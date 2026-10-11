@@ -37,9 +37,11 @@ import {
   renameSessionRows,
   setSessionFavoriteRow,
 } from '../sessionDbOps.ts'
+import { claimSessionId } from '../sessionLock.ts'
 import {
   saveSessionSnapshot,
   setupSessionDB,
+  setupSessionLock,
   setupSessionStorageAutosave,
 } from './persistence.ts'
 import { savedSessionMenuItems } from './sessionMenus.ts'
@@ -254,7 +256,7 @@ export default function RootModel({
         /**
          * #action
          * Merges a row this model has just written into the in-memory list. The
-         * autosave autorun writes exactly one row on every debounced session
+         * autosave autorun writes exactly one row on every throttled session
          * edit — every 400ms for as long as you keep panning — and already
          * holds its contents, so re-reading every session's metadata to learn
          * what it just stored is the expensive way to move one row to the top.
@@ -290,6 +292,7 @@ export default function RootModel({
         // but the helpers only touch fields/actions already composed in.
         const model = self as unknown as WebRootModel
         setupSessionStorageAutosave(model)
+        setupSessionLock(model)
         if (!indexedDBAvailable()) {
           // no autosave database here (jsdom, a locked-down browser profile).
           // An empty list rather than `undefined`, which means "still opening"
@@ -365,7 +368,7 @@ export default function RootModel({
             self.session?.notifyError('Session not found')
             return
           }
-          // The autosave autorun is debounced, so the outgoing session's last
+          // The autosave autorun is throttled, so the outgoing session's last
           // edits may not have landed yet — and once setSession swaps it out,
           // the pending tick reads the *new* session and they are lost for
           // good. Flush it here so switching sessions never costs the last
@@ -380,7 +383,18 @@ export default function RootModel({
             )
           }
           await self.pluginManager.preloadSessionTypes(ret)
-          self.setSession(ret)
+          // another tab is autosaving this id, and sharing it would have the
+          // two overwrite one row (sessionLock.ts)
+          if ((await claimSessionId(id)) === 'held-elsewhere') {
+            const { id: _id, ...copy } = ret
+            self.setSession(copy)
+            self.session?.notify(
+              'That session is open in another tab, so a copy was opened here',
+              'info',
+            )
+          } else {
+            self.setSession(ret)
+          }
         })
       },
       /**

@@ -29,6 +29,8 @@ import TrixPlugin from '@jbrowse/plugin-trix'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
+import SessionManagerPlugin from './SessionManager/index.ts'
+
 const corePlugins = [
   Canvas,
   LinearGenomeView,
@@ -60,6 +62,7 @@ const corePlugins = [
   ComparativeAdapters,
   Gwas,
   Marks,
+  SessionManagerPlugin,
 ]
 
 export default corePlugins

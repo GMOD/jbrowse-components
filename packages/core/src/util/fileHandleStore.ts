@@ -31,6 +31,11 @@ function getDB() {
     upgrade(db) {
       db.createObjectStore(STORE_NAME)
     },
+    // the browser closed the connection (site data cleared while the page was
+    // open); without this every later pick reuses the dead handle and throws
+    terminated() {
+      dbPromise = undefined
+    },
   }).catch((error: unknown) => {
     // drop the rejected promise, so a transient open failure (a blocked
     // upgrade, a storage prompt the user has since answered) doesn't make every

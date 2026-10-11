@@ -1,3 +1,5 @@
+import { summarizeSession } from '@jbrowse/app-core'
+
 import type { Session, SessionDB, SessionMetadata } from './types.ts'
 import type { IDBPDatabase, IDBPObjectStore } from 'idb'
 
@@ -70,6 +72,7 @@ async function withBothStores<T>(
  */
 export function nextSessionMetadata(
   prev: SessionMetadata | undefined,
+  snap: Session,
   { id, name, configPath }: { id: string; name: string; configPath: string },
 ): SessionMetadata {
   const now = new Date()
@@ -80,6 +83,7 @@ export function nextSessionMetadata(
     name,
     id,
     configPath,
+    summary: summarizeSession(snap),
   }
 }
 
@@ -105,7 +109,7 @@ export function upsertSessionRows(
 ) {
   const { id } = ident
   return withBothStores(db, async ({ sessions, metadata }) => {
-    const meta = nextSessionMetadata(await metadata.get(id), ident)
+    const meta = nextSessionMetadata(await metadata.get(id), snap, ident)
     await Promise.all([sessions.put(snap, id), metadata.put(meta, id)])
     return meta
   })

@@ -55,12 +55,15 @@ export type { SessionModelFactory } from './sessionModelFactory.ts'
 // embedded product must not rewrite its host's URL — see queryParams.ts
 export {
   deleteQueryParams,
+  queryParamsHref,
   readAllQueryParams,
   readQueryParams,
   setQueryParams,
   useQueryParam,
 } from './queryParams.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'
+export { formatSessionSummary, summarizeSession } from './sessionSummary.ts'
+export type { SessionSummary } from './sessionSummary.ts'
 export type { Menu, MenuAction } from './menus.ts'
 // The helper library an agent drives the app through: desktop serves it to
 // run_javascript over MCP, web hands it to the page as window.jb

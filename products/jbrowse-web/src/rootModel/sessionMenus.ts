@@ -1,3 +1,4 @@
+import { formatSessionSummary } from '@jbrowse/app-core'
 import { formatRelativeTime } from '@jbrowse/core/util'
 import { sessionLastUsed } from '@jbrowse/web-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -13,6 +14,7 @@ interface SessionMenuActions {
 
 interface SessionMenuItem {
   label: string
+  subLabel?: string
   disabled?: boolean
   icon?: SvgIconComponent
   onClick: () => void
@@ -37,6 +39,7 @@ function sessionItem(
 ): SessionMenuItem {
   return {
     label: sessionLabel(r, currentSessionId),
+    subLabel: r.summary && formatSessionSummary(r.summary),
     disabled: r.id === currentSessionId,
     icon,
     onClick: () => {

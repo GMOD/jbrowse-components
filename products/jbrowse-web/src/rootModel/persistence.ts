@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import { openSessionDB } from '../openSessionDB.ts'
 import { configBaseUri, resolveConfigPath } from '../resolveConfigPath.ts'
 import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
+import { claimSessionId, releaseSessionIdsExcept } from '../sessionLock.ts'
 import { addRelativeUris } from '../util.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
@@ -76,7 +77,7 @@ export function saveSessionSnapshot(
 }
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
-// + metadata into idb on each session edit (debounced 400ms). Skipped when
+// + metadata into idb on each session edit (throttled to 400ms). Skipped when
 // indexedDB is unavailable (tests, restricted environments).
 export async function setupSessionDB(self: WebRootModel) {
   try {
@@ -105,11 +106,30 @@ export async function setupSessionDB(self: WebRootModel) {
       return
     }
     self.setSessionDB(sessionDB)
+    // a plugin-install rebuild opens its own, so this one would otherwise stay
+    // open for the life of the tab
+    registerTeardown(self, () => {
+      sessionDB.close()
+    })
     await pruneOldSessions(sessionDB, self.session?.id)
     await self.fetchSessionMetadata()
     if (!isAlive(self)) {
       return
     }
+
+    // the list is read once here and then follows only this tab's own writes,
+    // so re-read it on return from another tab that may have saved sessions
+    const refresh = () => {
+      if (isAlive(self)) {
+        self.fetchSessionMetadata().catch((e: unknown) => {
+          console.error(e)
+        })
+      }
+    }
+    window.addEventListener('focus', refresh)
+    registerTeardown(self, () => {
+      window.removeEventListener('focus', refresh)
+    })
 
     // notifyError always pushes a fresh snackbar — its "report" action defeats
     // the duplicate-message check in pushSnackbarMessage — and this autorun
@@ -145,7 +165,7 @@ export async function setupSessionDB(self: WebRootModel) {
               if (isAlive(self)) {
                 // the one row that changed is the one we just wrote, so merge it
                 // in rather than re-reading every session's metadata on each
-                // debounce tick (see upsertSessionMetadata)
+                // autosave tick (see upsertSessionMetadata)
                 self.upsertSessionMetadata(meta)
                 if (savingFailed) {
                   savingFailed = false
@@ -202,7 +222,26 @@ function registerTeardown(self: WebRootModel, disposer: () => void) {
   addDisposer(self, disposer)
 }
 
-// The autorun below is debounced, so the snapshot on disk trails the session by
+// Holds the tab's lock on whichever session is open (sessionLock.ts). Not
+// released at teardown: a plugin-install rebuild keeps the same session id,
+// and the browser releases every lock when the page goes.
+export function setupSessionLock(self: WebRootModel) {
+  registerTeardown(
+    self,
+    autorun(() => {
+      const id = self.session?.id
+      if (id) {
+        void claimSessionId(id).then(() => {
+          if (isAlive(self)) {
+            releaseSessionIdsExcept(self.session?.id)
+          }
+        })
+      }
+    }),
+  )
+}
+
+// The autorun below is throttled, so the snapshot on disk trails the session by
 // up to that delay and a tab closed inside the window loses the difference.
 // Writing once more on the way out means the delay only trades write frequency
 // against staleness-while-running, never against what a reload restores — so it

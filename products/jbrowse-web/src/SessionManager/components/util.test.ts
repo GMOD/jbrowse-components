@@ -1,6 +1,6 @@
 import { staleSessions } from './util.ts'
 
-import type { SessionMetadata } from './util.ts'
+import type { SessionMetadata } from '@jbrowse/web-core'
 
 const now = +new Date('2024-06-30T12:00:00Z')
 

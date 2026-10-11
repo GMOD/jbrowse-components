@@ -1,9 +1,10 @@
-import { ActionLink } from '@jbrowse/core/ui'
+import { queryParamsHref } from '@jbrowse/app-core'
 import { formatRelativeTime } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Link, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util.ts'
@@ -17,14 +18,10 @@ export interface Row {
   id: string
   /** the editable value — what a rename writes, never what the cell draws */
   name: string
-  /**
-   * what the name cell draws, which is `name` plus a "(current)" suffix on the
-   * open session. Precomputed so the column that *measures* the names to pick
-   * its width measures the same strings the cells render: measuring `name`
-   * alone left the current row — the one that is always at the top — as the one
-   * row ellipsed.
-   */
+  /** what the name cell draws: `name`, plus "(current)" on the open session */
   label: string
+  /** what the session holds, e.g. "hg38 · 2 views · 14 tracks" */
+  summary?: string
   createdAt: Date
   lastUsed: Date
   fav: boolean
@@ -78,10 +75,22 @@ export const FavoriteCell = observer(function FavoriteCell({
   )
 })
 
+const useStyles = makeStyles()(theme => ({
+  name: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  summary: {
+    color: theme.palette.text.secondary,
+  },
+}))
+
 export const NameCell = observer(function NameCell({
   row,
   session,
 }: CellProps) {
+  const { classes } = useStyles()
   // A native `title`, not a MUI Tooltip: the drawer is narrow enough that a
   // long session name ellipses, and a tooltip here would mean a popper laid
   // over the row underneath — which is exactly how this column lost its clicks
@@ -90,17 +99,37 @@ export const NameCell = observer(function NameCell({
   // The open session is not offered as a link: re-opening it from IndexedDB can
   // only lose work, since that row is up to one autosave tick behind the live
   // model. The File menu leaves it out of the recent list for the same reason.
-  return row.current ? (
-    <span title={row.label}>{row.label}</span>
-  ) : (
-    <ActionLink
-      title={row.label}
-      onClick={() => {
-        void session.activateSession(row.id)
-      }}
-    >
-      {row.label}
-    </ActionLink>
+  //
+  // A real href, so a modified or middle click opens the session in a new tab
+  // the way any link does; a plain click switches this tab in place.
+  const title = row.summary ? `${row.label}\n${row.summary}` : row.label
+  return (
+    <div className={classes.name} title={title}>
+      {row.current ? (
+        row.label
+      ) : (
+        <Link
+          href={queryParamsHref({ session: `local-${row.id}` })}
+          onClick={event => {
+            if (
+              event.button === 0 &&
+              !event.ctrlKey &&
+              !event.metaKey &&
+              !event.shiftKey &&
+              !event.altKey
+            ) {
+              event.preventDefault()
+              void session.activateSession(row.id)
+            }
+          }}
+        >
+          {row.label}
+        </Link>
+      )}
+      {row.summary ? (
+        <span className={classes.summary}> · {row.summary}</span>
+      ) : null}
+    </div>
   )
 })
 

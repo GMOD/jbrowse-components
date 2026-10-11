@@ -35,8 +35,7 @@ Name collisions across files are almost all one of these:
 
 - **A test that imports both**, in a package depending on both:
   `packages/text-indexing/src/util.test.ts` pins core's `indexableAdapters`
-  mirror (core cannot import the indexer: `node:fs`); jbrowse-web's
-  `sessionMetadataParity.test.ts` pins plugin-menus' `SessionMetadata`.
+  mirror (core cannot import the indexer: `node:fs`).
 - **A typed wrapper that is itself the check**: jbrowse-web's `buildLgvInit`
   annotates its return with the real `InitState`.
 - **A comment naming the twin**, where the copy is trivial and frozen.
@@ -44,7 +43,8 @@ Name collisions across files are almost all one of these:
 
 **Pin a shape with exact structural equality, not mutual assignability**: a
 renamed or dropped optional property leaves both shapes assignable.
-`sessionMetadataParity.test.ts` has the `Eq<A, B>` form.
+The form is `type Eq<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T
+extends B ? 1 : 2 ? true : false`.
 
 ## The one that bit
 

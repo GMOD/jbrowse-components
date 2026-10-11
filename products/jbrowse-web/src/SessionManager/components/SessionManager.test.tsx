@@ -4,7 +4,8 @@ import { render } from '@testing-library/react'
 
 import SessionManager from './SessionManager.tsx'
 
-import type { SessionMetadata, SessionModel } from './util.ts'
+import type { SessionModel } from './util.ts'
+import type { SessionMetadata } from '@jbrowse/web-core'
 
 const theme = createJBrowseTheme()
 

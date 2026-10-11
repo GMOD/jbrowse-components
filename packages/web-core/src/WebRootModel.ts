@@ -1,4 +1,4 @@
-import type { AppRootModel } from '@jbrowse/app-core'
+import type { AppRootModel, SessionSummary } from '@jbrowse/app-core'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {
@@ -21,6 +21,8 @@ export interface SessionMetadata {
   updatedAt?: Date
   configPath: string
   favorite: boolean
+  /** absent on rows written before the field existed */
+  summary?: SessionSummary
 }
 
 /**

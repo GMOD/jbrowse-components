@@ -109,8 +109,8 @@ export async function readSessionFromIDB(query: string) {
  *
  * Needed because the two autosaves are not equivalent. The sessionStorage
  * mirror is the fresher of the pair (the unload flush writes there and not
- * here, and both are debounced 400ms), and the fresh session's own autosave is
- * about to overwrite it — so a crash inside that first debounce window is
+ * here, and both are throttled to 400ms), and the fresh session's own autosave is
+ * about to overwrite it — so a crash inside that first 400ms window is
  * exactly the case where letting go of the sessionStorage copy loses the
  * session for good. This is the write that makes "starting over keeps your
  * crashed session" true rather than merely usual.

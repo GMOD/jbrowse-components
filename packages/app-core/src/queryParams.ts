@@ -52,7 +52,7 @@ function subscribe(callback: () => void) {
 
 // Writes params back into `loc`, leaving the other URL component untouched — the
 // URL hash/search setters each replace only their own component.
-function writeParams(loc: ParamLocation, params: URLSearchParams) {
+function urlWith(loc: ParamLocation, params: URLSearchParams) {
   const url = new URL(window.location.href)
   const str = params.toString()
   if (loc === 'hash') {
@@ -60,7 +60,11 @@ function writeParams(loc: ParamLocation, params: URLSearchParams) {
   } else {
     url.search = str
   }
-  window.history.replaceState(null, '', url.href)
+  return url.href
+}
+
+function writeParams(loc: ParamLocation, params: URLSearchParams) {
+  window.history.replaceState(null, '', urlWith(loc, params))
   // Copied, which this note has claimed while the loop read the live set. A
   // listener is React's store-change callback, and React may flush the re-render
   // synchronously inside it, so the set can be mutated mid-notify: an unmounted
@@ -99,8 +103,10 @@ export function deleteQueryParams(keys: readonly string[]) {
   writeParams(loc, params)
 }
 
-export function setQueryParams(values: Record<string, string | undefined>) {
-  const loc = paramLocation()
+function paramsWith(
+  loc: ParamLocation,
+  values: Record<string, string | undefined>,
+) {
   const params = readParams(loc)
   for (const [key, value] of Object.entries(values)) {
     if (value === undefined) {
@@ -109,7 +115,18 @@ export function setQueryParams(values: Record<string, string | undefined>) {
       params.set(key, value)
     }
   }
-  writeParams(loc, params)
+  return params
+}
+
+export function setQueryParams(values: Record<string, string | undefined>) {
+  const loc = paramLocation()
+  writeParams(loc, paramsWith(loc, values))
+}
+
+/** The page's own URL with `values` applied, for a link to another state. */
+export function queryParamsHref(values: Record<string, string | undefined>) {
+  const loc = paramLocation()
+  return urlWith(loc, paramsWith(loc, values))
 }
 
 /**

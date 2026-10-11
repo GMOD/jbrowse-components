@@ -28,6 +28,7 @@ import {
   stripPrefix,
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
+import { RELOAD_LOCK_WAIT_MS, claimSessionId } from './sessionLock.ts'
 import { arePluginsRemembered } from './trustedPlugins.ts'
 import {
   checkPlugins,
@@ -651,23 +652,21 @@ const SessionLoader = types
      * Restores the session named by the URL's `local-<id>`, tried in
      * sessionStorage (this tab's current) then IndexedDB (shared autosave).
      *
-     * A sessionStorage hit means this same tab is reloading its own session, so
-     * we keep id = query: the URL keeps pointing at a session this tab already
-     * persisted (a fresh id would race the debounced autosave -> "not found" on
-     * a fast refresh, and orphan a new IndexedDB entry every reload).
-     *
-     * An IndexedDB-only hit means another context (a new tab off a copied URL, a
-     * link, a fresh visit) is adopting an id this tab never owned. IndexedDB is
-     * shared across tabs, so we fork a fresh id via `loadImportedSession`;
-     * otherwise both tabs would autosave over the same slot and fight.
+     * Either hit keeps id = query unless another live tab holds that id's lock
+     * (sessionLock.ts). A duplicated tab copies sessionStorage, and a copied
+     * URL finds the row in IndexedDB; when the original tab is still open, a
+     * fresh id is forked so the two don't autosave over one row. Keeping the id
+     * otherwise is what stops a reload, or a bookmark revisited, from adding a
+     * duplicate row each time. Without Web Locks an IndexedDB hit always forks,
+     * since nothing can say whether another tab has it open.
      *
      * Ahead of both, the one case where restoring is the wrong answer: this tab
      * already opened this exact session and crashed to the app-level
      * ErrorBoundary doing it. The autosave rewrote the snapshot at most 400ms
      * before that, so `FatalErrorDialog`'s **Refresh** lands back here and
-     * crashes again — the loop this offer breaks. What the marker names is the
-     * id in the URL rather than the id that got loaded, so the fork above is
-     * still recognized: it crashed under an id this URL has never carried.
+     * crashes again — the loop this offer breaks. The marker names the id in
+     * the URL rather than the id that got loaded, so a forked load is still
+     * recognized.
      */
     async fetchLocalSession() {
       const query = stripPrefix(self.sessionQuery!)
@@ -677,13 +676,17 @@ const SessionLoader = types
         return
       }
       const fromStorage = readSessionFromStorage(query)
-      const fromIDB = fromStorage ? undefined : await readSessionFromIDB(query)
-      if (fromStorage) {
-        await this.loadSession({ ...fromStorage, id: query })
-      } else if (fromIDB) {
-        await this.loadImportedSession(fromIDB)
-      } else {
+      const snap = fromStorage ?? (await readSessionFromIDB(query))
+      if (!snap) {
         throw new Error('Local session not found')
+      }
+      const claim = await claimSessionId(query, {
+        waitMs: RELOAD_LOCK_WAIT_MS,
+      })
+      if (claim === 'claimed' || (claim === 'unsupported' && fromStorage)) {
+        await this.loadSession({ ...snap, id: query })
+      } else {
+        await this.loadImportedSession(snap)
       }
     },
     /**

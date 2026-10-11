@@ -1,16 +1,17 @@
 import { useState } from 'react'
 
+import { formatSessionSummary } from '@jbrowse/app-core'
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { sessionLastUsed } from '@jbrowse/web-core'
 import { Button, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
 import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
 import { DeleteCell, FavoriteCell, LastUsedCell, NameCell } from './cells.tsx'
-import { sessionLastUsed } from './util.ts'
 
 import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
@@ -58,6 +59,7 @@ function buildRows(
         label: current ? `${r.name} (current)` : r.name,
         createdAt: r.createdAt,
         lastUsed: sessionLastUsed(r),
+        summary: r.summary && formatSessionSummary(r.summary),
         fav: r.favorite,
         current,
       }
@@ -146,7 +148,7 @@ const SessionManager = observer(function SessionManager({
           onChange={val => {
             setShowOnlyFavs(val)
           }}
-          label="Show favorites only?"
+          label="Show favorites only"
         />
         <Button
           variant="contained"
@@ -170,10 +172,14 @@ const SessionManager = observer(function SessionManager({
             rows={rows}
             columns={buildColumns(session)}
             processRowUpdate={(newRow: Row, oldRow: Row) => {
-              if (newRow.name !== oldRow.name) {
-                void session.renameSavedSession(newRow.id, newRow.name)
+              const name = newRow.name.trim()
+              if (!name) {
+                return oldRow
               }
-              return newRow
+              if (name !== oldRow.name) {
+                void session.renameSavedSession(newRow.id, name)
+              }
+              return { ...newRow, name }
             }}
             onProcessRowUpdateError={e => {
               console.error(e)

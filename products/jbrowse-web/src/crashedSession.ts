@@ -14,8 +14,7 @@ import { getSessionQueryType, stripPrefix } from './sessionLoaderHelpers.ts'
 // sessionStorage, alongside the session mirror this is about (persistence.ts's
 // `current`) and for the same reason: the marker is about ONE tab's attempt at
 // one session. Another tab adopting the same id out of IndexedDB is a different
-// attempt and gets no marker, which is right — it is running different code
-// paths (loadImportedSession forks a fresh id) and may well be fine.
+// attempt and gets no marker, which is right — it may well be fine.
 //
 // Written through the guarded accessors because the writer is a crash handler.
 // A store that refuses — Safari private browsing, a third-party frame with
