@@ -28,6 +28,12 @@ however many rows name it, which is where that is settled.
 `--pick single` empties any multi-gene cell instead, for a strictly one-to-one
 table; `--pick first` is the arbitrary choice, if you want the coverage.
 
+`--homology A:B=FILE` also writes every A-B gene pair an orthogroup holds, the
+product of the two cells rather than the index-paired rows, as MCScanX_h's
+`.homology` input. Pairing copies by OrthoFinder's listing order decides which
+copy is collinear before anything has looked; MCScanX_h decides it from gene
+order.
+
 `--bed NAME=FILE` reports what share of each column's ids the BED resolves and
 drops the rest. OrthoFinder ids come from the protein FASTA headers, so they are
 whatever those headers led with, and a table whose ids resolve nowhere loads
@@ -40,7 +46,8 @@ it. The share needs both numbers to be readable, which is why a column with no
 Requires: python3 only.
 Usage:
   python3 orthogroups_to_blocks.py Orthogroups.tsv -o rice.blocks \\
-      [--assembly rice.pep=rice] [--bed rice=rice.bed] [--pick single]
+      [--assembly rice.pep=rice] [--bed rice=rice.bed] [--pick single] \\
+      [--homology rice:maize=rice.maize.homology]
 """
 
 import argparse
@@ -118,7 +125,14 @@ def orthogroup_rows(cells, pick, max_copies, beds, counts=None):
     return [r for r in rows if sum(g != "." for g in r) > 1]
 
 
-def build_rows(lines, columns, pick, beds, max_copies):
+def homology_pairs(cells, pairs, max_copies, beds):
+    """{(a, b): [(gene_a, gene_b), ...]} for each requested column pair."""
+    genes = [cell_genes(c, beds[i], max_copies)[0] for i, c in enumerate(cells)]
+    return {(a, b): [(x, y) for x in genes[a] for y in genes[b]]
+            for a, b in pairs}
+
+
+def build_rows(lines, columns, pick, beds, max_copies, pairs=()):
     """([row, ...], seen, resolved, counts) from an Orthogroups.tsv body.
 
     `seen` and `resolved` are per column and hold DISTINCT gene ids: the ids the
@@ -130,6 +144,7 @@ def build_rows(lines, columns, pick, beds, max_copies):
     seen = [set() for _ in columns]
     resolved = [set() for _ in columns]
     counts = {"orthogroups": 0, "expanded": 0, "families": 0}
+    homology = {pair: [] for pair in pairs}
     for line in lines:
         # padded AND truncated to the header's width: `beds` has one entry per
         # column, so a stray cell on a wider row indexes past the end of it
@@ -145,7 +160,9 @@ def build_rows(lines, columns, pick, beds, max_copies):
         new = orthogroup_rows(cells, pick, max_copies, beds, counts)
         counts["expanded"] += len(new) > 1
         rows += new
-    return rows, seen, resolved, counts
+        for pair, found in homology_pairs(cells, pairs, max_copies, beds).items():
+            homology[pair] += found
+    return rows, seen, resolved, counts, homology
 
 
 def report_columns(columns, bed_files, seen, resolved):
@@ -184,6 +201,9 @@ def main():
     p.add_argument("--pick", choices=["expand", "single", "first"], default="expand",
                    help="what a multi-gene cell contributes: a row per copy "
                         "(default), nothing, or the first gene listed")
+    p.add_argument("--homology", action="append", default=[], metavar="A:B=FILE",
+                   help="also write every A-B gene pair within an orthogroup to "
+                        "FILE, as MCScanX_h input")
     p.add_argument("--max-copies", type=int, default=4, metavar="N",
                    help="a cell with more genes than this is a gene family, "
                         "and contributes nothing")
@@ -196,11 +216,17 @@ def main():
         for name in bed_files:
             if name not in columns:
                 sys.exit(f"--bed {name!r} is not one of the columns {columns}")
+        homology_files = {}
+        for key, path in parse_kv(args.homology, "homology").items():
+            a, _, b = key.partition(":")
+            if a not in columns or b not in columns:
+                sys.exit(f"--homology {key!r} names a column not in {columns}")
+            homology_files[(columns.index(a), columns.index(b))] = path
         beds = [read_bed_names(bed_files[c]) if c in bed_files else None
                 for c in columns]
         # the header is already consumed, so the rest of the handle is the body
-        rows, seen, resolved, counts = build_rows(
-            fh, columns, args.pick, beds, args.max_copies)
+        rows, seen, resolved, counts, homology = build_rows(
+            fh, columns, args.pick, beds, args.max_copies, homology_files)
 
     placed, dead = report_columns(columns, bed_files, seen, resolved)
     if dead:
@@ -215,6 +241,9 @@ def main():
 
     with open(args.out, "w") as fh:
         fh.writelines("\t".join(r) + "\n" for r in rows)
+    for pair, path in homology_files.items():
+        with open(path, "w") as fh:
+            fh.writelines(f"{x}\t{y}\n" for x, y in homology[pair])
 
     # a threshold below the ploidy in the set empties the cells the table exists
     # to show, and an emptied cell reads as a genome with fewer orthologs

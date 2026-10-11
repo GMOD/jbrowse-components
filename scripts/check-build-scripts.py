@@ -1015,6 +1015,16 @@ check("an orthogroup present in one genome only is dropped",
 check("a gene the BED does not have is not counted as an answer",
       og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b"}, None]),
       [["Os01g1", "Zm01b", "Sb01g"]])
+# MCScanX_h picks the collinear copy from gene order, so it gets every pairing,
+# not the index-paired rows that already chose one
+check("--homology writes the product of two duplicated cells",
+      og.homology_pairs(["A1, A2", "B1, B2", "C1"], [(0, 1), (1, 2)], 4, [None] * 3),
+      {(0, 1): [("A1", "B1"), ("A1", "B2"), ("A2", "B1"), ("A2", "B2")],
+       (1, 2): [("B1", "C1"), ("B2", "C1")]})
+check("--homology drops a gene family and an unplaced gene as the table does",
+      og.homology_pairs(["A1", "B1, B2, B3", "C1, C2"], [(0, 1), (0, 2)], 2,
+                        [None, None, {"C2"}]),
+      {(0, 1): [], (0, 2): [("A1", "C2")]})
 # symbols_to_blocks.py: the same three modes over a symbol join, where a column's
 # copies are the genes sharing one symbol. Expanding them is what draws a
 # duplication as a ribbon per copy; taking the first hid the second copy of the
@@ -1096,18 +1106,18 @@ check("the per-column report gives the share, and marks an unchecked column",
        "  sorghum: 1 ids, unchecked (pass --bed sorghum=FILE)"])
 # distinct ids, not output cells: `expand` repeats the single-copy gene once per
 # copy beside it, so counting cells reports more rice genes than the table holds
-_, seen, resolved, _ = og.build_rows(
+_, seen, resolved, _, _ = og.build_rows(
     ["OG1\tOs01g1\tZm01a, Zm01b\n"], ["rice", "maize"], "expand", [None] * 2, 4)
 check("the placed count is distinct ids, not the rows expansion wrote",
       [len(seen[0]), len(resolved[0])], [1, 1])
 # `beds` has one entry per column, so a stray cell on a wider row indexed past
 # the end of it: IndexError, after the file had already been read.
-wide, _, _, _ = og.build_rows(
+wide, _, _, _, _ = og.build_rows(
     ["OG1\tOs1\tZm1\tSTRAY\n"], ["rice", "maize"], "expand", [None] * 2, 4)
 check("a row wider than the header is cut to the columns, not indexed past them",
       wide, [["Os1", "Zm1"]])
 # a row SHORTER than the header is the ordinary case and still pads
-short, _, _, _ = og.build_rows(
+short, _, _, _, _ = og.build_rows(
     ["OG1\tOs1\tZm1\n"], ["rice", "maize", "sorghum"], "expand", [None] * 3, 4)
 check("a row shorter than the header pads to it",
       short, [["Os1", "Zm1", "."]])
