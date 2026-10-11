@@ -59,7 +59,17 @@ export interface AlignmentTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for CRAM and for reads without MD. */
   sequenceAdapter?: Record<string, unknown>
-  region: { refName: string; start: number; end: number }
+  region: {
+    refName: string
+    start: number
+    end: number
+    /**
+     * The contig's name in the reference, where the file spells it another
+     * way (`1` in the BAM, `chr1` in the FASTA): what a read with no MD tag
+     * is compared against, as the browser's `originalRefName` is.
+     */
+    originalRefName?: string
+  }
   /** The display's `color` object, as a config writes it; unset reads plain. */
   color?: SnapshotIn<typeof alignmentsColorConfigSchema>
   /** The display's `filter` object, as a config writes it. */

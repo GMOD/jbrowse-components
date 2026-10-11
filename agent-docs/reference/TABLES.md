@@ -60,6 +60,10 @@ back as `legend` with `legendTitle`. Each read carries its painted `color` as
 `#rrggbb` and its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...). A host
 draws `color` as given and keys the legend off `legend`, so a scheme the
 browser gains paints in R with no port. A linear ramp keys no legend yet.
+A host has no assembly manager, so where a file spells a contig another way
+than the reference does, it names both: `region.refName` for the file and
+`region.originalRefName` for the reference, as the browser's renamed regions
+carry it (ggjbrowse's `reference_chrom`).
 
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
