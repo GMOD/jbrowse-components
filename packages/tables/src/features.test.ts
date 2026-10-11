@@ -79,3 +79,21 @@ test('a BigBed region lays out', async () => {
   expect(t.features.id.length).toBeGreaterThan(0)
   expect(t.rects.start.length).toBeGreaterThan(0)
 })
+
+test('a transcript label names its transcript and the gene it belongs to', async () => {
+  const t = await engine.features({
+    ...GFF3,
+    bpPerPx: 5,
+    display: { subfeatureLabels: 'below' },
+  })
+  const sub = t.labels.subfeature
+    .map((s, i) => i)
+    .filter(i => t.labels.subfeature[i]! >= 0)
+  expect(sub.length).toBeGreaterThan(0)
+  for (const i of sub) {
+    const s = t.labels.subfeature[i]!
+    expect(t.labels.feature[i]).toBe(t.subfeatures.feature[s])
+    expect(t.subfeatures.name[s]).toBe(t.labels.text[i])
+  }
+  expect(Math.min(...t.labels.feature)).toBeGreaterThanOrEqual(0)
+})

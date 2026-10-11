@@ -1,11 +1,6 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
-import {
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-  cssColorToABGR,
-} from '@jbrowse/core/util/colorBits'
+import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
@@ -76,18 +71,6 @@ export interface FeatureTablesArgs {
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
 
-function hex(n: number) {
-  return n.toString(16).padStart(2, '0')
-}
-
-function hexOfAbgr(c: number) {
-  return `#${hex(abgrRed(c))}${hex(abgrGreen(c))}${hex(abgrBlue(c))}`
-}
-
-function hexOfCss(css: string) {
-  return hexOfAbgr(cssColorToABGR(css))
-}
-
 function pairs(a: ArrayLike<number>) {
   const first: number[] = []
   const second: number[] = []
@@ -127,7 +110,7 @@ function chevrons(
         )
         out.y.push(d.lineYs[i]!)
         out.direction.push(direction)
-        out.color.push(hexOfAbgr(d.lineColors[i]!))
+        out.color.push(abgrToHex(d.lineColors[i]!))
         out.feature.push(d.lineFeatureIndices[i]!)
       }
     }
@@ -154,7 +137,7 @@ function arrows(d: FeatureDataResult, bpPerPx: number) {
       out.y.push(d.arrowYs[i]!)
       out.direction.push(d.arrowDirections[i]!)
       out.headHalfHeight.push(arrowHeadHalfHeightPx(d.arrowHeights[i]!))
-      out.color.push(hexOfAbgr(d.arrowColors[i]!))
+      out.color.push(abgrToHex(d.arrowColors[i]!))
       out.feature.push(d.arrowFeatureIndices[i]!)
     }
   }
@@ -263,9 +246,13 @@ export async function featureTables(
     y: [] as number[],
     color: [] as string[],
     feature: [] as number[],
+    subfeature: [] as number[],
   }
   const featureIndex = new Map(
     d.flatbushItems.map((item, i) => [item.featureId, i]),
+  )
+  const subfeatureIndex = new Map(
+    d.subfeatureInfos.map((s, i) => [s.featureId, i]),
   )
   forEachDisplayLabel(
     [
@@ -292,8 +279,16 @@ export async function featureTables(
           labels.kind.push(p.kind === 'desc' ? 'description' : p.kind)
           labels.position.push(region.start + p.labelX * bpPerPx)
           labels.y.push(p.labelY)
-          labels.color.push(hexOfCss(p.color))
-          labels.feature.push(featureIndex.get(featureId) ?? -1)
+          labels.color.push(cssColorToHex(p.color))
+          const sub = subfeatureIndex.get(featureId)
+          labels.subfeature.push(sub ?? -1)
+          labels.feature.push(
+            featureIndex.get(
+              sub === undefined
+                ? featureId
+                : d.subfeatureInfos[sub]!.parentFeatureId,
+            ) ?? -1,
+          )
         }
       }
     },
@@ -336,14 +331,14 @@ export async function featureTables(
       end: rectEnd,
       top: Array.from(d.rectYs),
       height: Array.from(d.rectHeights),
-      color: Array.from(d.rectColors, hexOfAbgr),
+      color: Array.from(d.rectColors, abgrToHex),
       feature: Array.from(d.rectFeatureIndices),
     },
     lines: {
       start: lineStart,
       end: lineEnd,
       y: Array.from(d.lineYs),
-      color: Array.from(d.lineColors, hexOfAbgr),
+      color: Array.from(d.lineColors, abgrToHex),
       feature: Array.from(d.lineFeatureIndices),
     },
     chevrons: hideChevrons
@@ -353,7 +348,7 @@ export async function featureTables(
     labels,
     legend: {
       label: entries.map(e => e.label),
-      color: entries.map(e => hexOfCss(e.color!)),
+      color: entries.map(e => cssColorToHex(e.color!)),
     },
     legendTitle: key?.title ?? '',
     /** The px sizes the display draws its fixed-size marks at. */
@@ -364,7 +359,7 @@ export async function featureTables(
       chevronWidth: CHEVRON_W_PX,
       chevronHeight: CHEVRON_H_PX,
     },
-    height: Math.max(0, ...items.map(item => item.bottomPx)),
+    height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
     bpPerPx,
   }
 }
