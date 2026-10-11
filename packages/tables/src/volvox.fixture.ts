@@ -4,8 +4,9 @@ import { pathToFileURL } from 'node:url'
 import type { AlignmentTablesArgs } from './index.ts'
 
 const VOLVOX = path.resolve('test_data/volvox')
-const uri = (file: string) => ({
-  uri: pathToFileURL(path.join(VOLVOX, file)).href,
+const METHYLATION = path.resolve('test_data/methylation_test')
+const uri = (file: string, dir = VOLVOX) => ({
+  uri: pathToFileURL(path.join(dir, file)).href,
   locationType: 'UriLocation',
 })
 
@@ -44,6 +45,24 @@ export const LONG_READS: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 1000, end: 20000 },
+}
+
+/** Seven ONT reads over a clip of hg38 chr20, with 5mC calls. */
+export const METHYLATED: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('methylation_clip.bam', METHYLATION),
+    index: {
+      location: uri('methylation_clip.bam.bai', METHYLATION),
+      indexType: 'BAI',
+    },
+  },
+  sequenceAdapter: {
+    type: 'IndexedFastaAdapter',
+    fastaLocation: uri('hg38_clip.fa', METHYLATION),
+    faiLocation: uri('hg38_clip.fa.fai', METHYLATION),
+  },
+  region: { refName: '20', start: 10000, end: 20000 },
 }
 
 export const CRAM: AlignmentTablesArgs = {

@@ -19,7 +19,19 @@ adapters must be registered on `pluginManager` (`registerAlignmentsAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, color, filter, byteLimit, }: AlignmentTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, color, filter, baseColor, modifications, byteLimit, }: AlignmentTablesArgs) => Promise<…>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
+
+### referenceSequence
+
+A region of the reference, as the sequence adapter a track's assembly names
+reads it: the bases as one string, for a host drawing them under a pileup.
+
+```js
+// type signature
+(pluginManager: PluginManager, { sequenceAdapter, region, }: { sequenceAdapter: Record<string, unknown>; region: { refName: string; start: number; end: number; }; }) => Promise<string>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)

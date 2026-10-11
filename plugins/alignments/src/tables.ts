@@ -1,12 +1,22 @@
 import { pairDirectionOfNum } from '@jbrowse/alignments-core'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
+import { alignmentsBaseColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
+import { alignmentsModificationsConfigSchema } from './LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
@@ -33,6 +43,7 @@ import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
+  baseLayerOf,
   bodyColorScheme,
   colorByOf,
   declaredReadLabels,
@@ -41,16 +52,45 @@ import {
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from './shared/legendUtils.ts'
+import { getModificationName } from './shared/modificationData.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from './shared/types.ts'
+import { getColorForModification } from './util.ts'
 
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+import type { BaseLayer, ModificationColorBy } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+
+/**
+ * #api
+ * A region of the reference, as the sequence adapter a track's assembly names
+ * reads it: the bases as one string, for a host drawing them under a pileup.
+ */
+export async function referenceSequence(
+  pluginManager: PluginManager,
+  {
+    sequenceAdapter,
+    region,
+  }: {
+    sequenceAdapter: Record<string, unknown>
+    region: { refName: string; start: number; end: number }
+  },
+) {
+  const adapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig: sequenceAdapter,
+  })
+  if (!isSequenceAdapter(adapter)) {
+    throw new Error(`${String(sequenceAdapter.type)} serves no sequence`)
+  }
+  return (await adapter.getSequence(region)) ?? ''
+}
 
 /** Registers the adapters `alignmentTables` reads through, BAM and CRAM. */
 export function registerAlignmentsAdapters(pluginManager: PluginManager) {
@@ -77,6 +117,13 @@ export interface AlignmentTablesArgs {
   color?: SnapshotIn<typeof alignmentsColorConfigSchema>
   /** The display's `filter` object, as a config writes it. */
   filter?: SnapshotIn<typeof readFilterConfigSchema>
+  /**
+   * The display's `baseColor` object: the per-base layer painted over the
+   * reads, `{ field: 'modifications' }` for the reads' base modifications.
+   */
+  baseColor?: SnapshotIn<typeof alignmentsBaseColorConfigSchema>
+  /** The display's `modifications` object, the settings that layer reads. */
+  modifications?: SnapshotIn<typeof alignmentsModificationsConfigSchema>
   /**
    * The most compressed bytes the region may need, refused off the index
    * before any read is fetched. 200 MB by default; a host holds the whole
@@ -157,8 +204,31 @@ function hexOf(css: string) {
  * same scale and classified into the same buckets, each painted the color the
  * display paints it, and the key the display shows beside them.
  */
+/** The display's per-base layer, from its `baseColor` and `modifications` objects. */
+function baseLayerFor({
+  baseColor,
+  modifications,
+}: Pick<AlignmentTablesArgs, 'baseColor' | 'modifications'>) {
+  const base = alignmentsBaseColorConfigSchema.create(baseColor ?? {})
+  const mods = alignmentsModificationsConfigSchema.create(modifications ?? {})
+  const settings: ModificationColorBy = {
+    threshold: readConfObject(mods, 'threshold'),
+    unmodified: readConfObject(mods, 'unmodified'),
+    cytosineContext: readConfObject(mods, 'cytosineContext'),
+    shownModifications: readConfObject(mods, 'shownModifications'),
+  }
+  return baseLayerOf(
+    {
+      field: readConfObject(base, 'field'),
+      scale: readConfObject(base, 'scale'),
+    },
+    settings,
+  )
+}
+
 function colorReads(
   colorSnapshot: AlignmentTablesArgs['color'],
+  baseLayer: BaseLayer | undefined,
   laid: LaidOutPileupData,
 ) {
   const node = alignmentsColorConfigSchema.create(colorSnapshot ?? {})
@@ -179,7 +249,7 @@ function colorReads(
     : undefined
   const colored = applyReadColorsByGroup(byGroup, {
     colorBy,
-    bodyScheme: bodyColorScheme(colorBy, undefined),
+    bodyScheme: bodyColorScheme(colorBy, baseLayer),
     readColorOpts: {},
     bakedScale,
   })
@@ -196,8 +266,17 @@ function colorReads(
     : colorBy.type === 'mappingQuality'
       ? presentMapqs(colored)
       : collectAcrossGroups(colored, d => d.readTagValues)
+  const detectedModifications = new Map(
+    data.detectedModifications.map(type => [
+      type,
+      getColorForModification(type),
+    ]),
+  )
   const legend = getReadDisplayLegendItems({
     colorBy,
+    baseLayer,
+    detectedModifications,
+    presentModifications: new Set(data.modificationTypes ?? []),
     presentCategories: new Set(category as ReadColorCategory[]),
     palette,
     presentTagValues,
@@ -236,6 +315,46 @@ function colorReads(
  * reader kept it, its sequence; a clip with its length and whether the clipped
  * bases are in the file (`soft`) or not (`hard`).
  */
+/**
+ * The reads' base modifications as the display's modifications layer paints
+ * them: each call at its position on its read, its type code and name, its
+ * probability, whether it is the call that the base is unmodified, the color
+ * the display paints it and the opacity it paints it at, which follows the
+ * probability.
+ */
+function modifications(d: WorkerPileupData) {
+  const types = d.modificationTypes ?? []
+  const n = d.modificationPositions.length
+  const type = Array.from(
+    { length: n },
+    (_, i) => types[d.modificationTypeIndices?.[i] ?? 0] ?? '',
+  )
+  const unmodified = Array.from(
+    { length: n },
+    (_, i) => d.modificationNoMod?.[i] === 1,
+  )
+  return {
+    position: d.modificationPositions,
+    read: d.modificationReadIndices,
+    type,
+    name: type.map((t, i) =>
+      unmodified[i]
+        ? `Unmodified ${getModificationName(t)}`
+        : getModificationName(t),
+    ),
+    probability: Array.from(
+      { length: n },
+      (_, i) => (d.modificationProbabilities?.[i] ?? 0) / 255,
+    ),
+    unmodified,
+    color: Array.from(
+      d.modificationColors,
+      c => `#${hex(abgrRed(c))}${hex(abgrGreen(c))}${hex(abgrBlue(c))}`,
+    ),
+    opacity: Array.from(d.modificationColors, c => abgrAlpha(c) / 255),
+  }
+}
+
 /**
  * The share of the depth a mark's site holds, as the display fades a
  * sub-pixel mark by it: the worker's byte, zeroed below its depth-dependent
@@ -362,6 +481,7 @@ function sectionTables(
       reverse: d.coverageRevDepths,
     },
     ...interbase(d),
+    modifications: modifications(d),
     junctions: junctions(d, refName),
     legend: colors.legend,
     legendTitle: colors.legendTitle,
@@ -388,6 +508,8 @@ export async function alignmentTables(
     region,
     color,
     filter,
+    baseColor,
+    modifications,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: AlignmentTablesArgs,
 ): Promise<AlignmentTables> {
@@ -396,6 +518,7 @@ export async function alignmentTables(
       colorSnapshotOf(alignmentsColorConfigSchema.create(color ?? {})),
     ),
   )
+  const baseLayer = baseLayerFor({ baseColor, modifications })
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -403,6 +526,7 @@ export async function alignmentTables(
     regions: [{ assemblyName: '', ...region }],
     filterBy: readFilterOf(readFilterConfigSchema.create(filter ?? {})),
     colorBy,
+    baseLayer,
     byteLimit,
     statusCallback: () => {},
   }
@@ -426,7 +550,7 @@ export async function alignmentTables(
   return sectionTables(
     data,
     laid.readYs,
-    colorReads(color, laid),
+    colorReads(color, baseLayer, laid),
     region.refName,
   )
 }

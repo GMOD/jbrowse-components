@@ -78,7 +78,15 @@ of the depth at its site, zeroed below the display's depth-dependent
 threshold, which is what the pileup fades a sub-pixel mark by (the shaders'
 `frequencyAlpha`: `width + fade * (1 - width)` for a mark under a pixel
 wide), so a host can fade sequencing errors as the display does without
-porting the threshold.
+porting the threshold. The display's `baseColor` and `modifications`
+objects select its per-base layer the same way `color` does: under
+`{ field: 'modifications' }` the reads' base modifications come back as
+`modifications` (position, read, type code and name, probability, whether
+the call says the base is unmodified, and the color and opacity the display
+paints it at), the reads take the layer's pale strand tints, and the key
+gains the modification rows. `referenceSequence` reads a region's bases
+through the assembly's sequence adapter, for a host drawing them under a
+pileup; the bundle serves it as `jbrowse.sequence`.
 
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the

@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   alignmentTables,
+  referenceSequence,
   registerAlignmentsAdapters,
 } from '@jbrowse/plugin-alignments/tables'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
@@ -36,5 +37,7 @@ export function createTablesEngine() {
   return {
     alignments: (args: AlignmentTablesArgs) =>
       alignmentTables(pluginManager, args),
+    sequence: (args: Parameters<typeof referenceSequence>[1]) =>
+      referenceSequence(pluginManager, args),
   }
 }

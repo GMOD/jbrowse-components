@@ -1,5 +1,5 @@
 import { alignmentColors, createTablesEngine } from './index.ts'
-import { BAM, CRAM, LONG_READS, SPLICED } from './volvox.fixture.ts'
+import { BAM, CRAM, LONG_READS, METHYLATED, SPLICED } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -205,6 +205,51 @@ test('junctions are the skips merged, each with its support', async () => {
   }
   const total = junctions.count.reduce((a, b) => a + b, 0)
   expect(total).toBe(gaps.type.filter(t => t === 'skip').length)
+})
+
+test('base modifications paint under the modifications layer, keyed with the reads', async () => {
+  const plain = await engine.alignments(METHYLATED)
+  expect(plain.modifications.position.length).toBe(0)
+  const { reads, modifications, legend } = await engine.alignments({
+    ...METHYLATED,
+    baseColor: { field: 'modifications' },
+  })
+  const n = modifications.position.length
+  expect(n).toBeGreaterThan(100)
+  for (const column of Object.values(modifications)) {
+    expect(column).toHaveLength(n)
+  }
+  expect(new Set(modifications.type)).toEqual(new Set(['m']))
+  expect(new Set(modifications.name)).toEqual(new Set(['5mC']))
+  modifications.position.forEach((p, i) => {
+    const r = modifications.read[i]!
+    expect(p).toBeGreaterThanOrEqual(reads.start[r]!)
+    expect(p).toBeLessThan(reads.end[r]!)
+    expect(modifications.probability[i]).toBeGreaterThanOrEqual(0.1)
+    expect(modifications.opacity[i]).toBeGreaterThanOrEqual(0.1)
+    expect(modifications.opacity[i]).toBeLessThanOrEqual(1)
+    expect(modifications.color[i]).toMatch(/^#[0-9a-f]{6}$/)
+  })
+  expect(legend.label).toContain('5mC')
+  expect(new Set(reads.category)).toEqual(new Set(['modFwd', 'modRev']))
+
+  const calls = await engine.alignments({
+    ...METHYLATED,
+    baseColor: { field: 'modifications' },
+    modifications: { unmodified: 'calls' },
+  })
+  expect(calls.modifications.unmodified.filter(Boolean).length).toBeGreaterThan(
+    0,
+  )
+  expect(calls.modifications.name).toContain('Unmodified 5mC')
+})
+
+test('a region of the reference reads as its bases', async () => {
+  const bases = await engine.sequence({
+    sequenceAdapter: BAM.sequenceAdapter!,
+    region: { refName: 'ctgA', start: 1000, end: 1010 },
+  })
+  expect(bases).toMatch(/^[ACGTNacgtn]{10}$/)
 })
 
 test('a region over the byte limit is refused before any read is fetched', async () => {
