@@ -14,6 +14,10 @@ aligning their assemblies with minimap2. We read the alignment whole-genome in a
 dotplot and base by base in a linear synteny view, where the genes of the three
 strains line up. The steps work the same on any pair of assemblies.
 
+Aligning each pair of genomes separately is one of two routes to a stacked view.
+The other aligns every genome against every other in one minimap2 run, and
+[](/docs/tutorials/allvsall_synteny) follows it through five _E. coli_ strains.
+
 ## Prerequisites
 
 - a JBrowse instance ([web](/docs/quickstart_web) or
@@ -158,6 +162,11 @@ CHC155 / J99 stack needs the two adjacent alignments:
 minimap2 -c -x asm20 --eqx hpylori_chc155.fa.gz hpylori_26695.fa.gz > 26695_vs_chc155.paf
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_chc155.fa.gz > chc155_vs_j99.paf
 ```
+
+A single all-vs-all PAF is the alternative to one file per pair: every band of
+the stack reads the same file, in any row order, at the cost of renaming each
+genome's sequences to PanSN names before aligning
+([](/docs/tutorials/allvsall_synteny)).
 
 Take the third assembly from its hub and add both alignments the same way as
 above, then:

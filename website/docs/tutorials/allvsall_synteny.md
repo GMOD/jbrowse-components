@@ -21,6 +21,11 @@ all-vs-all PAF, an alignment of every genome against every other. Then we:
 - add a gene track per strain, and read one strain against the rest in a single
   pileup
 
+The alternative to one all-vs-all file is a separate alignment for each pair of
+adjacent rows, which [](/docs/tutorials/synteny_visualization) follows through
+three _H. pylori_ strains. Pairwise files need no renaming, and suit a few
+genomes in a fixed order.
+
 ## Prerequisites
 
 - a JBrowse to open the files in: [Desktop](/docs/quickstart_desktop) takes a
