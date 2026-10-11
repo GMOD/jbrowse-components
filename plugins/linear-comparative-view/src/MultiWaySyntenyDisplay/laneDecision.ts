@@ -1,3 +1,5 @@
+import { clamp } from '@jbrowse/core/util'
+
 import {
   OUTLIER_REACH,
   keepNearMedian,
@@ -249,10 +251,17 @@ function fitExtent(
     p => p.placement,
     incumbentCenter,
   )
-  return {
-    fit: extentOf(near),
-    bulk: extentOf(unitBp > 0 ? peelEnds(near, unitBp * CLUSTER_GAP) : near),
+  if (unitBp <= 0) {
+    return { fit: extentOf(near), bulk: extentOf(near) }
   }
+  // the median filter judges pieces by their centres, so it can cut one
+  // contiguous block in two; a cluster it keeps any piece of stays whole
+  const gapBp = unitBp * CLUSTER_GAP
+  const kept = new Set(near)
+  const whole = clustersOf(placements, gapBp)
+    .filter(cluster => cluster.some(p => kept.has(p)))
+    .flat()
+  return { fit: extentOf(near), bulk: extentOf(peelEnds(whole, gapBp)) }
 }
 
 function anchorOrderSign(
@@ -336,6 +345,7 @@ function fitLane(
   const min = (openedLo + openedHi) / 2 - span / 2
   return {
     rung,
+    bulk: { lo: openedLo, hi: openedHi },
     pinned: contig.refName === pinned,
     frame: withOpenings(
       {
@@ -473,7 +483,7 @@ function decideOrientation(
   return share >= NEARLY_ALL ? vote.backwards : incumbent
 }
 
-// Unclamped, so part of the fit can fall off an edge and homologs line up.
+// Unclamped against the contig, so homologs line up; `keepBulk` bounds it.
 function alignFrameTo(
   upperX: Map<string, number>,
   lane: LanePlacement[],
@@ -495,6 +505,20 @@ function alignFrameTo(
       (frame.max - frame.min)) /
     width
   return { ...frame, min: frame.min + shift, max: frame.max + shift }
+}
+
+// The alignment may leave as much of the bulk off the frame as a rung's
+// tolerance does, and no more, so a block it would line up at the cost of
+// another stays on the frame with it.
+function keepBulk(frame: RowFrame, bulk: { lo: number; hi: number }) {
+  const span = frame.max - frame.min
+  const slack = RUNG_TOLERANCE * span
+  const min = clamp(
+    frame.min,
+    Math.min(bulk.lo, bulk.hi - span) - slack,
+    Math.max(bulk.lo, bulk.hi - span) + slack,
+  )
+  return min === frame.min ? frame : { ...frame, min, max: min + span }
 }
 
 function weightInside(placements: LanePlacement[], frame: RowFrame) {
@@ -648,7 +672,7 @@ export function decideLaneFrames({
       out.set(assemblyName, undefined)
       continue
     }
-    const { rung, pinned: onPin, frame: fitted } = fit
+    const { rung, bulk, pinned: onPin, frame: fitted } = fit
     const placements = lanePlacements(groups, assemblyName, fitted)
     // the vote reads screen px; the decision is against the anchor's order
     const upperVote = orientationVote(upperX, placements)
@@ -670,7 +694,8 @@ export function decideLaneFrames({
     const orientationPinned = flipPin?.refName === fitted.refName
     const relativeFlipped = orientationPinned ? flipPin.flipped : voted
     const oriented = { ...fitted, flipped: relativeFlipped !== anchorReversed }
-    const aligned = alignFrameTo(reference, placements, oriented, width)
+    const shifted = alignFrameTo(reference, placements, oriented, width)
+    const aligned = keepBulk(shifted, bulk)
 
     let decision: LaneDecision | undefined
     let decisionPx: number | undefined
@@ -702,7 +727,7 @@ export function decideLaneFrames({
       )
       if (
         weightInside(placements, heldFrame) >=
-        HOLD_COVERAGE * weightInside(placements, aligned)
+        HOLD_COVERAGE * weightInside(placements, shifted)
       ) {
         decision = sameDecision(held, carried) ? held : carried
         decisionPx = heldPx
