@@ -13,8 +13,9 @@ JBrowse's own engine in R ([TABLES.md](TABLES.md)):
 
 - **In:** the view's open tracks and the regions on screen.
 - **Out:** a short script: one ggjbrowse reader per track, `fig <-
-  jbrowse_stack(...)`, `fig`, `ggsave()`. It shows the figure when sourced and
-  writes `figure.png` under `Rscript`.
+  jbrowse_stack(...)`, `print(fig)`, `ggsave()`. It shows the figure when
+  sourced (`source()` prints nothing without `print`) and writes `figure.png`
+  under `Rscript`.
 
 ## Where the code is
 
@@ -51,7 +52,8 @@ facets on a feature track) land in the script header.
   TypeScript, reached 100+ lines for three tracks and drifted from
   ggjbrowse's own `autoplot()` (panel heights, band choice). Composition
   lives in ggjbrowse (`jbrowse_stack`), once. The header shows how to take
-  one band apart (`autoplot(reads, "pileup") + ...`).
+  one band apart over the script's own track names, with `ggplot2::` spelled
+  out since the script attaches only ggjbrowse; `rScriptRun.test.ts` runs it.
 - **The engine reads, from the config as written.** A display's written
   config (`getSnapshot`, defaults left out) goes to the reader's `display`
   argument, so a setting the browser gains needs no exporter change and the

@@ -23,18 +23,18 @@ library(ggjbrowse)
 locus <- "ctgA:1,001-9,000"
 
 # GFF3Tabix genes
-genes <- jbrowse_features("https://jbrowse.org/volvox/volvox.sort.gff3.gz",
+genes <- jbrowse_features("https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz",
   locus,
   display = list(heightMode = "fit", height = 100),
   width = 1588)
 
 # volvox-sorted.bam
-reads <- jbrowse_alignments("https://jbrowse.org/volvox/volvox-sorted.bam",
+reads <- jbrowse_alignments("https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam",
   locus,
   display = list(color = list(field = "mapq")))
 
 fig <- jbrowse_stack(genes, reads)
-fig
+print(fig)
 ```
 
 Each reader returns the tables its track draws, and every band is an ordinary

@@ -84,7 +84,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.1.0'
+export const GGJBROWSE_VERSION = '0.1.1'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 const MAX_INCHES = 49
@@ -356,6 +356,13 @@ function sourceNotes(uris: readonly string[]) {
     : []
 }
 
+/** A one-band restyle over the script's own names, runnable with only ggjbrowse attached. */
+function restyleExample(first: string, alignments?: string) {
+  return alignments
+    ? `autoplot(${alignments}, "pileup") + geom_jbrowse_mismatches(ggplot2::aes(alpha = quality))`
+    : `autoplot(${first}) + ggplot2::theme_minimal()`
+}
+
 /**
  * One R script for a view's tracks over its regions: a ggjbrowse reader per
  * track, reading each as its display does, then `jbrowse_stack()` drawing
@@ -381,6 +388,7 @@ export function exportTracksToR({
   const names = trackNames(tracks)
   const reads: string[] = []
   const drawn: string[] = []
+  let alignments: string | undefined
   let inches = 0
   tracks.forEach((track, i) => {
     const reader = READERS[track.displayType]
@@ -446,6 +454,9 @@ export function exportTracksToR({
       ].join('\n'),
     )
     drawn.push(name)
+    if (reader.call === 'jbrowse_alignments') {
+      alignments ??= name
+    }
     inches += reader.inches
     notes.push(
       ...[...sourceNotes(source.uris), ...settingNotes(track)].map(
@@ -464,7 +475,7 @@ export function exportTracksToR({
     '#',
     '# Each reader returns the tables its track draws; jbrowse_stack() draws',
     '# them. To restyle one band, draw it alone and add to it, e.g.',
-    '#   autoplot(reads, "pileup") + geom_jbrowse_mismatches(aes(alpha = quality))',
+    `#   ${restyleExample(drawn[0]!, alignments)}`,
     ...(notes.length
       ? [
           '#',
@@ -483,7 +494,7 @@ export function exportTracksToR({
     reads.join('\n\n'),
     '',
     `fig <- jbrowse_stack(${drawn.join(', ')})`,
-    'fig',
+    'print(fig)',
     `ggplot2::ggsave(${rStr(out)}, fig, width = ${WIDTH_INCHES}, height = ${height})`,
     '',
   ].join('\n')

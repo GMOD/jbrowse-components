@@ -27,6 +27,9 @@ function register(
   probe: string,
   regions: Region[] = ONE,
 ) {
+  if (cases.some(c => c.name === name)) {
+    throw new Error(`two cases named ${name} would share one script file`)
+  }
   const out = path.join(dir, `${name}.png`)
   cases.push({
     name,
@@ -53,6 +56,24 @@ const stack = register(
   nrow(volvox_alignments$reads) > 0, nrow(volvox_cram_alignments_ctga$reads) > 0,
   nrow(volvox_filtered_vcf$features) > 0, nrow(volvox_test_vcf$cells) > 0`,
 )
+
+const restyleExample = (script: string) =>
+  script
+    .split('\n')
+    .find(line => line.startsWith('#   autoplot('))!
+    .slice(4)
+
+const restyled = (name: string, tracks: RExportTrack[]) => {
+  const { script } = exportTracksToR({ tracks, regions: ONE })
+  return register(name, tracks, `{ print(${restyleExample(script!)}); TRUE }`)
+}
+const restyledReads = restyled('restyle_reads', [
+  track('gff3tabix_genes', 'LinearBasicDisplay'),
+  track('volvox_alignments', 'LinearAlignmentsDisplay'),
+])
+const restyledGenes = restyled('restyle_genes', [
+  track('gff3tabix_genes', 'LinearBasicDisplay'),
+])
 
 const twoRegions = register(
   'two_regions',
@@ -162,6 +183,11 @@ maybe('an exported script, run under R', () => {
   it('draws every reader’s track into one figure', () => {
     allTrue(stack)
     expect(results.get(stack)!.match(/TRUE/g)).toHaveLength(7)
+  })
+
+  it('runs the header’s restyle example as written', () => {
+    allTrue(restyledReads)
+    allTrue(restyledGenes)
   })
 
   it('draws several regions end to end', () => {

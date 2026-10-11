@@ -12,7 +12,7 @@ type Track = LinearGenomeViewModel['tracks'][number]
 
 /** The regions on screen, each displayed region cut to what the view shows of it. */
 function viewRegions(view: LinearGenomeViewModel): Region[] {
-  const blocks = view.coarseDynamicBlocks
+  const blocks = view.dynamicBlocks.contentBlocks
   if (blocks.length === 0) {
     return view.displayedRegions.map(r => ({
       refName: r.refName,

@@ -36,14 +36,17 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   )
   expect(script).toContain('display = list(color = list(field = "mapq")))')
   expect(script).toContain(
-    'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nfig\n',
+    'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.1.0"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.1.1"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')
     .filter(line => !line.startsWith('#'))
     .join('\n')
+  expect(script).toContain(
+    '#   autoplot(volvox_alignments, "pileup") + geom_jbrowse_mismatches(ggplot2::aes(alpha = quality))',
+  )
   expect(code).not.toMatch(/region_layout|jbrowse_regions|geom_jbrowse/)
 })
 
