@@ -7,7 +7,7 @@ import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import {
-  getDefaultMode,
+  getInitialMode,
   getTranscripts,
   pickDefaultTranscriptIndex,
 } from './featureTypeUtil.ts'
@@ -19,6 +19,7 @@ import type {
 } from '../../util/index.ts'
 import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
 import type {
+  SequenceDisplayMode,
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
 } from './model.ts'
@@ -60,10 +61,16 @@ const SequenceFeatureDetailsPanel = observer(
     )
     const effectiveFeature = transcripts[transcriptIndex] ?? feature
 
-    // mode and revcomp are per-panel state, not on the shared model, so each
-    // subfeature panel (e.g. coding vs noncoding transcripts of one gene) picks
-    // its own sequence type and strand
-    const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
+    // mode and revcomp are per-panel state, so each subfeature panel (e.g.
+    // coding vs noncoding transcripts of one gene) shows its own sequence type
+    // and strand; a pick also becomes the model's preference for the next panel
+    const [mode, setPanelMode] = useState(() =>
+      getInitialMode(effectiveFeature, model.preferredMode),
+    )
+    const setMode = (m: SequenceDisplayMode) => {
+      setPanelMode(m)
+      model.setPreferredMode(m)
+    }
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
     // spread into whichever readout is mounted, rather than forwarded field by
@@ -88,7 +95,9 @@ const SequenceFeatureDetailsPanel = observer(
           transcriptIndex={transcriptIndex}
           setTranscriptIndex={index => {
             setTranscriptIndex(index)
-            setMode(getDefaultMode(transcripts[index]!))
+            setPanelMode(
+              getInitialMode(transcripts[index]!, model.preferredMode),
+            )
           }}
         />
       ) : null
@@ -171,7 +180,8 @@ const SequenceFeatureDetailsPanel = observer(
 // different feature — so key the panel on the feature to reinitialize them.
 // Otherwise a mode picked on a coding transcript ('cds') survives onto a
 // feature that doesn't offer it, which renders the wrong sequence and puts an
-// out-of-range value in the sequence type selector.
+// out-of-range value in the sequence type selector. The model's
+// `preferredMode` carries the pick across wherever the new feature offers it.
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
   props: SequenceFeatureDetailsProps,
 ) {

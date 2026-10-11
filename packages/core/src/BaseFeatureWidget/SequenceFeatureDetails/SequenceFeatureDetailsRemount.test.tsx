@@ -40,13 +40,19 @@ const region: SimpleFeatureSerialized = {
 // written with RTL's rerender(): that tears the tree down and mounts a fresh
 // one, so the panel would reinitialize for free and the test would pass even
 // with the reinitialization removed.
-function Harness({ model }: { model: SequenceFeatureDetailsModel }) {
+function Harness({
+  model,
+  next = region,
+}: {
+  model: SequenceFeatureDetailsModel
+  next?: SimpleFeatureSerialized
+}) {
   const [feature, setFeature] = useState(transcript)
   return (
     <>
       <button
         onClick={() => {
-          setFeature(region)
+          setFeature(next)
         }}
       >
         next feature
@@ -61,6 +67,10 @@ function Harness({ model }: { model: SequenceFeatureDetailsModel }) {
   )
 }
 
+beforeEach(() => {
+  localStorage.clear()
+})
+
 // a stale 'cds' on a bare region renders the wrong sequence type and puts an
 // out-of-range value in the selector, which displays as blank
 test('the sequence type reinitializes when the feature prop changes', async () => {
@@ -69,6 +79,41 @@ test('the sequence type reinitializes when the feature prop changes', async () =
   )
   await act(async () => {})
   expect(within(container).getByRole('combobox').textContent).toBe('CDS')
+
+  fireEvent.click(getByRole('button', { name: 'next feature' }))
+  await act(async () => {})
+  expect(within(container).getByRole('combobox').textContent).toBe('Genomic')
+})
+
+function pickSequenceType(container: HTMLElement, label: string) {
+  fireEvent.mouseDown(within(container).getByRole('combobox'))
+  fireEvent.click(within(document.body).getByRole('option', { name: label }))
+}
+
+test('a picked sequence type carries to the next feature that offers it', async () => {
+  const otherTranscript = { ...transcript, uniqueId: 't2' }
+  const { container, getByRole } = render(
+    <Harness
+      model={SequenceFeatureDetailsF().create()}
+      next={otherTranscript}
+    />,
+  )
+  await act(async () => {})
+  pickSequenceType(container, 'Protein')
+  await act(async () => {})
+
+  fireEvent.click(getByRole('button', { name: 'next feature' }))
+  await act(async () => {})
+  expect(within(container).getByRole('combobox').textContent).toBe('Protein')
+})
+
+test('a picked sequence type the next feature lacks falls back to its default', async () => {
+  const { container, getByRole } = render(
+    <Harness model={SequenceFeatureDetailsF().create()} />,
+  )
+  await act(async () => {})
+  pickSequenceType(container, 'Protein')
+  await act(async () => {})
 
   fireEvent.click(getByRole('button', { name: 'next feature' }))
   await act(async () => {})

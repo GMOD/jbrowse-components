@@ -80,6 +80,35 @@ export function getDefaultMode(
       : 'genomic'
 }
 
+export function getAvailableModes(
+  feature: SimpleFeatureSerializedNoId,
+): SequenceDisplayMode[] {
+  const coding: SequenceDisplayMode[] = featureHasCDS(feature)
+    ? ['cds', 'protein']
+    : []
+  const rest: SequenceDisplayMode[] = featureHasExonOrCDS(feature)
+    ? [
+        'cdna',
+        'gene',
+        'gene_updownstream',
+        'gene_collapsed_intron',
+        'gene_updownstream_collapsed_intron',
+      ]
+    : ['genomic', 'genomic_sequence_updownstream']
+  return [...coding, ...rest]
+}
+
+// the type the user last picked, where this feature offers it, so clicking
+// from one gene to the next keeps e.g. the protein readout
+export function getInitialMode(
+  feature: SimpleFeatureSerializedNoId,
+  preferred: SequenceDisplayMode | undefined,
+) {
+  return preferred && getAvailableModes(feature).includes(preferred)
+    ? preferred
+    : getDefaultMode(feature)
+}
+
 // whether the mode renders up/downstream flanks. shared by the sequence body
 // (which fetches+renders the flanks) and the FASTA header (which annotates
 // them) so the two can't drift, e.g. gene_updownstream_collapsed_intron

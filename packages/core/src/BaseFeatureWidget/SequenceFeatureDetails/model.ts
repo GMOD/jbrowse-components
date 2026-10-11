@@ -36,16 +36,23 @@ export interface SequenceHoverTarget {
   setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
 }
 
-export type SequenceDisplayMode =
-  | 'gene'
-  | 'gene_collapsed_intron'
-  | 'gene_updownstream'
-  | 'gene_updownstream_collapsed_intron'
-  | 'cdna'
-  | 'cds'
-  | 'genomic'
-  | 'genomic_sequence_updownstream'
-  | 'protein'
+const sequenceDisplayModes = [
+  'gene',
+  'gene_collapsed_intron',
+  'gene_updownstream',
+  'gene_updownstream_collapsed_intron',
+  'cdna',
+  'cds',
+  'genomic',
+  'genomic_sequence_updownstream',
+  'protein',
+] as const
+
+export type SequenceDisplayMode = (typeof sequenceDisplayModes)[number]
+
+function parseSequenceDisplayMode(val: string | undefined) {
+  return sequenceDisplayModes.find(m => m === val)
+}
 
 const p = 'sequenceFeatureDetails'
 
@@ -99,6 +106,14 @@ export function SequenceFeatureDetailsF() {
       charactersPerRow: clampCharactersPerRow(
         localStorageGetNumber(`${p}-charactersPerRow`, 100),
       ),
+      /**
+       * #volatile
+       * the sequence type last picked in any panel, which a panel opens on
+       * when its feature offers it
+       */
+      preferredMode: parseSequenceDisplayMode(
+        localStorageGetItem(`${p}-preferredMode`),
+      ),
     }))
     .actions(self => ({
       /**
@@ -136,6 +151,13 @@ export function SequenceFeatureDetailsF() {
       setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
         localStorageSetItem(`${p}-showCoordinatesSetting`, f)
+      },
+      /**
+       * #action
+       */
+      setPreferredMode(f: SequenceDisplayMode) {
+        self.preferredMode = f
+        localStorageSetItem(`${p}-preferredMode`, f)
       },
     }))
     .views(self => ({

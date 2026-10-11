@@ -406,7 +406,7 @@
   },
   "SequenceFeatureDetails": {
    "category": "Widget",
-   "text": "# SequenceFeatureDetails (Widget model, core)\n\nUser preferences for the sequence readout under a feature's details, seeded from and written straight back to localStorage. Nothing here is snapshotted or reads the tree, so an instance is cheap and needs no lifecycle: a holder that only sometimes shows a panel (e.g. a track's right-click dialog) creates one when it opens rather than carrying it around.\n\n## Actions\n- `setUpDownBp(f: number) => void`\n- `setIntronBp(f: number) => void`\n- `setUpperCaseCDS(f: boolean) => void`\n- `setCharactersPerRow(f: number) => void`\n- `setShowCoordinates(f: ShowCoordinatesMode) => void`\n\n## Getters\n- `showCoordinates: boolean`"
+   "text": "# SequenceFeatureDetails (Widget model, core)\n\nUser preferences for the sequence readout under a feature's details, seeded from and written straight back to localStorage. Nothing here is snapshotted or reads the tree, so an instance is cheap and needs no lifecycle: a holder that only sometimes shows a panel (e.g. a track's right-click dialog) creates one when it opens rather than carrying it around.\n\n## Actions\n- `setUpDownBp(f: number) => void`\n- `setIntronBp(f: number) => void`\n- `setUpperCaseCDS(f: boolean) => void`\n- `setCharactersPerRow(f: number) => void`\n- `setShowCoordinates(f: ShowCoordinatesMode) => void`\n- `setPreferredMode(f: \"cdna\" | \"cds\" | \"gene\" | \"gene_collapsed_intron\" | \"gene_updownstream\" | \"gene_updownstream_collapsed_intron\" | \"genomic\" | \"genomic_sequence_updownstream…`\n\n## Getters\n- `showCoordinates: boolean`"
   },
   "SessionTracksManagerSessionMixin": {
    "category": "Mixin",
