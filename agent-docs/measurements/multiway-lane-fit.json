@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/lanefit.mjs plugins/linear-comparative-view/benches/multiwayLaneFit.probe.ts && node /tmp/lanefit.mjs, from the repo root (it rewrites this file) - the eight hosted hg38 liftOver PIFs of demos/hg38_vertebrates over a 1.2 Mb hg38 window walking chr17:10-25 Mb in 100 kb steps (151 steps, 1500 px), each step's decisions carried into the next, the whole walk fetched at once.",
-    "notes": "HOW WIDE A LANE DRAWS THROUGH A DUPLICATION-RICH STRETCH. `mean rung` is the lane's average width as a multiple of the anchor window; `wide steps` counts steps drawn at 3x or wider, where a collinear block squeezes to a third of the anchor's width and its ribbons fan. `undrawn` is the share of the anchor bp the lane places on its drawn contig whose placement falls wholly outside the drawn frame, so it draws no ribbon.\n\nBEFORE 2026-10-11, measured with this walk on the then-main code: wide steps 32/41/53/63/73/39/18/46 (365 in all), mean rungs 1.36-6.13, rung changes 124, oscillations 4, undrawn 4.5-27.3%. Two things inflated the width. The fit spanned the min to the max of every placement within `OUTLIER_REACH` of the median, so a 16-23 kb stray chain set the zoom of a lane whose main chains held 95-99% of its bp. And a hole opened between any two lane-adjacent pieces whose anchors sat apart, so two chains meeting at a rearrangement breakpoint opened a hole of the anchor distance between them, 2-7 Mb here, which the opened extent then counted. Holes come off every fetched group, so the rung depended on how far the fetch reached past the viewport: the 17p figure's window (chr17:15,200,014-16,400,014) fetched with a 0.4 Mb pad drew 1/1/5/3/3/3/3/1.5, the published figure exactly, and window-only 1/1/3/1.5/3/3/2/1.5.\n\nWHAT CHANGED. A hole opens only between two pieces of one alignment record (`recordId`, stamped by `clipFeatureToRegion`), or where the lane places the anchor between the two pieces nowhere, which is how the HPRC PIF states the CFHR3-CFHR1 deletion. And the lane draws one block of its contig (`blocksOf`: clusters a quarter window apart, strays under 5% of the evidence set aside, the rest linked across gaps of up to a window), naming the others in its header. The 17p window now draws 1/1/1.5/1.5/1/1/1/1 at fetch pads of 0, 0.4 and 1.2 Mb, marmoset and chimp each one block with the other named. Clipping a group to the window now cuts its vote weight too, which made the padded and unpadded fits agree. Along the way, on this walk: peeling end clusters within a 5% budget (the first fix) drew 67 wide steps, 87 rung changes and 9 oscillations, its one-step 1x/1.5x returns where a cluster sat on the budget; holding the stray floor at half for a cluster the lane already draws took the blocks from 11 oscillations to 7. The grape MCScan walk (multiway-lane-stability) draws fewer crossed steps and more orientation returns under blocks."
+    "notes": "HOW WIDE A LANE DRAWS THROUGH A DUPLICATION-RICH STRETCH. `mean rung` is the lane's average width as a multiple of the anchor window; `wide steps` counts steps drawn at 3x or wider, where a collinear block squeezes to a third of the anchor's width and its ribbons fan. `undrawn` is the share of the anchor bp the lane places on its drawn contig whose placement falls wholly outside the drawn frame, so it draws no ribbon.\n\nBEFORE 2026-10-11, measured with this walk on the then-main code: wide steps 32/41/53/63/73/39/18/46 (365 in all), mean rungs 1.36-6.13, rung changes 124, oscillations 4, undrawn 4.5-27.3%. Two things inflated the width. The fit spanned the min to the max of every placement within `OUTLIER_REACH` of the median, so a 16-23 kb stray chain set the zoom of a lane whose main chains held 95-99% of its bp. And a hole opened between any two lane-adjacent pieces whose anchors sat apart, so two chains meeting at a rearrangement breakpoint opened a hole of the anchor distance between them, 2-7 Mb here, which the opened extent then counted. Holes come off every fetched group, so the rung depended on how far the fetch reached past the viewport: the 17p figure's window (chr17:15,200,014-16,400,014) fetched with a 0.4 Mb pad drew 1/1/5/3/3/3/3/1.5, the published figure exactly, and window-only 1/1/3/1.5/3/3/2/1.5.\n\nWHAT CHANGED. A hole opens only between two pieces of one alignment record (`recordId`, stamped by `clipFeatureToRegion`), or where the lane places the anchor between the two pieces nowhere, which is how the HPRC PIF states the CFHR3-CFHR1 deletion. And the lane draws one block of its contig (`blocksOf`: clusters a quarter window apart, strays under 5% of the evidence set aside, the rest linked across gaps of up to a window, or wider where both still fit 1.5x), naming the others in its header. Without the 1.5x join the grape figure at 38 kb parted neighbouring peach genes into two blocks; the join costs this walk 7 wide steps, 41 against 34. The 17p window now draws 1/1/1.5/1.5/1/1/1/1 at fetch pads of 0, 0.4 and 1.2 Mb, marmoset and chimp each one block with the other named. Clipping a group to the window now cuts its vote weight too, which made the padded and unpadded fits agree. Along the way, on this walk: peeling end clusters within a 5% budget (the first fix) drew 67 wide steps, 87 rung changes and 9 oscillations, its one-step 1x/1.5x returns where a cluster sat on the budget; holding the stray floor at half for a cluster the lane already draws took the blocks from 11 oscillations to 7. The grape MCScan walk (multiway-lane-stability) draws fewer crossed steps and more orientation returns under blocks."
   },
   "columns": [
     {
@@ -99,8 +99,8 @@
     {
       "values": {
         "lane": "mm39",
-        "meanRung": 1.24,
-        "rungChanges": 10,
+        "meanRung": 1.31,
+        "rungChanges": 11,
         "rungOsc": 0,
         "wideSteps": 6,
         "undrawnPct": 9.2
@@ -110,8 +110,8 @@
       "values": {
         "lane": "canFam6",
         "meanRung": 1.05,
-        "rungChanges": 6,
-        "rungOsc": 2,
+        "rungChanges": 8,
+        "rungOsc": 3,
         "wideSteps": 0,
         "undrawnPct": 7
       }
@@ -119,11 +119,11 @@
     {
       "values": {
         "lane": "bosTau9",
-        "meanRung": 1.15,
-        "rungChanges": 7,
+        "meanRung": 1.26,
+        "rungChanges": 9,
         "rungOsc": 1,
-        "wideSteps": 8,
-        "undrawnPct": 9.1
+        "wideSteps": 15,
+        "undrawnPct": 8.8
       }
     }
   ]

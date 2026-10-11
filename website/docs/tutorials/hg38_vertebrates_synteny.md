@@ -219,16 +219,22 @@ and many of those blocks run the other way against their neighbours.
 A lane whose blocks mostly run backwards along hg38 draws mirrored, so its
 ribbons run straight on screen while the strand color still marks each of them
 as an inversion. Inside a lane, a ribbon crosses where one block runs against
-its neighbour. The marmoset lane shows this most clearly. Its chain covers the
-left of the window forwards and then stops, and a reversed block further along
-the same chromosome places the rest of the window.
+its neighbour, as in the dog and cow lanes.
+
+A lane draws one stretch of its chromosome at a time. Where the window lands on
+two stretches a window or more apart, the lane draws the one holding more of the
+window, and its header names the other after `also at`. The marmoset lane draws
+the reversed block that places the right of the window, and names the forward
+chain that places the left.
 
 The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
 Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
-misses some of what the alignment places. Three items on the lane header menu
-set the frame:
+misses some of what the alignment places. Four items on the lane header menu set
+the frame:
 
 - **Show chr17 in this lane** pins the lane onto chr17.
+- **Show chr5:80,472,173..81,176,598 in this lane**, on the marmoset lane, pins
+  it onto the stretch its header names.
 - **Flip lane** turns the lane the other way on the same contig, for a lane
   whose blocks split about evenly between the two orientations.
 - **Let the lane choose its orientation** hands the choice back.
@@ -242,9 +248,9 @@ alignment places the hg38 window.
 
 - **Span**: the number at a lane's right edge is the span the lane shows, and
   the multiple after it is how many times wider than the hg38 window that span
-  is, rounded to one of a few fixed steps. The step fits the bulk of what the
-  lane places: a lane up to a tenth wider than a step stays on that step, and a
-  few short pieces far from the rest fall off its edges.
+  is, rounded to one of a few fixed steps. The step fits the stretch the lane
+  draws: a lane up to a tenth wider than a step stays on that step, and short
+  pieces off that stretch fall off its edges.
 - **Ribbons**: each joins a lane to hg38, the anchor, since each chain aligns
   one genome to hg38. The ticked rule above the ribbons is hg38's axis, and the
   badge opening each lane label names it.

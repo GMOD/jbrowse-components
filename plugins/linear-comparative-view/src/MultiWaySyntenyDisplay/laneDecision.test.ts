@@ -327,6 +327,17 @@ describe('a stray piece', () => {
     expect(decision.alsoAt).toEqual([{ start: 500_000, end: 500_400 }])
   })
 
+  test('two blocks a window apart that fit 1.5x together stay one', () => {
+    const decision = settle(
+      groupFeatures([
+        alignment('a', 0, 300, 500_000),
+        alignment('b', 300, 600, 501_350, 501_600),
+      ]),
+    )
+    expect(decision.rung).toBe(1.5)
+    expect(decision.alsoAt).toEqual([])
+  })
+
   test('a pin draws the block it names', () => {
     const decision = decide(split(400), {
       pinned: new Map([['peach', { refName: 'Pp1', at: 500_200 }]]),

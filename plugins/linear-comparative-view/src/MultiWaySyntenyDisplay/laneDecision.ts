@@ -105,8 +105,10 @@ const CLUSTER_GAP = 0.25
 // a cluster holding less of the lane's evidence is a stray: it links no two
 // blocks, and outside the block it would sit in it draws nothing
 const STRAY_SHARE = 0.05
-// a lane gap wider than this many windows parts one block from the next
+// a lane gap wider than this many windows parts one block from the next,
+// unless the two together still fit this rung, where showing both costs little
 const BLOCK_GAP = 1
+const JOINED_RUNG = 1.5
 // the share of the stray floor a cluster already drawn needs to stay solid
 const HELD_STRAY_RATIO = 0.5
 
@@ -251,7 +253,12 @@ function blocksOf(
   for (const cluster of solid.length ? solid : clusters) {
     const { lo, hi } = extentOf(cluster)
     const last = blocks.at(-1)
-    if (solid.length && last && lo - last.hi <= unitBp * BLOCK_GAP) {
+    if (
+      solid.length &&
+      last &&
+      (lo - last.hi <= unitBp * BLOCK_GAP ||
+        rungCovers(JOINED_RUNG, (hi - last.lo) / unitBp))
+    ) {
       last.hi = Math.max(last.hi, hi)
     } else {
       blocks.push({ lo, hi, overlap: 0 })
