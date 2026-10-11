@@ -759,8 +759,13 @@ jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 # The whole pggb graph as a track, drawing from the coarse tier past five bp per
 # pixel; the tier as a separate track; and the segments colored by how many
 # strains walk each one.
-for p in ecoli_pggb ecoli_pggb.fold50; do
-  cp "$p".segs.bed.gz "$p".segs.bed.gz.tbi "$p".links.bed.gz "$p".links.bed.gz.tbi "$APP/"
+# The fine pair is the contig layout, with rows on each strain's own contig.
+# The anchored pair files a segment under every K12 position its branch spans,
+# so on this graph it draws multi-megabase rows across every window.
+for k in segs links; do
+  cp ecoli_pggb.contig.$k.bed.gz "$APP/ecoli_pggb.$k.bed.gz"
+  cp ecoli_pggb.contig.$k.bed.gz.tbi "$APP/ecoli_pggb.$k.bed.gz.tbi"
+  cp ecoli_pggb.fold50.$k.bed.gz ecoli_pggb.fold50.$k.bed.gz.tbi "$APP/"
 done
 cat > pggb_segments_track.json <<'JSON'
 {
