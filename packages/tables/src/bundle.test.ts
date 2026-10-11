@@ -15,7 +15,7 @@ import vm from 'node:vm'
 import { parse } from 'acorn'
 
 import { createTablesEngine } from './index.ts'
-import { BAM, CRAM } from './volvox.fixture.ts'
+import { BAM, CRAM, METHYLATED } from './volvox.fixture.ts'
 
 // A host with no web globals at all, as R's V8 is: an empty vm context, where
 // the only thing the bundle is handed is a synchronous byte reader.
@@ -56,6 +56,7 @@ test('the bundle is printable ASCII and ES2020', () => {
 test.each([
   ['BAM', BAM],
   ['CRAM', CRAM],
+  ['modBAM', { ...METHYLATED, baseColor: { field: 'modifications' } }],
 ])(
   'the bundle answers a %s as the engine does, in a bare host',
   async (_, args) => {
@@ -68,5 +69,8 @@ test.each([
       Array.from(direct.mismatches.position),
     )
     expect(bare.coverage.depth).toEqual(Array.from(direct.coverage.depth))
+    expect(bare.modifications.position).toEqual(
+      Array.from(direct.modifications.position),
+    )
   },
 )

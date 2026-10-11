@@ -117,7 +117,7 @@ export class TextDecoderShim {
   }
 }
 
-class TextEncoderShim {
+export class TextEncoderShim {
   encode(s = '') {
     const out: number[] = []
     for (const ch of s) {
@@ -138,6 +138,22 @@ class TextEncoderShim {
       }
     }
     return new Uint8Array(out)
+  }
+
+  /** As the WHATWG encoder: whole characters until `dest` is full, `read` in UTF-16 units. */
+  encodeInto(s: string, dest: Uint8Array) {
+    let read = 0
+    let written = 0
+    for (const ch of s) {
+      const bytes = this.encode(ch)
+      if (written + bytes.length > dest.length) {
+        break
+      }
+      dest.set(bytes, written)
+      written += bytes.length
+      read += ch.length
+    }
+    return { read, written }
   }
 }
 

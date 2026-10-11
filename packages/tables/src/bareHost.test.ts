@@ -1,7 +1,11 @@
-import { TextDecoder as NodeTextDecoder } from 'node:util'
+import {
+  TextDecoder as NodeTextDecoder,
+  TextEncoder as NodeTextEncoder,
+} from 'node:util'
 
 import {
   TextDecoderShim,
+  TextEncoderShim,
   fetchShim,
   installBareHostGlobals,
 } from './bareHost.ts'
@@ -45,6 +49,27 @@ test('decodes UTF-8 as the WHATWG decoder does, valid or not', () => {
       new Uint8Array([0xff]),
     ),
   ).toThrow(TypeError)
+})
+
+test('encodes into a buffer as the WHATWG encoder does, whole characters only', () => {
+  const node = new NodeTextEncoder()
+  const shim = new TextEncoderShim()
+  const texts = [
+    '',
+    'abc',
+    'na\u00EFve',
+    'C+m,1,3;G-m\u{1F600}x',
+    '\u4E2D\u6587',
+  ]
+  for (const text of texts) {
+    for (const size of [0, 1, 2, 3, 5, 8, 64]) {
+      const a = new Uint8Array(size)
+      const b = new Uint8Array(size)
+      expect(shim.encodeInto(text, a)).toEqual(node.encodeInto(text, b))
+      expect(a).toEqual(b)
+    }
+    expect(shim.encode(text)).toEqual(node.encode(text))
+  }
 })
 
 test('a range past the end of the file answers 416, as a server does', async () => {
