@@ -1,6 +1,6 @@
 import { fireEvent, render, within } from '@testing-library/react'
 
-import { getDefaultMode } from '../featureTypeUtil.ts'
+import { resolveMode } from '../featureTypeUtil.ts'
 import { SequenceFeatureDetailsF } from '../model.ts'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
@@ -11,10 +11,7 @@ function openedOptions(feature: SimpleFeatureSerialized) {
     <SequenceTypeSelector
       model={SequenceFeatureDetailsF().create()}
       feature={feature}
-      // same source the panel initializes mode from, so the selected value is
-      // always one of the options this feature offers
-      mode={getDefaultMode(feature)}
-      setMode={() => {}}
+      mode={resolveMode(undefined, feature)}
     />,
   )
   fireEvent.mouseDown(within(container).getByRole('combobox'))

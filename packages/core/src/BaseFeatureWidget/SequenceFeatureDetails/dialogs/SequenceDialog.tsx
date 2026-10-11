@@ -33,7 +33,6 @@ const SequenceDialog = observer(function SequenceDialog({
   transcriptSelector,
   feature,
   mode,
-  setMode,
   revcomp,
   setRevcomp,
   sequence,
@@ -52,7 +51,6 @@ const SequenceDialog = observer(function SequenceDialog({
   // the transcript index is its state, not the dialog's
   transcriptSelector?: React.ReactNode
   mode: SequenceDisplayMode
-  setMode: (mode: SequenceDisplayMode) => void
   revcomp: boolean
   setRevcomp: (arg: boolean) => void
   sequence: SeqState | ErrorState | undefined
@@ -82,7 +80,6 @@ const SequenceDialog = observer(function SequenceDialog({
             model={sequenceFeatureDetails}
             feature={feature}
             mode={mode}
-            setMode={setMode}
           />
           <SequenceFeatureMenu
             ref={seqPanelRef}

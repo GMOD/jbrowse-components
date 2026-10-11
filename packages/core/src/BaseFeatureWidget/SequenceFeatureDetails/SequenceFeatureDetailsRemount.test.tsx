@@ -36,10 +36,8 @@ const region: SimpleFeatureSerialized = {
 }
 
 // Swaps the feature from inside a tree that stays mounted, which is what the
-// drawer widget does (setFeatureData on the same widget). Note this can't be
-// written with RTL's rerender(): that tears the tree down and mounts a fresh
-// one, so the panel would reinitialize for free and the test would pass even
-// with the reinitialization removed.
+// drawer widget does (setFeatureData on the same widget). RTL's rerender()
+// would instead mount a fresh tree, which reinitializes every panel for free.
 function Harness({
   model,
   next = region,

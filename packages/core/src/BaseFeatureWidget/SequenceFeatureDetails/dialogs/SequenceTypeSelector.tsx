@@ -21,12 +21,10 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
   model,
   feature,
   mode,
-  setMode,
 }: {
   model: SequenceFeatureDetailsModel
   feature: SimpleFeatureSerialized
   mode: SequenceDisplayMode
-  setMode: (mode: SequenceDisplayMode) => void
 }) {
   const { classes } = useStyles()
   const { intronBp, upDownBp } = model
@@ -48,7 +46,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
         size="small"
         value={mode}
         onChange={event => {
-          setMode(event.target.value)
+          model.setMode(event.target.value)
         }}
         aria-label="Sequence type"
       >

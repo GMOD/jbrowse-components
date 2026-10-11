@@ -70,16 +70,7 @@ export function pickDefaultTranscriptIndex(
   return best ? transcripts.indexOf(best) : 0
 }
 
-export function getDefaultMode(
-  feature: SimpleFeatureSerializedNoId,
-): SequenceDisplayMode {
-  return featureHasCDS(feature)
-    ? 'cds'
-    : featureHasExon(feature)
-      ? 'cdna'
-      : 'genomic'
-}
-
+// the sequence types the selector offers, the first being the default
 export function getAvailableModes(
   feature: SimpleFeatureSerializedNoId,
 ): SequenceDisplayMode[] {
@@ -98,15 +89,15 @@ export function getAvailableModes(
   return [...coding, ...rest]
 }
 
-// the type the user last picked, where this feature offers it, so clicking
-// from one gene to the next keeps e.g. the protein readout
-export function getInitialMode(
+// The setting is sticky and global, so clicking from one gene to the next
+// keeps e.g. the protein readout; a feature that does not offer it, such as a
+// noncoding transcript under 'protein', shows its own default instead.
+export function resolveMode(
+  setting: SequenceDisplayMode | undefined,
   feature: SimpleFeatureSerializedNoId,
-  preferred: SequenceDisplayMode | undefined,
 ) {
-  return preferred && getAvailableModes(feature).includes(preferred)
-    ? preferred
-    : getDefaultMode(feature)
+  const modes = getAvailableModes(feature)
+  return setting && modes.includes(setting) ? setting : modes[0]!
 }
 
 // whether the mode renders up/downstream flanks. shared by the sequence body

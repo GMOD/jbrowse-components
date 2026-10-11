@@ -1255,7 +1255,7 @@ ScoreScaleMixin.unclippedQuantile
 SequenceFeatureDetails.intronBp
 SequenceFeatureDetails.setCharactersPerRow
 SequenceFeatureDetails.setIntronBp
-SequenceFeatureDetails.setPreferredMode
+SequenceFeatureDetails.setMode
 SequenceFeatureDetails.setShowCoordinates
 SequenceFeatureDetails.setUpDownBp
 SequenceFeatureDetails.setUpperCaseCDS

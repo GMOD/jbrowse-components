@@ -108,11 +108,11 @@ export function SequenceFeatureDetailsF() {
       ),
       /**
        * #volatile
-       * the sequence type last picked in any panel, which a panel opens on
-       * when its feature offers it
+       * the sequence type last picked in any panel; `resolveMode` falls back
+       * to a feature's default where it does not offer this one
        */
-      preferredMode: parseSequenceDisplayMode(
-        localStorageGetItem(`${p}-preferredMode`),
+      modeSetting: parseSequenceDisplayMode(
+        localStorageGetItem(`${p}-modeSetting`),
       ),
     }))
     .actions(self => ({
@@ -155,9 +155,9 @@ export function SequenceFeatureDetailsF() {
       /**
        * #action
        */
-      setPreferredMode(f: SequenceDisplayMode) {
-        self.preferredMode = f
-        localStorageSetItem(`${p}-preferredMode`, f)
+      setMode(f: SequenceDisplayMode) {
+        self.modeSetting = f
+        localStorageSetItem(`${p}-modeSetting`, f)
       },
     }))
     .views(self => ({

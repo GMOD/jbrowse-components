@@ -7,9 +7,9 @@ import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import {
-  getInitialMode,
   getTranscripts,
   pickDefaultTranscriptIndex,
+  resolveMode,
 } from './featureTypeUtil.ts'
 import { useSequenceFetch } from './useSequenceFetch.ts'
 
@@ -19,7 +19,6 @@ import type {
 } from '../../util/index.ts'
 import type { CanonicalTranscripts } from '../../util/isoformRank.ts'
 import type {
-  SequenceDisplayMode,
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
 } from './model.ts'
@@ -61,16 +60,7 @@ const SequenceFeatureDetailsPanel = observer(
     )
     const effectiveFeature = transcripts[transcriptIndex] ?? feature
 
-    // mode and revcomp are per-panel state, so each subfeature panel (e.g.
-    // coding vs noncoding transcripts of one gene) shows its own sequence type
-    // and strand; a pick also becomes the model's preference for the next panel
-    const [mode, setPanelMode] = useState(() =>
-      getInitialMode(effectiveFeature, model.preferredMode),
-    )
-    const setMode = (m: SequenceDisplayMode) => {
-      setPanelMode(m)
-      model.setPreferredMode(m)
-    }
+    const mode = resolveMode(model.modeSetting, effectiveFeature)
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
     // spread into whichever readout is mounted, rather than forwarded field by
@@ -93,12 +83,7 @@ const SequenceFeatureDetailsPanel = observer(
         <TranscriptSelector
           transcripts={transcripts}
           transcriptIndex={transcriptIndex}
-          setTranscriptIndex={index => {
-            setTranscriptIndex(index)
-            setPanelMode(
-              getInitialMode(transcripts[index]!, model.preferredMode),
-            )
-          }}
+          setTranscriptIndex={setTranscriptIndex}
         />
       ) : null
 
@@ -110,7 +95,6 @@ const SequenceFeatureDetailsPanel = observer(
             model={model}
             feature={effectiveFeature}
             mode={mode}
-            setMode={setMode}
           />
           <SequenceFeatureMenu
             ref={seqPanelRef}
@@ -142,7 +126,6 @@ const SequenceFeatureDetailsPanel = observer(
               transcriptSelector={transcriptSelector}
               feature={effectiveFeature}
               mode={mode}
-              setMode={setMode}
               revcomp={revcomp}
               setRevcomp={setRevcomp}
               assemblyName={assemblyName}
@@ -175,13 +158,9 @@ const SequenceFeatureDetailsPanel = observer(
 // a feature-detail widget, so anything holding a SequenceFeatureDetails model
 // (the widget, a track's right-click dialog) renders the same readout.
 //
-// The panel's sequence type, transcript and revcomp are initialized from the
-// feature, and the widget is reused (not remounted) when the user clicks a
-// different feature — so key the panel on the feature to reinitialize them.
-// Otherwise a mode picked on a coding transcript ('cds') survives onto a
-// feature that doesn't offer it, which renders the wrong sequence and puts an
-// out-of-range value in the sequence type selector. The model's
-// `preferredMode` carries the pick across wherever the new feature offers it.
+// The panel's transcript and revcomp are initialized from the feature, and the
+// widget is reused (not remounted) when the user clicks a different feature —
+// so key the panel on the feature to reinitialize them.
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
   props: SequenceFeatureDetailsProps,
 ) {
