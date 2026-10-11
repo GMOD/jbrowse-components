@@ -23,6 +23,7 @@ exports[`export session with alignments and gff tracks 1`] = `
     "sessionPlugins": [],
     "views": [
       {
+        "colorByCDS": false,
         "displayedRegions": [
           {
             "assemblyName": "volvox",
@@ -32,6 +33,10 @@ exports[`export session with alignments and gff tracks 1`] = `
           },
         ],
         "id": "integration_test",
+        "showAminoAcids": true,
+        "showCytobands": true,
+        "showTrackOutlines": true,
+        "trackLabels": "",
         "tracks": [
           {
             "configuration": "volvox_alignments_pileup_coverage",
