@@ -8,18 +8,43 @@ export const CIGAR_HAS_SV_DELETION = 4
 /** The deletion length from which callers file a deletion as a structural variant. */
 export const SV_DELETION_MIN_BP = 50
 
-/** {@link CIGAR_HAS_SKIP} and {@link CIGAR_HAS_SV_DELETION} over a packed CIGAR (`len << 4 | op`). */
+const SV_DELETION_MIN_PACKED = SV_DELETION_MIN_BP << 4
+
+// The op count from which the branch-free scan wins. Interleaved in one
+// process (`plugins/alignments/benches/categoryBits.bench.ts`), the branching
+// form took 11.6 ms over 153,677 short reads against 13.5 branch-free, and
+// 15.4 ms over 335 long reads of 7,300 ops against 9.7: a long read's ops mix
+// in an order no predictor learns, and a short read has too few to repay the
+// arithmetic.
+const BRANCH_FREE_MIN_OPS = 32
+
+/**
+ * {@link CIGAR_HAS_SKIP} and {@link CIGAR_HAS_SV_DELETION} over a packed CIGAR
+ * (`len << 4 | op`).
+ */
 export function numericCigarCategoryBits(cigar: ArrayLike<number>) {
-  let bits = 0
-  for (let i = 0; i < cigar.length; i++) {
-    const op = cigar[i]! & 0xf
-    if (op === CIGAR_N) {
-      bits |= CIGAR_HAS_SKIP
-    } else if (op === CIGAR_D && cigar[i]! >>> 4 >= SV_DELETION_MIN_BP) {
-      bits |= CIGAR_HAS_SV_DELETION
+  if (cigar.length < BRANCH_FREE_MIN_OPS) {
+    let bits = 0
+    for (let i = 0; i < cigar.length; i++) {
+      const packed = cigar[i]!
+      const op = packed & 0xf
+      if (op === CIGAR_N) {
+        bits |= CIGAR_HAS_SKIP
+      } else if (op === CIGAR_D && packed >= SV_DELETION_MIN_PACKED) {
+        bits |= CIGAR_HAS_SV_DELETION
+      }
     }
+    return bits
   }
-  return bits
+  let skip = 0
+  let svDeletion = 0
+  for (let i = 0; i < cigar.length; i++) {
+    const packed = cigar[i]!
+    const op = packed & 0xf
+    skip |= +(op === CIGAR_N)
+    svDeletion |= +(op === CIGAR_D) & +(packed >= SV_DELETION_MIN_PACKED)
+  }
+  return (skip ? CIGAR_HAS_SKIP : 0) | (svDeletion ? CIGAR_HAS_SV_DELETION : 0)
 }
 
 const CHAR_D = 68

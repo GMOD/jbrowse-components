@@ -215,20 +215,20 @@ export default class CramSlightlyLazyFeature
   // `NUMERIC_CIGAR` is built to answer it.
   get cigarCategoryBits() {
     const arena = this.readFeatureArena
-    let bits = 0
+    let skip = 0
+    let svDeletion = 0
     if (arena) {
       const { codes, num } = arena
       const end = this.readFeatureStart + this.readFeatureCount
       for (let i = this.readFeatureStart; i < end; i++) {
         const code = codes[i]
-        if (code === RF_REF_SKIP) {
-          bits |= CIGAR_HAS_SKIP
-        } else if (code === RF_DELETION && num[i]! >= SV_DELETION_MIN_BP) {
-          bits |= CIGAR_HAS_SV_DELETION
-        }
+        skip |= +(code === RF_REF_SKIP)
+        svDeletion |= +(code === RF_DELETION) & +(num[i]! >= SV_DELETION_MIN_BP)
       }
     }
-    return bits
+    return (
+      (skip ? CIGAR_HAS_SKIP : 0) | (svDeletion ? CIGAR_HAS_SV_DELETION : 0)
+    )
   }
 
   get CIGAR() {
