@@ -194,6 +194,30 @@ declared color. The palette the display deals to a shared panel's sources is
 the tree sidebar's (`dealtValueColors` over its arranged rows), which the table
 does not run yet.
 
+## In grammar-of-graphics terms
+
+A host draws the tables with its own grammar, so a table hands it the parts
+of the display's that it can't rebuild:
+
+- **Data:** each table is one mark kind, a row per mark. Beside the marks'
+  geometry it carries the semantic columns a host may map instead (`mapq`,
+  `strand`, `score`, `genotype`, `dosage`, `type`), and `section`, the
+  display's facet.
+- **Scale output:** each mark's `color` is what the display's `color` object
+  resolves to. The display's scale has already run, so a host draws the
+  column through an identity scale (ggjbrowse classes it `jbrowse_color`,
+  whose `scale_type` is identity).
+- **Guides:** `legend` and the other keys are that scale's guide, a label
+  per color.
+- **Stats left to the host:** the derived geometry (a read split at its
+  skips, an arc's points) is the host's, computed from the table's own
+  columns. A stat the display runs on the main thread (layout, autoscale,
+  the arc pass, label placement) comes back as columns, since a host
+  re-running it is the drift these tables exist to remove.
+
+A new table follows the same split: geometry and semantic columns as data,
+the display's resolved colors as one column, its key as a guide.
+
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
 downstream canary is for.
