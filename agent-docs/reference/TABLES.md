@@ -124,7 +124,7 @@ downstream canary is for.
 
 `pnpm build:bundle` writes `dist/jbrowse-tables.js`, one IIFE with no imports.
 `src/bareHost.ts` installs what the readers need of `fetch`, `TextDecoder`,
-`URL`, `Headers`, `AbortController` and the timers, and answers every byte
+`URL`, `Headers`, `AbortController`, `Intl` and the timers, and answers every byte
 range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 
 - **A timer with a delay never fires.** There is no event loop; the only
@@ -142,6 +142,10 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 - **`sideEffects` names `hostGlobals.*` and `bundle.*`.** With `false`,
   esbuild drops the side-effect import that installs the globals, and core's
   `featureTable.ts` reads `TextDecoder` at load.
+- **R's V8 is built without ICU, so it has no `Intl`.** The shim's segmenter
+  splits code points rather than graphemes, which only changes where a label
+  truncates on a combining sequence or an emoji join. Node's `vm` context
+  keeps `Intl`, so the bundle test deletes it.
 - **The test that matters runs the bundle in an empty `node:vm` context**,
   which has no web globals, as V8 in R has none (`bundle.test.ts`). A shim
   removed turns it red.

@@ -359,6 +359,35 @@ export async function fetchShim(
 }
 
 /**
+ * What the data stack asks of `Intl`, for a V8 built without ICU, as R's is: a
+ * grapheme segmenter splitting code points, which differs only on a combining
+ * sequence or an emoji join, a collator comparing UTF-16 code units, and a
+ * number format printing the number plainly.
+ */
+export const IntlShim = {
+  Segmenter: class {
+    segment(text: string) {
+      let index = 0
+      return Array.from(text, segment => {
+        const s = { segment, index, input: text }
+        index += segment.length
+        return s
+      })
+    }
+  },
+  Collator: class {
+    compare(a: string, b: string) {
+      return a < b ? -1 : a > b ? 1 : 0
+    }
+  },
+  NumberFormat: class {
+    format(n: number) {
+      return String(n)
+    }
+  },
+}
+
+/**
  * Installs the web globals the data stack reads where the host has none,
  * leaving any it has, with `host` answering every byte range.
  */
@@ -391,4 +420,8 @@ export function installBareHostGlobals(host: ReadRange) {
   g.clearInterval ??= () => {}
   g.performance ??= { now: () => Date.now() }
   g.atob ??= (s: string) => String.fromCharCode(...fromBase64(s))
+  const intl = (g.Intl ??= {}) as Record<string, unknown>
+  for (const [name, shim] of Object.entries(IntlShim)) {
+    intl[name] ??= shim
+  }
 }

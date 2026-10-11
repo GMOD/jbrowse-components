@@ -17,8 +17,9 @@ import { parse } from 'acorn'
 import { createTablesEngine } from './index.ts'
 import { BAM, BIGBED, CRAM, GFF3, METHYLATED } from './volvox.fixture.ts'
 
-// A host with no web globals at all, as R's V8 is: an empty vm context, where
-// the only thing the bundle is handed is a synchronous byte reader.
+// A host with no web globals at all, as R's V8 is: an empty vm context, less
+// the `Intl` R's V8 is built without, where the only thing the bundle is
+// handed is a synchronous byte reader.
 function readRange(url: string, start: number, end: number) {
   const file = fileURLToPath(url)
   const size = statSync(file).size
@@ -45,7 +46,9 @@ beforeAll(() => {
   )
   code = readFileSync(out, 'utf8')
   const sandbox: Record<string, unknown> = { jbrowseHost: { readRange } }
-  vm.runInNewContext(code, sandbox)
+  vm.createContext(sandbox)
+  vm.runInContext('delete globalThis.Intl', sandbox)
+  vm.runInContext(code, sandbox)
   jbrowse = sandbox.jbrowse as typeof jbrowse
 }, 120_000)
 
