@@ -1,4 +1,4 @@
-import { FACET_LABELS } from './facetLabels.ts'
+import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
 
 /**
  * The read fields a paired-end arc and the read cloud can paint, and the
@@ -12,13 +12,13 @@ import { FACET_LABELS } from './facetLabels.ts'
 export const ARC_COLOR_OPTIONS = [
   {
     value: 'insertSizeAndOrientation',
-    label: 'Insert size and orientation',
+    label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
     helpText:
       'Combined SV view. A short insert always paints pink regardless of orientation — at a short insert the useful signal is just "something is here", so orientation is not worth distinguishing. Otherwise an abnormal pair orientation wins (inversion, tandem duplication), and a large insert with normal orientation paints as a long insert (the classic deletion signature). Insert-size thresholds are robust to the long tail of large inserts (median ± 3·1.4826·MAD) so the short-insert signal is not washed out by a few very large outliers.',
   },
   {
     value: 'insertSize',
-    label: 'Insert size',
+    label: INSERT_SIZE_LABELS.insertSize,
     helpText:
       'Colors only by template length: short inserts pink, long inserts red, normal grey — orientation ignored. Thresholds use a robust median ± 3·1.4826·MAD spread so a tight insert-size distribution with a few very large outliers still flags genuinely short inserts.',
   },

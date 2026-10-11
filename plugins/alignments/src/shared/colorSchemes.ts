@@ -1,4 +1,4 @@
-import { FACET_LABELS } from './facetLabels.ts'
+import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
 
 import type {
   BaseLayer,
@@ -87,7 +87,11 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   insertSize: {
     type: 'insertSize',
     bodyScheme: 'insertSize',
-    menu: { kind: 'radio', label: 'Insert size', group: 'pairedEnd' },
+    menu: {
+      kind: 'radio',
+      label: INSERT_SIZE_LABELS.insertSize,
+      group: 'pairedEnd',
+    },
     mateAware: true,
   },
   firstOfPairStrand: {
@@ -115,7 +119,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     bodyScheme: 'insertSizeAndOrientation',
     menu: {
       kind: 'radio',
-      label: 'Insert size and orientation',
+      label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
       group: 'pairedEnd',
     },
     mateAware: true,

@@ -60,9 +60,9 @@ export interface AlignmentsColorSetting extends ColorSetting {
 type PresetScheme = Exclude<ReadColorSchemeType, 'normal' | 'tag'>
 
 /**
- * The read fields with a vocabulary or ramp of their own. The read dimensions
- * share the facet's names, so `facet` and `color` over one variable are one
- * word. There is no `chainStrand`: a long read's inversion reads under View
+ * The read fields with a vocabulary or ramp of their own. A field that is also
+ * a facet dimension takes the facet's name, so `facet` and `color` over it are
+ * one word. The insert-size fields and `mateRefName` are not facet dimensions. There is no `chainStrand`: a long read's inversion reads under View
  * as pairs.
  */
 export const COLOR_FIELDS: Record<PresetScheme, string> = {

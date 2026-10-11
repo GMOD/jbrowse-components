@@ -20,6 +20,12 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
   mateAssembly: 'Mate assembly',
 }
 
+/** The insert-size fields' names in the Color by and Arc color menus alike. */
+export const INSERT_SIZE_LABELS = {
+  insertSize: 'Insert size',
+  insertSizeAndOrientation: 'Insert size and orientation',
+} as const
+
 /**
  * The fragment strand the first mate implies, as a section chip and a color
  * key both name it: a reverse-mapped read1 is on the forward fragment, so the
