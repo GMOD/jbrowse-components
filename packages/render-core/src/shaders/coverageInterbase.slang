@@ -1,6 +1,6 @@
 // Interbase histogram: slim 1px-wide bars indicating insertion / softclip /
-// hardclip density across the coverage band, hanging from just below the
-// indicator triangles. See coverageBand.slang.
+// hardclip density across the coverage band, hanging from the band top so each
+// bar runs out of its indicator triangle's apex. See coverageBand.slang.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
 //! js-export: interbaseEdgePx
@@ -20,20 +20,12 @@ struct Instance {
 };
 
 // Screen-pixel Y of one edge of a bar, `offset` bars' worth of stacked height
-// below the coverage-area top.
-//
-// Rounded to a whole pixel, and that rounding is the whole reason this is a
-// named function rather than two expressions inline. TRIANGLE_H is 4.5, so an
-// unsnapped edge half-covers a row — and the backends do not agree on a
-// half-covered row: Canvas2D composites each of the ~40 bars that stack in one
-// column at 40bp/px separately and saturates to opaque, while this pass resolves
-// the union coverage once and stays at 50%. That read as a full row of 128,0,128
-// against 191,127,191 and was the largest remaining cross-backend divergence.
-// Whole-pixel edges leave no partial coverage to disagree about — which only
-// holds while both sides round the same numbers the same way, so
-// drawInterbaseSegments `//! js-export`s this rather than repeating it.
+// below the coverage-area top, snapped to a whole pixel. The backends disagree
+// on a half-covered row: Canvas2D saturates the ~40 bars stacked in one column
+// at 40bp/px to opaque, while this pass resolves their union once and stays at
+// 50%. drawInterbaseSegments `//! js-export`s this so both sides round alike.
 float interbaseEdgePx(float offset, float interbaseHeight) {
-  return floor(TRIANGLE_H + offset * interbaseHeight + 0.5);
+  return floor(offset * interbaseHeight + 0.5);
 }
 
 [shader("vertex")]
@@ -44,9 +36,7 @@ CoverageVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float cx = covBpToClipX(inst.position, u);
   float barW = pxToClipLen(1.0, u.canvasW);
 
-  // Hang from the coverage-area top, starting just below the indicator
-  // triangle row (TRIANGLE_H is the same const coverageIndicator.slang draws
-  // with). Both edges snap to whole pixels BEFORE the clip-space conversion.
+  // Both edges snap to whole pixels BEFORE the clip-space conversion.
   float topPx = interbaseEdgePx(inst.yOffset, u.interbaseHeight);
   float botPx = interbaseEdgePx(inst.yOffset + inst.segHeight, u.interbaseHeight);
   float sTop = covAreaTop(u) - pxToClipLen(topPx, u.canvasH);

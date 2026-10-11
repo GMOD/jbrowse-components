@@ -331,10 +331,11 @@ export const coverageModShape = layerShape(
 )
 
 /**
- * The interbase histogram: 1 px bars hanging from just below the indicator
- * strip, each position a stack of up to three typed segments. Both the
- * painter and the hit read the segment edges through `interbaseEdgePx`, the
- * shader's own snapped edge math, so the hit rectangle is the painted one.
+ * The interbase histogram: 1 px bars hanging from the band top, under the
+ * indicator triangles, each position a stack of up to three typed segments.
+ * Both the painter and the hit read the segment edges through
+ * `interbaseEdgePx`, the shader's own snapped edge math, so the hit rectangle
+ * is the painted one.
  * A bar taller than the band is clipped to it on both backends, and here too.
  */
 export const coverageInterbaseShape = layerShape(

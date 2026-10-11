@@ -18,7 +18,7 @@ const xOf = (bp: number) => (bp - 1000) * 2
 
 // coverageHeight=90, YSCALEBAR_LABEL_OFFSET=5 → effectiveH=80 → effectiveH/2=40.
 // interbaseMaxCount/domainMax = 20/20 = 1 → interbaseHeight=40. Edges snap to
-// whole px through interbaseEdgePx, so a full-height bar spans px [5, 45].
+// whole px through interbaseEdgePx, so a full-height bar spans px [0, 40].
 const COV_HEIGHT = 90
 const DOMAIN_MAX = 20
 
@@ -122,7 +122,7 @@ describe('the interbase histogram bars', () => {
   })
 
   // A stacked bar: insertion occupies [0, 0.2] of the stack and softclip
-  // [0.2, 1.0], i.e. px [5, 13] and [13, 45]. Which type the hover means is
+  // [0.2, 1.0], i.e. px [0, 8] and [8, 40]. Which type the hover means is
   // which SEGMENT is under the cursor, not which is tallest.
   const stackedAt1005 = region({
     interbasePackedBuffer: segments([
@@ -133,9 +133,9 @@ describe('the interbase histogram bars', () => {
   })
 
   it.each([
-    ['the short top segment', 8, 1],
+    ['the short top segment', 4, 1],
     ['the tall bottom segment', 30, 2],
-    ['the slack below the stack, to the bottom-most segment', 46, 2],
+    ['the slack below the stack, to the bottom-most segment', 41, 2],
   ])('reports the type under the cursor: %s', (_name, yPx, type) => {
     expect(
       hitCoverageBand(stackedAt1005, band(), block, xOf(1005), yPx)?.type,

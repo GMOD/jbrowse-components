@@ -392,8 +392,7 @@ test('a bar taller than the band stops at the band bottom, and the band top move
   const channels = interbaseChannels([
     { position: START + 2, yOffset: 0, segHeight: 0.8, colorType: 1 },
   ])
-  // 200/50 of the half-band is a 180px bar, which ends 49px below a band that
-  // starts at 40 and is 100 tall.
+  // 200/50 of the half-band overruns a band that starts at 40 and is 100 tall.
   const p = sweepParams({ top: 40, interbaseMaxCount: 200 })
   const hitAt = (yPx: number) =>
     coverageInterbaseShape.hitNearest!(
@@ -407,7 +406,7 @@ test('a bar taller than the band stops at the band bottom, and the band top move
       1e6,
     )
   expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 140, distSq: 160 ** 2 })
-  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 45, distSq: 45 ** 2 })
+  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 40, distSq: 40 ** 2 })
 })
 
 function indicatorChannels(
