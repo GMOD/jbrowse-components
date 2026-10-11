@@ -66,6 +66,15 @@ than the reference does, it names both: `region.refName` for the file and
 `region.originalRefName` for the reference, as the browser's renamed regions
 carry it (ggjbrowse's `reference_chrom`).
 
+A setting the table cannot serve is refused with an error:
+
+- `unit: 'chain'` is refused with an error. Chain mode joins a read to its
+  mates on the main thread, which the table does not run.
+- A facet that hides every section is refused, so an empty table always
+  means an empty region.
+- With no assembly, coloring by the mate's contig takes each contig's name
+  hash, where the browser takes the assembly's own contig order.
+
 Beside the reads come the marks the display draws on them, each as the
 worker ships it: `insertions` (position, length, sequence, read), `clips`
 (position, length, `soft` or `hard`, read) and `junctions`, the skips merged
@@ -111,8 +120,8 @@ Under `readConnections` (`'arc'` or `'cloud'`) the read-connection band comes
 back from the display's own arc pass (`computeArcsByGroup`), run over every
 section at once as the display runs it:
 
-- `arcs`: each mate-pair or split-read connection's feet (`start`, `end`),
-  `shape` (`arc`, `flat`, `flatSplit`, `unplaced`), `category`, and the
+- `arcs`: each mate-pair or split-read connection's feet (`start`, `end`,
+  the near foot first, so `start` can lie right of `end`), `shape` (`arc`, `flat`, `flatSplit`, `unplaced`), `category`, and the
   `color` and `opacity` the band paints it in.
 - `y` is where the band plots it in bp: an arc's genomic radius, or the read
   cloud's |TLEN| with the display's ±8% jitter. `span` is the distance
@@ -164,11 +173,25 @@ layer encoder (`buildSourceRenderData`):
   and a line's whisker band as rows with `band` set, at the `opacity` the
   display paints it. `low` is where a mark reaches down to: the band's min,
   or the `origin` bars grow from.
-- Each mark's `color` is the display's: its band's color between the cuts, or
-  under density and a gradient the shared ramp functions (`makeDensityRgbStringFn`,
-  `makeDensityLutFillFn`) over the resolved domain.
+- Each mark's `color` is the display's. A bar takes its value's color; a line
+  takes the color of the band between the cuts its score is in (`cutBand`);
+  a whisker band comes back in pieces split at the cuts, each in its band's
+  color, as the display fills it. Under density and a gradient the color is
+  the shared ramp's (`makeDensityRgbStringFn`, `makeDensityLutFillFn`) over
+  the resolved domain.
+- `run` numbers an interpolated line's stretches, starting a new one where
+  the display breaks the line (`centerLinksToPrevious` over the encoder's
+  `gapLimitBp`).
+- The sources stack in the order `rows.domain` gives them
+  (`orderRowsByDomain`, the tree sidebar's own rule), each on its `row`
+  under a row layout and all on row 0 in a shared panel.
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
   resolves to, and `rules` the reference lines it draws.
+
+A source paints its own declared color. The palette the display deals to a
+shared panel's sources with none declared is the tree sidebar's
+(`dealtValueColors` over its arranged rows), which the table does not run
+yet, so those sources all paint the default pos/neg pair.
 
 `@jbrowse/plugin-variants/tables` (`variantTables`) does the same for a
 multi-sample VCF. It takes the `LinearMultiSampleVariantDisplay`'s config,
@@ -187,12 +210,9 @@ and paints the cells as the display does (`paintCellColors`,
   cells painted.
 
 The table does not apply the display's density fade, which depends on zoom,
-and does not order the rows by the `rows` arrangement.
-
-A multi-source track reads with a `source` column, each source in its own
-declared color. The palette the display deals to a shared panel's sources is
-the tree sidebar's (`dealtValueColors` over its arranged rows), which the table
-does not run yet.
+and does not order the rows by the `rows` arrangement. A categorical `color`
+deals its values into slots the browser keeps per session; the table deals
+afresh on every call, so one value can take two colors across two calls.
 
 ## In grammar-of-graphics terms
 
