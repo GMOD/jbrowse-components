@@ -17,6 +17,7 @@ import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { resolveSubMenu, staysOpenOnClick } from './MenuTypes.ts'
 import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
 import { isAimedAtPanel } from './submenuAim.ts'
+import { usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
 
 import type { MenuColumnFlags } from './MenuItemTrailing.tsx'
 import type {
@@ -756,9 +757,11 @@ const CascadingMenu = observer(function CascadingMenu({
   style,
 }: CascadingMenuProps) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
+  const { onEntering, ...focus } = usePlacedMenuFocus()
 
   return (
     <Menu
+      {...focus}
       anchorEl={anchorEl}
       open={open}
       onClose={onClose}
@@ -767,6 +770,7 @@ const CascadingMenu = observer(function CascadingMenu({
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       style={style}
+      slotProps={{ transition: { onEntering } }}
     >
       <CascadingMenuContext
         value={{

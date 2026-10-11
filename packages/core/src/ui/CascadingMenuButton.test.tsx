@@ -87,6 +87,36 @@ describe('CascadingMenuButton', () => {
     )
   })
 
+  // MUI focused a row while the menu mounted, before Popover placed the paper,
+  // and Firefox scrolled a page embedding JBrowse in an iframe to that row
+  it('should focus a row only once its menu is placed, without scrolling', async () => {
+    const focus = HTMLElement.prototype.focus
+    const rowFocuses: { label: string; top: string; options?: FocusOptions }[] =
+      []
+    const spy = jest
+      .spyOn(HTMLElement.prototype, 'focus')
+      .mockImplementation(function (this: HTMLElement, options) {
+        if (this.getAttribute('role') === 'menuitem') {
+          rowFocuses.push({
+            label: this.textContent,
+            top: this.closest<HTMLElement>('.MuiPaper-root')!.style.top,
+            options,
+          })
+        }
+        focus.call(this, options)
+      })
+    const user = await setup()
+    await user.click(screen.getByTestId('menu-button'))
+    await user.hover(await screen.findByText('Submenu'))
+    await screen.findByText('Sub Item 1')
+    spy.mockRestore()
+    expect(rowFocuses.map(f => f.label)).toEqual(['Item 1', 'Sub Item 1'])
+    for (const { top, options } of rowFocuses) {
+      expect(top).not.toBe('')
+      expect(options).toEqual({ preventScroll: true })
+    }
+  })
+
   it('should close submenu on ArrowLeft key', async () => {
     const user = await setup()
     await user.click(screen.getByTestId('menu-button'))

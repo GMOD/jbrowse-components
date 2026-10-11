@@ -4,6 +4,8 @@
 import { Menu } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { usePlacedMenuFocus } from './usePlacedMenuFocus.ts'
+
 import type { PopoverOrigin } from '@mui/material'
 
 // A Menu a hovering pointer can cross into: the root (which spans the viewport)
@@ -42,8 +44,10 @@ const HoverMenu = observer(function HoverMenu({
   zIndex?: React.CSSProperties['zIndex']
   children: React.ReactNode
 }) {
+  const { onEntering, ...focus } = usePlacedMenuFocus()
   return (
     <Menu
+      {...focus}
       open
       anchorEl={anchorEl}
       onClose={onClose}
@@ -57,6 +61,7 @@ const HoverMenu = observer(function HoverMenu({
           onMouseEnter,
           ref: paperRef,
         },
+        transition: { onEntering },
       }}
       // A submenu is portaled in the DOM but is still a React *descendant* of
       // the parent menu's list, so React replays its key events into the parent
