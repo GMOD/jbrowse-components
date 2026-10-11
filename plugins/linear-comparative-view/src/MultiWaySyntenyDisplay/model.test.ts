@@ -1271,6 +1271,9 @@ test('an `{assembly}` entry fills in every name the session knows a lane by, and
     volvox_random: 'vr-ensGene',
     'sample#1#vr': 'vr-ensGene',
   })
+
+  setConf(display, 'laneGeneTracks', ['volvox-refGene', 'volvox-ensGene'])
+  expect(display.laneGeneTracks.get('volvox')?.trackId).toBe('volvox-refGene')
 })
 
 test('a lane selection reaches the adapter under every name the session knows the genome by', () => {

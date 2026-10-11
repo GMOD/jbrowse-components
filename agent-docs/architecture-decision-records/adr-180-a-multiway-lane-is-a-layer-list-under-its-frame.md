@@ -69,8 +69,8 @@ A layer names one track per genome by listing its id per lane, or by an
 for that per-lane lookup:
 
 - **A `jexl:` callback over `assembly`.** It makes the whole slot one expression,
-  so a plain id no longer outranks the pattern, and neither Edit plot nor
-  `jbrowse validate` can read an expression back.
+  so a plain id no longer outranks the pattern, and Edit plot shows an
+  expression where it showed ids.
 - **A structured object, `{ field: 'assembly', … }`.** `field` reads a value off a
   datum in the encoding vocabulary, and building an id from one still needs a
   template inside the object.
