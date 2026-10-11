@@ -9,6 +9,8 @@ import coverageBand;
 import hpmath;
 
 public static const uint VERTS_PER_INSTANCE = 3u;
+// TRIANGLE_HW / TRIANGLE_H come from coverageBand — coverageInterbase hangs its
+// bars below this triangle and must use the same height.
 
 [[vk::binding(1, 0)]] ConstantBuffer<CoverageBandUniforms> u;
 

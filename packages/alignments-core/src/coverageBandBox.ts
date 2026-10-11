@@ -26,7 +26,7 @@ export function coverageLayout(coverageHeight: number) {
 
 /**
  * Full-scale height in px of the interbase histogram — what a bar whose stacked
- * fractions sum to 1 occupies, hanging from the band top.
+ * fractions sum to 1 occupies, hanging from the indicator triangles' tip row.
  * 0 means "draw nothing": no interbase events, or the autoscaled domain has not
  * resolved yet, which now means only that no data has landed —
  * `settledDynamicBlocks` covers the window where the coarse blocks are empty and

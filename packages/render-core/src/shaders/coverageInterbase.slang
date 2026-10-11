@@ -1,6 +1,6 @@
 // Interbase histogram: slim 1px-wide bars indicating insertion / softclip /
-// hardclip density across the coverage band, hanging from the band top so each
-// bar runs out of its indicator triangle's apex. See coverageBand.slang.
+// hardclip density across the coverage band, hanging from the indicator
+// triangles' tip row. See coverageBand.slang.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
 //! js-export: interbaseEdgePx
@@ -24,8 +24,12 @@ struct Instance {
 // on a half-covered row: Canvas2D saturates the ~40 bars stacked in one column
 // at 40bp/px to opaque, while this pass resolves their union once and stays at
 // 50%. drawInterbaseSegments `//! js-export`s this so both sides round alike.
+//
+// The bar starts on the triangle's last pixel row, floor(TRIANGLE_H), rather
+// than the row after it: the tip anti-aliases to nothing, so starting below it
+// leaves a visible gap between triangle and bar.
 float interbaseEdgePx(float offset, float interbaseHeight) {
-  return floor(offset * interbaseHeight + 0.5);
+  return floor(TRIANGLE_H) + floor(offset * interbaseHeight + 0.5);
 }
 
 [shader("vertex")]

@@ -788,8 +788,9 @@ describe('drawInterbaseSegments', () => {
   }
 
   it('draws a 1px bar centered on the bp boundary', () => {
-    // Both edges snap to whole px: top floor(0.5) = 0, bottom floor(40.5) = 40.
-    expect(draw(bp => bp - 50)[0]!.args).toEqual([49.5, 0, 1, 40])
+    // Both edges snap to whole px past the triangle's tip row floor(4.5) = 4:
+    // top 4, bottom 4 + 40 = 44.
+    expect(draw(bp => bp - 50)[0]!.args).toEqual([49.5, 4, 1, 40])
   })
 
   // The mark is 1px wide and CENTERED on `bpToX(pos)`, so half of it still shows

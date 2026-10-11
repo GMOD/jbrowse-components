@@ -5,5 +5,5 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 export function interbaseEdgePx(offset: number, interbaseHeight: number): number {
-  return Math.floor(((offset * interbaseHeight) + 0.5))
+  return (Math.floor(4.5) + Math.floor(((offset * interbaseHeight) + 0.5)))
 }

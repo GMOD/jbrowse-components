@@ -406,7 +406,7 @@ test('a bar taller than the band stops at the band bottom, and the band top move
       1e6,
     )
   expect(hitAt(300)).toEqual({ index: 0, x: 4, y: 140, distSq: 160 ** 2 })
-  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 40, distSq: 40 ** 2 })
+  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 44, distSq: 44 ** 2 })
 })
 
 function indicatorChannels(
