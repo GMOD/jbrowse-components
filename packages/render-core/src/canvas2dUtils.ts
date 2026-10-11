@@ -203,9 +203,9 @@ export function devicePxSpan(cssStart: number, cssEnd: number, dpr: number) {
  * band clamped to zero height is the caller's cue to skip its passes.
  *
  * `dpr` is the scale the canvas ACTUALLY got (`hal.resize`'s return), not
- * `getDpr()`: the two part company once the backing store clamps at
- * `MAX_CANVAS_DIM_PX`, and past that a band built from the true ratio is taller
- * than the target.
+ * `getDpr()`: a backing store capped at `MAX_CANVAS_DIM_PX`, or a WebGL drawing
+ * buffer the browser shrank, falls below it, and a band built from the true
+ * ratio is then taller than the target.
  */
 export function devicePxBand(
   top: number,

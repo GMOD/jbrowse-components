@@ -92,9 +92,8 @@ export const segmentMark: MarkShape<DotplotGeometryData, DotplotSegmentParams> =
         // drawDotplotInstances' equivalent from absolute cumBp.
         panPxH: (p.baseH - p.viewBpH) * p.bpPerPxHInv,
         panPxV: (p.baseV - p.viewBpV) * p.bpPerPxVInv,
-        // The shader measures in CSS px (the frame's dims are the view's, and the
-        // HAL scales the backing store by getDpr()), so it needs the ratio to
-        // size its AA ramp at one output pixel — see aaHalf in dotplot.slang.
+        // The shader measures in CSS px, so it needs the screen's ratio to size
+        // its AA ramp at one output pixel; see aaHalf in dotplot.slang.
         devicePixelRatio: getDpr(),
       })
     },

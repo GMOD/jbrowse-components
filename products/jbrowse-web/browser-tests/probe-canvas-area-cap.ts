@@ -1,21 +1,24 @@
 /* eslint-disable no-console */
 // A tall track on a wide hi-dpi view, where a canvas's backing store passes
-// Chrome's 7680x4320 px WebGL drawing-buffer cap unless `backingSize` keeps it
-// under. Reports, per height, the canvas the display got, the drawing buffer
-// WebGL2 allocated for it, and any GPU error on the console, and saves the
-// track's top 600 CSS px so a short track and a capped one can be compared.
+// Chrome's 7680x4320 px WebGL drawing-buffer cap. Reports, per height, the
+// canvas the display got, the drawing buffer WebGL2 allocated for it, and any
+// GPU error on the console, and saves the track's top 600 CSS px so a short
+// track and a tall one can be compared.
 //
 //   node browser-tests/probe-canvas-area-cap.ts webgl     # headless Chrome
 //   node browser-tests/probe-canvas-area-cap.ts webgpu    # headed Firefox Nightly
 //
 // The WebGL2 arm wants a real GPU: CHROME_ARGS defaults to ANGLE over GL.
 //
-// Measured 2026-10-11 on volvox_alignments, 2586 CSS px wide at dpr 2: at 4000
-// and 6000 px tall the store holds at 5172x6414 in Chrome 155 (WebGL2, Intel
-// ANGLE-GL), with the drawing buffer the same size, and at 5148x6444 in
-// Firefox Nightly 157 (WebGPU). No GPU error in either, and each capped crop
-// places every read where the 1000 px track does; the 4-7% of pixels that
-// differ are the vertical resampling and, in Firefox, a page scrollbar.
+// Measured 2026-10-11 on volvox_alignments, 2586 CSS px wide at dpr 2:
+// - Chrome 155 (WebGL2, Intel ANGLE-GL) shrinks the drawing buffer to 4631x7163
+//   at 4000 px tall and 4576x7249 at 6000, under canvases of 5172x8000 and
+//   5172x8192. Against the 1000 px track 0.01% and 0.06% of the crop differ,
+//   the vertical resampling.
+// - Firefox Nightly 157 (WebGPU) keeps the whole 5148x8192 store. Against the
+//   3000 px track 0.04% differs at 6000; the 1000 px track differs by 1.7% at
+//   every taller height, because a page scrollbar narrows the view.
+// - No GPU error in either.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -69,7 +72,10 @@ async function measure(page: Page, port: number, height: number) {
   const errors: string[] = []
   const onConsole = (m: { text: () => string }) => {
     const t = m.text()
-    if (/webgpu|webgl|validation|scissor|viewport|GPU/i.test(t)) {
+    if (
+      /webgpu|webgl|validation|scissor|viewport|GPU/i.test(t) &&
+      !t.includes('device ready')
+    ) {
       errors.push(t.slice(0, 200))
     }
   }
@@ -79,12 +85,12 @@ async function measure(page: Page, port: number, height: number) {
   )
   await waitForDataLoaded(page, 90000)
   await new Promise(r => setTimeout(r, 1500))
-  const info = await page.evaluate(() => {
+  const info = await page.evaluate(backend => {
     const canvases = [...document.querySelectorAll('canvas')]
     const c = canvases.toSorted(
       (a, b) => b.width * b.height - a.width * a.height,
     )[0]!
-    const gl = c.getContext('webgl2')
+    const gl = backend === 'webgl' ? c.getContext('webgl2') : null
     const r = c.getBoundingClientRect()
     return {
       dpr: devicePixelRatio,
@@ -97,7 +103,7 @@ async function measure(page: Page, port: number, height: number) {
       top: r.top,
       left: r.left,
     }
-  })
+  }, BACKEND)
   await page.screenshot({
     path: `${OUT}/area-cap-${BACKEND}-${height}.png`,
     clip: { x: info.left, y: info.top, width: 1200, height: 600 },

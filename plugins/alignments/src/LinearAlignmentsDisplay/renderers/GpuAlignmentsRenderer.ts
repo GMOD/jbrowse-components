@@ -367,12 +367,11 @@ export class GpuAlignmentsRenderer
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
-    // Every rect below is device px, so it is derived from the scale the canvas
-    // actually got and never from `getDpr()`: the two agree until the backing
-    // store clamps at `MAX_CANVAS_DIM_PX`, and past that a viewport built from
-    // the true dpr is taller than the target — WebGPU rejects the pass and the
-    // whole track goes blank. The `dpr` UNIFORM stays the true one: it scales
-    // stroke widths, which want screen density rather than target extent.
+    // Every rect below is device px, so it derives from the scale the canvas
+    // actually got, never from `getDpr()`: a capped backing store or a
+    // browser-shrunk WebGL drawing buffer falls below it, and a viewport built
+    // from the true dpr then overruns the target. The `dpr` UNIFORM stays the
+    // true one: it scales stroke widths, which want screen density.
     const scale = this.hal.resize(canvasWidth, canvasHeight)
     const bufH = Math.round(canvasHeight * scale.y)
     this.hal.beginFrame(0, 0, 0, 0)
@@ -430,9 +429,8 @@ export class GpuAlignmentsRenderer
     state: RenderState,
     pileup: MarkPlan<PileupDataResult, RenderState>,
     sectionIdx: number,
-    // The canvas's ACTUAL vertical scale, not `getDpr()` — every band offset
-    // below is a device-px rect inside `bufH`, and the two part company once
-    // the backing store clamps.
+    // The canvas's ACTUAL vertical scale, not `getDpr()`: every band offset
+    // below is a device-px rect inside `bufH`.
     scaleY: number,
     bufH: number,
   ) {
