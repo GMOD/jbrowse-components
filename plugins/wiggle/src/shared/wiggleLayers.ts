@@ -207,7 +207,7 @@ function stackSides(
 }
 
 // The render layers one source contributes under a summary presentation
-// (avg, whiskers, or a single min/max band), colored by each value's sign vs
+// (the aggregate alone, or inside its min and max), colored by each value's sign vs
 // the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
 // `lineLayers` instead. `summaryBands` decides which bands there are and this
 // decides how each becomes layers. Under a gradient both backends color bars

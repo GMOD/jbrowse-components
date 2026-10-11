@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The quantitative display's one mark is spelt as the mark display spells one: `mark` is `bar`, `point`, `line` or `span` (`heatmap` was a span under its own name), `y` names the field plotted (`scoreField`), one `size` is a point's diameter or a line's width (`lineWidth` folded in, unset drawing each mark's own default), and `summaryScoreMode`'s `avg` is `mean`, the aggregate's word. `mark`, `interpolate`, `size` and `origin` join the plot vocabulary, so Edit plot and the agent API can change a quantitative plot's type. v4 `lineWidth` and `avg` lift; `scoreField` and `heatmap` were beta spellings and get none"
+summary: "The quantitative display's one mark is spelt as the mark display spells one: `mark` is `bar`, `point`, `line` or `span` (`heatmap` was a span under its own name), `y` names the field plotted (`scoreField`), one `size` is a point's diameter or a line's width (`lineWidth` folded in, unset drawing each mark's own default), and `summaryScoreMode`'s `avg` is `mean`, the aggregate's word, while its `whiskers` is `extent: 'min-max'`, the span drawn around the aggregate. `mark`, `interpolate`, `size` and `origin` join the plot vocabulary, so Edit plot and the agent API can change a quantitative plot's type. v4 `lineWidth` and `avg` lift; `scoreField` and `heatmap` were beta spellings and get none"
 ---
 
 # ADR-216: The quantitative display spells its mark as the mark display does
