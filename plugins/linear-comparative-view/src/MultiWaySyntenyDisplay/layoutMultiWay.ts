@@ -151,11 +151,21 @@ export function frameOpenings(frame: RowFrame) {
   return frame.openings ?? NO_OPENINGS
 }
 
+// Pieces of two records meeting in a lane are a rearrangement's breakpoint,
+// whose anchor distance can run to megabases; only a source naming no
+// records leaves the call to the gap alone.
+function oneRecord(left: MatePlacement, right: MatePlacement) {
+  const a: unknown = left.feature.get('recordId')
+  const b: unknown = right.feature.get('recordId')
+  return a === undefined || b === undefined || a === b
+}
+
 /**
- * Where two alignment pieces of a lane abut, or nearly, while their anchor
- * ends sit at least `SPLIT_AT_GAP_BP` further apart. Named records are genes,
- * whose spacing says nothing about a deletion.
+ * Where two pieces of one alignment record abut in a lane, or nearly, while
+ * their anchor ends sit at least `SPLIT_AT_GAP_BP` further apart. Named
+ * records are genes, whose spacing says nothing about a deletion.
  */
+
 export function laneOpeningsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
     string,
@@ -180,8 +190,9 @@ export function laneOpeningsOf(groups: MultiWayGroup[]) {
   for (const [key, list] of pieces) {
     list.sort((a, b) => a.lane.start - b.lane.start)
     const openings: LaneOpening[] = []
-    forEachLaneGap(list, (left, _right, laneGap, anchorGap) => {
+    forEachLaneGap(list, (left, right, laneGap, anchorGap) => {
       if (
+        oneRecord(left.lane, right.lane) &&
         anchorGap !== undefined &&
         laneGap >= 0 &&
         anchorGap - laneGap >= SPLIT_AT_GAP_BP

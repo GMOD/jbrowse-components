@@ -54,9 +54,11 @@ function piece(
   end: number,
   mates: { assemblyName: string; refName: string; start: number }[],
   orientation = 1,
+  recordId?: string,
 ) {
   return new SimpleFeature({
     uniqueId: id,
+    recordId,
     refName: 'chr1',
     start,
     end,
@@ -78,12 +80,14 @@ function cfhFeatures() {
     }),
   )
   return [
-    piece('cfh/0', WINDOW_START, DEL_START, carriers),
+    piece('cfh/0', WINDOW_START, DEL_START, carriers, 1, 'cfh'),
     piece(
       'cfh/1',
       DEL_END,
       WINDOW_END,
       carriers.map(c => ({ ...c, start: c.start + BEFORE })),
+      1,
+      'cfh',
     ),
     ...Object.entries(NON_CARRIERS).map(([assemblyName, [ref, at]]) =>
       piece(`whole-${assemblyName}`, WINDOW_START, WINDOW_END, [
@@ -190,6 +194,18 @@ describe('a deletion the lane carries against the anchor', () => {
     for (const [assemblyName, [ref]] of Object.entries(NON_CARRIERS)) {
       expect(openingsOf(assemblyName, ref)).toEqual([])
     }
+  })
+
+  test('opens nothing where two records meet in the lane', () => {
+    const [ref, at] = CARRIERS['HG01123.1']
+    const lane = (start: number) => [
+      { assemblyName: 'HG01123.1', refName: ref, start },
+    ]
+    const breakpoint = groupFeatures([
+      piece('a/0', 10_000_000, 10_050_000, lane(at), 1, 'a'),
+      piece('b/0', 14_000_000, 14_050_000, lane(at + 50_000), 1, 'b'),
+    ])
+    expect(laneOpeningsOf(breakpoint)('HG01123.1', ref)).toEqual([])
   })
 
   test('puts both pieces of every carrier under their own anchor stretch', () => {

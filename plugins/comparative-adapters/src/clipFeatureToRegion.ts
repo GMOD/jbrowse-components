@@ -132,6 +132,7 @@ function clippedFeature(
   const data: SimpleFeatureSerialized = {
     ...source,
     uniqueId: `${feature.id()}${suffix}`,
+    recordId: feature.id(),
     start: clipped.start,
     end: clipped.end,
     mate: { ...mate, start: clipped.mateStart, end: clipped.mateEnd },
@@ -164,8 +165,10 @@ function clippedFeature(
  * that holds it, and a selection keyed on it survives a refetch. Runs are
  * numbered by their place in the record, and `syntenyId` carries the same
  * suffix, so each run is its own group to a display grouping on it — one
- * placement per run rather than one ribbon across the gap. A feature with no
- * `mate` is not a pairwise record and passes through whole.
+ * placement per run rather than one ribbon across the gap. Every piece names
+ * its record's id in `recordId`, so a gap between two pieces of one record
+ * reads as the deletion the alignment states. A feature with no `mate` is not
+ * a pairwise record and passes through whole.
  */
 export function clipFeatureToRegion(
   feature: Feature,

@@ -197,6 +197,7 @@ test('splitAtGapBp: a record inside the window is cut at its large indel into ru
   ])
   expect(runs.map(f => f.id())).toEqual(['r1/0', 'r1/1'])
   expect(runs.map(f => f.get('syntenyId'))).toEqual(['7/0', '7/1'])
+  expect(runs.map(f => f.get('recordId'))).toEqual(['r1', 'r1'])
   expect(runs.every(f => f.get('CIGAR') === undefined)).toBe(true)
   expect(runs.every(f => f.get('identity') === 0.98)).toBe(true)
 })

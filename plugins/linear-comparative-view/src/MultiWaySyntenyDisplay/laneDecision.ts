@@ -95,6 +95,10 @@ const ALSO_ON_SHARE = 0.2
 const ALSO_ON_MAX = 3
 // relative, since a lane aligned on its median can overhang its frame
 const HOLD_COVERAGE = 0.9
+// the most of a lane's evidence its frame leaves off, from the ends only
+const PEEL_BUDGET = 0.05
+// a lane gap wider than this share of the window starts a new cluster
+const CLUSTER_GAP = 0.25
 
 function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
@@ -123,7 +127,7 @@ function pickContig(
   incumbent: string | undefined,
   pinned: string | undefined,
 ) {
-  const byRef = new Map<string, MultiWayPlacement[]>()
+  const byRef = new Map<string, WeighedPlacement[]>()
   const evidence = new Map<string, number>()
   for (const group of groups) {
     for (const p of group.mates.get(assemblyName) ?? []) {
@@ -132,7 +136,7 @@ function pickContig(
         bucket = []
         byRef.set(p.refName, bucket)
       }
-      bucket.push(p)
+      bucket.push({ placement: p, weight: group.weight })
       evidence.set(p.refName, (evidence.get(p.refName) ?? 0) + group.weight)
     }
   }
@@ -170,25 +174,85 @@ function pickContig(
   )
 }
 
-function fitExtent(
-  placements: MultiWayPlacement[],
-  unitBp: number,
-  incumbentCenter: number | undefined,
-) {
-  const kept = keepNearMedian(
-    placements,
-    unitBp > 0 ? unitBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
-    p => p,
-    incumbentCenter,
-  )
+interface WeighedPlacement {
+  placement: MultiWayPlacement
+  // the group's vote evidence: anchor bp for an alignment, 1 for a gene
+  weight: number
+}
+
+function clustersOf(placements: WeighedPlacement[], gapBp: number) {
+  const clusters: WeighedPlacement[][] = []
+  let reach = Number.NEGATIVE_INFINITY
+  for (const p of [...placements].sort(
+    (a, b) => a.placement.start - b.placement.start,
+  )) {
+    if (!clusters.length || p.placement.start - reach > gapBp) {
+      clusters.push([])
+    }
+    clusters.at(-1)!.push(p)
+    reach = Math.max(reach, p.placement.end)
+  }
+  return clusters
+}
+
+const weightOf = (placements: WeighedPlacement[]) =>
+  placements.reduce((sum, p) => sum + p.weight, 0)
+
+// Isolated clusters come off either end, the lighter end first, while the
+// weight dropped stays within the budget; an inner cluster never widens the
+// extent, so it stays.
+function peelEnds(placements: WeighedPlacement[], gapBp: number) {
+  const clusters = clustersOf(placements, gapBp)
+  const budget = PEEL_BUDGET * weightOf(placements)
+  let first = 0
+  let last = clusters.length - 1
+  let peeled = 0
+  while (first < last) {
+    const left = weightOf(clusters[first]!)
+    const right = weightOf(clusters[last]!)
+    if (peeled + Math.min(left, right) > budget) {
+      break
+    }
+    peeled += Math.min(left, right)
+    if (left <= right) {
+      first++
+    } else {
+      last--
+    }
+  }
+  return clusters.slice(first, last + 1).flat()
+}
+
+function extentOf(placements: WeighedPlacement[]) {
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
-  for (const p of kept) {
-    min = Math.min(min, p.start)
-    max = Math.max(max, p.end)
+  for (const { placement } of placements) {
+    min = Math.min(min, placement.start)
+    max = Math.max(max, placement.end)
   }
   // no margin: rounding up to a rung is the margin
   return { lo: Math.max(0, min), hi: Math.max(max, min + 1) }
+}
+
+/**
+ * `fit` spans every placement near the median; `bulk`, which sizes and
+ * centres the frame, leaves out the isolated stray pieces `peelEnds` drops.
+ */
+function fitExtent(
+  placements: WeighedPlacement[],
+  unitBp: number,
+  incumbentCenter: number | undefined,
+) {
+  const near = keepNearMedian(
+    placements,
+    unitBp > 0 ? unitBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
+    p => p.placement,
+    incumbentCenter,
+  )
+  return {
+    fit: extentOf(near),
+    bulk: extentOf(unitBp > 0 ? peelEnds(near, unitBp * CLUSTER_GAP) : near),
+  }
 }
 
 function anchorOrderSign(
@@ -256,14 +320,14 @@ function fitLane(
     return undefined
   }
   const held = incumbent?.refName === contig.refName ? incumbent : undefined
-  const { lo, hi } = fitExtent(
+  const { fit, bulk } = fitExtent(
     contig.placements,
     unitBp,
     held && (held.fitMin + held.fitMax) / 2,
   )
   const openings = openingsOf(assemblyName, contig.refName)
-  const openedLo = openedBp(openings, lo, true)
-  const openedHi = Math.max(openedLo + 1, openedBp(openings, hi))
+  const openedLo = openedBp(openings, bulk.lo, true)
+  const openedHi = Math.max(openedLo + 1, openedBp(openings, bulk.hi))
   const rung =
     unitBp > 0
       ? pickRung(Math.max(openedHi - openedLo, unitBp) / unitBp, held?.rung)
@@ -279,8 +343,8 @@ function fitLane(
         min,
         max: min + span,
         flipped: anchorOrderSign(groups, assemblyName, contig.refName) < 0,
-        fitMin: lo,
-        fitMax: hi,
+        fitMin: fit.lo,
+        fitMax: fit.hi,
         alsoOn: contig.alsoOn,
         alsoOnMore: contig.alsoOnMore,
       },

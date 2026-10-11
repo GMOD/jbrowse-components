@@ -1,6 +1,6 @@
 {
   "id": "multiway-17p-orientation",
-  "measured": "2026-09-24",
+  "measured": "2026-10-11",
   "published": false,
   "source": {
     "kind": "bench",
@@ -128,9 +128,9 @@
         "drawn": "forward",
         "fallback": "forward",
         "against": "anchor",
-        "shared": 14,
-        "allPairsBackwards": "0.061",
-        "neighbourBackwards": "0.184",
+        "shared": 4,
+        "allPairsBackwards": "0.000",
+        "neighbourBackwards": "0.000",
         "forwardBp": 1147002,
         "reverseBp": 22332,
         "majority": "+ 0.981"
@@ -143,9 +143,9 @@
         "drawn": "forward",
         "fallback": "[rev]",
         "against": "anchor",
-        "shared": 11,
-        "allPairsBackwards": "0.105",
-        "neighbourBackwards": "0.792",
+        "shared": 10,
+        "allPairsBackwards": "0.100",
+        "neighbourBackwards": "0.798",
         "forwardBp": 527509,
         "reverseBp": 576664,
         "majority": "- 0.522"
@@ -173,9 +173,9 @@
         "drawn": "[rev]",
         "fallback": "forward",
         "against": "anchor",
-        "shared": 19,
-        "allPairsBackwards": "0.812",
-        "neighbourBackwards": "0.294",
+        "shared": 17,
+        "allPairsBackwards": "0.827",
+        "neighbourBackwards": "0.608",
         "forwardBp": 440288,
         "reverseBp": 487063,
         "majority": "- 0.525"

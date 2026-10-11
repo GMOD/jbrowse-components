@@ -242,8 +242,9 @@ alignment places the hg38 window.
 
 - **Span**: the number at a lane's right edge is the span the lane shows, and
   the multiple after it is how many times wider than the hg38 window that span
-  is, rounded to one of a few fixed steps. A lane that places up to a tenth more
-  than a step stays on that step, and the extra runs off the lane's edges.
+  is, rounded to one of a few fixed steps. The step fits the bulk of what the
+  lane places: a lane up to a tenth wider than a step stays on that step, and a
+  few short pieces far from the rest fall off its edges.
 - **Ribbons**: each joins a lane to hg38, the anchor, since each chain aligns
   one genome to hg38. The ticked rule above the ribbons is hg38's axis, and the
   badge opening each lane label names it.

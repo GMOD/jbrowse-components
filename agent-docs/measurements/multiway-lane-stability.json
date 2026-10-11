@@ -1,6 +1,6 @@
 {
   "id": "multiway-lane-stability",
-  "measured": "2026-09-24",
+  "measured": "2026-10-11",
   "published": false,
   "source": {
     "kind": "bench",
@@ -111,11 +111,11 @@
         "fallbackFlipChanges": 10,
         "fallbackFlipOsc": 2,
         "empty": 33,
-        "crossedSteps": 21,
+        "crossedSteps": 20,
         "rungChanges": 6,
         "rungOsc": 0,
         "slipSteps": 21,
-        "medianSlipPx": 297,
+        "medianSlipPx": 313,
         "maxSlipPx": 4705
       }
     },
@@ -130,11 +130,11 @@
         "fallbackFlipChanges": 17,
         "fallbackFlipOsc": 2,
         "empty": 33,
-        "crossedSteps": 15,
+        "crossedSteps": 14,
         "rungChanges": 17,
         "rungOsc": 2,
         "slipSteps": 16,
-        "medianSlipPx": 248,
+        "medianSlipPx": 281,
         "maxSlipPx": 671
       }
     },
@@ -149,12 +149,12 @@
         "fallbackFlipChanges": 13,
         "fallbackFlipOsc": 3,
         "empty": 33,
-        "crossedSteps": 14,
+        "crossedSteps": 13,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 17,
-        "medianSlipPx": 283,
-        "maxSlipPx": 530
+        "slipSteps": 16,
+        "medianSlipPx": 239,
+        "maxSlipPx": 655
       }
     },
     {
@@ -163,16 +163,16 @@
         "contigs": 5,
         "contigChanges": 8,
         "contigOsc": 0,
-        "drawnFlipChanges": 7,
-        "drawnFlipOsc": 1,
+        "drawnFlipChanges": 5,
+        "drawnFlipOsc": 0,
         "fallbackFlipChanges": 14,
         "fallbackFlipOsc": 3,
         "empty": 33,
-        "crossedSteps": 9,
+        "crossedSteps": 8,
         "rungChanges": 4,
         "rungOsc": 0,
-        "slipSteps": 22,
-        "medianSlipPx": 266,
+        "slipSteps": 21,
+        "medianSlipPx": 288,
         "maxSlipPx": 3889
       }
     },
@@ -187,12 +187,12 @@
         "fallbackFlipChanges": 12,
         "fallbackFlipOsc": 3,
         "empty": 33,
-        "crossedSteps": 33,
+        "crossedSteps": 35,
         "rungChanges": 6,
         "rungOsc": 0,
-        "slipSteps": 17,
-        "medianSlipPx": 236,
-        "maxSlipPx": 737
+        "slipSteps": 15,
+        "medianSlipPx": 284,
+        "maxSlipPx": 748
       }
     },
     {
@@ -206,11 +206,11 @@
         "fallbackFlipChanges": 15,
         "fallbackFlipOsc": 5,
         "empty": 34,
-        "crossedSteps": 39,
+        "crossedSteps": 37,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 21,
-        "medianSlipPx": 231,
+        "slipSteps": 20,
+        "medianSlipPx": 258,
         "maxSlipPx": 12445
       }
     }

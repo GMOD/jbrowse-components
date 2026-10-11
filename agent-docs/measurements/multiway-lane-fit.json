@@ -1,0 +1,130 @@
+{
+  "id": "multiway-lane-fit",
+  "measured": "2026-10-11",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/lanefit.mjs plugins/linear-comparative-view/benches/multiwayLaneFit.probe.ts && node /tmp/lanefit.mjs, from the repo root (it rewrites this file) - the eight hosted hg38 liftOver PIFs of demos/hg38_vertebrates over a 1.2 Mb hg38 window walking chr17:10-25 Mb in 100 kb steps (151 steps, 1500 px), each step's decisions carried into the next, the whole walk fetched at once.",
+    "notes": "HOW WIDE A LANE DRAWS THROUGH A DUPLICATION-RICH STRETCH. `mean rung` is the lane's average width as a multiple of the anchor window; `wide steps` counts steps drawn at 3x or wider, where a collinear block squeezes to a third of the anchor's width and its ribbons fan. `undrawn` is the share of the anchor bp the lane places on its drawn contig whose placement falls wholly outside the drawn frame, so it draws no ribbon.\n\nBEFORE 2026-10-11, measured with this walk on the then-main code: wide steps 32/41/53/63/73/39/18/46 (365 in all), mean rungs 1.36-6.13, rung changes 124, oscillations 4, undrawn 4.5-27.3%. Two things inflated the width. The fit spanned the min to the max of every placement within `OUTLIER_REACH` of the median, so a 16-23 kb stray chain set the zoom of a lane whose main chains held 95-99% of its bp. And a hole opened between any two lane-adjacent pieces whose anchors sat apart, so two chains meeting at a rearrangement breakpoint opened a hole of the anchor distance between them, 2-7 Mb here, which the opened extent then counted. Holes come off every fetched group, so the rung depended on how far the fetch reached past the viewport: the 17p figure's window (chr17:15,200,014-16,400,014) fetched with a 0.4 Mb pad drew 1/1/5/3/3/3/3/1.5, the published figure exactly, and window-only 1/1/3/1.5/3/3/2/1.5.\n\nWHAT CHANGED. A hole opens only between two pieces of one alignment record (`recordId`, stamped by `clipFeatureToRegion`), and the rung and centre fit the placements left once `peelEnds` takes isolated clusters (a quarter window apart) off the ends, at most 5% of the lane's vote evidence; `fitMin`/`fitMax` keep the unpeeled extent. Each alone over this walk, measured on a prototype that weighed by lane bp: peeling 244 wide steps, 103 changes, 9 oscillations; the record rule 177, 115, 6. The 17p window now draws 1/1/1.5/1.5/3/1/1/1 at fetch pads of 0 and 1.2 Mb, marmoset 2 at 0.4 Mb. The oscillations are one-step 1x/1.5x returns at 14.3-14.7 Mb and one 1.5/3/1.5 on rheMac10, where a stray cluster sits on the 5% budget or the cluster gap. The grape MCScan walk (multiway-lane-stability) holds its rung changes and oscillations."
+  },
+  "columns": [
+    {
+      "key": "lane",
+      "label": "lane",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "meanRung",
+      "label": "mean rung",
+      "format": "x",
+      "align": "right"
+    },
+    {
+      "key": "rungChanges",
+      "label": "rung chg",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "rungOsc",
+      "label": "rung osc",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "wideSteps",
+      "label": "wide steps",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "undrawnPct",
+      "label": "undrawn",
+      "format": "percent",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "lane": "panTro6",
+        "meanRung": 1.41,
+        "rungChanges": 8,
+        "rungOsc": 0,
+        "wideSteps": 14,
+        "undrawnPct": 10.8
+      }
+    },
+    {
+      "values": {
+        "lane": "gorGor6",
+        "meanRung": 1.18,
+        "rungChanges": 7,
+        "rungOsc": 1,
+        "wideSteps": 0,
+        "undrawnPct": 4.7
+      }
+    },
+    {
+      "values": {
+        "lane": "ponAbe3",
+        "meanRung": 1.3,
+        "rungChanges": 11,
+        "rungOsc": 1,
+        "wideSteps": 0,
+        "undrawnPct": 5
+      }
+    },
+    {
+      "values": {
+        "lane": "rheMac10",
+        "meanRung": 1.26,
+        "rungChanges": 15,
+        "rungOsc": 2,
+        "wideSteps": 1,
+        "undrawnPct": 11.9
+      }
+    },
+    {
+      "values": {
+        "lane": "calJac4",
+        "meanRung": 1.35,
+        "rungChanges": 16,
+        "rungOsc": 2,
+        "wideSteps": 4,
+        "undrawnPct": 24.8
+      }
+    },
+    {
+      "values": {
+        "lane": "mm39",
+        "meanRung": 1.29,
+        "rungChanges": 12,
+        "rungOsc": 0,
+        "wideSteps": 4,
+        "undrawnPct": 9.6
+      }
+    },
+    {
+      "values": {
+        "lane": "canFam6",
+        "meanRung": 1.06,
+        "rungChanges": 8,
+        "rungOsc": 3,
+        "wideSteps": 0,
+        "undrawnPct": 7
+      }
+    },
+    {
+      "values": {
+        "lane": "bosTau9",
+        "meanRung": 1.59,
+        "rungChanges": 9,
+        "rungOsc": 0,
+        "wideSteps": 36,
+        "undrawnPct": 7.1
+      }
+    }
+  ]
+}

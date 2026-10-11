@@ -248,6 +248,79 @@ describe('the ladder rung', () => {
   })
 })
 
+describe('a stray piece', () => {
+  // nameless records, whose evidence is their anchor bp
+  const alignment = (
+    uniqueId: string,
+    start: number,
+    end: number,
+    mateStart: number,
+    mateEnd = mateStart + end - start,
+  ) =>
+    new SimpleFeature({
+      uniqueId,
+      refName: 'chr1',
+      start,
+      end,
+      strand: 1,
+      assemblyName: 'anchor',
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: mateStart,
+        end: mateEnd,
+      },
+    })
+
+  test('an isolated piece off one end does not widen the rung', () => {
+    const groups = groupFeatures([
+      alignment('block', 0, 950, 500_000),
+      alignment('stray', 960, 1000, 501_900),
+    ])
+    const frame = computeRowFrame(groups, 'peach', SPAN_BP)!
+    expect(frame.max - frame.min).toBe(SPAN_BP)
+    expect(frame.fitMax - frame.fitMin).toBe(1940)
+    expect(settle(groups).rung).toBe(1)
+  })
+
+  test('two halves far apart keep the rung that shows both', () => {
+    const groups = groupFeatures([
+      alignment('left', 0, 500, 500_000),
+      alignment('right', 500, 1000, 501_400),
+    ])
+    expect(settle(groups).rung).toBe(2)
+  })
+
+  test('peeling stops at a twentieth of the lane', () => {
+    const groups = groupFeatures([
+      alignment('block', 0, 900, 500_000),
+      alignment('s1', 900, 933, 501_200),
+      alignment('s2', 933, 966, 501_500),
+      alignment('s3', 966, 999, 501_800),
+    ])
+    expect(settle(groups).rung).toBe(1.5)
+  })
+
+  test('a collinear lane wider than a rung keeps the next one', () => {
+    const groups = groupFeatures(
+      [0, 250, 500, 750].map((start, i) =>
+        alignment(`${i}`, start, start + 250, 500_000 + i * 295),
+      ),
+    )
+    expect(settle(groups).rung).toBe(1.5)
+  })
+
+  test('a gene table weighs each gene once, so a lone short ortholog is no stray', () => {
+    const groups = groupFeatures([
+      pair('long', 'long', 0, { start: 500_000, end: 500_900 }),
+      pair('a', 'a', 300, { start: 500_100 }),
+      pair('b', 'b', 600, { start: 500_500 }),
+      pair('far', 'far', 900, { start: 501_300, end: 501_340 }),
+    ])
+    expect(settle(groups).rung).toBe(1.5)
+  })
+})
+
 describe('the contig', () => {
   // an alignment source: nameless records, whose evidence is their anchor bp
   const twoContigs = (pp1Bp: number, pp2Bp: number) =>
