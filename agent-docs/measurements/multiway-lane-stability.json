@@ -111,11 +111,11 @@
         "fallbackFlipChanges": 10,
         "fallbackFlipOsc": 2,
         "empty": 33,
-        "crossedSteps": 20,
+        "crossedSteps": 19,
         "rungChanges": 6,
         "rungOsc": 0,
-        "slipSteps": 21,
-        "medianSlipPx": 270,
+        "slipSteps": 20,
+        "medianSlipPx": 313,
         "maxSlipPx": 4705
       }
     },
@@ -133,9 +133,9 @@
         "crossedSteps": 14,
         "rungChanges": 16,
         "rungOsc": 2,
-        "slipSteps": 17,
-        "medianSlipPx": 211,
-        "maxSlipPx": 874
+        "slipSteps": 16,
+        "medianSlipPx": 281,
+        "maxSlipPx": 461
       }
     },
     {
@@ -153,7 +153,7 @@
         "rungChanges": 2,
         "rungOsc": 0,
         "slipSteps": 16,
-        "medianSlipPx": 295,
+        "medianSlipPx": 206,
         "maxSlipPx": 655
       }
     },
@@ -171,8 +171,8 @@
         "crossedSteps": 8,
         "rungChanges": 4,
         "rungOsc": 0,
-        "slipSteps": 19,
-        "medianSlipPx": 431,
+        "slipSteps": 21,
+        "medianSlipPx": 284,
         "maxSlipPx": 3889
       }
     },
@@ -190,9 +190,9 @@
         "crossedSteps": 35,
         "rungChanges": 6,
         "rungOsc": 0,
-        "slipSteps": 14,
-        "medianSlipPx": 239,
-        "maxSlipPx": 660
+        "slipSteps": 15,
+        "medianSlipPx": 238,
+        "maxSlipPx": 748
       }
     },
     {
@@ -206,12 +206,12 @@
         "fallbackFlipChanges": 15,
         "fallbackFlipOsc": 5,
         "empty": 34,
-        "crossedSteps": 40,
+        "crossedSteps": 37,
         "rungChanges": 2,
         "rungOsc": 0,
-        "slipSteps": 19,
-        "medianSlipPx": 231,
-        "maxSlipPx": 12632
+        "slipSteps": 20,
+        "medianSlipPx": 258,
+        "maxSlipPx": 12445
       }
     }
   ]

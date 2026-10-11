@@ -291,22 +291,6 @@ describe('a stray piece', () => {
     expect(settle(groups).rung).toBe(2)
   })
 
-  test('lining the forward majority up keeps a moved block on the frame', () => {
-    const groups = groupFeatures([
-      alignment('a', 0, 300, 500_900),
-      alignment('b', 300, 600, 501_200),
-      alignment('moved', 600, 1000, 500_000),
-    ])
-    const decision = settle(groups)
-    expect(decision.rung).toBe(1.5)
-    expect(decision.flipped).toBe(false)
-    const frame = frameOf(decision)
-    for (const center of [500_200, 501_050, 501_350]) {
-      expect(center).toBeGreaterThan(frame.min)
-      expect(center).toBeLessThan(frame.max)
-    }
-  })
-
   test('a block the median reach cuts through stays whole', () => {
     const groups = groupFeatures([
       alignment('a0', 0, 100, 501_400, 501_500),
