@@ -7,6 +7,7 @@
     { "path": "../../plugins/gff3/tsconfig.build.esm.json" },
     { "path": "../../plugins/gtf/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },
+    { "path": "../../plugins/wiggle/tsconfig.build.esm.json" },
     { "path": "../core/tsconfig.build.esm.json" }
   ]
 }
