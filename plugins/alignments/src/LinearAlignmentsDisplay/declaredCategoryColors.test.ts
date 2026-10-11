@@ -151,7 +151,7 @@ test('an orientation field names its mate and chain levels', () => {
 describe('the five levels that share the neutral default', () => {
   const LEVELS: [Partial<AlignmentsColorSetting>, SwatchCategory][] = [
     [{ field: 'pairOrientation', domain: ['LR'] }, 'pairLR'],
-    [{ field: 'pairOrientation', domain: [''] }, 'nonSplit'],
+    [{ field: 'pairOrientation', domain: [''] }, 'noOrientation'],
     [
       { field: 'insertSize', scale: 'categorical', domain: ['normal'] },
       'normalInsert',
@@ -266,7 +266,7 @@ describe('color.value fills the reads no field colors', () => {
     const palette = paletteFor({ value: 'steelblue' })
     for (const category of [
       'pairLR',
-      'nonSplit',
+      'noOrientation',
       'normalInsert',
       'mapqUnavailable',
     ] as const) {

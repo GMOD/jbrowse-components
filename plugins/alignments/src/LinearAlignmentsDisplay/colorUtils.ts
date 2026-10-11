@@ -9,7 +9,7 @@ import {
   RC_MAPQ_UNAVAILABLE,
   RC_MOD_FWD,
   RC_MOD_REV,
-  RC_NON_SPLIT,
+  RC_NO_ORIENTATION,
   RC_NORMAL_INSERT,
   RC_NO_TAG_VALUE,
   RC_PAIR_LL,
@@ -72,7 +72,7 @@ export type ReadColorCategory =
   | 'interchrom'
   | 'fwdStrand'
   | 'revStrand'
-  | 'nonSplit'
+  | 'noOrientation'
   | 'pairLR'
   | 'pairRL'
   | 'pairRR'
@@ -113,7 +113,7 @@ export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
   interchrom: RC_INTERCHROM,
   fwdStrand: RC_FWD_STRAND,
   revStrand: RC_REV_STRAND,
-  nonSplit: RC_NON_SPLIT,
+  noOrientation: RC_NO_ORIENTATION,
   pairLR: RC_PAIR_LR,
   pairRL: RC_PAIR_RL,
   pairRR: RC_PAIR_RR,
@@ -359,7 +359,7 @@ export const swatchPaletteKeys = {
   revStrand: 'colorRevStrand',
   modFwd: 'colorModificationFwd',
   modRev: 'colorModificationRev',
-  nonSplit: 'colorPairLR',
+  noOrientation: 'colorPairLR',
   pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
   pairRR: 'colorPairRR',

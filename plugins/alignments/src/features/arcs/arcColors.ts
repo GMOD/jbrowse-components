@@ -138,7 +138,7 @@ function splitJunctionColor(arc: PendingArc) {
       : COLOR_SPLIT_BACK
 }
 
-// The palette slot a pair category paints in. `pairLR` and `nonSplit` have no
+// The palette slot a pair category paints in. `pairLR` and `noOrientation` have no
 // slot of their own and land on the baseline, which `arcSlotCategory` names
 // per coloring mode.
 const ARC_SLOT_OF_CATEGORY = new Map<string, number>(

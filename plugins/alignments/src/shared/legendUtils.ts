@@ -69,7 +69,7 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // bucket in another color, so the box still names every color drawn. A
 // same-colored arc row naming something else keeps a row of its own: the
 // palette paints `colorPairLR` for five buckets (`pairLR`, `normalInsert`,
-// `noTagValue`, `nonSplit`, `mapqUnavailable`), so folding by color keyed
+// `noTagValue`, `noOrientation`, `mapqUnavailable`), so folding by color keyed
 // normal arcs as "No HP value" or "MAPQ unavailable (255)".
 //
 // TWO lists, not one concatenation: only the arcs are ever folded, since two
@@ -325,7 +325,7 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   // the modification scheme's read body, under the marks it paints on top
   modFwd: 'Read, forward strand',
   modRev: 'Read, reverse strand',
-  nonSplit: 'Unsplit read',
+  noOrientation: 'No orientation',
   // From the shared table, because the group-by section chips name the same four
   // buckets (`pairOrientationKey`) and a swatch row and the section it labels
   // reading differently is the drift PAIR_DIRECTION_LABELS exists to stop.

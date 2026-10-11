@@ -290,7 +290,7 @@ const READ_COLOR_LEVELS: Record<
   normal: [],
   strand: STRAND_LEVELS,
   firstOfPairStrand: STRAND_LEVELS,
-  pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'nonSplit']],
+  pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'noOrientation']],
   insertSize: INSERT_SIZE_COLOR_LEVELS,
   // an LR pair of normal size is the normal insert
   insertSizeAndOrientation: [

@@ -113,7 +113,7 @@ describe('arc and read color classifiers', () => {
     }
   })
 
-  // The arc palette has no `nonSplit` slot, so a pair with no orientation
+  // The arc palette has no `noOrientation` slot, so a pair with no orientation
   // folds onto the baseline, which the pairOrientation key names `pairLR`;
   // the two categories share a swatch, so the picture agrees.
   test('a pair with no orientation paints the same swatch on both sides', () => {
@@ -124,7 +124,7 @@ describe('arc and read color classifiers', () => {
         swatchPaletteKeys[read as keyof typeof swatchPaletteKeys],
       )
     }
-    expect(readCategory('pairOrientation', 0, 300)).toBe('nonSplit')
+    expect(readCategory('pairOrientation', 0, 300)).toBe('noOrientation')
     expect(arcCategory('pairOrientation', 0, 300)).toBe('pairLR')
   })
 

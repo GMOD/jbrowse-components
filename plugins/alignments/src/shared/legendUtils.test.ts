@@ -101,13 +101,13 @@ describe('getReadDisplayLegendItems', () => {
       labels('pairOrientation', [
         'fwdStrand',
         'revStrand',
-        'nonSplit',
+        'noOrientation',
         'pairLR',
       ]),
     ).toEqual([
       'Split segment (same strand)',
       'Split segment (inverted)',
-      'Unsplit read',
+      'No orientation',
       'LR - Normal pair orientation',
     ])
   })
@@ -1149,13 +1149,13 @@ describe('getAlignmentsColorScales', () => {
 
   // The merge is about what a color means in the OTHER vocabulary, so two read
   // rows sharing a palette entry are two meanings and stay two rows — pairLR,
-  // normalInsert, noTagValue, nonSplit and mapqUnavailable all paint colorPairLR.
+  // normalInsert, noTagValue, noOrientation and mapqUnavailable all paint colorPairLR.
   // Fed the concatenation, the same rules dropped the second row.
   test('two read rows in one color are two meanings, not one', () => {
     const [reads] = getAlignmentsColorScales(
       model(
         [
-          { color: '#ccc', label: 'Unsplit read' },
+          { color: '#ccc', label: 'No orientation' },
           { color: '#ccc', label: 'MAPQ unavailable (255)' },
           { color: '#0a0', label: 'LL - Both mates forward strand' },
         ],
@@ -1164,7 +1164,7 @@ describe('getAlignmentsColorScales', () => {
       ),
     )
     expect(entries(reads).map(i => i.label)).toEqual([
-      'Unsplit read',
+      'No orientation',
       'MAPQ unavailable (255)',
       'LL - Both mates forward strand',
     ])

@@ -1511,7 +1511,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // pairOrientation in a chain, an unpaired segment is colored by its
           // strand against the orientation the chains on screen agree on
           // (`consensusChainStrandFrames`), so the legend names `Split segment
-          // (same strand)`, `Split segment (inverted)` and `Unsplit read`.
+          // (same strand)`, `Split segment (inverted)` and `No orientation`.
           // The left/right asymmetry the reviewer saw was a bug, a chain
           // classified per window from half a molecule each time; chains now
           // join across windows (`attachChainFields`).

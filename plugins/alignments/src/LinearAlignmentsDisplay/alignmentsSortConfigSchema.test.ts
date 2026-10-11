@@ -5,15 +5,12 @@ import {
 
 const toChr = (refName: string) => (refName === '1' ? 'chr1' : refName)
 
-function sortOfSnap(
-  snap: Record<string, unknown> | string,
-  fallbackRefName?: string,
-) {
+function sortOfSnap(snap: Record<string, unknown>, fallbackRefName?: string) {
   return sortOf(alignmentsSortConfigSchema.create(snap), toChr, fallbackRefName)
 }
 
 test('a whole-window order is the layout order, with no column', () => {
-  expect(sortOfSnap('spliced')).toEqual({
+  expect(sortOfSnap({ type: 'spliced' })).toEqual({
     layoutOrder: 'spliced',
     sortColumn: undefined,
   })

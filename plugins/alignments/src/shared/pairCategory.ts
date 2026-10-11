@@ -52,7 +52,7 @@ const ABNORMAL_ORIENTATION: Record<number, ReadColorCategory> = {
 export function pairOrientationCategory(
   pairOrientationNum: number,
 ): ReadColorCategory {
-  return ORIENTATION[pairOrientationNum] ?? 'nonSplit'
+  return ORIENTATION[pairOrientationNum] ?? 'noOrientation'
 }
 
 const INSERT_CLASS: Record<

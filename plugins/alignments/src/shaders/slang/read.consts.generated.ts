@@ -15,7 +15,7 @@ export const RC_FWD_STRAND = 5
 
 export const RC_REV_STRAND = 6
 
-export const RC_NON_SPLIT = 7
+export const RC_NO_ORIENTATION = 7
 
 export const RC_PAIR_LR = 8
 

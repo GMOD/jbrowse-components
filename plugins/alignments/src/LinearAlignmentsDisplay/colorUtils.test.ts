@@ -123,14 +123,14 @@ describe('readColorCategory', () => {
         makeData({ pairOrientation: 0, strand: 1 }),
         'pairOrientation',
       ),
-    ).toBe('nonSplit')
+    ).toBe('noOrientation')
     expect(
       readColorCategory(
         0,
         makeData({ pairOrientation: 0, strand: -1 }),
         'pairOrientation',
       ),
-    ).toBe('nonSplit')
+    ).toBe('noOrientation')
   })
 
   test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {
@@ -328,7 +328,7 @@ describe('readColorCategory', () => {
       readColorCategory(0, makeData({ flags: 9 }), 'normal', chainOpts),
     ).toBe('plain')
     expect(readColorCategory(0, supp, 'pairOrientation', chainOpts)).toBe(
-      'nonSplit',
+      'noOrientation',
     )
   })
 

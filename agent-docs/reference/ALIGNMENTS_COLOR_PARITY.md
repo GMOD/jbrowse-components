@@ -43,7 +43,7 @@ one connection twice.
 - `LinearAlignmentsDisplay/arcReadColorParity.test.ts` holds `getArcColorType`
   against `readColorCategory`. Both classify a pair through `pairCategory`
   (`shared/pairCategory.ts`); what the test pins is the arc side's own gates
-  and its category-to-slot fold, under which `pairLR` and `nonSplit` share the
+  and its category-to-slot fold, under which `pairLR` and `noOrientation` share the
   baseline slot.
 - `chromosomePainting.test.ts` sabotage-checks `paintedRefNamePosition`, since both
   failure modes fall back to a plausible color.

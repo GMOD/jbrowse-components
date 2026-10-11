@@ -146,11 +146,11 @@ describe('connector labels match the read key word for word', () => {
   )
 })
 
-// A pair with no computed orientation (po 0) is 'nonSplit' to the read fills
+// A pair with no computed orientation (po 0) is 'noOrientation' to the read fills
 // and falls to the arc baseline, pairLR, on the arcs: one grey for both.
 describe('unknown pair orientation', () => {
   test('the arc baseline and the read fill are the same grey', () => {
-    expect(swatchPaletteKeys.nonSplit).toBe(swatchPaletteKeys.pairLR)
+    expect(swatchPaletteKeys.noOrientation).toBe(swatchPaletteKeys.pairLR)
     expect(ARC_SLOT_CATEGORY[0]).toBe('normalInsert')
     expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
   })
