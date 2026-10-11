@@ -243,6 +243,16 @@ Zoom to one block with both gene tracks on and set to **Show only genes**.
 MCScan anchors only the pairs it could call confidently, so most genes have no
 ribbon.
 
+## Tandem copies sharing one ortholog {#syntenic-depth}
+
+Pick **Color by value → Syntenic depth** on the palette button in the view
+header. A ribbon stays grey where its two genes pair only with each other, and
+turns orange where several genes share one ortholog, which is often a tandem
+array. The count covers the whole `.anchors` file, so a gene whose other copies
+are off screen still takes color.
+
+<Figure caption="Grape chr1 against peach Pp04, the .anchors track colored by syntenic depth. Grey one-to-one pairs run in order across the block; orange marks a tandem array in each genome, grape copies converging on one peach gene and peach copies fanning out from one grape gene." src="/img/mcscan_synteny/syntenic_depth.png" />
+
 ## Viewing the gene pairs as a dotplot
 
 Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pair

@@ -3761,6 +3761,64 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 616,
   },
 
+  // The .anchors track colored by syntenic depth. Chosen off the hosted anchors
+  // and BEDs as the window whose deep links all stay in frame: grape
+  // VIT_201s0011g01730/01740/01760 share peach Prupe.4G110400.2, and grape
+  // VIT_201s0011g01810 pairs with peach Prupe.4G110700/110900/111000, so a
+  // tandem array in each genome at depth 3, against one-to-one pairs. The
+  // windows hold the block's dense run, where both genomes step at about the
+  // same rate so ribbons stand near upright: grape starts past
+  // VIT_201s0011g01710, whose mate sits off the peach window at 5,822 kb, and
+  // runs to VIT_201s0011g01940 so its peach mate at 5,933 kb keeps both ends.
+  {
+    mode: 'url',
+    name: 'mcscan_synteny/syntenic_depth',
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'grape',
+              loc: 'chr1:1,537,000-1,670,000',
+              tracks: [
+                {
+                  trackId: 'grape_genes',
+                  type: 'LinearBasicDisplay',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showLabels: 'auto',
+                  height: 70,
+                },
+              ],
+            },
+            {
+              assembly: 'peach',
+              loc: 'Pp04:5,858,000-5,935,000',
+              tracks: [
+                {
+                  trackId: 'peach_genes',
+                  type: 'LinearBasicDisplay',
+                  showOnlyGenes: true,
+                  displayMode: 'compact',
+                  showLabels: 'auto',
+                  height: 70,
+                },
+              ],
+            },
+          ],
+          tracks: [['grape_peach_synteny_mcscan']],
+          drawCurves: false,
+          levelHeights: [220],
+          color: { field: 'syntenicDepth' },
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 60000,
+    viewportHeight: 616,
+  },
+
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
   // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
   // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
