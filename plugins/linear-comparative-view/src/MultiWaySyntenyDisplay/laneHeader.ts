@@ -3,6 +3,7 @@ import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
+import type { LaneBlock } from './layoutMultiWay.ts'
 
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
@@ -63,6 +64,18 @@ export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   }
 }
 
+export function blockLocString(
+  lane: Pick<Lane, 'canon'>,
+  refName: string,
+  block: LaneBlock,
+) {
+  return assembleLocString({
+    refName: lane.canon(refName),
+    start: Math.round(block.start),
+    end: Math.round(block.end),
+  })
+}
+
 function scaleLabelOf(lane: Lane, visibleBpSpan: number) {
   if (lane.isAnchor) {
     return visibleBpSpan > 0 ? getBpDisplayStr(visibleBpSpan) : ''
@@ -97,11 +110,15 @@ export function laneHeaderRows(
     const alsoOn = lane.frame?.alsoOn.length
       ? `· also on ${lane.frame.alsoOn.map(ref => lane.canon(ref)).join(', ')}${more}`
       : undefined
+    const frame = lane.frame
+    const alsoAt = frame?.alsoAt.length
+      ? `· also at ${frame.alsoAt.map(block => blockLocString(lane, frame.refName, block)).join(', ')}`
+      : undefined
     return {
       assemblyName: lane.assemblyName,
       label: inline
         ? `${lane.label}${lane.frame?.flipped ? ' [rev]' : ''}`
-        : [lane.label, where, alsoOn].filter(part => !!part).join('  '),
+        : [lane.label, where, alsoAt, alsoOn].filter(part => !!part).join('  '),
       scale: scaleLabelOf(lane, visibleBpSpan),
       y: inline
         ? inlineBaseline(lane.glyphTop, inlineGlyphHeight)

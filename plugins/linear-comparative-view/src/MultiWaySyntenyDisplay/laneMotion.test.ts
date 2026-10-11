@@ -28,6 +28,7 @@ function decision(over: Partial<LaneDecision> = {}): LaneDecision {
     fitMax: 1_005_000,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
     pinned: false,
     orientationPinned: false,
     ...over,

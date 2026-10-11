@@ -97,6 +97,12 @@ export interface LaneOpening {
 
 const NO_OPENINGS: readonly LaneOpening[] = []
 
+/** a stretch of a lane's contig, in lane bp */
+export interface LaneBlock {
+  start: number
+  end: number
+}
+
 /**
  * `min` and `max` are in the opened coordinate, the lane's bp plus every
  * opening before it, which is the lane's bp wherever it has no openings.
@@ -111,6 +117,8 @@ export interface RowFrame {
   fitMax: number
   alsoOn: string[]
   alsoOnMore: number
+  /** other blocks of the contig the lane places a comparable share on */
+  alsoAt: LaneBlock[]
   openings?: readonly LaneOpening[]
   morphFrom?: readonly { frame: RowFrame; weight: number }[]
 }
@@ -435,6 +443,10 @@ export function clipGroupToAnchor(
     : {
         ...group,
         anchor: { ...anchor, start: from, end: to },
+        weight: voteEvidence(
+          isNamedRecord(group.feature),
+          Math.max(to - from, 1),
+        ),
         mates: new Map(
           [...group.mates].map(([assemblyName, placements]) => [
             assemblyName,

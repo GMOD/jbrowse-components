@@ -12,6 +12,7 @@ const frame: RowFrame = {
   fitMax: 1000,
   alsoOn: [],
   alsoOnMore: 0,
+  alsoAt: [],
 }
 
 function mateLane(
@@ -95,6 +96,16 @@ describe('the label', () => {
       rowOf(mateLane({ frame: { alsoOn: ['Pp2', 'Pp5'], alsoOnMore: 6 } }))
         .label,
     ).toBe('peach  Pp1:1..1,960  · also on Pp2, Pp5 and 6 more')
+  })
+
+  test('names the blocks of its contig the lane is not showing', () => {
+    expect(
+      rowOf(
+        mateLane({
+          frame: { alsoAt: [{ start: 35_000_000, end: 35_600_000 }] },
+        }),
+      ).label,
+    ).toBe('peach  Pp1:1..1,960  · also at Pp1:35,000,001..35,600,000')
   })
 
   test('leaves a lane with no annotation unmarked', () => {

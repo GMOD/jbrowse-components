@@ -93,6 +93,7 @@ const peachFrame: RowFrame = {
   flipped: false,
   alsoOn: [],
   alsoOnMore: 0,
+  alsoAt: [],
   fitMin: 1100,
   fitMax: 1400,
 }

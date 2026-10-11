@@ -21,10 +21,10 @@ import { colorByMenuItems } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
-import { laneRegion } from './laneHeader.ts'
+import { blockLocString, laneRegion } from './laneHeader.ts'
 import { laneResetLabel } from './laneSelection.ts'
 
-import type { LaneFlipPin } from './laneDecision.ts'
+import type { LaneFlipPin, LanePin } from './laneDecision.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -44,11 +44,11 @@ export interface LaneHeaderModel {
   anchorLocString: string
   holdsAssembly: (assemblyName: string) => boolean
   canReanchor: boolean
-  pinnedLaneContigs: ReadonlyMap<string, string>
+  pinnedLanes: ReadonlyMap<string, LanePin>
   pinnedLaneFlips: ReadonlyMap<string, LaneFlipPin>
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
-  pinLaneContig: (assemblyName: string, refName: string | undefined) => void
+  pinLane: (assemblyName: string, pin: LanePin | undefined) => void
   flipLane: (assemblyName: string) => void
   unpinLaneFlip: (assemblyName: string) => void
   lanesFrozen: boolean
@@ -170,21 +170,31 @@ function laneContigMenuItems(
   lane: HeaderLane,
 ): MenuItem[] {
   const name = lane.assemblyName
-  const pinned = model.pinnedLaneContigs.get(name)
+  const pinned = model.pinnedLanes.get(name)
+  const frame = lane.frame
   return [
-    ...(lane.frame?.alsoOn ?? []).map(refName => ({
+    ...(frame?.alsoOn ?? []).map(refName => ({
       label: `Show ${lane.canon(refName)} in this lane`,
       onClick: () => {
-        model.pinLaneContig(name, refName)
+        model.pinLane(name, { refName })
+      },
+    })),
+    ...(frame?.alsoAt ?? []).map(block => ({
+      label: `Show ${blockLocString(lane, frame!.refName, block)} in this lane`,
+      onClick: () => {
+        model.pinLane(name, {
+          refName: frame!.refName,
+          at: (block.start + block.end) / 2,
+        })
       },
     })),
     ...(pinned === undefined
       ? []
       : [
           {
-            label: `Let the lane choose its contig (pinned to ${lane.canon(pinned)})`,
+            label: `Let the lane choose where it draws (pinned to ${lane.canon(pinned.refName)})`,
             onClick: () => {
-              model.pinLaneContig(name, undefined)
+              model.pinLane(name, undefined)
             },
           },
         ]),

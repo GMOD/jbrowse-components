@@ -10,6 +10,7 @@ import {
   showSubMenuItems,
 } from './menus.ts'
 
+import type { LanePin } from './laneDecision.ts'
 import type { HeaderLane } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -42,6 +43,7 @@ const peach = {
     fitMax: 2000,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
   },
   canon: (ref: string) => ref.replace('pp', 'Pp'),
   hasAnnotation: true,
@@ -82,8 +84,8 @@ function headerModel({
     anchorLocString: 'chr1:1-1,000',
     holdsAssembly: () => held,
     canReanchor,
-    pinnedLaneContigs: new Map(
-      pinned === undefined ? [] : [['peach', pinned] as const],
+    pinnedLanes: new Map(
+      pinned === undefined ? [] : [['peach', { refName: pinned }] as const],
     ),
     openInNewView: (name: string, loc: string) => {
       calls.push(`open ${name} ${loc}`)
@@ -91,8 +93,10 @@ function headerModel({
     reanchor: (name: string, loc: string) => {
       calls.push(`reanchor ${name} ${loc}`)
     },
-    pinLaneContig: (name: string, refName: string | undefined) => {
-      calls.push(`pin ${name} ${refName}`)
+    pinLane: (name: string, pin: LanePin | undefined) => {
+      calls.push(
+        `pin ${name} ${pin?.refName}${pin?.at === undefined ? '' : `@${pin.at}`}`,
+      )
     },
     pinnedLaneFlips: new Map(
       flipPinned === undefined
@@ -445,11 +449,25 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
   })
   expect(labelsOf(pinnedItems).slice(5)).toEqual([
     'Show Pp1 in this lane',
-    'Let the lane choose its contig (pinned to Pp5)',
+    'Let the lane choose where it draws (pinned to Pp5)',
     'Flip lane',
   ])
   click(pinnedItems[6])
   expect(pinnedModel.calls).toEqual(['pin peach undefined'])
+})
+
+test('a lane offers each block of its contig it names', () => {
+  const split = {
+    ...peach,
+    frame: { ...peach.frame, alsoAt: [{ start: 9000, end: 9400 }] },
+  }
+  const { model, calls } = headerModel()
+  const items = laneHeaderMenuItems(model, split)
+  expect(labelsOf(items).slice(5, 6)).toEqual([
+    'Show Pp1:9,001..9,400 in this lane',
+  ])
+  click(items[5])
+  expect(calls).toEqual(['pin peach pp1@9200'])
 })
 
 test("a mate lane's frame becomes a locstring in the lane assembly's own names", () => {

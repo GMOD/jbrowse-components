@@ -1,7 +1,7 @@
 import { preferIncumbent } from './syntenyHysteresis.ts'
 
 // how far, in multiples of the anchor's window, an item may sit from the
-// length-weighted median and still shape a lane's frame or a launched panel
+// length-weighted median and still shape a launched panel
 export const OUTLIER_REACH = 1.5
 
 /**
@@ -10,12 +10,12 @@ export const OUTLIER_REACH = 1.5
  *
  * Alignment-level sources carry repeat noise: a handful of short records whose
  * mate lands megabases from the block everything else agrees on, and a
- * min/max frame over them stretches a lane — or a launched panel — across the
- * whole genome. Centering on the length-weighted median and keeping what sits
- * within a window-scaled reach of it drops those; a clean gene table passes
- * through unchanged, since all its placements agree. Shared by the multi-way
- * lane frame and the launch's panel resolution so the two cannot disagree
- * about which hits are the outliers.
+ * min/max panel over them stretches across the whole genome. Centering on the
+ * length-weighted median and keeping what sits within a window-scaled reach of
+ * it drops those; a clean gene table passes through unchanged, since all its
+ * placements agree. The multi-way lane fit used this too, until it judged
+ * pieces by their centres and cut one block in two: it now draws whole blocks
+ * (`laneDecision.ts`).
  */
 export function keepNearMedian<T>(
   items: T[],

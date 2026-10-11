@@ -413,6 +413,7 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
     fitMax: 2000,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
   })
   const narrowFrom = (f: RowFrame): RowFrame => ({
     ...f,

@@ -309,6 +309,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     fitMax: 300,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
     pinned: false,
     orientationPinned: false,
   }
@@ -795,6 +796,7 @@ describe('the lane stack scrolls once lanes would crush', () => {
             fitMax: 300,
             alsoOn: [],
             alsoOnMore: 0,
+            alsoAt: [],
             pinned: false,
             orientationPinned: false,
           },
@@ -921,6 +923,7 @@ const decisionOn = (refName: string, pivotLaneBp: number) => ({
   fitMax: pivotLaneBp + 100,
   alsoOn: [],
   alsoOnMore: 0,
+  alsoAt: [],
   pinned: false,
   orientationPinned: false,
 })

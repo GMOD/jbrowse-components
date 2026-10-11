@@ -1151,8 +1151,8 @@ MultiWaySyntenyDisplay.openInNewView
 MultiWaySyntenyDisplay.openLaneSelection
 MultiWaySyntenyDisplay.outlineCells
 MultiWaySyntenyDisplay.pinnedLabelGroups
-MultiWaySyntenyDisplay.pinnedLaneContigs
 MultiWaySyntenyDisplay.pinnedLaneFlips
+MultiWaySyntenyDisplay.pinnedLanes
 MultiWaySyntenyDisplay.realignLane
 MultiWaySyntenyDisplay.reanchor
 MultiWaySyntenyDisplay.releasedLanes

@@ -9,7 +9,7 @@ import {
 } from './laneDecision.ts'
 import { groupFeatures, laneOpeningsOf, rowFrameX } from './layoutMultiWay.ts'
 
-import type { LaneDecision, LaneFlipPin } from './laneDecision.ts'
+import type { LaneDecision, LaneFlipPin, LanePin } from './laneDecision.ts'
 
 const WIDTH = 800
 const SPAN_BP = 1000
@@ -53,7 +53,7 @@ function decide(
   }: {
     assemblyNames?: string[]
     previous?: Map<string, LaneDecision | undefined>
-    pinned?: Map<string, string>
+    pinned?: Map<string, LanePin>
     pinnedFlips?: Map<string, LaneFlipPin>
     anchorReversed?: boolean
     panBp?: number
@@ -279,11 +279,11 @@ describe('a stray piece', () => {
     ])
     const frame = computeRowFrame(groups, 'peach', SPAN_BP)!
     expect(frame.max - frame.min).toBe(SPAN_BP)
-    expect(frame.fitMax - frame.fitMin).toBe(1940)
+    expect(frame.fitMax - frame.fitMin).toBe(950)
     expect(settle(groups).rung).toBe(1)
   })
 
-  test('two halves far apart keep the rung that shows both', () => {
+  test('two halves under a window apart keep the rung that shows both', () => {
     const groups = groupFeatures([
       alignment('left', 0, 500, 500_000),
       alignment('right', 500, 1000, 501_400),
@@ -291,7 +291,7 @@ describe('a stray piece', () => {
     expect(settle(groups).rung).toBe(2)
   })
 
-  test('a block the median reach cuts through stays whole', () => {
+  test('pieces under a window apart are one block, drawn whole', () => {
     const groups = groupFeatures([
       alignment('a0', 0, 100, 501_400, 501_500),
       alignment('a1', 100, 200, 501_550, 501_650),
@@ -301,14 +301,67 @@ describe('a stray piece', () => {
     expect(settle(groups).rung).toBe(3)
   })
 
-  test('peeling stops at a twentieth of the lane', () => {
+  test('a stray under a twentieth of the lane falls off however many there are', () => {
     const groups = groupFeatures([
       alignment('block', 0, 900, 500_000),
       alignment('s1', 900, 933, 501_200),
       alignment('s2', 933, 966, 501_500),
       alignment('s3', 966, 999, 501_800),
     ])
-    expect(settle(groups).rung).toBe(1.5)
+    const decision = settle(groups)
+    expect(decision.rung).toBe(1)
+    expect(decision.alsoAt).toEqual([])
+  })
+
+  // two halves of the window 1.5 windows apart in the lane
+  const split = (leftEnd: number) =>
+    groupFeatures([
+      alignment('left', 0, leftEnd, 500_000),
+      alignment('right', leftEnd, 1000, 500_000 + leftEnd + 1500),
+    ])
+
+  test('two blocks over a window apart draw the heavier and name the other', () => {
+    const decision = settle(split(400))
+    expect(decision.rung).toBe(1)
+    expect([decision.fitMin, decision.fitMax]).toEqual([501_900, 502_500])
+    expect(decision.alsoAt).toEqual([{ start: 500_000, end: 500_400 }])
+  })
+
+  test('a pin draws the block it names', () => {
+    const decision = decide(split(400), {
+      pinned: new Map([['peach', { refName: 'Pp1', at: 500_200 }]]),
+    }).get('peach')!
+    expect([decision.fitMin, decision.fitMax]).toEqual([500_000, 500_400])
+    expect(decision.pinned).toBe(true)
+    expect(decision.alsoAt).toEqual([{ start: 501_900, end: 502_500 }])
+  })
+
+  test('a small cluster the lane already draws stays in its block', () => {
+    const lane = (smallBp: number) =>
+      groupFeatures([
+        alignment('block', 0, 900, 500_000),
+        alignment('small', 1000 - smallBp, 1000, 501_300),
+      ])
+    expect(settle(lane(40)).fitMax).toBe(500_900)
+    const held = settle(lane(80))
+    expect(held.fitMax).toBe(501_380)
+    const step = decide(lane(40), {
+      previous: new Map([['peach', held]]),
+    }).get('peach')!
+    expect(step.fitMax).toBe(501_340)
+  })
+
+  test('a held block stays until the other clearly outweighs it', () => {
+    const held = settle(split(550))
+    expect(held.fitMin).toBe(500_000)
+    const panned = decide(split(450), {
+      previous: new Map([['peach', held]]),
+    }).get('peach')!
+    expect(panned.fitMin).toBe(500_000)
+    const outweighed = decide(split(300), {
+      previous: new Map([['peach', held]]),
+    }).get('peach')!
+    expect(outweighed.fitMin).toBe(501_800)
   })
 
   test('a collinear lane wider than a rung keeps the next one', () => {
@@ -439,7 +492,7 @@ describe('the contig', () => {
   })
 
   test('a pin outranks the vote while the window still places on it', () => {
-    const pinned = new Map([['peach', 'Pp2']])
+    const pinned = new Map([['peach', { refName: 'Pp2' }]])
     const decision = decide(twoContigs(200, 30), { pinned }).get('peach')!
     expect(decision.refName).toBe('Pp2')
     expect(decision.pinned).toBe(true)
@@ -448,7 +501,9 @@ describe('the contig', () => {
 
   test('releasing a pin lets the lane vote fresh rather than hold the pinned contig', () => {
     const groups = twoContigs(180, 130)
-    const pinned = decide(groups, { pinned: new Map([['peach', 'Pp2']]) })
+    const pinned = decide(groups, {
+      pinned: new Map([['peach', { refName: 'Pp2' }]]),
+    })
     expect(pinned.get('peach')!.refName).toBe('Pp2')
 
     const released = decide(groups, { previous: pinned }).get('peach')!

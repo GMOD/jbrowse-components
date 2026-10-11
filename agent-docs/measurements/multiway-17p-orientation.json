@@ -95,12 +95,12 @@
       "values": {
         "lane": "calJac4",
         "contig": "chr5",
-        "drawn": "forward",
+        "drawn": "[rev]",
         "fallback": "[rev]",
         "against": "anchor",
-        "shared": 46,
-        "allPairsBackwards": "0.019",
-        "neighbourBackwards": "0.688",
+        "shared": 24,
+        "allPairsBackwards": "1.000",
+        "neighbourBackwards": "0.950",
         "forwardBp": 582085,
         "reverseBp": 597199,
         "majority": "- 0.506"

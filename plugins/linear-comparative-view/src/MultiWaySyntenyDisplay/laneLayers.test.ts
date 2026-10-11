@@ -45,6 +45,7 @@ function frameOf(flipped: boolean): RowFrame {
     fitMax: 69_300_000,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
   }
 }
 

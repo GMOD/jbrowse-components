@@ -553,6 +553,7 @@ test('tick spacing across lanes reports the ratio of their scales', () => {
       flipped: false,
       alsoOn: [],
       alsoOnMore: 0,
+      alsoAt: [],
       fitMin: 0,
       fitMax: 100000,
     },
@@ -567,6 +568,7 @@ test('tick spacing across lanes reports the ratio of their scales', () => {
       flipped: false,
       alsoOn: [],
       alsoOnMore: 0,
+      alsoAt: [],
       fitMin: 0,
       fitMax: 200000,
     },
@@ -586,6 +588,7 @@ test('a lane far enough out that its ticks would hatch draws none', () => {
         flipped: false,
         alsoOn: [],
         alsoOnMore: 0,
+        alsoAt: [],
         fitMin: 0,
         fitMax: 100000000,
       },
@@ -1360,6 +1363,7 @@ test('a lane fetches the same region as its fitted extent wobbles', () => {
     flipped: false,
     alsoOn: [],
     alsoOnMore: 0,
+    alsoAt: [],
     fitMin: 0,
     fitMax,
   })
@@ -1380,6 +1384,7 @@ test('the fetch region bound is a fact of the span alone', () => {
       flipped: false,
       alsoOn: [],
       alsoOnMore: 0,
+      alsoAt: [],
     })
     widths.add(end - start)
     expect(end - start).toBeLessThanOrEqual(laneFetchRegionMaxBp(span))

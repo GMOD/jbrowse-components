@@ -190,6 +190,7 @@ import type {
   FrozenLanes,
   LaneDecision,
   LaneFlipPin,
+  LanePin,
 } from './laneDecision.ts'
 import type {
   HeldLane,
@@ -364,7 +365,7 @@ export function stateModelFactory(
       /** #volatile */
       laneDecisions: new Map<string, LaneDecision | undefined>(),
       /** #volatile */
-      pinnedLaneContigs: new Map<string, string>(),
+      pinnedLanes: new Map<string, LanePin>(),
       /** #volatile */
       laneFlipPinsByAnchor: new Map<string, ReadonlyMap<string, LaneFlipPin>>(),
       /**
@@ -1565,7 +1566,7 @@ export function stateModelFactory(
           anchorReversed: self.anchorReversed,
           previous,
           frozen,
-          pinned: self.pinnedLaneContigs,
+          pinned: self.pinnedLanes,
           pinnedFlips: self.pinnedLaneFlips,
           openingsOf: self.laneOpenings,
         })
@@ -1673,16 +1674,16 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * `undefined` lets the lane choose again
+         * a contig, or a block on it; `undefined` lets the lane choose again
          */
-        pinLaneContig(assemblyName: string, refName: string | undefined) {
-          const pins = new Map(self.pinnedLaneContigs)
-          if (refName === undefined) {
+        pinLane(assemblyName: string, pin: LanePin | undefined) {
+          const pins = new Map(self.pinnedLanes)
+          if (pin === undefined) {
             pins.delete(assemblyName)
           } else {
-            pins.set(assemblyName, refName)
+            pins.set(assemblyName, pin)
           }
-          self.pinnedLaneContigs = pins
+          self.pinnedLanes = pins
           realign(assemblyName)
         },
         /** #action */

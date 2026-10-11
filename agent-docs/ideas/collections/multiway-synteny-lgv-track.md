@@ -36,13 +36,13 @@ rows in the synteny view: maize `1:286.7M` AND `5:6.3M` for one rice window).
 Since 2026-09-01 the other copy is at least NAMED and reachable: `pickContig`
 returns the contigs explaining a comparable share of the window (`alsoOn`, a
 fifth of the drawn one's evidence), the lane header says "also on 5", and the header
-menu offers "Show 5 in this lane", a per-lane pin (`pinnedLaneContigs`) that
+menu offers "Show 5 in this lane", a per-lane pin (`pinnedLanes`) that
 outranks the vote until the reader lets the lane choose again — the synteny
 follow's refused-spread report, applied to a lane. That is one copy at a time.
 The lane model that shows both is lane-per-REGION rather than lane-per-assembly —
-cluster a lane's placements (the median-reach filter already computes the
-cluster it keeps; the change is keeping the runners-up as additional lanes with
-the same assembly label). That also unlocks the wheat homoeolog case, which is
+cluster a lane's placements (`blocksOf` already computes the blocks, and
+names the runners-up on one contig as `alsoAt`; the change is keeping them as
+additional lanes with the same assembly label). That also unlocks the wheat homoeolog case, which is
 today doubly excluded: `wheat_homoeologs` names one assembly twice, and the
 display drops mates whose assembly equals the anchor's (a rule that exists
 because paralogy records in an all-vs-all PAF name the anchor as their own

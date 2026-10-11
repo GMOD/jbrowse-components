@@ -1,8 +1,4 @@
-import {
-  OUTLIER_REACH,
-  keepNearMedian,
-  weightedMedian,
-} from '../keepNearMedian.ts'
+import { weightedMedian } from '../keepNearMedian.ts'
 import { NEARLY_ALL, preferIncumbent } from '../syntenyHysteresis.ts'
 import {
   frameOpenings,
@@ -15,6 +11,7 @@ import {
 
 import type {
   FetchRegion,
+  LaneBlock,
   LaneOpening,
   MultiWayGroup,
   MultiWayPlacement,
@@ -45,9 +42,17 @@ export interface LaneDecision {
   fitMax: number
   alsoOn: string[]
   alsoOnMore: number
+  alsoAt: LaneBlock[]
   /** the reader's pin chose the contig, so it is no incumbent once unpinned */
   pinned: boolean
   orientationPinned: boolean
+}
+
+/** the reader's pick of where a lane draws: a contig, and on it a block */
+export interface LanePin {
+  refName: string
+  /** a lane bp in the block picked; none lets the lane choose on the contig */
+  at?: number
 }
 
 /** `flipped` is against the anchor's order, as `LaneDecision.flipped` is */
@@ -95,10 +100,15 @@ const ALSO_ON_SHARE = 0.2
 const ALSO_ON_MAX = 3
 // relative, since a lane aligned on its median can overhang its frame
 const HOLD_COVERAGE = 0.9
-// the most of a lane's evidence its frame leaves off, from the ends only
-const PEEL_BUDGET = 0.05
 // a lane gap wider than this share of the window starts a new cluster
 const CLUSTER_GAP = 0.25
+// a cluster holding less of the lane's evidence is a stray: it links no two
+// blocks, and outside the block it would sit in it draws nothing
+const STRAY_SHARE = 0.05
+// a lane gap wider than this many windows parts one block from the next
+const BLOCK_GAP = 1
+// the share of the stray floor a cluster already drawn needs to stay solid
+const HELD_STRAY_RATIO = 0.5
 
 function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
@@ -198,33 +208,6 @@ function clustersOf(placements: WeighedPlacement[], gapBp: number) {
 const weightOf = (placements: WeighedPlacement[]) =>
   placements.reduce((sum, p) => sum + p.weight, 0)
 
-// Isolated clusters come off either end, the lighter end first, while the
-// weight dropped stays within the budget; an inner cluster never widens the
-// extent, so it stays. A cluster on the budget can flip the rung for a step;
-// skipping the peel while the held rung covers the unpeeled bulk steadied it
-// and drew a third more steps at 3x or wider (multiway-lane-fit).
-function peelEnds(placements: WeighedPlacement[], gapBp: number) {
-  const clusters = clustersOf(placements, gapBp)
-  const budget = PEEL_BUDGET * weightOf(placements)
-  let first = 0
-  let last = clusters.length - 1
-  let peeled = 0
-  while (first < last) {
-    const left = weightOf(clusters[first]!)
-    const right = weightOf(clusters[last]!)
-    if (peeled + Math.min(left, right) > budget) {
-      break
-    }
-    peeled += Math.min(left, right)
-    if (left <= right) {
-      first++
-    } else {
-      last--
-    }
-  }
-  return clusters.slice(first, last + 1).flat()
-}
-
 function extentOf(placements: WeighedPlacement[]) {
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
@@ -236,32 +219,100 @@ function extentOf(placements: WeighedPlacement[]) {
   return { lo: Math.max(0, min), hi: Math.max(max, min + 1) }
 }
 
+interface Block {
+  lo: number
+  hi: number
+  /** the block's evidence, named for `preferIncumbent` */
+  overlap: number
+}
+
 /**
- * `fit` spans every placement near the median; `bulk`, which sizes and
- * centres the frame, leaves out the isolated stray pieces `peelEnds` drops.
+ * A contig's placements as blocks: clusters a quarter window apart, the strays
+ * set aside, and the rest linked across lane gaps of up to a window. A stray
+ * inside a block's span counts toward it; one outside every block counts
+ * toward none, so a scatter of small hits can neither chain two blocks nor
+ * widen one. Where every cluster is a stray, each is its own block. A cluster
+ * the lane already draws (`held`) stays solid at a lower share, since each
+ * step re-clips the pieces at the window's edges and moves their weight.
  */
-function fitExtent(
+function blocksOf(
+  placements: WeighedPlacement[],
+  unitBp: number,
+  held?: { lo: number; hi: number },
+) {
+  const clusters = clustersOf(placements, unitBp * CLUSTER_GAP)
+  const floor = STRAY_SHARE * weightOf(placements)
+  const solid = clusters.filter(cluster => {
+    const { lo, hi } = extentOf(cluster)
+    const drawn = held !== undefined && lo < held.hi && hi > held.lo
+    return weightOf(cluster) >= (drawn ? floor * HELD_STRAY_RATIO : floor)
+  })
+  const blocks: Block[] = []
+  for (const cluster of solid.length ? solid : clusters) {
+    const { lo, hi } = extentOf(cluster)
+    const last = blocks.at(-1)
+    if (solid.length && last && lo - last.hi <= unitBp * BLOCK_GAP) {
+      last.hi = Math.max(last.hi, hi)
+    } else {
+      blocks.push({ lo, hi, overlap: 0 })
+    }
+  }
+  for (const p of placements) {
+    const block = blocks.find(
+      b => p.placement.start < b.hi && p.placement.end > b.lo,
+    )
+    if (block) {
+      block.overlap += p.weight
+    }
+  }
+  return blocks
+}
+
+const distanceTo = (block: Block, bp: number) =>
+  Math.max(0, block.lo - bp, bp - block.hi)
+
+function pickBlock(
+  blocks: Block[],
+  pinnedAt: number | undefined,
+  incumbentCenter: number | undefined,
+) {
+  if (pinnedAt !== undefined) {
+    return blocks.reduce((a, b) =>
+      distanceTo(b, pinnedAt) < distanceTo(a, pinnedAt) ? b : a,
+    )
+  }
+  const best = blocks.reduce((a, b) => (b.overlap > a.overlap ? b : a))
+  const held =
+    incumbentCenter === undefined
+      ? undefined
+      : blocks.find(b => distanceTo(b, incumbentCenter) === 0)
+  return preferIncumbent(best, held)!
+}
+
+/**
+ * The block the lane draws, and the others holding a comparable share of its
+ * evidence, which the lane header names. Two blocks a window or more apart
+ * draw one at a time rather than zoomed out to hold both.
+ */
+function fitBlocks(
   placements: WeighedPlacement[],
   unitBp: number,
   incumbentCenter: number | undefined,
+  pinnedAt: number | undefined,
+  heldFit?: { lo: number; hi: number },
 ) {
-  const near = keepNearMedian(
-    placements,
-    unitBp > 0 ? unitBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
-    p => p.placement,
-    incumbentCenter,
-  )
   if (unitBp <= 0) {
-    return { fit: extentOf(near), bulk: extentOf(near) }
+    return { fit: extentOf(placements), alsoAt: [] }
   }
-  // the median filter judges pieces by their centres, so it can cut one
-  // contiguous block in two; a cluster it keeps any piece of stays whole
-  const gapBp = unitBp * CLUSTER_GAP
-  const kept = new Set(near)
-  const whole = clustersOf(placements, gapBp)
-    .filter(cluster => cluster.some(p => kept.has(p)))
-    .flat()
-  return { fit: extentOf(near), bulk: extentOf(peelEnds(whole, gapBp)) }
+  const blocks = blocksOf(placements, unitBp, heldFit)
+  const chosen = pickBlock(blocks, pinnedAt, incumbentCenter)
+  return {
+    fit: { lo: chosen.lo, hi: chosen.hi },
+    alsoAt: blocks
+      .filter(b => b !== chosen && b.overlap >= chosen.overlap * ALSO_ON_SHARE)
+      .sort((a, b) => b.overlap - a.overlap)
+      .map(b => ({ start: b.lo, end: b.hi })),
+  }
 }
 
 function anchorOrderSign(
@@ -315,28 +366,31 @@ function fitLane(
   assemblyName: string,
   unitBp: number,
   incumbent: FitIncumbent | undefined,
-  pinned: string | undefined,
+  pinned: LanePin | undefined,
   openingsOf: OpeningsOf,
 ) {
-  const released = incumbent?.pinned && incumbent.refName !== pinned
+  const released = incumbent?.pinned && incumbent.refName !== pinned?.refName
   const contig = pickContig(
     groups,
     assemblyName,
     released ? undefined : incumbent?.refName,
-    pinned,
+    pinned?.refName,
   )
   if (!contig) {
     return undefined
   }
+  const onPin = pinned !== undefined && contig.refName === pinned.refName
   const held = incumbent?.refName === contig.refName ? incumbent : undefined
-  const { fit, bulk } = fitExtent(
+  const { fit, alsoAt } = fitBlocks(
     contig.placements,
     unitBp,
     held && (held.fitMin + held.fitMax) / 2,
+    onPin ? pinned.at : undefined,
+    held && { lo: held.fitMin, hi: held.fitMax },
   )
   const openings = openingsOf(assemblyName, contig.refName)
-  const openedLo = openedBp(openings, bulk.lo, true)
-  const openedHi = Math.max(openedLo + 1, openedBp(openings, bulk.hi))
+  const openedLo = openedBp(openings, fit.lo, true)
+  const openedHi = Math.max(openedLo + 1, openedBp(openings, fit.hi))
   const rung =
     unitBp > 0
       ? pickRung(Math.max(openedHi - openedLo, unitBp) / unitBp, held?.rung)
@@ -345,7 +399,7 @@ function fitLane(
   const min = (openedLo + openedHi) / 2 - span / 2
   return {
     rung,
-    pinned: contig.refName === pinned,
+    pinned: onPin,
     frame: withOpenings(
       {
         refName: contig.refName,
@@ -356,6 +410,7 @@ function fitLane(
         fitMax: fit.hi,
         alsoOn: contig.alsoOn,
         alsoOnMore: contig.alsoOnMore,
+        alsoAt,
       },
       openings,
     ),
@@ -556,6 +611,7 @@ export function frameFromDecision(
       fitMax: d.fitMax,
       alsoOn: d.alsoOn,
       alsoOnMore: d.alsoOnMore,
+      alsoAt: d.alsoAt,
     },
     openings,
   )
@@ -572,7 +628,7 @@ export interface DecideLaneFramesOpts {
   width: number
   anchorReversed?: boolean
   previous: ReadonlyMap<string, LaneDecision | undefined>
-  pinned?: ReadonlyMap<string, string>
+  pinned?: ReadonlyMap<string, LanePin>
   pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
   frozen?: ReadonlyMap<string, LaneDecision>
   /** read off every fetched group, so a hole does not wait on the viewport */
@@ -592,6 +648,11 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
     a.fitMin === b.fitMin &&
     a.fitMax === b.fitMax &&
     a.alsoOnMore === b.alsoOnMore &&
+    a.alsoAt.length === b.alsoAt.length &&
+    a.alsoAt.every(
+      (block, i) =>
+        block.start === b.alsoAt[i]!.start && block.end === b.alsoAt[i]!.end,
+    ) &&
     a.alsoOn.length === b.alsoOn.length &&
     a.alsoOn.every((name, i) => name === b.alsoOn[i])
   )
@@ -702,6 +763,7 @@ export function decideLaneFrames({
         fitMax: aligned.fitMax,
         alsoOn: aligned.alsoOn,
         alsoOnMore: aligned.alsoOnMore,
+        alsoAt: aligned.alsoAt,
       }
       const heldFrame = frameFromDecision(
         carried,
@@ -741,6 +803,7 @@ export function decideLaneFrames({
           fitMax: aligned.fitMax,
           alsoOn: aligned.alsoOn,
           alsoOnMore: aligned.alsoOnMore,
+          alsoAt: aligned.alsoAt,
           pinned: onPin,
           orientationPinned,
         }

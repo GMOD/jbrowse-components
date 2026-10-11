@@ -45,7 +45,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-hovertarget">**hoverTarget**</span><br><code>HoverTarget &#124; undefined</code> |  |
 | <span id="volatile-clickedtarget">**clickedTarget**</span><br><code>RibbonRef &#124; undefined</code> |  |
 | <span id="volatile-lanedecisions">**laneDecisions**</span><br><code>Map&lt;string, LaneDecision &#124; undefined&gt;</code> |  |
-| <span id="volatile-pinnedlanecontigs">**pinnedLaneContigs**</span><br><code>Map&lt;string, string&gt;</code> |  |
+| <span id="volatile-pinnedlanes">**pinnedLanes**</span><br><code>Map&lt;string, LanePin&gt;</code> |  |
 | <span id="volatile-laneflippinsbyanchor">**laneFlipPinsByAnchor**</span><br><code>Map&lt;string, ReadonlyMap&lt;string, LaneFlipPin&gt;&gt;</code> |  |
 | <span id="volatile-renderoriginpx">**renderOriginPx**</span><br><code>number</code> | the view's `offsetPx` the stack was last laid out against |
 | <span id="volatile-lanetransitions">**laneTransitions**</span><br><code>Map&lt;string, LaneTransition&gt;</code> |  |
@@ -295,7 +295,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-nudgelane">**nudgeLane**</span><br><code>(assemblyName: string, dxPx: number) =&gt; void</code> | slides a mate lane `dxPx` screen px, only while the lanes are frozen |
 | <span id="action-setlanedragpx">**setLaneDragPx**</span><br><code>(assemblyName: string, dxPx: number) =&gt; void</code> |  |
 | <span id="action-endlanedrag">**endLaneDrag**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
-| <span id="action-pinlanecontig">**pinLaneContig**</span><br><code>(assemblyName: string, refName: string &#124; undefined) =&gt; void</code> | `undefined` lets the lane choose again |
+| <span id="action-pinlane">**pinLane**</span><br><code>(assemblyName: string, pin: LanePin &#124; undefined) =&gt; void</code> | a contig, or a block on it; `undefined` lets the lane choose again |
 | <span id="action-fliplane">**flipLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-unpinlaneflip">**unpinLaneFlip**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-setlaneframes">**setLaneFrames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(originPx: number, decisions: Map&lt;string, LaneDecision &#124; undefined&gt;) =&gt; void</code></pre></dialog></span> | `originPx` is the view offset the decisions' px space is anchored at |
