@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   alignmentTables,
   referenceSequence,
@@ -44,6 +45,45 @@ export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
 
+interface RegionArgs {
+  adapterConfig: Record<string, unknown>
+  region: { refName: string }
+}
+
+const LISTED_CONTIGS = 20
+
+/**
+ * Where the region's contig is not one the file has, what to tell the reader,
+ * naming the file's contigs: its tables come back empty, as the browser draws
+ * a track with no such contig, and a host can say why. Empty where the contig
+ * is there, or the adapter cannot list its contigs.
+ */
+async function missingContig(
+  pluginManager: PluginManager,
+  { adapterConfig, region }: RegionArgs,
+) {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    'tables',
+    adapterConfig,
+  )
+  const names: string[] =
+    'getRefNames' in dataAdapter
+      ? await (
+          dataAdapter as { getRefNames: () => Promise<string[]> }
+        ).getRefNames()
+      : []
+  if (names.length === 0 || names.includes(region.refName)) {
+    return ''
+  }
+  const listed = names.slice(0, LISTED_CONTIGS).join(', ')
+  const more =
+    names.length > LISTED_CONTIGS
+      ? `, and ${names.length - LISTED_CONTIGS} more`
+      : ''
+  return `${region.refName} is not a contig of this file, whose contigs are ${listed}${more}`
+}
+
 class TablesPlugin extends Plugin {
   name = 'TablesPlugin'
   install(pluginManager: PluginManager) {
@@ -68,12 +108,18 @@ export function createTablesEngine() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
+  const onContig = async <A extends RegionArgs, T>(
+    args: A,
+    table: (pm: PluginManager, args: A) => Promise<T>,
+  ) => ({
+    ...(await table(pluginManager, args)),
+    missingContig: await missingContig(pluginManager, args),
+  })
   return {
-    alignments: (args: AlignmentTablesArgs) =>
-      alignmentTables(pluginManager, args),
-    features: (args: FeatureTablesArgs) => featureTables(pluginManager, args),
-    wiggle: (args: WiggleTablesArgs) => wiggleTables(pluginManager, args),
-    variants: (args: VariantTablesArgs) => variantTables(pluginManager, args),
+    alignments: (args: AlignmentTablesArgs) => onContig(args, alignmentTables),
+    features: (args: FeatureTablesArgs) => onContig(args, featureTables),
+    wiggle: (args: WiggleTablesArgs) => onContig(args, wiggleTables),
+    variants: (args: VariantTablesArgs) => onContig(args, variantTables),
     sequence: (args: Parameters<typeof referenceSequence>[1]) =>
       referenceSequence(pluginManager, args),
   }

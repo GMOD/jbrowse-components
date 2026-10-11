@@ -832,7 +832,26 @@ export async function alignmentTables(
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
+    settings: Object.fromEntries(
+      COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),
+    ) as Record<(typeof COMPOSING_SLOTS)[number], unknown>,
   }
 }
+
+/**
+ * The display's slots that decide which bands a host stacks and what each
+ * hides, resolved, so a host composes the track from the config it was read
+ * with rather than restating the defaults.
+ */
+const COMPOSING_SLOTS = [
+  'showCoverage',
+  'showPileup',
+  'showMismatches',
+  'showSashimiArcs',
+  'minSashimiScore',
+  'coverageSnpMinFrequency',
+  'fadeLowFrequencyMismatches',
+  'readConnections',
+] as const
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>

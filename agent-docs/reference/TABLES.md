@@ -46,7 +46,14 @@ worker's `mismatchFrequencies`, which is a display fade zeroed below a
 depth-dependent threshold. A region over `byteLimit` (200 MB of compressed
 alignments by default) is refused off the index with an error naming the
 size, since a host holds the whole table in memory.
-`@jbrowse/tables` composes them (`createTablesEngine`) and serves the colors a
+`@jbrowse/tables` composes them (`createTablesEngine`) and adds
+`missingContig` to each table: where the region's contig is not one the file
+lists, the tables come back empty, as the browser draws such a track, and
+`missingContig` says so and names the file's contigs, so a host can tell a
+typo from a quiet region. `alignmentTables` also returns `settings`, the
+resolved slots that decide which bands a host stacks (`showCoverage`,
+`showPileup`, `showSashimiArcs`, `minSashimiScore`, ...), so the host composes
+from the config rather than restating its defaults. The engine also serves the colors a
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
