@@ -262,7 +262,7 @@ Whether `field` is a preset measurement. An own-property lookup: a field spelled
 
 ```js
 // type signature
-(field: string) => field is "dnds" | "identity" | "mapq"
+(field: string) => field is "copies" | "dnds" | "identity" | "mapq"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
@@ -481,7 +481,7 @@ displays.
 
 ```js
 // type signature
-{ readonly mapq: {…}; readonly identity: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 1; readonly scheme: "redgreyblue"; readonly title: "Identity"; }; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "blueyellowred"; readonly title: "dN/dS"; }; }
+{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "blueyellowred"; readonly title: "dN/dS"; }; readonly copies: { readonly scale: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly labels: readonly ["One-to-one", "Two copies", "Three or more copies"]; readonly title: "Copies"; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)

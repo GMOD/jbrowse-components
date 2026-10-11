@@ -5092,6 +5092,24 @@ export const configManifest: ConfigManifest = {
               "domainMid": 1,
               "scheme": "blueyellowred",
               "title": "dN/dS"
+            },
+            "copies": {
+              "scale": "threshold",
+              "domain": [
+                "2",
+                "3"
+              ],
+              "range": [
+                "#bdbdbd",
+                "#fdae6b",
+                "#e6550d"
+              ],
+              "labels": [
+                "One-to-one",
+                "Two copies",
+                "Three or more copies"
+              ],
+              "title": "Copies"
             }
           }
         },
