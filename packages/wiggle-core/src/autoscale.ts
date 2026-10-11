@@ -61,7 +61,7 @@ export interface ScoreSpan {
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
   aggregate: string,
-  extent = 'none',
+  extent: string,
 ): ScoreSpan {
   const { low, high } = boundArrays(aggregate, extent)
   return {
@@ -211,7 +211,7 @@ export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
 export function computeScoreStats(
   aggregate: string,
   datasets: Dataset[],
-  extent = 'none',
+  extent: string,
 ): ScoreStats | undefined {
   return computeSpanStats(datasets.map(d => datasetSpan(d, aggregate, extent)))
 }
@@ -268,14 +268,14 @@ export function autoscaleDomainFromStats({
   quantile,
   zero,
   aggregate,
-  extent = 'none',
+  extent,
   visibleEntries,
 }: {
   stats: ScoreStats
   quantile: number
   zero: boolean
   aggregate: string
-  extent?: string
+  extent: string
   visibleEntries: Dataset[]
 }): [number, number] {
   return autoscaleDomainFromSpans({

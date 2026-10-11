@@ -24,7 +24,10 @@ Vega-Lite's boxplot word) says whether the bin's min-to-max span is drawn
 around it. The single-source display defaults to `min-max`, the multi track
 and GC content to `none`; v4's `whiskers` lifts to `mean` with `min-max`, and
 its other modes to `none`. The menu's row is "Bin summary", the three
-operations as a radio and "Show min and max" as a checkbox.
+operations as a radio and "Show min and max" as a checkbox. Neither is a fetch
+key: one fetch ships all three summaries, and `aggregate`'s place in
+`rpcProps`, held for an adapter that might skip the min and max under `mean`,
+would have emptied the default min-max band.
 
 ## Context
 

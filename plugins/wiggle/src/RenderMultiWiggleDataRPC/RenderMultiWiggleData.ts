@@ -13,10 +13,6 @@ interface RenderMultiWiggleDataArgs {
   sources?: SourceInfo[]
   bpPerPx?: number
   resolution?: number
-  // The display's raw summary slot, forwarded to the adapter so one that stores
-  // min/max separately can skip reading them for a mode that cannot show them.
-  // Optional: a caller that omits it gets the summary either way.
-  aggregate?: string
   scoreField?: string
 }
 

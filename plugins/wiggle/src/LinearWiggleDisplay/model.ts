@@ -581,16 +581,12 @@ export default function stateModelFactory(
       },
       /**
        * #method
-       * `aggregate` is a fetch key so an adapter that stores min/max
-       * apart from the mean can skip reading them. The extent is not: it
-       * moves with the rendering type and would refetch on every switch to
-       * density (WIGGLE_DISPLAY.md, "`aggregate`, `extent`").
+       * Neither `aggregate` nor `extent` is a fetch key: both pick among
+       * arrays the fetch already ships, so a change re-encodes and refetches
+       * nothing (WIGGLE_DISPLAY.md, "`aggregate`, `extent`").
        */
       rpcProps() {
-        return {
-          ...self.sharedRpcProps(),
-          aggregate: self.aggregate,
-        }
+        return self.sharedRpcProps()
       },
 
       /**

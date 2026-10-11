@@ -152,10 +152,9 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  // The raw summary slot is a fetch key: an adapter that stores min/max beside
-  // each mean can skip reading them for a mode that cannot show them, and only
-  // the fetch can carry that. See the model's `rpcProps`.
-  it('refetches when aggregate changes', async () => {
+  // One fetch ships mean, min and max together, and the aggregate and the
+  // extent pick among them on the main thread. See the model's `rpcProps`.
+  it('does NOT refetch when aggregate or extent changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -167,10 +166,11 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     display.setAggregate('max')
+    display.setExtent('none')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
-    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   // posColor is a pure gpuProps field (only used in the per-instance buffer).

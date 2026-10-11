@@ -49,8 +49,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
  * The views a wiggle-family display states once `plotGeometry` names where its
  * plot sits. Installed as a `.views()` layer of its own, under the layer where
  * the display spreads `sharedRpcProps`/`sharedGpuProps` into its own
- * `rpcProps()`/`gpuProps()` — the solid-color override, the row list and the
- * `aggregate` fetch key.
+ * `rpcProps()`/`gpuProps()` — the solid-color override and the row list.
  *
  * A plain function rather than another mixin: `types.compose` depth is a real
  * ceiling in these chains (ADR-041), and a mixin composed beside

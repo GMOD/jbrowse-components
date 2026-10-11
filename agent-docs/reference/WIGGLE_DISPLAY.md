@@ -226,9 +226,11 @@ draws the bin's min and max around the aggregate, Vega-Lite's boxplot
 names a span and no operation.
 
 `effectiveExtent` resolves to `none` under density, and the autoscale domain,
-the menu, the tooltip and `gpuProps` all read it. **`rpcProps` carries the raw
-`aggregate`** and no extent: the extent moves with the rendering type, and no
-adapter reads either.
+the menu, the tooltip and `gpuProps` all read it. **Neither setting is a fetch
+key**: one fetch ships mean, min and max together and no adapter reads either,
+so a switch re-encodes and refetches nothing. `aggregate` was one, held for an
+adapter that might skip the min and max under `mean`; the min-max band at
+`mean` is the single-source default, so that skip would have emptied it.
 
 **No color setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
 the worker ships one set of score arrays and the main thread colors each

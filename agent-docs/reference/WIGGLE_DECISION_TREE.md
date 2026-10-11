@@ -100,9 +100,10 @@ A row's `rowColor` draws its label bar in every layout that has row labels.
 - **Density resolves the extent to none**, because it has no min-max
   presentation. The resolution happens on the model, so the autoscale domain,
   the menu and the tooltip cannot each answer it differently.
-- **`rpcProps` carries no extent.** The effective extent moves with the plot
-  type, so keying the fetch on it made a switch to density
-  re-download every visible region.
+- **`rpcProps` carries neither the aggregate nor the extent.** Both pick among
+  arrays one fetch already ships, and the effective extent moves with the plot
+  type, so keying the fetch on it made a switch to density re-download every
+  visible region.
 - **Encode and render are separate autoruns**, and render is registered first —
   so the frame after a plot-type switch sees state that moved and a region that
   has not. Drawing the previous plot for one frame is the correct stale; reading

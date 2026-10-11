@@ -54,7 +54,6 @@ export async function executeRenderMultiWiggleData({
     signal,
     bpPerPx = 0,
     resolution = 1,
-    aggregate,
     scoreField,
     statusCallback,
   } = args
@@ -62,15 +61,10 @@ export async function executeRenderMultiWiggleData({
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const isMulti = isMultiSource(dataAdapter)
-  // aggregate is passed through, not acted on here: an adapter that
-  // stores min/max separately can skip reading them when the rendering
-  // cannot show them, as `mean`, the multi track's default, cannot. Adapters that get their
-  // summary for free, like a BigWig zoom record, ignore it.
   const opts = {
     bpPerPx,
     resolution,
     sources: sourcesArg,
-    aggregate,
     scoreField,
     signal,
     statusCallback,
