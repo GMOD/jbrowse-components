@@ -21,6 +21,8 @@ vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
 
 - [OrthoFinder](https://github.com/davidemms/OrthoFinder) with
   [DIAMOND](https://github.com/bbuchfink/diamond) on `PATH` as `orthofinder`
+- [MCScanX](https://github.com/wyp1125/MCScanX) (`MCScanX_h`; bioconda
+  `mcscanx`), for the [collinear blocks](#collinear-blocks)
 - `python3`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
@@ -317,6 +319,85 @@ which draws a lane per fly. Every fly keeps this window's melanogaster genes.
 
 <Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane's chromosome is X." src="/img/multiway_synteny/drosophila_lanes.png" />
 
+### Collinear blocks from the same orthogroups {#collinear-blocks}
+
+An orthogroup says which genes are related, and nothing about which of them
+still sit in order. [MCScanX](https://github.com/wyp1125/MCScanX)'s `MCScanX_h`
+chains ortholog pairs that keep their order into collinear blocks. Start by
+writing every gene pair an orthogroup holds between two flies:
+
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
+```bash
+# every melanogaster-simulans pair in an orthogroup, each copy of a duplicated
+# gene included, so MCScanX_h picks the collinear copy by gene order
+python3 orthogroups_to_blocks.py Orthogroups.tsv -o melanogaster.blocks \
+  --homology melanogaster:simulans=x.homology
+```
+
+`MCScanX_h` reads those pairs and `x.gff`, four columns per gene (chromosome,
+gene id, start, end) with each chromosome name prefixed by a two-letter code for
+its genome:
+
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
+```bash
+# -s 10: a block holds at least 10 gene pairs
+# -m 24: at most 24 genes skipped between two pairs of a block
+# -g 0: a skipped gene costs nothing, so -s alone sets the size cutoff
+# -b 2: blocks between the two genomes only, none within one
+# -a: write the .collinearity file and skip the HTML
+MCScanX_h x -a -b 2 -s 10 -m 24 -g 0
+```
+
+Convert the blocks to PAF, one line per block, with each sequence named for its
+assembly (`melanogaster#1#2L`):
+
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mcscanx_to_anchors.py
+python3 mcscanx_to_anchors.py --gff x.gff --collinearity x.collinearity \
+  --species aa=melanogaster --species bb=simulans \
+  --paf melanogaster.simulans.paf \
+  --chrom-sizes melanogaster=melanogaster.chrom.sizes \
+  --chrom-sizes simulans=simulans.chrom.sizes
+```
+
+The PAF files of every pair, concatenated, back every band of a stack from one
+track:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "drosophila_blocks",
+  "name": "Drosophila collinear blocks (MCScanX)",
+  "assemblyNames": [
+    "melanogaster",
+    "simulans",
+    "yakuba",
+    "pseudoobscura",
+    "virilis"
+  ],
+  "adapter": {
+    "type": "MultiGenomePAFAdapter",
+    "uri": "https://jbrowse.org/demos/orthofinder_drosophila/drosophila.blocks.paf.gz",
+    "assemblyNames": [
+      "melanogaster",
+      "simulans",
+      "yakuba",
+      "pseudoobscura",
+      "virilis"
+    ]
+  }
+}
+```
+
+Stack the flies in the same order as above and pick `drosophila_blocks` for
+every band:
+
+<Figure caption="The stack above drawn from the drosophila_blocks track, one ribbon per collinear block. simulans keeps each melanogaster arm in a few long blocks and yakuba in more, while pseudoobscura and virilis break every arm into many short ones. Nearly every block stays inside one arm." src="/img/orthofinder_synteny/drosophila_blocks.png" />
+
 ## Nightshades: the same genes over genomes of very different sizes {#nightshades}
 
 The `solanaceae` set is tomato, potato, pepper and _Nicotiana attenuata_ (the
@@ -389,8 +470,10 @@ tracks, the synteny track and a stacked default session:
 2. Run OrthoFinder to the orthogroups only.
 3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
    as gene families, and print how one-to-one each adjacent pair of genomes is.
-4. Write the assemblies, gene tracks, the orthogroups track and a stacked
-   session.
+4. Chain every pair of genomes into collinear blocks with `MCScanX_h`, and
+   collect the blocks into one PAF.
+5. Write the assemblies, gene tracks, the orthogroups and blocks tracks and a
+   stacked session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
@@ -472,6 +555,8 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
 
 - Emms and Kelly (2019).
   [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)
+- Wang et al. (2012).
+  [MCScanX: a toolkit for detection and evolutionary analysis of gene synteny and collinearity](https://doi.org/10.1093/nar/gkr1293)
 - Devos et al. (1995).
   [Structural evolution of wheat chromosomes 4A, 5A, and 7B and its impact on recombination](https://doi.org/10.1007/BF00220890)
 - Dvorak et al. (2018).

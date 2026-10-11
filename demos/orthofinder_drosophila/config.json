@@ -292,6 +292,29 @@
           "virilis"
         ]
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "drosophila_blocks",
+      "name": "Drosophila collinear blocks (MCScanX)",
+      "assemblyNames": [
+        "melanogaster",
+        "simulans",
+        "yakuba",
+        "pseudoobscura",
+        "virilis"
+      ],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "drosophila.blocks.paf.gz",
+        "assemblyNames": [
+          "melanogaster",
+          "simulans",
+          "yakuba",
+          "pseudoobscura",
+          "virilis"
+        ]
+      }
     }
   ]
 }

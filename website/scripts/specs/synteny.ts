@@ -2604,6 +2604,56 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1240,
   },
 
+  // orthofinder_synteny.md#collinear-blocks: the stack above on the MCScanX_h
+  // blocks track instead of the orthogroup links. The close flies collapse into
+  // a few blocks per arm; pseudoobscura and virilis stay as many short blocks,
+  // since their gene order is scrambled within each arm. A block is one
+  // polygon, so it takes a higher alpha than a link.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/drosophila_blocks',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'simulans' },
+              { assembly: 'melanogaster' },
+              { assembly: 'yakuba' },
+              { assembly: 'melanogaster' },
+              { assembly: 'pseudoobscura' },
+              { assembly: 'melanogaster' },
+              { assembly: 'virilis' },
+            ],
+            tracks: [
+              ['drosophila_blocks'],
+              ['drosophila_blocks'],
+              ['drosophila_blocks'],
+              ['drosophila_blocks'],
+              ['drosophila_blocks'],
+              ['drosophila_blocks'],
+            ],
+            color: { field: 'reference' },
+            autoDiagonalize: true,
+            diagonalizeAnchorRow: 1,
+            sameScale: true,
+            collapseEmptyRows: true,
+            levelHeights: [150, 150, 150, 150, 150, 150],
+            opacity: 0.5,
+            drawCurves: false,
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    viewportHeight: 1240,
+  },
+
   // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.
   // Maize's whole-genome duplication is the thing to see: a maize gene's
   // orthogroup commonly holds two maize copies, so the .blocks conversion's
