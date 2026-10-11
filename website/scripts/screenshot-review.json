@@ -3304,13 +3304,6 @@
     "reviewedAt": "2026-09-14T13:59:34.379Z",
     "hash": "ad0e5cb3e02c17de52e3876cb8fd6d12ed249be9"
   },
-  "mark_display/density_sidecar": {
-    "name": "mark_display/density_sidecar",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:45:58.763Z",
-    "hash": "a20c609a934e95f900fdf4c88953ad9b1c38de30"
-  },
   "mark_display/multiscale": {
     "name": "mark_display/multiscale",
     "status": "good",
