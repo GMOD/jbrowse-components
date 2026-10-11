@@ -48,6 +48,7 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
@@ -738,6 +739,14 @@ export function arcColorCategoryLabel(
  * color, rather than subtracting here: a section listing three of the seven
  * colors its heading names is worse than the repetition it avoids.
  */
+/**
+ * The read-connection band's key heading, named after the overlay drawn:
+ * flat read-cloud lines are not arcs.
+ */
+export function arcLegendTitle(readConnections: ReadConnectionsMode) {
+  return readConnections === 'cloud' ? 'Read cloud colors' : 'Arc colors'
+}
+
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ArcCategory>,
   palette: ColorPalette,

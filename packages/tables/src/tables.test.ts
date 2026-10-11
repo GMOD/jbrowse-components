@@ -1,5 +1,12 @@
 import { alignmentColors, createTablesEngine } from './index.ts'
-import { BAM, CRAM, LONG_READS, METHYLATED, SPLICED } from './volvox.fixture.ts'
+import {
+  BAM,
+  CRAM,
+  LONG_READS,
+  METHYLATED,
+  PAIRED_INVERSION,
+  SPLICED,
+} from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -100,7 +107,10 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   expect(plain.reads.category.every(c => c === 'plain')).toBe(true)
   expect(plain.legend.label).toEqual(['Reads'])
 
-  const strand = await engine.alignments({ ...BAM, color: { field: 'strand' } })
+  const strand = await engine.alignments({
+    ...BAM,
+    display: { color: { field: 'strand' } },
+  })
   const painted = (t: typeof strand, s: number) =>
     new Set(t.reads.color.filter((_, i) => t.reads.strand[i] === s))
   const [fwd] = painted(strand, 1)
@@ -119,14 +129,19 @@ test('reads paint as the display\u2019s color object paints them, with its key',
 
   const written = await engine.alignments({
     ...BAM,
-    color: { field: 'strand', range: ['#ff0000', '#0000ff'], title: 'Mine' },
+    display: {
+      color: { field: 'strand', range: ['#ff0000', '#0000ff'], title: 'Mine' },
+    },
   })
   expect([...painted(written, 1)]).toEqual(['#ff0000'])
   expect([...painted(written, -1)]).toEqual(['#0000ff'])
   expect(written.legendTitle).toBe('Mine')
 
   // a threshold key lists every bin, reads in it or not, highest first
-  const mapq = await engine.alignments({ ...BAM, color: { field: 'mapq' } })
+  const mapq = await engine.alignments({
+    ...BAM,
+    display: { color: { field: 'mapq' } },
+  })
   expect(mapq.legendTitle).toBe('Mapping quality')
   expect(mapq.legend.label[0]).toMatch(/^MAPQ 30\+/)
   expect(mapq.legend.label.length).toBe(4)
@@ -140,7 +155,7 @@ test('the display\u2019s filter object keeps the reads it keeps', async () => {
   const all = await engine.alignments(BAM)
   const reverse = await engine.alignments({
     ...BAM,
-    filter: { flagInclude: 16 },
+    display: { filter: { flagInclude: 16 } },
   })
   expect(reverse.reads.strand.every(s => s === -1)).toBe(true)
   expect(reverse.reads.name.length).toBeGreaterThan(0)
@@ -212,7 +227,7 @@ test('base modifications paint under the modifications layer, keyed with the rea
   expect(plain.modifications.position.length).toBe(0)
   const { reads, modifications, legend } = await engine.alignments({
     ...METHYLATED,
-    baseColor: { field: 'modifications' },
+    display: { baseColor: { field: 'modifications' } },
   })
   const n = modifications.position.length
   expect(n).toBeGreaterThan(100)
@@ -235,8 +250,10 @@ test('base modifications paint under the modifications layer, keyed with the rea
 
   const calls = await engine.alignments({
     ...METHYLATED,
-    baseColor: { field: 'modifications' },
-    modifications: { unmodified: 'calls' },
+    display: {
+      baseColor: { field: 'modifications' },
+      modifications: { unmodified: 'calls' },
+    },
   })
   expect(calls.modifications.unmodified.filter(Boolean).length).toBeGreaterThan(
     0,
@@ -260,8 +277,10 @@ test('the coverage band\u2019s stacks are the worker\u2019s: alleles, and modifi
   })
   const { modificationCoverage } = await engine.alignments({
     ...METHYLATED,
-    baseColor: { field: 'modifications' },
-    modifications: { unmodified: 'calls' },
+    display: {
+      baseColor: { field: 'modifications' },
+      modifications: { unmodified: 'calls' },
+    },
   })
   expect(modificationCoverage.position.length).toBeGreaterThan(0)
   expect(new Set(modificationCoverage.color).size).toBe(2)
@@ -277,7 +296,7 @@ test('the display\u2019s sort object orders the rows', async () => {
   const site = plain.mismatches.position[0]!
   const sorted = await engine.alignments({
     ...BAM,
-    sort: { type: 'basePair', pos: site },
+    display: { sort: { type: 'basePair', pos: site } },
   })
   const rowOf = (t: typeof sorted, i: number) => t.reads.row[i]!
   const bases = new Map<number, string>()
@@ -299,7 +318,10 @@ test('the display\u2019s sort object orders the rows', async () => {
   expect(Math.max(...mismatched)).toBeLessThan(Math.min(...matching))
 
   // the length order lays the longest reads out first, by their clipped extent
-  const byLength = await engine.alignments({ ...BAM, sort: { type: 'length' } })
+  const byLength = await engine.alignments({
+    ...BAM,
+    display: { sort: { type: 'length' } },
+  })
   const lengths = byLength.reads.start.map((s, i) => byLength.reads.end[i]! - s)
   const top = [...lengths].sort((a, b) => b - a)[
     Math.floor(lengths.length / 20)
@@ -314,7 +336,10 @@ test('the display’s facet object splits the reads into sections, each laid out
   expect(plain.sections.label).toEqual([''])
   expect(new Set(plain.reads.section)).toEqual(new Set(['']))
 
-  const t = await engine.alignments({ ...BAM, facet: { field: 'strand' } })
+  const t = await engine.alignments({
+    ...BAM,
+    display: { facet: { field: 'strand' } },
+  })
   expect(t.sections.label).toHaveLength(2)
   expect(t.reads.start).toHaveLength(plain.reads.start.length)
   const sectionOfStrand = new Map<number, string>()
@@ -338,14 +363,89 @@ test('the display’s facet object splits the reads into sections, each laid out
   const [first, second] = t.sections.key
   const reordered = await engine.alignments({
     ...BAM,
-    facet: { field: 'strand', domain: [second!, first!] },
+    display: { facet: { field: 'strand', domain: [second!, first!] } },
   })
   expect(reordered.sections.key).toEqual([second, first])
   const hidden = await engine.alignments({
     ...BAM,
-    facet: { field: 'strand', hidden: [first!] },
+    display: { facet: { field: 'strand', hidden: [first!] } },
   })
   expect(hidden.sections.key).toEqual([second])
+})
+
+test('read connections come back as the display’s band draws them', async () => {
+  const off = await engine.alignments(PAIRED_INVERSION)
+  expect(off.arcs.start).toHaveLength(0)
+  expect(off.arcLegend.label).toEqual([])
+
+  const arcs = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { readConnections: 'arc' },
+  })
+  const n = arcs.arcs.start.length
+  expect(n).toBeGreaterThan(100)
+  for (const column of Object.values(arcs.arcs)) {
+    expect(column).toHaveLength(n)
+  }
+  expect(new Set(arcs.arcs.shape)).toEqual(new Set(['arc']))
+  expect(new Set(arcs.arcs.category)).toEqual(
+    new Set(['normalInsert', 'pairLL', 'pairRR', 'splitInvLL']),
+  )
+  arcs.arcs.start.forEach((start, i) => {
+    const radius = Math.abs(arcs.arcs.end[i]! - start) / 2
+    expect(Math.abs(arcs.arcs.y[i]! - radius)).toBeLessThanOrEqual(1)
+    expect(arcs.arcLegend.color).toContain(arcs.arcs.color[i])
+  })
+  expect(new Set(arcs.arcs.color)).toEqual(new Set(arcs.arcLegend.color))
+  expect(arcs.arcLegend.label).toHaveLength(4)
+  expect(arcs.arcLegendTitle).toBe('Arc colors')
+  expect(new Set(arcs.arcs.width)).toEqual(new Set([1]))
+
+  const abnormal = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { readConnections: 'arc', showOrdinaryPairs: false },
+  })
+  expect(abnormal.arcs.category).not.toContain('normalInsert')
+  expect(abnormal.arcs.start).toHaveLength(
+    arcs.arcs.category.filter(c => c !== 'normalInsert').length,
+  )
+
+  const cloud = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { readConnections: 'cloud' },
+  })
+  expect(cloud.arcs.category).not.toContain('normalInsert')
+  expect(new Set(cloud.arcs.shape)).toEqual(new Set(['flat', 'flatSplit']))
+  expect(new Set(cloud.arcs.opacity)).toEqual(new Set([0.7]))
+  cloud.arcs.span.forEach((span, i) => {
+    expect(Math.abs(cloud.arcs.y[i]! - span)).toBeLessThanOrEqual(span * 0.08)
+  })
+  expect(cloud.arcSpanMax).toBe(Math.max(...cloud.arcs.span))
+  expect(cloud.arcLegendTitle).toBe('Read cloud colors')
+
+  const faceted = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { readConnections: 'arc', facet: { field: 'strand' } },
+  })
+  expect(faceted.arcs.start).toHaveLength(n)
+  expect(new Set(faceted.arcs.section)).toEqual(new Set(faceted.sections.label))
+})
+
+test('an arc’s stroke widens with the reads behind it, as the band strokes it', async () => {
+  const { arcs } = await engine.alignments({
+    ...LONG_READS,
+    display: { readConnections: 'arc', readConnectionsLineWidth: 2 },
+  })
+  const widthAt = new Map(arcs.support.map((s, i) => [s, arcs.width[i]!]))
+  expect(widthAt.get(1)).toBe(2)
+  const supports = [...widthAt.keys()].sort((a, b) => a - b)
+  expect(supports.length).toBeGreaterThan(1)
+  for (let i = 1; i < supports.length; i++) {
+    expect(widthAt.get(supports[i]!)).toBeGreaterThan(
+      widthAt.get(supports[i - 1]!)!,
+    )
+  }
+  expect(Math.max(...arcs.width)).toBeLessThanOrEqual(8)
 })
 
 test('a region of the reference reads as its bases', async () => {

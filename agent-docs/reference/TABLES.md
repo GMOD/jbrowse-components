@@ -50,10 +50,11 @@ size, since a host holds the whole table in memory.
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
-**A table takes the display's own settings objects and answers what the
-display draws with them.** `alignmentTables` takes the `color` and `filter`
-objects as a config writes them, resolves each through the display's config
-schema, and runs the display's pipeline: the worker filters and fetches under
+**A table takes the display's own config and answers what the display draws
+with it.** `alignmentTables` takes `display`, the `LinearAlignmentsDisplay`
+config as a track's `displays` entry writes it, resolves it through the
+display's config schema, so the schema's defaults are the table's, and runs
+the display's pipeline: the worker filters and fetches under
 `colorBy`, the main-thread bake and classification (`applyReadColorsByGroup`)
 paint each read, and the display's own key (`getReadDisplayLegendItems`) comes
 back as `legend` with `legendTitle`. Each read carries its painted `color` as
@@ -105,6 +106,28 @@ by `orderedGroups` under the facet's `domain`, each laid out on its own:
 - A `read` column indexes the joined `reads`, across sections.
 - The read colors and their key pool over the sections, as the display's do,
   so one key serves every section.
+
+Under `readConnections` (`'arc'` or `'cloud'`) the read-connection band comes
+back from the display's own arc pass (`computeArcsByGroup`), run over every
+section at once as the display runs it:
+
+- `arcs`: each mate-pair or split-read connection's feet (`start`, `end`),
+  `shape` (`arc`, `flat`, `flatSplit`, `unplaced`), `category`, and the
+  `color` and `opacity` the band paints it in.
+- `y` is where the band plots it in bp: an arc's genomic radius, or the read
+  cloud's |TLEN| with the display's ±8% jitter. `span` is the distance
+  itself, and `arcSpanMax` the read cloud's y domain.
+- `support` is the reads behind it, and `width` the stroke in px from the
+  shader's own `linkStrokeWidthPx` over `arcStrokeScale`, past its 1.5 device
+  px antialiasing floor, which is the GPU's concern and not the host's.
+- `arcTicks` are the interchromosomal ticks, with the contigs each reaches.
+- `arcLegend` and `arcLegendTitle` are the band's key. `arcColor`,
+  `showOrdinaryPairs`, `showInterchrom`, `showLongRange`,
+  `minInterchromSupport` and `readConnectionsLineWidth` act as they do in the
+  display.
+
+A host has no assembly, so a split read whose SA tag spells its contig
+another way than the BAM does reads as interchromosomal.
 
 `@jbrowse/plugin-canvas/tables` (`featureTables`) does the same for a feature
 track. It takes the `LinearBasicDisplay`'s config as a track's `displays`

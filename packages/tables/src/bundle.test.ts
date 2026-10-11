@@ -62,7 +62,10 @@ test('the bundle is printable ASCII and ES2020', () => {
 test.each([
   ['BAM', BAM],
   ['CRAM', CRAM],
-  ['modBAM', { ...METHYLATED, baseColor: { field: 'modifications' } }],
+  [
+    'modBAM',
+    { ...METHYLATED, display: { baseColor: { field: 'modifications' } } },
+  ],
 ])(
   'the bundle answers a %s as the engine does, in a bare host',
   async (_, args) => {

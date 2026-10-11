@@ -37,6 +37,19 @@ export const SPLICED: AlignmentTablesArgs = {
   region: { refName: 'ctgA', start: 400, end: 1300 },
 }
 
+export const PAIRED_INVERSION: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-simple-inv-paired.bam'),
+    index: {
+      location: uri('volvox-simple-inv-paired.bam.bai'),
+      indexType: 'BAI',
+    },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 18000, end: 32000 },
+}
+
 export const LONG_READS: AlignmentTablesArgs = {
   adapterConfig: {
     type: 'BamAdapter',

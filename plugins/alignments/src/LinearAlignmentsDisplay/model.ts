@@ -97,6 +97,7 @@ import {
   colorRampScales,
   getAlignmentsColorScales,
   arcColorCategoryLabel,
+  arcLegendTitle,
   getArcLegendItems,
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
@@ -1131,9 +1132,7 @@ export default function stateModelFactory(
            * the reader is looking at: flat read-cloud lines are not arcs.
            */
           get arcLegendTitle() {
-            return self.readConnections === 'cloud'
-              ? 'Read cloud colors'
-              : 'Arc colors'
+            return arcLegendTitle(self.readConnections)
           },
 
           /**

@@ -14,16 +14,17 @@ import {
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
-import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
+import {
+  colorSettingOf,
+  colorSnapshotOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
+import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
+import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
+import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
-import { alignmentsBaseColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts'
-import { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
-import { alignmentsModificationsConfigSchema } from './LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts'
-import { alignmentsSortConfigSchema } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
@@ -33,20 +34,28 @@ import {
   readColorFromCategoryIndex,
 } from './LinearAlignmentsDisplay/colorUtils.ts'
 import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
+import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
 import {
   applyReadColorsByGroup,
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
 import { orderedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { presentMapqs } from './LinearAlignmentsDisplay/qualitySpans.ts'
-import {
-  readFilterConfigSchema,
-  readFilterOf,
-} from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
+import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { buildLaidOutPileupMap } from './RenderAlignmentDataRPC/sortLayout.ts'
+import {
+  ARC_COLOR_INTERCHROM,
+  arcColorSlot,
+} from './features/arcs/arcColors.ts'
+import { arcStrokeScale } from './features/arcs/arcLineWidth.ts'
+import { CLOUD_LINE_ALPHA } from './features/arcs/bandFeed.ts'
+import { computeArcsByGroup } from './features/arcs/compute.ts'
+import { isFlatArcShape } from './features/arcs/shapes.ts'
+import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { mergeJunctions } from './features/sashimi/junctions.ts'
 import { spliceMotifLabel } from './features/sashimi/motif.ts'
+import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -54,13 +63,19 @@ import {
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
+  colorFieldOf,
   declaredReadLabels,
   isBakedScheme,
   pinnedInsertSizeBand,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
+import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
-import { getReadDisplayLegendItems } from './shared/legendUtils.ts'
+import {
+  arcLegendTitle,
+  getArcLegendItems,
+  getReadDisplayLegendItems,
+} from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
 import {
   INTERBASE_INSERTION,
@@ -70,19 +85,23 @@ import {
 import { getColorForModification } from './util.ts'
 
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
+import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
+import type { ReadConnectionsMode } from './LinearAlignmentsDisplay/constants.ts'
 import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+import type { ArcsUploadData } from './features/arcs/types.ts'
 import type {
+  ArcColorField,
   BaseLayer,
   ModificationColorBy,
   SortColumn,
   SortType,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
  * #api
@@ -131,29 +150,16 @@ export interface AlignmentTablesArgs {
      */
     originalRefName?: string
   }
-  /** The display's `color` object, as a config writes it; unset reads plain. */
-  color?: SnapshotIn<typeof alignmentsColorConfigSchema>
-  /** The display's `filter` object, as a config writes it. */
-  filter?: SnapshotIn<typeof readFilterConfigSchema>
   /**
-   * The display's `baseColor` object: the per-base layer painted over the
-   * reads, `{ field: 'modifications' }` for the reads' base modifications.
+   * The display's config as a track's `displays` entry writes it for a
+   * `LinearAlignmentsDisplay`. The tables read its `color`, `filter`,
+   * `baseColor`, `modifications`, `sort` and `facet` objects, and its read
+   * connections: `readConnections` (`'arc'` or `'cloud'`), `arcColor`,
+   * `showInterchrom`, `showLongRange`, `showOrdinaryPairs`,
+   * `minInterchromSupport` and `readConnectionsLineWidth`. Unset reads the
+   * default display.
    */
-  baseColor?: SnapshotIn<typeof alignmentsBaseColorConfigSchema>
-  /** The display's `modifications` object, the settings that layer reads. */
-  modifications?: SnapshotIn<typeof alignmentsModificationsConfigSchema>
-  /**
-   * The display's `sort` object: a whole-window order (`position`, `length`,
-   * `spliced`, `split`), or a column sort (`strand`, `basePair`, `tag`,
-   * `insertion`, `softclip`, `hardclip`) over `pos`, on the region's contig
-   * where `refName` is left out, ranking by `tag` under `tag`.
-   */
-  sort?: SnapshotIn<typeof alignmentsSortConfigSchema>
-  /**
-   * The display's `facet` object: the field that splits the reads into
-   * stacked sections, the `domain` they stack in, and the sections `hidden`.
-   */
-  facet?: SnapshotIn<typeof sectionFacetConfigSchema>
+  display?: Record<string, unknown>
   /**
    * The most compressed bytes the region may need, refused off the index
    * before any read is fetched. 200 MB by default; a host holds the whole
@@ -228,15 +234,8 @@ function hexOf(css: string) {
   return `#${hex(r!)}${hex(g!)}${hex(b!)}`
 }
 
-/**
- * The display's color pipeline over one laid-out section: the `color` object
- * resolved as the display resolves it, the worker's reads baked through the
- * same scale and classified into the same buckets, each painted the color the
- * display paints it, and the key the display shows beside them.
- */
 /** The display's `sort` object as the layout and the worker read it. */
-function sortFor(sort: AlignmentTablesArgs['sort'], refName: string) {
-  const node = alignmentsSortConfigSchema.create(sort ?? {})
+function sortFor(node: AnyConfigurationModel, refName: string) {
   const type: SortType = readConfObject(node, 'type')
   const pos: number | undefined = readConfObject(node, 'pos')
   const column: SortColumn | undefined =
@@ -256,12 +255,9 @@ function sortFor(sort: AlignmentTablesArgs['sort'], refName: string) {
 }
 
 /** The display's per-base layer, from its `baseColor` and `modifications` objects. */
-function baseLayerFor({
-  baseColor,
-  modifications,
-}: Pick<AlignmentTablesArgs, 'baseColor' | 'modifications'>) {
-  const base = alignmentsBaseColorConfigSchema.create(baseColor ?? {})
-  const mods = alignmentsModificationsConfigSchema.create(modifications ?? {})
+function baseLayerFor(conf: DisplayConf) {
+  const base = conf.baseColor
+  const mods = conf.modifications
   const settings: ModificationColorBy = {
     threshold: readConfObject(mods, 'threshold'),
     unmodified: readConfObject(mods, 'unmodified'),
@@ -277,12 +273,17 @@ function baseLayerFor({
   )
 }
 
+/**
+ * The display's color pipeline over its laid-out sections: the `color` object
+ * resolved as the display resolves it, the worker's reads baked through one
+ * scale and classified into the same buckets, each painted the color the
+ * display paints it, and the key the display shows beside them.
+ */
 function colorReads(
-  colorSnapshot: AlignmentTablesArgs['color'],
+  node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
 ) {
-  const node = alignmentsColorConfigSchema.create(colorSnapshot ?? {})
   const { labels, title, ...setting } = colorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
   const colorBy = colorByOf(encoding)
@@ -330,6 +331,7 @@ function colorReads(
       return [key, { color, category }]
     }),
   )
+  const declared = declaredReadLabels(encoding, labels ?? [])
   const presentTagValues = !isBakedScheme(colorBy)
     ? undefined
     : colorBy.type === 'mappingQuality'
@@ -354,7 +356,7 @@ function colorReads(
     palette,
     presentTagValues,
     bakedScale,
-    labels: declaredReadLabels(encoding, labels ?? []),
+    labels: declared,
     descending: withPreset(
       { ...setting, descending: readConfObject(node, 'descending') },
       ALIGNMENTS_FIELD_PRESETS,
@@ -362,6 +364,10 @@ function colorReads(
   }).filter(item => item.color !== undefined)
   return {
     sections,
+    palette,
+    declared,
+    readField: colorFieldOf(colorBy),
+    insertSizeBand: band,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => hexOf(item.color!)),
@@ -372,12 +378,6 @@ function colorReads(
   }
 }
 
-/**
- * The insertions on the reads and the clips at their ends, which the worker
- * ships as one interbase list: an insertion with its length and, where the
- * reader kept it, its sequence; a clip with its length and whether the clipped
- * bases are in the file (`soft`) or not (`hard`).
- */
 /**
  * The reads' base modifications as the display's modifications layer paints
  * them: each call at its position on its read, its type code and name, its
@@ -460,6 +460,12 @@ function fades(bytes: Uint8Array) {
   return Array.from(bytes, b => b / 255)
 }
 
+/**
+ * The insertions on the reads and the clips at their ends, which the worker
+ * ships as one interbase list: an insertion with its length and, where the
+ * reader kept it, its sequence; a clip with its length and whether the clipped
+ * bases are in the file (`soft`) or not (`hard`).
+ */
 function interbase(d: WorkerPileupData) {
   const insertions = {
     position: [] as number[],
@@ -515,6 +521,144 @@ function junctions(d: WorkerPileupData, refName: string) {
     count: merged.map(j => j.count),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
+  }
+}
+
+const ARC_SHAPE_NAMES = ['arc', 'flat', 'flatSplit', 'unplaced'] as const
+const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
+
+function hexOfNormalized([r, g, b]: readonly number[]) {
+  return `#${hex(Math.round(r! * 255))}${hex(Math.round(g! * 255))}${hex(Math.round(b! * 255))}`
+}
+
+/** One section's arcs and interchromosomal ticks, in the band's paint. */
+function sectionConnections(
+  a: ArcsUploadData,
+  {
+    slotColor,
+    colorField,
+    widthOf,
+  }: {
+    slotColor: string[]
+    colorField: ArcColorField
+    widthOf: (support: number) => number
+  },
+) {
+  const n = a.numArcs
+  const shape = Array.from(a.arcShapeTypes.subarray(0, n))
+  const colorSlot = Array.from(a.arcColorTypes.subarray(0, n), arcColorSlot)
+  const support = Array.from(a.arcSupport.subarray(0, n))
+  const ticks = a.numArcLines
+  return {
+    arcs: {
+      start: a.arcX1.subarray(0, n),
+      end: a.arcX2.subarray(0, n),
+      shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
+      category: colorSlot.map(c => arcSlotCategory(c, colorField)),
+      color: colorSlot.map(c => slotColor[c]!),
+      opacity: shape.map(s => (isFlatArcShape(s) ? CLOUD_LINE_ALPHA : 1)),
+      y: a.arcYBp.subarray(0, n),
+      span: a.arcSpanBp.subarray(0, n),
+      support,
+      width: support.map(widthOf),
+    },
+    arcTicks: {
+      position: a.arcLinePositions.subarray(0, ticks),
+      support: a.arcLineSupport.subarray(0, ticks),
+      partners: a.arcLinePartnerRefNames
+        .slice(0, ticks)
+        .map(names => names.join(',')),
+      color: new Array<string>(ticks).fill(slotColor[ARC_COLOR_INTERCHROM]!),
+      width: Array.from(a.arcLineSupport.subarray(0, ticks), widthOf),
+    },
+  }
+}
+
+/**
+ * The read-connection band the display draws under `readConnections`, from
+ * the display's own arc pass over every section at once: each section's
+ * mate-pair and split-read arcs, or the read cloud's bars, in the colors and
+ * stroke widths the band paints them, its interchromosomal ticks, and the
+ * band's key. `y` is where the band plots a connection, in bp: an arc's
+ * genomic radius, or the read cloud's |TLEN| jittered as the display jitters
+ * it so coincident pairs separate; `span` is the distance itself.
+ */
+function readConnectionTables(
+  conf: DisplayConf,
+  dataByGroup: ReadonlyMap<string, WorkerPileupData>,
+  region: AlignmentTablesArgs['region'],
+  colors: ReturnType<typeof colorReads>,
+) {
+  const mode: ReadConnectionsMode = readConfObject(conf, 'readConnections')
+  const cloud = mode === 'cloud'
+  const colorField = arcColorFieldOf(
+    readConfObject(conf.arcColor, 'field'),
+    colors.readField,
+  )
+  const regionInfo = { ...region, displayedRegionIndex: 0 }
+  const result =
+    mode === 'off'
+      ? undefined
+      : computeArcsByGroup(
+          new Map(
+            [...dataByGroup].map(([key, data]) => [key, new Map([[0, data]])]),
+          ),
+          { loaded: [regionInfo], displayed: [regionInfo] },
+          {
+            colorField,
+            cloud,
+            showInterchrom: readConfObject(conf, 'showInterchrom'),
+            showLongRange: readConfObject(conf, 'showLongRange'),
+            showOrdinaryPairs:
+              readConfObject(conf, 'showOrdinaryPairs') ?? !cloud,
+            minInterchromSupport: readConfObject(conf, 'minInterchromSupport'),
+          },
+        )
+  const slotColor = buildArcColorPalette(colors.palette, colorField).map(
+    hexOfNormalized,
+  )
+  const lineWidth: number = readConfObject(conf, 'readConnectionsLineWidth')
+  const stroke = arcStrokeScale(lineWidth)
+  const widthOf = (support: number) =>
+    linkStrokeWidthPx(
+      support,
+      LINK_SIZE_SCALED,
+      lineWidth,
+      stroke.domain[0],
+      stroke.domain[1],
+      SCALE_TYPE_LOG,
+      stroke.range[0],
+      stroke.range[1],
+      DPR_PAST_THE_ANTIALIASING_FLOOR,
+    )
+  const paint = { slotColor, colorField, widthOf }
+  const bySection = new Map(
+    [...dataByGroup.keys()].map(key => [
+      key,
+      sectionConnections(
+        result?.byGroup.get(key)?.get(0) ?? emptyArcsUploadData(),
+        paint,
+      ),
+    ]),
+  )
+  const legend = result
+    ? getArcLegendItems(
+        new Set(
+          [...result.colorSlots].map(slot => arcSlotCategory(slot, colorField)),
+        ),
+        colors.palette,
+        result.interchromFromMatePair,
+        colors.declared.categories,
+      ).filter(item => item.color !== undefined)
+    : []
+  return {
+    bySection,
+    arcLegend: {
+      label: legend.map(item => item.label),
+      color: legend.map(item => hexOf(item.color!)),
+    },
+    arcLegendTitle: arcLegendTitle(mode),
+    arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
   }
 }
 
@@ -583,7 +727,8 @@ function sectionTables(
   }
 }
 
-type SectionTables = ReturnType<typeof sectionTables>
+type SectionTables = ReturnType<typeof sectionTables> &
+  ReturnType<typeof sectionConnections>
 
 /**
  * The sections' tables as one set, each row naming its `section` and each
@@ -638,23 +783,22 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
     region,
-    color,
-    filter,
-    baseColor,
-    modifications,
-    sort,
-    facet,
+    display = {},
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: AlignmentTablesArgs,
 ) {
-  const colorBy = colorByOf(
-    alignmentsColorEncoding(
-      colorSnapshotOf(alignmentsColorConfigSchema.create(color ?? {})),
-    ),
+  const conf: DisplayConf = displayConfigSchemaFactory(pluginManager).create({
+    ...display,
+    type: 'LinearAlignmentsDisplay',
+    displayId: 'tables',
+  })
+  const colorBy = colorByOf(alignmentsColorEncoding(colorSettingOf(conf.color)))
+  const baseLayer = baseLayerFor(conf)
+  const { layoutOrder, sortColumn, sortTag } = sortFor(
+    conf.sort,
+    region.refName,
   )
-  const baseLayer = baseLayerFor({ baseColor, modifications })
-  const { layoutOrder, sortColumn, sortTag } = sortFor(sort, region.refName)
-  const facetNode = sectionFacetConfigSchema.create(facet ?? {})
+  const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
     domain: readConfObject(facetNode, 'domain'),
@@ -664,7 +808,7 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
     regions: [{ assemblyName: '', ...region }],
-    filterBy: readFilterOf(readFilterConfigSchema.create(filter ?? {})),
+    filterBy: readFilterOf(conf.filter),
     colorBy,
     baseLayer,
     sortTag,
@@ -700,17 +844,32 @@ export async function alignmentTables(
       }).get(0)!,
     ]),
   )
-  const colors = colorReads(color, baseLayer, laidByGroup)
+  const colors = colorReads(conf.color, baseLayer, laidByGroup)
+  const connections = readConnectionTables(
+    conf,
+    new Map(
+      order.map(({ key }) => {
+        const data = dataOf.get(key)!
+        const band = colors.insertSizeBand
+        return [key, band ? { ...data, insertSizeStats: band } : data]
+      }),
+    ),
+    region,
+    colors,
+  )
   return {
     ...joinSections(
       order.map(({ key, label }) => ({
         label,
-        tables: sectionTables(
-          dataOf.get(key)!,
-          laidByGroup.get(key)!.readYs,
-          colors.sections.get(key)!,
-          region.refName,
-        ),
+        tables: {
+          ...sectionTables(
+            dataOf.get(key)!,
+            laidByGroup.get(key)!.readYs,
+            colors.sections.get(key)!,
+            region.refName,
+          ),
+          ...connections.bySection.get(key)!,
+        },
       })),
     ),
     sections: {
@@ -719,6 +878,9 @@ export async function alignmentTables(
     },
     legend: colors.legend,
     legendTitle: colors.legendTitle,
+    arcLegend: connections.arcLegend,
+    arcLegendTitle: connections.arcLegendTitle,
+    arcSpanMax: connections.arcSpanMax,
   }
 }
 
