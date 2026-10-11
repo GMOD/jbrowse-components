@@ -19,8 +19,10 @@ itself, such as R through V8. The adapters must be registered on
 
 Coordinates are 0-based genomic; every `y`, `top` and height is in the
 display's px, down from the track's top, and `feature` is a 0-based index
-into `features`. The layout is the display's grown to its content: every
-feature placed, nothing trimmed to a track height.
+into `features`. The layout is the display's under its `heightMode` and
+`height`: `fit` (the default) runs the display's fit ladder, so the labels,
+isoforms and row heights the browser gives up to fit the track are given up
+here too, and `grow` places every feature at full size.
 
 ```js
 // type signature

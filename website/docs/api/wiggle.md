@@ -22,7 +22,7 @@ adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, display, bpPerPx }: WiggleTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, region, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)
