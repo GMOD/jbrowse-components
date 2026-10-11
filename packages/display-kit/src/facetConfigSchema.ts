@@ -48,8 +48,9 @@ export const facetConfigSchema = ConfigurationSchema(
      * The multi-sample variant displays read a sample attribute instead, and
      * the multi-row display `group`, its `rowGroups`.
      * The alignments displays also take a read dimension here:
-     * `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq` or
-     * `mateAssembly`. Writing `facet: "strand"` lands here.
+     * `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`,
+     * `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"`
+     * lands here.
      */
     field: {
       type: 'featureField',

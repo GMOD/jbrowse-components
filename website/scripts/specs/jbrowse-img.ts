@@ -553,7 +553,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // labelled section under the arcs, and the flat background pileup goes
     // below it, so the section divider says which reads carry the SV rather
     // than leaving the reader to pick the colored ones out of a single stack.
-    'facet=splitRead',
+    'facet=split',
     'coverageHeight=80',
     // grouping stacks two coverage lanes and truncates the "Not split" lane at
     // a row boundary, so the whole SV signal fits well under the 820 the

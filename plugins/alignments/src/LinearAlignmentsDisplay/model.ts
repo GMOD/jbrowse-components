@@ -84,6 +84,7 @@ import {
 } from '../shared/colorSchemes.ts'
 import {
   facetForUnit,
+  facetValueNotices,
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
@@ -385,20 +386,6 @@ export default function stateModelFactory(
       )
       // Config-slot toggles live in `configSlotViews`.
       .views(configSlotViews)
-      .views(self => ({
-        /**
-         * #getter
-         * What the `color`, `facet` and `scales.y` slots say that the display
-         * cannot draw as written, for the corner notice.
-         */
-        get notices(): string[] {
-          return [
-            ...self.colorNotices,
-            ...self.facetNotices,
-            ...self.valueScaleNotices,
-          ]
-        },
-      }))
       .volatile(() => {
         return {
           /**
@@ -1474,6 +1461,24 @@ export default function stateModelFactory(
               self.hiddenGroupKeys,
               sectionOrder(facet?.field ?? '', facet?.domain),
             )
+          },
+
+          /**
+           * #getter
+           * What the `color`, `facet` and `scales.y` slots say that the display
+           * cannot draw as written, for the corner notice, and a facet field
+           * no fetched read answers.
+           */
+          get notices(): string[] {
+            return [
+              ...self.colorNotices,
+              ...self.facetNotices,
+              ...facetValueNotices(
+                this.effectiveFacet,
+                this.groupOrder.map(g => g.key),
+              ),
+              ...self.valueScaleNotices,
+            ]
           },
 
           /**

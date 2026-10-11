@@ -22,12 +22,32 @@ export const INSERT_SIZE_LEVELS = ['short', 'normal', 'long'] as const
 /** SAM's "mapping quality unavailable", a level of its own on every channel. */
 export const MAPQ_UNAVAILABLE_LEVEL = '255'
 
-export const SPLIT_READ_LEVELS = ['split', 'unsplit'] as const
+export const SPLIT_LEVELS = ['split', 'unsplit'] as const
+
+export const SPLICED_LEVELS = ['spliced', 'unspliced'] as const
+
+/**
+ * Where a read stands in its pair. `concordant` is the aligner's verdict
+ * (`isConcordantPairRead`), so a file whose aligner never sets the proper-pair
+ * flag files every pair `discordant`. `nonPrimary` is a secondary or
+ * supplementary record, whose own flags and orientation do not describe its
+ * pair.
+ */
+export const PAIRING_LEVELS = [
+  'concordant',
+  'discordant',
+  'unpaired',
+  'nonPrimary',
+] as const
+
+export type Pairing = (typeof PAIRING_LEVELS)[number]
 
 const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
   pairOrientation: PAIR_ORIENTATION_LEVELS,
+  pairing: PAIRING_LEVELS,
   mapq: [...MAPQ_BINS.map(b => b.key), MAPQ_UNAVAILABLE_LEVEL],
-  splitRead: SPLIT_READ_LEVELS,
+  split: SPLIT_LEVELS,
+  spliced: SPLICED_LEVELS,
 }
 
 /** A read field's own value order, after the values `domain` lists. */

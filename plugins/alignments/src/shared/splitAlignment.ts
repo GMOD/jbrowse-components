@@ -21,7 +21,7 @@ import type { PanelStop } from '@jbrowse/sv-core'
  * segment of the split, the primary included, while the flag marks only the pieces
  * after the first. Grouping on the flag alone therefore filed a split read's own
  * first piece with the reads that never split at all — sections cutting through
- * the evidence instead of around it, which is the bug the `splitRead` dimension
+ * the evidence instead of around it, which is the bug the `split` dimension
  * was rewritten to fix.
  *
  * The flag stays as an OR because it is a conformance backstop, not a second

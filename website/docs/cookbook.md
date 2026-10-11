@@ -366,9 +366,9 @@ pass every `jexl:` expression, on variant tracks too:
   `{ "field": "pairOrientation", "domain": ["RR"], "range": ["#d95f02"] }`
 - `baseColor` draws a per-base layer over the reads, whatever `color` fills them
   with: `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`
-- `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
-  `splitRead`, `mapq`, or any read field; `domain` pins which haplotype (or
-  other value) stacks first — the same slot
+- `facet` also takes `strand`, `firstOfPairStrand`, `pairOrientation`, `split`,
+  `pairing`, `mapq`, or any read field; `domain` pins which haplotype (or other
+  value) stacks first — the same slot
   [feature, variant, mark and multiway synteny tracks](/docs/config_guides/grouping_and_ordering)
   all take
 - `flagExclude` 1540 hides unmapped, vendor-failed, and duplicate reads; 3844

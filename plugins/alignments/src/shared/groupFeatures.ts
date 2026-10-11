@@ -1,5 +1,10 @@
-import { PAIR_DIRECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
 import {
+  PAIR_DIRECTION_LABELS,
+  pairDirection,
+  pairOrientationToNum,
+} from '@jbrowse/alignments-core'
+import {
+  CIGAR_HAS_SKIP,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
@@ -17,15 +22,19 @@ import {
 } from '@jbrowse/core/util/groupKeys'
 
 import { featureChainKey } from './chainGroupingKey.ts'
+import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
   FIRST_OF_PAIR_STRAND_LABELS,
   FACET_LABELS,
   facetTag,
 } from './facetLabels.ts'
+import { pairingOf } from './pairing.ts'
 import {
   MAPQ_UNAVAILABLE_LEVEL,
-  SPLIT_READ_LEVELS,
+  PAIRING_LEVELS,
+  SPLICED_LEVELS,
+  SPLIT_LEVELS,
   levelOrder,
 } from './readFieldLevels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
@@ -34,11 +43,13 @@ import {
   firstOfPairStrand,
   getFlags,
   getMappingQuality,
+  getMateRefName,
   getOrCreate,
   getStrand,
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
+import type { Pairing } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -157,16 +168,58 @@ function pairOrientationKey(feature: Feature): GroupKey {
     : PAIR_ORIENTATION_GROUPS[dir]
 }
 
-const [SPLIT_KEY, UNSPLIT_KEY] = SPLIT_READ_LEVELS
-const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split (SA)' }
+const [SPLIT_KEY, UNSPLIT_KEY] = SPLIT_LEVELS
+const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split' }
 const UNSPLIT_GROUP: GroupKey = { key: UNSPLIT_KEY, label: 'Not split' }
 
 // Reads that cross a breakpoint and reads that don't — at an SV locus, the
-// evidence and the background. `isSplitAlignment` carries why that is an SA
-// question rather than a supplementary-flag one, and the "Show only split
-// alignments" filter shares it.
-function splitReadKey(feature: Feature): GroupKey {
+// evidence and the background. `isSplitAlignment` is the "Show only split
+// alignments" filter's test and the sort's `READ_SPLIT`.
+function splitKey(feature: Feature): GroupKey {
   return isSplitAlignment(feature) ? SPLIT_GROUP : UNSPLIT_GROUP
+}
+
+const [SPLICED_KEY, UNSPLICED_KEY] = SPLICED_LEVELS
+const SPLICED_GROUP: GroupKey = { key: SPLICED_KEY, label: 'Spliced' }
+const UNSPLICED_GROUP: GroupKey = { key: UNSPLICED_KEY, label: 'Not spliced' }
+
+// Over the whole record, as the spliced filter and sort ask it.
+function isSpliced(feature: Feature) {
+  return (cigarCategoryBitsOf(feature) & CIGAR_HAS_SKIP) !== 0
+}
+
+function splicedKey(feature: Feature): GroupKey {
+  return isSpliced(feature) ? SPLICED_GROUP : UNSPLICED_GROUP
+}
+
+const PAIRING_GROUP_LABELS: Record<Pairing, string> = {
+  concordant: 'Concordant',
+  discordant: 'Discordant',
+  unpaired: 'Unpaired',
+  nonPrimary: 'Secondary or supplementary',
+}
+
+const PAIRING_GROUPS = Object.fromEntries(
+  PAIRING_LEVELS.map(key => [key, { key, label: PAIRING_GROUP_LABELS[key] }]),
+) as Record<Pairing, GroupKey>
+
+function pairingKey(feature: Feature): GroupKey {
+  return PAIRING_GROUPS[
+    pairingOf(
+      getFlags(feature),
+      pairOrientationToNum(
+        feature.get('pair_orientation') as string | undefined,
+      ),
+    )
+  ]
+}
+
+// A read's mate reference, or a synteny block's query contig.
+function mateRefNameKey(feature: Feature): GroupKey {
+  const name = getMateRefName(feature)
+  return name
+    ? { key: name, label: name }
+    : { key: '', label: 'No mate reference' }
 }
 
 // One section per mate sample of an all-vs-all synteny track. `mate.assemblyName`
@@ -201,9 +254,9 @@ function mapqKey(feature: Feature): GroupKey {
 // region-width depth arrays before uploading a per-bp GPU buffer that alone
 // approaches the device limit at chromosome scale, so `MAX_GROUPS` is what
 // keeps a UMI-style `RX`/`MI` tag from paying that thousands of times over.
-// Every dimension but `tag` and `mateAssembly` is a closed set of at most five
-// keys, and GroupByDialog refuses `tag` up front with the distinct values in
-// hand.
+// Every dimension but `tag`, `mateRefName` and `mateAssembly` is a closed set
+// of at most five keys, and GroupByDialog refuses `tag` up front with the
+// distinct values in hand.
 
 // The tail past `MAX_GROUPS` merges into one overflow section rather than
 // dropping its reads, by the same `capGroupKeys` rule a display reading the
@@ -348,20 +401,43 @@ export const FACET_DIMENSIONS: {
     fragmentLevel: true,
     key: pairOrientationKey,
   },
+  // A chain takes its representative's level, and one holding only its
+  // supplementary falls back to that record, so `nonPrimary` can be a section
+  // in chain mode too.
+  pairing: {
+    field: 'pairing',
+    fragmentLevel: true,
+    key: pairingKey,
+  },
   // Chain mode is where this one earns its keep — long-read SV viewing is linked
   // reads plus split-read evidence — so it states the chain's key rather than
   // being dropped there. One mate can be split where the other is not, and the
   // fragment has split evidence if either does, which no single read answers.
-  splitRead: {
-    field: 'splitRead',
+  split: {
+    field: 'split',
     fragmentLevel: false,
-    key: splitReadKey,
+    key: splitKey,
     chainKey: chain => (chainIsSplit(chain) ? SPLIT_GROUP : UNSPLIT_GROUP),
+  },
+  spliced: {
+    field: 'spliced',
+    fragmentLevel: false,
+    key: splicedKey,
+    chainKey: chain =>
+      chain.some(isSpliced) ? SPLICED_GROUP : UNSPLICED_GROUP,
   },
   mapq: {
     field: 'mapq',
     fragmentLevel: false,
     key: mapqKey,
+  },
+  // As `mateAssembly`, the data decides how many sections there are, so it
+  // stays out of the radios; a config or the agent API names it.
+  mateRefName: {
+    field: 'mateRefName',
+    fragmentLevel: true,
+    hidden: true,
+    key: mateRefNameKey,
   },
   mateAssembly: {
     field: 'mateAssembly',
@@ -443,6 +519,26 @@ export function isChainFacetable(field: string | undefined) {
 // See ../RenderAlignmentDataRPC/CLAUDE.md.
 export function facetForUnit(facet: Facet | undefined, unit: AlignmentsUnit) {
   return unit === 'chain' && !isChainFacetable(facet?.field) ? undefined : facet
+}
+
+/**
+ * A facet over a field that no fetched read answers, for the corner notice:
+ * the reads come back as one section keyed `''`. A read dimension and a tag
+ * answer for every read, a tag's `''` being its own "untagged" section.
+ */
+export function facetValueNotices(
+  facet: Facet | undefined,
+  keys: readonly string[],
+): string[] {
+  return facet &&
+    !isReadDimension(facet.field) &&
+    facetTag(facet.field) === undefined &&
+    keys.length === 1 &&
+    keys[0] === ''
+    ? [
+        `facet: no read here carries a value for ${facet.field}, so every read is in one section`,
+      ]
+    : []
 }
 
 /** What `facet` says that `unit` cannot draw, for the corner notice. */

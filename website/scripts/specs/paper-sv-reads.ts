@@ -173,7 +173,7 @@ const readEvidence = ({
             featureHeight: connectorCurves ? 6 : 3,
             showBezierConnections: connectorCurves,
             height: connectorCurves ? 345 : 195,
-            facet: 'splitRead',
+            facet: 'split',
             showLegend: true,
           },
           {

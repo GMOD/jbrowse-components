@@ -57,8 +57,8 @@ what **Edit plot...** accepts.
 
 The alignments displays take `facet` the same way, plus a handful of read
 dimensions no attribute expresses — `strand`, `firstOfPairStrand`,
-`pairOrientation`, `splitRead`, `mapq`. The same idea over a `LinearMarkDisplay`
-faceting a BAM by its `HP` haplotype tag:
+`pairOrientation`, `pairing`, `split`, `spliced`, `mapq`. The same idea over a
+`LinearMarkDisplay` faceting a BAM by its `HP` haplotype tag:
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 

@@ -967,9 +967,9 @@ export const svSpecs: ScreenshotSpec[] = [
               // The reads that cross the breakpoints, above the reads that
               // don't: the section divider says which is which, so the figure
               // no longer needs a paragraph painted over the pileup saying it.
-              // Grouping survives linked-reads mode because splitRead defines a
+              // Grouping survives linked-reads mode because split defines a
               // chain key (a fragment is split if any of its reads is).
-              facet: 'splitRead',
+              facet: 'split',
             },
           ],
         },
@@ -981,7 +981,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // picture, potentially extra-wide screenshot. it is also groupby sa in both
     // first and second screenshots, should be only in second"). It used to be
     // two stages, the Group by menu over the pileup and then the grouping — but
-    // the session already carries `facet: splitRead`, which is what the live
+    // the session already carries `facet: split`, which is what the live
     // link has to open, so the menu frame showed the radio checked over the
     // applied result and both frames were the same picture. The menu path is a
     // sentence, and the section under the figure is where it belongs.

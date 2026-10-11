@@ -19,7 +19,7 @@ import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldValueReader } from './groupFeatures.ts'
 import { splitBit } from './readCategoryBits.ts'
 import { isFillUnmarkedMode, paintsUnmodifiedCalls } from './types.ts'
-import { getFlags, getStrand } from './util.ts'
+import { getFlags, getMateRefName, getStrand } from './util.ts'
 
 import type { BaseLayer, ReadColorBy } from './types.ts'
 import type {
@@ -34,15 +34,6 @@ import type {
 import type { Feature, ProgressReporter, Region } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ModificationType } from '@jbrowse/modifications-utils'
-
-// The name of whatever this feature aligns *to*. A synteny/PAF block carries a
-// `mate` describing its position in the other assembly; a BAM read names its
-// mate's reference in next_ref. Returns undefined when the feature has neither,
-// so the caller can leave it uncolored rather than paint a hash of ''.
-function getMateRefName(feature: Feature) {
-  const mate = feature.get('mate') as { refName?: string } | undefined
-  return mate?.refName ?? (feature.get('next_ref') as string | undefined)
-}
 
 interface ExtractOpts {
   colorBy: ReadColorBy | undefined

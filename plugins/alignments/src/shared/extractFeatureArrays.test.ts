@@ -121,7 +121,7 @@ describe('attribute color extraction', () => {
       }).tagColorValues,
     ).toEqual(['volvox_random', ''])
     expect(
-      extract([bamRead('ctgB')], { type: 'tag', attribute: 'splitRead' })
+      extract([bamRead('ctgB')], { type: 'tag', attribute: 'split' })
         .tagColorValues,
     ).toEqual(['unsplit'])
   })

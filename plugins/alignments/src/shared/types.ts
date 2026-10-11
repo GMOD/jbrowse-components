@@ -209,8 +209,11 @@ export const READ_DIMENSIONS = [
   'strand',
   'firstOfPairStrand',
   'pairOrientation',
-  'splitRead',
+  'pairing',
+  'split',
+  'spliced',
   'mapq',
+  'mateRefName',
   'mateAssembly',
 ] as const
 export type ReadDimension = (typeof READ_DIMENSIONS)[number]

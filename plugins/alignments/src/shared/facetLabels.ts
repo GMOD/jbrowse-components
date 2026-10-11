@@ -15,8 +15,11 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
   strand: 'Strand',
   firstOfPairStrand: 'First-of-pair strand',
   pairOrientation: 'Pair orientation',
-  splitRead: 'Split read (SA tag)',
+  pairing: 'Pairing',
+  split: 'Split read',
+  spliced: 'Spliced read',
   mapq: 'Mapping quality',
+  mateRefName: 'Mate chromosome',
   mateAssembly: 'Mate assembly',
 }
 

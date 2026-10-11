@@ -8,6 +8,7 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   facetForUnit,
+  facetValueNotices,
   facetUnitNotices,
   isChainFacetable,
   partitionFeatures,
@@ -184,10 +185,10 @@ test('split-read grouping keeps both pieces of a split read together', () => {
     feat('a-supp', { flags: 0x800, tags: { SA: 'ctgA,1,+,50S50M,60,0;' } }),
     feat('c', { flags: 0, tags: {} }),
   ]
-  const groups = partitionFeatures(features, { field: 'splitRead' })
+  const groups = partitionFeatures(features, { field: 'split' })
   // 'split' sorts before 'unsplit', which is also the order that helps: at an SV
   // locus the reads crossing the breakpoint sit at the top of the pileup.
-  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
+  expect(groups.map(g => g.label)).toEqual(['Split', 'Not split'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'a-supp'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['c'])
 })
@@ -201,8 +202,8 @@ test('split-read grouping counts a supplementary record with no SA tag', () => {
     feat('supp', { flags: 0x800, tags: {} }),
     feat('plain', { flags: 0, tags: {} }),
   ]
-  const groups = partitionFeatures(features, { field: 'splitRead' })
-  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
+  const groups = partitionFeatures(features, { field: 'split' })
+  expect(groups.map(g => g.label)).toEqual(['Split', 'Not split'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['supp'])
 })
 
@@ -223,6 +224,71 @@ test('pair-orientation grouping keys the IGV category, not the raw string', () =
     'RL - Mates point outward',
   ])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'b'])
+})
+
+// `insertSize` is a color field, not a facet dimension, and a BAM feature
+// answers no `get('insertSize')`, so every read keys `''`.
+test('a facet field no read answers raises a notice, a tag and a dimension do not', () => {
+  const features = [feat('a', { template_length: 300 })]
+  const keysOf = (field: string) => keys(partitionFeatures(features, { field }))
+  expect(
+    facetValueNotices({ field: 'insertSize' }, keysOf('insertSize')),
+  ).toEqual([
+    'facet: no read here carries a value for insertSize, so every read is in one section',
+  ])
+  expect(facetValueNotices({ field: 'tags.HP' }, keysOf('tags.HP'))).toEqual([])
+  expect(
+    facetValueNotices({ field: 'mateRefName' }, keysOf('mateRefName')),
+  ).toEqual([])
+  expect(facetValueNotices({ field: 'insertSize' }, [])).toEqual([])
+})
+
+test('pairing files each record by where it stands in its pair', () => {
+  const features = [
+    feat('proper', { flags: 0x1 | 0x2, pair_orientation: 'F1R2' }),
+    feat('inverted', { flags: 0x1 | 0x2, pair_orientation: 'F1F2' }),
+    feat('unflagged', { flags: 0x1, pair_orientation: 'F1R2' }),
+    feat('mateless', { flags: 0x1 | 0x8 }),
+    feat('unmapped', { flags: 0x1 | 0x4 }),
+    feat('single', { flags: 0 }),
+    feat('secondary', { flags: 0x1 | 0x2 | 0x100, pair_orientation: 'F1R2' }),
+    feat('supp', { flags: 0x1 | 0x2 | 0x800, pair_orientation: 'F1R2' }),
+  ]
+  const groups = partitionFeatures(features, { field: 'pairing' })
+  expect(
+    Object.fromEntries(groups.map(g => [g.key, g.features.map(f => f.id())])),
+  ).toEqual({
+    concordant: ['proper'],
+    discordant: ['inverted', 'unflagged'],
+    unpaired: ['mateless', 'unmapped', 'single'],
+    nonPrimary: ['secondary', 'supp'],
+  })
+  expect(keys(groups)).toEqual([
+    'concordant',
+    'discordant',
+    'unpaired',
+    'nonPrimary',
+  ])
+})
+
+// Off the record's whole CIGAR, as the spliced filter and sort ask it, so a
+// read spliced outside the window still files as spliced.
+test('spliced grouping reads the whole CIGAR, and a chain is spliced if any read is', () => {
+  const features = [
+    feat('rna', { CIGAR: '20M500N20M' }),
+    feat('dna', { CIGAR: '40M' }),
+  ]
+  const groups = partitionFeatures(features, { field: 'spliced' })
+  expect(keys(groups)).toEqual(['spliced', 'unspliced'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['rna'])
+
+  const chain = [
+    feat('m1', { name: 'r', CIGAR: '40M' }),
+    feat('m2', { name: 'r', CIGAR: '20M500N20M' }),
+  ]
+  expect(
+    keys(partitionFeatures(chain, { field: 'spliced', unit: 'chain' })),
+  ).toEqual(['spliced'])
 })
 
 // The sections stack in the order the legend lists its pair-orientation
@@ -323,7 +389,7 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
 
 // Two ways a dimension resolves one chain to one key: the representative read
 // answers for the fragment, or the dimension states the chain's key itself.
-// `splitRead` is the second — its per-read key differs between a split mate and
+// `split` is the second — its per-read key differs between a split mate and
 // its unsplit partner — so a reading of `fragmentLevel` alone would drop it from
 // chain mode, where it matters most.
 test('a facet a chain cannot honor says so beside the ungrouped picture', () => {
@@ -342,8 +408,8 @@ test('isChainFacetable allows a fragment-level key, a chainKey, a tag or a field
   expect(isChainFacetable('pairOrientation')).toBe(true)
   expect(isChainFacetable('mateAssembly')).toBe(true)
   expect(isChainFacetable('strand')).toBe(false)
-  expect(isChainFacetable('splitRead')).toBe(true)
-  expect(FACET_DIMENSIONS.splitRead.fragmentLevel).toBe(false)
+  expect(isChainFacetable('split')).toBe(true)
+  expect(FACET_DIMENSIONS.split.fragmentLevel).toBe(false)
   expect(isChainFacetable('mapq')).toBe(false)
   expect(isChainFacetable(undefined)).toBe(false)
 })
@@ -375,10 +441,10 @@ test('split-read grouping keys a chain off any read carrying SA', () => {
     }),
   ]
   const groups = partitionFeatures(features, {
-    field: 'splitRead',
+    field: 'split',
     unit: 'chain',
   })
-  expect(groups.map(g => g.label)).toEqual(['Split (SA)'])
+  expect(groups.map(g => g.label)).toEqual(['Split'])
   expect(groups[0]!.features).toHaveLength(2)
 })
 

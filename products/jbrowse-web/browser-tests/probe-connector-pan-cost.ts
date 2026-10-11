@@ -87,7 +87,7 @@ const VIEWS = {
       'hg008t_hifi',
       'HG008-T_PacBio-HiFi-Revio_116x.sv_read_evidence_slices.bam',
     ),
-    display: { unit: 'chain', facet: 'splitRead' },
+    display: { unit: 'chain', facet: 'split' },
   },
 }
 type View = keyof typeof VIEWS

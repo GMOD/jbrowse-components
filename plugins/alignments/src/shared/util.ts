@@ -48,6 +48,17 @@ export function getFlags(feature: Feature) {
 }
 
 /**
+ * The name of whatever this feature aligns to: a synteny block's `mate`, in the
+ * other assembly, or a read's mate reference, `next_ref`. Undefined where the
+ * feature has neither, so a caller can leave it uncolored rather than paint a
+ * hash of `''`.
+ */
+export function getMateRefName(feature: Feature) {
+  const mate = feature.get('mate') as { refName?: string } | undefined
+  return mate?.refName ?? (feature.get('next_ref') as string | undefined)
+}
+
+/**
  * A feature's strand, normalized to -1 / 0 / 1. THE source of strand for
  * everything downstream of an adapter — never re-derive it from
  * `SAM_FLAG_REVERSE`.
