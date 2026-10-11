@@ -81,7 +81,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
         description:
-          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
+          'Label text drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
         defaultValue: 'auto',
       },
       /**

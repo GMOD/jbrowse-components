@@ -79,7 +79,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot domainQuantile
-     * What an unset `domainMax` follows: the loaded counts' quantile, `0.95`
+     * The value an unset `domainMax` follows: the loaded counts' quantile, `0.95`
      * so faint off-diagonal contacts read, or at `1` their maximum. The track
      * menu's "Emphasize faint contacts" toggles it. The same word every color
      * ramp and `scales.y` take.

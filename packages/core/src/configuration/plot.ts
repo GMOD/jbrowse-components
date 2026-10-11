@@ -32,14 +32,13 @@ import type { AnyConfigurationModel } from './types.ts'
 // plot..." should show the row grouping.
 export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   marks: 'the marks drawn in order, each a mark and an encoding',
-  mark: 'what each value is drawn as: a bar, a point, a line or a span',
+  mark: 'the shape each value is drawn as: a bar, a point, a line or a span',
   interpolate:
-    'how a line joins its values: held across each bin, or centre to centre',
-  aggregate:
-    "which of a zoom bin's stored summaries is drawn: mean, min or max",
+    'the path a line takes between values: held across each bin, or centre to centre',
+  aggregate: 'the stored zoom-bin summary drawn: mean, min or max',
   extent: "the span drawn around each bin's aggregate: its min to max, or none",
   transform: 'the steps run over the features before any mark',
-  unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
+  unit: 'the unit one row draws: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',
   rows: 'the rows: their field or order, labels, focus and tree',
   rowColor: 'the color of each row, by a row attribute',
@@ -53,7 +52,7 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   size: "a point's diameter or a line's width, in px",
   origin: 'the value bars grow from',
   filter:
-    'what a feature has to pass: jexl: expressions, or on an alignments display the read flags, name, tags and categories',
+    'the tests a feature has to pass: jexl: expressions, or on an alignments display the read flags, name, tags and categories',
 }
 
 /**

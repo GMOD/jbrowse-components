@@ -19,7 +19,7 @@ function valueScaleRuleSchema() {
     {
       /**
        * #slot scales.y.rules.value
-       * Where the rule sits on the axis, in the units the axis plots: a
+       * The rule's position on the axis, in the units the axis plots: a
        * `-log10(p)` over a Manhattan plot, a depth over coverage.
        */
       value: {
@@ -143,8 +143,8 @@ export function valueScaleSchema({
     {
       /**
        * #slot scales.y.type
-       * How the axis reads its domain — the ticks, the cross-hatches and the
-       * renderer's placement all come from it. `log` cannot represent 0 or
+       * The axis's scale type, which sets the ticks, the cross-hatches and the
+       * renderer's placement. `log` cannot represent 0 or
        * negative values and floors the domain above them; `symlog` is log-like
        * away from zero and linear through it, so a track whose values touch or
        * cross 0 keeps them.
@@ -219,7 +219,7 @@ export function valueScaleSchema({
       },
       /**
        * #slot scales.y.domainQuantile
-       * Where an unpinned end's outliers are fenced. An end follows the
+       * The fence for an unpinned end's outliers. An end follows the
        * loaded values' extreme; below `1`, an extreme that would stretch the
        * axis past twice the span this quantile of the values draws stops at
        * that fence, and the bars past it wear the red clip strip. So `0.99`

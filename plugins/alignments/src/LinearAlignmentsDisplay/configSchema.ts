@@ -170,7 +170,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       baseColor: alignmentsBaseColorConfigSchema,
       /**
        * #slot modifications
-       * What the `modifications` and `bisulfite` color fields draw:
+       * Settings for the `modifications` and `bisulfite` color fields:
        * `threshold` (percent, default 10), `unmodified`,
        * `cytosineContext` and `shownModifications`.
        */
@@ -281,7 +281,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: 'read',
         // A chain joins by QNAME, never by a BX/MI linked-read barcode.
         description:
-          'What one row stands for: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
+          'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
       },
       /**
        * #slot
@@ -381,7 +381,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot arcColor
-       * What colors the read-connection arcs and the read cloud:
+       * The field the read-connection arcs and the read cloud are colored by:
        * `"pairOrientation"` paints them by pair orientation whatever the reads
        * show, and `""` takes the reads' `color` field where an arc paints it.
        */

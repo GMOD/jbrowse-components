@@ -37,7 +37,7 @@ const HicTrackConfigFactory = () => {
       ...triangleMatrixConfigSchemaFields,
       /**
        * #slot color
-       * How a count becomes a color: a `linear` or `log` scale onto a named
+       * The scale from count to color: a `linear` or `log` scale onto a named
        * `scheme`, over a domain whose unset ends follow the loaded counts.
        */
       color: hicColorConfigSchema,

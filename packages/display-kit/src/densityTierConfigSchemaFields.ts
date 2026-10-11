@@ -17,7 +17,7 @@ export const densityTierConfigSchemaFields = {
     model: types.enumeration('Density tier', [...DENSITY_TIER_MODES]),
     defaultValue: 'auto',
     description:
-      'when to draw the features-per-bin density band in place of features: "auto" swaps to it where the region is too large to fetch, "features" never does and keeps the banner, "density" always does. Needs a density source on the adapter (its densityAdapter slot)',
+      'the switch from features to the features-per-bin density band: "auto" swaps to it where the region is too large to fetch, "features" never does and keeps the banner, "density" always does. Needs a density source on the adapter (its densityAdapter slot)',
     advanced: true,
   },
   /**

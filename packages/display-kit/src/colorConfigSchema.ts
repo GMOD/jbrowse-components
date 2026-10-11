@@ -188,7 +188,7 @@ export function colorChannelSlots<
   field,
   fieldType,
   fieldDefault = '',
-  scale = 'how field paints; unset follows field, none paints value',
+  scale = 'unset follows field, none paints value',
 }: {
   scales: readonly S[]
   scaleName: string
@@ -242,7 +242,7 @@ export function colorRangeSlot({
 }
 
 /**
- * What a value `domain` does not list takes, as d3's `ordinal.unknown`: unset,
+ * The color of a value `domain` does not list, as d3's `ordinal.unknown`: unset,
  * the next palette color where the display deals one; a color, that color;
  * `""`, no color from this setting, so the value keeps its own. `range`
  * entries past the domain go unread while it is set.
@@ -251,17 +251,17 @@ export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'what a value domain does not list takes: unset the next palette color where the display deals one, a color that color, "" none from this setting',
+      'color of a value domain does not list: unset the next palette color where the display deals one, a color that color, "" none from this setting',
   },
 } as const
 
-/** What a key names each `domain` value, one each in order. */
+/** The key's name for each `domain` value, one each in order. */
 export const colorLabelsSlot = {
   labels: {
     type: 'stringArray',
     defaultValue: [],
     description:
-      'what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name',
+      'key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name',
   },
 } as const
 

@@ -56,7 +56,7 @@ const configSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * where the tabix index is and which kind it is. The `uri` shorthand derives
+     * The tabix index location and its kind. The `uri` shorthand derives
      * both, so a config using it states neither.
      */
     index: tabixIndexSchema(),

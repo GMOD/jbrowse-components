@@ -49,7 +49,7 @@ export const markSizeSchema = ConfigurationSchema(
     },
     /**
      * #slot scale
-     * How the value becomes a width: `linear` or `log` between `domainMin`
+     * The scale from value to width: `linear` or `log` between `domainMin`
      * and `domainMax`.
      */
     scale: {

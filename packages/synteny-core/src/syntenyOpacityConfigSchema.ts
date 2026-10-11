@@ -69,7 +69,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot field
-     * What fades an alignment: a measurement (`identity`, `mapq`, `dnds`) or
+     * The field each alignment is faded by: a measurement (`identity`, `mapq`, `dnds`) or
      * a column the tracks declare in `attributeColumns`. Empty draws every
      * alignment at `value`. Writing `opacity: "identity"` lands here.
      *

@@ -19,8 +19,8 @@ export const LD_VALUE_EXTENT = [0, 1] as const
 /**
  * #config LDColor
  * #category display
- * The LD display's `color`: which statistic the cells are, `r2` or `dprime`,
- * through a linear scale onto a named `scheme`. An unset `scheme` is the
+ * The LD display's `color` setting paints the statistic the cells show,
+ * `r2` or `dprime`, through a linear scale onto a named `scheme`. An unset `scheme` is the
  * metric's own, reds for r² and blues for D'. The domain is the statistic's
  * 0 to 1 rather than the loaded values', so one r² paints one color on every
  * track; `domainMin` and `domainMax` narrow it. The slots are the shared
@@ -40,7 +40,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * Which of the file's columns the cells are: `r2` (R², the R2/PHASED_R2
+     * The file column the cells show: `r2` (R², the R2/PHASED_R2
      * column) or `dprime` (D', the DP/ABS_DPRIME one). A file that carries
      * only one of the two serves that one whichever is asked for, and the
      * legend and the menu say which.

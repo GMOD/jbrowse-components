@@ -92,7 +92,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
       defaultValue: '',
       advanced: true,
       description:
-        'what relative bigWigs URLs resolve against, stamped from the location the config was loaded from',
+        'base for relative bigWigs URLs, stamped from the location the config was loaded from',
     },
     ...samplesTsvAdapterConfigSchemaFields,
   },

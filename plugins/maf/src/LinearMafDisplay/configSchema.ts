@@ -114,7 +114,8 @@ export default function configSchemaF() {
       },
       /**
        * #slot color
-       * What colors the aligned cells; see [MafColor](../mafcolor).
+       * The field the aligned cells are colored by; see
+       * [MafColor](../mafcolor).
        *
        * #example
        * ```js
@@ -132,7 +133,7 @@ export default function configSchemaF() {
         type: 'maybeStringEnum',
         model: types.enumeration('MafYField', [...MAF_Y_FIELDS]),
         description:
-          "what a row's bar height carries: identity, or unset for none",
+          "the value a row's bar height shows: identity, or unset for none",
       },
       /**
        * #slot

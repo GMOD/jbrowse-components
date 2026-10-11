@@ -74,13 +74,13 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot treeProvenance
-     * What `tree` was computed from, the locus and the settings; unset for a
-     * tree that arrived as data.
+     * The locus and settings `tree` was computed from; unset for a tree that
+     * arrived as data.
      */
     treeProvenance: {
       type: 'maybeFrozen',
       description:
-        'what tree was computed from, the locus and the settings; unset for a tree that arrived as data',
+        'the locus and settings tree was computed from; unset for a tree that arrived as data',
     },
     /**
      * #slot kept

@@ -58,7 +58,7 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot color
-       * Which statistic the cells are, `field` `r2` or `dprime`, and the
+       * The statistic the cells show, `field` `r2` or `dprime`, and the
        * linear ramp it paints through over the statistic's 0 to 1.
        */
       color: ldColorConfigSchema,

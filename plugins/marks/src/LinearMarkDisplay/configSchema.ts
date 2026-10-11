@@ -120,7 +120,7 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.labels
-     * What the key names each `domain` value, one each in order; one past the
+     * The key's name for each `domain` value, one each in order; one past the
      * list keeps its own name.
      */
     labels: {
@@ -140,7 +140,7 @@ const markShapeSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.shape.missingLabel
-     * What the key calls a feature with nothing in `field`; unset is
+     * The key's name for a feature with nothing in `field`; unset is
      * "(no value)".
      */
     missingLabel: {
@@ -298,8 +298,8 @@ const markSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.interpolate
-     * How a `line` joins its values: `step` holds each across its span, as
-     * the data says; `linear` runs from one span's centre to the next,
+     * The path a `line` takes between values: `step` holds each across its
+     * span, as the data says; `linear` runs from one span's centre to the next,
      * smoother where the spans are few. Read by a line alone.
      */
     interpolate: {
@@ -310,7 +310,7 @@ const markSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.linkShape
-     * How a link mark draws: `dome`, a half-ellipse whose apex is the pair's
+     * The shape of a link mark: `dome`, a half-ellipse whose apex is the pair's
      * half-width clamped to the band, `arc`, a true semicircle that may leave
      * it, or `line`, a straight segment between the feet, on the baseline or
      * at the `y` value. Past three block widths a dome or arc becomes a
@@ -335,8 +335,8 @@ const markSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding
-     * Which feature fields feed the mark's channels. Every channel has a
-     * default, so `{}` draws a bar from `start` to `end` with no value.
+     * The feature field each of the mark's channels reads. Every channel has
+     * a default, so `{}` draws a bar from `start` to `end` with no value.
      */
     encoding: markEncodingSchema,
     /**
@@ -350,7 +350,7 @@ const markSchema = ConfigurationSchema(
     transform: types.array(markTransformStep),
     /**
      * #slot marks.source
-     * Where this mark draws from once the byte gate refuses the features.
+     * The data this mark draws once the byte gate refuses the features.
      * `features` is off — the mark draws nothing past the budget. `density`
      * draws the adapter's `densityAdapter` sidecar in the banner's place, one
      * bar per sidecar bin over this mark's own y axis, and needs no transform:

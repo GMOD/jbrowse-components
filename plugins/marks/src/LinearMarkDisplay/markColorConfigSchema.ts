@@ -107,7 +107,7 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
-        'how field becomes a color: categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
+        'categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:
@@ -138,7 +138,7 @@ export const markColorSchema = ConfigurationSchema(
     ...colorDescendingSlot,
     /**
      * #slot missingLabel
-     * What the key calls a feature with nothing in `field`; unset is
+     * The key's name for a feature with nothing in `field`; unset is
      * "(no value)".
      */
     missingLabel: {

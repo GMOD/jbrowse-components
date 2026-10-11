@@ -186,7 +186,7 @@ export default function configSchemaFactory() {
         model: types.enumeration('VariantUnit', [...VARIANT_UNITS]),
         defaultValue: 'sample',
         description:
-          "What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype",
+          "The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype",
       },
       /**
        * #slot color
@@ -274,7 +274,7 @@ export default function configSchemaFactory() {
         model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
         defaultValue: 'skip',
         description:
-          "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
+          "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
       },
       /**
        * #slot
@@ -329,7 +329,7 @@ export default function configSchemaFactory() {
         model: types.enumeration('variantLaneLabels', [...SHOW_LABELS_MODES]),
         defaultValue: 'auto',
         description:
-          "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull",
+          "label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull",
       },
     },
     {

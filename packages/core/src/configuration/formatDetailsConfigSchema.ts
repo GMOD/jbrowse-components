@@ -66,7 +66,7 @@ export function FormatDetailsConfigSchemaFactory() {
     },
     /**
      * #slot formatDetails.depth
-     * how many levels of subfeature the `subfeatures` callback runs on,
+     * The number of subfeature levels the `subfeatures` callback runs on,
      * defaulting to 2, which stops at a gene's transcripts rather than
      * descending into their exons and CDSs. A track's value wins over the
      * session's
@@ -79,8 +79,8 @@ export function FormatDetailsConfigSchemaFactory() {
     },
     /**
      * #slot formatDetails.maxDepth
-     * how many levels of subfeature card the panel renders at all, which is a
-     * separate question from how deep `subfeatures` formats. Unset means no
+     * The number of subfeature card levels the panel renders at all,
+     * independent of how deep `subfeatures` formats. Unset means no
      * limit. A track's value wins over the session's
      */
     maxDepth: {

@@ -18,9 +18,9 @@ const CYTOSINE_CONTEXTS = [
 /**
  * #config AlignmentsModifications
  * #category display
- * The alignments displays' `modifications` setting: what the `modifications`
- * and `bisulfite` fields of [AlignmentsBaseColor](../alignmentsbasecolor)
- * draw. The by-type view paints each MM/ML call its type's color above
+ * The alignments displays' `modifications` setting configures the
+ * `modifications` and `bisulfite` fields of
+ * [AlignmentsBaseColor](../alignmentsbasecolor). The by-type view paints each MM/ML call its type's color above
  * `threshold`; `unmodified: 'calls'` paints the unmodified side blue as well,
  * and `unmodified: 'all'` paints every cytosine in `cytosineContext` whether
  * the basecaller listed it or not, which is the methylation view.
@@ -63,7 +63,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       ]),
       defaultValue: 'hidden',
       description:
-        "which unmodified sites paint blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view",
+        "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view",
     },
     /**
      * #slot
@@ -73,7 +73,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       model: types.enumeration('CytosineContext', [...CYTOSINE_CONTEXTS]),
       defaultValue: 'CG',
       description:
-        'which cytosines the methylation fill and bisulfite paint: CG, CHG, CHH or all',
+        'cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all',
     },
     /**
      * #slot

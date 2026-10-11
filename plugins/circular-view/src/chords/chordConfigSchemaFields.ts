@@ -18,7 +18,7 @@ export const chordConfigSchemaFields = {
     type: 'number',
     defaultValue: 0.1,
     description:
-      "how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span",
+      "a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span",
   },
 } as const
 

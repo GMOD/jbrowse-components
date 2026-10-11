@@ -148,8 +148,8 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * how far from the center a chord across the circle passes, as a
-       * fraction of the radius; a shorter chord bows less, in proportion to its
+       * a chord's distance from the center at its closest, as a fraction of
+       * the radius; a shorter chord bows less, in proportion to its
        * span
        */
       get bezierRadiusRatio(): number {

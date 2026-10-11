@@ -9,7 +9,7 @@ export default ConfigurationSchema(
   {
     /**
      * #slot
-     * which RPC backend to use. Empty means "use the host application's
+     * The RPC backend. Empty means "use the host application's
      * default" (web/desktop default to the web worker driver, embedded/headless
      * to the main thread). Every call in the session runs on the driver this
      * names; there is no per-track or per-call override.

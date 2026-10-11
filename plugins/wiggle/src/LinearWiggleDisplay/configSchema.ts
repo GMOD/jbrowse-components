@@ -95,7 +95,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot mark
-     * What each score is drawn as, in the mark display's words: `bar`, a bar
+     * The shape each score is drawn as, in the mark display's words: `bar`, a bar
      * from the `origin` to the score; `point`, a point at it; `line`, a line
      * through the scores; `span`, a strip whose color is the score. The
      * track menu's Plot type writes it. v4's `defaultRendering` loads as its
@@ -117,8 +117,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot interpolate
-     * How a `line` joins its scores: `step` holds each across its bin, as the
-     * data says; `linear` runs from one bin's centre to the next, smoother
+     * The path a `line` takes between scores: `step` holds each across its
+     * bin, as the data says; `linear` runs from one bin's centre to the next, smoother
      * where the bins are few. Read by a line alone.
      */
     interpolate: {

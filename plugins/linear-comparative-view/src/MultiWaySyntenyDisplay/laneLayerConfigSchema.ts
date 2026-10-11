@@ -50,7 +50,7 @@ export const laneLayerConfigSchema = ConfigurationSchema(
     name: {
       type: 'string',
       defaultValue: '',
-      description: "what the layer's band is labelled",
+      description: "label of the layer's band",
     },
     /**
      * #slot tracks

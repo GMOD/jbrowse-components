@@ -19,7 +19,7 @@ export const lodModeSlot = {
     model: types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
     defaultValue: 'auto',
     description:
-      "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels",
+      "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels",
   },
 } as const
 

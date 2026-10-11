@@ -21,7 +21,7 @@ export function aggregateConfigSchemaFields({
       model: types.enumeration('Aggregate', [...AGGREGATES]),
       defaultValue: 'mean',
       description:
-        "which of a zoom bin's stored summaries is drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing",
+        "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing",
     },
     extent: {
       type: 'stringEnum',

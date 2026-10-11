@@ -52,7 +52,7 @@ export const ribbonColorConfigSchema = ConfigurationSchema(
     ...syntenyColorSlots({
       scaleName: 'RibbonColorScale',
       field:
-        "what colors a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)",
+        "field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)",
     }),
   },
   colorChannelOptions('ribbonColor', MEASURE_FIELD_PRESETS),

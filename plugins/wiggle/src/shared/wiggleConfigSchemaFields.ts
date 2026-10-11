@@ -29,7 +29,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 1,
     description:
-      'how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end',
+      'points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end',
   },
   origin: {
     type: 'number',

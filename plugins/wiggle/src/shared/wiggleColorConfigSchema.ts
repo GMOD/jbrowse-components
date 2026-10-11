@@ -82,7 +82,7 @@ export const wiggleColorSchema = ConfigurationSchema(
     },
     /**
      * #slot scale
-     * How `score` becomes a color. `threshold` paints each band between two
+     * The scale from `score` to a color. `threshold` paints each band between two
      * of its cuts, and on a density plot (`mark: 'span'`) fades from white at
      * the lowest cut to the first `range` color below it and the last above it;
      * `linear` runs `range`, else `scheme`, else viridis across

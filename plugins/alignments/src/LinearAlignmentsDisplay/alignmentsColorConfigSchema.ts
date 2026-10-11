@@ -78,7 +78,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       scaleName: 'AlignmentsColorScale',
       fieldType: 'string',
       field:
-        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
+        'field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
       scale:
         'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field',
     }),
@@ -95,15 +95,15 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     ...colorRampSlots,
     /**
      * #slot labels
-     * What the key, the hovers and the arc key name each level or value
-     * `range` colors, in the same order: `labels: ["Maternal", "Paternal"]`
+     * Names for each level or value `range` colors, in the same order, in
+     * the key, the hovers and the arc key: `labels: ["Maternal", "Paternal"]`
      * beside `domain: ["1", "2"]` on `tags.HP`.
      */
     labels: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
+        "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
     },
     ...colorTitleSlot,
     ...colorDescendingSlot,

@@ -54,7 +54,8 @@ export const MAF_FIELD_PRESETS = {
 /**
  * #config MafColor
  * #category display
- * The MAF display's `color`: what colors each species row's aligned cells.
+ * The MAF display's `color` setting colors each species row's aligned cells
+ * by one field.
  * `mismatch` paints a base only where it differs from the reference,
  * `base` every base, `identity` the mean identity to the reference along a
  * ramp, `chromosome` each block by the rank of its source chromosome within
@@ -92,7 +93,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       model: types.enumeration('MafColorField', [...MAF_COLOR_FIELDS]),
       defaultValue: 'mismatch',
       description:
-        'what colors a cell: mismatch, base, identity, chromosome or codon',
+        'field to color each cell by: mismatch, base, identity, chromosome or codon',
     },
     /**
      * #slot domain
@@ -119,7 +120,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'what the key names each domain value, one each in order; one past the list keeps its own name',
+        'key name for each domain value, one each in order; one past the list keeps its own name',
     },
     /**
      * #slot title

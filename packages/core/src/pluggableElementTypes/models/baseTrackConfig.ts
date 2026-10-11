@@ -234,7 +234,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * where this track's data comes from. Its `type` names the adapter for
+       * The source of this track's data. Its `type` names the adapter for
        * the file format (`BamAdapter`, `Gff3TabixAdapter`, ...) and the rest of
        * the object is that adapter's own slots — see the adapter pages for
        * each. Most adapters also accept a `uri` shorthand in place of writing
