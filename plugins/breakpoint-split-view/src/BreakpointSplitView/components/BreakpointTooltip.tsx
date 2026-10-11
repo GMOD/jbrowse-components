@@ -1,17 +1,14 @@
-import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
 const BreakpointTooltip = observer(function BreakpointTooltip({
-  contents,
+  lines,
 }: {
-  contents?: string
+  lines: string[]
 }) {
-  return contents ? (
+  return lines.length ? (
     <BaseTooltip>
-      <div>
-        <SanitizedHTML html={contents} />
-      </div>
+      <div style={{ whiteSpace: 'pre-wrap' }}>{lines.join('\n')}</div>
     </BaseTooltip>
   ) : null
 })

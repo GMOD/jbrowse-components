@@ -107,7 +107,7 @@ const AlignmentConnections = observer(function AlignmentConnections(
                   buildPairTooltip(
                     entryLabel(e1),
                     entryLabel(e2),
-                    hiddenNote ? `${label}<br/>${hiddenNote}` : label,
+                    hiddenNote ? [label, hiddenNote] : [label],
                   ),
                 highlights: () =>
                   chainHighlightRects({

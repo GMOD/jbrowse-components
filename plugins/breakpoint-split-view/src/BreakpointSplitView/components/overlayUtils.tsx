@@ -142,15 +142,14 @@ export function readTooltipLabel(name: string, loc: string) {
   return name ? `${truncateMiddle(name)} (${loc})` : loc
 }
 
-// shared by every overlay type's hover tooltip: two endpoint labels plus an
-// optional reason (e.g. why the connecting curve is colored a certain way)
+// shared by every overlay type's hover tooltip: two endpoint labels plus any
+// reasons (e.g. why the connecting curve is colored a certain way)
 export function buildPairTooltip(
   from: Feature | string,
   to: Feature | string,
-  reason?: string,
+  reasons: string[] = [],
 ) {
-  const base = `${endpointLabel(from)} → ${endpointLabel(to)}`
-  return reason ? `${base}<br/>${reason}` : base
+  return [`${endpointLabel(from)} → ${endpointLabel(to)}`, ...reasons]
 }
 
 export interface PathSpec {
@@ -161,7 +160,7 @@ export interface PathSpec {
    * ever built, and each walks the features behind the curve, so they resolve
    * on hover rather than for all N every frame.
    */
-  tooltip?: () => string
+  tooltip?: () => string[]
   highlights?: () => HighlightRect[]
   /** Resolved at click time, for the reason `variantWidgetOpener` gives. */
   openWidget?: () => void
@@ -283,7 +282,7 @@ export const OverlayPaths = observer(function OverlayPaths({
           </Fragment>
         ))}
       {hovered?.tooltip ? (
-        <BreakpointTooltip contents={hovered.tooltip()} />
+        <BreakpointTooltip lines={hovered.tooltip()} />
       ) : null}
     </g>
   )
