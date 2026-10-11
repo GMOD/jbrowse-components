@@ -43,7 +43,8 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
         }
-      }
+      },
+      "displayDefaults": { "extent": "none" }
     },
     {
       "type": "FeatureTrack",
@@ -72,7 +73,8 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
         }
-      }
+      },
+      "displayDefaults": { "extent": "none" }
     },
     {
       "type": "FeatureTrack",
@@ -101,7 +103,8 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
         }
-      }
+      },
+      "displayDefaults": { "extent": "none" }
     },
     {
       "type": "FeatureTrack",
@@ -130,7 +133,8 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
         }
-      }
+      },
+      "displayDefaults": { "extent": "none" }
     }
   ],
   "defaultSession": {

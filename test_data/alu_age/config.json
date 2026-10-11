@@ -26,7 +26,8 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
         }
-      }
+      },
+      "displayDefaults": { "extent": "none" }
     },
     {
       "type": "FeatureTrack",

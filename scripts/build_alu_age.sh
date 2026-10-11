@@ -219,7 +219,7 @@ jb add-track-json track.json --out "$APP" --update
 # The copies per kilobase, a track of their own for a whole chromosome, where
 # the copies track is over its fetch budget.
 jb add-track "${BED%.gz}.density.bw" --trackId "${FAMILY}_per_kb" --name "$FAMILY copies per kb" \
-  --assemblyNames "$ASM" --load inPlace --out "$APP" --force
+  --assemblyNames "$ASM" --displayDefaults '{"extent":"none"}' --load inPlace --out "$APP" --force
 
 # Two tracks over the per-megabase BED, one column each, on one fixed axis.
 # Bars grow from zero, colored by a threshold at 0 whose key names the two

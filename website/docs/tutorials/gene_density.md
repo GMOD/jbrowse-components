@@ -84,9 +84,14 @@ Add the bigWig as a track:
   "trackId": "hg38_genes_density",
   "name": "RefSeq genes per kb",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
+  "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw",
+  "displayDefaults": { "extent": "none" }
 }
 ```
+
+`extent: "none"` draws each bin's mean alone. Most kilobases hold no gene or
+one, so the min-max band drawn around the mean would fill every zoomed-out pixel
+to the same height.
 
 The three repeat tracks come from cutting the RepeatMasker table into one BED
 per `repFamily`, so the Alu bigWig counts only Alus. The same `make-density`
@@ -97,7 +102,8 @@ line over each family BED builds its bigWig:
   "trackId": "hg38_Alu_density",
   "name": "Alu per kb",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw",
+  "displayDefaults": { "extent": "none" }
 }
 ```
 
@@ -108,7 +114,8 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
   "trackId": "hg38_L1_density",
   "name": "L1 per kb",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
+  "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw",
+  "displayDefaults": { "extent": "none" }
 }
 ```
 
@@ -117,7 +124,8 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
   "trackId": "hg38_Simple_repeat_density",
   "name": "Simple repeats per kb",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
+  "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw",
+  "displayDefaults": { "extent": "none" }
 }
 ```
 

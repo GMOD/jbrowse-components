@@ -81,13 +81,16 @@ done
 
 jb add-track genes.gff.gz --trackId hg38_genes --name "RefSeq curated genes" \
   --assemblyNames hg38 --load inPlace --out "$APP" --force
+# --displayDefaults draws each bin's mean alone: a 1 kb count is mostly 0 or 1,
+# so the min-max band around it would read as a presence stripe zoomed out
 jb add-track genes.gff.density.bw --trackId hg38_genes_density --name "RefSeq genes per kb" \
-  --assemblyNames hg38 --load inPlace --out "$APP" --force
+  --assemblyNames hg38 --displayDefaults '{"extent":"none"}' --load inPlace --out "$APP" --force
 for family in Alu L1 Simple_repeat; do
   jb add-track "$family.bed.gz" --trackId "hg38_$family" --name "RepeatMasker $family" \
     --assemblyNames hg38 --load inPlace --out "$APP" --force
   jb add-track "$family.bed.density.bw" --trackId "hg38_${family}_density" \
-    --name "${family/Simple_repeat/Simple repeats} per kb" --assemblyNames hg38 --load inPlace --out "$APP" --force
+    --name "${family/Simple_repeat/Simple repeats} per kb" --assemblyNames hg38 \
+    --displayDefaults '{"extent":"none"}' --load inPlace --out "$APP" --force
 done
 
 echo "built $OUTDIR/$APP; serve it with: npx --yes serve $OUTDIR/$APP"

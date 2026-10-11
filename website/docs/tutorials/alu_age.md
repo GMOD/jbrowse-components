@@ -168,7 +168,8 @@ Add the bigWig as a track:
   "trackId": "alu_per_kb",
   "name": "Alu copies per kb",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw",
+  "displayDefaults": { "extent": "none" }
 }
 ```
 
