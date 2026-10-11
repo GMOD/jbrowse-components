@@ -244,6 +244,71 @@ test('base modifications paint under the modifications layer, keyed with the rea
   expect(calls.modifications.name).toContain('Unmodified 5mC')
 })
 
+test('the coverage band\u2019s stacks are the worker\u2019s: alleles, and modification states under the layer', async () => {
+  const { mismatches, alleleCoverage, coverage } = await engine.alignments(BAM)
+  expect(alleleCoverage.position.length).toBeGreaterThan(0)
+  const sites = new Set(mismatches.position)
+  const depthAt = new Map(
+    Array.from(coverage.start, (s, i) => [s, coverage.depth[i]!] as const),
+  )
+  alleleCoverage.position.forEach((p, i) => {
+    expect(sites.has(p)).toBe(true)
+    expect('ACGTN').toContain(alleleCoverage.base[i])
+    expect(alleleCoverage.from[i]).toBeLessThan(alleleCoverage.to[i]!)
+    expect(alleleCoverage.to[i]).toBeLessThanOrEqual(1 + 1e-6)
+    expect(alleleCoverage.depth[i]).toBeCloseTo(depthAt.get(p)!, 3)
+  })
+  const { modificationCoverage } = await engine.alignments({
+    ...METHYLATED,
+    baseColor: { field: 'modifications' },
+    modifications: { unmodified: 'calls' },
+  })
+  expect(modificationCoverage.position.length).toBeGreaterThan(0)
+  expect(new Set(modificationCoverage.color).size).toBe(2)
+  modificationCoverage.from.forEach((from, i) => {
+    expect(from).toBeLessThan(modificationCoverage.to[i]!)
+    expect(modificationCoverage.to[i]).toBeLessThanOrEqual(1 + 1e-6)
+    expect(modificationCoverage.opacity[i]).toBeGreaterThan(0)
+  })
+})
+
+test('the display\u2019s sort object orders the rows', async () => {
+  const plain = await engine.alignments(BAM)
+  const site = plain.mismatches.position[0]!
+  const sorted = await engine.alignments({
+    ...BAM,
+    sort: { type: 'basePair', pos: site },
+  })
+  const rowOf = (t: typeof sorted, i: number) => t.reads.row[i]!
+  const bases = new Map<number, string>()
+  sorted.mismatches.position.forEach((p, i) => {
+    if (p === site) {
+      bases.set(sorted.mismatches.read[i]!, sorted.mismatches.base[i]!)
+    }
+  })
+  const covering = sorted.reads.start
+    .map((_, i) => i)
+    .filter(i => sorted.reads.start[i]! <= site && sorted.reads.end[i]! > site)
+  const mismatched = covering
+    .filter(i => bases.has(i))
+    .map(i => rowOf(sorted, i))
+  const matching = covering
+    .filter(i => !bases.has(i))
+    .map(i => rowOf(sorted, i))
+  expect(mismatched.length).toBeGreaterThan(0)
+  expect(Math.max(...mismatched)).toBeLessThan(Math.min(...matching))
+
+  // the length order lays the longest reads out first, by their clipped extent
+  const byLength = await engine.alignments({ ...BAM, sort: { type: 'length' } })
+  const lengths = byLength.reads.start.map((s, i) => byLength.reads.end[i]! - s)
+  const top = [...lengths].sort((a, b) => b - a)[
+    Math.floor(lengths.length / 20)
+  ]!
+  const first = byLength.reads.row.indexOf(0)
+  expect(lengths[first]).toBeGreaterThanOrEqual(top)
+  expect(byLength.reads.row).not.toEqual(plain.reads.row)
+})
+
 test('a region of the reference reads as its bases', async () => {
   const bases = await engine.sequence({
     sequenceAdapter: BAM.sequenceAdapter!,

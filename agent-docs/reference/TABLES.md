@@ -86,7 +86,14 @@ the call says the base is unmodified, and the color and opacity the display
 paints it at), the reads take the layer's pale strand tints, and the key
 gains the modification rows. `referenceSequence` reads a region's bases
 through the assembly's sequence adapter, for a host drawing them under a
-pileup; the bundle serves it as `jbrowse.sequence`.
+pileup; the bundle serves it as `jbrowse.sequence`. The coverage band's
+stacks come back as the worker packs them for the display: `alleleCoverage`
+(each mismatch position's alleles as fractions of its bar, `from` and `to`,
+with the `depth` there) and `modificationCoverage` (each modification state's
+share, in its color and opacity), decoded through alignments-core's own
+segment readers, so a host stacks what the display stacks. The display's
+`sort` object (a whole-window order, or a column sort over `pos`) lays the
+rows out as the display does.
 
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the

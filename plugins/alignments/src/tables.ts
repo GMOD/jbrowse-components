@@ -1,4 +1,8 @@
-import { pairDirectionOfNum } from '@jbrowse/alignments-core'
+import {
+  pairDirectionOfNum,
+  readModCovSegments,
+  readSnpSegments,
+} from '@jbrowse/alignments-core'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
@@ -17,6 +21,7 @@ import CramAdapterF from './CramAdapter/index.ts'
 import { alignmentsBaseColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts'
+import { alignmentsSortConfigSchema } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
@@ -53,7 +58,11 @@ import {
 } from './shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
-import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from './shared/types.ts'
+import {
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+  isLayoutOrder,
+} from './shared/types.ts'
 import { getColorForModification } from './util.ts'
 
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
@@ -61,7 +70,12 @@ import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
-import type { BaseLayer, ModificationColorBy } from './shared/types.ts'
+import type {
+  BaseLayer,
+  ModificationColorBy,
+  SortColumn,
+  SortType,
+} from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -124,6 +138,13 @@ export interface AlignmentTablesArgs {
   baseColor?: SnapshotIn<typeof alignmentsBaseColorConfigSchema>
   /** The display's `modifications` object, the settings that layer reads. */
   modifications?: SnapshotIn<typeof alignmentsModificationsConfigSchema>
+  /**
+   * The display's `sort` object: a whole-window order (`position`, `length`,
+   * `spliced`, `split`), or a column sort (`strand`, `basePair`, `tag`,
+   * `insertion`, `softclip`, `hardclip`) over `pos`, on the region's contig
+   * where `refName` is left out, ranking by `tag` under `tag`.
+   */
+  sort?: SnapshotIn<typeof alignmentsSortConfigSchema>
   /**
    * The most compressed bytes the region may need, refused off the index
    * before any read is fetched. 200 MB by default; a host holds the whole
@@ -204,6 +225,27 @@ function hexOf(css: string) {
  * same scale and classified into the same buckets, each painted the color the
  * display paints it, and the key the display shows beside them.
  */
+/** The display's `sort` object as the layout and the worker read it. */
+function sortFor(sort: AlignmentTablesArgs['sort'], refName: string) {
+  const node = alignmentsSortConfigSchema.create(sort ?? {})
+  const type: SortType = readConfObject(node, 'type')
+  const pos: number | undefined = readConfObject(node, 'pos')
+  const column: SortColumn | undefined =
+    isLayoutOrder(type) || pos === undefined
+      ? undefined
+      : {
+          type,
+          pos,
+          refName: readConfObject(node, 'refName') ?? refName,
+          tag: readConfObject(node, 'tag'),
+        }
+  return {
+    layoutOrder: isLayoutOrder(type) ? type : undefined,
+    sortColumn: column,
+    sortTag: column?.type === 'tag' ? column.tag : undefined,
+  }
+}
+
 /** The display's per-base layer, from its `baseColor` and `modifications` objects. */
 function baseLayerFor({
   baseColor,
@@ -356,6 +398,39 @@ function modifications(d: WorkerPileupData) {
 }
 
 /**
+ * The coverage band's stacked segments, as the worker packs them for the
+ * display: at each position with a mismatch, each allele's share of the bar
+ * from the bottom up, and under the modifications layer each modification
+ * state's share, with the color and opacity it paints in. `from` and `to` are
+ * fractions of the position's depth, which `depth` gives.
+ */
+function coverageStacks(d: WorkerPileupData) {
+  const depthOf = (relDepth: number) => relDepth * d.coverageMaxDepth
+  const alleles = readSnpSegments(d.snpPackedBuffer)
+  const modifications = readModCovSegments(d.modCovPackedBuffer)
+  return {
+    alleleCoverage: {
+      position: alleles.map(a => a.position),
+      base: alleles.map(a => 'ACGTN'[a.colorType - 1] ?? 'N'),
+      from: alleles.map(a => a.yOffset),
+      to: alleles.map(a => a.yOffset + a.height),
+      depth: alleles.map(a => depthOf(a.relDepth)),
+    },
+    modificationCoverage: {
+      position: modifications.map(m => m.position),
+      from: modifications.map(m => m.yOffset),
+      to: modifications.map(m => m.yOffset + m.height),
+      depth: modifications.map(m => depthOf(m.relDepth)),
+      color: modifications.map(
+        m =>
+          `#${hex(abgrRed(m.packedColor))}${hex(abgrGreen(m.packedColor))}${hex(abgrBlue(m.packedColor))}`,
+      ),
+      opacity: modifications.map(m => abgrAlpha(m.packedColor) / 255),
+    },
+  }
+}
+
+/**
  * The share of the depth a mark's site holds, as the display fades a
  * sub-pixel mark by it: the worker's byte, zeroed below its depth-dependent
  * threshold, so a sequencing error on a deep pileup fades to the floor.
@@ -482,6 +557,7 @@ function sectionTables(
     },
     ...interbase(d),
     modifications: modifications(d),
+    ...coverageStacks(d),
     junctions: junctions(d, refName),
     legend: colors.legend,
     legendTitle: colors.legendTitle,
@@ -510,6 +586,7 @@ export async function alignmentTables(
     filter,
     baseColor,
     modifications,
+    sort,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: AlignmentTablesArgs,
 ): Promise<AlignmentTables> {
@@ -519,6 +596,7 @@ export async function alignmentTables(
     ),
   )
   const baseLayer = baseLayerFor({ baseColor, modifications })
+  const { layoutOrder, sortColumn, sortTag } = sortFor(sort, region.refName)
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -527,6 +605,7 @@ export async function alignmentTables(
     filterBy: readFilterOf(readFilterConfigSchema.create(filter ?? {})),
     colorBy,
     baseLayer,
+    sortTag,
     byteLimit,
     statusCallback: () => {},
   }
@@ -543,7 +622,8 @@ export async function alignmentTables(
   }
   const laid = buildLaidOutPileupMap({
     dataMap: new Map([[0, data]]),
-    sortColumn: undefined,
+    sortColumn,
+    layoutOrder,
     showSoftClipping: false,
     regions: new Map([[0, region]]),
   }).get(0)!

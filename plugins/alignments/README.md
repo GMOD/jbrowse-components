@@ -19,7 +19,7 @@ adapters must be registered on `pluginManager` (`registerAlignmentsAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, color, filter, baseColor, modifications, byteLimit, }: AlignmentTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, color, filter, baseColor, modifications, sort, byteLimit, }: AlignmentTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
