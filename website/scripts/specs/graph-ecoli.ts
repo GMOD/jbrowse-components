@@ -154,27 +154,13 @@ const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 // is the fine graph's.
 const PGGB_TIER_IS5_NODE = '160195'
 
-// The coarse level-of-detail tier of the pggb graph: one node per bubble, with
-// the invariant reference between bubbles as backbone. Same two files and same
-// adapter as the fine tier, so nothing in the view, the glyphs or the renderer
-// knows the difference -- a collapsed bubble is a reference span with an id and
-// a rank, which is the whole segs/links contract.
+// The coarse tier of the pggb graph: the whole graph with every variant under
+// 50 bp folded into K12's segments, which `gfa-to-tabix build` writes as
+// ecoli_pggb.fold50 beside the fine pair. Same two files and same adapter as
+// the fine tier, so nothing in the view or the renderer knows the difference.
 //
-// It exists because `gfatools bubble` returns NOTHING on a pggb GFA (it reads
-// rGFA SN/SO/SR to place a bubble on a reference), which left the graph that
-// most needs coarsening as the one that could not be coarsened. The
-// decomposition this is built from is the one the graph already ships:
-// `gfa-to-tabix bubbles` turns the hosted `vg deconstruct` snarl VCF
-// into the bubble BED `bubbles_to_tier_bed.py` reads, and `build_bubble_tier.sh`
-// does the rest. Measured: 143,964 top-level snarls over the whole 4.64 Mb
-// graph, 544 of them at `--min-content 50`, so the ENTIRE pangenome is 1,088
-// nodes in 51 kB against 606k segments in the fine index.
-//
-// 50 rather than the HPRC tier's 10,000, and the threshold is what the figure
-// turns on: at 0 every SNP is its own node (462 bubbles in 20 kb, which is worse
-// than the fine tier), and at 1,000 the 1.2 kb insertion this locus is about is
-// the only thing left in 50 kb. 50 keeps every indel and absorbs the
-// single-base alternatives into backbone, which is the cut a reader wants.
+// At 50 bp the fold absorbs the single-base alternatives and keeps every
+// indel, including the 1.2 kb IS5 element this locus is about.
 const PGGB_TIER_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_TIER_TRACK)
 
 // The segments track as a graph over the tier window. Past the adapter's
@@ -931,7 +917,7 @@ export const pggbVideoFixtures = {
 }
 
 export const ecoliGraphSpecs: ScreenshotSpec[] = [
-  // THE COARSE END OF THE LADDER: the pggb graph drawn one node per bubble
+  // THE COARSE END OF THE LADDER: the pggb graph with small variants folded
   // instead of one node per segment. This was the answer to the second report
   // on the fine-grained figure that used to sit above it ("the large green loop
   // is small now but figure still has many small bubbles. we may want to look
@@ -941,13 +927,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // (pggb_locus_graph) has since been deleted -- it never stopped reading as a
   // tangle.
   //
-  // What the collapse does: 15 kb here is two bubbles, the IS5 element and the
-  // insZ element to its left, because a `--min-content 50` tier absorbs every
-  // single-base bubble into the backbone and keeps every indel. Each surviving
-  // node states what it collapsed (`cn` segments, `cw` traversals, `cs`/`cl`
-  // shortest and longest allele), and the IS5 insertion is `cl:i:1200` here.
-  // insZ is the frame's control: NCTC86's MAF row runs straight through it
-  // while it breaks across insH21 with the other three.
+  // What the fold leaves in 15 kb: the IS5 element and the insZ element to its
+  // left, with every single-base variant folded into the backbone. insZ is the
+  // frame's control: NCTC86's MAF row runs straight through it while it breaks
+  // across insH21 with the other three.
   //
   // Anchored rather than force-directed, which is the opposite choice from the
   // fine figure and for the reason the layout note gives: a tier IS a chain
@@ -961,7 +944,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // down one corner of the pane with the IS5 callout off-frame: with no branch
   // structure, the force solver has nothing to spread and returns the chain as
   // a line, while the anchored layout spends the same pixels putting each
-  // bubble under its own coordinate. The backbone looking plain is the
+  // variant under its own coordinate. The backbone looking plain is the
   // anchoring working.
   //
   // The graph is the segments track itself: at this zoom it is past the
