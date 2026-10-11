@@ -26,6 +26,26 @@ export const BAM: AlignmentTablesArgs = {
   region,
 }
 
+export const SPLICED: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('spliced.bam'),
+    index: { location: uri('spliced.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 400, end: 1300 },
+}
+
+export const LONG_READS: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-long-reads-sv.bam'),
+    index: { location: uri('volvox-long-reads-sv.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 1000, end: 20000 },
+}
+
 export const CRAM: AlignmentTablesArgs = {
   adapterConfig: {
     type: 'CramAdapter',

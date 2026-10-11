@@ -65,6 +65,15 @@ than the reference does, it names both: `region.refName` for the file and
 `region.originalRefName` for the reference, as the browser's renamed regions
 carry it (ggjbrowse's `reference_chrom`).
 
+Beside the reads come the marks the display draws on them, each as the
+worker ships it: `insertions` (position, length, sequence, read), `clips`
+(position, length, `soft` or `hard`, read) and `junctions`, the skips merged
+as the sashimi band merges them (start, end, supporting-read count, strand off
+the reads' tags or the splice motif, and the motif where the region's sequence
+covers both ends), every junction down to a single read, since the display's
+`minSashimiScore` is the host's to apply. `alignmentColors` names the
+insertion, soft-clip and hard-clip colors beside the rest.
+
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
 downstream canary is for.

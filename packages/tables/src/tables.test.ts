@@ -1,5 +1,5 @@
 import { alignmentColors, createTablesEngine } from './index.ts'
-import { BAM, CRAM } from './volvox.fixture.ts'
+import { BAM, CRAM, LONG_READS, SPLICED } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -61,6 +61,9 @@ test('the colors are the display\u2019s, one per base', () => {
     colors.read,
     colors.skip,
     colors.deletion,
+    colors.insertion,
+    colors.softclip,
+    colors.hardclip,
     colors.coverage,
   ]) {
     expect(color).toMatch(/^(#|rgb)/)
@@ -142,6 +145,48 @@ test('the display\u2019s filter object keeps the reads it keeps', async () => {
   expect(reverse.reads.strand.every(s => s === -1)).toBe(true)
   expect(reverse.reads.name.length).toBeGreaterThan(0)
   expect(reverse.reads.name.length).toBeLessThan(all.reads.name.length)
+})
+
+test('insertions and clips sit on their reads', async () => {
+  const { reads, insertions, clips } = await engine.alignments(LONG_READS)
+  expect(insertions.position.length).toBeGreaterThan(0)
+  insertions.position.forEach((p, i) => {
+    const r = insertions.read[i]!
+    expect(p).toBeGreaterThanOrEqual(reads.start[r]!)
+    expect(p).toBeLessThanOrEqual(reads.end[r]!)
+    expect(insertions.length[i]).toBeGreaterThan(0)
+    expect(insertions.sequence[i]).toHaveLength(insertions.length[i]!)
+  })
+  expect(new Set(clips.type)).toEqual(new Set(['soft', 'hard']))
+  clips.type.forEach((_, i) => {
+    const r = clips.read[i]!
+    expect([reads.start[r], reads.end[r]]).toContain(clips.position[i])
+    expect(clips.length[i]).toBeGreaterThan(0)
+  })
+})
+
+test('junctions are the skips merged, each with its support', async () => {
+  const { gaps, junctions } = await engine.alignments(SPLICED)
+  const skips = new Set(
+    gaps.type.flatMap((t, i) =>
+      t === 'skip' ? [`${gaps.start[i]}-${gaps.end[i]}`] : [],
+    ),
+  )
+  expect(junctions.start.length).toBe(skips.size)
+  junctions.start.forEach((start, i) => {
+    expect(skips.has(`${start}-${junctions.end[i]}`)).toBe(true)
+    expect(junctions.count[i]).toBeGreaterThan(0)
+    expect([1, -1, 0]).toContain(junctions.strand[i])
+  })
+  // the motif is read under a junction whose ends the region's sequence covers
+  expect(junctions.motif.filter(Boolean).length).toBeGreaterThan(0)
+  for (const m of junctions.motif) {
+    expect(m === '' || m === 'non-canonical' || m.endsWith('(canonical)')).toBe(
+      true,
+    )
+  }
+  const total = junctions.count.reduce((a, b) => a + b, 0)
+  expect(total).toBe(gaps.type.filter(t => t === 'skip').length)
 })
 
 test('a region over the byte limit is refused before any read is fetched', async () => {

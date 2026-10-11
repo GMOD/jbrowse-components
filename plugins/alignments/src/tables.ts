@@ -27,6 +27,8 @@ import {
 } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { buildLaidOutPileupMap } from './RenderAlignmentDataRPC/sortLayout.ts'
+import { mergeJunctions } from './features/sashimi/junctions.ts'
+import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -39,6 +41,7 @@ import {
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from './shared/legendUtils.ts'
+import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from './shared/types.ts'
 
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type {
@@ -228,6 +231,65 @@ function colorReads(
 }
 
 /**
+ * The insertions on the reads and the clips at their ends, which the worker
+ * ships as one interbase list: an insertion with its length and, where the
+ * reader kept it, its sequence; a clip with its length and whether the clipped
+ * bases are in the file (`soft`) or not (`hard`).
+ */
+function interbase(d: WorkerPileupData) {
+  const insertions = {
+    position: [] as number[],
+    length: [] as number[],
+    sequence: [] as string[],
+    read: [] as number[],
+  }
+  const clips = {
+    position: [] as number[],
+    length: [] as number[],
+    type: [] as string[],
+    read: [] as number[],
+  }
+  for (let i = 0; i < d.interbasePositions.length; i++) {
+    const type = d.interbaseTypes[i]!
+    if (type === INTERBASE_INSERTION) {
+      insertions.position.push(d.interbasePositions[i]!)
+      insertions.length.push(d.interbaseLengths[i]!)
+      insertions.sequence.push(d.interbaseSequences[i] ?? '')
+      insertions.read.push(d.interbaseReadIndices[i]!)
+    } else {
+      clips.position.push(d.interbasePositions[i]!)
+      clips.length.push(d.interbaseLengths[i]!)
+      clips.type.push(type === INTERBASE_SOFTCLIP ? 'soft' : 'hard')
+      clips.read.push(d.interbaseReadIndices[i]!)
+    }
+  }
+  return { insertions, clips }
+}
+
+/**
+ * The splice junctions the reads' skips support, merged as the sashimi band
+ * merges them: each once, with its supporting-read count, the strand its
+ * reads' tags or its splice motif give it (0 where neither says), and the
+ * motif where the reference was read. Every junction, down to a single
+ * read; the display hides those under its `minSashimiScore`.
+ */
+function junctions(d: WorkerPileupData, refName: string) {
+  const merged = [
+    ...mergeJunctions([{ refName, data: d }], {
+      minSashimiScore: 0,
+      showNonCanonicalJunctions: true,
+    }).values(),
+  ].sort((a, b) => a.start - b.start || a.end - b.end)
+  return {
+    start: merged.map(j => j.start),
+    end: merged.map(j => j.end),
+    count: merged.map(j => j.count),
+    strand: merged.map(j => j.strand),
+    motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
+  }
+}
+
+/**
  * One section's reads as the alignments display draws them, as columns. Every
  * coordinate is 0-based genomic; `read` in the other tables is a 0-based index
  * into `reads`.
@@ -236,6 +298,7 @@ function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
   colors: ReturnType<typeof colorReads>,
+  refName: string,
 ) {
   const [readStart, readEnd] = pairs(d.readPositions)
   const [gapStart, gapEnd] = pairs(d.gapPositions)
@@ -282,6 +345,8 @@ function sectionTables(
       forward: d.coverageFwdDepths,
       reverse: d.coverageRevDepths,
     },
+    ...interbase(d),
+    junctions: junctions(d, refName),
     legend: colors.legend,
     legendTitle: colors.legendTitle,
   }
@@ -292,9 +357,10 @@ export type AlignmentTables = ReturnType<typeof sectionTables>
 /**
  * #api
  * A region's reads as the alignments display fetches, filters, lays out and
- * colors them, as tables: the worker's reads, mismatches, gaps and coverage,
- * each read on the row the display's pileup layout gives it and in the color
- * the display's `color` object paints it, with the key the display shows. For
+ * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
+ * clips, coverage and splice junctions, each read on the row the display's
+ * pileup layout gives it and in the color the display's `color` object paints
+ * it, with the key the display shows. For
  * a host that draws them itself, such as R through V8. The adapters must be
  * registered on `pluginManager` (`registerAlignmentsAdapters`).
  */
@@ -341,5 +407,10 @@ export async function alignmentTables(
     showSoftClipping: false,
     regions: new Map([[0, region]]),
   }).get(0)!
-  return sectionTables(data, laid.readYs, colorReads(color, laid))
+  return sectionTables(
+    data,
+    laid.readYs,
+    colorReads(color, laid),
+    region.refName,
+  )
 }
