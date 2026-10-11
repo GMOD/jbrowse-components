@@ -72,7 +72,13 @@ as the sashimi band merges them (start, end, supporting-read count, strand off
 the reads' tags or the splice motif, and the motif where the region's sequence
 covers both ends), every junction down to a single read, since the display's
 `minSashimiScore` is the host's to apply. `alignmentColors` names the
-insertion, soft-clip and hard-clip colors beside the rest.
+insertion, soft-clip and hard-clip colors beside the rest. A mismatch, gap,
+insertion or clip carries `fade`, the worker's own frequency byte: its share
+of the depth at its site, zeroed below the display's depth-dependent
+threshold, which is what the pileup fades a sub-pixel mark by (the shaders'
+`frequencyAlpha`: `width + fade * (1 - width)` for a mark under a pixel
+wide), so a host can fade sequencing errors as the display does without
+porting the threshold.
 
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the

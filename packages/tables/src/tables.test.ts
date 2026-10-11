@@ -147,6 +147,24 @@ test('the display\u2019s filter object keeps the reads it keeps', async () => {
   expect(reverse.reads.name.length).toBeLessThan(all.reads.name.length)
 })
 
+test('a mark\u2019s fade is its share of the depth, zeroed under the display\u2019s threshold', async () => {
+  const { mismatches, gaps, insertions, clips } =
+    await engine.alignments(LONG_READS)
+  for (const table of [mismatches, gaps, insertions, clips]) {
+    expect(table.fade.length).toBe(table.read.length)
+    expect(table.fade.every(f => f >= 0 && f <= 1)).toBe(true)
+  }
+  mismatches.fade.forEach((fade, i) => {
+    expect(fade).toBeLessThanOrEqual(mismatches.frequency[i]! + 1 / 255)
+  })
+  // sequencing errors on a 20-deep long-read pileup sit under the threshold
+  expect(insertions.fade.filter(f => f === 0).length).toBeGreaterThan(0)
+  expect(mismatches.fade.filter(f => f === 0).length).toBeGreaterThan(0)
+  // the short reads' shared variants clear it
+  const short = await engine.alignments(BAM)
+  expect(short.mismatches.fade.filter(f => f > 0).length).toBeGreaterThan(0)
+})
+
 test('insertions and clips sit on their reads', async () => {
   const { reads, insertions, clips } = await engine.alignments(LONG_READS)
   expect(insertions.position.length).toBeGreaterThan(0)

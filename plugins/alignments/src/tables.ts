@@ -236,31 +236,45 @@ function colorReads(
  * reader kept it, its sequence; a clip with its length and whether the clipped
  * bases are in the file (`soft`) or not (`hard`).
  */
+/**
+ * The share of the depth a mark's site holds, as the display fades a
+ * sub-pixel mark by it: the worker's byte, zeroed below its depth-dependent
+ * threshold, so a sequencing error on a deep pileup fades to the floor.
+ */
+function fades(bytes: Uint8Array) {
+  return Array.from(bytes, b => b / 255)
+}
+
 function interbase(d: WorkerPileupData) {
   const insertions = {
     position: [] as number[],
     length: [] as number[],
     sequence: [] as string[],
     read: [] as number[],
+    fade: [] as number[],
   }
   const clips = {
     position: [] as number[],
     length: [] as number[],
     type: [] as string[],
     read: [] as number[],
+    fade: [] as number[],
   }
   for (let i = 0; i < d.interbasePositions.length; i++) {
     const type = d.interbaseTypes[i]!
+    const fade = d.interbaseFrequencies[i]! / 255
     if (type === INTERBASE_INSERTION) {
       insertions.position.push(d.interbasePositions[i]!)
       insertions.length.push(d.interbaseLengths[i]!)
       insertions.sequence.push(d.interbaseSequences[i] ?? '')
       insertions.read.push(d.interbaseReadIndices[i]!)
+      insertions.fade.push(fade)
     } else {
       clips.position.push(d.interbasePositions[i]!)
       clips.length.push(d.interbaseLengths[i]!)
       clips.type.push(type === INTERBASE_SOFTCLIP ? 'soft' : 'hard')
       clips.read.push(d.interbaseReadIndices[i]!)
+      clips.fade.push(fade)
     }
   }
   return { insertions, clips }
@@ -330,6 +344,7 @@ function sectionTables(
       base: Array.from(d.mismatchBases, b => BASE_OF_CODE[b] ?? 'N'),
       read: d.mismatchReadIndices,
       frequency: alleleFrequencies(d),
+      fade: fades(d.mismatchFrequencies),
       quality: d.mismatchQuals,
     },
     gaps: {
@@ -337,6 +352,7 @@ function sectionTables(
       end: gapEnd,
       type: Array.from(d.gapTypes, t => (t === GAP_SKIP ? 'skip' : 'deletion')),
       read: d.gapReadIndices,
+      fade: fades(d.gapFrequencies),
     },
     coverage: {
       start: coverageStart,
