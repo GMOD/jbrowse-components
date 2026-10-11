@@ -34,6 +34,22 @@ test('a BigWig region comes back as the wiggle display scales and colors it', as
     display: { scales: { y: { domainMin: -50, domainMax: 300 } } },
   })
   expect(pinned.domain).toEqual([-50, 300])
+
+  const ruled = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    display: {
+      scales: {
+        y: {
+          rules: [{ value: 0 }, { value: 500, color: 'red', label: 'gain' }],
+        },
+      },
+    },
+  })
+  expect(ruled.rules).toEqual({
+    value: [0, 500],
+    color: ['#787878', '#ff0000'],
+    label: ['', 'gain'],
+  })
 })
 
 test('a zoomed-out min-max extent draws the max and min bands around the mean', async () => {

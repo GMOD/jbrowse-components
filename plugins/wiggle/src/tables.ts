@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
+import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
 import {
@@ -130,7 +131,10 @@ export async function wiggleTables(
   const rules = (scale.rules as Parameters<typeof readConfObject>[0][]).map(
     rule => ({
       value: readConfObject(rule, 'value') as number,
-      color: (readConfObject(rule, 'color') as string | undefined) ?? '',
+      color: cssColorToHex(
+        (readConfObject(rule, 'color') as string | undefined) ??
+          DEFAULT_RULE_COLOR,
+      ),
       label: (readConfObject(rule, 'label') as string | undefined) ?? '',
     }),
   )
