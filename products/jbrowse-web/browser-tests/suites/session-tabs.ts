@@ -1,4 +1,10 @@
-import { delay, findByText, navigateToApp, navigateToUrl } from '../helpers.ts'
+import {
+  delay,
+  findByText,
+  navigateToApp,
+  navigateToUrl,
+  zoomOut,
+} from '../helpers.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Browser, Page } from 'puppeteer'
@@ -96,6 +102,35 @@ const suite: TestSuite = {
           throw new Error(
             `reopening ${id} with no tab holding it forked ${reopenedId}`,
           )
+        }
+      },
+    },
+    {
+      name: 'an untouched session stays out of Recent sessions',
+      fn: async page => {
+        const volvox = 'test_data/volvox/config.json'
+        await navigateToApp(page, volvox, 'Edited one')
+        await delay(1200)
+        await zoomOut(page)
+        await delay(1200)
+        await navigateToApp(page, volvox, 'Untouched one')
+        await delay(2000)
+        await navigateToApp(page, volvox, 'Looking')
+        await delay(1200)
+        await (await findByText(page, 'File')).click()
+        await delay(400)
+        await (await findByText(page, 'Recent sessions...')).click()
+        await delay(600)
+        const menu = await page.evaluate(() =>
+          [...document.querySelectorAll('[role="menuitem"]')].map(
+            e => e.textContent,
+          ),
+        )
+        if (!menu.some(t => t.includes('Edited one'))) {
+          throw new Error(`edited session missing from ${JSON.stringify(menu)}`)
+        }
+        if (menu.some(t => t.includes('Untouched one'))) {
+          throw new Error(`untouched session listed in ${JSON.stringify(menu)}`)
         }
       },
     },

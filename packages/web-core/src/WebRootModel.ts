@@ -23,6 +23,12 @@ export interface SessionMetadata {
   favorite: boolean
   /** absent on rows written before the field existed */
   summary?: SessionSummary
+  /**
+   * false while the session has only ever been written as it booted. Such a
+   * row stays out of the recent lists. Absent on rows written before the field
+   * existed, which count as edited.
+   */
+  edited?: boolean
 }
 
 /**

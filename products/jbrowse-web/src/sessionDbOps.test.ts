@@ -3,7 +3,12 @@ import { nextSessionMetadata } from './sessionDbOps.ts'
 import type { SessionMetadata } from './types.ts'
 
 const snap = { id: 'abc', name: 'My session' }
-const ident = { id: 'abc', name: 'My session', configPath: 'config.json' }
+const ident = {
+  id: 'abc',
+  name: 'My session',
+  configPath: 'config.json',
+  edited: true,
+}
 
 function existing(overrides: Partial<SessionMetadata> = {}): SessionMetadata {
   return {
@@ -57,4 +62,21 @@ it('takes name/id/configPath from the caller, not the old row', () => {
     name: 'My session',
     configPath: 'config.json',
   })
+})
+
+// A row written only as the session booted stays unlisted until an edit, and
+// an edit is never taken back by a later boot-state write
+it('marks a row edited for good once any write is of a change', () => {
+  const boot = { ...ident, edited: false }
+  expect(nextSessionMetadata(undefined, snap, boot).edited).toBe(false)
+  expect(
+    nextSessionMetadata(existing({ edited: false }), snap, boot).edited,
+  ).toBe(false)
+  expect(
+    nextSessionMetadata(existing({ edited: true }), snap, boot).edited,
+  ).toBe(true)
+  expect(nextSessionMetadata(existing(), snap, boot).edited).toBe(true)
+  expect(
+    nextSessionMetadata(existing({ edited: false }), snap, ident).edited,
+  ).toBe(true)
 })

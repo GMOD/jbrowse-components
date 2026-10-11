@@ -1,4 +1,10 @@
-import { delay, findByText, navigateToApp, navigateToUrl } from '../helpers.ts'
+import {
+  delay,
+  findByText,
+  navigateToApp,
+  navigateToUrl,
+  zoomOut,
+} from '../helpers.ts'
 
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
@@ -95,10 +101,13 @@ const suite: TestSuite = {
     {
       name: 'session manager rows stay clickable',
       fn: async page => {
-        // three loads under different names, so the saved-session list has rows
+        // three loads under different names, each edited so the saved-session
+        // list shows it (an untouched session is left out)
         for (const name of ['Grid A', 'Grid B', 'Grid C']) {
           await navigateToApp(page, 'test_data/volvox/config.json', name)
-          // the autosave is debounced 400ms; let each session's row land
+          await delay(1200)
+          await zoomOut(page)
+          // the autosave is throttled to 400ms; let each session's row land
           await delay(1200)
         }
         await (await findByText(page, 'File')).click()

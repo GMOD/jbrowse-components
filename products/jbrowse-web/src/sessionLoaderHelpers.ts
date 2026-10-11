@@ -131,7 +131,11 @@ export async function writeSessionToIDB(snap: Snap, configPath: string) {
   let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
   try {
     db = await openSessionDB()
-    await upsertSessionRows(db, { ...snap, id, name }, { id, name, configPath })
+    await upsertSessionRows(
+      db,
+      { ...snap, id, name },
+      { id, name, configPath, edited: true },
+    )
     return true
   } catch (e) {
     console.error(e)

@@ -157,4 +157,20 @@ describe('staleSessionIds', () => {
     // legacy row (Jan 2024) rather than an arbitrary NaN-sorted victim
     expect(staleSessionIds(list, undefined)).toEqual(['legacy'])
   })
+
+  // an unedited row is only there so its local- URL resolves in another tab
+  it('drops unedited rows after a day, outside the cap', () => {
+    const now = +new Date(Date.UTC(2024, 0, 100))
+    const unedited = (id: string, daysAgo: number) => ({
+      ...meta(id, daysAgo),
+      edited: false,
+    })
+    const list = [
+      unedited('fresh', 0),
+      unedited('old', 2),
+      unedited('openOld', 2),
+      ...fill(100),
+    ]
+    expect(staleSessionIds(list, 'openOld', now)).toEqual(['old'])
+  })
 })

@@ -67,13 +67,24 @@ async function withBothStores<T>(
  *   still in use; `updatedAt` is what the recent list, the pruner and the
  *   age-based delete all rank by.
  *
+ * `edited` only ever goes from false to true. A row from before the field
+ * existed counts as edited, since nothing can say otherwise.
+ *
  * Pure, and separate from the transaction, because jsdom has no IndexedDB —
  * upsertSessionRows itself never executes under jest.
  */
+export interface SessionRowIdent {
+  id: string
+  name: string
+  configPath: string
+  /** whether this write is of a change, rather than of the state it booted in */
+  edited: boolean
+}
+
 export function nextSessionMetadata(
   prev: SessionMetadata | undefined,
   snap: Session,
-  { id, name, configPath }: { id: string; name: string; configPath: string },
+  { id, name, configPath, edited }: SessionRowIdent,
 ): SessionMetadata {
   const now = new Date()
   return {
@@ -84,6 +95,7 @@ export function nextSessionMetadata(
     id,
     configPath,
     summary: summarizeSession(snap),
+    edited: edited || (prev !== undefined && prev.edited !== false),
   }
 }
 
@@ -105,7 +117,7 @@ export function nextSessionMetadata(
 export function upsertSessionRows(
   db: SessionDBHandle,
   snap: Session,
-  ident: { id: string; name: string; configPath: string },
+  ident: SessionRowIdent,
 ) {
   const { id } = ident
   return withBothStores(db, async ({ sessions, metadata }) => {

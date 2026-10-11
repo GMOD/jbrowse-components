@@ -88,6 +88,13 @@ function isOpenSession(self: SessionDbHost, id: string) {
   return id === self.session?.id
 }
 
+// Whether a row belongs in this root's recent lists: saved against this config,
+// and edited at some point rather than only written as it booted (see
+// saveSessionSnapshot)
+function isListed(self: { configPath?: string }, m: SessionMetadata) {
+  return m.configPath === (self.configPath ?? '') && m.edited !== false
+}
+
 // Every saved-session action is fired off with `void` from a menu or a grid
 // cell, so a rejection has nowhere to land: log it and surface it on the current
 // session's snackbar, matching the autosave autorun's error handling.
@@ -248,7 +255,7 @@ export default function RootModel({
             }
             this.setSavedSessionMetadata(
               ret
-                .filter(f => f.configPath === (self.configPath ?? ''))
+                .filter(m => isListed(self, m))
                 .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
             )
           }
@@ -262,8 +269,7 @@ export default function RootModel({
          * what it just stored is the expensive way to move one row to the top.
          */
         upsertSessionMetadata(meta: SessionMetadata) {
-          // a row for another config belongs to a different bucket of the list
-          if (meta.configPath === (self.configPath ?? '')) {
+          if (isListed(self, meta)) {
             this.setSavedSessionMetadata(
               [
                 meta,
@@ -373,14 +379,15 @@ export default function RootModel({
           // the pending tick reads the *new* session and they are lost for
           // good. Flush it here so switching sessions never costs the last
           // thing you did to the one you are leaving.
-          if (self.session) {
-            self.upsertSessionMetadata(
-              await saveSessionSnapshot(
-                sessionDB,
-                self.session,
-                self.configPath,
-              ),
-            )
+          const flushed =
+            self.session &&
+            (await saveSessionSnapshot(
+              sessionDB,
+              self.session,
+              self.configPath,
+            ))
+          if (flushed) {
+            self.upsertSessionMetadata(flushed)
           }
           await self.pluginManager.preloadSessionTypes(ret)
           // another tab is autosaving this id, and sharing it would have the

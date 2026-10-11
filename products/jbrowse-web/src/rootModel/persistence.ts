@@ -19,11 +19,13 @@ import type { IStateTreeNode, IType } from '@jbrowse/mobx-state-tree'
 // favorites plus the most recent non-favorites; the active session is never
 // pruned.
 const MAX_AUTOSAVED_SESSIONS = 100
+const UNEDITED_SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000
 
 /**
  * Which autosaved sessions the pruner deletes: everything past the newest
- * MAX_AUTOSAVED_SESSIONS non-favorites. Favorites and the open session are
- * never candidates, whatever their age.
+ * MAX_AUTOSAVED_SESSIONS edited non-favorites, and unedited rows more than a
+ * day old. Favorites and the open session are never candidates, whatever their
+ * age.
  *
  * Split out from pruneOldSessions rather than left inline because this is the
  * one decision here that destroys a user's work when it is wrong, and it is
@@ -33,12 +35,21 @@ const MAX_AUTOSAVED_SESSIONS = 100
 export function staleSessionIds(
   metadata: SessionMetadata[],
   activeId: string | undefined,
+  now = Date.now(),
 ) {
-  return metadata
-    .filter(m => !m.favorite && m.id !== activeId)
+  const candidates = metadata.filter(m => !m.favorite && m.id !== activeId)
+  // an unedited row is listed nowhere and only serves its local- URL to
+  // another tab, which a day covers
+  const unedited = candidates.filter(
+    m =>
+      m.edited === false &&
+      now - +sessionLastUsed(m) > UNEDITED_SESSION_LIFETIME_MS,
+  )
+  const overCap = candidates
+    .filter(m => m.edited !== false)
     .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
     .slice(MAX_AUTOSAVED_SESSIONS)
-    .map(m => m.id)
+  return [...unedited, ...overCap].map(m => m.id)
 }
 
 async function pruneOldSessions(
@@ -49,19 +60,28 @@ async function pruneOldSessions(
   await deleteSessionRows(sessionDB, staleSessionIds(metadata, activeId))
 }
 
+// Per session node, the snapshot it booted with or last wrote. MST hands back
+// the same snapshot object until something changes, so identity is the test.
+const savedSnapshots = new WeakMap<object, unknown>()
+
 /**
  * Writes a session's snapshot and its metadata row to the autosave database,
- * and returns the row that landed.
+ * and returns the row that landed — or undefined, writing nothing, when the
+ * snapshot is the one last written.
+ *
+ * The first write of a session node is of the state it booted in, and marks a
+ * new row unedited: the recent lists leave it out and the pruner clears it, but
+ * its `local-` URL still resolves in another tab meanwhile. Any later write is
+ * of a change, and marks the row edited for good.
  *
  * The point of the helper is the *synchronous head*: id, name and the snapshot
  * are read before anything is awaited. That is what keeps the autosave autorun
  * tracking them (an MST action or a read past an await runs untracked — see the
  * MST notes in CLAUDE.md), and what keeps the async tail from touching a node
- * that may have been destroyed in the meantime. It has to be right in two
- * places now — the autorun and the flush activateSession does on its way out —
- * so it is one function rather than two copies of the same three lines.
+ * that may have been destroyed in the meantime. Both the autorun and the flush
+ * activateSession does on its way out go through it.
  */
-export function saveSessionSnapshot(
+export async function saveSessionSnapshot(
   db: SessionDBHandle,
   // IStateTreeNode, never IAnyStateTreeNode — the latter resolves to `any` and
   // would stop checking that a caller passed something with an id and a name
@@ -73,7 +93,17 @@ export function saveSessionSnapshot(
 ) {
   const { id, name } = session
   const snap = getSnapshot<Session>(session)
-  return upsertSessionRows(db, snap, { id, name, configPath: configPath ?? '' })
+  const saved = savedSnapshots.get(session)
+  if (saved === snap) {
+    return undefined
+  }
+  savedSnapshots.set(session, snap)
+  return upsertSessionRows(db, snap, {
+    id,
+    name,
+    configPath: configPath ?? '',
+    edited: saved !== undefined,
+  })
 }
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
@@ -162,7 +192,7 @@ export async function setupSessionDB(self: WebRootModel) {
                 self.session,
                 self.configPath,
               )
-              if (isAlive(self)) {
+              if (meta && isAlive(self)) {
                 // the one row that changed is the one we just wrote, so merge it
                 // in rather than re-reading every session's metadata on each
                 // autosave tick (see upsertSessionMetadata)
