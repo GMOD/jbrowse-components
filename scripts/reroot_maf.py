@@ -61,7 +61,7 @@ import sys
 from collections import Counter
 
 REF = sys.argv[4] if len(sys.argv) > 4 else "K12#1#chr"
-_comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
+_comp = str.maketrans("ACGTRYKMBDHVNacgtrykmbdhvn", "TGCAYRMKVHDBNtgcayrmkvhdbn")
 
 
 def dotted(name):
@@ -296,6 +296,13 @@ def main():
     genome = read_fasta(sys.argv[3])
     with open(sys.argv[1]) as fh:
         parsed = [rows for rows in parse_blocks(fh) if any(r[1] == REF for r in rows)]
+    # a '-' row is located from the end of its sequence, so a FASTA whose lengths
+    # differ from the MAF's srcSize would misread every one of them
+    for name, srcsize in {(r[1], int(r[5])) for rows in parsed for r in rows}:
+        if name not in genome or len(genome[name]) != srcsize:
+            sys.exit("%s: srcSize %d in the MAF, %s in %s" % (
+                name, srcsize, len(genome[name]) if name in genome else "absent",
+                sys.argv[3]))
     stats = Counter()
     blocks = [b for rows in parsed for b in reroot(rows, genome, stats)]
     split = sum(1 for rows in parsed if sum(r[1] == REF for r in rows) > 1)
@@ -340,6 +347,16 @@ def main():
     # interval index this file is retrieved through can no longer find
     # everything.
     sys.stderr.write("%d blocks overlap their predecessor on %s\n" % (overlaps, REF))
+    # Should be 0 too. A reference row dropped for not carrying its own bases
+    # leaves its interval in no block, which no other count reports.
+    gaps, end = 0, 0
+    for rows in blocks:
+        start = int(rows[0][2])
+        gaps += start > end
+        end = max(end, start + int(rows[0][3]))
+    srcsize = int(blocks[0][0][5]) if blocks else 0
+    gaps += end < srcsize
+    sys.stderr.write("%d gaps in %s coverage\n" % (gaps, REF))
 
 
 if __name__ == "__main__":

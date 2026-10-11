@@ -180,7 +180,7 @@ const pggbTierCut = graphTrack(PGGB_SEGMENTS_TRACK, {
 // that window is 154 nodes -- about 6 px each, and a row of 6 px marks says
 // nothing about what a strain carries. This is the ycbF/pyrD window, where the
 // same index returns 37 segments, the long ones are 59 and 158 bp, and the
-// strains genuinely differ: CFT073's contig only reaches the last 293 bp
+// strains genuinely differ: CFT073's contig only reaches the last 275 bp
 // (`tabix ecoli_pggb.segs.bed.gz 'K12#1#chr:1004500-1004961'`, whose sixth column
 // lists the strains carrying each segment), so its row starts where it joins and
 // the tutorial already explains that boundary as ycbF ending and pyrD starting.
@@ -714,7 +714,7 @@ function pggbLocusSession(
 // charcoal (ALT_ALLELE_COLOR), which is what makes "the added nodes are
 // off-reference" visible rather than asserted.
 //
-// Both halves box THE SAME TWO NODES and say which setting they are (review: "I
+// Both halves box the detour's ends and say which setting they are (review: "I
 // don't particularly understand the difference here. ideally, shows red boxes
 // and arrow and/or text annotation showing the difference between the two
 // sides"). Without that, the difference is stated only as a node count in a
@@ -751,8 +751,8 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   const DETOUR_EXIT = 's2095+'
   const DETOUR_INTERIOR = 's2094+'
   // One color per node, the same color in both halves, which is what makes the
-  // composite readable as one picture: the blue box is s2093 on the left and
-  // s2093 on the right, and the reader can see that without reading a caption.
+  // composite readable as one picture: the orange box is s2095 on the left and
+  // s2095 on the right, and the reader can see that without reading a caption.
   // All three boxed one red was a figure where the left 43 bp box and the right
   // 43 bp box asserted no relationship (review: "might want to use different
   // colors for the different annotation boxes so it is clear what the
@@ -1159,10 +1159,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // that a row is first-seen attribution. Here the name comes from a path that
   // actually walks the segment, so a row is carriage.
   //
-  // Same track and same colors as the figure above, at PGGB_ROWS_LOCUS rather than
-  // at its kilobase: rows are what this figure is for, and a row has to be
-  // readable segment by segment. Here the five rows differ from each other in
-  // ways a reader can name -- CFT073 absent from the left half of the window, the
+  // Same track and same colors as the figure above, at PGGB_SAMPLE_ROWS_LOCUS
+  // rather than at its kilobase: rows are what this figure is for, and a row has
+  // to be readable segment by segment. Here the five rows differ from each other
+  // in ways a reader can name -- CFT073 absent until it rejoins at 1,004,686, the
   // 1 bp nodes taken by some strains and not others.
   //
   // ONE LAYOUT (review: "dunno what is being shown here really. not a strong

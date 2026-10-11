@@ -723,9 +723,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // Bare names, not glosses: the prose above the figure carries what each one
     // means, and a gloss ran the pill off the pane. Neither deletion gets a
     // callout: the renderer writes "32.7 kb del" across the arc itself.
-    // Each pill sits toward the pane's edge, and each leader arrives at its node
-    // near a right angle, so no leader reads as a piece of the graph and no
-    // arrow ends at another label. Positions come from `node
+    // Each leader arrives at its node near a right angle, so no leader reads as
+    // a piece of the graph and no arrow ends at another label. Positions come from `node
     // scripts/probe-graph-nodes.ts pangenome/hprc_graph_anatomy`.
     annotations: [
       // s329770+ is the 14.3 kb CYP21A2 backbone node on the blue end of the
@@ -778,7 +777,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   },
   // The inversion in one linear view: the bubble lane states the flag, the
   // lanes cross between HG00099's two haplotypes with FLNA and EMD in opposite
-  // order on the carriers, and the graph draws the block as a hairpin.
+  // order on the carriers, and the graph draws the block on the backbone, read
+  // in reverse by the carriers (s586922+ -> s586923- -> s586924+).
   {
     mode: 'url',
     name: 'pangenome/hprc_inversion',

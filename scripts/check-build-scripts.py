@@ -427,9 +427,12 @@ check("strip_pad blanks a pad on the right",
 check("strip_pad blanks a pad on both ends",
       reroot_maf.strip_pad(["s", "g#1#chr", "4", "4", "+", "12", "GA-CGTC"], genome)[6],
       "-A-CGT-")
+# h's '-' interval 1..5 counts from the end: bases 11..15, ACCG, read as CGGT.
+# Read as '+' it would be TTTA, which the row does not hold.
+genome["h#1#chr"] = "TTTTACGTAAAACCGA"
 check("strip_pad reads a minus-strand row in its own orientation",
-      reroot_maf.strip_pad(["s", "g#1#chr", "4", "4", "-", "12", "TACGTG"], genome)[6],
-      "-ACGT-")
+      reroot_maf.strip_pad(["s", "h#1#chr", "1", "4", "-", "16", "TCGGTG"], genome)[6],
+      "-CGGT-")
 check("strip_pad drops a row whose declared bases are not in it",
       reroot_maf.strip_pad(["s", "g#1#chr", "0", "4", "+", "12", "ACGT"], genome), None)
 
@@ -442,6 +445,13 @@ check("crop trims columns to the reference row's bases",
       [r[6] for r in cropped], ["ACGT", "ACGT"])
 check("crop moves a row's start past the bases it cut",
       [r[2:4] for r in cropped], [["100", "4"], ["52", "4"]])
+# a '-' row's start is its first base in its own orientation, so the shift is
+# the same
+check("crop moves a minus-strand row's start the same way",
+      reroot_maf.crop_to_reference(
+          [["s", "REF#1#chr", "100", "4", "+", "1000", "--ACGT"],
+           ["s", "rev#1#chr", "50", "6", "-", "1000", "TTACGT"]])[1][2:5],
+      ["52", "4", "-"])
 check("crop drops a row left with no bases",
       [r[1] for r in reroot_maf.crop_to_reference(
           [["s", "REF#1#chr", "100", "2", "+", "1000", "--AC"],
