@@ -23,7 +23,10 @@ import {
 } from '@jbrowse/wiggle-core/normalize'
 
 import { interbaseBarHeightPx } from './coverageBandBox.ts'
-import { interbaseEdgePx } from './interbaseEdge.generated.ts'
+import {
+  interbaseBarLeftPx,
+  interbaseEdgePx,
+} from './interbaseEdge.generated.ts'
 import {
   readIndicators,
   readInterbaseSegments,
@@ -333,8 +336,9 @@ export const coverageModShape = layerShape(
 /**
  * The interbase histogram: 1 px bars hanging from the indicator triangles'
  * tip row, each position a stack of up to three typed segments. Both the
- * painter and the hit read the segment edges through `interbaseEdgePx`, the
- * shader's own snapped edge math, so the hit rectangle is the painted one.
+ * painter and the hit read the bar's edges through `interbaseEdgePx` and
+ * `interbaseBarLeftPx`, the shader's own snaps, so the hit rectangle is the
+ * painted one.
  * A bar taller than the band is clipped to it on both backends, and here too.
  */
 export const coverageInterbaseShape = layerShape(
@@ -366,7 +370,7 @@ export const coverageInterbaseShape = layerShape(
     return (
       segments &&
       nearestInk(candidates, maxDistSq, i => {
-        const px = bpToX(segments.position(i))
+        const left = interbaseBarLeftPx(bpToX(segments.position(i)))
         const top = p.top + interbaseEdgePx(segments.stackStart(i), barHeight)
         const bottom = Math.min(
           bandBottom,
@@ -375,7 +379,7 @@ export const coverageInterbaseShape = layerShape(
         // a stack clipped entirely out of the band has no ink to be near
         return bottom < top
           ? undefined
-          : inkOnRect(xPx, yPx, px - 0.5, top, 1, bottom - top)
+          : inkOnRect(xPx, yPx, left, top, 1, bottom - top)
       })
     )
   },

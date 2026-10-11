@@ -3,7 +3,7 @@
 // triangles' tip row. See coverageBand.slang.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
-//! js-export: interbaseEdgePx
+//! js-export: interbaseEdgePx, interbaseBarLeftPx
 //! js-export-out: packages/alignments-core/src/interbaseEdge.generated.ts
 
 import coverageBand;
@@ -32,13 +32,22 @@ float interbaseEdgePx(float offset, float interbaseHeight) {
   return floor(TRIANGLE_H) + floor(offset * interbaseHeight + 0.5);
 }
 
+// Left edge of the 1px bar centred on `centerPx`, snapped to the pixel column
+// whose centre is nearest. Unsnapped, the bar straddles two columns: Canvas2D
+// paints both at partial alpha while the GPU fills one solid, so the bar read
+// paler than its triangle and the backends disagreed.
+float interbaseBarLeftPx(float centerPx) {
+  return floor(centerPx);
+}
+
 [shader("vertex")]
 CoverageVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   CoverageVsOut o;
   float2 local = quadLocal(vid);
 
-  float cx = covBpToClipX(inst.position, u);
-  float barW = pxToClipLen(1.0, u.canvasW);
+  float cx = covFlipX(covBpToClipX(inst.position, u), u);
+  float x0 = pxToClipX(interbaseBarLeftPx(clipXToPx(cx, u.canvasW)), u.canvasW);
+  float x1 = x0 + pxToClipLen(1.0, u.canvasW);
 
   // Both edges snap to whole pixels BEFORE the clip-space conversion.
   float topPx = interbaseEdgePx(inst.yOffset, u.interbaseHeight);
@@ -46,7 +55,7 @@ CoverageVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sTop = covAreaTop(u) - pxToClipLen(topPx, u.canvasH);
   float sBot = covAreaTop(u) - pxToClipLen(botPx, u.canvasH);
 
-  o.position = covFlippedQuad(cx - barW * 0.5, cx + barW * 0.5, sBot, sTop, local, u);
+  o.position = float4(lerp(x0, x1, local.x), lerp(sBot, sTop, local.y), 0.0, 1.0);
   o.color = float4(covClipKindColor(inst.colorType, u), 1.0);
   return o;
 }

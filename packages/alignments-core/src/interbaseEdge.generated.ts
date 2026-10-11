@@ -4,6 +4,10 @@
 // Scalar twins of coverageInterbase.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+export function interbaseBarLeftPx(centerPx: number): number {
+  return Math.floor(centerPx)
+}
+
 export function interbaseEdgePx(offset: number, interbaseHeight: number): number {
   return (Math.floor(4.5) + Math.floor(((offset * interbaseHeight) + 0.5)))
 }

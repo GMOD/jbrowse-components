@@ -787,28 +787,24 @@ describe('drawInterbaseSegments', () => {
     return calls.filter(c => c.method === 'fillRect')
   }
 
-  it('draws a 1px bar centered on the bp boundary', () => {
+  it('draws the pixel column nearest the bp boundary', () => {
     // Both edges snap to whole px past the triangle's tip row floor(4.5) = 4:
     // top 4, bottom 4 + 40 = 44.
-    expect(draw(bp => bp - 50)[0]!.args).toEqual([49.5, 4, 1, 40])
+    expect(draw(bp => bp - 49.7)[0]!.args).toEqual([50, 4, 1, 40])
+    expect(draw(bp => bp - 50)[0]!.args).toEqual([50, 4, 1, 40])
   })
 
-  // The mark is 1px wide and CENTERED on `bpToX(pos)`, so half of it still shows
-  // when the boundary itself is half a pixel outside. coverageInterbase.slang
-  // emits the quad and lets the scissor clip it, so culling the bp CELL
-  // (bpToX(pos)..bpToX(pos + 1)) dropped a sliver the GPU draws — at every block
-  // boundary of a multi-region view, not just the two ends of the canvas.
   it.each([
-    ['overlapping the left edge', -0.4],
-    ['overlapping the right edge', VIEW + 0.4],
+    ['in the first column', 0.4],
+    ['in the last column', VIEW - 0.4],
   ])('draws a bar %s', (_name, px) => {
     expect(draw(() => px)).toHaveLength(1)
   })
 
   it.each([
-    ['fully past the left edge', -0.6],
-    ['fully past the right edge', VIEW + 0.6],
-  ])('still culls a bar %s', (_name, px) => {
+    ['just past the left edge', -0.4],
+    ['just past the right edge', VIEW + 0.4],
+  ])('culls a bar whose column is %s', (_name, px) => {
     expect(draw(() => px)).toHaveLength(0)
   })
 
