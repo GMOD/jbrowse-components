@@ -119,6 +119,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"below" &#124; "none" &#124; "overlay"</code> | Overridable hook (default none): the subfeature-label mode the worker bakes. |
 | <span id="getter-labelfontsize">**labelFontSize**</span><br><code>number</code> |  |
 | <span id="getter-showlabelsmode">**showLabelsMode**</span><br><code>"auto" &#124; "description" &#124; "name" &#124; "nameAndDescription" &#124; "none"</code> |  |
+| <span id="getter-labelvisibility">**labelVisibility**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ showLabels: boolean; geneNamesOnly: boolean; showDescriptions…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ showLabels: boolean; geneNamesOnly: boolean; showDescriptions: boolean; }</code></pre></dialog></span> | Which labels the `showLabels` mode shows at the on-screen feature density: names, descriptions, and whether only gene names survive. |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  |
 | <span id="getter-genenamesonly">**geneNamesOnly**</span><br><code>boolean</code> | `auto` past the name threshold, with the gene features alone still under it: gene names stay and every other name goes. |
 | <span id="getter-showdescriptions">**showDescriptions**</span><br><code>boolean</code> |  |
