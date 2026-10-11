@@ -331,10 +331,10 @@ vcf_tier ecoli_pggb_snarls "$(ls pggb/*.smooth.final."$REF".vcf)"
 # blocks that lack it, flip blocks where REF is on '-', give each REF row in a
 # repeat-collapsed block its own block), then rename PanSN 'sample#1#chr' ->
 # 'sample.chr' (JBrowse splits the species off on the '.').
-# reroot_maf.py also crops away smoothxg's block padding, which otherwise draws a
-# phantom ~311 bp insertion at the edge of every POA block on any strain running
-# antiparallel to REF there. See its docstring; this is not cosmetic.
-python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf "${REF}#1#chr"
+# reroot_maf.py also blanks smoothxg's block padding, which otherwise draws
+# phantom insertions and misplaces two thirds of the rows. It finds each row's
+# own bases by matching it against all.fa.gz. See its docstring.
+python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf all.fa.gz "${REF}#1#chr"
 python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip -f ecoli_pggb.maf.bed
 tabix -f -p bed ecoli_pggb.maf.bed.gz

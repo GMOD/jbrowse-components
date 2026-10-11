@@ -277,15 +277,18 @@ paths split and rejoin) for the
 
 ## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
-`pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12 and
-rename the rows to `sample.chr`, then convert the MAF to the tabix-indexed BED
-that [`MafTabixAdapter`](/docs/config/maftabixadapter) reads:
+`pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12,
+rename the rows to `sample.chr`, and blank the padding smoothxg writes around
+each row, then convert the MAF to the tabix-indexed BED that
+[`MafTabixAdapter`](/docs/config/maftabixadapter) reads:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/reroot_maf.py
-python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf K12#1#chr
+# all.fa.gz is the pggb input: the padding sits on either end of a row, so
+# only the genome says which bases are the row's own
+python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf all.fa.gz K12#1#chr
 ```
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->

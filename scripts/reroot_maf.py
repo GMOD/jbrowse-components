@@ -8,6 +8,8 @@ be rooted on the same genome. This:
   - reverse-complements a block when the reference row is on '-' so the reference
     is always '+',
   - emits one block per reference row, each rooted on its own copy,
+  - blanks smoothxg's padding off every row, found by matching the row against
+    its genome, and drops a row whose declared bases it does not carry,
   - crops each block's columns to the reference row's declared interval,
   - sorts blocks by reference start (what an interval index needs),
   - renames PanSN 'sample#hap#contig' -> 'sample.contig' (JBrowse splits the
@@ -51,11 +53,13 @@ queried window before it counts as reachable, or coverage retrieved by a query
 for some other locus is credited to this one. Get either wrong and the answer
 moves by thousands of positions. See agent-docs/guides/TAFFY_INDEX_GAPS_HANDOFF.md.
 
-Usage: reroot_maf.py <in.maf> <out.maf> [reference_path]   (default K12#1#chr)
+Usage: reroot_maf.py <in.maf> <out.maf> <genomes.fa[.gz]> [reference_path]
+       (reference defaults to K12#1#chr; the FASTA holds every path the MAF names)
 """
+import gzip
 import sys
 
-REF = sys.argv[3] if len(sys.argv) > 3 else "K12#1#chr"
+REF = sys.argv[4] if len(sys.argv) > 4 else "K12#1#chr"
 _comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
 
 
@@ -110,6 +114,59 @@ def _blank_bases(seq, count, leading):
     return "".join(chars)
 
 
+def read_fasta(path):
+    genome, name, chunks = {}, None, []
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt") as fh:
+        for line in fh:
+            if line.startswith(">"):
+                if name is not None:
+                    genome[name] = "".join(chunks).upper()
+                name, chunks = line[1:].split()[0], []
+            else:
+                chunks.append(line.strip())
+    if name is not None:
+        genome[name] = "".join(chunks).upper()
+    return genome
+
+
+def declared_bases(row, genome):
+    """The bases a row's declared interval holds, in the row's own orientation."""
+    _, name, start, size, strand, srcsize, _ = row
+    start, size, srcsize = int(start), int(size), int(srcsize)
+    if strand == "+":
+        return genome[name][start:start + size]
+    return genome[name][srcsize - start - size:srcsize - start].translate(_comp)[::-1]
+
+
+def strip_pad(row, genome):
+    """Blank smoothxg's padding off a row, or return None for a row that does not
+    carry its own declared bases.
+
+    smoothxg's MAF writer pads rows past their declared `size`: 20,111 of the
+    26,813 rows in the five-strain E. coli graph. The pad is not where the
+    declared interval would put it. Located by matching each row against its
+    genome, it sits on the left end of 8,047 rows, the right end of 3,951 and
+    BOTH ends of 8,113, so no rule from strand or block position can find it,
+    and a crop that guesses leaves pad in and cuts real bases out. Located by
+    sequence, every surviving row is its genome's bases at its declared start.
+    72 padded rows and 19 unpadded ones carry bases their genome does not have
+    there at all; those are dropped.
+    """
+    bases = row[6].replace("-", "").upper()
+    want = declared_bases(row, genome)
+    lead = bases.find(want) if want else -1
+    if lead < 0:
+        return None
+    seq = row[6]
+    trail = len(bases) - len(want) - lead
+    if lead:
+        seq = _blank_bases(seq, lead, leading=True)
+    if trail:
+        seq = _blank_bases(seq, trail, leading=False)
+    return row[:6] + [seq]
+
+
 def _drop_empty_columns(rows):
     """Drop columns left as gap in every row, which blanking a pad can produce."""
     keep = [i for i, col in enumerate(zip(*(r[6] for r in rows)))
@@ -120,90 +177,35 @@ def _drop_empty_columns(rows):
 
 
 def crop_to_reference(rows):
-    """Trim a block's columns to the span of the reference row's declared interval.
+    """Trim a block's columns to the span of the reference row's bases.
 
-    smoothxg's MAF writer pads every row's sequence past its declared `size` --
-    73% of the rows in the five-strain E. coli graph carry more non-gap
-    characters than they declare, ~311 of them (the `poa-length-target` block
-    stride is 1100). The pad sits downstream of the declared interval, so on a
-    row whose path runs antiparallel to the reference it lands at the LEFT edge
-    of the block, where the reference is all gap. Nothing marks it as padding, so
-    a renderer reads it as sequence the sample carries and the reference does
-    not: a phantom ~311 bp insertion at the edge of every block, repeating at the
-    POA block stride. Strand is the tell -- of the 1,989 that landed flush with a
-    block edge, 1,037 were on IAI39's 1,373 minus-strand rows and 738 on the
-    ~20,600 plus-strand rows of all five strains. In K12:2,120,000-2,140,000 --
-    the gallery's pangenome variants figure -- 15 of the 20 blocks drew one on
-    IAI39, the only strain reverse-oriented there.
-
-    Two passes. Cropping to the reference's own declared span removes the pad
-    that is flush with a block edge. What is left over on a row after that crop,
-    against the row's OWN declared size, is that row's copy of the same pad,
-    sitting a base or two inside the block because the reference had a base
-    before it; blank it from whichever end the row's strand puts it on, then drop
-    the columns that leaves empty. Together: large (>=100 bp) insertions anywhere
-    in a block go 3,254 -> 549, and 17 -> 1 in the gallery window. Every row then
-    declares exactly its own non-gap count.
-
-    Reference coverage is untouched -- the declared intervals are what the crop
-    keeps, and they already partition the reference, so all 4,641,652 K12
-    positions still come back from a windowed query.
-
-    The 549 that survive have the same 312 bp median, so some are still pad, in
-    blocks whose structure hides it. Nothing local separates those from a real
-    insertion: a 311 bp run sits at every distance from a block edge (145 within
-    25 columns, 97 beyond 300), and the neighbouring block's copy -- the evidence
-    that would prove redundancy -- is what the crop has just removed.
-
-    It is not free. A non-reference strain loses 2-7% of its declared coverage
-    (IAI39 worst, 307 kb of 4.19 Mb), because 586 rows declare an interval lying
-    wholly or partly in the flank; 82 keep no bases at all and are dropped. Those
-    rows are the artifact, not collateral: a row whose sequence sits in the
-    reference-gap flank is exactly the one drawing a phantom insertion, and it
-    was being painted at the wrong reference position before. There is no
-    downstream repair that keeps them AND places them, because the flank content
-    and the neighbouring block's own content are the same sequence declared
-    twice; keeping both is what makes blocks overlap, which breaks the row-0
-    interval index this file is retrieved through.
-
-    `size` is recomputed per row (it has to be: the MAF spec defines it as the
-    row's non-gap count, and the input's is what disagrees). `start` needs no
-    adjustment either way -- the pad runs outward from the declared interval in
-    the row's own direction, so blanking it leaves the row starting exactly where
-    it always said it did.
+    Rows arrive with their padding blanked (strip_pad), so the reference row's
+    bases are exactly its declared interval, and those intervals partition the
+    reference: every emitted block covers its own, and K12 coverage stays
+    complete. A column outside that span holds another row's bases where the
+    reference has none, at the block's edge; cropping it moves that row's start
+    past the bases it lost, on either strand, since a MAF row's start is the
+    position of its first base in its own orientation.
 
     A row left with no bases at all is dropped rather than emitted as a lane of
-    pure gap.
+    pure gap, and `size` is each row's own non-gap count, as the MAF spec says.
     """
-    ref = rows[0]
-    size, seq = int(ref[3]), ref[6]
+    ref = rows[0][6]
     # a reference row of pure gap is not a block; let next() raise on it
-    first = next(i for i, char in enumerate(seq) if char != "-")
-    last, seen = len(seq), 0
-    for i, char in enumerate(seq[first:], first):
-        if char != "-":
-            seen += 1
-            if seen == size:
-                last = i + 1
-                break
+    first = next(i for i, char in enumerate(ref) if char != "-")
+    last = len(ref) - next(i for i, char in enumerate(reversed(ref)) if char != "-")
     cropped = []
     for row in rows:
         seg = row[6][first:last]
         bases = len(seg) - seg.count("-")
-        # what the crop leaves over the row's own declared size is this row's copy
-        # of the same pad, sitting inside the block because the reference had a
-        # base or two before it. Strand says which end: the pad follows the
-        # declared interval in the row's own direction.
-        surplus = bases - int(row[3])
-        if surplus > 0:
-            seg = _blank_bases(seg, surplus, leading=row[4] != ref[4])
-            bases -= surplus
         if bases:
-            cropped.append(row[:3] + [str(bases)] + row[4:6] + [seg])
+            before = first - row[6][:first].count("-")
+            cropped.append(row[:2] + [str(int(row[2]) + before), str(bases)]
+                           + row[4:6] + [seg])
     return _drop_empty_columns(cropped)
 
 
-def reroot(rows):
+def reroot(rows, genome=None):
     """Yield one block per REF row: that row at position 0, plus the other rows.
 
     A block with several REF rows is a collapsed repeat. A block is found through
@@ -220,6 +222,8 @@ def reroot(rows):
     Blocks are emitted per copy in row order and sorted by reference start
     afterwards, which an interval index needs.
     """
+    if genome is not None:
+        rows = [r for r in (strip_pad(r, genome) for r in rows) if r is not None]
     for i in (k for k, r in enumerate(rows) if r[1] == REF):
         # order-preserving, so i still indexes the same row
         block = _flip(rows) if rows[i][4] == "-" else rows
@@ -229,12 +233,14 @@ def reroot(rows):
 
 
 def main():
-    if not 3 <= len(sys.argv) <= 4:
-        sys.exit("usage: reroot_maf.py <in.maf> <out.maf> [reference_path]"
-                 f"   (reference defaults to {REF})")
+    if not 4 <= len(sys.argv) <= 5:
+        sys.exit("usage: reroot_maf.py <in.maf> <out.maf> <genomes.fa[.gz]> "
+                 f"[reference_path]   (reference defaults to {REF})")
+    genome = read_fasta(sys.argv[3])
     with open(sys.argv[1]) as fh:
         parsed = [rows for rows in parse_blocks(fh) if any(r[1] == REF for r in rows)]
-    blocks = [b for rows in parsed for b in reroot(rows)]
+    blocks = [b for rows in parsed for b in reroot(rows, genome)]
+    dropped = sum(1 for rows in parsed for r in rows if strip_pad(r, genome) is None)
     split = sum(1 for rows in parsed if sum(r[1] == REF for r in rows) > 1)
     padded = sum(1 for rows in parsed for r in rows
                  if len(r[6]) - r[6].count("-") != int(r[3]))
@@ -257,8 +263,10 @@ def main():
                      "repeats) and were split, one block per copy\n"
                      % (split, len(parsed), REF))
     sys.stderr.write("%d of %d input rows declared a size their sequence did not "
-                     "match (smoothxg's block padding); cropped to the reference "
-                     "interval\n" % (padded, rows_in))
+                     "match (smoothxg's block padding); padding blanked where the "
+                     "genome places the row\n" % (padded, rows_in))
+    sys.stderr.write("%d input rows did not carry their declared bases and were "
+                     "dropped\n" % dropped)
     # Should be 0, and NOT because blocks anchor on the leftmost copy -- they
     # anchor in row order and are sorted afterwards, which is the same choice
     # the module docstring records rejecting leftmost for. What makes them

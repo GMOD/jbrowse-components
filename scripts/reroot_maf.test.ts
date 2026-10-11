@@ -1,8 +1,9 @@
 // reroot_maf.py is the densest of the helpers a reader downloads: it re-roots
 // every block on one reference, reverse-complements the ones whose reference
-// runs backwards, splits a collapsed repeat into one block per copy, and crops
-// smoothxg's block padding away. Each of those is a claim its docstring records
-// measurements for, and none of them was executable.
+// runs backwards, splits a collapsed repeat into one block per copy, and blanks
+// smoothxg's block padding by matching each row against its genome. Each of
+// those is a claim its docstring records measurements for, and none of them was
+// executable.
 //
 // The invariants below are that docstring's own, so a future change either
 // keeps them or has to argue with a failing test rather than with prose.
@@ -11,6 +12,7 @@ import { readFileSync } from 'node:fs'
 import { assertPython3, fixture, runPython } from './pythonHelperScript.ts'
 
 const REF = 'K12#1#chr'
+const LENGTH = 1000
 
 interface Row {
   name: string
@@ -21,31 +23,68 @@ interface Row {
   seq: string
 }
 
+// Each strain is LENGTH bases of N with the bases its rows declare written in,
+// so a row's own bases are findable and a pad, which is not N, never is.
+function genome(placed: Record<number, string>) {
+  const chars = Array<string>(LENGTH).fill('N')
+  for (const [at, bases] of Object.entries(placed)) {
+    chars.splice(+at, bases.length, ...bases.split(''))
+  }
+  return chars.join('')
+}
+
+const GENOMES = {
+  'K12#1#chr': genome({
+    50: 'ACGA',
+    100: 'ACGTA',
+    600: 'ACGT',
+    700: 'AC',
+    900: 'ACGT',
+    986: 'CGTT',
+  }),
+  'Sakai#1#chr': genome({
+    20: 'TTTT',
+    200: 'ACGTT',
+    500: 'GT',
+    700: 'ACGC',
+    800: 'GGAC',
+  }),
+  'IAI39#1#chr': genome({ 698: 'GT' }),
+  'NCTC86#1#chr': genome({ 100: 'AC' }),
+  'CFT073#1#chr': genome({ 50: 'TTT' }),
+}
+
 // Blocks are deliberately out of reference order in the input, so the sort the
 // interval index depends on is doing something here.
 const INPUT = `##maf version=1
 
 a
-s K12#1#chr 100 5 + 4641652 ACGTA
-s Sakai#1#chr 200 5 + 5498578 ACGTT
+s K12#1#chr 100 5 + ${LENGTH} ACGTA
+s Sakai#1#chr 200 5 + ${LENGTH} ACGTT
 
 a
-s Sakai#1#chr 300 4 + 5498578 ACGT
-s CFT073#1#chr 400 4 + 5231428 ACGT
+s Sakai#1#chr 300 4 + ${LENGTH} ACGT
+s CFT073#1#chr 400 4 + ${LENGTH} ACGT
 
 a
-s K12#1#chr 10 4 - 4641652 AACG
-s Sakai#1#chr 20 4 + 5498578 TTTT
+s K12#1#chr 10 4 - ${LENGTH} AACG
+s Sakai#1#chr 20 4 + ${LENGTH} TTTT
 
 a
-s K12#1#chr 900 4 + 4641652 ACGT
-s K12#1#chr 50 4 + 4641652 ACGA
-s Sakai#1#chr 700 4 + 5498578 ACGC
+s K12#1#chr 900 4 + ${LENGTH} ACGT
+s K12#1#chr 50 4 + ${LENGTH} ACGA
+s Sakai#1#chr 700 4 + ${LENGTH} ACGC
 
 a
-s K12#1#chr 6000 4 + 4641652 ACGT
-s Sakai#1#chr 7000 2 + 5498578 ACGT
-s IAI39#1#chr 8000 2 - 4000000 ACGT
+s K12#1#chr 600 4 + ${LENGTH} ACGT
+s Sakai#1#chr 500 2 + ${LENGTH} ACGT
+s IAI39#1#chr 300 2 - ${LENGTH} ACGT
+s NCTC86#1#chr 100 2 + ${LENGTH} TACG
+s CFT073#1#chr 50 3 + ${LENGTH} GGG-
+
+a
+s K12#1#chr 700 2 + ${LENGTH} --AC
+s Sakai#1#chr 800 4 + ${LENGTH} GGAC
 `
 
 function parseMaf(text: string): Row[][] {
@@ -73,16 +112,26 @@ let stderr: string
 
 beforeAll(() => {
   assertPython3()
-  const at = fixture({ 'in.maf': INPUT })
-  const run = runPython('reroot_maf.py', [at('in.maf'), at('out.maf'), REF])
+  const fasta = Object.entries(GENOMES)
+    .map(([name, seq]) => `>${name}\n${seq}\n`)
+    .join('')
+  const at = fixture({ 'in.maf': INPUT, 'genomes.fa': fasta })
+  const run = runPython('reroot_maf.py', [
+    at('in.maf'),
+    at('out.maf'),
+    at('genomes.fa'),
+    REF,
+  ])
   expect(run.status).toBe(0)
   stderr = run.stderr
   blocks = parseMaf(readFileSync(at('out.maf'), 'utf8'))
 })
 
+const blockAt = (start: number) => blocks.find(b => b[0]!.start === start)!
+
 test('a block without the reference is dropped', () => {
-  const names = blocks.flat().map(r => r.name)
-  expect(names).not.toContain('CFT073.chr')
+  const sakai = blocks.flat().filter(r => r.name === 'Sakai.chr')
+  expect(sakai.map(r => r.start)).not.toContain(300)
 })
 
 test('every block is rooted on the reference, which is what row 0 means', () => {
@@ -107,20 +156,19 @@ test('PanSN names become sample.contig, derived rather than substituted', () => 
   expect([...new Set(blocks.flat().map(r => r.name))].sort()).toEqual([
     'IAI39.chr',
     'K12.chr',
+    'NCTC86.chr',
     'Sakai.chr',
   ])
 })
 
 test('blocks come out sorted by reference start', () => {
   const starts = blocks.map(b => b[0]!.start)
-  expect(starts).toEqual([...starts].sort((a, b) => a - b))
-  expect(starts).toEqual([50, 100, 900, 6000, 4641638])
+  expect(starts).toEqual([50, 100, 600, 700, 900, 986])
 })
 
 test('no block overlaps its predecessor on the reference', () => {
-  // The property the script's own closing counter watches: the crop keeps each
-  // block to its reference row's declared interval, and those partition the
-  // reference.
+  // The property the script's own closing counter watches: each block covers
+  // its reference row's declared interval, and those partition the reference.
   for (let i = 1; i < blocks.length; i++) {
     const prev = blocks[i - 1]![0]!
     expect(blocks[i]![0]!.start).toBeGreaterThanOrEqual(prev.start + prev.size)
@@ -129,11 +177,11 @@ test('no block overlaps its predecessor on the reference', () => {
 })
 
 test('a reference row on the minus strand flips the whole block', () => {
-  const block = blocks.find(b => b[0]!.start === 4641638)!
+  const block = blockAt(986)
   // srcSize - start - size, and the reference always ends up '+'
   expect(block[0]).toMatchObject({
     name: 'K12.chr',
-    start: 4641638,
+    start: 986,
     size: 4,
     strand: '+',
     seq: 'CGTT',
@@ -141,7 +189,7 @@ test('a reference row on the minus strand flips the whole block', () => {
   // every other row flips with it, including its strand
   expect(block[1]).toMatchObject({
     name: 'Sakai.chr',
-    start: 5498554,
+    start: 976,
     strand: '-',
     seq: 'AAAA',
   })
@@ -150,38 +198,74 @@ test('a reference row on the minus strand flips the whole block', () => {
 test('a collapsed repeat becomes one block per reference copy', () => {
   // Both copies came from one input block. Each anchors its own block, so a
   // region query can reach the surplus copy at all.
-  const copies = blocks.filter(b => [50, 900].includes(b[0]!.start))
-  expect(copies).toHaveLength(2)
+  const copies = [blockAt(50), blockAt(900)]
   expect(copies.map(b => b[0]!.seq)).toEqual(['ACGA', 'ACGT'])
   // the non-reference rows are repeated into each copy
   for (const block of copies) {
     expect(block[1]).toMatchObject({ name: 'Sakai.chr', start: 700 })
   }
-  expect(stderr).toMatch(/1 of 4 input blocks carried several .* rows/)
+  expect(stderr).toMatch(/1 of 5 input blocks carried several .* rows/)
 })
 
-test('smoothxg block padding is blanked from the end the row’s strand puts it on', () => {
-  const block = blocks.find(b => b[0]!.start === 6000)!
-  // The pad follows the declared interval in the row's OWN direction, so a
-  // plus-strand row keeps its leading bases and a minus-strand row its
-  // trailing ones. Getting this backwards draws the phantom insertion at the
-  // other edge instead of removing it.
-  expect(block[1]).toMatchObject({
-    name: 'Sakai.chr',
-    strand: '+',
-    seq: 'AC--',
+test('smoothxg padding is blanked wherever the genome places the row', () => {
+  // The pad sits on the left, the right or both ends of a row, so the
+  // genome is the only thing that says which bases are the row's own.
+  const block = blockAt(600)
+  const byName = Object.fromEntries(block.map(r => [r.name, r]))
+  expect(byName['Sakai.chr']).toMatchObject({
+    start: 500,
     size: 2,
-  })
-  expect(block[2]).toMatchObject({
-    name: 'IAI39.chr',
-    strand: '-',
     seq: '--GT',
-    size: 2,
   })
-  // start is untouched: the pad runs outward from the declared interval, so
-  // blanking it leaves the row starting where it always said it did
-  expect(block[1]!.start).toBe(7000)
-  expect(block[2]!.start).toBe(8000)
+  expect(byName['IAI39.chr']).toMatchObject({
+    start: 300,
+    size: 2,
+    strand: '-',
+    seq: 'AC--',
+  })
+  expect(byName['NCTC86.chr']).toMatchObject({
+    start: 100,
+    size: 2,
+    seq: '-AC-',
+  })
+})
+
+test('a row that does not carry its declared bases is dropped', () => {
+  // CFT073's row declares 50..53, which holds TTT; GGG is not its sequence
+  expect(blockAt(600).map(r => r.name)).not.toContain('CFT073.chr')
+  // counted over blocks that hold the reference, the only ones emitted
+  expect(stderr).toMatch(/1 input rows did not carry their declared bases/)
+})
+
+test('cropping a row to the reference span moves its start past what it cut', () => {
+  // Sakai's GG sit where the reference is gap, so the crop keeps AC and the
+  // row now starts two bases later
+  expect(blockAt(700)[1]).toMatchObject({
+    name: 'Sakai.chr',
+    start: 802,
+    size: 2,
+    seq: 'AC',
+  })
+})
+
+test('every emitted row is its genome at its declared start', () => {
+  const comp: Record<string, string> = { A: 'T', C: 'G', G: 'C', T: 'A' }
+  for (const block of blocks) {
+    for (const row of block) {
+      const seq = GENOMES[row.name.replace('.', '#1#') as keyof typeof GENOMES]
+      const bases = row.seq.replaceAll('-', '')
+      const want =
+        row.strand === '+'
+          ? seq.slice(row.start, row.start + row.size)
+          : seq
+              .slice(LENGTH - row.start - row.size, LENGTH - row.start)
+              .split('')
+              .reverse()
+              .map(c => comp[c] ?? c)
+              .join('')
+      expect([row.name, row.start, bases]).toEqual([row.name, row.start, want])
+    }
+  }
 })
 
 test('every emitted row declares exactly its own non-gap count', () => {
