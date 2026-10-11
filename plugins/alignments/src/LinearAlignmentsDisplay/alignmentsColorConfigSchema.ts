@@ -103,7 +103,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
+        "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
     },
     ...colorTitleSlot,
     ...colorDescendingSlot,

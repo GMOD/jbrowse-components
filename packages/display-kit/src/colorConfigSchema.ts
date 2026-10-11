@@ -242,7 +242,7 @@ export function colorRangeSlot({
 }
 
 /**
- * The color of a value `domain` does not list, as d3's `ordinal.unknown`: unset,
+ * The color for a value missing from `domain`, as d3's `ordinal.unknown`: unset,
  * the next palette color where the display deals one; a color, that color;
  * `""`, no color from this setting, so the value keeps its own. `range`
  * entries past the domain go unread while it is set.
@@ -251,7 +251,7 @@ export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'color of a value domain does not list: unset the next palette color where the display deals one, a color that color, "" none from this setting',
+      'color for a value missing from domain: unset the next palette color where the display deals one, a color that color, "" none from this setting',
   },
 } as const
 
@@ -261,7 +261,7 @@ export const colorLabelsSlot = {
     type: 'stringArray',
     defaultValue: [],
     description:
-      'key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name',
+      'key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name',
   },
 } as const
 

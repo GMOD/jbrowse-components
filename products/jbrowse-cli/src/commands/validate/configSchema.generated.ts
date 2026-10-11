@@ -2940,7 +2940,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "baseUri": {
-          "description": "base for relative bigWigs URLs, stamped from the location the config was loaded from.",
+          "description": "base URL for relative bigWig URLs, stamped from the location the config was loaded from.",
           "default": "",
           "if": {
             "type": "null"
@@ -4882,7 +4882,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -5631,7 +5631,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -5742,7 +5742,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color of a value domain does not list: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting.",
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting.",
               "if": {
                 "type": "null"
               },
@@ -6238,7 +6238,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -7530,7 +7530,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -7956,7 +7956,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key label for each value domain lists, in order, or with no domain for each of a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -8783,7 +8783,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -8881,7 +8881,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -9074,7 +9074,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -9276,7 +9276,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -11188,7 +11188,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -11320,7 +11320,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -12104,7 +12104,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -12279,7 +12279,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -12840,7 +12840,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -25550,7 +25550,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
+              "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },

@@ -120,7 +120,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'key name for each domain value, one each in order; one past the list keeps its own name',
+        'key label for each domain value, one each in order; one past the list keeps its own name',
     },
     /**
      * #slot title
