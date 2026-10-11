@@ -756,6 +756,9 @@ importers:
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
+      '@jbrowse/plugin-variants':
+        specifier: workspace:^
+        version: link:../../plugins/variants
       '@jbrowse/plugin-wiggle':
         specifier: workspace:^
         version: link:../../plugins/wiggle

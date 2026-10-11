@@ -20,6 +20,7 @@ import {
   BIGBED,
   COVERAGE_BIGWIG,
   CRAM,
+  DOG_VCF,
   GFF3,
   METHYLATED,
   SIGNED_BIGWIG,
@@ -43,6 +44,7 @@ let jbrowse: {
   alignments: (args: string) => Promise<string>
   features: (args: string) => Promise<string>
   wiggle: (args: string) => Promise<string>
+  variants: (args: string) => Promise<string>
 }
 let code: string
 
@@ -124,5 +126,22 @@ test.each([
     expect(bare.bins).toEqual(direct.bins)
     expect(bare.marks).toEqual(direct.marks)
     expect(bare.domain).toEqual(direct.domain)
+  },
+)
+
+test.each([
+  ['allele', DOG_VCF],
+  ['haplotype', { ...DOG_VCF, display: { unit: 'haplotype' } }],
+])(
+  'the bundle answers a multi-sample VCF by %s as the engine does, in a bare host',
+  async (_, args) => {
+    const bare = JSON.parse(await jbrowse.variants(JSON.stringify(args)))
+    const direct = await createTablesEngine().variants(args)
+    expect(bare.cells.variant.length).toBeGreaterThan(0)
+    const { id: _bareId, ...bareVariants } = bare.variants
+    const { id: _directId, ...directVariants } = direct.variants
+    expect(bareVariants).toEqual(directVariants)
+    expect(bare.cells).toEqual(direct.cells)
+    expect(bare.legend).toEqual(direct.legend)
   },
 )

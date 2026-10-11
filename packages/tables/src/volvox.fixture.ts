@@ -4,11 +4,13 @@ import { pathToFileURL } from 'node:url'
 import type {
   AlignmentTablesArgs,
   FeatureTablesArgs,
+  VariantTablesArgs,
   WiggleTablesArgs,
 } from './index.ts'
 
 const VOLVOX = path.resolve('test_data/volvox')
 const METHYLATION = path.resolve('test_data/methylation_test')
+const DOG10K = path.resolve('test_data/dog10k')
 const uri = (file: string, dir = VOLVOX) => ({
   uri: pathToFileURL(path.join(dir, file)).href,
   locationType: 'UriLocation',
@@ -129,4 +131,14 @@ export const COVERAGE_BIGWIG: WiggleTablesArgs = {
   },
   region: { refName: 'ctgA', start: 0, end: 50000 },
   bpPerPx: 50,
+}
+
+/** 39 dogs genotyped at 490 SNVs across CYP1A2, a few of them phased. */
+export const DOG_VCF: VariantTablesArgs = {
+  adapterConfig: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: uri('dog10k_cyp1a2_snvs.vcf.gz', DOG10K),
+    index: { location: uri('dog10k_cyp1a2_snvs.vcf.gz.tbi', DOG10K) },
+  },
+  region: { refName: 'chr30', start: 38258000, end: 38265000 },
 }

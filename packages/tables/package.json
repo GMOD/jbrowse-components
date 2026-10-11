@@ -44,6 +44,7 @@
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-gtf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
+    "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^"
   },
   "devDependencies": {

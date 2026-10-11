@@ -172,8 +172,8 @@ export function computeVariantCells({
       // `alt` unguarded
       alt: (feature.get('ALT') as string[] | undefined) ?? [],
       ref: feature.get('REF') as string,
-      name: feature.get('name')!,
-      description: feature.get('description') as string,
+      name: feature.get('name') ?? '',
+      description: (feature.get('description') as string | undefined) ?? '',
       length: end - start,
       insertedBp: inserted,
       type: feature.get('type') ?? '',

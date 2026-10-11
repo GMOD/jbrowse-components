@@ -170,6 +170,25 @@ layer encoder (`buildSourceRenderData`):
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
   resolves to, and `rules` the reference lines it draws.
 
+`@jbrowse/plugin-variants/tables` (`variantTables`) does the same for a
+multi-sample VCF. It takes the `LinearMultiSampleVariantDisplay`'s config,
+runs the display's worker (`executeVariantCellData`) at genomic positions,
+and paints the cells as the display does (`paintCellColors`,
+`paintFeatureColors`):
+
+- `variants`: each record the display's filters keep (MAF, missingness, the
+  jexl `filter`), with its lane color.
+- `cells`: each row's cell at a record, with its genotype, its alt dosage over
+  the called alleles, and the fill `shade(hue, dosage)` paints. Under
+  `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
+- `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
+  named as the display names them, in file order.
+- `legend`: the display's key, from `getVariantColorScales` over what the
+  cells painted.
+
+The table does not apply the display's density fade, which depends on zoom,
+and does not order the rows by the `rows` arrangement.
+
 A multi-source track reads with a `source` column, each source in its own
 declared color. The palette the display deals to a shared panel's sources is
 the tree sidebar's (`dealtValueColors` over its arranged rows), which the table
