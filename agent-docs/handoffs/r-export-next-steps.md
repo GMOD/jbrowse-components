@@ -59,3 +59,17 @@ Still open, smaller:
 - Printed regions are 0-based.
 - `jbrowse_sequence` takes no locus.
 - Two tracks on different contigs with the same span stack under one label.
+
+## Gallery comparison (2026-10-11)
+
+Thirteen live exports beside their views (https://claude.ai/artifact/6h9xxrCvFpkf1J1T2q6cgw)
+led to ggjbrowse 0.2.1: sub-pixel features draw a pixel wide, the genotype
+matrix paints its grey reference rows, section labels read across. Still
+differing:
+
+- A density or other ramp draws no key in R (`legendOf` keys categorical
+  scales only).
+- A multi-sample matrix leaves out the `rowColor` group colors; the engine's
+  `rows` table carries none.
+- The exporter gives a multi-sample track 3 inches whatever its row count, so
+  86 row labels overprint; size it from the display's `height`.
