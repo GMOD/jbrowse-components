@@ -59,7 +59,7 @@ export const laneLayerConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        "the trackIds the lanes draw the layer from, matched to a lane by the track's assembly. An entry spelling `{assembly}`, such as `{assembly}-gc5Base`, names in each lane the track whose id has that lane's genome written there; a plain id outranks it. A lane no entry names draws an empty band",
+        "the trackIds the lanes draw the layer from, matched to a lane by the track's assembly. An entry spelling `{assembly}`, such as `{assembly}-gc5Base`, names in each lane the track whose id has that lane's genome, or any of its aliases, written there. Plain ids outrank `{assembly}` entries, and an earlier entry outranks a later one. A lane no entry names draws an empty band",
     },
     /**
      * #slot adapter

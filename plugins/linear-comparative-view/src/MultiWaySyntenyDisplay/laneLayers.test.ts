@@ -296,10 +296,12 @@ describe('a template layer', () => {
     const sourcesOf = (display: {
       laneLayerSources: Map<string, { source: string }>[]
     }) =>
-      [...display.laneLayerSources[0]!].map(([lane, { source }]) => [
-        lane,
-        source,
-      ])
+      Object.fromEntries(
+        [...display.laneLayerSources[0]!].map(([lane, { source }]) => [
+          lane,
+          source,
+        ]),
+      )
     expect(
       sourcesOf(
         await templateDisplay(GC, {
@@ -307,10 +309,10 @@ describe('a template layer', () => {
           tracks: ['{assembly}-scores'],
         }),
       ),
-    ).toEqual([
-      ['volvox', 'volvox-scores'],
-      ['volvox_random', 'volvox_random-scores'],
-    ])
+    ).toEqual({
+      volvox: 'volvox-scores',
+      volvox_random: 'volvox_random-scores',
+    })
     expect(
       sourcesOf(
         await templateDisplay(GC, {
@@ -318,10 +320,10 @@ describe('a template layer', () => {
           tracks: ['{assembly}-scores', 'volvox_random-other'],
         }),
       ),
-    ).toEqual([
-      ['volvox_random', 'volvox_random-other'],
-      ['volvox', 'volvox-scores'],
-    ])
+    ).toEqual({
+      volvox: 'volvox-scores',
+      volvox_random: 'volvox_random-other',
+    })
   })
 
   test('an adapter that computes from no sequence is read by no lane, since each would read the one file at its own coordinates', async () => {

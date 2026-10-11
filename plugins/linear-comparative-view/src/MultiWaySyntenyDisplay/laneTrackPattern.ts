@@ -1,13 +1,15 @@
 const ASSEMBLY = '{assembly}'
 
-export function patternNamesTrack(
+export function laneTrackIds(
   entries: readonly string[],
-  trackId: string,
-  assemblyNames: readonly string[],
+  spellings: readonly string[],
 ) {
-  return entries.some(
-    entry =>
-      entry.includes(ASSEMBLY) &&
-      assemblyNames.some(name => entry.replaceAll(ASSEMBLY, name) === trackId),
-  )
+  return [
+    ...entries.filter(entry => !entry.includes(ASSEMBLY)),
+    ...entries
+      .filter(entry => entry.includes(ASSEMBLY))
+      .flatMap(entry =>
+        spellings.map(name => entry.replaceAll(ASSEMBLY, name)),
+      ),
+  ]
 }

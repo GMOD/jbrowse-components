@@ -1240,6 +1240,39 @@ test('an `{assembly}` entry names each lane its own gene track, and a plain id o
   expect(trackIdOf('volvox_random')).toBe('volvox_random-refseq')
 })
 
+test('an `{assembly}` entry fills in every name the session knows a lane by, and an earlier entry wins', () => {
+  const { display } = createDisplayWithSession({
+    geneTracks: [
+      { trackId: 'volvox-ensGene', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random_ccds', assemblyNames: ['volvox_random'] },
+      { trackId: 'vr-ensGene', assemblyNames: ['volvox_random'] },
+      { trackId: 'volvox-refGene', assemblyNames: ['volvox'] },
+    ],
+    assemblyAliases: { 'sample#1#vr': 'volvox_random' },
+    assemblyOf: name =>
+      testAssembly(
+        name === 'volvox_random' ? { allAliases: ['volvox_random', 'vr'] } : {},
+      ),
+  })
+  display.setFeatures([
+    mateRecord('f1', 'volvox_random', 'gene1'),
+    mateRecord('f2', 'sample#1#vr', 'gene2'),
+  ])
+  setConf(display, 'laneGeneTracks', [
+    '{assembly}-refGene',
+    '{assembly}-ensGene',
+  ])
+  expect(
+    Object.fromEntries(
+      [...display.laneGeneTracks].map(([lane, track]) => [lane, track.trackId]),
+    ),
+  ).toEqual({
+    volvox: 'volvox-refGene',
+    volvox_random: 'vr-ensGene',
+    'sample#1#vr': 'vr-ensGene',
+  })
+})
+
 test('a lane selection reaches the adapter under every name the session knows the genome by', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },

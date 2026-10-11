@@ -141,7 +141,7 @@ import {
   laneContentHeight,
   laneGeometry,
 } from './laneStack.ts'
-import { patternNamesTrack } from './laneTrackPattern.ts'
+import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
@@ -907,6 +907,43 @@ export function stateModelFactory(
           ) ?? assemblyName
         )
       },
+      /**
+       * #getter
+       * every session track, connections' included
+       */
+      get sessionTracksById(): ReadonlyMap<string, AnyTrackConfig> {
+        return new Map(
+          allSessionTracks(getSession(self)).map(track => [
+            track.trackId as string,
+            track,
+          ]),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * the tracks `entries` names for the lane keyed `key`, best first:
+       * plain ids, then `{assembly}` entries, each in entry order
+       */
+      namedLaneTracks(entries: readonly string[], key: string) {
+        const { assemblyManager } = getSession(self)
+        const spellings = new Set([
+          key,
+          ...((assemblyManager.has(key) &&
+            assemblyManager.get(key)?.allAliases) ||
+            []),
+        ])
+        return laneTrackIds(entries, [...spellings]).flatMap(id => {
+          const track = self.sessionTracksById.get(id)
+          return track &&
+            getConfAssemblyNamesOrNone(track).some(
+              name => self.laneKey(name) === key,
+            )
+            ? [track]
+            : []
+        })
+      },
     }))
     .views(self => ({
       /** #getter */
@@ -1287,26 +1324,19 @@ export function stateModelFactory(
        * keyed by each lane's own spelling, not by `laneKey`
        */
       get laneGeneTracks() {
-        const session = getSession(self)
         const entries: string[] = getConf(self, 'laneGeneTracks')
-        const named = new Set(entries)
         const lanesByKey = new Map<string, string[]>()
         for (const lane of [self.anchorAssemblyName, ...self.rowAssemblies]) {
           const key = self.laneKey(lane)
           lanesByKey.set(key, [...(lanesByKey.get(key) ?? []), lane])
         }
         const best = new Map<string, { rank: number; track: AnyTrackConfig }>()
-        for (const track of allSessionTracks(session)) {
+        for (const track of self.sessionTracksById.values()) {
           const names = getConfAssemblyNamesOrNone(track)
           const type = (track.adapter as { type?: unknown } | undefined)?.type
-          const rank = named.has(track.trackId)
-            ? -2
-            : patternNamesTrack(entries, track.trackId, [
-                  ...names,
-                  ...names.map(self.laneKey),
-                ])
-              ? -1
-              : annotationRank(typeof type === 'string' ? type : undefined)
+          const rank = annotationRank(
+            typeof type === 'string' ? type : undefined,
+          )
           if (names.length === 1 && rank !== undefined) {
             const key = self.laneKey(names[0]!)
             const held = best.get(key)
@@ -1319,9 +1349,16 @@ export function stateModelFactory(
           }
         }
         const out = new Map<string, AnyTrackConfig>()
-        for (const [key, { track }] of best) {
-          for (const lane of lanesByKey.get(key)!) {
-            out.set(lane, track)
+        for (const [key, lanes] of lanesByKey) {
+          const track =
+            self
+              .namedLaneTracks(entries, key)
+              .find(t => getConfAssemblyNamesOrNone(t).length === 1) ??
+            best.get(key)?.track
+          if (track) {
+            for (const lane of lanes) {
+              out.set(lane, track)
+            }
           }
         }
         return out
@@ -1904,39 +1941,23 @@ export function stateModelFactory(
     .views(self => ({
       /** #getter */
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
-        const sessionTracks = allSessionTracks(getSession(self))
-        const byId = new Map(
-          sessionTracks.map(track => [track.trackId as string, track]),
-        )
         const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
         return self.configuration.laneLayers.map((layer, i) => {
           const out = new Map<string, LaneLayerSource>()
-          const named = [
-            ...layer.tracks.flatMap(id => byId.get(id) ?? []),
-            ...sessionTracks.filter(track => {
-              const names = getConfAssemblyNamesOrNone(track)
-              return patternNamesTrack(layer.tracks, track.trackId, [
-                ...names,
-                ...names.map(self.laneKey),
-              ])
-            }),
-          ]
-          for (const track of named) {
-            const names = getConfAssemblyNamesOrNone(track)
-            for (const lane of lanes) {
-              if (
-                !out.has(lane) &&
-                names.some(name => self.laneKey(name) === self.laneKey(lane))
-              ) {
-                out.set(lane, {
-                  source: track.trackId,
-                  adapterConfig: toTrackConfigEntry(track).adapter as Record<
-                    string,
-                    unknown
-                  >,
-                  template: false,
-                })
-              }
+          for (const lane of lanes) {
+            const [track] = self.namedLaneTracks(
+              layer.tracks,
+              self.laneKey(lane),
+            )
+            if (track) {
+              out.set(lane, {
+                source: track.trackId,
+                adapterConfig: toTrackConfigEntry(track).adapter as Record<
+                  string,
+                  unknown
+                >,
+                template: false,
+              })
             }
           }
           const template = self.laneLayerTemplates[i]

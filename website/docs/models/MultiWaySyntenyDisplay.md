@@ -121,6 +121,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-adapterdeclareslanes">**adapterDeclaresLanes**</span><br><code>boolean</code> |  |
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  |
 | <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call |
+| <span id="getter-sessiontracksbyid">**sessionTracksById**</span><br><code>ReadonlyMap&lt;string, AnyTrackConfig&gt;</code> | every session track, connections' included |
 | <span id="getter-adjacentlanesaligndirectly">**adjacentLanesAlignDirectly**</span><br><code>boolean</code> |  |
 | <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its lower lane against the anchor |
 | <span id="getter-pinnedlaneflips">**pinnedLaneFlips**</span><br><code>ReadonlyMap&lt;string, LaneFlipPin&gt;</code> |  |
@@ -237,6 +238,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="method-lanekey">**laneKey**</span><br><code>(assemblyName: string) =&gt; string</code> | the canonical name, so two spellings of one assembly share a key |
+| <span id="method-namedlanetracks">**namedLaneTracks**</span><br><code>(entries: readonly string[], key: string) =&gt; AnyTrackConfig[]</code> | the tracks `entries` names for the lane keyed `key`, best first: plain ids, then `{assembly}` entries, each in entry order |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { haplotypes: string[] &#124; undefined; }</code> | reads only user-controlled state, never a fetch's output, or it loops |
 | <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
