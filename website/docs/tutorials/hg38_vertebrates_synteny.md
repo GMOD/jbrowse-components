@@ -233,7 +233,7 @@ set the frame:
   whose blocks split about evenly between the two orientations.
 - **Let the lane choose its orientation** hands the choice back.
 
-<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. Every lane places the window as several blocks of both colors, against the TP53 window's single red runs, and a flipped lane, marked reversed in its header, runs its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. Most lanes place the window as several blocks of both colors, against the TP53 window's single red runs, and a flipped lane, marked reversed in its header, runs its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
 
