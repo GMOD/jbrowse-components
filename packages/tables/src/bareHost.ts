@@ -381,9 +381,7 @@ export const IntlShim = {
     }
   },
   NumberFormat: class {
-    format(n: number) {
-      return String(n)
-    }
+    format = String
   },
 }
 
