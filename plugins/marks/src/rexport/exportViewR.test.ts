@@ -615,6 +615,19 @@ const stack = register(
   `c(file.size(${JSON.stringify(stackPng)}) > 0, nrow(wig_volvox_microarray_multi_multirowxy$sources), max(genes_gff3tabix_genes$features$.region))`,
 )
 
+const fitted = (display: Record<string, unknown>) =>
+  register(
+    `fitted_${String(display.heightMode)}`,
+    scriptFor(
+      [track(main, 'gff3tabix_genes', 'LinearBasicDisplay', display)],
+      [{ refName: 'ctgA', start: 0, end: 25000 }],
+    ),
+    `{ g <- genes_gff3tabix_genes; eden <- which(g$features$name == "EDEN")
+  c(max(g$features$bottom) <= 100, "EDEN" %in% g$labels$text, sum(g$subfeatures$feature == eden)) }`,
+  )
+const fit = fitted({ heightMode: 'fit', height: 100 })
+const grown = fitted({ heightMode: 'grow', height: 100 })
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -798,6 +811,11 @@ maybe('the emitted script, run under R', () => {
 
   it('stacks a feature, a multi-BigWig and an alignments track over two regions', () => {
     expect(results.get(stack)).toBe('[1] 1 2 2')
+  })
+
+  it('fits a feature track to the height the view gives it, as the browser does', () => {
+    expect(results.get(fit)).toBe('[1] 1 0 1')
+    expect(results.get(grown)).toBe('[1] 0 1 3')
   })
 
   it('keeps a gene seen in two regions apart in each', () => {

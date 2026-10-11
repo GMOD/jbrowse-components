@@ -190,7 +190,12 @@ const featureExporter: RExporter = (track, regions) => {
   if ('skipped' in source) {
     return source
   }
-  const written = engineDisplay(track.writtenDisplay ?? track.display)
+  const { heightMode, height } = track.display
+  const written = {
+    ...engineDisplay(track.writtenDisplay ?? track.display),
+    ...(heightMode === undefined ? {} : { heightMode }),
+    ...(height === undefined ? {} : { height }),
+  }
   const result = engineResult({
     name: `genes_${track.key}`,
     regions,

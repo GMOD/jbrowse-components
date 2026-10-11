@@ -1022,9 +1022,11 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
       },
       BAM,
     )
-    expect(s).toContain('display = list(modifications = list(threshold = 20))')
+    expect(s).toContain(
+      'display = list(modifications = list(threshold = 20), height = 400)',
+    )
     expect(s).toContain('geom_jbrowse_junctions(min_reads = 5)')
-    expect(s).not.toMatch(/height = 400|showCoverage/)
+    expect(s).not.toMatch(/showCoverage|minSashimiScore/)
   })
 
   it('draws the coverage band alone where the pileup is hidden', () => {

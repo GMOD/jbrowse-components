@@ -37,12 +37,10 @@ const READERS = {
 
 type ReaderKind = keyof typeof READERS
 
-/** Slots that size the browser's track or choose its bands, where the figure sizes and composes itself. */
+/** Slots the figure composes itself from, which the engine has no use for. */
 const HOST_SLOTS = new Set([
   'type',
   'displayId',
-  'height',
-  'maxHeight',
   'coverageHeight',
   'sashimiArcsHeight',
   'readConnectionsHeight',
