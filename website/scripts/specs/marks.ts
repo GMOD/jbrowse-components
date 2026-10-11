@@ -14,9 +14,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const CONFIG = 'https://jbrowse.org/demos/gene_density/config.json'
 const ALU_BED = 'https://jbrowse.org/demos/gene_density/Alu.bed.gz'
 
-const ALU_DENSITY_BW =
-  'https://jbrowse.org/demos/gene_density/Alu.bed.density.bw'
-
 const ALU_MARKS_TRACK = {
   type: 'FeatureTrack',
   trackId: 'alu_marks',
@@ -27,10 +24,6 @@ const ALU_MARKS_TRACK = {
     bedGzLocation: { uri: ALU_BED, locationType: 'UriLocation' },
     index: {
       location: { uri: `${ALU_BED}.tbi`, locationType: 'UriLocation' },
-    },
-    densityAdapter: {
-      type: 'BigWigAdapter',
-      bigWigLocation: { uri: ALU_DENSITY_BW, locationType: 'UriLocation' },
     },
   },
   displays: [
@@ -49,28 +42,6 @@ const ALU_MARKS_TRACK = {
               ops: [{ op: 'count' }],
             },
           ],
-          encoding: { y: 'count' },
-          minBpPerPx: 100,
-        },
-      ],
-    },
-  ],
-}
-
-// The same track past the fetch budget: the raw mark is off, the binned one
-// cannot fetch, and a third mark reads the make-density sidecar instead.
-const ALU_SIDECAR_TRACK = {
-  ...ALU_MARKS_TRACK,
-  trackId: 'alu_sidecar',
-  displays: [
-    {
-      type: 'LinearMarkDisplay',
-      displayId: 'alu_sidecar-LinearMarkDisplay',
-      marks: [
-        { mark: 'bar', encoding: { y: 'milliDiv' }, maxBpPerPx: 100 },
-        {
-          mark: 'bar',
-          source: 'density',
           encoding: { y: 'count' },
           minBpPerPx: 100,
         },
@@ -158,29 +129,6 @@ function aluMarksUrl(loc: string) {
 }
 
 export const marksSpecs: ScreenshotSpec[] = [
-  // Chromosome 1 end to end, past the byte budget: the sidecar's bins draw in
-  // the banner's place, with the chip naming them.
-  {
-    mode: 'url',
-    name: 'mark_display/density_sidecar',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [ALU_SIDECAR_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1',
-          tracks: [
-            { trackId: 'alu_sidecar', type: 'LinearMarkDisplay', height: 160 },
-          ],
-        },
-      ],
-    }),
-    readySelector: displayPainted('mark-display'),
-    readyTimeout: 90000,
-    viewportHeight: 370,
-  },
-
   // Two frames of the same track: 3 Mb of 1q21, where only the binned mark is
   // in range and the axis is counts, then 30 kb of it, where only the raw mark
   // is and the axis is each Alu's divergence from its consensus.
@@ -269,12 +217,23 @@ export const marksSpecs: ScreenshotSpec[] = [
 ]
 
 // The Alu tutorial (docs/tutorials/alu_age.md). The config carries the tracks:
-// the copies as a mark display, and the per-megabase BED build_alu_age.sh
-// writes, plotted as the AluY share against the genome-wide share.
+// the copies as a mark display, their make-density bigWig for a whole
+// chromosome, where the copies are over the fetch budget, and the per-megabase
+// BED build_alu_age.sh writes, plotted as the AluY share against the
+// genome-wide share.
 const ALU_AGE_CONFIG = 'test_data/alu_age/config.json'
+const ALU_YOUNG_SHARE = {
+  trackId: 'alu_young_share',
+  type: 'LinearMarkDisplay',
+  height: 90,
+}
 const ALU_AGE_TRACKS = [
   { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 110 },
-  { trackId: 'alu_young_share', type: 'LinearMarkDisplay', height: 90 },
+  ALU_YOUNG_SHARE,
+]
+const ALU_CHROMOSOME_TRACKS = [
+  { trackId: 'alu_per_kb', type: 'LinearWiggleDisplay', height: 110 },
+  ALU_YOUNG_SHARE,
 ]
 
 function aluAgeSpec(
@@ -327,7 +286,7 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
       ],
     },
   ),
-  aluAgeSpec('alu_age/chromosome', 'chr1', ALU_AGE_TRACKS, {
+  aluAgeSpec('alu_age/chromosome', 'chr1', ALU_CHROMOSOME_TRACKS, {
     viewportHeight: 465,
   }),
   aluAgeSpec('alu_age/binned', BINNED_LOC, ALU_AGE_TRACKS, {

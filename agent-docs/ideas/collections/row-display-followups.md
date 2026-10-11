@@ -31,8 +31,6 @@ data) and a per-feature "Color by..." menu are new UI.
 
 - a phased dialog opened before the first cellData and submitted over
   haplotype rows still writes the sample order;
-- a density sidecar standing in under `rows` draws in the first row only, and
-  `valueMarkIndex` picks the hidden mark;
 - `refillArray` in `packages/core/src/configuration/configurationSchema.ts`
   works around the fork's quadratic array reconcile, which
   `@jbrowse/mobx-state-tree` 6.6.1 made linear; measure a 5,000-name reorder

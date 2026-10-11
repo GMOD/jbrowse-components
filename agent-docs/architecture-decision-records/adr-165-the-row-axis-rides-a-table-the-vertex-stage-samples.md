@@ -24,8 +24,7 @@ read it, as do the text labels, the tooltip and the sort at a column. A
 focus's legend, axis and size scales come from a scan of each region's `row`
 lane against the drawn keys, which copies no lane (`drawnScales.ts`). A facet
 still offsets its rows through `facetRegion`, since its sections are of
-variable height, and binds no table; so does the density sidecar, whose bins
-carry no key.
+variable height, and binds no table.
 
 ## Context
 

@@ -106,7 +106,7 @@ summary swaps on span (`coarseTierPastThreshold` is `aboveForceLoadFloor`), whil
 the question it stands in for is cost, so the tutorial's 83 kb C4 figure would
 silently lose its per-haplotype base rows to presence bands. A cost-based swap is
 a design question, since the deciding estimate is the detail tier's, which
-`byteGateAdapterConfig` points away from once the tier is on (`gateMeasuresCoarse`).
+`byteGateAdapterConfig` points away from once the tier is on (`coarseTierActive`).
 [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"Fetch dominates at 470-way"
 predicted this gap.
 

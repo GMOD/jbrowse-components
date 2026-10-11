@@ -1,13 +1,23 @@
 ---
-status: Accepted
-summary: "Where the region-too-large gate refuses, a display with a density source draws features per bin instead of the banner — the swap is on the gate's verdict (cost), never on span; the source is a sidecar slot on the adapter; the bins have their own cache and never touch rpcProps"
+status: Rejected
+summary: "Removed 2026-10-11: a density sidecar on the adapter that displays drew in the banner's place cost a slot on ten adapters, four renderings and a menu for what a QuantitativeTrack over the same bigWig shows; `make-density` stays as a plain bigWig maker. The index-estimate measurements below still stand"
 ---
 
 # ADR-102: The density tier swaps on the gate's verdict
 
 ## Status
 
-Accepted (2026-09).
+Accepted (2026-09), **removed 2026-10-11**. The tier stood in a display's place
+on four displays (the two canvas feature displays, alignments' coverage band,
+the mark display's `source: 'density'`), each drawing the bins its own way, and
+put a `densityAdapter` slot on ten adapters, three of which no display read
+(GWAS, multi-sample VCF, split VCF). BAM gave the slot a second meaning, read
+depth, which left the band's readout without a unit. A
+QuantitativeTrack over the same `make-density` bigWig draws the same picture
+beside the features, so the slot, the worker read, `DensityTierMixin`, the band
+consumers and `add-track --density` went. `CoarseTierMixin` stays, trimmed to
+MAF's gated summary tier. The measurements under "No index estimate" are the
+reason a per-bin estimate from the index is not the replacement either.
 
 ## Context
 

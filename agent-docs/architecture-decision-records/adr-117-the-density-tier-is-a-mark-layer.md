@@ -7,7 +7,11 @@ summary: "The picture per zoom level works at any scale. A `bin` step's `step` m
 
 ## Status
 
-Accepted (2026-09-10). Takes
+Accepted (2026-09-10); **the density layer was removed 2026-10-11** with the
+tier it drew ([ADR-102](adr-102-the-density-tier-swaps-on-the-gates-verdict.md)'s
+status says why). `step: "auto"` and the mark display's byte gate stand; a
+mark has no `source` slot, and past the budget the display shows the banner.
+Takes
 [ADR-112](adr-112-a-layer-owns-its-transform-and-its-zoom-range.md)'s declined
 zoom-following bin, which
 [ADR-113](adr-113-one-scale-rule-in-one-place.md) re-declined on the same terms,

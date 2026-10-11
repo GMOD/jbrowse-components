@@ -6,7 +6,8 @@
 # One scored BED becomes one track that plots a numeric column: each copy's
 # divergence from its consensus as a bar colored by subfamily lineage when
 # zoomed in, the count per bin with the AluY count over it when zoomed out, and
-# a `jbrowse make-density` sidecar past the fetch budget. A second file counts
+# a `jbrowse make-density` bigWig of copies per kilobase for a whole chromosome.
+# A second file counts
 # the copies per megabase and tests whether the youngest lineage's share follows
 # the family's density, against a strand split that should not. The tracks are
 # mark displays declared in JSON, so the same config over another family's
@@ -106,7 +107,7 @@ gzip -dc rmsk.bed.gz |
   bgzip >"$BED"
 tabix -f -p bed "$BED"
 
-# ── The density sidecar ─────────────────────────────────────────────────────
+# ── Copies per kilobase ─────────────────────────────────────────────────────
 # Counts feature starts per 1 kb bin into <file>.density.bw beside the input.
 # --assembly reads the reference lengths off a FASTA's .fai; --chrom-sizes
 # takes a two-column table instead, which is what the hg38 hub publishes.
@@ -141,10 +142,10 @@ cp -f "$BED" "$BED.tbi" "${BED%.gz}.density.bw" "$SHARE.gz" "$SHARE.gz.tbi" "$AP
 # Mark 1 draws zoomed in: one bar per copy, milliDiv on the axis, colored by
 # the first four characters of the name (AluJ, AluS, AluY), which the formula
 # step writes into `lineage`. Mark 2 draws zoomed out: the count per bin, the
-# bin width following the zoom, and past the fetch budget the sidecar's bins in
-# its place. Mark 3 is the youngest lineage's count per bin, over mark 2.
+# bin width following the zoom. Mark 3 is the youngest lineage's count per bin,
+# over mark 2.
 sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
-  -e "s|@BW@|${BED%.gz}.density.bw|g" -e "s|@YOUNG@|$YOUNG|g" >track.json <<'JSON'
+  -e "s|@YOUNG@|$YOUNG|g" >track.json <<'JSON'
 {
   "type": "FeatureTrack",
   "trackId": "@FAMILY@_age",
@@ -153,11 +154,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": { "uri": "@BED@" },
-    "index": { "location": { "uri": "@BED@.tbi" } },
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "bigWigLocation": { "uri": "@BW@" }
-    }
+    "index": { "location": { "uri": "@BED@.tbi" } }
   },
   "displays": [
     {
@@ -187,7 +184,6 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
         },
         {
           "mark": "bar",
-          "source": "density",
           "transform": [
             { "type": "bin", "step": "auto" },
             {
@@ -219,6 +215,11 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
 }
 JSON
 jb add-track-json track.json --out "$APP" --update
+
+# The copies per kilobase, a track of their own for a whole chromosome, where
+# the copies track is over its fetch budget.
+jb add-track "${BED%.gz}.density.bw" --trackId "${FAMILY}_per_kb" --name "$FAMILY copies per kb" \
+  --assemblyNames "$ASM" --load inPlace --out "$APP" --force
 
 # Two tracks over the per-megabase BED, one column each, on one fixed axis.
 # Bars grow from zero, colored by a threshold at 0 whose key names the two

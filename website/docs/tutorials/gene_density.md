@@ -2,9 +2,8 @@
 title: Gene density and transposon density along a chromosome
 sidebar_label: Gene density (RefSeq, RepeatMasker)
 description:
-  Whole-chromosome bands for 30,000 genes and 1.3 million Alu copies, from a
-  features-per-kilobase sidecar the track draws where its features are too many
-  to fetch
+  Whole-chromosome tracks of genes and Alu copies per kilobase, from a bigWig
+  `jbrowse make-density` counts once from each annotation file
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -12,18 +11,16 @@ tutorial_category: Genes & annotation
 We look at where the genes sit along human chromosome 1 and which transposons
 sit near them: Alu elements pile up where the genes are, and L1 elements spread
 more evenly. A whole chromosome holds more genes, and far more repeat copies,
-than a browser fetches at once, so each track points at a small bigWig of
-feature counts per kilobase, built once with `jbrowse make-density`. The track
-draws that bigWig as a band wherever its features are too many to fetch, and
-swaps in the features once they fit.
+than a browser fetches at once, so we count each file's features per kilobase
+into a small bigWig with `jbrowse make-density` and show those counts as tracks,
+then zoom in to see the genes themselves.
 
 ## Prerequisites
 
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - [Node.js](https://nodejs.org/), which the JBrowse CLI runs on
-- the [JBrowse CLI](/docs/cli), for `jbrowse make-density` and the track it
-  attaches to
+- the [JBrowse CLI](/docs/cli), for `jbrowse make-density`
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
@@ -33,7 +30,7 @@ swaps in the features once they fit.
 
 The figures read UCSC's hg38 annotation tables, rehosted by
 [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with a
-density sidecar beside each file.
+per-kilobase bigWig beside each file.
 
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
@@ -61,12 +58,11 @@ names it in `assemblyNames`.
 }
 ```
 
-## Building a features-per-kilobase density sidecar
+## Counting features per kilobase into a bigWig
 
-The sidecar is one bigWig per track: the number of features starting in each 1
-kb bin, counted once from the file. `jbrowse make-density` reads the GFF3 and
-writes it beside the input, named for the file with `.density.bw` in place of
-its `.gz`:
+One bigWig per file holds the number of features starting in each 1 kb bin,
+counted once. `jbrowse make-density` reads the GFF3 and writes it beside the
+input, named for the file with `.density.bw` in place of its `.gz`:
 
 <!-- from: scripts/build_gene_density.sh -->
 
@@ -74,17 +70,70 @@ its `.gz`:
 # --chrom-sizes gives the bigWig header its reference lengths;
 #   --assembly hg38.fa reads them off the FASTA's .fai instead
 # a GFF3 counts only lines with no Parent= attribute, so a gene is one
-#   count however many transcripts and exons hang under it; a BED, GTF
-#   or VCF counts every record
+#   count however many transcripts and exons hang under it; a BED or VCF
+#   counts every record, and a GTF its transcript rows
 # every bin is written, empty ones included, so the zoomed-out levels of
 #   the bigWig average over the whole span
 jbrowse make-density genes.gff.gz --chrom-sizes hg38.chrom.sizes
 ```
 
-`jbrowse add-track genes.gff.gz` finds `genes.gff.density.bw` beside the file
-and attaches it; name a sidecar stored elsewhere, or a remote one, with
-`--density`. The sidecar goes in the `densityAdapter` slot on the adapter of the
-track:
+Add the bigWig as a track:
+
+```json addtrack loc=chr1
+{
+  "trackId": "hg38_genes_density",
+  "name": "RefSeq genes per kb",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
+}
+```
+
+The three repeat tracks come from cutting the RepeatMasker table into one BED
+per `repFamily`, so the Alu bigWig counts only Alus. The same `make-density`
+line over each family BED builds its bigWig:
+
+```json addtrack loc=chr1
+{
+  "trackId": "hg38_Alu_density",
+  "name": "Alu per kb",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+}
+```
+
+The L1 track and the simple-repeat control follow, with the file names swapped:
+
+```json addtrack loc=chr1
+{
+  "trackId": "hg38_L1_density",
+  "name": "L1 per kb",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
+}
+```
+
+```json addtrack loc=chr1
+{
+  "trackId": "hg38_Simple_repeat_density",
+  "name": "Simple repeats per kb",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
+}
+```
+
+## Gene and repeat density along chromosome 1
+
+Add the four tracks above, then open chromosome 1 with all four.
+
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats, each as features per kilobase on its own scale. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
+
+The gap in every track is the centromere and the 1q12 heterochromatin beside it.
+
+## Zooming in to 1q21 with the genes as features
+
+Add the gene file as a track, then type `chr1:150,000,000-160,000,000`, 10 Mb
+over 1q21 to 1q23. At this width the gene track's fetch fits, so it draws each
+gene:
 
 ```json addtrack loc=chr1:150,000,000-160,000,000
 {
@@ -94,116 +143,20 @@ track:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz",
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
-    }
-  },
-  "displayDefaults": { "densityTierBpPerPx": 50000 }
-}
-```
-
-Because `densityAdapter` sits on the adapter, every display of the track draws
-the band. The optional `densityTierBpPerPx` switches the gene track to the band
-from 50 kb per pixel outward, since on the smaller chromosomes the band reads
-more easily than a screen of genes. The setting has no menu entry, the **Density
-band** choices below override it, and the repeat tracks leave it unset.
-
-The three repeat tracks come from cutting the RepeatMasker table into one BED
-per `repFamily`, so the Alu track and its sidecar hold only Alus. The same
-`make-density` line over each family BED builds its sidecar.
-
-The Alu track follows the same pattern:
-
-```json addtrack loc=chr1:150,000,000-160,000,000
-{
-  "type": "FeatureTrack",
-  "trackId": "hg38_Alu",
-  "name": "RepeatMasker Alu",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
-    }
+    "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz"
   }
 }
 ```
 
-The L1 track and the simple-repeat control follow, with the file names swapped:
+<Figure src="/img/gene_density_1q21.png" caption="Chromosome 1 from 150 to 160 Mb: the RefSeq genes as features above the Alu and L1 copies per kilobase. Alu peaks under the densest runs of genes, and L1 runs more evenly across them." />
 
-```json addtrack loc=chr1:150,000,000-160,000,000
-{
-  "type": "FeatureTrack",
-  "trackId": "hg38_L1",
-  "name": "RepeatMasker L1",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz",
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
-    }
-  }
-}
-```
+## Checking the tracks against counts from the files
 
-```json addtrack loc=chr1:150,000,000-160,000,000
-{
-  "type": "FeatureTrack",
-  "trackId": "hg38_Simple_repeat",
-  "name": "RepeatMasker simple repeats",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz",
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
-    }
-  }
-}
-```
-
-To use your own BED, swap each `uri` for it and for the sidecar `make-density`
-wrote. The BED needs bgzip and tabix (`.tbi` beside it), the same refNames as
-the assembly, and the `.density.bw` beside it unless `densityAdapter` points
-elsewhere.
-
-## Gene and repeat density bands along chromosome 1
-
-Add the four tracks above, then open chromosome 1 with all four. At this width
-every track is over its fetch budget, so each draws its density sidecar.
-
-<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
-
-The gap in every band is the centromere and the 1q12 heterochromatin beside it.
-
-## Zooming in to 1q21 draws the genes again
-
-Type `chr1:150,000,000-160,000,000`, 10 Mb over 1q21 to 1q23. The gene track's
-fetch now fits, so its genes are drawn, while the Alu and L1 tracks keep their
-bands.
-
-<Figure src="/img/gene_density_1q21.png" caption="Chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest runs of genes, and the L1 band runs more evenly across them." />
-
-The track menu of a track with a sidecar has a **Density band** entry:
-
-- **Automatic**, **Features only** and **Density only** keep or drop the band by
-  hand
-- **Load features anyway** forces the fetch the band replaced
-
-## Checking the bands against counts from the files
-
-The bands are counts, so counting the files checks them. Each band prints its
-peak in its corner, and hovering shows the sidecar value under the cursor. Count
-one megabase under the tallest run of the gene band, at 155 Mb, and one under a
-trough, at 60 Mb. A gene's transcripts and exons have `Parent=`, so the gene
-line drops them and counts each gene once:
+The tracks are counts, so counting the files checks them. Hovering a track shows
+the count per kilobase under the cursor. Count one megabase under the tallest
+run of the gene track, at 155 Mb, and one under a trough, at 60 Mb. A gene's
+transcripts and exons have `Parent=`, so the gene line drops them and counts
+each gene once:
 
 ```bash
 tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='
@@ -218,7 +171,7 @@ tabix Simple_repeat.bed.gz chr1:155,000,000-156,000,000 | wc -l
 | 60 to 61 Mb   | 4     | 146  | 295 | 235            |
 
 The gene count runs with the Alu count, while L1 and the simple repeats come out
-about the same in both, the same pattern the four bands show.
+about the same in both, the same pattern the four tracks show.
 
 ## Reproduce it end to end
 
@@ -227,8 +180,8 @@ wraps every step above. It:
 
 1. fetches the two UCSC tables and the reference lengths
 2. cuts the RepeatMasker table into the three family BEDs
-3. builds a sidecar for each of the four files
-4. writes a JBrowse with the four tracks
+3. counts each of the four files per kilobase into a bigWig
+4. writes a JBrowse with the four files and their four bigWigs as tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_gene_density.sh

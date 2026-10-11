@@ -901,55 +901,6 @@ level.
 ]
 ```
 
-### Past the fetch budget
-
-A bin summarizes only what the fetch admits, and a wide enough view is over the
-byte budget, where a track normally shows "region too large". Give the adapter a
-density sidecar — a features-per-bin BigWig, which `jbrowse make-density` writes
-— and mark one layer `"source": "density"`, and that layer draws the sidecar's
-bins there instead of the banner:
-
-```json
-"adapter": {
-  "type": "Gff3TabixAdapter",
-  "gffGzLocation": { "uri": "genes.gff.gz" },
-  "index": { "location": { "uri": "genes.gff.gz.tbi" } },
-  "densityAdapter": {
-    "type": "BigWigAdapter",
-    "bigWigLocation": { "uri": "genes.density.bw" }
-  }
-},
-"displays": [
-  {
-    "type": "LinearMarkDisplay",
-    "displayId": "genes-LinearMarkDisplay",
-    "marks": [
-      { "mark": "bar", "encoding": { "y": "score" }, "maxBpPerPx": 100 },
-      {
-        "mark": "bar",
-        "source": "density",
-        "transform": [
-          { "type": "bin", "step": "auto" },
-          { "type": "aggregate", "ops": [{ "op": "count" }] }
-        ],
-        "minBpPerPx": 100
-      }
-    ]
-  }
-]
-```
-
-Under the budget the density mark counts the features it fetched; the `source`
-takes over only past it. The sidecar's bars draw as any other — same axis, same
-hover, same SVG export — and hovering reads out the bin's count. Other marks
-draw nothing there, a corner chip names the sidecar, and the track menu's
-**Density band** submenu switches between Automatic, Features only and Density
-only, and has the Force-load. Clicking a bin opens nothing: reading the features
-back is the download the budget refused. With no `"source": "density"` the
-banner appears unchanged.
-
-<Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
-
 ## When a config cannot draw as written
 
 A `marks` list loads whenever its keys and value types are right, and the
@@ -975,7 +926,6 @@ each reported under its id:
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `unread-interpolate` | warning | An `interpolate` on a mark that draws no line. |
 | `unread-row-proportion` | warning | A `rowProportion` on a mark that draws no span. |
-| `span-density-source` | warning | `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. |
 | `threshold-cuts` | warning | Threshold cuts that repeat, leaving an interval no value falls in. |
 | `threshold-no-cuts` | warning | A threshold color naming no cut, so every value paints one color. |
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
@@ -994,7 +944,6 @@ each reported under its id:
 | `value-beside-rows` | warning | A mark other than a span drawn beside one that stacks rows, standing in the first of them. |
 | `two-packings` | warning | Two `pileup` steps packing one plot, whose rows share numbers. |
 | `cross-section-packing` | warning | A `pileup` in the display's `transform` under a `facet`, packing across every section. |
-| `second-density-mark` | warning | A second mark standing in for the density sidecar at a zoom where one already does. |
 | `rows-beside-facet` | warning | `rows` beside a `facet` on another field, where the facet draws alone. |
 | `packing-under-rows` | warning | A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. |
 
@@ -1077,8 +1026,7 @@ the session names the mark display for it.
   over a hosted file, each with its picture and a live link: bars, points,
   ramps, thresholds, bins, pileups, facets, labels, links and rows.
 - [](/docs/tutorials/alu_age) plots a BED column as bars colored by another
-  column, counts the rows per zoom-following bin and reads a density sidecar
-  past the fetch budget.
+  column and counts the rows per zoom-following bin.
 - [](/docs/tutorials/read_marks) plots a BAM's own fields: depth as a coverage
   step, insert size as a point per pair on a track of its own, the reads stacked
   and colored by a ramp, and a derived BED scanning a chromosome.

@@ -28,8 +28,8 @@ the MAF display.
    spellings, `scrollTop` on span and `rowOffsetPx` on the rest.
 3. A band stack with its own axes above the rows, for coverage and
    conservation.
-4. A coarse tier serving per-row records from `summaryAdapter`, where
-   `DensityTierMixin` serves one row of bins from `densityAdapter`.
+4. A coarse tier serving per-row records from `summaryAdapter`, which
+   `CoarseTierMixin` already reads for `LinearMafDisplay`.
 5. Per-base `text` gated by row height and colored against its cell.
 6. **An `insertion` mark type** over alignments-core's `insertionMark`:
    entries in `MARK_TYPES`/`MARK_SPECS` and the `jbrowse validate` copy, a lens

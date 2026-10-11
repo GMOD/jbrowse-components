@@ -36,8 +36,7 @@ Behaviours that fail silently:
   field the last `pileup` before its encode wrote, unless an `aggregate` or
   `coverage` after it made features from nothing (`layerFeatures`).
 - **A `bin` by `field` counts a boundary-crossing feature where its `field` falls.**
-  The `make-density` sidecar counts starts the same way, so the density tier and
-  the fetched count agree.
+  A `make-density` bigWig counts starts the same way, so the two counts agree.
 - **`step: "auto"` resolves before the RPC** and is keyed into the fetch, so only
   a zoom across a rung refetches
   ([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).

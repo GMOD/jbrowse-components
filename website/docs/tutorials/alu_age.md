@@ -3,7 +3,7 @@ title: A grammar of graphics over a BED (RepeatMasker Alu age)
 sidebar_label: Marks over a BED (Alu age)
 description:
   Declare a BED column as the height of a bar and another as its color, count
-  features per bin zoomed out, and read a density sidecar past the fetch budget
+  features per bin zoomed out, and count a whole chromosome into a bigWig
 guide_category: Tutorials
 tutorial_category: Grammar of graphics
 ---
@@ -38,7 +38,7 @@ so there is nothing to download by hand.
 
 - RepeatMasker, UCSC's `rmsk` table as BED with a column header:
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
-- reference lengths, for the sidecar's bigWig header:
+- reference lengths, for the bigWig header:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 
 ## Plotting each Alu copy's divergence at one locus
@@ -67,10 +67,8 @@ track below lists three marks:
   `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
   and the categorical `domain` fixes the legend order
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
-  grey, from the density sidecar
+  grey
 - **AluY per bin**: the same count behind a `filter` for AluY, in red
-
-`densityAdapter` names the sidecar built in [Zooming out](#zooming-out).
 
 ```json addtrack loc=chr1:151,000,000-151,030,000
 {
@@ -80,11 +78,7 @@ track below lists three marks:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
-    "densityAdapter": {
-      "type": "BigWigAdapter",
-      "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
-    }
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
   },
   "displays": [
     {
@@ -113,7 +107,6 @@ track below lists three marks:
         },
         {
           "mark": "bar",
-          "source": "density",
           "transform": [
             { "type": "bin", "step": "auto" },
             {
@@ -155,9 +148,9 @@ row.
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
-On a whole chromosome the track would exceed its feature budget. The grey mark
-has `"source": "density"`, so past the budget it draws the bins of a density
-sidecar, a bigWig of feature starts per kilobase:
+On a whole chromosome the track exceeds its fetch budget and shows a "region too
+large" message. A bigWig of copies per kilobase, counted once from the BED,
+covers that width:
 
 <!-- from: scripts/build_alu_age.sh -->
 
@@ -168,7 +161,16 @@ sidecar, a bigWig of feature starts per kilobase:
 jbrowse make-density Alu.bed.gz --chrom-sizes hg38.chrom.sizes
 ```
 
-**Density band** in the track menu holds or forces the swap to density bins.
+Add the bigWig as a track:
+
+```json addtrack loc=chr1
+{
+  "trackId": "alu_per_kb",
+  "name": "Alu copies per kb",
+  "assemblyNames": ["hg38"],
+  "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+}
+```
 
 ## AluY share per megabase, against the genome-wide share
 
@@ -235,7 +237,7 @@ and key names live. The config below sets them in the track:
 }
 ```
 
-<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies per kilobase above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
 ## Correlating AluY share with Alu density across the genome
 

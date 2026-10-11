@@ -103,8 +103,9 @@ render state rather than a new mechanism.
   [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md): the mark display
   gates and composes the density tier
   ([ADR-102](adr-102-the-density-tier-swaps-on-the-gates-verdict.md)), so a
-  mark declaring `source: 'density'` draws the `make-density` sidecar's bins
-  as its own layer where the fetch is refused.
+  mark declaring `source: 'density'` drew the `make-density` sidecar's bins
+  as its own layer where the fetch is refused. The density half was removed
+  with the tier on 2026-10-11; past the budget the display shows the banner.
 
 ## Rejected alternatives
 

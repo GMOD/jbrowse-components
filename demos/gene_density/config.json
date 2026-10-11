@@ -30,15 +30,20 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz.tbi"
           }
-        },
-        "densityAdapter": {
-          "type": "BigWigAdapter",
-          "bigWigLocation": {
-            "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
-          }
         }
-      },
-      "displayDefaults": { "densityTierBpPerPx": 50000 }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38_genes_density",
+      "name": "RefSeq genes per kb",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/genes.gff.density.bw"
+        }
+      }
     },
     {
       "type": "FeatureTrack",
@@ -54,12 +59,18 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
           }
-        },
-        "densityAdapter": {
-          "type": "BigWigAdapter",
-          "bigWigLocation": {
-            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
-          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38_Alu_density",
+      "name": "Alu per kb",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
         }
       }
     },
@@ -77,12 +88,18 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz.tbi"
           }
-        },
-        "densityAdapter": {
-          "type": "BigWigAdapter",
-          "bigWigLocation": {
-            "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
-          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38_L1_density",
+      "name": "L1 per kb",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/L1.bed.density.bw"
         }
       }
     },
@@ -100,12 +117,18 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz.tbi"
           }
-        },
-        "densityAdapter": {
-          "type": "BigWigAdapter",
-          "bigWigLocation": {
-            "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
-          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38_Simple_repeat_density",
+      "name": "Simple repeats per kb",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.density.bw"
         }
       }
     }
@@ -117,7 +140,12 @@
         "type": "LinearGenomeView",
         "assembly": "hg38",
         "loc": "chr1",
-        "tracks": ["hg38_genes", "hg38_Alu", "hg38_L1", "hg38_Simple_repeat"]
+        "tracks": [
+          "hg38_genes_density",
+          "hg38_Alu_density",
+          "hg38_L1_density",
+          "hg38_Simple_repeat_density"
+        ]
       }
     ]
   }

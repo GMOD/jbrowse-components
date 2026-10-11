@@ -539,6 +539,6 @@ walks through.
 ## More
 
 [](/docs/config_guides/mark_display) shows a density and the raw features in one
-track across zooms, a facet over a BAM's haplotype tag, and a density sidecar
-past the fetch budget; [](/docs/tutorials/alu_age) and
-[](/docs/tutorials/read_marks) each take one file through a question.
+track across zooms and a facet over a BAM's haplotype tag;
+[](/docs/tutorials/alu_age) and [](/docs/tutorials/read_marks) each take one
+file through a question.
