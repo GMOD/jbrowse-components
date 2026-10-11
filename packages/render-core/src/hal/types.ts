@@ -144,10 +144,10 @@ export interface GpuHal {
   readonly uniformByteSize: number
   /**
    * Size the canvas, and report the scale its backing store actually got.
-   * Callers derive every device-px rect from THAT rather than from `getDpr()`:
-   * past `MAX_CANVAS_DIM_PX` the two differ, and a rect built from the true dpr
-   * exceeds the target it draws into (WebGPU rejects the whole pass and the
-   * track goes blank; WebGL2 clamps and paints at the wrong scale).
+   * Callers derive every device-px rect from that scale. It differs from
+   * `getDpr()` past the backing-store caps in `canvas2dUtils.ts` and where
+   * a browser shrinks a WebGL drawing buffer, and a rect built from the true
+   * dpr then lands outside the target.
    */
   resize(width: number, height: number): CanvasScale
 

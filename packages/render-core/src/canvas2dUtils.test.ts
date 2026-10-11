@@ -1,4 +1,5 @@
 import {
+  MAX_CANVAS_AREA_PX,
   MAX_CANVAS_DIM_PX,
   MAX_DPR,
   bpAtPx,
@@ -82,7 +83,6 @@ test('devicePxSpan produces abutting spans with no seam or overlap', () => {
 })
 
 test('clamps an oversized backing store to the safe max instead of throwing', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const canvas = {
     width: 0,
     height: 0,
@@ -97,8 +97,6 @@ test('clamps an oversized backing store to the safe max instead of throwing', ()
   expect(canvas.height).toBe(MAX_CANVAS_DIM_PX)
   expect(canvas.width).toBe(1000)
   expect(canvas.style.height).toBe(`${MAX_CANVAS_DIM_PX + 5000}px`)
-  expect(warn).toHaveBeenCalled()
-  warn.mockRestore()
 })
 
 // The clamp above is only half the story: what the caller does with the ratio
@@ -109,7 +107,6 @@ test('clamps an oversized backing store to the safe max instead of throwing', ()
 // the attachment, which WebGPU rejects, blanking the track with no error
 // anywhere. Measured on a retina panel 2026-08-22.
 test('the reported scale follows the backing store, not the screen', () => {
-  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const canvas = document.createElement('canvas')
   const cssHeight = MAX_CANVAS_DIM_PX + 5000
   const { scale } = syncCanvasSize(canvas, 1000, cssHeight)
@@ -120,7 +117,6 @@ test('the reported scale follows the backing store, not the screen', () => {
   expect(scale.y).toBeLessThan(getDpr())
   // and the rect a caller builds from it lands inside the store
   expect(Math.round(cssHeight * scale.y)).toBe(MAX_CANVAS_DIM_PX)
-  warn.mockRestore()
 })
 
 // The Canvas2D twin of the pivot inside the shaders' extendToMinWidthX. When a
@@ -709,6 +705,28 @@ describe('getDpr', () => {
     syncCanvasSize(canvas, 100, maxCanvasCssPx())
     expect(canvas.height).toBe(MAX_CANVAS_DIM_PX)
     expect(canvas.style.height).toBe(`${maxCanvasCssPx()}px`)
+  })
+
+  // Chrome shrinks a WebGL drawing buffer past 7680x4320 px and keeps the
+  // requested canvas.width/height, so a store over that area draws bands in the
+  // wrong rows on WebGL2 alone. A 2560-wide view at dpr 2 reaches it at 3240
+  // CSS px tall, under the per-axis cap. Height gives way and width keeps dpr.
+  test('the backing store stays within the area cap, at full width', () => {
+    setDpr(2)
+    const canvas = document.createElement('canvas')
+    const { scale } = syncCanvasSize(canvas, 2560, 4096)
+    expect(canvas.width).toBe(5120)
+    expect(canvas.width * canvas.height).toBeLessThanOrEqual(MAX_CANVAS_AREA_PX)
+    expect(canvas.height).toBe(Math.floor(MAX_CANVAS_AREA_PX / 5120))
+    expect(scale.x).toBe(2)
+    expect(scale.y).toBe(canvas.height / 4096)
+  })
+
+  test('a store under the area cap keeps the full dpr', () => {
+    setDpr(2)
+    const canvas = document.createElement('canvas')
+    expect(syncCanvasSize(canvas, 2560, 3240).scale).toEqual({ x: 2, y: 2 })
+    expect(canvas.height).toBe(6480)
   })
 })
 

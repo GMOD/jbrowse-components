@@ -86,9 +86,9 @@ export function clipBlock(
   block: BpRegionBounds,
   canvasWidth: number,
   canvasHeight: number,
-  // The scale the backing store actually got, per axis (`hal.resize`), NOT
-  // `getDpr()`: only one axis clamps at a time, so past `MAX_CANVAS_DIM_PX` a
-  // canvas is 2x on one axis and less on the other.
+  // The scale the backing store actually got, per axis (`hal.resize`). A
+  // capped canvas or a browser-shrunk WebGL drawing buffer falls below
+  // `getDpr()` on either axis, and the two axes can differ.
   scale: CanvasScale,
 ): BlockClipResult | null {
   const clamp = clampBlockScissor(

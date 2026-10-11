@@ -37,78 +37,57 @@ export function getDpr() {
     : Math.min(devicePixelRatio, MAX_DPR)
 }
 
-// Conservative ceiling (physical/backing px) for a single canvas dimension.
-// Browsers throw `InvalidStateError: Canvas exceeds max size` once the backing
-// store crosses their (browser/GPU-specific) limit — Firefox caps the area,
-// WebGL caps a texture at MAX_TEXTURE_SIZE (>= 8192 on essentially all real
-// hardware), Safari/Chrome cap the dimension. 8192 is under all of these, so a
-// canvas whose backing store stays within it on both axes can't throw. Callers
-// that can produce arbitrarily tall/wide content (e.g. the MAF rows canvas with
-// hundreds of species) bound their CSS size against `MAX_CANVAS_DIM_PX / dpr`.
+// Ceiling on one backing-store dimension. Browsers throw `InvalidStateError:
+// Canvas exceeds max size` past their own limit, and a WebGL implementation
+// caps a texture at MAX_TEXTURE_SIZE, at least 8192 on essentially all real
+// hardware. 8192 is under all of them.
 export const MAX_CANVAS_DIM_PX = 8192
+
+// Ceiling on backing-store area. Past exactly 7680x4320 px Chrome shrinks a
+// WebGL drawing buffer and leaves canvas.width/height at the requested size, so
+// staying under it keeps every backend drawing the same pixels, and bounds a
+// WebGPU canvas's 4x MSAA target with it.
+export const MAX_CANVAS_AREA_PX = 7680 * 4320
 
 /**
  * The largest CSS-px extent a canvas may take on one axis before its backing
- * store (`× dpr`) crosses the ceiling above.
+ * store (`× dpr`) reaches {@link MAX_CANVAS_DIM_PX}.
  *
  * For displays that size a canvas to their **content** rather than to a
- * viewport — a row stack that grows with the row count, so nothing downstream
- * bounds it. Past this the backing store stops tracking the CSS size
- * (`syncCanvasSize` clamps it) while scissor/viewport rects are still derived
- * as `cssPx * dpr`, so WebGPU rejects an out-of-bounds rect and blanks the
- * frame, WebGL clamps and paints at the wrong scale, and the Canvas2D fallback
- * stretches its top slice over the whole track.
+ * viewport, a row stack that grows with the row count. Past it the canvas still
+ * draws, at a reduced resolution on that axis (`syncCanvasSize` reports the
+ * scale it got), so the cap is about keeping the rows legible: MAF scrolls its
+ * overflow into a viewport, and multi-row divides the cap across its rows.
  *
  * A function, not a constant: `getDpr()` follows the window, so a display
  * reading this into a computed re-derives it when the window moves to another
- * screen. Where the cap lands is the caller's — MAF scrolls its overflow into a
- * viewport, the multi-row painting divides the cap across its rows so they thin
- * out and all stay on screen.
+ * screen.
  */
 export function maxCanvasCssPx() {
   return MAX_CANVAS_DIM_PX / getDpr()
 }
 
-let warnedCanvasClamp = false
-
-// CSS px → backing-store px, clamped to the safe ceiling (warning once if the
-// clamp engages).
-//
-// This is a last-resort guard against `InvalidStateError: Canvas exceeds max
-// size`, NOT a graceful degradation: once clamped the backing store stops
-// tracking the CSS size, so the browser *stretches* the smaller image over the
-// larger element, and every GPU scissor/viewport rect — computed as
-// `cssPx * getDpr()` by `clipBlock` and friends, against the true dpr rather
-// than the effective one — can now exceed the backing store (WebGL clamps
-// silently, WebGPU rejects the rect and blanks the frame). So model-level
-// sizing must keep canvases within the limit on its own: any display sizing a
-// canvas to its *content* rather than its viewport bounds itself with
-// `maxCanvasCssPx()` above. Registered in
-// agent-docs/reference/ARCHITECTURAL_LIMITS.md with the effective-dpr fix that
-// retires it.
-function backingPx(cssSize: number, dpr: number, axis: 'width' | 'height') {
-  const value = Math.round(cssSize * dpr)
-  if (value > MAX_CANVAS_DIM_PX) {
-    if (!warnedCanvasClamp) {
-      warnedCanvasClamp = true
-      console.warn(
-        `Canvas ${axis} ${value}px exceeds the safe limit ${MAX_CANVAS_DIM_PX}px and was clamped`,
-      )
-    }
-    return MAX_CANVAS_DIM_PX
-  }
-  return value
+// CSS px → backing-store px under both ceilings. Height gives way to the area
+// cap, since horizontal resolution is where a genome browser's detail is. Every
+// device-px rect derives from the scale this leaves (`syncCanvasSize`,
+// `prepareCanvas`), so a capped canvas draws whole at a lower resolution.
+function backingSize(cssWidth: number, cssHeight: number, dpr: number) {
+  const width = Math.min(Math.round(cssWidth * dpr), MAX_CANVAS_DIM_PX)
+  const height = Math.min(
+    Math.round(cssHeight * dpr),
+    MAX_CANVAS_DIM_PX,
+    Math.floor(MAX_CANVAS_AREA_PX / Math.max(width, 1)),
+  )
+  return { width, height }
 }
 
 /**
  * The ratio a canvas's backing store ACTUALLY has to its CSS box, per axis.
  *
- * Equal to `getDpr()` on both axes until `backingPx` clamps, and below it after
- * — which is the whole point: every device-px rect a renderer hands the GPU has
- * to be derived from this rather than from the true dpr, or a clamped canvas
- * gets a viewport taller than the target it draws into and the frame is
- * rejected outright. See ARCHITECTURAL_LIMITS.md §"A canvas past
- * MAX_CANVAS_DIM_PX renders wrong, not smaller".
+ * `getDpr()` on both axes until `backingSize` caps the store, and below it
+ * after, so every device-px rect a renderer hands the GPU derives from this.
+ * See ARCHITECTURAL_LIMITS.md §"A canvas past
+ * the backing-store caps draws at reduced resolution".
  */
 export interface CanvasScale {
   x: number
@@ -130,9 +109,7 @@ export function syncCanvasSize(
   width: number,
   height: number,
 ): { changed: boolean; scale: CanvasScale } {
-  const dpr = getDpr()
-  const pw = backingPx(width, dpr, 'width')
-  const ph = backingPx(height, dpr, 'height')
+  const { width: pw, height: ph } = backingSize(width, height, getDpr())
   const changed = canvas.width !== pw || canvas.height !== ph
   if (changed) {
     canvas.width = pw
@@ -163,9 +140,11 @@ export function prepareCanvas(
   canvasWidth: number,
   canvasHeight: number,
 ) {
-  const dpr = getDpr()
-  const bufW = backingPx(canvasWidth, dpr, 'width')
-  const bufH = backingPx(canvasHeight, dpr, 'height')
+  const { width: bufW, height: bufH } = backingSize(
+    canvasWidth,
+    canvasHeight,
+    getDpr(),
+  )
 
   if (canvas.width !== bufW || canvas.height !== bufH) {
     canvas.width = bufW

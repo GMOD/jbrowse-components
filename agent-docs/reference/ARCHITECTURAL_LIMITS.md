@@ -103,25 +103,34 @@ draws.
 
 **Retire when** `writeUniforms` returns a slot token that `drawPass` takes.
 
-### A canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller
+### A canvas past the backing-store caps draws at reduced resolution
 
 **Status:** Mitigated; kept because the trap recurs.
 
-`backingPx` (`canvas2dUtils.ts`) caps a backing store at `MAX_CANVAS_DIM_PX` per
-axis so an oversized canvas cannot throw `InvalidStateError`, and display height
-is user-dragged with no maximum. A rect derived from the true dpr past the cap
-overruns the backing store: WebGL2 clamps silently, WebGPU rejects the viewport
-and blanks the frame with no banner.
+`backingSize` (`canvas2dUtils.ts`) caps a backing store at `MAX_CANVAS_DIM_PX`
+per axis, so an oversized canvas cannot throw `InvalidStateError`, and at
+`MAX_CANVAS_AREA_PX` of area by giving up height. Display height is
+user-dragged with no maximum, and the resize handle's double-click grows a track
+to its whole content.
 
-Every device-px rect (`clipBlock`, alignments' `bufH`) derives from the scale
-`syncCanvasSize` / `hal.resize` / `prepareCanvas` report, not from `getDpr()`.
-**Uniforms still read the true dpr**, correctly, so new code mixing the two
-spaces is wrong in a way no test covers.
+- **The area cap is Chrome's.** Past 7680x4320 px Chrome shrinks a WebGL
+  drawing buffer and leaves `canvas.width/height` at the requested size. A
+  2560-CSS-wide view at dpr 2 reaches it at 3240 px tall, and MAF and multi-row
+  reach it on any window wider than about 2025 CSS px.
+- **Every device-px rect derives from the reported scale**: `clipBlock`,
+  alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`.
+  `WebGL2Hal.resize` takes that scale from the drawing buffer, so a browser that
+  shrinks under the cap still draws correctly.
+- **A shader that rebuilds device px from the dpr breaks this.** The variant
+  matrix did, and painted 0.2% of its columns on a shrunk buffer. The `dpr`
+  uniforms that remain only size antialias ramps, which want screen density.
+- **`MockHal.reportedScale`** is how a backend test sees a capped scale; the
+  default reports `getDpr()`.
 
 `getDpr()` caps at `MAX_DPR`. **Reading the global `devicePixelRatio` directly
 re-opens the split.** Two sites diverge on purpose: `createSvgRasterCanvas` pins
-2x and analytics read the raw value. Any new display sizing a canvas to content
-must bound it as MAF's `maxRowsHeight` does; nothing enforces that.
+2x and analytics read the raw value. A display sizing a canvas to content bounds
+it as MAF's `maxRowsHeight` does, so its rows stay legible.
 
 ---
 

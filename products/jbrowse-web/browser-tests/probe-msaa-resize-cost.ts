@@ -342,11 +342,12 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
         cssHeight,
         backingHeight: canvas?.height ?? 0,
         backingWidth: canvas?.width ?? 0,
+        dpr: Math.min(devicePixelRatio, 2),
         error: display.error ? String(display.error) : '',
       }
     }, cssHeight)
     const fresh = consoleLines.slice(before)
-    const clamped = fresh.some(t => t.includes('exceeds the safe limit'))
+    const clamped = row.backingHeight < Math.round(row.cssHeight * row.dpr)
     // What the GPU said at this height. The clamp regime's failure is a rect
     // the backing store cannot hold, and the rejection is the only thing that
     // names it — `display.error` stays empty and nothing reaches the user.
