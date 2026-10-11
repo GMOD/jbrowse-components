@@ -3,8 +3,11 @@ import { BIGBED, GFF3 } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
+/** Every feature at full size, as the tests below read the layout. */
+const GROW = { heightMode: 'grow' }
+
 test('a GFF3 region comes back as the feature display lays it out', async () => {
-  const t = await engine.features(GFF3)
+  const t = await engine.features({ ...GFF3, display: GROW })
   const n = t.features.id.length
   expect(n).toBeGreaterThan(10)
   for (const table of [t.features, t.rects, t.lines, t.labels]) {
@@ -45,10 +48,10 @@ test('a GFF3 region comes back as the feature display lays it out', async () => 
 })
 
 test('the display settings reach the tables', async () => {
-  const shown = await engine.features(GFF3)
+  const shown = await engine.features({ ...GFF3, display: GROW })
   const bare = await engine.features({
     ...GFF3,
-    display: { showLabels: 'none', displayDirectionalChevrons: false },
+    display: { ...GROW, showLabels: 'none', displayDirectionalChevrons: false },
   })
   expect(bare.labels.text).toEqual([])
   expect(bare.chevrons.position).toEqual([])
@@ -57,7 +60,7 @@ test('the display settings reach the tables', async () => {
 
   const constant = await engine.features({
     ...GFF3,
-    display: { color: { value: '#123456' } },
+    display: { ...GROW, color: { value: '#123456' } },
   })
   expect(constant.rects.color).toContain('#123456')
 })
@@ -65,7 +68,7 @@ test('the display settings reach the tables', async () => {
 test('a color field paints through its scale and keys what it painted', async () => {
   const t = await engine.features({
     ...GFF3,
-    display: { color: { field: 'type' } },
+    display: { ...GROW, color: { field: 'type' } },
   })
   expect(t.legend.label.length).toBeGreaterThan(1)
   expect(new Set(t.rects.color).size).toBeGreaterThan(1)
@@ -75,7 +78,7 @@ test('a color field paints through its scale and keys what it painted', async ()
 })
 
 test('a BigBed region lays out', async () => {
-  const t = await engine.features(BIGBED)
+  const t = await engine.features({ ...BIGBED, display: GROW })
   expect(t.features.id.length).toBeGreaterThan(0)
   expect(t.rects.start.length).toBeGreaterThan(0)
 })
@@ -84,7 +87,7 @@ test('a transcript label names its transcript and the gene it belongs to', async
   const t = await engine.features({
     ...GFF3,
     bpPerPx: 5,
-    display: { subfeatureLabels: 'below' },
+    display: { ...GROW, subfeatureLabels: 'below' },
   })
   const sub = t.labels.subfeature
     .map((s, i) => i)
@@ -96,4 +99,18 @@ test('a transcript label names its transcript and the gene it belongs to', async
     expect(t.subfeatures.name[s]).toBe(t.labels.text[i])
   }
   expect(Math.min(...t.labels.feature)).toBeGreaterThanOrEqual(0)
+})
+
+test('the default fit gives up what the browser gives up to fit the track', async () => {
+  const label = (t: { labels: { text: string[] } }) =>
+    t.labels.text.includes('EDEN')
+  const fit = await engine.features(GFF3)
+  const bottom = Math.max(...fit.features.bottom)
+  expect(bottom).toBeLessThanOrEqual(100)
+  expect(label(fit)).toBe(false)
+  const tall = await engine.features({ ...GFF3, display: { height: 2000 } })
+  expect(label(tall)).toBe(true)
+  const grown = await engine.features({ ...GFF3, display: GROW })
+  expect(label(grown)).toBe(true)
+  expect(Math.max(...grown.features.bottom)).toBeGreaterThan(bottom)
 })

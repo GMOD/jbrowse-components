@@ -141,8 +141,11 @@ another way than the BAM does reads as interchromosomal.
 `@jbrowse/plugin-canvas/tables` (`featureTables`) does the same for a feature
 track. It takes the `LinearBasicDisplay`'s config as a track's `displays`
 entry writes it and a `bpPerPx`, runs the feature worker, then the display's
-own layout (`computeLaidOutData`), color resolution (`resolveMapColors`) and
-label placement (`forEachDisplayLabel`):
+own layout under its `heightMode` and `height` (the fit ladder,
+`fitLadderViews`), color resolution (`resolveMapColors`) and label placement
+(`forEachDisplayLabel`). Under the default `fit` the table gives up the labels,
+isoforms and row height the browser gives up to fit the track; `heightMode:
+'grow'` places every feature at full size:
 
 - `features`, one per top-level feature on its laid-out row (`top`,
   `bottom` in the display's px), and `subfeatures`, a gene's transcripts.

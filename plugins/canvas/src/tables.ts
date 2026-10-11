@@ -2,13 +2,17 @@ import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 
+import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
 import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
+import {
+  fitLadderViews,
+  fitLadderVolatiles,
+} from './LinearBasicDisplay/fitLadderViews.ts'
 import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
-import { computeLaidOutData } from './LinearBasicDisplay/layout.ts'
 import {
   ARROW_LENGTH_PX,
   STEM_HALF_H_PX,
@@ -156,8 +160,10 @@ function arrows(d: FeatureDataResult, bpPerPx: number) {
  *
  * Coordinates are 0-based genomic; every `y`, `top` and height is in the
  * display's px, down from the track's top, and `feature` is a 0-based index
- * into `features`. The layout is the display's grown to its content: every
- * feature placed, nothing trimmed to a track height.
+ * into `features`. The layout is the display's under its `heightMode` and
+ * `height`: `fit` (the default) runs the display's fit ladder, so the labels,
+ * isoforms and row heights the browser gives up to fit the track are given up
+ * here too, and `grow` places every feature at full size.
  */
 export async function featureTables(
   pluginManager: PluginManager,
@@ -219,26 +225,49 @@ export async function featureTables(
     maxLabelDensity: readConfObject(conf, 'maxLabelFeatureDensity'),
     maxDescriptionDensity: readConfObject(conf, 'maxDescriptionFeatureDensity'),
   })
-  const laid = computeLaidOutData(
-    new Map([[0, { ...raw, regionKey: region.refName }]]),
-    {
+  const heightMode: string = readConfObject(conf, 'heightMode')
+  const trackHeight: number = readConfObject(conf, 'height')
+  const fontSize = labelFontSize(displayMode)
+  const rpcDataMap = new Map([[0, { ...raw, regionKey: region.refName }]])
+  const stage = fitLadderViews({
+    ...fitLadderVolatiles(),
+    rpcDataMap,
+    layoutReady: true,
+    layoutInputs: {
       bpPerPx,
-      showLabels: visibility.showLabels,
-      showDescriptions: visibility.showDescriptions,
-      geneNamesOnly: visibility.geneNamesOnly,
       reversedRegions: new Set(),
       displayMode,
       pinnedFeatureIds: new Set(),
+      expandedGeneIds: new Set(),
+      facet: undefined,
+      hiddenGroupKeys: new Set(),
+      geneNamesOnly: visibility.geneNamesOnly,
     },
-  )
+    showLabels: visibility.showLabels,
+    effectiveShowDescriptions: visibility.showDescriptions,
+    facet: undefined,
+    fitMeasureFeatureIds:
+      heightMode === 'grow'
+        ? undefined
+        : new Set(raw.flatbushItems.map(item => item.featureId)),
+    fitHeightToDisplay: heightMode === 'fit',
+    autoHeight: heightMode === 'grow',
+    showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
+    reservesBelowLabelRows:
+      readConfObject(conf, 'subfeatureLabels') === 'below',
+    fitTargetHeight: trackHeight,
+    labelFontSize: fontSize,
+  }).fitStage
+  const laid =
+    stage.scale === 1
+      ? stage.layout
+      : scaleLaidOutData(stage.layout, stage.scale)
   const palette = resolvePalette()
   const colors = featureColorViews({
     conf: { color: conf.color },
     rpcDataMap: new Map([[0, raw]]),
   })
   const d = resolveMapColors(laid, palette, colors.fieldPalette).get(0)!
-  const fontSize = labelFontSize(displayMode)
-
   const labels = {
     text: [] as string[],
     kind: [] as string[],
@@ -266,10 +295,10 @@ export async function featureTables(
     ],
     new Map([[0, d]]),
     {
-      showLabels: visibility.showLabels,
-      showDescriptions: visibility.showDescriptions,
-      showSubfeatureLabels: true,
-      fontSize,
+      showLabels: stage.showLabels,
+      showDescriptions: stage.showDescriptions,
+      showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
+      fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
       colors: labelColors(palette),
     },
     (featureId, placed) => {
