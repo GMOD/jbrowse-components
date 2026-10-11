@@ -466,7 +466,7 @@ restores natively:
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
 | [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
-| [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line" |
+| [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line". A personal preference: never in a session snapshot. It, showCytobands, trackLabels, colorByCDS, showAminoAcids and showTrackOutlines start from this browser's last choice, which their setters record. |
 | [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
 | [`showGridlines`](/docs/models/lineargenomeview#property-showgridlines) | show the "gridlines" in the track area |
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
