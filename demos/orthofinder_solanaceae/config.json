@@ -247,6 +247,17 @@
         ],
         "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"]
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "solanaceae_blocks",
+      "name": "Solanaceae collinear blocks (MCScanX)",
+      "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "solanaceae.blocks.paf.gz",
+        "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"]
+      }
     }
   ]
 }
