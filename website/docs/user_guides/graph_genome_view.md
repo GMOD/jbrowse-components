@@ -208,7 +208,7 @@ zooming in brings them back. A track whose adapter names `coarse` gives the
 graph a second tier to cut, built by the same fold
 ([`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold)). Once the
 linear view is zoomed out past the handover, the graph track cuts the tier and
-the size limit no longer applies; the drawing does not change across the
+the size limit no longer applies; the drawing barely changes across the
 handover, since the fine cut has folded the same variants by then. The segments
 lane draws segments at every zoom, so load the tier's prefix as a track of its
 own too, a lane that draws a whole chromosome where the segments lane refuses.

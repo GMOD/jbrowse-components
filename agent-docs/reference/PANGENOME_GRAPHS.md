@@ -36,8 +36,9 @@ package, bundle, repo and hosted prefix all spell `graphgenomeview**er**`, only
 
 The graph track folds every cut at ten of the linear view's pixels, and a coarse
 tier is the same fold of the whole graph (`gfa-to-tabix fold`, a port of bandage-core's
-`foldVariants`), so the handover changes what is fetched and not
-what is drawn. The plugin's `GRAPH_TRACK.md` "Level of detail: the fold" states
+`foldVariants`), so the handover changes what is fetched and barely what is
+drawn. The two folds can differ where the way back from a big allele to the
+backbone runs through part of a small one. The plugin's `GRAPH_TRACK.md` "Level of detail: the fold" states
 the rule.
 
 - **Threshold on content, never reference span.** A pure insertion replaces no
