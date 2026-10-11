@@ -5093,7 +5093,7 @@ export const configManifest: ConfigManifest = {
               "scheme": "blueyellowred",
               "title": "dN/dS"
             },
-            "copies": {
+            "syntenicDepth": {
               "scale": "threshold",
               "domain": [
                 "2",
@@ -5106,10 +5106,10 @@ export const configManifest: ConfigManifest = {
               ],
               "labels": [
                 "One-to-one",
-                "Two copies",
-                "Three or more copies"
+                "Shared by 2 genes",
+                "Shared by 3 or more"
               ],
-              "title": "Copies"
+              "title": "Syntenic depth"
             }
           }
         },
