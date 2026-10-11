@@ -1,0 +1,48 @@
+{
+  "id": "connector-pan-cost",
+  "measured": "2026-10-11",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "BASE_URL=<build of 49a236b22d> AFTER_URL=<build of 57ad515e4f> CHROME_ARGS='--use-angle=gl-egl --use-gl=angle' node products/jbrowse-web/browser-tests/probe-connector-pan-cost.ts run 3",
+    "notes": "Production builds served statically; headless Chrome 155 on hardware WebGL2 (ANGLE, NVIDIA RTX A6000), 1400 px view, display 500 px tall, a 120-frame pan of 3 px a frame out and back, three interleaved reps after an untraced warm-up pan; each cell is the median over reps of the per-frame median of top-level main-thread RunTask ms. Load average 2.6 to 3.3. Frame time was 16.7 ms in every arm, so the cost is headroom inside the frame. The 6 mutations per frame in every OFF arm are the rest of the app. Illumina lays out 388 connectors, of which the 211 in the visible band draw. A sitting earlier the same day with the same harness read +2.32 / +0.15 and +1.29 / +0.24 ms, so the after cost is noise around zero and the HiFi before cost moves by about 0.4 ms between sittings."
+  },
+  "columns": [
+    { "key": "view", "label": "view", "format": "text", "align": "left" },
+    { "key": "connectors", "label": "connectors drawn", "format": "int", "align": "right" },
+    { "key": "beforeOnMs", "label": "before, on", "format": "ms", "precision": 2, "align": "right" },
+    { "key": "beforeOffMs", "label": "before, off", "format": "ms", "precision": 2, "align": "right" },
+    { "key": "beforeCostMs", "label": "before, on − off", "format": "ms", "precision": 2, "derived": "beforeOnMs - beforeOffMs", "align": "right" },
+    { "key": "afterOnMs", "label": "after, on", "format": "ms", "precision": 2, "align": "right" },
+    { "key": "afterOffMs", "label": "after, off", "format": "ms", "precision": 2, "align": "right" },
+    { "key": "afterCostMs", "label": "after, on − off", "format": "ms", "precision": 2, "derived": "afterOnMs - afterOffMs", "align": "right" },
+    { "key": "beforeMutations", "label": "DOM mutations per frame, before", "format": "int", "align": "right" },
+    { "key": "afterMutations", "label": "after", "format": "int", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "view": "HG008-T Illumina 195x, read mode, `chr3:184,709,000-184,723,000`",
+        "connectors": 211,
+        "beforeOnMs": 4.03,
+        "beforeOffMs": 1.79,
+        "afterOnMs": 1.64,
+        "afterOffMs": 1.76,
+        "beforeMutations": 428,
+        "afterMutations": 6
+      }
+    },
+    {
+      "values": {
+        "view": "HG008-T HiFi 116x, chain mode by split read, same locus",
+        "connectors": 106,
+        "beforeOnMs": 2.94,
+        "beforeOffMs": 2.08,
+        "afterOnMs": 1.87,
+        "afterOffMs": 1.98,
+        "beforeMutations": 218,
+        "afterMutations": 6
+      }
+    }
+  ]
+}
