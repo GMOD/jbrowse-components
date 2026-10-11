@@ -27,7 +27,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`), `bcftools` and `pigz`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later, for
   the graph's files and the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
@@ -92,7 +92,7 @@ paste that `esmUrl` into **ESM build URL** and leave the rest empty.
 
 ## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 
-Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later,
+Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later,
 whose `build` command writes every file below (its
 [releases](https://github.com/GMOD/gfa-to-tabix/releases) have Linux and macOS
 binaries if you have no Rust toolchain):

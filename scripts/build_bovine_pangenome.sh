@@ -36,7 +36,7 @@
 # carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.10.0 or later,
+#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.12.0 or later,
 #           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #

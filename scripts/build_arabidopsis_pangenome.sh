@@ -11,7 +11,7 @@
 # Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
-#           biocontainers image), node (npx) and gfa-to-tabix 0.10.0
+#           biocontainers image), node (npx) and gfa-to-tabix 0.12.0
 #           or later
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #

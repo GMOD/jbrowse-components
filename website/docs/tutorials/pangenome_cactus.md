@@ -31,7 +31,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later and
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later and
   [`gfatools`](https://github.com/lh3/gfatools), for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI

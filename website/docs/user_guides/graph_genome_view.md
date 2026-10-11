@@ -103,7 +103,7 @@ layout here, was built for assembly graphs. Use Bandage for one.
 
 Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
 screen as a graph.
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) 0.11.0 or
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) 0.12.0 or
 later builds the index, the format decides which route it takes, and every step
 after that is the same. An rGFA's bubbles also need
 [`gfatools`](https://github.com/lh3/gfatools) on PATH:

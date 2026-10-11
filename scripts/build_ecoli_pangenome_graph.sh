@@ -29,7 +29,7 @@
 #
 # Requires: docker or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
-#           gfa-to-tabix 0.11.0 or later, the NCBI `datasets` CLI, samtools,
+#           gfa-to-tabix 0.12.0 or later, the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
@@ -51,7 +51,7 @@ if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { 
 
 # Checked up front, since the graph track is built after pggb has run.
 gfa-to-tabix build --help >/dev/null 2>&1 || {
-  echo "gfa-to-tabix 0.11.0 or later is not on PATH: cargo install gfa-to-tabix," >&2
+  echo "gfa-to-tabix 0.12.0 or later is not on PATH: cargo install gfa-to-tabix," >&2
   echo "or a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
 }
