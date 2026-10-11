@@ -15,6 +15,8 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
@@ -35,6 +37,7 @@ import {
   applyReadColorsByGroup,
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
+import { orderedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { presentMapqs } from './LinearAlignmentsDisplay/qualitySpans.ts'
 import {
   readFilterConfigSchema,
@@ -56,6 +59,7 @@ import {
   pinnedInsertSizeBand,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
+import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { getReadDisplayLegendItems } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
 import {
@@ -145,6 +149,11 @@ export interface AlignmentTablesArgs {
    * where `refName` is left out, ranking by `tag` under `tag`.
    */
   sort?: SnapshotIn<typeof alignmentsSortConfigSchema>
+  /**
+   * The display's `facet` object: the field that splits the reads into
+   * stacked sections, the `domain` they stack in, and the sections `hidden`.
+   */
+  facet?: SnapshotIn<typeof sectionFacetConfigSchema>
   /**
    * The most compressed bytes the region may need, refused off the index
    * before any read is fetched. 200 MB by default; a host holds the whole
@@ -271,16 +280,19 @@ function baseLayerFor({
 function colorReads(
   colorSnapshot: AlignmentTablesArgs['color'],
   baseLayer: BaseLayer | undefined,
-  laid: LaidOutPileupData,
+  laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
 ) {
   const node = alignmentsColorConfigSchema.create(colorSnapshot ?? {})
   const { labels, title, ...setting } = colorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
   const colorBy = colorByOf(encoding)
   const band = pinnedInsertSizeBand(encoding)
-  const byGroup = new Map([
-    ['', new Map([[0, band ? { ...laid, insertSizeStats: band } : laid]])],
-  ])
+  const byGroup = new Map(
+    [...laidByGroup].map(([key, laid]) => [
+      key,
+      new Map([[0, band ? { ...laid, insertSizeStats: band } : laid]]),
+    ]),
+  )
   const bakedScale = isBakedScheme(colorBy)
     ? bakedColorScale(
         colorBy,
@@ -295,13 +307,28 @@ function colorReads(
     readColorOpts: {},
     bakedScale,
   })
-  const data = colored.get('')!.get(0)!
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
     declared: writtenReadCategoryColors(setting.value, encoding),
   })
-  const category: string[] = Array.from(
-    data.readColorCategories,
-    i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
+  const sections = new Map(
+    [...colored].map(([key, map]) => {
+      const data = map.get(0)!
+      const category: string[] = Array.from(
+        data.readColorCategories,
+        i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
+      )
+      const color = category.map((_, i) =>
+        hexOf(
+          readColorFromCategoryIndex(
+            data.readColorCategories[i]!,
+            i,
+            data,
+            palette,
+          ),
+        ),
+      )
+      return [key, { color, category }]
+    }),
   )
   const presentTagValues = !isBakedScheme(colorBy)
     ? undefined
@@ -309,17 +336,21 @@ function colorReads(
       ? presentMapqs(colored)
       : collectAcrossGroups(colored, d => d.readTagValues)
   const detectedModifications = new Map(
-    data.detectedModifications.map(type => [
-      type,
-      getColorForModification(type),
-    ]),
+    [...collectAcrossGroups(colored, d => d.detectedModifications)].map(
+      type => [type, getColorForModification(type)],
+    ),
   )
   const legend = getReadDisplayLegendItems({
     colorBy,
     baseLayer,
     detectedModifications,
-    presentModifications: new Set(data.modificationTypes ?? []),
-    presentCategories: new Set(category as ReadColorCategory[]),
+    presentModifications: collectAcrossGroups(
+      colored,
+      d => d.modificationTypes,
+    ),
+    presentCategories: new Set(
+      [...sections.values()].flatMap(s => s.category) as ReadColorCategory[],
+    ),
     palette,
     presentTagValues,
     bakedScale,
@@ -330,17 +361,7 @@ function colorReads(
     ).descending,
   }).filter(item => item.color !== undefined)
   return {
-    color: category.map((_, i) =>
-      hexOf(
-        readColorFromCategoryIndex(
-          data.readColorCategories[i]!,
-          i,
-          data,
-          palette,
-        ),
-      ),
-    ),
-    category,
+    sections,
     legend: {
       label: legend.map(item => item.label),
       color: legend.map(item => hexOf(item.color!)),
@@ -505,7 +526,7 @@ function junctions(d: WorkerPileupData, refName: string) {
 function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
-  colors: ReturnType<typeof colorReads>,
+  colors: { color: string[]; category: string[] },
   refName: string,
 ) {
   const [readStart, readEnd] = pairs(d.readPositions)
@@ -559,12 +580,45 @@ function sectionTables(
     modifications: modifications(d),
     ...coverageStacks(d),
     junctions: junctions(d, refName),
-    legend: colors.legend,
-    legendTitle: colors.legendTitle,
   }
 }
 
-export type AlignmentTables = ReturnType<typeof sectionTables>
+type SectionTables = ReturnType<typeof sectionTables>
+
+/**
+ * The sections' tables as one set, each row naming its `section` and each
+ * `read` column offset to index the joined `reads`.
+ */
+function joinSections(sections: { label: string; tables: SectionTables }[]) {
+  const joined: Record<string, Record<string, unknown[]>> = {}
+  let readOffset = 0
+  for (const { label, tables } of sections) {
+    for (const [name, table] of Object.entries(tables)) {
+      const out = (joined[name] ??= { section: [] })
+      let rows = 0
+      for (const [column, values] of Object.entries(table)) {
+        const list = Array.from(values as ArrayLike<unknown>)
+        rows = list.length
+        ;(out[column] ??= []).push(
+          ...(column === 'read'
+            ? list.map(r => (r as number) + readOffset)
+            : list),
+        )
+      }
+      out.section!.push(...new Array<string>(rows).fill(label))
+    }
+    readOffset += tables.reads.start.length
+  }
+  return joined as {
+    [K in keyof SectionTables]: {
+      [C in keyof SectionTables[K]]: SectionTables[K][C] extends ArrayLike<
+        infer V
+      >
+        ? V[]
+        : never
+    } & { section: string[] }
+  }
+}
 
 /**
  * #api
@@ -572,8 +626,10 @@ export type AlignmentTables = ReturnType<typeof sectionTables>
  * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
  * clips, coverage and splice junctions, each read on the row the display's
  * pileup layout gives it and in the color the display's `color` object paints
- * it, with the key the display shows. For
- * a host that draws them itself, such as R through V8. The adapters must be
+ * it, with the key the display shows. Under a `facet` each section lays out
+ * on its own, every row names its `section`, and `sections` lists them in
+ * stacking order; ungrouped, there is one section, labelled `''`. For a host
+ * that draws them itself, such as R through V8. The adapters must be
  * registered on `pluginManager` (`registerAlignmentsAdapters`).
  */
 export async function alignmentTables(
@@ -587,9 +643,10 @@ export async function alignmentTables(
     baseColor,
     modifications,
     sort,
+    facet,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: AlignmentTablesArgs,
-): Promise<AlignmentTables> {
+) {
   const colorBy = colorByOf(
     alignmentsColorEncoding(
       colorSnapshotOf(alignmentsColorConfigSchema.create(color ?? {})),
@@ -597,6 +654,11 @@ export async function alignmentTables(
   )
   const baseLayer = baseLayerFor({ baseColor, modifications })
   const { layoutOrder, sortColumn, sortTag } = sortFor(sort, region.refName)
+  const facetNode = sectionFacetConfigSchema.create(facet ?? {})
+  const facetSetting = facetSettingOf({
+    field: readConfObject(facetNode, 'field'),
+    domain: readConfObject(facetNode, 'domain'),
+  })
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -606,6 +668,7 @@ export async function alignmentTables(
     colorBy,
     baseLayer,
     sortTag,
+    facet: workerFacet(facetSetting, 'read'),
     byteLimit,
     statusCallback: () => {},
   }
@@ -616,21 +679,47 @@ export async function alignmentTables(
       `${where} needs ${result.bytes} bytes of alignments, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
     )
   }
-  const data = result.value.groups[0]?.data
-  if (!data) {
+  const order = orderedGroups(
+    new Map([[0, result.value]]),
+    new Set<string>(readConfObject(facetNode, 'hidden')),
+    sectionOrder(facetSetting?.field ?? '', facetSetting?.domain),
+  )
+  if (!order.length) {
     throw new Error(`no reads came back for ${where}`)
   }
-  const laid = buildLaidOutPileupMap({
-    dataMap: new Map([[0, data]]),
-    sortColumn,
-    layoutOrder,
-    showSoftClipping: false,
-    regions: new Map([[0, region]]),
-  }).get(0)!
-  return sectionTables(
-    data,
-    laid.readYs,
-    colorReads(color, baseLayer, laid),
-    region.refName,
+  const dataOf = new Map(result.value.groups.map(g => [g.key, g.data]))
+  const laidByGroup = new Map(
+    order.map(({ key }) => [
+      key,
+      buildLaidOutPileupMap({
+        dataMap: new Map([[0, dataOf.get(key)!]]),
+        sortColumn,
+        layoutOrder,
+        showSoftClipping: false,
+        regions: new Map([[0, region]]),
+      }).get(0)!,
+    ]),
   )
+  const colors = colorReads(color, baseLayer, laidByGroup)
+  return {
+    ...joinSections(
+      order.map(({ key, label }) => ({
+        label,
+        tables: sectionTables(
+          dataOf.get(key)!,
+          laidByGroup.get(key)!.readYs,
+          colors.sections.get(key)!,
+          region.refName,
+        ),
+      })),
+    ),
+    sections: {
+      key: order.map(g => g.key),
+      label: order.map(g => g.label),
+    },
+    legend: colors.legend,
+    legendTitle: colors.legendTitle,
+  }
 }
+
+export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>

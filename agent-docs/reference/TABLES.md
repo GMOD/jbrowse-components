@@ -95,6 +95,17 @@ segment readers, so a host stacks what the display stacks. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does.
 
+The display's `facet` object (`field`, `domain`, `hidden`) splits the reads
+into stacked sections as the worker partitions them for the display, ordered
+by `orderedGroups` under the facet's `domain`, each laid out on its own:
+
+- Every table carries a `section` column, the section's label, and `sections`
+  lists `key` and `label` in stacking order. Ungrouped, there is one section
+  labelled `''`.
+- A `read` column indexes the joined `reads`, across sections.
+- The read colors and their key pool over the sections, as the display's do,
+  so one key serves every section.
+
 `@jbrowse/plugin-canvas/tables` (`featureTables`) does the same for a feature
 track. It takes the `LinearBasicDisplay`'s config as a track's `displays`
 entry writes it and a `bpPerPx`, runs the feature worker, then the display's

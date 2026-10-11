@@ -309,6 +309,45 @@ test('the display\u2019s sort object orders the rows', async () => {
   expect(byLength.reads.row).not.toEqual(plain.reads.row)
 })
 
+test('the display’s facet object splits the reads into sections, each laid out on its own', async () => {
+  const plain = await engine.alignments(BAM)
+  expect(plain.sections.label).toEqual([''])
+  expect(new Set(plain.reads.section)).toEqual(new Set(['']))
+
+  const t = await engine.alignments({ ...BAM, facet: { field: 'strand' } })
+  expect(t.sections.label).toHaveLength(2)
+  expect(t.reads.start).toHaveLength(plain.reads.start.length)
+  const sectionOfStrand = new Map<number, string>()
+  t.reads.strand.forEach((strand, i) => {
+    expect(sectionOfStrand.get(strand) ?? t.reads.section[i]).toBe(
+      t.reads.section[i],
+    )
+    sectionOfStrand.set(strand, t.reads.section[i]!)
+  })
+  for (const label of t.sections.label) {
+    const rows = t.reads.row.filter((_, i) => t.reads.section[i] === label)
+    expect(Math.min(...rows)).toBe(0)
+  }
+  t.mismatches.read.forEach((r, i) => {
+    expect(t.reads.section[r]).toBe(t.mismatches.section[i])
+    expect(t.mismatches.position[i]).toBeGreaterThanOrEqual(t.reads.start[r]!)
+    expect(t.mismatches.position[i]).toBeLessThan(t.reads.end[r]!)
+  })
+  expect(new Set(t.coverage.section)).toEqual(new Set(t.sections.label))
+
+  const [first, second] = t.sections.key
+  const reordered = await engine.alignments({
+    ...BAM,
+    facet: { field: 'strand', domain: [second!, first!] },
+  })
+  expect(reordered.sections.key).toEqual([second, first])
+  const hidden = await engine.alignments({
+    ...BAM,
+    facet: { field: 'strand', hidden: [first!] },
+  })
+  expect(hidden.sections.key).toEqual([second])
+})
+
 test('a region of the reference reads as its bases', async () => {
   const bases = await engine.sequence({
     sequenceAdapter: BAM.sequenceAdapter!,
