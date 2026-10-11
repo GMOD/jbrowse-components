@@ -1,5 +1,9 @@
 import { createTablesEngine } from './index.ts'
-import { COVERAGE_BIGWIG, SIGNED_BIGWIG } from './volvox.fixture.ts'
+import {
+  COVERAGE_BIGWIG,
+  MULTI_BIGWIG,
+  SIGNED_BIGWIG,
+} from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -87,4 +91,87 @@ test('density fades each bin from white at the pivot to the side it is on', asyn
     expect(byMagnitude[0]!.light).toBeGreaterThan(byMagnitude.at(-1)!.light)
   }
   expect(new Set(t.marks.color).size).toBeGreaterThan(20)
+})
+
+test('a line takes the color of the band between the cuts its score is in', async () => {
+  const color = {
+    field: 'score',
+    scale: 'threshold',
+    domain: [-200, 200],
+    range: ['blue', 'grey', 'red'],
+  }
+  const bandOf = (score: number) =>
+    score < -200 ? '#0000ff' : score < 200 ? '#808080' : '#ff0000'
+  for (const mark of ['bar', 'line']) {
+    const t = await engine.wiggle({
+      ...SIGNED_BIGWIG,
+      bpPerPx: 1000,
+      display: { mark, color, extent: 'none' },
+    })
+    t.marks.score.forEach((score, i) => {
+      if (!t.marks.band[i]) {
+        expect(t.marks.color[i]).toBe(bandOf(score))
+      }
+    })
+    expect(new Set(t.marks.color).size).toBe(3)
+  }
+  const line = await engine.wiggle({
+    ...SIGNED_BIGWIG,
+    bpPerPx: 1000,
+    display: { mark: 'line', color },
+  })
+  const pieces = line.marks.band
+    .map((b, i) => i)
+    .filter(i => line.marks.band[i])
+  expect(pieces.length).toBeGreaterThan(line.bins.score.length)
+  for (const i of pieces) {
+    expect(bandOf(line.marks.low[i]!)).toBe(line.marks.color[i])
+    expect(line.marks.low[i]).toBeLessThanOrEqual(line.marks.score[i]!)
+  }
+})
+
+test('a multi-wiggle stacks its sources in the order rows.domain gives', async () => {
+  const domain = ['posneg_rw3', 'posneg_rw1', 'posneg_rw2']
+  const t = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    display: { rows: { field: 'source', domain } },
+  })
+  expect(t.sources.name).toEqual(domain)
+  domain.forEach((name, row) => {
+    const rows = t.marks.row.filter((_, i) => t.marks.source[i] === name)
+    expect(rows.length).toBeGreaterThan(0)
+    expect(new Set(rows)).toEqual(new Set([row]))
+  })
+  const shared = await engine.wiggle(MULTI_BIGWIG)
+  expect(new Set(shared.marks.row)).toEqual(new Set([0]))
+  expect(new Set(shared.marks.source).size).toBe(3)
+})
+
+test('an interpolated line breaks into runs where the display breaks it', async () => {
+  const line = (maxGapMultiple: number) =>
+    engine.wiggle({
+      ...COVERAGE_BIGWIG,
+      bpPerPx: 5,
+      display: {
+        mark: 'line',
+        interpolate: 'linear',
+        extent: 'none',
+        maxGapMultiple,
+      },
+    })
+  const broken = await line(1)
+  const runs = new Set(broken.marks.run)
+  expect(runs.size).toBeGreaterThan(1)
+  expect(runs.size).toBeLessThan(broken.marks.run.length)
+  const mid = (i: number) => (broken.marks.start[i]! + broken.marks.end[i]!) / 2
+  const gaps = broken.marks.run
+    .map((r, i) => i)
+    .filter(i => i > 0 && broken.marks.run[i] !== broken.marks.run[i - 1])
+    .map(i => mid(i) - mid(i - 1))
+  const links = broken.marks.run
+    .map((r, i) => i)
+    .filter(i => i > 0 && broken.marks.run[i] === broken.marks.run[i - 1])
+    .map(i => mid(i) - mid(i - 1))
+  expect(Math.min(...gaps)).toBeGreaterThan(Math.max(...links))
+  expect(new Set((await line(0)).marks.run).size).toBe(1)
 })

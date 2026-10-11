@@ -1,8 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
+import {
+  abgrToHex,
+  cssColorToHex,
+  normalizedRgbToHex,
+} from '@jbrowse/core/util/colorBits'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
 import {
   computeAutoscaleDomain,
   getNiceDomain,
@@ -28,7 +33,11 @@ import {
   resolveWiggleColor,
   wiggleColorEncoding,
 } from './shared/wiggleColor.ts'
-import { isLineMode } from './shared/wiggleComponentUtils.ts'
+import {
+  centerLinksToPrevious,
+  cutBand,
+  isLineMode,
+} from './shared/wiggleComponentUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -55,26 +64,6 @@ export interface WiggleTablesArgs {
    * of a BigWig's zoom levels answers, and so how wide each bin is.
    */
   bpPerPx: number
-}
-
-function hex(n: number) {
-  return Math.round(n).toString(16).padStart(2, '0')
-}
-
-function hexOfNormalized([r, g, b]: readonly number[]) {
-  return `#${hex(r! * 255)}${hex(g! * 255)}${hex(b! * 255)}`
-}
-
-function hexOfAbgr(c: number) {
-  return `#${hex(abgrRed(c))}${hex(abgrGreen(c))}${hex(abgrBlue(c))}`
-}
-
-function hexOfCss(css: string) {
-  const [r, g, b] = css
-    .slice(css.indexOf('(') + 1, css.indexOf(')'))
-    .split(',')
-    .map(Number)
-  return `#${hex(r!)}${hex(g!)}${hex(b!)}`
 }
 
 /**
@@ -183,26 +172,25 @@ export async function wiggleTables(
     domain: readConfObject(conf.rows, 'domain'),
   })
   const maxGapMultiple: number = readConfObject(conf, 'maxGapMultiple')
-  const layers = data.sources.flatMap((source, row) =>
-    buildSourceRenderData(
-      { ...data, sources: [source] },
-      {
-        sources: [{ name: source.name, color: source.color }],
-        rowLayout: false,
-        perSource: false,
-        wiggleColor,
-        origin,
-        aggregate,
-        effectiveExtent: extent,
-        renderingType,
-        maxGapMultiple,
-      },
-    ).map(layer => ({
-      layer,
-      source: source.name,
-      row: rowLayout ? row : 0,
-    })),
+  const sources = orderRowsByDomain(
+    data.sources,
+    readConfObject(conf.rows, 'domain'),
   )
+  const layers = buildSourceRenderData(data, {
+    sources: sources.map(s => ({ name: s.name, color: s.color })),
+    rowLayout: true,
+    perSource: false,
+    wiggleColor,
+    origin,
+    aggregate,
+    effectiveExtent: extent,
+    renderingType,
+    maxGapMultiple,
+  }).map(layer => ({
+    layer,
+    source: sources[layer.rowIndex]!.name,
+    row: rowLayout ? layer.rowIndex : 0,
+  }))
   const scaleCode = scaleTypeCode(scaleType)
   const gradient =
     wiggleColor.rampLut !== null && !isLineMode(renderingType) && !density
@@ -253,31 +241,63 @@ export async function wiggleTables(
     band: [] as boolean[],
     color: [] as string[],
     opacity: [] as number[],
+    run: [] as number[],
   }
+  let run = -1
+  const { cuts } = wiggleColor
+  const innerColors = wiggleColor.innerColors.map(cssColorToHex)
   layers.forEach(({ layer, source, row }, index) => {
     const fill = colorOf(layer)
-    const own = hexOfNormalized(layer.color)
-    const below = layer.negColor ? hexOfNormalized(layer.negColor) : own
-    for (let i = 0; i < layer.numFeatures; i++) {
-      const score = layer.featureScores[i]!
+    const own = normalizedRgbToHex(layer.color)
+    const bandColors = layer.negColor
+      ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
+      : undefined
+    const colorAt = (score: number, i: number) =>
+      fill
+        ? cssColorToHex(fill(score))
+        : layer.colorsAbgr
+          ? abgrToHex(layer.colorsAbgr[i]!)
+          : bandColors
+            ? bandColors[cutBand(score, cuts)]!
+            : own
+    const push = (i: number, low: number, score: number, color: string) => {
       marks.source.push(source)
       marks.row.push(row)
       marks.layer.push(index)
       marks.start.push(layer.featurePositions[i * 2]!)
       marks.end.push(layer.featurePositions[i * 2 + 1]!)
       marks.score.push(score)
-      marks.low.push(layer.band ? layer.band.minScores[i]! : origin)
+      marks.low.push(low)
       marks.band.push(!!layer.band)
       marks.opacity.push(layer.band ? WHISKER_BAND_OPACITY : 1)
-      marks.color.push(
-        fill
-          ? hexOfCss(fill(score))
-          : layer.colorsAbgr
-            ? hexOfAbgr(layer.colorsAbgr[i]!)
-            : score < wiggleColor.pivot
-              ? below
-              : own,
-      )
+      marks.color.push(color)
+      marks.run.push(run)
+    }
+    const gapLimitBp = layer.gapLimitBp ?? Number.POSITIVE_INFINITY
+    for (let i = 0; i < layer.numFeatures; i++) {
+      const score = layer.featureScores[i]!
+      if (!centerLinksToPrevious(layer.featurePositions, i, gapLimitBp)) {
+        run++
+      }
+      if (layer.band && bandColors) {
+        const min = layer.band.minScores[i]!
+        const edges = [min, ...cuts.filter(c => c > min && c < score), score]
+        for (let k = 1; k < edges.length; k++) {
+          push(
+            i,
+            edges[k - 1]!,
+            edges[k]!,
+            bandColors[cutBand(edges[k - 1]!, cuts)]!,
+          )
+        }
+      } else {
+        push(
+          i,
+          layer.band ? layer.band.minScores[i]! : origin,
+          score,
+          colorAt(score, i),
+        )
+      }
     }
   })
 
@@ -289,7 +309,7 @@ export async function wiggleTables(
     min: [] as number[],
     max: [] as number[],
   }
-  for (const source of data.sources) {
+  for (const source of sources) {
     for (let i = 0; i < source.numFeatures; i++) {
       bins.source.push(source.name)
       bins.start.push(source.featurePositions[i * 2]!)
@@ -304,10 +324,10 @@ export async function wiggleTables(
     bins,
     marks,
     sources: {
-      name: data.sources.map(s => s.name),
-      label: data.sources.map(s => s.label ?? s.name),
-      group: data.sources.map(s => s.group ?? ''),
-      color: data.sources.map(s => s.color ?? ''),
+      name: sources.map(s => s.name),
+      label: sources.map(s => s.label ?? s.name),
+      group: sources.map(s => s.group ?? ''),
+      color: sources.map(s => s.color ?? ''),
     },
     rules: {
       value: rules.map(r => r.value),
@@ -320,8 +340,6 @@ export async function wiggleTables(
     rendering: renderingType,
     origin,
     rowLayout,
-    gapLimitBp: layers.find(l => l.layer.gapLimitBp !== undefined)?.layer
-      .gapLimitBp,
   }
 }
 
