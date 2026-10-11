@@ -208,6 +208,29 @@ export function abgrAlpha(c: number) {
   return (c >>> 24) & 0xff
 }
 
+function hexByte(n: number) {
+  return n.toString(16).padStart(2, '0')
+}
+
+/** An ABGR-packed color as lowercase `#rrggbb`, its alpha dropped. */
+export function abgrToHex(c: number) {
+  return `#${hexByte(abgrRed(c))}${hexByte(abgrGreen(c))}${hexByte(abgrBlue(c))}`
+}
+
+/** Any CSS color as lowercase `#rrggbb`, its alpha dropped. */
+export function cssColorToHex(color: string) {
+  return abgrToHex(cssColorToABGR(color))
+}
+
+/** A 0..1 normalized RGB triple as lowercase `#rrggbb`. */
+export function normalizedRgbToHex([r, g, b]: readonly [
+  number,
+  number,
+  number,
+]) {
+  return abgrToHex(normalizedRgbToABGR(r, g, b))
+}
+
 export function cssColorToNormalizedRgba(
   color: string,
 ): [number, number, number, number] {
