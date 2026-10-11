@@ -30,7 +30,10 @@ export drawing from one callback. It is a **component** rendering either an
 
 ```tsx
 import { SvgCanvas } from './SvgCanvas.ts'
-import { createSvgRasterCanvas } from './createSvgRasterCanvas.ts'
+import {
+  createSvgRasterCanvas,
+  svgRasterDataUrl,
+} from './createSvgRasterCanvas.ts'
 
 import type { SvgRasterCanvasOpts } from './createSvgRasterCanvas.ts'
 import type React from 'react'
@@ -45,7 +48,7 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
 }
 
 /**
- * Paint into either a 2× rasterize canvas (PNG-embedded as <image>) or an
+ * Paint into either a rasterize canvas (PNG-embedded as <image>) or an
  * SvgCanvas (serialized into a <g>). Renders one element — callers don't
  * branch on which mode was picked.
  *
@@ -82,7 +85,7 @@ export function PaintLayer({
       <image
         width={width}
         height={height}
-        xlinkHref={canvas.toDataURL('image/png')}
+        xlinkHref={svgRasterDataUrl(canvas)}
       />
     )
   }
@@ -98,8 +101,10 @@ export function PaintLayer({
 
 The surface comes from `opts`:
 
-- With `opts.rasterizeLayers` set it draws to an offscreen 2x canvas and embeds
-  a PNG.
+- With `opts.rasterizeLayers` set it draws to an offscreen canvas and embeds a
+  PNG. The canvas is 2x, or smaller for a layer past the browsers' canvas
+  limits; `createSvgRasterCanvas` picks the scale, so `paint` draws in CSS px
+  either way.
 - Otherwise it draws to `SvgCanvas`, a `CanvasRenderingContext2D` duck-type
   emitting `<rect>`, `<text>`, `<path>`. Pass `undefined` for `opts` to force
   this vector output; do that for text and labels so they stay crisp.

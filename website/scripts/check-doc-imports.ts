@@ -599,7 +599,7 @@ const DOC_THIRD_PARTY = new Set([
   // a page worse) so nobody pulls it again. Naming the option is the whole
   // point of the note, and it is not ours to define.
   'advancedChunks',
-  // ARCHITECTURAL_LIMITS.md §"A canvas past `MAX_CANVAS_DIM_PX` renders wrong": the DOMException the browser throws, quoted because the guard
+  // ARCHITECTURAL_LIMITS.md §"A canvas past the backing-store caps draws at reduced resolution": the DOMException the browser throws, quoted because the guard
   // exists to keep it from being thrown. The name is the browser's.
   'InvalidStateError',
   // products/jbrowse-build-your-own/examples-site/CLAUDE.md: the MUI global

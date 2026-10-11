@@ -1,7 +1,10 @@
 import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { serializeSvg } from '@jbrowse/core/svg/serializeSvg'
 import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
-import { createSvgRasterCanvas } from '@jbrowse/core/util/createSvgRasterCanvas'
+import {
+  createSvgRasterCanvas,
+  svgRasterDataUrl,
+} from '@jbrowse/core/util/createSvgRasterCanvas'
 
 import { warpRing } from './warpRing.ts'
 
@@ -10,6 +13,11 @@ import type { RingDisplay, RingHostModel } from './ringHost.ts'
 import type { SvgRasterCanvasOpts } from '@jbrowse/core/util/createSvgRasterCanvas'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
+
+// The rings' raster holds an ImageData of the same size beside its canvas, so
+// it takes a smaller budget than other export layers. A fully zoomed view's
+// 10,000 CSS px figure costs 512 MiB under it; the default would cost 2 GiB.
+const RING_RASTER_AREA_PX = 8192 * 8192
 
 type RingSvgDisplay = RingDisplay & {
   renderSvg?: (
@@ -111,7 +119,12 @@ export async function paintRingsSvg(
   if (drawn.length === 0) {
     return null
   }
-  const { canvas, ctx } = createSvgRasterCanvas(figure.size, figure.size, opts)
+  const { canvas, ctx } = createSvgRasterCanvas(
+    figure.size,
+    figure.size,
+    opts,
+    RING_RASTER_AREA_PX,
+  )
   const scale = canvas.width / figure.size
   const pixels = ctx.createImageData(canvas.width, canvas.height)
   for (const { ring, body } of drawn) {
@@ -142,7 +155,7 @@ export async function paintRingsSvg(
     <image
       width={figure.size}
       height={figure.size}
-      xlinkHref={canvas.toDataURL('image/png')}
+      xlinkHref={svgRasterDataUrl(canvas)}
     />
   )
 }

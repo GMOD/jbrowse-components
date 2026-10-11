@@ -1,5 +1,8 @@
 import { SvgCanvas } from './SvgCanvas.ts'
-import { createSvgRasterCanvas } from './createSvgRasterCanvas.ts'
+import {
+  createSvgRasterCanvas,
+  svgRasterDataUrl,
+} from './createSvgRasterCanvas.ts'
 
 import type { SvgRasterCanvasOpts } from './createSvgRasterCanvas.ts'
 import type React from 'react'
@@ -16,7 +19,7 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
 }
 
 /**
- * Paint into either a 2× rasterize canvas (PNG-embedded as <image>) or an
+ * Paint into either a rasterize canvas (PNG-embedded as <image>) or an
  * SvgCanvas (serialized into a <g>). Renders one element — callers don't
  * branch on which mode was picked.
  *
@@ -53,7 +56,7 @@ export function PaintLayer({
       <image
         width={width}
         height={height}
-        xlinkHref={canvas.toDataURL('image/png')}
+        xlinkHref={svgRasterDataUrl(canvas)}
       />
     )
   }

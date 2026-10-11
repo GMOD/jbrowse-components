@@ -27,8 +27,8 @@ export const MAX_DPR = 2
  * geometry at a different scale than the canvas it lands on.
  *
  * Two places legitimately want something other than this and should keep saying
- * so explicitly: `createSvgRasterCanvas` pins 2x because export goes to a file
- * rather than a screen, and the analytics / error-report paths read the raw
+ * so explicitly: `createSvgRasterCanvas` rasterizes at 2x because export goes
+ * to a file, and the analytics / error-report paths read the raw
  * global because they are reporting the device, not drawing on it.
  */
 export function getDpr() {

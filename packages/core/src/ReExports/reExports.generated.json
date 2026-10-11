@@ -2857,7 +2857,9 @@
     "@jbrowse/core/util/createSvgRasterCanvas": {
       "package": "@jbrowse/core",
       "names": [
-        "createSvgRasterCanvas"
+        "MAX_SVG_RASTER_AREA_PX",
+        "createSvgRasterCanvas",
+        "svgRasterDataUrl"
       ],
       "worker": "real"
     },
@@ -4969,6 +4971,7 @@
       "names": [
         "CANVAS_SEAM_PX",
         "CappedPath",
+        "MAX_CANVAS_AREA_PX",
         "MAX_CANVAS_DIM_PX",
         "MAX_DPR",
         "bpAtPx",

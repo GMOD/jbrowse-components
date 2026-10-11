@@ -128,8 +128,9 @@ to its whole content.
   default reports `getDpr()`.
 
 `getDpr()` caps at `MAX_DPR`. **Reading the global `devicePixelRatio` directly
-re-opens the split.** Two sites diverge on purpose: `createSvgRasterCanvas` pins
-2x and analytics read the raw value. A display sizing a canvas to content bounds
+re-opens the split.** Two sites diverge on purpose: `createSvgRasterCanvas`
+rasterizes at 2x, smaller past 2^28 px of area or 32767 px on an axis, and
+analytics read the raw value. A display sizing a canvas to content bounds
 it as MAF's `maxRowsHeight` does, so its rows stay legible.
 
 ---
