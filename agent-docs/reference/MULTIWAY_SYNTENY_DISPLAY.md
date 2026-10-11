@@ -110,6 +110,11 @@ cost is linear in lanes.
   captured at attach, since a display is destroyed after its view detaches;
   "Open in new view" returns one first. A GenArk-backed db draws only through the
   aliases (jb2hubs' `defaultGeneTrackId` spelling).
+- **An `{assembly}` entry in `laneGeneTracks` or `laneLayers[].tracks` is filled
+  per lane** with the lane's canonical name, then its aliases, and only a held
+  assembly's aliases are read (`namedLaneTracks`). Plain ids come before
+  patterns, each in entry order. A locstring's braces mean something else:
+  `{hg38}chr1:1-100` names an assembly literally.
 - **A lane template reads a lane only while each region is under
   `LANE_TEMPLATE_MAX_BP`**, since the region is the sequence it downloads. An
   adapter type that computes from no sequence is no template (every lane would read

@@ -117,9 +117,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)):
   an in-shader predicate would make the Canvas2D fallback repaint the whole
   display per mousemove.
-- **No per-layer data and no `lookup` join.** No measurement backs it, and each
-  source multiplies the refName renaming, byte gate and zoom range a display runs
-  once today. It reopens when a named plot needs two files in one display.
+- **No per-layer data on the mark display, and no `lookup` join.** No measurement
+  backs it, and each source multiplies the refName renaming, byte gate and zoom
+  range a display runs once today. It reopens when a named plot needs two files
+  in one display. The multi-way display's lanes already read a source per layer
+  (ADR-180): the row facet's value, `{assembly}`, picks each lane's track.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
   Canvas2D painters' color batching. `encoding.size` maps a width through the

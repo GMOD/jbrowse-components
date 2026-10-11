@@ -53,8 +53,29 @@ lifecycle of its own.
 - Stage 2 moves the gene glyphs and the placement boxes onto `encodeFeatures`,
   gated on measuring the encoder at 40 lanes, since ADR-114 kept canvas's
   packer at 3.11x the encoder's cost. Only a named record draws a box already:
-  an alignment record no gene covers names no gene to stand in for.
+  an alignment record no gene covers names no gene to stand in for. Stage 2 is
+  also when `laneGeneTracks` can become the first entry of `laneLayers`; before
+  it, a gene layer would be a second spelling of the slot, since a layer has no
+  annotation fallback, gene adapter or label row.
 - Extra layers cost one fetch per lane each; the synced per-lane LGV (route 4)
   stays the drill-down for anything a mark list cannot say.
 - The name row makes every lane taller by 12 px with names on, so a stack that
   was just above the pitch floor now scrolls.
+
+## Rejected alternatives
+
+A layer names one track per genome by listing its id per lane, or by an
+`{assembly}` entry each lane fills with its own names (`laneTrackIds`). Declined
+for that per-lane lookup:
+
+- **A `jexl:` callback over `assembly`.** It makes the whole slot one expression,
+  so a plain id no longer outranks the pattern, and neither Edit plot nor
+  `jbrowse validate` can read an expression back.
+- **A structured object, `{ field: 'assembly', … }`.** `field` reads a value off a
+  datum in the encoding vocabulary, and building an id from one still needs a
+  template inside the object.
+- **Selecting tracks by `category` or `name`.** Only a trackId is unique, so a
+  genome with two GC tracks would leave the lane to guess.
+- **A templated `adapter.uri`.** `adapter` is a template that reads the lane's
+  sequence, and a file path spells the host's name for a genome, not the
+  lane's.
