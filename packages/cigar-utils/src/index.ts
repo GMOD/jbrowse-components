@@ -57,7 +57,13 @@ export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'
 export { refWindowToRead } from './refWindowToRead.ts'
 export type { CigarCursor, ReadWindow } from './refWindowToRead.ts'
-export { numericCigarHasSkip } from './numericCigarHasSkip.ts'
+export {
+  CIGAR_HAS_SKIP,
+  CIGAR_HAS_SV_DELETION,
+  SV_DELETION_MIN_BP,
+  cigarStringCategoryBits,
+  numericCigarCategoryBits,
+} from './cigarCategoryBits.ts'
 export { numericCigarToString } from './numericCigarToString.ts'
 export {
   connectionEndpointBps,

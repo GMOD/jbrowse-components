@@ -23,6 +23,10 @@ class ContigBlock extends SimpleFeature implements MismatchFeature {
   get clipLengthAtStartOfRead(): number {
     return (this.get('mate') as { start: number }).start
   }
+
+  get cigarCategoryBits() {
+    return 0
+  }
 }
 
 function contigBlock({

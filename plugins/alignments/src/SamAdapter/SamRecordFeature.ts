@@ -2,6 +2,7 @@ import { forEachMismatchNumeric } from '@gmod/bam'
 import {
   clipLengthAtStartOfReadNumeric,
   encodeSeqNumeric,
+  numericCigarCategoryBits,
   parseCigar2Typed,
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_REVERSE,
@@ -185,6 +186,10 @@ export default class SamRecordFeature implements MismatchFeature {
 
   get hasEndClip() {
     return cigarHasEndClip(this.NUMERIC_CIGAR)
+  }
+
+  get cigarCategoryBits() {
+    return numericCigarCategoryBits(this.NUMERIC_CIGAR)
   }
 
   // IGV's pair-orientation string (e.g. `F1R2`)

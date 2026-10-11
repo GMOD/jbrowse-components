@@ -1,5 +1,10 @@
-import { CramRecord } from '@gmod/cram'
-import { numericCigarToString } from '@jbrowse/cigar-utils'
+import { CramRecord, RF_DELETION, RF_REF_SKIP } from '@gmod/cram'
+import {
+  CIGAR_HAS_SKIP,
+  CIGAR_HAS_SV_DELETION,
+  SV_DELETION_MIN_BP,
+  numericCigarToString,
+} from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
@@ -203,6 +208,27 @@ export default class CramSlightlyLazyFeature
         ? this.getTrailingClipLength()
         : this.getLeadingClipLength()
     return this.clipStart
+  }
+
+  // Off the slice's read-feature columns, which `forEachMismatch` walks too,
+  // so neither `readFeatures` (an object per feature per access) nor
+  // `NUMERIC_CIGAR` is built to answer it.
+  get cigarCategoryBits() {
+    const arena = this.readFeatureArena
+    let bits = 0
+    if (arena) {
+      const { codes, num } = arena
+      const end = this.readFeatureStart + this.readFeatureCount
+      for (let i = this.readFeatureStart; i < end; i++) {
+        const code = codes[i]
+        if (code === RF_REF_SKIP) {
+          bits |= CIGAR_HAS_SKIP
+        } else if (code === RF_DELETION && num[i]! >= SV_DELETION_MIN_BP) {
+          bits |= CIGAR_HAS_SV_DELETION
+        }
+      }
+    }
+    return bits
   }
 
   get CIGAR() {

@@ -4,10 +4,12 @@ import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 import { emptyConnectingLinesUploadData } from '../features/connectingLines/types.ts'
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
+import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 import {
-  GAP_DELETION,
-  GAP_SKIP,
-} from '../shaders/slang/gap.consts.generated.ts'
+  READ_SPLICED,
+  READ_SPLIT,
+  READ_SV_DELETION,
+} from '../shared/readCategoryBits.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -460,60 +462,30 @@ function buildSoftclipOrder(
   )
 }
 
-// 1 for every read whose CIGAR carries a skip, off the gap arrays the worker
-// already ships, so no per-read flag crosses the boundary for this.
-function readSplicedFlags(data: WorkerPileupData, numReads: number) {
-  const { gapTypes, gapReadIndices } = data
-  const spliced = new Uint8Array(numReads)
-  for (let i = 0; i < gapTypes.length; i++) {
-    if (gapTypes[i] === GAP_SKIP) {
-      spliced[gapReadIndices[i]!] = 1
-    }
-  }
-  return spliced
+// Which category bits each lifting order lifts. `split` takes a deletion of
+// structural-variant size with the split reads: an aligner writes the same
+// molecule either way, by the deletion's length.
+const LIFTED_BITS: Partial<Record<LayoutOrder, number>> = {
+  spliced: READ_SPLICED,
+  split: READ_SPLIT | READ_SV_DELETION,
 }
 
-// The size from which callers file a deletion as a structural variant
-const SV_GAP_BP = 50
-
-// 1 for every read aligned in pieces, which is one carrying an SA tag, and for
-// every read carrying a deletion of structural-variant size: an aligner writes
-// the same molecule either way, by the deletion's length. The SA array is
-// absent when no read of the group has one.
-function readSplitFlags(data: WorkerPileupData, numReads: number) {
-  const { readSuppAlignments, gapPositions, gapTypes, gapReadIndices } = data
-  const split = new Uint8Array(numReads)
-  for (let i = 0; i < gapTypes.length; i++) {
-    if (
-      gapTypes[i] === GAP_DELETION &&
-      gapPositions[i * 2 + 1]! - gapPositions[i * 2]! >= SV_GAP_BP
-    ) {
-      split[gapReadIndices[i]!] = 1
-    }
-  }
-  if (readSuppAlignments) {
-    for (let i = 0; i < numReads; i++) {
-      if (readSuppAlignments[i]) {
-        split[i] = 1
-      }
-    }
-  }
-  return split
-}
-
-// The reads an order lifts ahead of the rest, or undefined for an order that
-// lifts no class: spliced reads, or reads aligned in pieces or across a large
-// deletion.
+// 1 for each read the order lifts ahead of the rest, or undefined for an order
+// that lifts no class.
 function liftedFlags(
   layoutOrder: LayoutOrder,
   data: WorkerPileupData,
   numReads: number,
 ) {
-  return layoutOrder === 'spliced'
-    ? readSplicedFlags(data, numReads)
-    : layoutOrder === 'split'
-      ? readSplitFlags(data, numReads)
-      : undefined
+  const mask = LIFTED_BITS[layoutOrder]
+  if (mask === undefined) {
+    return undefined
+  }
+  const lifted = new Uint8Array(numReads)
+  for (let i = 0; i < numReads; i++) {
+    lifted[i] = data.readCategoryBits[i]! & mask ? 1 : 0
+  }
+  return lifted
 }
 
 // The lifted reads take the lowest rows, each class in canonical order — so on

@@ -10,14 +10,16 @@ import {
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 import {
+  cigarCategoryBitsOf,
   extractCigarFeatures,
   extractCigarFeaturesFromString,
   isMismatchFeature,
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldValueReader } from './groupFeatures.ts'
+import { splitBit } from './readCategoryBits.ts'
 import { isFillUnmarkedMode, paintsUnmodifiedCalls } from './types.ts'
-import { getStrand } from './util.ts'
+import { getFlags, getStrand } from './util.ts'
 
 import type { BaseLayer, ReadColorBy } from './types.ts'
 import type {
@@ -126,6 +128,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   // learns a new shape.
   const suppAlignments: string[] = []
   let hasSuppAlignment = false
+  const categoryBits = new Uint8Array(featuresArray.length)
   // Soft/hard-clip length at the 5' start of the read in read coordinates
   // (getClip already accounts for strand). This is the read-order sort key that
   // lets the main thread chain split segments in true read order rather than
@@ -169,6 +172,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         : ((getTag(feature, 'SA') as string | undefined) ?? '')
     hasSuppAlignment ||= sa !== ''
     suppAlignments.push(sa)
+    categoryBits[readIndex] =
+      splitBit(getFlags(feature), sa) | cigarCategoryBitsOf(feature)
     // Read once: it drives both the start clip and the indel walk below.
     const cigarString = isMismatch
       ? ''
@@ -315,6 +320,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     // See its declaration: `undefined` when no read in this group carried an SA
     // tag, which is the deep short-read case and every synteny one.
     suppAlignments: hasSuppAlignment ? suppAlignments : undefined,
+    categoryBits,
     clipAtStart,
     detectedModifications,
     // Raw (strand, type) pairs seen in this call. The worker merges these across

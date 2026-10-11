@@ -6,6 +6,7 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
+  cigarStringCategoryBits,
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
@@ -70,6 +71,12 @@ export interface MismatchFeature extends Feature {
   // walk, answer it off the packed CIGAR's end ops; a feature that omits it is
   // looked up as before.
   readonly hasEndClip?: boolean
+
+  // REQUIRED. `READ_SPLICED` and `READ_SV_DELETION` (readCategoryBits.ts) over
+  // the whole record, where the extraction walk stops at the region. Each
+  // format reads its own CIGAR store: BAM and SAM the packed CIGAR, CRAM its
+  // read-feature columns.
+  readonly cigarCategoryBits: number
 }
 
 // Only BAM/CRAM features carry per-base mismatch/CIGAR detail. Other features
@@ -80,6 +87,19 @@ export function isMismatchFeature(
   feature: Feature,
 ): feature is MismatchFeature {
   return 'forEachMismatch' in feature
+}
+
+/**
+ * `READ_SPLICED` and `READ_SV_DELETION` for any feature this pipeline serves:
+ * an alignment record answers off its own CIGAR store, and a synteny block off
+ * its CIGAR string.
+ */
+export function cigarCategoryBitsOf(feature: Feature) {
+  return isMismatchFeature(feature)
+    ? feature.cigarCategoryBits
+    : cigarStringCategoryBits(
+        (feature.get('CIGAR') as string | undefined) ?? '',
+      )
 }
 
 // Output buffers each emitter pushes into. Bundled to keep the dispatch

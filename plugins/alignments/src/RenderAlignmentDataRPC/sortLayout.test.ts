@@ -1,9 +1,15 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
+import { SV_DELETION_MIN_BP } from '@jbrowse/cigar-utils'
 
 import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../shaders/slang/gap.consts.generated.ts'
+import {
+  READ_SPLICED,
+  READ_SPLIT,
+  READ_SV_DELETION,
+} from '../shared/readCategoryBits.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -36,6 +42,21 @@ interface Read {
   // Intron skips, [start, end) each — what marks the read as spliced.
   skips?: [number, number][]
   deletions?: [number, number][]
+  // Aligned in pieces, as the worker's `READ_SPLIT` says of a record carrying
+  // an SA tag or the supplementary flag.
+  split?: boolean
+}
+
+// The worker's whole-record answer for a fixture read; its gap arrays stay
+// what the region drew.
+function categoryBitsOf(r: Read) {
+  return (
+    (r.split ? READ_SPLIT : 0) |
+    (r.skips?.length ? READ_SPLICED : 0) |
+    (r.deletions?.some(([s, e]) => e - s >= SV_DELETION_MIN_BP)
+      ? READ_SV_DELETION
+      : 0)
+  )
 }
 
 function makePileupData(opts: {
@@ -137,6 +158,7 @@ function makePileupData(opts: {
     gapReadIndices,
     gapFrequencies: new Uint8Array(skipEntries.length),
     readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
+    readCategoryBits: Uint8Array.from(reads.map(categoryBitsOf)),
     mismatchPositions,
     mismatchBases,
     mismatchStrands: new Int8Array(numMismatches),
@@ -406,27 +428,24 @@ describe("computeLayout layoutOrder 'spliced'", () => {
 describe("computeLayout layoutOrder 'split'", () => {
   // A read aligned whole starts before one aligned in pieces that overlaps it.
   // Start order gives the whole read row 0; split-first gives it to the read
-  // carrying an SA tag, which is the one a breakpoint's connector is drawn for.
-  const data = (readSuppAlignments?: string[]) => ({
-    ...makePileupData({
+  // aligned in pieces, which is the one a breakpoint's connector is drawn for.
+  const data = (split: boolean) =>
+    makePileupData({
       regionStart: 0,
       reads: [
         { start: 0, end: 50 }, // id0 whole
-        { start: 10, end: 200 }, // id1 split
+        { start: 10, end: 200, split }, // id1
         { start: 300, end: 350 }, // id2 whole, clear of both
       ],
-    }),
-    readSuppAlignments,
-  })
-  const split = ['', 'chr5,100,+,50M150S,60,0;', '']
+    })
 
   test('default order places the earlier whole read first', () => {
-    expect([...computeLayout(data(split)).readYs]).toEqual([0, 1, 0])
+    expect([...computeLayout(data(true)).readYs]).toEqual([0, 1, 0])
   })
 
   test('split-first gives the split read the lowest row', () => {
     const { readYs, maxY } = computeLayout(
-      data(split),
+      data(true),
       false,
       undefined,
       'split',
@@ -436,9 +455,8 @@ describe("computeLayout layoutOrder 'split'", () => {
   })
 
   test('with no split read in the group, the order is by start', () => {
-    // the worker ships no SA array at all when no read carries the tag
     expect([
-      ...computeLayout(data(), false, undefined, 'split').readYs,
+      ...computeLayout(data(false), false, undefined, 'split').readYs,
     ]).toEqual([0, 1, 0])
   })
 
@@ -1201,7 +1219,7 @@ describe('computeMultiRegionLayout', () => {
   })
 
   test("layoutOrder 'split' partitions on any region's copy of the read", () => {
-    // id0 spans both regions and only region 2's copy carries the SA tag
+    // id0 spans both regions and only region 2's copy says it is split
     const r1 = makePileupData({
       regionStart: 0,
       reads: [
@@ -1209,13 +1227,10 @@ describe('computeMultiRegionLayout', () => {
         { start: 0, end: 20 }, // id1 whole, earlier start
       ],
     })
-    const r2 = {
-      ...makePileupData({
-        regionStart: 100,
-        reads: [{ start: 100, end: 200 }], // id0 again
-      }),
-      readSuppAlignments: ['chr5,100,+,50M150S,60,0;'],
-    }
+    const r2 = makePileupData({
+      regionStart: 100,
+      reads: [{ start: 100, end: 200, split: true }], // id0 again
+    })
     const { rowMap } = computeMultiRegionLayout({
       entries: [
         [0, r1],

@@ -1,5 +1,4 @@
 import { packReference } from '@gmod/bam'
-import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
@@ -121,9 +120,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       const { intervalTreeMap } = await this.loadData(opts)
       checkAbortSignal(signal)
       const tree = intervalTreeMap[refName]
-      const drops = dropsRead<SamRecordFeature>(filterBy, record =>
-        numericCigarHasSkip(record.NUMERIC_CIGAR),
-      )
+      const drops = dropsRead(filterBy)
       const records = tree
         ? tree(statusCallback)
             .search([start, end])

@@ -1,5 +1,4 @@
 import { BamFile, packReference } from '@gmod/bam'
-import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
@@ -143,9 +142,7 @@ export abstract class BamAdapterBase<
       )
       checkAbortSignal(signal)
 
-      const drops = dropsRead<BamSlightlyLazyFeature>(filterBy, record =>
-        numericCigarHasSkip(record.NUMERIC_CIGAR),
-      )
+      const drops = dropsRead(filterBy)
       // Only reads lacking an MD tag need the reference, and whether ANY does is
       // only knowable once the records are in — hence `span` below. But the
       // SPAN itself needs no records: seqFetchSpan clamps to [start, end), so

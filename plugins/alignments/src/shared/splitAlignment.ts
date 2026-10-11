@@ -1,5 +1,4 @@
 import {
-  SAM_FLAG_SUPPLEMENTARY,
   connectionEndpointBps,
   featurizeSAEntries,
   getClip,
@@ -8,8 +7,10 @@ import {
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { READ_SPLIT, splitBit } from './readCategoryBits.ts'
 import { getFlags, getStrand } from './util.ts'
 
+import type { MismatchFeature } from './extractCigarFeatures.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { PanelStop } from '@jbrowse/sv-core'
 
@@ -31,12 +32,18 @@ import type { PanelStop } from '@jbrowse/sv-core'
  * `extractFeatureTagValue`, not `@jbrowse/modifications-utils`' `getTag`, so a
  * source that keeps the value as a plain field (the flagless PAF/synteny blocks
  * this pipeline also serves) answers the same way as a BAM.
+ *
+ * It skips the tag lookup on a record with no end clip, as the extraction does
+ * when it fills `readCategoryBits`, so the two agree read for read: the SAM
+ * spec clips every record of a chimeric alignment, so such a record carries no
+ * SA on conforming input.
  */
 export function isSplitAlignment(feature: Feature) {
-  return (
-    (getFlags(feature) & SAM_FLAG_SUPPLEMENTARY) !== 0 ||
-    extractFeatureTagValue(feature, 'SA') !== ''
-  )
+  const sa =
+    (feature as Partial<MismatchFeature>).hasEndClip === false
+      ? ''
+      : extractFeatureTagValue(feature, 'SA')
+  return splitBit(getFlags(feature), sa) === READ_SPLIT
 }
 
 /**

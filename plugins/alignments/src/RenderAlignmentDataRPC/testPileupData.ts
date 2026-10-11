@@ -97,6 +97,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     // interchromosomal reads sets `readNextRefIds` and `nextRefNames` together.
     readNextRefIds: new Int32Array(n).fill(-1),
     nextRefNames: [],
+    readCategoryBits: new Uint8Array(n),
     segmentPositions: new Uint32Array(n * 2),
     segmentReadIndices: new Uint32Array(n),
     segmentEdgeFlags: new Uint8Array(n),

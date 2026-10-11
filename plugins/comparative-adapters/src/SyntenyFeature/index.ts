@@ -3,6 +3,7 @@ import {
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
+  cigarStringCategoryBits,
   coarseCigarOwnAxis,
   forEachCsMismatch,
   getMismatches,
@@ -61,6 +62,10 @@ export default class SyntenyFeature extends SimpleFeature {
   // CIGAR carries no clip of its own.
   get clipLengthAtStartOfRead() {
     return this.mate?.start ?? 0
+  }
+
+  get cigarCategoryBits() {
+    return cigarStringCategoryBits(this.walkableCigar ?? '')
   }
 
   forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {

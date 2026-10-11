@@ -1,5 +1,8 @@
 import { BamRecord, forEachMismatchNumeric } from '@gmod/bam'
-import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
+import {
+  clipLengthAtStartOfReadNumeric,
+  numericCigarCategoryBits,
+} from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import {
@@ -185,6 +188,10 @@ export default class BamSlightlyLazyFeature
 
   get hasEndClip() {
     return cigarHasEndClip(this.NUMERIC_CIGAR)
+  }
+
+  get cigarCategoryBits() {
+    return numericCigarCategoryBits(this.NUMERIC_CIGAR)
   }
 
   get refName() {
@@ -415,6 +422,10 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   get hasEndClip() {
     return this.base.hasEndClip
+  }
+
+  get cigarCategoryBits() {
+    return this.base.cigarCategoryBits
   }
 
   get NUMERIC_CIGAR() {

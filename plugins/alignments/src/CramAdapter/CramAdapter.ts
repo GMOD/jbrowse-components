@@ -215,13 +215,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
           }),
       )
       checkAbortSignal(signal)
-      // CRAM has no CIGAR; a skip is an 'N' read feature. `readFeatures` is
-      // rebuilt per access, which the thunk keeps off every read while the
-      // filter is off.
-      const drops = dropsRead<CramSlightlyLazyFeature>(
-        filterBy,
-        record => record.readFeatures?.some(f => f.code === 'N') ?? false,
-      )
+      const drops = dropsRead(filterBy)
       await withProgress(
         {
           label: 'Processing alignments',

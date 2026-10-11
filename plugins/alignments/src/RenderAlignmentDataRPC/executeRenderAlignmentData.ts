@@ -102,6 +102,7 @@ async function buildGroupResult(
     sortTagValues,
     nextPositions,
     suppAlignments,
+    categoryBits,
     clipAtStart,
     detectedModifications,
   } = extraction
@@ -226,6 +227,7 @@ async function buildGroupResult(
 
     readNextPositions: new Uint32Array(nextPositions),
     readSuppAlignments: suppAlignments,
+    readCategoryBits: categoryBits,
     readClipAtStart: new Uint32Array(clipAtStart),
 
     // One shared insert-size scale for every group of the fetch (pooled in the

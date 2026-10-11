@@ -8,6 +8,8 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
+import { READ_SPLICED } from './readCategoryBits.ts'
+
 import type { ReadFilter } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
@@ -156,8 +158,8 @@ function filterReadFlag(
 }
 
 // True when the spliced-read filter drops this read. `hasSkip` is a thunk
-// because answering it means walking the CIGAR, which no read pays for while
-// the filter is off.
+// because answering it walks the CIGAR, which no read pays for while the
+// filter is off.
 export function filterSpliced(
   spliced: ReadFilter['spliced'],
   hasSkip: () => boolean,
@@ -181,15 +183,13 @@ interface FilterableRead {
   flags: number
   name: string | undefined
   getTag(tag: string): unknown
+  cigarCategoryBits: number
 }
 
 // Whether `filterBy` drops a read, for every adapter: flags, read name, the
-// AND-ed tag filters and the spliced filter. `hasSkip` is the format's own
-// test, since CRAM has no CIGAR to walk.
-export function dropsRead<R extends FilterableRead>(
-  filterBy: ReadFilter | undefined,
-  hasSkip: (read: R) => boolean,
-) {
+// AND-ed tag filters and the spliced filter, which reads the record's own
+// `cigarCategoryBits` as the sort and the tables do.
+export function dropsRead(filterBy: ReadFilter | undefined) {
   const {
     flagInclude = 0,
     flagExclude = 0,
@@ -197,11 +197,11 @@ export function dropsRead<R extends FilterableRead>(
     readName,
     spliced,
   } = filterBy ?? {}
-  return (read: R) =>
+  return (read: FilterableRead) =>
     filterReadFlag(read.flags, flagInclude, flagExclude) ||
     (readName !== undefined && read.name !== readName) ||
     !!tagFilters?.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
-    filterSpliced(spliced, () => hasSkip(read))
+    filterSpliced(spliced, () => (read.cigarCategoryBits & READ_SPLICED) !== 0)
 }
 
 export interface SamHeaderLine {
