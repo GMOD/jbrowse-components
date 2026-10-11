@@ -20,7 +20,7 @@ export function densityFormat(file: string): DensityFormat {
   if (!hit) {
     throw new Error(
       alignmentFormat.test(file)
-        ? `${file} is an alignment file, which make-density cannot read. Count coverage with a tool that reads BAM/CRAM (e.g. "bamCoverage" or "samtools depth" piped to bedGraphToBigWig) and pass the result with add-track --density.`
+        ? `${file} is an alignment file, which make-density cannot read. Count coverage with a tool that reads BAM/CRAM (e.g. bamCoverage or mosdepth) and add its bigWig as a track.`
         : `Cannot tell what kind of file ${file} is. make-density reads GFF3, GTF, BED and VCF, plain or bgzipped.`,
     )
   }

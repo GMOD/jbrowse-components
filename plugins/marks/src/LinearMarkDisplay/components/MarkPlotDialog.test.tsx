@@ -539,13 +539,10 @@ describe('the mark list', () => {
     setup({
       marks: [
         { mark: 'span', transform: [{ type: 'pileup' }] },
-        { mark: 'span', transform: [{ type: 'pileup' }], source: 'density' },
+        { mark: 'span', transform: [{ type: 'pileup' }] },
       ],
     })
     fireEvent.click(screen.getByTestId('mark-row-1'))
     expect(screen.getByText(/packs rows of its own/)).toBeInTheDocument()
-    expect(
-      screen.getByText(/does not draw the density sidecar/),
-    ).toBeInTheDocument()
   })
 })

@@ -207,7 +207,6 @@ test('an arc whose mate no window shows runs off its own block, clipped, not as 
     ctx,
     {
       sections: display.sourceSections,
-      densityRegions: display.densityCoverageRegions,
     },
     display.renderBlocks,
     display.renderState,

@@ -334,7 +334,7 @@ export function bootAlignmentsDisplay({
  * `register` and `trackConfig` reach `bootAlignmentsDisplay`'s, so a menu
  * contribution can be installed against the same world — a track-menu item that
  * reads the view's blocks needs the measured view this builds, not a bare model
- * — and a case about the adapter (a density sidecar, say) can state one.
+ * — and a case about the adapter can state one.
  */
 export function createRpcTestEnvironment({
   register,

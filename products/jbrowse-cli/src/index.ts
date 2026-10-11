@@ -59,7 +59,7 @@ const registry: {
   {
     name: 'make-density',
     summary:
-      'Counts feature starts per bin into a bigWig density sidecar, with bedGraphToBigWig',
+      'Counts feature starts per bin into a bigWig, with bedGraphToBigWig',
     load: () => import('./commands/make-density/index.ts').then(m => m.run),
   },
   {

@@ -30,7 +30,6 @@ import { withHitIndex } from '@jbrowse/core/util/markEncoding'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -38,7 +37,6 @@ import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
-import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
@@ -90,7 +88,6 @@ import {
 } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
 
-import { densityRegionData } from './densityLayer.ts'
 import {
   facetLayout,
   facetRegion,
@@ -105,7 +102,6 @@ import {
   colorSection,
   keySettingOf,
   markColorScales,
-  markConstantColor,
   paintScaleOf,
 } from './legend.ts'
 import { createLinkOwners, withMateRegions } from './linkOwners.ts'
@@ -130,7 +126,7 @@ import {
   toBinEdges,
   widestBinStep,
 } from './markRequest.ts'
-import { hitsByIndex, readsValue } from './markSpecs.ts'
+import { readsValue } from './markSpecs.ts'
 import {
   DEFAULT_LINE_WIDTH_PX,
   DEFAULT_LINK_STROKE_PX,
@@ -194,7 +190,6 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import type { CoarseTierMode } from '@jbrowse/display-kit/coarseTier'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type { FloatingLabel } from '@jbrowse/display-kit/floatingLabelHost'
 import type {
@@ -254,10 +249,9 @@ export function markSizeOf({
   )
 }
 
-/** The marks at the view's zoom: which draw, and which the sidecar stands in for. */
+/** The marks at the view's zoom: which draw. */
 export interface MarkView {
   visible: boolean[]
-  densityMark: number
 }
 
 /**
@@ -284,10 +278,6 @@ export function stateModelFactory(
           TreeSidebarMixin(),
           RowHeightMixin(),
         ),
-        // Where the byte gate refuses the features, a mark declaring
-        // `source: 'density'` draws the adapter's sidecar in the banner's place
-        // — see `densityPayloads`.
-        DensityTierMixin(),
         ScoreScaleMixin(),
         LegendMixin(),
         ContextMenuMixin<MarkDisplayContextMenuInfo>(),
@@ -308,7 +298,7 @@ export function stateModelFactory(
          * #getter
          * Opt into the byte gate: `CoreGetEncodedLayers` measures the index before
          * it downloads, so an over-budget region is refused before a feature is
-         * read, and the density tier draws in place of the refused region.
+         * read.
          */
         get gateEnabled() {
           return true
@@ -416,29 +406,13 @@ export function stateModelFactory(
         /**
          * #getter
          * The marks at the view's zoom: whether each draws, inside its
-         * `minBpPerPx`..`maxBpPerPx` range where 0 is no bound, and the first
-         * drawing mark the density sidecar stands in for, -1 where none does.
+         * `minBpPerPx`..`maxBpPerPx` range where 0 is no bound.
          */
         get markView(): MarkView {
           const { bpPerPx } = self.host
-          const { marks } = self.conf
-          const visible = this.markEntries.map(entry =>
-            markDrawsAt(entry, bpPerPx),
-          )
           return {
-            visible,
-            densityMark: marks.findIndex(
-              (m, i) =>
-                visible[i] && m.source === 'density' && readsValue(m.mark),
-            ),
+            visible: this.markEntries.map(entry => markDrawsAt(entry, bpPerPx)),
           }
-        },
-        /**
-         * #getter
-         * The mark the density sidecar stands in for, or -1.
-         */
-        get densityMarkIndex(): number {
-          return this.markView.densityMark
         },
         /**
          * #getter
@@ -598,15 +572,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether each `row` lane holds a key the row table places: under
-         * `rows`, except while the density sidecar stands in, whose bins
-         * count every row's features and draw as one band.
-         */
-        get drawsKeyedRows(): boolean {
-          return this.drawsRows && !self.coarseTierStandsIn
-        },
-        /**
-         * #getter
          * The field the worker splits the features on: the facet's, else the
          * rows'. One split serves both, so `rows` sends it as `facet`.
          */
@@ -627,54 +592,11 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `CoarseTierMixin`'s hook, narrowed: with no mark declaring the
-         * sidecar there is nothing to draw the bins as, so the tier neither
-         * reads nor stands in and the banner is the answer it always was.
-         */
-        get coarseTierMode(): CoarseTierMode {
-          return self.densityMarkIndex === -1
-            ? 'never'
-            : coarseTierModeOf(self.densityTierMode)
-        },
-        /**
-         * #getter
-         * The tier's bins as this display's own payload: the density mark's
-         * layer built from the sidecar's intervals, every other mark empty.
-         * Keyed off `coarseTier`, which moves once per read.
-         */
-        get densityPayloads(): ReadonlyMap<number, MarkRegionData> {
-          const markIndex = self.densityMarkIndex
-          const mark = self.conf.marks[markIndex]
-          const payloads = new Map<number, MarkRegionData>()
-          if (mark) {
-            const color = markConstantColor(mark)
-            for (const [index, bins] of self.coarseTier) {
-              payloads.set(
-                index,
-                densityRegionData(
-                  bins,
-                  self.conf.marks.length,
-                  markIndex,
-                  color,
-                  hitsByIndex(mark.mark),
-                ),
-              )
-            }
-          }
-          return payloads
-        },
-        /**
-         * #getter
          * The layers as they came back, keyed by displayedRegionIndex: the
-         * foundation's per-region store, or the density tier's bins where the
-         * gate refused the features and a mark declared the sidecar. One map,
-         * so the domain, the legend, the hover, the highlight and the SVG
-         * export read the tier through the paths they already had.
+         * foundation's per-region store.
          */
         get featurePayloads(): ReadonlyMap<number, MarkRegionData> {
-          return self.coarseTierStandsIn
-            ? this.densityPayloads
-            : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
+          return self.regionPayloads as ReadonlyMap<number, MarkRegionData>
         },
       }))
       .volatile(() => ({
@@ -798,7 +720,7 @@ export function stateModelFactory(
       })
       .views(self => {
         const layout = stableIdentityComputed(() => {
-          if (self.drawsKeyedRows) {
+          if (self.drawsRows) {
             return rowsLayout(self.sources, categoricalField(self.rowsField))
           }
           const { field = '', domain = [] } = self.facet ?? {}
@@ -821,7 +743,7 @@ export function stateModelFactory(
           withMarkColors,
         )
         const keyed = createEncodeMemo(
-          () => (self.drawsKeyedRows ? colored() : NO_REGIONS),
+          () => (self.drawsRows ? colored() : NO_REGIONS),
           () => self.rowKeys,
           (region, rowKeys) => keyRegion(region, rowKeys, self.rowsField),
         )
@@ -831,12 +753,12 @@ export function stateModelFactory(
           facetRegion,
         )
         const unsplit = createEncodeMemo(
-          () => (self.drawsKeyedRows || self.facet ? NO_REGIONS : colored()),
+          () => (self.drawsRows || self.facet ? NO_REGIONS : colored()),
           undefined,
           unsplitRegion,
         )
         const drawn = () =>
-          self.drawsKeyedRows ? keyed() : self.facet ? faceted() : unsplit()
+          self.drawsRows ? keyed() : self.facet ? faceted() : unsplit()
         const mateRegions = stableIdentityComputed((): MateRegion[] =>
           self.host.displayedRegions.map((r, index) => ({
             index,
@@ -902,7 +824,7 @@ export function stateModelFactory(
            * not keys.
            */
           get rowTable(): RowTable | undefined {
-            return self.drawsKeyedRows
+            return self.drawsRows
               ? markRowTable(keyNames.get(), order.get())
               : undefined
           },
@@ -1039,7 +961,7 @@ export function stateModelFactory(
          * figure; none while the rows are not drawn.
          */
         get sidebarPanel(): SvgSidebarProps | undefined {
-          return self.drawsKeyedRows
+          return self.drawsRows
             ? {
                 showTree: self.showTree,
                 hierarchy: self.hierarchy,
@@ -1093,7 +1015,7 @@ export function stateModelFactory(
           const rowHeight = self.effectiveRowHeight
           const rowsTop = self.rowsTopOffset - self.scrollTop
           const band =
-            rowCount > 1 || (self.drawsKeyedRows && self.rowHeight > 0)
+            rowCount > 1 || (self.drawsRows && self.rowHeight > 0)
               ? {
                   height: rowHeight,
                   offset: pointInset,
@@ -1515,25 +1437,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The corner notice while the sidecar stands in, naming what is drawn
-         * and how many marks are not: past the budget the banner is gone, and
-         * nothing else on screen says the bars are the sidecar's.
-         */
-        get densityStandInNotice(): string | undefined {
-          if (!self.coarseTierStandsIn) {
-            return undefined
-          }
-          const off = self.markView.visible.filter(
-            (visible, i) => visible && i !== self.densityMarkIndex,
-          ).length
-          const rest =
-            off === 0
-              ? ''
-              : `; ${off} other ${pluralize(off, 'mark')} draws nothing`
-          return `Too much data to fetch here, so the adapter's density sidecar is drawn in the features' place${rest}`
-        },
-        /**
-         * #getter
          * What the worker left out of the loaded regions — a feature whose
          * position or `y` read as missing or not a number — for the corner
          * notice, naming the field a binned position came from.
@@ -1610,12 +1513,11 @@ export function stateModelFactory(
          * The px each row is drawn in, the band every shape gets:
          * `RowHeightMixin`'s under `rows`, pinned or fit. Elsewhere the bands
          * fit the plot whatever `rowHeight` holds, since a facet's rows and
-         * the density sidecar's one band have no scroll to reach past the
-         * plot's foot.
+         * have no scroll to reach past the plot's foot.
          */
         get effectiveRowHeight(): number {
           return resolveRowHeight(
-            self.drawsKeyedRows ? self.rowHeight : 0,
+            self.drawsRows ? self.rowHeight : 0,
             self.autoRowHeight,
           )
         },
@@ -1625,9 +1527,7 @@ export function stateModelFactory(
          * plot wherever a pinned `rowHeight` asks for more than it holds.
          */
         get scrollContentHeight(): number {
-          return self.drawsKeyedRows
-            ? self.rowCount * self.effectiveRowHeight
-            : 0
+          return self.drawsRows ? self.rowCount * self.effectiveRowHeight : 0
         },
         /**
          * #getter
@@ -1722,9 +1622,7 @@ export function stateModelFactory(
         /**
          * #action
          * Open the feature widget on the read, the bin or the run a hit drew,
-         * inside its facet section, through `selectEncodedFeature`. A bin of the
-         * density sidecar opens nothing, its region holding no request — the
-         * read-back is the download the gate refused.
+         * inside its facet section, through `selectEncodedFeature`.
          */
         selectFeature(hit: MarkHitInfo) {
           const request = self.featurePayloads.get(hit.regionIndex)?.request

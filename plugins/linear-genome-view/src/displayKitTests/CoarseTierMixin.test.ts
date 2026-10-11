@@ -17,6 +17,7 @@ import { stateModelFactory as linearGenomeViewStateModelFactory } from '../Linea
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
@@ -27,9 +28,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The mixin's own tests, on the smallest display that composes it: a detail
 // fetch that stores a tag per region, and a coarse read that stores a tag per
-// region beside it. What is pinned is the mechanism the two real composers
-// share — the swap, the suspended detail fetch, the gated variant, and the two
-// tiers holding their own spans — not either display's drawing.
+// region beside it. What is pinned is the mechanism MAF's summary tier runs
+// on — the swap, the suspended detail fetch, the gate measuring the coarse
+// read, and the two tiers holding their own spans — not its drawing.
 
 const DISPLAY_NAME = 'CoarseTierTestDisplay'
 
@@ -46,7 +47,6 @@ interface Control {
   coarseCalls: CoarseTierRead[]
   coarseBytes: number | undefined
   detailBytes: number | undefined
-  gated: boolean
   threshold: number
 }
 
@@ -74,9 +74,6 @@ function makeStateModel(
       },
       get coarseAdapterSlot() {
         return 'coarseAdapter'
-      },
-      get coarseTierGated() {
-        return control.gated
       },
       get coarseTierPastThreshold() {
         const view = self.host
@@ -129,15 +126,18 @@ type TestDisplay = Instance<ReturnType<typeof makeStateModel>>
 
 function setup({
   withSource = true,
-  gated = false,
   threshold = 20_000,
-}: { withSource?: boolean; gated?: boolean; threshold?: number } = {}) {
+  displayedRegions,
+}: {
+  withSource?: boolean
+  threshold?: number
+  displayedRegions?: Region[]
+} = {}) {
   const control: Control = {
     detailCalls: [],
     coarseCalls: [],
     coarseBytes: undefined,
     detailBytes: undefined,
-    gated,
     threshold,
   }
   const env = createDisplayTestEnvironment<TestDisplay>({
@@ -155,10 +155,11 @@ function setup({
       },
     },
     assemblyEnd: 10_000_000,
+    extraAssemblyNames: ['volvox2'],
     displayConfig: {},
     rpcCall: () => [],
   })
-  const { display, view } = env.createDisplay()
+  const { display, view } = env.createDisplay({ displayedRegions })
   return { display, view, control }
 }
 
@@ -319,12 +320,12 @@ describe('each tier holds its own span', () => {
   })
 })
 
-// A gated coarse read is the gate's measurement pass while the tier is up: the
+// The coarse read is the gate's measurement pass while the tier is up: the
 // gate measures the coarse adapter, a refusal is the banner, and the detail
 // fetch has nothing to re-measure so it stands down outright.
-describe('a gated coarse tier', () => {
+describe('the gate under the tier', () => {
   it('measures the coarse adapter and commits its bytes', async () => {
-    const { display, view, control } = setup({ gated: true })
+    const { display, view, control } = setup()
     control.coarseBytes = 1000
     view.zoomTo(100)
     await settle(display)
@@ -335,20 +336,19 @@ describe('a gated coarse tier', () => {
   })
 
   it('raises the banner on a refused read and keeps the detail fetch down', async () => {
-    const { display, view, control } = setup({ gated: true })
+    const { display, view, control } = setup()
     control.coarseBytes = 1e9
     view.zoomTo(100)
     await settle(display)
     expect(display.regionTooLarge).toBe(true)
     expect(display.displayPhase).toBe('tooLarge')
-    expect(display.drawsWhenTooLarge).toBe(false)
     expect(display.fetchSuspended).toBe(true)
     expect(display.coarseTier.size).toBe(0)
     expect(control.detailCalls).toHaveLength(0)
   })
 
   it('swaps by threshold alone, so a refused detail fetch keeps the banner', async () => {
-    const { display, view, control } = setup({ gated: true })
+    const { display, view, control } = setup()
     control.detailBytes = 1e9
     view.zoomTo(1)
     await settle(display)
@@ -359,27 +359,32 @@ describe('a gated coarse tier', () => {
   })
 })
 
-describe('an ungated coarse tier', () => {
-  it('swaps on the gate refusing the detail fetch and keeps its re-measure', async () => {
-    const { display, view, control } = setup({ threshold: Infinity })
-    control.detailBytes = 1e9
+// A view showing two genomes with the track on one: the read and its covered
+// check both take this track's genome. A read over every slice threw, and a
+// check over every slice never found the other genome covered, so each commit
+// fetched again.
+describe('a track on one genome of two', () => {
+  it('reads its own genome and settles', async () => {
+    const { display, view, control } = setup({
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 },
+        { assemblyName: 'volvox2', refName: 'ctgA', start: 0, end: 50_000 },
+      ],
+    })
     view.zoomTo(100)
+    const visible: { assemblyName: string }[] = view.visibleRegions
+    expect(new Set(visible.map(r => r.assemblyName))).toEqual(
+      new Set(['volvox', 'volvox2']),
+    )
     await settle(display)
-    expect(display.regionTooLarge).toBe(true)
-    expect(display.coarseTierActive).toBe(true)
-    expect(display.fetchSuspended).toBe(false)
-    expect(display.byteGateAdapterPath).toEqual(['adapter'])
-    expect(display.drawsWhenTooLarge).toBe(true)
-    expect(display.displayPhase).toBe('ready')
     expect(control.coarseCalls).toHaveLength(1)
-  })
+    const read: CoarseTierRead = display.coarseTierRead!
+    expect(new Set(read.regions.map(r => r.region.assemblyName))).toEqual(
+      new Set(['volvox']),
+    )
 
-  it('commits no bytes off its read, so the detail measurement stays owed', async () => {
-    const { display, view, control } = setup({ threshold: Infinity })
-    control.detailBytes = 1e9
-    control.coarseBytes = 10
-    view.zoomTo(100)
     await settle(display)
-    expect(display.byteEstimate?.bytes).toBe(1e9)
+    await settle(display)
+    expect(control.coarseCalls).toHaveLength(1)
   })
 })

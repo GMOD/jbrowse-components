@@ -8,7 +8,6 @@ import { parseArgs } from 'node:util'
 
 import { printHelp, requirePositional } from '../../utils.ts'
 import { describeExit, waitForProcessClose } from '../process-utils.ts'
-import { densitySidecarPath } from '../shared/density.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
@@ -46,7 +45,7 @@ export async function run(args?: string[]) {
     out: {
       type: 'string',
       description:
-        'Where to write the bigWig. Defaults to <file>.density.bw beside the input, which is where add-track looks for it',
+        'Where to write the bigWig. Defaults to <file>.density.bw beside the input',
     },
   } as const
   const { values: flags, positionals } = parseArgs({
@@ -56,21 +55,19 @@ export async function run(args?: string[]) {
   })
 
   const description =
-    'Counts feature starts per bin into a bigWig, the density sidecar a track draws where the region is too large to fetch its features'
+    'Counts feature starts per bin into a bigWig, which add-track turns into a quantitative track of where the features are'
 
   const notes =
-    "The sidecar is attached to a track through its adapter's densityAdapter " +
-    'slot, which BamAdapter, CramAdapter, HtsgetBamAdapter, Gff3TabixAdapter, ' +
-    'GtfTabixAdapter, BedTabixAdapter, BigBedAdapter, VcfTabixAdapter and ' +
-    'SplitVcfTabixAdapter declare. add-track attaches it on its own when the ' +
-    'default <file>.density.bw sits beside the track file, so building it before ' +
-    'adding the track is all it takes; --density attaches one by path or URL.\n\n' +
     'GFF3 counts only top-level features — a line whose attributes have no ' +
-    'Parent= — so a gene is one count rather than one per exon. GTF, BED and VCF ' +
+    'Parent= — so a gene is one count rather than one per exon. GTF counts its ' +
+    'transcript rows where it has any, and every row otherwise. BED and VCF ' +
     'have no parent link to follow, so every record counts.\n\n' +
+    'Every base is covered, empty bins as zero, so the zoomed-out summaries a ' +
+    'bigWig keeps average over real counts rather than only the bins that hold ' +
+    'something.\n\n' +
     'BAM and CRAM are out of scope: read depth is not feature density, and the ' +
-    'tools that compute it already write bigWig. Point add-track --density at ' +
-    'what they produce.\n\n' +
+    'tools that compute it (bamCoverage, mosdepth) already write it as a ' +
+    'bigWig or bedGraph.\n\n' +
     'Requires bedGraphToBigWig (UCSC) on the PATH.'
 
   const examples = [
@@ -111,7 +108,9 @@ export async function run(args?: string[]) {
   validateRequiredCommands(['bedGraphToBigWig'])
 
   const outputFile =
-    flags.out === undefined ? densitySidecarPath(file) : flags.out
+    flags.out === undefined
+      ? `${file.replace(/\.b?gz$/i, '')}.density.bw`
+      : flags.out
 
   const { bins, records, unknownRefNames } = await countFeatureStarts({
     file,
@@ -163,19 +162,7 @@ export async function run(args?: string[]) {
     rmSync(tmpDir, { recursive: true, force: true })
   }
 
-  // The slot lives on the indexed adapters, so a plain text file has to be
-  // bgzipped and tabix-indexed before the track can carry the sidecar
-  const indexed = /\.b?gz$/i.test(file)
-  const preset = format === 'bed' ? 'bed' : format === 'vcf' ? 'vcf' : 'gff'
-  const trackFile = indexed ? file : `${file}.gz`
-  const indexFirst = indexed
-    ? ''
-    : `  bgzip ${file} && tabix -p ${preset} ${trackFile}\n`
-  const nextCommand =
-    outputFile === densitySidecarPath(file)
-      ? `Next, add the track it summarizes — a sidecar under this name is picked up automatically:\n${indexFirst}  jbrowse add-track ${trackFile} --load copy`
-      : `Next, add the track it summarizes, naming this sidecar:\n${indexFirst}  jbrowse add-track ${trackFile} --load copy --density ${outputFile}`
   console.log(
-    `Created ${outputFile}: ${records} feature start(s) in ${binCount} non-empty ${binSize}bp bin(s)\n\n${nextCommand}`,
+    `Created ${outputFile}: ${records} feature start(s) in ${binCount} non-empty ${binSize}bp bin(s)\n\nNext, add it as a track of its own:\n  jbrowse add-track ${outputFile} --load copy`,
   )
 }

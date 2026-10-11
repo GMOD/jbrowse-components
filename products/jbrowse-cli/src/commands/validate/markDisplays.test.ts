@@ -531,20 +531,6 @@ describe('a marks list in a config file', () => {
     ).toEqual([`error empty-zoom-range ${DISPLAY}.marks[0].minBpPerPx`])
   })
 
-  it('warns on a density source a span or a second mark leaves unread', () => {
-    const density = {
-      mark: 'bar',
-      source: 'density',
-      encoding: { y: 'count' },
-    }
-    expect(found([density, density])).toEqual([
-      `warning second-density-mark ${DISPLAY}.marks[1].source`,
-    ])
-    expect(found([{ mark: 'span', source: 'density' }])).toEqual([
-      `warning span-density-source ${DISPLAY}.marks[0].source`,
-    ])
-  })
-
   it('leaves a list whose keys or types are wrong to the schema', () => {
     const problems = problemsOf(
       configOf([

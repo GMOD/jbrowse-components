@@ -62,7 +62,7 @@ COMMANDS
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
-  make-density         Counts feature starts per bin into a bigWig density sidecar, with bedGraphToBigWig
+  make-density         Counts feature starts per bin into a bigWig, with bedGraphToBigWig
   sort-gff             Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top
   sort-bed             Sort a BED for tabix: sort -k1,1 -k2,2n, header kept on top
   add-connection       Add a connection to a JBrowse 2 configuration
@@ -311,11 +311,6 @@ Options:
 
       --bed2                 Used only for mcscan anchors/simpleAnchors types
 
-      --density              Path or URL of a features-per-bin bigWig (jbrowse
-                             make-density) to attach as the adapter's
-                             densityAdapter. A local <file>.density.bw beside
-                             the track file is attached without this flag
-
 Notes:
 
 --load controls how the data file is placed relative to config.json: copy, move,
@@ -342,14 +337,6 @@ the positional track argument: pass a comma-separated list of BigWig files/URLs,
 or a .json file with an array of BigWig locations or subadapter objects (each
 with its own name/color/group). With --load, local list entries are copied like
 any other track file.
-
---density attaches a features-per-bin bigWig (jbrowse make-density) as the
-adapter's densityAdapter, the band a display draws where the region is too large
-to fetch features. A local <file>.density.bw beside the track file is attached
-without the flag; a URL cannot be probed, so a remote sidecar needs it. The
-adapters with the slot are BamAdapter, CramAdapter, HtsgetBamAdapter,
-Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, BigBedAdapter,
-VcfTabixAdapter and SplitVcfTabixAdapter.
 
 For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target
 — the reverse of the minimap2/nucmer input order. For the multi-genome PAF
@@ -384,9 +371,6 @@ $ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"
 
 # ...or from a sources.json with per-row name/color for each BigWig
 $ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
-
-# attach a remote density sidecar (a local genes.gff3.density.bw needs no flag)
-$ jbrowse add-track https://mywebsite.com/genes.gff3.gz --density https://mywebsite.com/genes.gff3.density.bw
 ```
 
 ## jbrowse validate
@@ -721,8 +705,8 @@ $ jbrowse make-pif input.paf --threads 8
 ## jbrowse make-density
 
 ```text
-Counts feature starts per bin into a bigWig, the density sidecar a track draws
-where the region is too large to fetch its features
+Counts feature starts per bin into a bigWig, which add-track turns into a
+quantitative track of where the features are
 
 Usage: jbrowse make-density <file> [options]
 
@@ -739,25 +723,21 @@ Options:
                              --chrom-sizes
 
       --out                  Where to write the bigWig. Defaults to
-                             <file>.density.bw beside the input, which is where
-                             add-track looks for it
+                             <file>.density.bw beside the input
 
 Notes:
 
-The sidecar is attached to a track through its adapter's densityAdapter slot,
-which BamAdapter, CramAdapter, HtsgetBamAdapter, Gff3TabixAdapter,
-GtfTabixAdapter, BedTabixAdapter, BigBedAdapter, VcfTabixAdapter and
-SplitVcfTabixAdapter declare. add-track attaches it on its own when the default
-<file>.density.bw sits beside the track file, so building it before adding the
-track is all it takes; --density attaches one by path or URL.
-
 GFF3 counts only top-level features — a line whose attributes have no Parent= —
-so a gene is one count rather than one per exon. GTF, BED and VCF have no parent
-link to follow, so every record counts.
+so a gene is one count rather than one per exon. GTF counts its transcript rows
+where it has any, and every row otherwise. BED and VCF have no parent link to
+follow, so every record counts.
+
+Every base is covered, empty bins as zero, so the zoomed-out summaries a bigWig
+keeps average over real counts rather than only the bins that hold something.
 
 BAM and CRAM are out of scope: read depth is not feature density, and the tools
-that compute it already write bigWig. Point add-track --density at what they
-produce.
+that compute it (bamCoverage, mosdepth) already write it as a bigWig or
+bedGraph.
 
 Requires bedGraphToBigWig (UCSC) on the PATH.
 

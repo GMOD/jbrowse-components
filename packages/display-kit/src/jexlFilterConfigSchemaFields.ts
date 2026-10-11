@@ -2,7 +2,7 @@ import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 
 /**
  * The `filter` slot, spread into a schema the way
- * `densityTierConfigSchemaFields` is. Three schemas take it — the canvas base
+ * `regionTooLargeConfigSchemaFields` is. Three schemas take it — the canvas base
  * display (and so `LinearVariantDisplay`), the mark display, and the shared
  * multi-sample variant schema — because those are the displays whose models
  * read it, through `configuredJexlFilters`. It sat on

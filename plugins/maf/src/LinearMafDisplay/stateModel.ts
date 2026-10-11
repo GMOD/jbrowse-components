@@ -927,16 +927,6 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The summary read is a whole-feature download (`BigBedAdapter`) over
-         * every zoom from 20kb to the whole genome, so the byte gate measures
-         * it against its own file — the alignment's cost would block the cheap
-         * tier on the expensive one's number.
-         */
-        get coarseTierGated() {
-          return true
-        },
-        /**
-         * #getter
          * Swap where the view is zoomed out past the force-load floor — the
          * gate's own comparison (`RegionTooLargeMixin`), read rather than
          * restated so the swap and the gate agree about where the floor is.
@@ -2687,7 +2677,7 @@ export default function stateModelFactory(
          *
          * On for **both** tiers: each RPC measures the file it actually reads —
          * the alignment index on the detail path, the `summaryAdapter`
-         * sub-adapter on the summary one (`coarseTierGated`). The summary tier
+         * sub-adapter on the summary one (`CoarseTierMixin`). The summary tier
          * used to be exempt on the grounds that it is the cheap one. It is cheap
          * *per base* — no sequence — but it is still a whole-feature download
          * (`BigBedAdapter.getFeatures`) over every zoom from 20kb to the whole

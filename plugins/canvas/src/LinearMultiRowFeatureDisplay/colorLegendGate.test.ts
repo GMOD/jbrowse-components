@@ -1,11 +1,9 @@
-import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 function menuLabels(display: { trackMenuItems: () => MenuItem[] }): string[] {
@@ -23,14 +21,6 @@ const IDENTITY = {
     domain: ['red', 'blue'],
     labels: ['EUR', 'AFR'],
   },
-}
-
-const DENSITY_ADAPTER = { type: 'BigWigAdapter', uri: 'segments.bw' }
-
-const BINS: FeatureDensity = {
-  starts: new Uint32Array([0, 100_000]),
-  ends: new Uint32Array([100_000, 200_000]),
-  scores: new Float32Array([40, 90]),
 }
 
 function painted(): MultiRowRegionData {
@@ -132,26 +122,6 @@ describe('the color key waits for a painting to key', () => {
     display.toggleCategory(display.colorLegend[0]!.values)
 
     expect([...display.hiddenColors]).toEqual([cssColorToABGR('red')])
-  })
-
-  it('drops it again while the density band stands in for the features', () => {
-    const { display, view } = createTestEnvironment({
-      densityAdapter: DENSITY_ADAPTER,
-      displayConfig: IDENTITY,
-    }).createDisplay()
-    view.zoomTo(100)
-    display.setRpcData(0, painted(), ctgA)
-    expect(display.colorLegend).toHaveLength(2)
-
-    setConf(display, 'densityTier', 'density')
-    display.setCoarseTier([{ displayedRegionIndex: 0, payload: BINS }], {
-      regions: [],
-      key: 'k',
-    })
-
-    expect(display.coarseTierStandsIn).toBe(true)
-    expect(display.colorLegend).toHaveLength(0)
-    expect(display.legendSpec.sections).toHaveLength(0)
   })
 
   // The data gates the draw, never the toggle: a track waiting on its first

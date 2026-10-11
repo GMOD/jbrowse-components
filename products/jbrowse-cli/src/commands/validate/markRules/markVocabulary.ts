@@ -40,10 +40,6 @@ export const MAX_THRESHOLD_CUTS = 8
 export const SIZE_SCALES = ['linear', 'log'] as const
 export type SizeScaleName = (typeof SIZE_SCALES)[number]
 
-export const MARK_SOURCES = ['features', 'density'] as const
-export type MarkSourceName = (typeof MARK_SOURCES)[number]
-export const DEFAULT_MARK_SOURCE: MarkSourceName = 'features'
-
 export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_BIN_AS = ['start', 'end'] as const

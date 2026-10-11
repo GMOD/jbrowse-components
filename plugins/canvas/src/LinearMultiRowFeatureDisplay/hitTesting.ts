@@ -77,7 +77,7 @@ export interface MultiRowHitTestSlice {
   rowProportion: number
   renderBlocks: RenderBlock[]
   renderState: MultiRowRenderState
-  drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
+  rpcDataMap: ReadonlyMap<number, MultiRowRegionData>
   uploadedChannels: ReadonlyMap<number, MultiRowUploadData>
   view: HitTestView
 }
@@ -185,7 +185,7 @@ function featureAtBase(
   mouseX: number,
   mouseY: number,
 ): MultiRowHit | undefined {
-  const region = self.drawnRegionData.get(p.index)
+  const region = self.rpcDataMap.get(p.index)
   const channels = self.uploadedChannels.get(p.index)
   const block = self.renderBlocks.find(b => b.displayedRegionIndex === p.index)
   if (!region || !channels || !block) {
@@ -280,11 +280,11 @@ export function contextTargetAtPixel(
 export function hitInstance(
   self: Pick<
     MultiRowHitTestSlice,
-    'rowIndexByValue' | 'rowKeys' | 'drawnRegionData' | 'uploadedChannels'
+    'rowIndexByValue' | 'rowKeys' | 'rpcDataMap' | 'uploadedChannels'
   >,
   hit: MultiRowHit | undefined,
 ): MarkInstance | undefined {
-  const region = hit && self.drawnRegionData.get(hit.regionIndex)
+  const region = hit && self.rpcDataMap.get(hit.regionIndex)
   const channels = hit && self.uploadedChannels.get(hit.regionIndex)
   if (!region || !channels || !self.rowIndexByValue.has(hit.rowName)) {
     return undefined

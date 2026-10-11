@@ -42,7 +42,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1357)
+# model members with no description (1351)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -344,12 +344,6 @@ ConnectionManagementSessionMixin.makeConnection
 ContextMenuMixin.closeContextMenu
 ContextMenuMixin.contextMenuInfo
 ContextMenuMixin.openContextMenu
-DensityBandMixin.densityBandLayer
-DensityBandMixin.densityHover
-DensityTierMixin.coarseAdapterSlot
-DensityTierMixin.coarseTierMode
-DensityTierMixin.densityTierThresholdBpPerPx
-DensityTierMixin.fetchCoarseTier
 DiagonalizeProgressMixin.setAwaitingAutoDiagonalize
 DiagonalizeProgressMixin.setDiagonalizeCancel
 DiagonalizeProgressMixin.setDiagonalizeError

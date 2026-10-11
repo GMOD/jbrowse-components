@@ -198,12 +198,6 @@ test('a channel the mark does not read waits unread', () => {
   ).toEqual(['warning unread-channel mark 0 encoding.shape'])
 })
 
-test('a text mark cannot draw the density sidecar', () => {
-  expect(
-    found([{ mark: 'text', source: 'density', encoding: { y: 'score' } }]),
-  ).toEqual(['warning span-density-source mark 0 source'])
-})
-
 test('a size on a mark that draws no shape waits unread, and a point or a rule reads a number alone', () => {
   expect(found([{ mark: 'span', encoding: { size: 8 } }])).toEqual([
     'warning unread-size mark 0 encoding.size',
@@ -885,19 +879,6 @@ test('a zoom range that admits no zoom never draws', () => {
   ])
 })
 
-test('a density source on a span, or on a second mark, waits unread', () => {
-  const density = { mark: 'bar', source: 'density', encoding: { y: 'count' } }
-  expect(found([density, density])).toEqual([
-    'warning second-density-mark mark 1 source',
-  ])
-  expect(found([{ mark: 'span', source: 'density' }])).toEqual([
-    'warning span-density-source mark 0 source',
-  ])
-  expect(found([{ mark: 'span', source: 'density' }, density])).toEqual([
-    'warning span-density-source mark 0 source',
-  ])
-})
-
 test('rows beside a facet on another field is named as not drawn yet', () => {
   const BAR = { mark: 'bar', encoding: { y: 'score' } }
   expect(found([BAR], undefined, undefined, 'source')).toEqual([])
@@ -964,7 +945,6 @@ test('a slot written at its default reads as unwritten, as the display sees it',
   const written = {
     mark: 'span',
     linkShape: 'dome',
-    source: 'features',
     encoding: {
       y: '',
       x: 'start',

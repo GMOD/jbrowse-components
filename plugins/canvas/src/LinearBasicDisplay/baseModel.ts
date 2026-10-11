@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   getDialogHost,
   getPaletteHost,
@@ -32,7 +31,6 @@ import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
-import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
@@ -54,7 +52,6 @@ import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
-import DensityBandMixin from '../shared/DensityBandMixin.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
 import {
   featureSpanRegion,
@@ -225,8 +222,6 @@ export default function baseStateModelFactory(
       LegendMixin(),
       ColorWritesMixin(),
       CanvasFeatureGateMixin(),
-      // After both gate mixins, since it keys off their verdict.
-      DensityBandMixin(),
       ContextMenuMixin<FeatureContextMenuInfo>(),
       HiddenGroupsMixin(),
       types.model({
@@ -395,12 +390,11 @@ export default function baseStateModelFactory(
       /**
        * #getter
        * Whether features can be laid out: data is fetched, in-bounds, the
-       * view is measured, and the density band is not standing in.
+       * view is measured.
        */
       get layoutReady() {
         return (
           !self.regionTooLarge &&
-          !self.coarseTierStandsIn &&
           containingLgv(self).initialized &&
           self.rpcDataMap.size > 0
         )
@@ -1596,10 +1590,9 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * Overridable hook: the key while features draw, by default the one the
-       * color channel's scale derives.
+       * `LegendMixin`'s hook: the key the color channel's scale derives.
        */
-      get featureColorScales(): ColorScale[] {
+      get colorScales(): ColorScale[] {
         return this.derivedColorScales
       },
     }))
@@ -1622,24 +1615,6 @@ export default function baseStateModelFactory(
         },
       }
     })
-    .views(self => ({
-      /**
-       * #getter
-       * `LegendMixin`'s hook: `featureColorScales`, or nothing while the
-       * density band stands in, since the band paints no feature color.
-       */
-      get colorScales(): ColorScale[] {
-        return self.coarseTierStandsIn ? [] : self.featureColorScales
-      },
-      /**
-       * #getter
-       * Overrides `LegendMixin`'s: the band standing in keeps the "Show
-       * legend" toggle, since the key returns on zooming in.
-       */
-      get hasLegendKey(): boolean {
-        return self.featureColorScales.some(scale => !colorScaleIsEmpty(scale))
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -1822,7 +1797,7 @@ export default function baseStateModelFactory(
        * #method
        */
       trackMenuItems(): MenuItem[] {
-        return [...canvasTrackMenuItems(self), ...densityTierMenuItems(self)]
+        return canvasTrackMenuItems(self)
       },
     }))
 }

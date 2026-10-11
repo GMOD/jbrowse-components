@@ -46,8 +46,8 @@ export function computeLaidOutData(
   return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
 }
 
-// The density band flattens every record onto row 0 to share pixels, and a
-// section split there would stack two bands nobody reserved.
+// A flattened layout puts every record on row 0 to share pixels, and a section
+// split there would stack two bands nobody reserved.
 function effectiveFacet(
   inputs: Pick<LayoutInputs, 'facet' | 'flattenRows'>,
 ): FeatureFacet | undefined {

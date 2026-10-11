@@ -187,7 +187,6 @@ function oneRegion(data: PileupDataResult): AlignmentsSources {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 
@@ -266,7 +265,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           connectorFeeds: new Map(),
         },
       ],
-      densityRegions: new Map(),
     })
 
     // The normalized depths should be identical
@@ -306,7 +304,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           connectorFeeds: new Map(),
         },
       ],
-      densityRegions: new Map(),
     })
 
     // Both should have same yOffset, height, colorType per segment
@@ -340,7 +337,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           connectorFeeds: new Map(),
         },
       ],
-      densityRegions: new Map(),
     })
 
     const covH = 100
@@ -491,7 +487,6 @@ describe('GPU sync rebuild transaction', () => {
 
     gpu.upload('sources', {
       sections: [],
-      densityRegions: new Map(),
     })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
@@ -587,7 +582,6 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     // must forget it.
     gpu.upload('sources', {
       sections: [],
-      densityRegions: new Map(),
     })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 

@@ -79,8 +79,8 @@ export interface RegionFetchInputs {
   gateSkipsMeasuredViewport: boolean
   /**
    * `MultiRegionDisplayMixin.fetchSuspended`: the display is drawing something
-   * in the features' place and does not want them fetched, the density band
-   * under a forced mode or a bp/px threshold. Tracked in the autorun, so the
+   * in the features' place and does not want them fetched, MAF's summary tier
+   * past its threshold. Tracked in the autorun, so the
    * flip back to false is what re-fires the fetch — an override declining inside
    * `fetchNeeded` runs untracked and would leave the display empty until the
    * next pan.
@@ -126,7 +126,7 @@ export interface RegionFetchInputs {
 export type RegionFetchIdleReason =
   /** a fetch failed or was canceled; only a viewport change clears it */
   | 'blocked'
-  /** the display is drawing a stand-in (the density band) and asked for no fetch */
+  /** the display is drawing a stand-in (a coarse tier) and asked for no fetch */
   | 'suspended'
   /** the gate says too large, and it measured that at this very viewport */
   | 'measured'

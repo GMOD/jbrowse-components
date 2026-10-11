@@ -90,7 +90,7 @@ export interface MarkRegionData {
   /**
    * The request the layers came back under, which `CoreGetEncodedFeature`
    * takes again to name the feature behind an instance. Absent on a payload no
-   * worker fetch produced, the density sidecar's.
+   * worker fetch produced.
    */
   request?: Omit<CoreGetEncodedLayersArgs, 'byteLimit'>
   /** The sections a facet stacked the layers' rows into. */

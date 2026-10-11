@@ -32,7 +32,6 @@ export interface SvgDisplayResult {
     displays: ({
       height: number
       regionTooLarge?: boolean
-      drawsWhenTooLarge?: boolean
     } & SidebarDisplay)[]
   }
   result: ReactNode

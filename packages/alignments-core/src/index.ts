@@ -162,12 +162,6 @@ export {
 } from './coverageBandTooltip.ts'
 export type { CoverageRow, CoverageRowsBin } from './coverageBandTooltip.ts'
 export {
-  densityBinSize,
-  densityToUniformBins,
-  packDensityRegion,
-} from './densityBins.ts'
-export type { PackedDensityRegion, UniformDensityBins } from './densityBins.ts'
-export {
   computeInterbaseCoverage,
   emptyInterbaseCoverage,
 } from './interbaseCoverage.ts'

@@ -66,8 +66,8 @@ merged array the worker ships rather than pre-sliced views of it.
 painters, hit test (`hitCoverageBand`, `coverageBinAt`) and tooltip tables,
 shared with MAF and declared once in
 `LinearAlignmentsDisplay/renderers/coverageMarks.ts`. What stays here is the
-plugin's own: `coverage/` (the density tier's band), `modCoverage/` (the
-modification stacks) and `indicator/` (the hit type).
+plugin's own: `coverage/` (the hit type and a depth-scale parity test),
+`modCoverage/` (the modification stacks) and `indicator/` (the hit type).
 
 `sashimi/` is a band of its own, as `arcs/` is: its compute stages and
 `bandFeed.ts`, which hands render-core's link mark the junctions as channels

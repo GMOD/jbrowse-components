@@ -355,17 +355,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "useSliceWorkerPool": {
           "description": "decode CRAM slices on a pool of workers rather than in the thread that asked.",
           "default": true,
@@ -505,17 +494,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "uri": {
           "type": "string",
           "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
@@ -649,17 +627,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "sequenceAdapter": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -731,17 +698,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
-          }
-        },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
           }
         },
         "uri": {
@@ -1103,17 +1059,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
-          }
-        },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
           }
         },
         "uri": {
@@ -1663,17 +1608,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "uri": {
           "type": "string",
           "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
@@ -1748,17 +1682,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "array",
             "items": {
               "type": "string"
-            }
-          }
-        },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
             }
           }
         },
@@ -2669,17 +2592,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "uri": {
           "type": "string",
           "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
@@ -2770,17 +2682,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
-          }
-        },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
           }
         }
       }
@@ -4730,17 +4631,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "densityAdapter": {
-          "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
         "scoreTransform": {
           "description": "transform applied to the score column.",
           "default": "none",
@@ -5148,30 +5038,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
           "default": 800,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
           "if": {
             "type": "null"
           },
@@ -5949,30 +5815,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "showLegend": {
@@ -6908,30 +6750,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
           "default": 800,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
           "if": {
             "type": "null"
           },
@@ -8145,30 +7963,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
           "default": 800,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
           "if": {
             "type": "null"
           },
@@ -10381,19 +10175,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
-        "source": {
-          "description": "features, or density past the fetch budget.",
-          "default": "features",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "features",
-              "density"
-            ]
-          }
-        },
         "minBpPerPx": {
           "description": "draw only at or above this bp/px.",
           "default": 0,
@@ -10865,30 +10646,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
           "default": 800,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
           "if": {
             "type": "null"
           },
@@ -13728,30 +13485,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "marks": {
           "if": {
             "type": "null"
@@ -13972,30 +13705,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
-          }
-        },
-        "densityTier": {
-          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "features",
-              "density"
-            ]
-          }
-        },
-        "densityTierBpPerPx": {
-          "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "marks": {
@@ -14716,38 +14425,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "growMaxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/growMaxHeight"
             },
-            "densityTier": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-                }
-              ]
-            },
-            "densityTierBpPerPx": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-                }
-              ]
-            },
             "filter": {
               "anyOf": [
                 {
@@ -15428,26 +15105,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "growMaxHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/growMaxHeight"
-            },
-            "densityTier": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-                }
-              ]
-            },
-            "densityTierBpPerPx": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-                }
-              ]
             },
             "readConnectionsLineWidth": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsLineWidth"
@@ -16159,26 +15816,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "growMaxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/growMaxHeight"
-            },
-            "densityTier": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-                }
-              ]
-            },
-            "densityTierBpPerPx": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-                }
-              ]
             },
             "filter": {
               "anyOf": [
@@ -17121,12 +16758,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
             },
-            "densityTier": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-            },
-            "densityTierBpPerPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -17537,12 +17168,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
-            },
-            "densityTier": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-            },
-            "densityTierBpPerPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -18216,12 +17841,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "densityTier": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-            },
-            "densityTierBpPerPx": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -18703,26 +18322,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "growMaxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
-            },
-            "densityTier": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTier"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
-                }
-              ]
-            },
-            "densityTierBpPerPx": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/densityTierBpPerPx"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTierBpPerPx"
-                }
-              ]
             },
             "readConnectionsLineWidth": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
@@ -19268,12 +18867,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/forceLoad"
-            },
-            "densityTier": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTier"
-            },
-            "densityTierBpPerPx": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/densityTierBpPerPx"
             },
             "marks": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/marks"

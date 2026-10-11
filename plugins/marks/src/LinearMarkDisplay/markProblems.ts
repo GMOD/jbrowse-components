@@ -39,7 +39,6 @@ import type {
   AggregateOpName,
   LineInterpolation,
   LinkShape,
-  MarkSourceName,
   MarkType,
 } from './markVocabulary.ts'
 
@@ -68,8 +67,6 @@ export const MARK_RULES = {
   'unread-interpolate': 'warning',
   /** A `rowProportion` on a mark that draws no span. */
   'unread-row-proportion': 'warning',
-  /** `source: "density"` on a `span`, a `text` or a `link`, which cannot draw the sidecar's bins. */
-  'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
   /** A threshold color naming no cut, so every value paints one color. */
@@ -118,8 +115,6 @@ export const MARK_RULES = {
   'two-packings': 'warning',
   /** A `pileup` in the display's `transform` under a `facet`, packing across every section. */
   'cross-section-packing': 'warning',
-  /** A second mark standing in for the density sidecar at a zoom where one already does. */
-  'second-density-mark': 'warning',
   /** `rows` beside a `facet` on another field, where the facet draws alone. */
   'rows-beside-facet': 'warning',
   /** A `pileup` or a `row` field under `rows`, whose packed rows share their value's one row. */
@@ -207,7 +202,6 @@ export type MarkSnapshot = {
   linkShape?: LinkShape
   interpolate?: LineInterpolation
   rowProportion?: number
-  source?: MarkSourceName
   minBpPerPx?: number
   maxBpPerPx?: number
   encoding?: {
@@ -368,10 +362,6 @@ function shapeLabelProblems(shape: unknown): OwnProblem[] {
         ),
       ]
     : []
-}
-
-function drawsDensity(mark: MarkSnapshot) {
-  return mark.source === 'density' && readsValue(markTypeOf(mark))
 }
 
 function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
@@ -766,15 +756,6 @@ function ownProblems(
       ),
     )
   }
-  if (!readsValue(type) && mark.source === 'density') {
-    problems.push(
-      found(
-        'span-density-source',
-        'source',
-        `a ${type} does not draw the density sidecar`,
-      ),
-    )
-  }
   const color = mark.encoding?.color ?? {}
   for (const { rule, slot, message } of colorProblems(
     color,
@@ -975,16 +956,6 @@ export function markProblems({
             'two-packings',
             'transform',
             `packs rows of its own, as mark ${j} does, and the two share row numbers; one pileup in the ${faceted ? "facet's transform packs them together per section" : "display's transform packs them together"}`,
-          ),
-        })
-      }
-      if (i > j && drawsDensity(mark) && drawsDensity(other)) {
-        problems.push({
-          mark: i,
-          ...found(
-            'second-density-mark',
-            'source',
-            `mark ${j} already stands in for the density sidecar here`,
           ),
         })
       }

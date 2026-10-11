@@ -221,10 +221,8 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * Overridable hook (default false), read by the fetch plan: the display
          * is drawing something in the features' place and wants no fetch while
-         * it does. `DensityTierMixin` says it while the band is up and the gate
-         * is not blocking, so a track forced to `density` never downloads the
-         * features it will not draw, while a refused viewport keeps its
-         * measurement pass and the gate can still release.
+         * it does. `CoarseTierMixin` says it while its tier stands in, so MAF
+         * never downloads the alignments its summary replaces.
          *
          * Not `fetchInert`: that one suppresses the scrim and ends the export
          * wait, and a display saying this still has its stand-in to load. On

@@ -91,7 +91,6 @@ function sources(
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 

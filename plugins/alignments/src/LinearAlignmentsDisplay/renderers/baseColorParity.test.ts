@@ -63,7 +63,6 @@ function gpuBaseSlots(showModifications: boolean) {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
   renderer.upload('sources', sources)
   renderer.renderBlocks(

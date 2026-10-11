@@ -263,9 +263,9 @@ export interface HeldColor {
 // Colors a layer the worker read for an earlier `color` declaration from
 // what it holds, and flags it `heldColor`: keys in their field's default
 // colors, numbers through a linear ramp over themselves, and the default
-// color where it holds no color data. Packed colors, an expression's or
-// the density tier's single one, stay as they came and unflagged: they carry
-// no table for the key or the scale to take.
+// color where it holds no color data. An expression's packed colors stay as
+// they came and unflagged: they carry no table for the key or the scale to
+// take.
 function colorAsHeld<L extends EncodedChannels>(layer: L): L {
   const read = layer.scale
   if (layer.colorKey) {

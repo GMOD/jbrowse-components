@@ -941,12 +941,10 @@
         "BaseFeatureDataAdapter",
         "BaseSequenceAdapter",
         "cachedSetup",
-        "densityAdapterConfigSchemaFields",
         "isFeatureAdapter",
         "isRefNameAliasAdapter",
         "isRegionsAdapter",
         "isSequenceAdapter",
-        "isSubAdapterConfig",
         "isTextSearchAdapter"
       ],
       "worker": "real"
@@ -4046,8 +4044,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "coarseTierCovers",
-        "resolveCoarseTier",
-        "resolveFetchSuspended"
+        "isSubAdapterConfig"
       ],
       "worker": "real"
     },
@@ -4160,37 +4157,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "ContextMenuMixin"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/densityTier": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "DENSITY_TIER_MODES",
-        "coarseTierModeOf",
-        "densityZoomBucket",
-        "isDensityTierMode"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/densityTierConfigSchemaFields": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "densityTierConfigSchemaFields"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/densityTierMenu": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "densityTierMenuItems"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/DensityTierMixin": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "default"
       ],
       "worker": "real"
     },
@@ -4626,7 +4592,6 @@
         "SvgLegend",
         "SvgPinnedHighlight",
         "SvgYAxis",
-        "exportsTooLargeNote",
         "renderDisplaySvg"
       ],
       "worker": "stub",

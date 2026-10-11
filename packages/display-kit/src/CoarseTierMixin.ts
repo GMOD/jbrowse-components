@@ -1,5 +1,4 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { isSubAdapterConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
@@ -7,11 +6,7 @@ import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
-import {
-  coarseTierCovers,
-  resolveCoarseTier,
-  resolveFetchSuspended,
-} from './coarseTier.ts'
+import { coarseTierCovers, isSubAdapterConfig } from './coarseTier.ts'
 import {
   coarseTierDisplayPhase,
   coarseTierSvgReady,
@@ -23,7 +18,6 @@ import { measurementOf, openGateCommit } from './gateCommit.ts'
 import type { ByteGateAdapterPath } from './RegionTooLargeMixin.ts'
 import type {
   CoarseTierEntry,
-  CoarseTierMode,
   CoarseTierRead,
   CoarseTierResult,
 } from './coarseTier.ts'
@@ -45,10 +39,7 @@ export interface CoarseTierHost
     Omit<FetchSkeletonHost, 'fetchCanceled'>,
     Omit<
       CoarseTierPhaseHost,
-      | 'coarseTierRead'
-      | 'coarseTierLoading'
-      | 'coarseTierStandsIn'
-      | 'gateMeasuresCoarse'
+      'coarseTierRead' | 'coarseTierLoading' | 'coarseTierStandsIn'
     >,
     GateCommitHost {
   setError: (error?: unknown) => void
@@ -69,11 +60,12 @@ function view(self: object) {
 }
 
 /**
- * The zoomed-out tier a display draws in place of its detail: the density
- * band's bins, MAF's summary bars. The verdict stays exactly what
- * `RegionTooLargeMixin` derives, and this mixin adds the swap decision, the
+ * The zoomed-out tier a display draws in place of its detail past its own
+ * threshold: MAF's summary bars. This mixin adds the swap decision, the
  * per-region payloads and the read that fills them, through the shared fetch
  * skeleton on its own rotation so the detail fetch's cancel never reaches it.
+ * While the tier is up the byte gate measures the coarse read, so its refusal
+ * is the banner and the detail fetch stands down.
  *
  * The payloads live beside the foundation's per-region store, never in it,
  * and the read records its own span: the two tiers fetch different widths of
@@ -84,9 +76,8 @@ function view(self: object) {
  * back in draws what it held.
  *
  * A display states its tier through the hooks below: the adapter slot the
- * source sits on, the mode, its own threshold, whether the byte gate measures
- * the coarse read, what its read depends on beyond the span, and the read
- * itself. Composed after `MultiRegionDisplayMixin`, so its `displayPhase` and
+ * source sits on, its own threshold, what its read depends on beyond the
+ * span, and the read itself. Composed after `MultiRegionDisplayMixin`, so its `displayPhase` and
  * `svgReady` are the ones `types.compose` keeps.
  *
  * #stateModel CoarseTierMixin
@@ -118,7 +109,7 @@ export default function CoarseTierMixin<P extends object>() {
       /**
        * #getter
        * Overridable hook (default none): the slot on the track's adapter the
-       * coarse source sits in — `densityAdapter`, `summaryAdapter`. With no
+       * coarse source sits in — `summaryAdapter` on MAF. With no
        * slot there is no source and the tier never stands in.
        */
       get coarseAdapterSlot(): string | undefined {
@@ -126,32 +117,10 @@ export default function CoarseTierMixin<P extends object>() {
       },
       /**
        * #getter
-       * Overridable hook (default `auto`): the user's override, where the
-       * display offers one.
-       */
-      get coarseTierMode(): CoarseTierMode {
-        return 'auto'
-      },
-      /**
-       * #getter
        * Overridable hook (default false): the display's own line past which
-       * `auto` swaps before the gate refuses anything — a bp/px slot, a span
-       * floor.
+       * the tier stands in — a bp/px slot, a span floor.
        */
       get coarseTierPastThreshold(): boolean {
-        return false
-      },
-      /**
-       * #getter
-       * Overridable hook (default false): the coarse read is a feature
-       * download the byte gate has to measure. The gate then measures the
-       * coarse adapter while the tier is up, its refusal is the banner, the
-       * detail fetch stands down outright since the coarse read is the
-       * measurement pass, and the swap is by threshold alone — the verdict is
-       * about whichever tier is up, so it cannot also pick the tier. A read
-       * bounded by construction (bins per screen pixel) leaves this off.
-       */
-      get coarseTierGated(): boolean {
         return false
       },
       /**
@@ -162,16 +131,6 @@ export default function CoarseTierMixin<P extends object>() {
        */
       get coarseReadKey(): unknown {
         return ''
-      },
-      /**
-       * #getter
-       * Overridable hook (default true): the display has somewhere to put the
-       * tier. Alignments fills it with `showCoverage`. The measured view is
-       * not this hook but the tier's own term below, since every display
-       * drawing one needs the geometry the draw is mapped through.
-       */
-      get coarseTierHasSomewhereToDraw(): boolean {
-        return true
       },
     }))
     .views(self => ({
@@ -204,42 +163,17 @@ export default function CoarseTierMixin<P extends object>() {
        * Whether the coarse tier stands in for the detail right now.
        */
       get coarseTierActive() {
-        return resolveCoarseTier({
-          mode: self.coarseTierMode,
-          hasSource: self.hasCoarseSource,
-          gateRefusesDetail: self.coarseTierGated
-            ? false
-            : host(self).regionTooLarge,
-          pastThreshold: self.coarseTierPastThreshold,
-        })
+        return self.hasCoarseSource && self.coarseTierPastThreshold
       },
     }))
     .views(self => ({
       /**
        * #getter
        * Whether the tier is standing in for the detail on screen right now:
-       * the tier's verdict, a measured view, and the display's own
-       * `coarseTierHasSomewhereToDraw`.
-       *
-       * Not a hook any more. It was one, and the three displays that filled it
-       * wrote two spellings of the same conjunction between them — which is
-       * how alignments came to be the one that never checked the view. A
-       * display with a place-to-draw term states that term alone now.
+       * the tier's verdict over a measured view.
        */
       get coarseTierStandsIn(): boolean {
-        return (
-          self.coarseTierActive &&
-          view(self).initialized &&
-          self.coarseTierHasSomewhereToDraw
-        )
-      },
-      /**
-       * #getter
-       * The byte gate is measuring the coarse read rather than the detail
-       * fetch, so its verdict is about the tier on screen.
-       */
-      get gateMeasuresCoarse() {
-        return self.coarseTierGated && self.coarseTierActive
+        return self.coarseTierActive && view(self).initialized
       },
     }))
     .views(self => ({
@@ -249,17 +183,9 @@ export default function CoarseTierMixin<P extends object>() {
        * about to run, so the estimate and the budget describe one file.
        */
       get byteGateAdapterPath(): ByteGateAdapterPath {
-        return self.gateMeasuresCoarse
+        return self.coarseTierActive
           ? ['adapter', self.coarseAdapterSlot!]
           : ['adapter']
-      },
-      /**
-       * #getter
-       * The gate's refusal is about the detail fetch, so that fetch owes the
-       * re-measure the gate releases through.
-       */
-      get gateRefusesDetail() {
-        return host(self).regionTooLarge && !self.gateMeasuresCoarse
       },
       /**
        * #getter
@@ -277,15 +203,11 @@ export default function CoarseTierMixin<P extends object>() {
     .views(self => ({
       /**
        * #getter
-       * `MultiRegionDisplayMixin`'s hook, from `resolveFetchSuspended` over
-       * `coarseTierStandsIn`.
+       * `MultiRegionDisplayMixin`'s hook: the coarse read is the measurement
+       * pass while the tier stands in, so the detail fetch has nothing to do.
        */
       get fetchSuspended() {
-        return resolveFetchSuspended({
-          standsIn: self.coarseTierStandsIn,
-          mode: self.coarseTierMode,
-          gateRefusesDetail: self.gateRefusesDetail,
-        })
+        return self.coarseTierStandsIn
       },
       /**
        * #getter
@@ -301,15 +223,6 @@ export default function CoarseTierMixin<P extends object>() {
        */
       get svgReady(): boolean {
         return coarseTierSvgReady(phaseHost(self))
-      },
-      /**
-       * #getter
-       * `renderDisplaySvg`'s hook: the export paints the tier in place of the
-       * too-large note, the same swap the chrome makes on screen — unless the
-       * note is about the coarse read itself.
-       */
-      get drawsWhenTooLarge() {
-        return self.coarseTierStandsIn && !self.gateMeasuresCoarse
       },
     }))
     .actions(self => ({
@@ -362,7 +275,7 @@ export default function CoarseTierMixin<P extends object>() {
         )
         installFetch<
           CoarseTierRead,
-          { result: CoarseTierResult<P>; gate: GateCommit | undefined }
+          { result: CoarseTierResult<P>; gate: GateCommit }
         >(host(self), {
           name: 'FetchCoarseTier',
           delay: 300,
@@ -397,13 +310,11 @@ export default function CoarseTierMixin<P extends object>() {
           },
           run: async (read, ctx) => {
             // `run`'s synchronous prefix is the capture point every runner uses
-            const gate = self.coarseTierGated
-              ? openGateCommit(host(self))
-              : undefined
+            const gate = openGateCommit(host(self))
             return { result: await self.fetchCoarseTier(read, ctx), gate }
           },
           commit: ({ result, gate }, read) => {
-            gate?.commit(measurementOf(result))
+            gate.commit(measurementOf(result))
             if (!isRegionRefused(result)) {
               self.setCoarseTier(result.entries, read)
             }

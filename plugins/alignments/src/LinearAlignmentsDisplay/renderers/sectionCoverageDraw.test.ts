@@ -62,7 +62,6 @@ function twoSections(): AlignmentsSources {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 

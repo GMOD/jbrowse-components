@@ -11,10 +11,6 @@ import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { LoadedRegion } from '@jbrowse/display-kit/regionCommit'
 
-/**
- * The payloads the display holds, never the ones it draws: the density band
- * empties `drawnRegionData`, but the pin is a fact about fetches that landed.
- */
 export interface RowsFieldSlice {
   rpcDataMap: ReadonlyMap<number, MultiRowRegionData>
 }

@@ -10,10 +10,6 @@ import {
   trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
 
-import { isURL } from '../../types/common.ts'
-import { densitySidecarPath } from '../shared/density.ts'
-import { configManifest } from '../validate/configManifest.generated.ts'
-
 import type { AdapterSpec } from '@jbrowse/add-track-core'
 
 interface UriLocation {
@@ -60,68 +56,6 @@ for (const { spec } of formats) {
 export function siblingSidecar(location: string, suffix: string) {
   const candidates = sidecarCandidateNames(location, suffix)
   return candidates.find(c => fs.existsSync(c)) ?? candidates[0]
-}
-
-// The adapters that declare a `densityAdapter` slot, read off the generated
-// manifest `jbrowse validate` uses. The hand-written list missed `GWASAdapter`,
-// which inherits the slot through `bedTabixConfigSchema` instead of spreading
-// `densityAdapterConfigSchemaFields`, so `--density` on a Pan-UKBB file was
-// refused by a message that listed nine adapters and not the tenth.
-const densityAdapterTypes = new Set(
-  Object.entries(configManifest.adapters)
-    .filter(([, entry]) => entry.slots.some(s => s.name === 'densityAdapter'))
-    .map(([name]) => name)
-    .sort(),
-)
-
-/**
- * The adapter with its density sidecar attached, and the local file to load
- * beside the config when there is one.
- *
- * An explicit `--density` is taken as given, since a URL cannot be probed;
- * otherwise the conventional `<file>.density.bw` counts only when it is
- * actually there, the way `siblingSidecar` probes an index.
- */
-export function withDensityAdapter({
-  adapter,
-  location,
-  density,
-  makeLocation,
-}: {
-  adapter: Adapter
-  location?: string
-  density?: string
-  makeLocation: (l: string) => Location
-}): { adapter: Adapter; file?: string } {
-  const supported = densityAdapterTypes.has(adapter.type)
-  if (density !== undefined && !supported) {
-    throw new Error(
-      `--density has no slot on ${adapter.type}. The adapters carrying a density sidecar are: ${[...densityAdapterTypes].join(', ')}`,
-    )
-  }
-  const probed =
-    location !== undefined && fs.existsSync(densitySidecarPath(location))
-      ? densitySidecarPath(location)
-      : undefined
-  if (probed !== undefined && !supported) {
-    console.warn(
-      `Warning: ${probed} sits beside the track file but ${adapter.type} has no densityAdapter slot, so it is not attached. The adapters carrying one are indexed: bgzip and tabix the file, then add it.`,
-    )
-  }
-  const file =
-    density === undefined ? (supported ? probed : undefined) : density
-  return file === undefined
-    ? { adapter }
-    : {
-        adapter: {
-          ...adapter,
-          densityAdapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: makeLocation(file),
-          },
-        },
-        file: isURL(file) ? undefined : file,
-      }
 }
 
 interface SpecContext {

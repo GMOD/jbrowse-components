@@ -40,12 +40,11 @@ export interface MarkDisplayModel
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures
-  densityStandInNotice: string | undefined
   cornerNotices: string[]
   openMarkPlotDialog: () => void
   facetLayout: FacetLayout
   axes: YAxis[]
-  drawsKeyedRows: boolean
+  drawsRows: boolean
   svgSidebar: SvgSidebarProps | undefined
   sources: RowSource[]
   effectiveRowHeight: number

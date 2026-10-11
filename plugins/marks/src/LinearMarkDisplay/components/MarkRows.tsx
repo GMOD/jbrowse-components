@@ -12,7 +12,7 @@ const MarkRows = observer(function MarkRows({
 }: {
   model: MarkDisplayModel
 }) {
-  return model.drawsKeyedRows ? (
+  return model.drawsRows ? (
     <RowsPanel model={model} testIdPrefix="mark" />
   ) : null
 })

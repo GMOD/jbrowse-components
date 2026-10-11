@@ -306,7 +306,6 @@ describe('the painter', () => {
             connectorFeeds: new Map(),
           },
         ],
-        densityRegions: new Map(),
       },
       [],
       state,

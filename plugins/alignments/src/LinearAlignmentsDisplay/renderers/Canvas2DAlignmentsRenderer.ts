@@ -84,14 +84,6 @@ export function buildAlignmentsRegionMap(
       }
     }
   })
-  // The density tier's bins, into section 0's keys, where the band's depth-bar
-  // layer paints them.
-  for (const [regionIdx, coverage] of sources.densityRegions) {
-    regions.set(sectionRegionKey(0, regionIdx), {
-      pileup: undefined,
-      coverage: { ...emptyCoverageRegion(), ...coverage },
-    })
-  }
   return {
     regions,
     sectionFeeds: sources.sections.map(section => section.arcFeeds),

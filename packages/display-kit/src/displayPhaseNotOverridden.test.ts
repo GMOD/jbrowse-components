@@ -9,8 +9,8 @@
 // the next term added to the mapping. Multi-way synteny shipped in that shape to
 // say "my lane fetches have not first landed"; that is
 // `FetchMixin.awaitingDependentData` now, the way "I never fetch here" is
-// `fetchInert`. The density tier's swap did too, once per display, and one copy
-// dropped `staleSettingsDrawn`; it is `DensityTierMixin`'s getter now. A display
+// `fetchInert`. A coarse tier's swap did too, once per display, and one copy
+// dropped `staleSettingsDrawn`; it is `CoarseTierMixin`'s getter now. A display
 // with a new term adds a hook beside those, or a mixin in display-kit.
 //
 // The legitimate declarations are the displays that compose no LGV foundation,

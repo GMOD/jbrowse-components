@@ -1,5 +1,3 @@
-import { setConf } from '@jbrowse/core/configuration'
-
 import { createTestEnvironment, ctgA, ctgB } from './testEnv.ts'
 
 // `rows.field` is a deferred expression the worker evaluates once per feature,
@@ -201,49 +199,5 @@ describe('regions that resolved differently reconcile to the pin', () => {
 
     expect(display.regionHasData(0)).toBe(true)
     expect(display.regionHasData(1)).toBe(true)
-  })
-})
-
-// The band swaps out what is drawn, and the pin is not that: reading it off the
-// empty `drawnRegionData` makes every held region disagree with the auto
-// sentinel and re-issues the lot on every pass over a track that is deliberately
-// fetching nothing.
-describe('the pin survives the density band standing in', () => {
-  function bandedDisplay() {
-    const { createDisplay } = createTestEnvironment({
-      densityAdapter: { type: 'BigWigAdapter', uri: 'segments.bw' },
-    })
-    const { display, view } = createDisplay()
-    view.zoomTo(100)
-    display.setRpcData(0, regionData('repClass'), ctgA)
-    setConf(display, 'densityTier', 'density')
-    expect(display.coarseTierStandsIn).toBe(true)
-    return display
-  }
-
-  it('keeps the field a loaded region answered', () => {
-    const display = bandedDisplay()
-
-    expect(display.pinnedRowsField).toBe('repClass')
-    expect(display.effectiveRowsField).toBe('repClass')
-  })
-
-  it('does not re-issue every held region', () => {
-    const display = bandedDisplay()
-
-    expect(display.regionHasData(0)).toBe(true)
-  })
-
-  it('keeps the "One row per..." candidates the data carries', () => {
-    const display = bandedDisplay()
-
-    expect(display.rowsFieldCandidates).toEqual(['repClass', 'repFamily'])
-  })
-
-  // ...and the rows themselves still go, which is the swap doing its job.
-  it('still empties the drawn rows', () => {
-    const display = bandedDisplay()
-
-    expect(display.sources).toHaveLength(0)
   })
 })

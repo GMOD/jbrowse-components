@@ -136,10 +136,6 @@ function makeModel(
     rowsHeight: 100,
     error: undefined,
     regionTooLarge: false,
-    drawsWhenTooLarge: false,
-    coarseTierStandsIn: false,
-    densityBandLayer: { regions: new Map(), maxDepth: 0 },
-    densityPeakReadout: '',
     svgReady: true,
     indelGlyphRegions: undefined,
     uploadedChannelsIn: palette =>

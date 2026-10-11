@@ -34,10 +34,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
-        },
-        {
           "name": "useSliceWorkerPool",
           "type": "boolean"
         },
@@ -88,10 +84,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "number"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "legacyKeys": [
@@ -142,10 +134,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "htsgetTrackId",
           "type": "string"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "legacyKeys": [
@@ -177,10 +165,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "boolean"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -307,10 +291,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "boolean"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -541,10 +521,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "aggregateField",
           "type": "string"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -580,10 +556,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "dontRedispatch",
           "type": "string[]"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -925,10 +897,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "number"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": [
@@ -962,10 +930,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "fetchSizeLimit",
           "type": "number"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         }
       ],
       "shorthandKeys": []
@@ -1720,10 +1684,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "disableGeneHeuristic",
           "type": "boolean"
-        },
-        {
-          "name": "densityAdapter",
-          "type": "(frozen | undefined)"
         },
         {
           "name": "scoreTransform",
@@ -3075,14 +3035,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "number"
-        },
-        {
           "name": "filter",
           "type": "JexlExpression[]"
         },
@@ -3505,14 +3457,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "number"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },
@@ -3619,14 +3563,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
-          "type": "number"
-        },
-        {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
           "type": "number"
         },
         {
@@ -4351,14 +4287,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
-          "type": "number"
-        },
-        {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
           "type": "number"
         },
         {
@@ -5400,10 +5328,6 @@ export const configManifest: ConfigManifest = {
                   "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
                 },
                 {
-                  "name": "source",
-                  "type": "MarkSource"
-                },
-                {
                   "name": "minBpPerPx",
                   "type": "number"
                 },
@@ -5523,14 +5447,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "growMaxHeight",
-          "type": "number"
-        },
-        {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
           "type": "number"
         },
         {
@@ -6876,14 +6792,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "number"
-        },
-        {
           "name": "marks",
           "type": "MarkConfigurationSchema[]",
           "subSlots": [
@@ -7112,10 +7020,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "transform",
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
-            },
-            {
-              "name": "source",
-              "type": "MarkSource"
             },
             {
               "name": "minBpPerPx",
@@ -7383,14 +7287,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "densityTier",
-          "type": "Density tier"
-        },
-        {
-          "name": "densityTierBpPerPx",
-          "type": "number"
-        },
-        {
           "name": "marks",
           "type": "MarkConfigurationSchema[]",
           "subSlots": [
@@ -7619,10 +7515,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "transform",
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
-            },
-            {
-              "name": "source",
-              "type": "MarkSource"
             },
             {
               "name": "minBpPerPx",

@@ -142,7 +142,6 @@ export type { ChainedByGroup } from './LinearAlignmentsDisplay/chainFields.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
 export { SORT_TYPES } from './shared/types.ts'
 export type { LayoutOrder, SortSetting } from './shared/types.ts'
-export type { CoverageRegionFields } from './features/coverage/types.ts'
 export type {
   BakedColorScale,
   NumericExtent,

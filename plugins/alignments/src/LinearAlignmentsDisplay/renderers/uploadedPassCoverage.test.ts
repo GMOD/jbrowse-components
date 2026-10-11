@@ -125,7 +125,6 @@ function oneRegion(): AlignmentsSources {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 

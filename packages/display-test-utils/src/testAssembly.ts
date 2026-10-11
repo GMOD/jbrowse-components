@@ -67,19 +67,21 @@ export function testAssembly({
 }
 
 /**
- * The manager wrapper, answering for one assembly by name. `waitForAssembly`
- * resolves the same object the synchronous `get` returns — two harnesses built
- * a second literal there and the two drifted apart on `getGeneticCodeId`.
+ * The manager wrapper, answering for its assemblies by name, every one the same
+ * stub. `waitForAssembly` resolves the same object the synchronous `get`
+ * returns — two harnesses built a second literal there and the two drifted
+ * apart on `getGeneticCodeId`.
  */
 export function testAssemblyManager(
   assembly: TestAssembly,
-  assemblyName = 'volvox',
+  assemblyNames: readonly string[] = ['volvox'],
 ) {
-  const get = (name: string) => (name === assemblyName ? assembly : undefined)
+  const get = (name: string) =>
+    assemblyNames.includes(name) ? assembly : undefined
   return {
     get,
     getCanonicalAssemblyName: (name: string) =>
-      name === assemblyName ? name : undefined,
+      assemblyNames.includes(name) ? name : undefined,
     waitForAssembly: () => Promise.resolve(assembly),
     isValidRefName: () => true,
     getRefNameMapForAdapter: (

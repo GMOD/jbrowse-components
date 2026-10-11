@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -190,7 +189,6 @@ export default function configSchemaF() {
         advanced: true,
       },
       ...rowSeparatorsConfigSchemaFields(),
-      ...densityTierConfigSchemaFields,
       /**
        * #slot
        * Show the categorical color key, which appears only in per-feature color

@@ -21,8 +21,7 @@ export type AlignmentsCoverageRegion = CoverageBandRegion &
 
 const EMPTY_BUFFER = new ArrayBuffer(0)
 
-// The band region of a key with no pileup feed: an arcs-only region, or the
-// density tier's, which spreads its bins over it.
+// The band region of a key with no pileup feed: an arcs-only region.
 export function emptyCoverageRegion(): AlignmentsCoverageRegion {
   return {
     coveragePackedBuffer: EMPTY_BUFFER,

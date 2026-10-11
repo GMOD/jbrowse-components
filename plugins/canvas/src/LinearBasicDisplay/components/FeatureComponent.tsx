@@ -19,7 +19,6 @@ import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { observer } from 'mobx-react'
 
-import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
@@ -192,7 +191,6 @@ const FeatureBody = observer(function FeatureBody({
     if (!isAlive(model)) {
       return
     }
-    model.setDensityHoverPx(canvasX)
     const result = hitTestAt(canvasX, canvasY)
     if (result) {
       model.setHover(
@@ -260,7 +258,6 @@ const FeatureBody = observer(function FeatureBody({
   const handleMouseLeave = useEventCallback(() => {
     hover.cancel()
     model.clearHover()
-    model.setDensityHoverPx(undefined)
   })
 
   // The layer hands over a hit shaped like the canvas path's, so crossing from a
@@ -293,10 +290,6 @@ const FeatureBody = observer(function FeatureBody({
             cursor: model.hoveredFeature ? 'pointer' : 'default',
           }}
         />
-
-        {/* Outside the scrolled overlay layer: the band replaces the features
-            entirely, so nothing under it scrolls. */}
-        <DensityBandOverlay model={model} />
 
         <OverlayScrollLayer model={model}>
           <FloatingLabelsLayer

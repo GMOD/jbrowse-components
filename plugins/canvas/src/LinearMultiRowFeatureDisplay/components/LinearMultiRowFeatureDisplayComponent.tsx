@@ -13,7 +13,6 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { MULTI_ROW_MARKS } from '../rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
@@ -91,7 +90,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           </svg>
         ) : null}
       </div>
-      <DensityBandOverlay model={model} />
       {/* Capture gates read this subtree as the doneness signal: `sources`
           derives from fetched features, so it cannot exist before the data has
           loaded and been binned into rows. */}
@@ -146,7 +144,6 @@ const LinearMultiRowFeatureDisplayComponent = observer(
           model.setHoveredFeature(
             state ? model.featureAt(state.x, state.y) : undefined,
           )
-          model.setDensityHoverPx(state ? state.x : undefined)
         }}
         onClick={e => {
           onClick(e)

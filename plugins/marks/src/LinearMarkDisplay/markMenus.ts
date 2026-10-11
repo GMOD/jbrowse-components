@@ -5,7 +5,6 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import {
   clusteringMenuItem,
@@ -115,7 +114,6 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
       },
     }),
     ...(self.drawsRows ? rowsMenuItems(self) : []),
-    ...densityTierMenuItems(self),
     ...makeShowSubMenu([
       ...(self.drawsRows
         ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
@@ -127,7 +125,7 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
 
 /** The right-click menu over a hit: its feature, and under `rows` a sort at the column. */
 export function markContextMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
-  const hit = self.coarseTierStandsIn ? undefined : self.contextMenuInfo?.hit
+  const hit = self.contextMenuInfo?.hit
   return hit
     ? [
         {

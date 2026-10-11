@@ -1,6 +1,5 @@
 import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
@@ -49,13 +48,6 @@ const LinearMarkDisplayComponent = observer(
         )}
         indicators={() => (
           <>
-            {model.densityStandInNotice ? (
-              <TrackControl
-                icon="filter"
-                label="density"
-                tooltip={model.densityStandInNotice}
-              />
-            ) : null}
             <ConfigProblemsIndicator
               notices={model.cornerNotices}
               onClick={() => {

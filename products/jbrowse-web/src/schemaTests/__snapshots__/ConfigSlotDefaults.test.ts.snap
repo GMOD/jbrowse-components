@@ -4,7 +4,6 @@ exports[`every registered schema slot default 1`] = `
 {
   "adapter: BamAdapter": {
     "bamLocation": "fileLocation = {"uri":"/path/to/my.bam","locationType":"UriLocation"}",
-    "densityAdapter": "maybeFrozen = undefined",
     "fetchSizeLimit": "number = 5000000",
   },
   "adapter: BedAdapter": {
@@ -29,7 +28,6 @@ exports[`every registered schema slot default 1`] = `
     "autoSql": "string = """,
     "bedGzLocation": "fileLocation = {"uri":"/path/to/my.bed.gz","locationType":"UriLocation"}",
     "columnNames": "stringArray = []",
-    "densityAdapter": "maybeFrozen = undefined",
     "disableGeneHeuristic": "boolean = false",
     "scoreColumn": "string = """,
   },
@@ -64,7 +62,6 @@ exports[`every registered schema slot default 1`] = `
   "adapter: BigBedAdapter": {
     "aggregateField": "string = "geneName2"",
     "bigBedLocation": "fileLocation = {"uri":"/path/to/my.bb","locationType":"UriLocation"}",
-    "densityAdapter": "maybeFrozen = undefined",
     "disableGeneHeuristic": "boolean = false",
     "scoreColumn": "string = """,
   },
@@ -100,7 +97,6 @@ exports[`every registered schema slot default 1`] = `
   "adapter: CramAdapter": {
     "craiLocation": "fileLocation = {"uri":"/path/to/my.cram.crai","locationType":"UriLocation"}",
     "cramLocation": "fileLocation = {"uri":"/path/to/my.cram","locationType":"UriLocation"}",
-    "densityAdapter": "maybeFrozen = undefined",
     "fetchSizeLimit": "number = 5000000",
     "useSliceWorkerPool": "boolean = true",
   },
@@ -148,7 +144,6 @@ exports[`every registered schema slot default 1`] = `
     "autoSql": "string = """,
     "bedGzLocation": "fileLocation = {"uri":"/path/to/my.bed.gz","locationType":"UriLocation"}",
     "columnNames": "stringArray = []",
-    "densityAdapter": "maybeFrozen = undefined",
     "disableGeneHeuristic": "boolean = false",
     "ldAdapter": "maybeFrozen = undefined",
     "scoreColumn": "string = "neg_log_pvalue"",
@@ -158,7 +153,6 @@ exports[`every registered schema slot default 1`] = `
     "gffLocation": "fileLocation = {"uri":"/path/to/my.gff","locationType":"UriLocation"}",
   },
   "adapter: Gff3TabixAdapter": {
-    "densityAdapter": "maybeFrozen = undefined",
     "dontRedispatch": "stringArray = ["chromosome","region","contig","supercontig","scaffold"]",
     "gffGzLocation": "fileLocation = {"uri":"/path/to/my.gff.gz","locationType":"UriLocation"}",
   },
@@ -168,7 +162,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "adapter: GtfTabixAdapter": {
     "aggregateField": "string = "gene_name"",
-    "densityAdapter": "maybeFrozen = undefined",
     "dontRedispatch": "stringArray = ["chromosome","region","contig","supercontig","scaffold"]",
     "gtfGzLocation": "fileLocation = {"uri":"/path/to/my.gtf.gz","locationType":"UriLocation"}",
   },
@@ -176,7 +169,6 @@ exports[`every registered schema slot default 1`] = `
     "hicLocation": "fileLocation = {"uri":"/path/to/my.hic","locationType":"UriLocation"}",
   },
   "adapter: HtsgetBamAdapter": {
-    "densityAdapter": "maybeFrozen = undefined",
     "htsgetBase": "fileLocation = {"uri":"","locationType":"UriLocation"}",
     "htsgetTrackId": "string = """,
   },
@@ -302,7 +294,6 @@ exports[`every registered schema slot default 1`] = `
     "sequenceAdapter": "maybeFrozen = undefined",
   },
   "adapter: SplitVcfTabixAdapter": {
-    "densityAdapter": "maybeFrozen = undefined",
     "fetchSizeLimit": "number = 5000000",
     "indexLocationMap": "frozen = {}",
     "indexType": "stringEnum = "TBI" of ["TBI","CSI"]",
@@ -326,7 +317,6 @@ exports[`every registered schema slot default 1`] = `
     "vcfLocation": "fileLocation = {"uri":"/path/to/my.vcf","locationType":"UriLocation"}",
   },
   "adapter: VcfTabixAdapter": {
-    "densityAdapter": "maybeFrozen = undefined",
     "fetchSizeLimit": "number = 5000000",
     "samplesTsvLocation": "maybeFileLocation = undefined",
     "vcfGzLocation": "fileLocation = {"uri":"/path/to/my.vcf.gz","locationType":"UriLocation"}",
@@ -374,8 +364,6 @@ exports[`every registered schema slot default 1`] = `
     "collapseGroupRows": "boolean = true",
     "coverageHeight": "number = 45",
     "coverageSnpMinFrequency": "number = 0",
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "fadeLowFrequencyMismatches": "boolean = true",
     "fadeLowQualityMismatches": "boolean = false",
     "featureHeight": "number = 7",
@@ -415,8 +403,6 @@ exports[`every registered schema slot default 1`] = `
     "collapseGroupRows": "boolean = false",
     "coverageHeight": "number = 45",
     "coverageSnpMinFrequency": "number = 0",
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "fadeLowFrequencyMismatches": "boolean = true",
     "fadeLowQualityMismatches": "boolean = false",
     "featureHeight": "number = 7",
@@ -455,8 +441,6 @@ exports[`every registered schema slot default 1`] = `
     "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",
     "connectorColor": "maybeColor = undefined",
     "containerTypes": "stringArray = ["proteoform_orf"]",
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "displayDirectionalChevrons": "boolean = true",
     "displayMode": "stringEnum = "normal" of ["normal","compact","superCompact","collapsed"]",
     "featureHeight": "number = 10",
@@ -517,8 +501,6 @@ exports[`every registered schema slot default 1`] = `
     "y": "maybeStringEnum = undefined of ["identity"]",
   },
   "display: LinearManhattanDisplay": {
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "fetchSizeLimit": "number = 1000000",
     "filter": "expressionArray = []",
     "forceLoad": "boolean = false",
@@ -533,8 +515,6 @@ exports[`every registered schema slot default 1`] = `
     "treeAreaWidth": "number = 80",
   },
   "display: LinearMarkDisplay": {
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "fetchSizeLimit": "number = 1000000",
     "filter": "expressionArray = []",
     "forceLoad": "boolean = false",
@@ -550,8 +530,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearMultiRowFeatureDisplay": {
     "clusterField": "featureField = "auto"",
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "fetchSizeLimit": "number = 5000000",
     "forceLoad": "boolean = false",
     "height": "number = 100",
@@ -600,8 +578,6 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearSyntenyDisplay": {},
   "display: LinearVariantDisplay": {
-    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
-    "densityTierBpPerPx": "number = 0",
     "displayMode": "stringEnum = "normal" of ["normal","compact","superCompact","collapsed"]",
     "featureHeight": "number = 10",
     "fetchSizeLimit": "number = 1000000",

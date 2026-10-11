@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -79,7 +78,6 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
       defaultValue: 5_000_000,
       advanced: true,
     },
-    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

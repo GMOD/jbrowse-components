@@ -1,4 +1,3 @@
-import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { autorun, when } from 'mobx'
 
@@ -287,80 +286,6 @@ test('a feature ring taller than its band lays itself out in the band', async ()
   expect(display.configuredHeight).toBe(500)
   expect(display.height).toBe(band)
 })
-
-// The density tier's read and its covered check both take this track's
-// genome: a read over every slice threw, and a check over every slice never
-// found the other genome covered, so each commit fetched again.
-test("a single-genome ring's density tier reads its own genome and settles", async () => {
-  const { session, display } = await ringTestSession(
-    {
-      type: 'FeatureTrack',
-      adapter: {
-        type: 'BedTabixAdapter',
-        bedGzLocation: {
-          localPath:
-            require.resolve('../../../../test_data/volvox/volvox-bed12.bed.gz'),
-        },
-        index: {
-          location: {
-            localPath:
-              require.resolve('../../../../test_data/volvox/volvox-bed12.bed.gz.tbi'),
-          },
-        },
-        densityAdapter: {
-          type: 'FromConfigAdapter',
-          features: scores('ctgA', CTG_A_BP, 1000),
-        },
-      },
-      displays: [
-        {
-          type: 'LinearBasicDisplay',
-          displayId: 'ring-LinearBasicDisplay',
-          densityTier: 'density',
-        },
-      ],
-    },
-    'LinearBasicDisplay',
-    ['volvox', 'volvox2'],
-  )
-  const tier = display as unknown as {
-    host: { bpPerPx: number; coarseBpPerPx: number }
-    coarseTierIssueKey: unknown
-    coarseTierRead:
-      | { key: unknown; regions: { region: { assemblyName: string } }[] }
-      | undefined
-  }
-  // the first read can go out before the view's coarse bp/px settles, and the
-  // settled zoom reads again
-  await when(
-    () =>
-      tier.host.coarseBpPerPx === tier.host.bpPerPx &&
-      tier.coarseTierRead !== undefined &&
-      isDataCurrent(tier.coarseTierRead.key, tier.coarseTierIssueKey),
-    { timeout: 20000 },
-  )
-  expect(display.error).toBeUndefined()
-  expect(
-    new Set(tier.coarseTierRead!.regions.map(r => r.region.assemblyName)),
-  ).toEqual(new Set(['volvox']))
-
-  // a check over every slice refetched every debounce, 300ms
-  const rpc = session.rpcManager as unknown as {
-    call: (sessionId: string, method: string, args: unknown) => unknown
-  }
-  const call = rpc.call.bind(rpc)
-  let refetches = 0
-  rpc.call = (sessionId, method, args) => {
-    if (method === 'CoreGetFeatureDensity') {
-      refetches++
-    }
-    return call(sessionId, method, args)
-  }
-  await new Promise(resolve => {
-    setTimeout(resolve, 1500)
-  })
-  expect(refetches).toBe(0)
-}, 30000)
 
 test("a ring's track menu is under the view menu's Tracks item", async () => {
   const { view } = await wiggleSession()

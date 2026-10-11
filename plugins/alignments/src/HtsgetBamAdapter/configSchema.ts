@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -60,7 +59,6 @@ const HtsgetBamAdapter = ConfigurationSchema(
       description: 'the trackId, which is appended to the base URL',
       defaultValue: '',
     },
-    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

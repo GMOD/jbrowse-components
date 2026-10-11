@@ -6,7 +6,6 @@ import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
-import { drawDensityBand } from '../shared/densityBand.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
   forEachDisplayLabel,
@@ -20,7 +19,6 @@ import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type { FeatureGroupSection } from './facet.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -32,12 +30,6 @@ import type {
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 export interface RenderSvgModel extends LgvSvgExportable {
-  // The density band draws in the too-large state, so the too-large note must
-  // not replace this body.
-  drawsWhenTooLarge: boolean
-  coarseTierStandsIn: boolean
-  densityBandLayer: DensityBandLayer
-  densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   fieldPalette: FieldPalette | undefined
   renderStateIn: (palette: JBrowsePalette) => RenderState
@@ -98,21 +90,6 @@ function CanvasFeaturesSvgBody({
 
   return (
     <>
-      {model.coarseTierStandsIn ? (
-        <PaintLayer
-          width={canvasWidth}
-          height={height}
-          opts={opts}
-          paint={ctx => {
-            drawDensityBand(ctx, renderBlocks, model.densityBandLayer, {
-              canvasWidth,
-              bandHeight: height,
-              readout: model.densityPeakReadout,
-              palette,
-            })
-          }}
-        />
-      ) : null}
       <MarkSvgLayer
         marks={CANVAS_FEATURE_MARKS}
         regions={dataMap}

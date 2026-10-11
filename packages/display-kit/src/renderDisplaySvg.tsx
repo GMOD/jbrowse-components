@@ -52,29 +52,10 @@ export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
   id: string
   height: number
   /**
-   * Whether the display paints its own body in the too-large terminal instead
-   * of `SvgChrome`'s note. Optional, and absent means it does not: only a
-   * display that draws something in the place of the features the gate refused
-   * — canvas's density band — answers `true`, and for it the note would be the
-   * one thing on screen the export left out.
-   */
-  drawsWhenTooLarge?: boolean
-  /**
    * Px the export reserves left of the display for its tree and row labels,
    * measured in the export's text. Absent for a display with no sidebar.
    */
   svgSidebarWidth?: (text?: ExportTextStyle) => number
-}
-
-/**
- * Whether the export draws `SvgChrome`'s too-large note, an opaque box over the
- * display's whole area, in place of its body.
- */
-export function exportsTooLargeNote(model: {
-  regionTooLarge?: boolean
-  drawsWhenTooLarge?: boolean
-}) {
-  return !!model.regionTooLarge && !model.drawsWhenTooLarge
 }
 
 /**
@@ -314,7 +295,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const sidebarWidth = overlays ? (model.svgSidebarWidth?.(opts) ?? 0) : 0
   return (
     <SvgChrome
-      regionTooLarge={exportsTooLargeNote(model)}
+      regionTooLarge={!!model.regionTooLarge}
       width={view.width}
       height={height}
     >

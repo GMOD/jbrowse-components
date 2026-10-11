@@ -302,7 +302,6 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   })
   renderer.renderBlocks(
     [

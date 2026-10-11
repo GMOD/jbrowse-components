@@ -5,7 +5,6 @@ import {
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
-import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
@@ -25,19 +24,17 @@ import {
   DEFAULT_LINE_INTERPOLATE,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
-  DEFAULT_MARK_SOURCE,
   DEFAULT_ROW_PROPORTION,
   DEFAULT_TEXT_FIELD,
   LINE_INTERPOLATIONS,
   LINK_SHAPES,
   MARK_TYPES,
-  MARK_SOURCES,
 } from './markVocabulary.ts'
 
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-export { MARK_TYPES, MARK_SOURCES } from './markVocabulary.ts'
-export type { MarkType, MarkSourceName } from './markVocabulary.ts'
+export { MARK_TYPES } from './markVocabulary.ts'
+export type { MarkType } from './markVocabulary.ts'
 
 const MARK_SHAPE_SCALES = ['none', 'categorical'] as const
 export type MarkShapeScale = (typeof MARK_SHAPE_SCALES)[number]
@@ -349,20 +346,6 @@ const markSchema = ConfigurationSchema(
      */
     transform: types.array(markTransformStep),
     /**
-     * #slot marks.source
-     * The data this mark draws once the byte gate refuses the features.
-     * `features` is off — the mark draws nothing past the budget. `density`
-     * draws the adapter's `densityAdapter` sidecar in the banner's place, one
-     * bar per sidecar bin over this mark's own y axis, and needs no transform:
-     * the sidecar has already binned. With no density mark the banner stands.
-     */
-    source: {
-      type: 'stringEnum',
-      model: types.enumeration('MarkSource', [...MARK_SOURCES]),
-      defaultValue: DEFAULT_MARK_SOURCE,
-      description: 'features, or density past the fetch budget',
-    },
-    /**
      * #slot marks.minBpPerPx
      * The mark draws only when the view is at least this zoomed out, in bp per
      * px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
@@ -446,7 +429,6 @@ export function configSchemaFactory() {
     {
       ...trackHeightConfigSchemaFields({ defaultHeight: 150 }),
       ...regionTooLargeConfigSchemaFields,
-      ...densityTierConfigSchemaFields,
       /**
        * #slot marks
        * The marks to draw, in order — a later one paints over an earlier one.

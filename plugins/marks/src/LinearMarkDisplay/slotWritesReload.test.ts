@@ -87,11 +87,6 @@ const STARTS: Record<string, unknown> = {
       color: { field: 'score', scale: 'log', scheme: 'viridis', reverse: true },
     },
   },
-  'a density bar': {
-    mark: 'bar',
-    source: 'density',
-    encoding: { y: 'count' },
-  },
   'a binned count': {
     mark: 'bar',
     transform: [

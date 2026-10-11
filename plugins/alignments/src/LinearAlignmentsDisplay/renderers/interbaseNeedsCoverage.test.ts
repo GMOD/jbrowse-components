@@ -127,7 +127,6 @@ function sources(): AlignmentsSources {
         ]),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 

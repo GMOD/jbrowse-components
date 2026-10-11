@@ -7,7 +7,6 @@ import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.gene
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
-import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -163,11 +162,6 @@ export interface AlignmentsSources {
   // One entry per stacked group, in stacking order. Ungrouped = single entry
   // (groupKey ''). Parallel to `RenderState.sections`.
   sections: SectionSource[]
-  // The density tier's stand-in for the pileup: features per bin by region
-  // index, drawn by the coverage band's own depth-bar layer. Empty whenever the
-  // tier is off, and the model empties `sections` whenever it is on, so the two
-  // never contend for a region key.
-  densityRegions: ReadonlyMap<number, CoverageRegionFields>
 }
 
 // Whole-map synced, and the only one: one `sources` cell rebuilds every region

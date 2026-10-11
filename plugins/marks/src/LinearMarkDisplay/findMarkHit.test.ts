@@ -7,7 +7,6 @@ import {
   pointInsetPx,
 } from '@jbrowse/render-core/marks'
 
-import { densityRegionData } from './densityLayer.ts'
 import { facetLayout, facetRegion } from './facet.ts'
 import { findMarkHit, hitLocString } from './findMarkHit.ts'
 import { buildMarkList } from './markList.ts'
@@ -323,27 +322,6 @@ test('a facet with a hidden section answers from the rows it kept', () => {
   expect(shown.layers[0]!.count).toBeLessThan(layer.count)
   const { hits, probes } = parity(['bar'], shown, STATE)
   expect(hits).toBeGreaterThan(probes / 5)
-})
-
-test('the density tier builds no Flatbush for a bar, and answers the same', () => {
-  const rand = lcg(8)
-  const n = 400
-  const starts = new Uint32Array(n)
-  const ends = new Uint32Array(n)
-  const scores = new Float32Array(n)
-  for (let i = 0; i < n; i++) {
-    starts[i] = i * 3
-    ends[i] = (i + 1) * 3
-    scores[i] = rand() * 12
-  }
-  const data = densityRegionData({ starts, ends, scores }, 1, 0, 1, false)
-  const state = { ...STATE, rowHeight: STATE.canvasHeight }
-  const { hits, probes } = parity(['bar'], data, state)
-  expect(hits).toBeGreaterThan(probes / 4)
-  expect(
-    densityRegionData({ starts, ends, scores }, 1, 0, 1, true).layers[0]!
-      .flatbush,
-  ).toBeDefined()
 })
 
 test('a link to another sequence names both feet, each on its own sequence', () => {

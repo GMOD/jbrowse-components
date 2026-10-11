@@ -54,15 +54,6 @@ export function constantColorOf(mark: MarkConfig): string | undefined {
 }
 
 /**
- * `constantColorOf` packed, the default blue where the mark has none: what a
- * bin the sidecar wrote paints, a scale having no meaning over it and a jexl
- * callback no feature to read.
- */
-export function markConstantColor(mark: MarkConfig): number {
-  return cssColorToABGR(constantColorOf(mark) ?? DEFAULT_MARK_COLOR)
-}
-
-/**
  * What a mark's channel says of its key: its guide members, copied out of the
  * config so a section holds plain values.
  */

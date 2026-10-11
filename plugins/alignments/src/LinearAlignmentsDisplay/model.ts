@@ -5,7 +5,6 @@ import {
   coverageDepthDomain,
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
-  densityBinSize,
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
@@ -34,13 +33,10 @@ import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import { coarseTierPending } from '@jbrowse/display-kit/coarseTierPhase'
-import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
@@ -54,7 +50,6 @@ import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   ScoreScaleMixin,
-  getNiceDomain,
   resolveSymlogConstant,
   visibleStatsRange,
   widenRangeToRules,
@@ -64,7 +59,6 @@ import { autorun, compareStructural, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from '../features/arcs/compute.ts'
-import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import {
   bezierConnectionLegendItems,
   bezierDipReservePx,
@@ -205,7 +199,6 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
-import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
@@ -376,7 +369,6 @@ export default function stateModelFactory(
         BaseDisplay,
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        DensityTierMixin(),
         ScoreScaleMixin(),
         LegendMixin(),
         ColorWritesMixin(),
@@ -797,84 +789,30 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * `CoarseTierMixin`'s hook: the band the tier's bins draw in. The
-           * pileup, axis and fetch read `coarseTierStandsIn`, which conjoins
-           * this with the tier's verdict.
-           */
-          get coarseTierHasSomewhereToDraw(): boolean {
-            return self.showCoverage
-          },
-
-          /**
-           * #getter
-           * The density tier's bins as the coverage band's per-region payload,
-           * empty while the tier is off. Both backends and the SVG export read
-           * this map. Depends on `coarseTier` and the DEBOUNCED zoom, so a pan
-           * frame never repacks.
-           */
-          get densityCoverageRegions(): ReadonlyMap<
-            number,
-            CoverageRegionFields
-          > {
-            const regions = new Map<number, CoverageRegionFields>()
-            const { view } = self
-            if (self.coarseTierStandsIn) {
-              const binSize = densityBinSize(view.coarseBpPerPx)
-              for (const [displayedRegionIndex, bins] of self.coarseTier) {
-                regions.set(
-                  displayedRegionIndex,
-                  densityCoverageFields(bins, binSize),
-                )
-              }
-            }
-            return regions
-          },
-
-          /**
-           * #getter
-           * The tallest bin across every region the tier holds, 0 while it
-           * holds none. One domain for all regions, so the bands the eye
-           * compares share a scale.
-           */
-          get densityDepthMax() {
-            let max = 0
-            for (const {
-              coverageMaxDepth,
-            } of this.densityCoverageRegions.values()) {
-              max = coverageMaxDepth > max ? coverageMaxDepth : max
-            }
-            return max
-          },
-
-          /**
-           * #getter
            * The depth every SHOWN group spans, so stacked sections share a
-           * scale; hidden lanes are excluded. Undefined while the density tier
-           * stands in, whose per-bin count is no depth a group could share.
+           * scale; hidden lanes are excluded.
            */
           get autoscaleRange(): [number, number] | undefined {
             const hidden = self.hiddenGroupKeys
-            return self.coarseTierStandsIn
-              ? undefined
-              : visibleStatsRange({
-                  active: self.showCoverage,
-                  view: self.view,
-                  payloadFor: index => self.rpcDataMap.get(index),
-                  itemsFor: grouped =>
-                    grouped.groups
-                      .filter(({ key }) => !hidden.has(key))
-                      .map(({ data }) => data),
-                  accumulate: entries => computeVisibleCoverageStats(entries),
-                  range: (stats, entries) =>
-                    widenRangeToRules(
-                      computeVisibleCoverageDomain({
-                        stats,
-                        quantile: self.domainQuantile,
-                        entries,
-                      }),
-                      self.scoreRules.map(rule => rule.value),
-                    ),
-                })
+            return visibleStatsRange({
+              active: self.showCoverage,
+              view: self.view,
+              payloadFor: index => self.rpcDataMap.get(index),
+              itemsFor: grouped =>
+                grouped.groups
+                  .filter(({ key }) => !hidden.has(key))
+                  .map(({ data }) => data),
+              accumulate: entries => computeVisibleCoverageStats(entries),
+              range: (stats, entries) =>
+                widenRangeToRules(
+                  computeVisibleCoverageDomain({
+                    stats,
+                    quantile: self.domainQuantile,
+                    entries,
+                  }),
+                  self.scoreRules.map(rule => rule.value),
+                ),
+            })
           },
 
           /**
@@ -889,22 +827,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The autoscaled depth domain. While the density tier stands in, the
-           * axis is the bins' own count per bin, which the depth bounds
-           * `scales.y` pins do not reach. Undefined until some region holds
+           * The autoscaled depth domain. Undefined until some region holds
            * one.
            */
           get coverageDomain(): [number, number] | undefined {
-            return self.coarseTierStandsIn
-              ? this.densityDepthMax > 0
-                ? getNiceDomain({
-                    domain: [0, this.densityDepthMax],
-                    bounds: [0, undefined],
-                    scaleType: self.scaleType,
-                    zero: true,
-                  })
-                : undefined
-              : self.autoscaledDomain
+            return self.autoscaledDomain
           },
 
           /**
@@ -1411,7 +1338,7 @@ export default function stateModelFactory(
            */
           get connectorsByGroup() {
             return resolveConnectorsByGroup(
-              self.coarseTierStandsIn ? new Map() : this.laidOutByGroupFramed,
+              this.laidOutByGroupFramed,
               {
                 lines: self.showLinkedReadLines,
                 scope: self.bezierArcScope,
@@ -1882,24 +1809,20 @@ export default function stateModelFactory(
          * #getter
          * The stacked lanes in stacking order, one `AlignmentLane` per drawn
          * group; ungrouped is the one-lane case. The one place a lane's key
-         * resolves to its data. Empty while the density tier is shown: every
-         * overlay walks `renderSections`, and `drawnLanes` turns the empty list
-         * into the synthetic no-data lane.
+         * resolves to its data.
          */
         get lanes(): AlignmentLane[] {
-          return self.coarseTierStandsIn
-            ? []
-            : buildLanes({
-                order: self.groupOrder,
-                rawByGroup: self.rawDataByGroup,
-                laidOutByGroup: self.laidOutByGroup,
-                arcInkKeys: self.arcsResult.inkGroupKeys,
-                sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
-                collapsedKeys: self.collapsedGroups,
-                heightOverridesPx: self.groupHeightOverrides,
-                showPileup: self.showPileup,
-                fitHeightToDisplay: self.fitHeightToDisplay,
-              })
+          return buildLanes({
+            order: self.groupOrder,
+            rawByGroup: self.rawDataByGroup,
+            laidOutByGroup: self.laidOutByGroup,
+            arcInkKeys: self.arcsResult.inkGroupKeys,
+            sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
+            collapsedKeys: self.collapsedGroups,
+            heightOverridesPx: self.groupHeightOverrides,
+            showPileup: self.showPileup,
+            fitHeightToDisplay: self.fitHeightToDisplay,
+          })
         },
 
         /**
@@ -2809,20 +2732,17 @@ export default function stateModelFactory(
         /**
          * #getter
          * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so they
-         * draw on the coverage band, and not while the density tier's
-         * feature counts stand in for it.
+         * draw on the coverage band.
          */
         get scoreRulesDrawn(): boolean {
-          return self.showCoverage && !self.coarseTierStandsIn
+          return self.showCoverage
         },
 
         /**
          * #getter
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
-         * left edge. While the density tier stands in, its scale counts
-         * features per bin and keeps the unit-free guides of `scales.y`. The
-         * read cloud's insert-size scale rules each section's arc band,
+         * left edge. The read cloud's insert-size scale rules each section's arc band,
          * captioned TLEN. Each band projects through its section's own scroll;
          * the chrome drops the off-screen ones.
          */
@@ -2830,7 +2750,6 @@ export default function stateModelFactory(
           const { scrollModel: scroll, renderSections } = self
           const scales: ValueScale[] = []
           if (self.showCoverage && self.coverageDepthDomain) {
-            const counts = self.coarseTierStandsIn
             scales.push({
               domain: self.coverageDepthDomain,
               scaleType: self.scaleType,
@@ -2838,8 +2757,8 @@ export default function stateModelFactory(
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
               symlogConstant: self.symlogConstant,
-              caption: counts ? 'features per bin' : self.scaleTitle,
-              rules: counts ? [] : self.scoreRules,
+              caption: self.scaleTitle,
+              rules: self.scoreRules,
               grid: self.grid,
               bandTops: renderSections.map(section =>
                 bandScreenTop(section.coverageTop, scroll),
@@ -3621,21 +3540,15 @@ export default function stateModelFactory(
             cells: () =>
               oneCell('sources', {
                 sections: self.sourceSections,
-                densityRegions: self.densityCoverageRegions,
               }),
             // `hasRegionData` is the per-REGION store, not a group's laid-out
             // map: a grouped fetch over a region with no reads partitions to
             // zero groups, and gating on the map would leave the loading
-            // overlay up forever. With the band standing in, first paint waits
-            // on the band's own read.
+            // overlay up forever.
             render: b =>
-              (
-                self.coarseTierStandsIn
-                  ? coarseTierPending(self)
-                  : !self.hasRegionData
-              )
-                ? false
-                : b.renderBlocks(self.renderBlocks, self.renderState),
+              self.hasRegionData
+                ? b.renderBlocks(self.renderBlocks, self.renderState)
+                : false,
           })
         },
       }))
@@ -3784,11 +3697,6 @@ export default function stateModelFactory(
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
             ...getCoverageMenuItems(self),
-            ...densityTierMenuItems(self, {
-              disabled: !self.showCoverage,
-              disabledHelpText:
-                'The density band draws in the coverage band — turn on "Show coverage" first',
-            }),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
           ] satisfies MenuItem[]

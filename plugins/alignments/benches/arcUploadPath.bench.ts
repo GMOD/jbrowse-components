@@ -218,7 +218,6 @@ function sources(data: PileupDataResult, arcs: ArcBandFeed): AlignmentsSources {
         connectorFeeds: new Map(),
       },
     ],
-    densityRegions: new Map(),
   }
 }
 

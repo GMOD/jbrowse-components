@@ -3,7 +3,6 @@ import {
   expandTabixShorthand,
   tabixIndexSchema,
 } from '@jbrowse/core/configuration'
-import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesTsv'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -71,7 +70,6 @@ const VcfTabixAdapter = ConfigurationSchema(
       defaultValue: 5_000_000,
       advanced: true,
     },
-    ...densityAdapterConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

@@ -4,14 +4,11 @@ import { toArray } from 'rxjs/operators'
 import { asTable } from '../../util/featureTable.ts'
 import { createStatusFanOut } from '../../util/progress.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
-import { isSubAdapterConfig } from './featureDensity.ts'
-import { isFeatureAdapter } from './util.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { FeatureTable } from '../../util/featureTable.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
-import type { FeatureDensity } from './featureDensity.ts'
 import type { BaseOptions, ZoomRange } from './types.ts'
 import type { Observable } from 'rxjs'
 
@@ -200,47 +197,6 @@ export abstract class BaseFeatureDataAdapter<
     _opts?: BaseOptions,
   ): Promise<[number, number] | undefined> {
     return undefined
-  }
-
-  /**
-   * Features per bin over each region, at the view's `bpPerPx`, for the density
-   * tier the display draws where the region-too-large gate refused the
-   * features. The default reads the `densityAdapter` sidecar slot
-   * (`densityAdapterConfigSchemaFields`) through `getSubAdapter`; `undefined`
-   * means no tier, and the banner stands. ADR-102 records why no index
-   * estimate stands in for a missing sidecar.
-   */
-  async getFeatureDensity(
-    regions: Region[],
-    opts: BaseOptions & { bpPerPx: number },
-  ): Promise<FeatureDensity[] | undefined> {
-    const sidecar: unknown = this.getConf(['densityAdapter'])
-    const resolved =
-      isSubAdapterConfig(sidecar) && this.getSubAdapter
-        ? (await this.getSubAdapter(sidecar)).dataAdapter
-        : undefined
-    if (resolved && !isFeatureAdapter(resolved)) {
-      throw new Error(
-        `densityAdapter ${isSubAdapterConfig(sidecar) ? sidecar.type : ''} is not a feature adapter`,
-      )
-    }
-    return resolved
-      ? Promise.all(
-          regions.map(async region => {
-            const features = await resolved.getFeaturesArray(region, opts)
-            const starts = new Uint32Array(features.length)
-            const ends = new Uint32Array(features.length)
-            const scores = new Float32Array(features.length)
-            features.forEach((feature, i) => {
-              const score = feature.get('score')
-              starts[i] = feature.get('start')
-              ends[i] = feature.get('end')
-              scores[i] = score === undefined ? 0 : score
-            })
-            return { starts, ends, scores }
-          }),
-        )
-      : undefined
   }
 
   async getSources(

@@ -937,9 +937,6 @@ test('a channel the mark does not read is named, and the rest still draws', () =
     ]),
   ).toEqual(['mark 0 encoding.shape: a bar does not read shape'])
   expect(
-    noticesOf([{ mark: 'span', source: 'density', encoding: {} }]),
-  ).toEqual(['mark 0 source: a span does not draw the density sidecar'])
-  expect(
     noticesOf([
       {
         mark: 'point',

@@ -1,4 +1,3 @@
-import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
@@ -15,21 +14,13 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 export function createTestEnvironment({
   adapterFetchSizeLimit,
-  densityAdapter,
 }: {
   adapterFetchSizeLimit?: number
-  densityAdapter?: Record<string, unknown>
 } = {}) {
   const adapterConfig =
-    adapterFetchSizeLimit === undefined && densityAdapter === undefined
+    adapterFetchSizeLimit === undefined
       ? undefined
-      : {
-          type: 'TestAdapter',
-          ...(adapterFetchSizeLimit === undefined
-            ? {}
-            : { fetchSizeLimit: adapterFetchSizeLimit }),
-          ...(densityAdapter === undefined ? {} : { densityAdapter }),
-        }
+      : { type: 'TestAdapter', fetchSizeLimit: adapterFetchSizeLimit }
   const env = createDisplayTestEnvironment<LinearBasicDisplayModel>({
     trackType: 'FeatureTrack',
     // The RPC is mocked, so the display only ever reads the adapter's config;
@@ -39,7 +30,6 @@ export function createTestEnvironment({
       configOnly: true,
       slots: {
         fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
-        ...densityAdapterConfigSchemaFields,
       },
       config: adapterConfig,
     },

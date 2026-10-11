@@ -1,9 +1,6 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { devicePxBand } from '@jbrowse/render-core/canvas2dUtils'
-import {
-  COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
-  COVERAGE_BAR_PASS,
-} from '@jbrowse/render-core/coverageBand'
+import { COVERAGE_BAND_UNIFORMS_SIZE_BYTES } from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { planMarks } from '@jbrowse/render-core/marks'
 import {
@@ -51,7 +48,6 @@ import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
-import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ArcBandState } from './arcMarks.ts'
@@ -93,10 +89,6 @@ interface UploadedRegion {
   arcs: ArcBandFeed | undefined
   sashimi: SashimiBandFeed | undefined
   connectors: ConnectorFeed | undefined
-  // The density tier's packed bins, when this key is a density region rather
-  // than a pileup one. Also what tells the two apart in the memo, so a swap
-  // either way rebuilds rather than trusting matching `undefined` layouts.
-  density: ArrayBuffer | undefined
 }
 
 /**
@@ -199,13 +191,6 @@ export class GpuAlignmentsRenderer
         )
       }
     })
-    // The density tier's bins go to section 0's keys, and only the depth-bar
-    // pass has anything to upload for them.
-    for (const [regionIdx, coverage] of sources.densityRegions) {
-      const idx = sectionRegionKey(0, regionIdx)
-      seen.add(idx)
-      this.syncDensityRegion(idx, coverage)
-    }
     // Sweep keys that went away — the HAL's buffers, and the memo entry, so a
     // region that later returns with a reference-identical payload re-uploads
     // instead of trusting buffers this sweep destroyed.
@@ -265,13 +250,9 @@ export class GpuAlignmentsRenderer
       arcs,
       sashimi,
       connectors,
-      density: undefined,
     })
 
-    const sameLayoutRun =
-      prev !== undefined &&
-      prev.density === undefined &&
-      prev.layout === data?.readYs
+    const sameLayoutRun = prev !== undefined && prev.layout === data?.readYs
 
     if (sameLayoutRun) {
       if (
@@ -322,31 +303,6 @@ export class GpuAlignmentsRenderer
       if (connectors) {
         uploadMarks(this.hal, idx, [CONNECTOR_MARK], connectors)
       }
-    }
-  }
-
-  /**
-   * Upload one density-tier region: the depth-bar pass alone, off the buffer
-   * the model packed from the density bins. Every other pass is left with no
-   * buffer for this key, which is how the arcs-only region above draws no
-   * pileup either.
-   */
-  private syncDensityRegion(idx: number, coverage: CoverageRegionFields) {
-    this.regions.set(idx, { ...emptyCoverageRegion(), ...coverage })
-    const prev = this.uploaded.get(idx)
-    this.uploaded.set(idx, {
-      layout: undefined,
-      fillColors: undefined,
-      colorCategories: undefined,
-      lines: undefined,
-      arcs: undefined,
-      sashimi: undefined,
-      connectors: undefined,
-      density: coverage.coveragePackedBuffer,
-    })
-    if (prev?.density !== coverage.coveragePackedBuffer) {
-      this.hal.deleteRegion(idx)
-      uploadPass(this.hal, idx, COVERAGE_BAR_PASS, coverage)
     }
   }
 

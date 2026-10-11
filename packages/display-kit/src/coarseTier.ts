@@ -4,54 +4,19 @@ import type { BufferedVisibleRegion } from './regionHost.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 /**
- * When the coarse tier stands in for the detail: `auto` swaps on the verdict
- * and the threshold, the other two are the user's override either way.
+ * Whether a coarse source slot holds something a sub-adapter can be built
+ * from. The `{ uri }` shorthand every location slot accepts has no `type`, and
+ * a read over it would answer nothing while the tier waited on it.
  */
-export type CoarseTierMode = 'auto' | 'never' | 'always'
-
-/**
- * Whether the coarse tier stands in for the detail right now. `auto` swaps
- * where the gate refuses the detail fetch — cost, not span — and past the
- * display's own threshold where it asks for the tier earlier. Without a source
- * there is nothing to draw, so the banner stands whatever the mode.
- */
-export function resolveCoarseTier({
-  mode,
-  hasSource,
-  gateRefusesDetail,
-  pastThreshold,
-}: {
-  mode: CoarseTierMode
-  hasSource: boolean
-  gateRefusesDetail: boolean
-  pastThreshold: boolean
-}) {
+export function isSubAdapterConfig(
+  value: unknown,
+): value is Record<string, unknown> & { type: string } {
   return (
-    hasSource &&
-    (mode === 'always' ||
-      (mode === 'auto' && (gateRefusesDetail || pastThreshold)))
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string'
   )
-}
-
-/**
- * Whether the detail fetch stands down while the coarse tier stands in.
- * `standsIn` is the display's own term — the tier's verdict, or on alignments
- * the verdict plus somewhere to draw it. A detail fetch the gate refused in
- * `auto` keeps running, because that fetch stops at the gate and re-measures,
- * and the measurement is how the gate releases; a forced tier has nothing to
- * release, and a gate measuring the coarse read has nothing to learn from the
- * detail fetch, so both fetch nothing whatever the gate says.
- */
-export function resolveFetchSuspended({
-  standsIn,
-  mode,
-  gateRefusesDetail,
-}: {
-  standsIn: boolean
-  mode: CoarseTierMode
-  gateRefusesDetail: boolean
-}) {
-  return standsIn && (mode === 'always' || !gateRefusesDetail)
 }
 
 /**

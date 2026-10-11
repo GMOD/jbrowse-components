@@ -17,6 +17,18 @@
   ],
   "tracks": [
     {
+      "type": "QuantitativeTrack",
+      "trackId": "alu_per_kb",
+      "name": "Alu copies per kb",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+        }
+      }
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "alu_age",
       "name": "Alu copies",
@@ -29,12 +41,6 @@
         "index": {
           "location": {
             "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
-          }
-        },
-        "densityAdapter": {
-          "type": "BigWigAdapter",
-          "bigWigLocation": {
-            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
           }
         }
       },
@@ -72,7 +78,6 @@
             },
             {
               "mark": "bar",
-              "source": "density",
               "transform": [
                 { "type": "bin", "step": "auto" },
                 {

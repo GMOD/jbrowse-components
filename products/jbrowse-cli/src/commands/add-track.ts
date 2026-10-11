@@ -6,7 +6,6 @@ import {
   guessTrack,
   guessTrackType,
   makeLocationProtocol,
-  withDensityAdapter,
 } from './add-track-utils/adapter-utils.ts'
 import { loadFiles } from './add-track-utils/file-operations.ts'
 import { buildMultiWiggle } from './add-track-utils/multiwig.ts'
@@ -140,11 +139,6 @@ export async function run(args?: string[]) {
       type: 'string',
       description: 'Used only for mcscan anchors/simpleAnchors types',
     },
-    density: {
-      type: 'string',
-      description:
-        "Path or URL of a features-per-bin bigWig (jbrowse make-density) to attach as the adapter's densityAdapter. A local <file>.density.bw beside the track file is attached without this flag",
-    },
   } as const
   const { values: flags, positionals } = parseArgs({
     args,
@@ -178,13 +172,6 @@ export async function run(args?: string[]) {
     'BigWig files/URLs, or a .json file with an array of BigWig locations or ' +
     'subadapter objects (each with its own name/color/group). With --load, ' +
     'local list entries are copied like any other track file.\n\n' +
-    '--density attaches a features-per-bin bigWig (jbrowse make-density) as the ' +
-    "adapter's densityAdapter, the band a display draws where the region is too " +
-    'large to fetch features. A local <file>.density.bw beside the track file is ' +
-    'attached without the flag; a URL cannot be probed, so a remote sidecar needs ' +
-    'it. The adapters with the slot are BamAdapter, CramAdapter, ' +
-    'HtsgetBamAdapter, Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, ' +
-    'BigBedAdapter, VcfTabixAdapter and SplitVcfTabixAdapter.\n\n' +
     'For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is ' +
     'query,target — the reverse of the minimap2/nucmer input order. For the ' +
     'multi-genome PAF adapters (MultiGenomePAFAdapter, MultiGenomeIndexedPAFAdapter) it is ' +
@@ -217,9 +204,6 @@ export async function run(args?: string[]) {
     '',
     '# ...or from a sources.json with per-row name/color for each BigWig',
     '$ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"',
-    '',
-    '# attach a remote density sidecar (a local genes.gff3.density.bw needs no flag)',
-    '$ jbrowse add-track https://mywebsite.com/genes.gff3.gz --density https://mywebsite.com/genes.gff3.density.bw',
   ]
 
   if (flags.help) {
@@ -264,12 +248,7 @@ export async function run(args?: string[]) {
 
   // build the adapter (and the set of files to load) up front, so the track-arg
   // and load validation runs before we touch the config on disk
-  const {
-    adapter: builtAdapter,
-    files,
-    trackType,
-    trackId,
-  } = multiwig
+  const { adapter, files, trackType, trackId } = multiwig
     ? buildMultiWiggleTrack({
         sources: multiwig,
         mapLocation,
@@ -289,18 +268,6 @@ export async function run(args?: string[]) {
         trackType: flags.trackType,
         trackId: flags.trackId,
       })
-
-  const { adapter, file: densityFile } = withDensityAdapter({
-    adapter: builtAdapter,
-    location,
-    density: flags.density,
-    makeLocation: mapLocation,
-  })
-  if (densityFile !== undefined && !load) {
-    throw new Error(
-      `--density names a local file (${densityFile}); pass --load to say how it is placed beside the config`,
-    )
-  }
 
   const baseConfigObj = config ? parseConfigFlag(config) : undefined
   const displayDefaults = mergeDisplayDefaults({
@@ -347,7 +314,7 @@ export async function run(args?: string[]) {
   const updatedConfig = { ...configContents, tracks }
 
   await loadFiles({
-    files: [...files, densityFile],
+    files,
     destDir: configDir,
     mode: load,
     subDir,

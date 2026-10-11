@@ -62,10 +62,7 @@ function drawTracks({
   return container
 }
 
-function separatorCount(display: {
-  regionTooLarge?: boolean
-  drawsWhenTooLarge?: boolean
-}) {
+function separatorCount(display: { regionTooLarge?: boolean }) {
   return drawTracks({ displays: [display] }).querySelectorAll('rect[width="3"]')
     .length
 }
@@ -76,12 +73,6 @@ test('a track with data gets a separator at each region end', () => {
 
 test('the too-large note is not struck through by the separators', () => {
   expect(separatorCount({ regionTooLarge: true })).toBe(0)
-})
-
-test('a display drawing its own too-large body keeps its separators', () => {
-  expect(
-    separatorCount({ regionTooLarge: true, drawsWhenTooLarge: true }),
-  ).toBe(2)
 })
 
 test('a left track name right-aligns in the gutter, and goes offset above a track with a sidebar', () => {

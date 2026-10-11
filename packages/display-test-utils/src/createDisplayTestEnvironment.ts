@@ -115,6 +115,11 @@ export interface DisplayTestEnvironmentOptions {
    * navigation it exercises has somewhere to go.
    */
   assemblyRegions?: Region[]
+  /**
+   * Assemblies the session knows beside the track's `volvox`, each answered
+   * by the same stub — a view showing a second genome the track is not on.
+   */
+  extraAssemblyNames?: string[]
   /** Extra view setup, after the width and displayed regions are set. */
   onViewReady?: (view: any) => void
   /**
@@ -162,6 +167,7 @@ export function createDisplayTestEnvironment<T>({
   viewRegionEnd = assemblyEnd,
   regions,
   assemblyRegions,
+  extraAssemblyNames = [],
   onViewReady,
   rpcCall,
 }: DisplayTestEnvironmentOptions) {
@@ -297,6 +303,7 @@ export function createDisplayTestEnvironment<T>({
             },
           ],
       }),
+      ['volvox', ...extraAssemblyNames],
     ),
     getTrackById: (id: string) =>
       id === 'test_track' ? trackConfig : undefined,

@@ -92,7 +92,6 @@ function AlignmentsSvgBody({
             ctx,
             {
               sections,
-              densityRegions: model.densityCoverageRegions,
             },
             renderBlocks,
             state,
