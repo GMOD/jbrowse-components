@@ -27,6 +27,8 @@ const engine = createTablesEngine()
     JSON.stringify(plain(await engine.alignments(JSON.parse(args)))),
   features: async (args: string) =>
     JSON.stringify(plain(await engine.features(JSON.parse(args)))),
+  wiggle: async (args: string) =>
+    JSON.stringify(plain(await engine.wiggle(JSON.parse(args)))),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
   alignmentColors: () => JSON.stringify(alignmentColors()),
 }

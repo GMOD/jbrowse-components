@@ -756,6 +756,9 @@ importers:
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../../plugins/wiggle
       react:
         specifier: '>=19.0.0'
         version: 19.3.0

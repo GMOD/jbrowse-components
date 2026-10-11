@@ -15,7 +15,15 @@ import vm from 'node:vm'
 import { parse } from 'acorn'
 
 import { createTablesEngine } from './index.ts'
-import { BAM, BIGBED, CRAM, GFF3, METHYLATED } from './volvox.fixture.ts'
+import {
+  BAM,
+  BIGBED,
+  COVERAGE_BIGWIG,
+  CRAM,
+  GFF3,
+  METHYLATED,
+  SIGNED_BIGWIG,
+} from './volvox.fixture.ts'
 
 // A host with no web globals at all, as R's V8 is: an empty vm context, less
 // the `Intl` R's V8 is built without, where the only thing the bundle is
@@ -34,6 +42,7 @@ function readRange(url: string, start: number, end: number) {
 let jbrowse: {
   alignments: (args: string) => Promise<string>
   features: (args: string) => Promise<string>
+  wiggle: (args: string) => Promise<string>
 }
 let code: string
 
@@ -99,5 +108,21 @@ test.each([
     expect(bareFeatures).toEqual(directFeatures)
     expect(bare.rects).toEqual(direct.rects)
     expect(bare.labels).toEqual(direct.labels)
+  },
+)
+
+test.each([
+  ['signed', SIGNED_BIGWIG],
+  ['zoomed-out min-max', { ...COVERAGE_BIGWIG, bpPerPx: 1000 }],
+  ['density', { ...SIGNED_BIGWIG, display: { mark: 'span' } }],
+])(
+  'the bundle answers a %s BigWig as the engine does, in a bare host',
+  async (_, args) => {
+    const bare = JSON.parse(await jbrowse.wiggle(JSON.stringify(args)))
+    const direct = await createTablesEngine().wiggle(args)
+    expect(bare.bins.score.length).toBeGreaterThan(0)
+    expect(bare.bins).toEqual(direct.bins)
+    expect(bare.marks).toEqual(direct.marks)
+    expect(bare.domain).toEqual(direct.domain)
   },
 )

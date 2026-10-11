@@ -150,6 +150,30 @@ The layout is the display's grown to its content, as under `heightMode:
 'grow'`: no fit ladder, no facet sections. `@jbrowse/tables` installs the
 BED, GFF3 and GTF plugins, which register adapters and nothing else.
 
+`@jbrowse/plugin-wiggle/tables` (`wiggleTables`) does the same for a
+quantitative track. It takes the `LinearWiggleDisplay`'s config and a
+`bpPerPx`, which picks the BigWig zoom level that answers. It runs the
+display's worker (`executeRenderMultiWiggleData`), its autoscale
+(`computeAutoscaleDomain`, `widenRangeToRules`, `getNiceDomain`) and its
+layer encoder (`buildSourceRenderData`):
+
+- `bins`: each source's scores as the worker ships them, with the bin's min
+  and max where the file summarizes.
+- `marks`: the encoder's layers in paint order, so a min-max extent comes
+  back as the max, aggregate and min bands, tinted as the display tints them,
+  and a line's whisker band as rows with `band` set. `low` is where a mark
+  reaches down to: the band's min, or the `origin` bars grow from.
+- Each mark's `color` is the display's: its band's color between the cuts, or
+  under density and a gradient the shared ramp functions (`makeDensityRgbStringFn`,
+  `makeDensityLutFillFn`) over the resolved domain.
+- `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
+  resolves to, and `rules` the reference lines it draws.
+
+A multi-source track reads with a `source` column, each source in its own
+declared color. The palette the display deals to a shared panel's sources is
+the tree sidebar's (`dealtValueColors` over its arranged rows), which the table
+does not run yet.
+
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
 downstream canary is for.

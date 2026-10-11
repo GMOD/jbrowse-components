@@ -43,7 +43,8 @@
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-gtf": "workspace:^",
-    "@jbrowse/plugin-sequence": "workspace:^"
+    "@jbrowse/plugin-sequence": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^"
   },
   "devDependencies": {
     "acorn": "8.19.0",

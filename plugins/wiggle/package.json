@@ -19,7 +19,8 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./LinearWiggleDisplay/stateModel": "./src/LinearWiggleDisplay/model.ts"
+    "./LinearWiggleDisplay/stateModel": "./src/LinearWiggleDisplay/model.ts",
+    "./tables": "./src/tables.ts"
   },
   "files": [
     "esm"
@@ -62,7 +63,8 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./LinearWiggleDisplay/stateModel": "./esm/LinearWiggleDisplay/model.js"
+      "./LinearWiggleDisplay/stateModel": "./esm/LinearWiggleDisplay/model.js",
+      "./tables": "./esm/tables.js"
     }
   },
   "sideEffects": false,

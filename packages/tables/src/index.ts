@@ -10,9 +10,14 @@ import { featureTables } from '@jbrowse/plugin-canvas/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
+import {
+  registerWiggleAdapters,
+  wiggleTables,
+} from '@jbrowse/plugin-wiggle/tables'
 
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
+import type { WiggleTablesArgs } from '@jbrowse/plugin-wiggle/tables'
 
 export type {
   AlignmentTables,
@@ -22,6 +27,10 @@ export type {
   FeatureTables,
   FeatureTablesArgs,
 } from '@jbrowse/plugin-canvas/tables'
+export type {
+  WiggleTables,
+  WiggleTablesArgs,
+} from '@jbrowse/plugin-wiggle/tables'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
@@ -31,6 +40,7 @@ class TablesPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     registerAlignmentsAdapters(pluginManager)
     registerSequenceAdapters(pluginManager)
+    registerWiggleAdapters(pluginManager)
   }
 }
 
@@ -52,6 +62,7 @@ export function createTablesEngine() {
     alignments: (args: AlignmentTablesArgs) =>
       alignmentTables(pluginManager, args),
     features: (args: FeatureTablesArgs) => featureTables(pluginManager, args),
+    wiggle: (args: WiggleTablesArgs) => wiggleTables(pluginManager, args),
     sequence: (args: Parameters<typeof referenceSequence>[1]) =>
       referenceSequence(pluginManager, args),
   }

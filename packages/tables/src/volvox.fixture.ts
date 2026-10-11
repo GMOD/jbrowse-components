@@ -1,7 +1,11 @@
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import type { AlignmentTablesArgs, FeatureTablesArgs } from './index.ts'
+import type {
+  AlignmentTablesArgs,
+  FeatureTablesArgs,
+  WiggleTablesArgs,
+} from './index.ts'
 
 const VOLVOX = path.resolve('test_data/volvox')
 const METHYLATION = path.resolve('test_data/methylation_test')
@@ -103,6 +107,26 @@ export const GFF3: FeatureTablesArgs = {
 export const BIGBED: FeatureTablesArgs = {
   adapterConfig: { type: 'BigBedAdapter', bigBedLocation: uri('volvox.bb') },
   sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+  bpPerPx: 50,
+}
+
+/** A signed microarray track over the whole contig, at 50 bp/px. */
+export const SIGNED_BIGWIG: WiggleTablesArgs = {
+  adapterConfig: {
+    type: 'BigWigAdapter',
+    bigWigLocation: uri('volvox_microarray_posneg.bw'),
+  },
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+  bpPerPx: 50,
+}
+
+/** The coverage of `BAM`'s reads as a BigWig. */
+export const COVERAGE_BIGWIG: WiggleTablesArgs = {
+  adapterConfig: {
+    type: 'BigWigAdapter',
+    bigWigLocation: uri('volvox-sorted.bam.coverage.bw'),
+  },
   region: { refName: 'ctgA', start: 0, end: 50000 },
   bpPerPx: 50,
 }
