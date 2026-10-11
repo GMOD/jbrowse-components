@@ -22,6 +22,7 @@ import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
 } from './shared/getDensityColor.ts'
+import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
   paintedWiggleColor,
   resolveWiggleColor,
@@ -251,6 +252,7 @@ export async function wiggleTables(
     low: [] as number[],
     band: [] as boolean[],
     color: [] as string[],
+    opacity: [] as number[],
   }
   layers.forEach(({ layer, source, row }, index) => {
     const fill = colorOf(layer)
@@ -266,6 +268,7 @@ export async function wiggleTables(
       marks.score.push(score)
       marks.low.push(layer.band ? layer.band.minScores[i]! : origin)
       marks.band.push(!!layer.band)
+      marks.opacity.push(layer.band ? WHISKER_BAND_OPACITY : 1)
       marks.color.push(
         fill
           ? hexOfCss(fill(score))

@@ -60,7 +60,12 @@ test('a zoomed-out min-max extent draws the max and min bands around the mean', 
   expect(band).toHaveLength(line.bins.start.length)
   for (const i of band) {
     expect(line.marks.low[i]).toBeLessThanOrEqual(line.marks.score[i]!)
+    expect(line.marks.opacity[i]).toBeGreaterThan(0)
+    expect(line.marks.opacity[i]).toBeLessThan(1)
   }
+  expect(
+    new Set(line.marks.opacity.filter((_, i) => !line.marks.band[i])),
+  ).toEqual(new Set([1]))
 })
 
 test('density fades each bin from white at the pivot to the side it is on', async () => {

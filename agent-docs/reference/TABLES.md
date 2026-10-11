@@ -161,8 +161,9 @@ layer encoder (`buildSourceRenderData`):
   and max where the file summarizes.
 - `marks`: the encoder's layers in paint order, so a min-max extent comes
   back as the max, aggregate and min bands, tinted as the display tints them,
-  and a line's whisker band as rows with `band` set. `low` is where a mark
-  reaches down to: the band's min, or the `origin` bars grow from.
+  and a line's whisker band as rows with `band` set, at the `opacity` the
+  display paints it. `low` is where a mark reaches down to: the band's min,
+  or the `origin` bars grow from.
 - Each mark's `color` is the display's: its band's color between the cuts, or
   under density and a gradient the shared ramp functions (`makeDensityRgbStringFn`,
   `makeDensityLutFillFn`) over the resolved domain.
