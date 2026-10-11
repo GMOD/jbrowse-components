@@ -83,7 +83,7 @@ const splicedReads = (spliced: 'only' | 'exclude') =>
       ],
       SPLICED_REGION,
     ),
-    'c(nrow(reads_spliced), sum(grepl("N", reads_spliced$cigar)))',
+    'c(nrow(reads_spliced), sum(reads_spliced$read %in% gaps_spliced$read[gaps_spliced$type == "skip"]))',
   )
 const splicedOnly = splicedReads('only')
 const splicedExcluded = splicedReads('exclude')
@@ -125,8 +125,8 @@ const crossRegionTicks = register(
   'aln_two_regions_ticks',
   alignmentsOver(TWO_REGIONS),
   `{ m <- mismatches_volvox_alignments; r <- reads_volvox_alignments
-  i <- match(paste(m$.region, m$read_index), paste(r$.region, r$read_index))
-  c(nrow(m) > 0, all(m$refpos >= r$start[i] & m$refpos < r$end[i]), all(m$row == r$row[i])) }`,
+  i <- match(paste(m$.region, m$read), paste(r$.region, r$read))
+  c(nrow(m) > 0, all(m$position >= r$start[i] & m$position < r$end[i]), all(m$row == r$row[i])) }`,
 )
 
 function samtools(...args: string[]) {
@@ -174,7 +174,7 @@ if (hasSamtools) {
   samtools('index', aliasedNoMd)
 }
 const tickSet =
-  'paste(sort(paste(mismatches_spliced$refpos, mismatches_spliced$base)), collapse = " ")'
+  'paste(sort(paste(mismatches_spliced$position, mismatches_spliced$base)), collapse = " ")'
 const splicedTicks = [
   splicedFrom(spliced),
   splicedFrom(noMd),
@@ -205,7 +205,7 @@ const insertClasses = (name: string, regions: Region[], region: number) =>
       regions,
     ),
     `{ r <- reads_volvox_sv[reads_volvox_sv$.region == ${region}, ]
-  paste(names(table(r$insertSize)), table(r$insertSize), collapse = " ") }`,
+  paste(names(table(r$category)), table(r$category), collapse = " ") }`,
   )
 const pooledInsertClasses = SV_REGIONS.map((_, i) =>
   insertClasses(`pooled_${i + 1}`, SV_REGIONS, i + 1),
@@ -221,7 +221,7 @@ const splicedBlocks = register(
     SPLICED_REGION,
   ),
   `{ b <- read_blocks_spliced; s <- skips_spliced; r <- reads_spliced
-  key <- function(d) paste(d$.region, d$read_index)
+  key <- function(d) paste(d$.region, d$read)
   covered <- tapply(b$end - b$start, key(b), sum)
   skipped <- tapply(s$end - s$start, key(s), sum)
   span <- setNames(r$end - r$start, key(r))
@@ -234,7 +234,7 @@ const deletions = register(
   'aln_deletions',
   scriptFor([track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {})]),
   `{ d <- deletions_volvox_alignments; r <- reads_volvox_alignments
-  i <- match(paste(d$.region, d$read_index), paste(r$.region, r$read_index))
+  i <- match(paste(d$.region, d$read), paste(r$.region, r$read))
   c(nrow(d) > 0, all(d$start >= r$start[i] & d$end <= r$end[i])) }`,
 )
 
@@ -291,9 +291,9 @@ const insertCuts = register(
       color: { field: 'insertSize', domain: ['300', '600'] },
     }),
   ]),
-  `{ r <- reads_volvox_sv; t <- abs(r$template_length)
-  c(all(r$insertSize[t > 600] == "long"), all(r$insertSize[t > 0 & t < 300] == "short"),
-    all(r$insertSize[t >= 300 & t <= 600] == "normal"), sum(t > 600) > 0, sum(t > 0 & t < 300) > 0) }`,
+  `{ r <- reads_volvox_sv; t <- abs(r$insert_size)
+  c(all(r$category[t > 600] == "longInsert"), all(r$category[t > 0 & t < 300] == "shortInsert"),
+    all(r$category[t >= 300 & t <= 600] == "normalInsert"), sum(t > 600) > 0, sum(t > 0 & t < 300) > 0) }`,
 )
 
 copyFileSync(
@@ -648,9 +648,7 @@ maybe('the emitted script, run under R', () => {
       .split(/\s+/)
     expect(Number(kept)).toBeGreaterThan(0)
     expect(keptSkips).toBe('0')
-    expect(chainFilterNotes.join('\n')).toMatch(
-      /properPairs "exclude" is not translated[\s\S]*split "only" is not translated/,
-    )
+    expect(chainFilterNotes.join('\n')).not.toMatch(/filter/)
   })
 
   it('draws each of two regions as it draws that region alone', () => {
@@ -676,7 +674,7 @@ maybe('the emitted script, run under R', () => {
 
   it('bands insert sizes in each region apart, as the browser samples them', () => {
     for (const [i, name] of pooledInsertClasses.entries()) {
-      expect(results.get(name)).toMatch(/normal/)
+      expect(results.get(name)).toMatch(/normalInsert/)
       expect(results.get(name)).toBe(results.get(aloneInsertClasses[i]!))
     }
   })
@@ -741,6 +739,7 @@ maybe('the emitted script, run under R', () => {
         .map(n => Number(n).toString(16).padStart(2, '0'))
         .join('')
         .toUpperCase()}`
+    // the key lists the bins the reads fall in, highest first
     const wanted = [
       `25 ${hex(range[2]!)}`,
       `37 ${hex(range[3]!)}`,

@@ -1137,7 +1137,7 @@ maybe('an alignments display draws as a pileup', () => {
       ...alignmentsPanels({
         display,
         written: display,
-        uri,
+        file: { uri, index: `${uri}.bai` },
         regions: region,
         reference: FASTA,
       }),
@@ -1202,12 +1202,14 @@ maybe('an alignments display draws as a pileup', () => {
     'aln_insert_classes',
     { color: { field: 'insertSize' } },
     PAIRED_BAM,
-    `t <- table(reads$insertSize); o <- table(reads$pairOrientation)
+    `t <- table(reads$category); o <- table(reads$pair_orientation)
 cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=", collapse = " "))`,
   )
   it('classes insert size and pair orientation as the browser does', () => {
     // computePairedInsertSizeStats over the same 257 reads bands 244..976
-    expect(ran(classes)).toBe('long=19 normal=236 short=2 LR=220 RL=5 RR=32')
+    expect(ran(classes)).toBe(
+      'longInsert=19 normalInsert=236 shortInsert=2 LR=220 RL=5 RR=32',
+    )
   })
 
   const unreadDisplay = {
@@ -1217,14 +1219,14 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
   const unread = alignmentsPanels({
     display: unreadDisplay,
     written: unreadDisplay,
-    uri: BAM,
+    file: { uri: BAM, index: `${BAM}.bai` },
     regions: region,
   }).notes
   it('names the settings it does not draw', () => {
     expect(unread).toEqual(
       expect.arrayContaining([
         'not translated: facet',
-        'color: mateRefName is not translated, so reads draw plain',
+        'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',
         'mismatches: a read with no MD tag draws no ticks, since no reference was given',
       ]),
     )
@@ -1240,7 +1242,7 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
       alignmentsPanels({
         display: { ...resolved, ...written },
         written,
-        uri: BAM,
+        file: { uri: BAM, index: `${BAM}.bai` },
         regions: region,
       }).notes.filter(n => n.startsWith('not translated'))
     expect(notes({})).toEqual([])
@@ -1255,7 +1257,7 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
     const { panels, notes } = alignmentsPanels({
       display: { showPileup: false, color: { field: 'mateRefName' } },
       written: { showPileup: false, color: { field: 'mateRefName' } },
-      uri: BAM,
+      file: { uri: BAM, index: `${BAM}.bai` },
       regions: region,
     })
     expect(notes).toEqual([

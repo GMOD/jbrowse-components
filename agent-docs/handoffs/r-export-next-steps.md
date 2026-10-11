@@ -1,13 +1,14 @@
 ---
 name: r-export-next-steps
-description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built, reviewed twice and live-verified on volvox but not landed. Open: Colin's call on landing, an external plugin or holding; R tests in CI; real data with R users; per-position base counts for the coverage band; insertions, clips, sort, facet, modifications and CRAM on alignments."
+description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built, reviewed twice, live-verified on volvox and, for alignments, reads through ggjbrowse, but is not landed. Open: Colin's call on landing, an external plugin or holding; feature tracks through the engine too; real data with R users; per-position base counts for the coverage band; insertions, clips, sort, facet and modifications on alignments."
 ---
 
 # R export: what is left
 
-Written 2026-10-05, revised 2026-10-10. The exporter turns the open tracks of a linear genome view
-into a self-contained `.R` that redraws them in rtracklayer, Rsamtools and
-ggplot2. Where the code is, what it draws and the parity rules are in
+Written 2026-10-05, revised 2026-10-11. The exporter turns the open tracks of a linear genome view
+into a `.R` that redraws them in ggplot2, alignments read through ggjbrowse
+(JBrowse's engine in R) and the rest through rtracklayer. Where the code is,
+what it draws and the parity rules are in
 [R_EXPORT.md](../reference/R_EXPORT.md); the user-facing page is
 `website/docs/user_guides/r_export.md`. **Colin has not approved landing it**:
 it was landed once by mistake and taken back, so do not merge or push it
@@ -18,8 +19,13 @@ without an explicit go.
 - Mark displays (BigWig, GFF3, VCF, BED, BigBed, BAM), the wiggle display, the
   gene glyph (GFF3, BED, BigBed) and an alignments pileup export, checked in
   the running app against the browser, over one region or several.
-- Reads draw their deletions and splice gaps, mismatch ticks (MD or the
-  reference), and the browser's read colors, MAPQ bins and insert-size bands.
+- Alignments (BAM and CRAM) read through ggjbrowse since 2026-10-11: the
+  display's `color` and `filter` objects go to the engine as written, so every
+  scheme the browser paints (strand, MAPQ bins, insert-size bands, pair
+  orientation, tags, a declared `range`) and every filter comes back exact,
+  with the browser's key; reads draw their deletions, splice gaps and mismatch
+  ticks (MD or the reference). The hand-written BAM readers and the samtools
+  CRAM decode are gone.
 - Two fresh adversarial reviews have run. The second, over the alignments and
   gene-glyph translators, found no wrong picture in the fixes it was given;
   its other findings are fixed or listed below.
@@ -42,29 +48,30 @@ without an explicit go.
 
 ## Next, in order
 
-1. **Put it in front of two or three R users with their own tracks.** Ask what
+1. **Feature tracks through the engine too.** `read_bigbed`, `bed_features`,
+   `gene_parts`, `collapse_isoforms` and `gene_layout` are the hand ports of
+   browser rules the alignments path just shed; a `featureTables` beside
+   `alignmentTables` (the GFF3, BED, BigBed and VCF adapters plus the gene
+   glyph's layout) would retire them the same way. `TABLES.md` has the
+   contract shape.
+2. **Put it in front of two or three R users with their own tracks.** Ask what
    they hit first: an unsupported track, a figure that differs from the browser,
    or a script they could not extend.
-2. **Real data.** An hg38 BAM at a deep locus (time it: `bam_mismatches` is
-   vectorized, `read_bam` and the pileup packing are not measured), a CRAM, a
-   ten-track session, `chr1` against `1` aliases.
-3. **Per-position base counts** (`Rsamtools::pileup`) as their own frame. They
-   would color the coverage band by allele as the browser does, which the
-   header now admits it does not, and give each mismatch its frequency. That
-   frequency is data, so it survives a resized figure, unlike a fade keyed to
-   pixels per bp, which the second review advised against porting.
-4. **Mismatch geometry.** A tick is a fixed-width line; a base cell zoomed in
+3. **Real data.** An hg38 BAM at a deep locus (time the engine's read and the
+   `alignments_regions` bind), a CRAM, a ten-track session, `chr1` against
+   `1` aliases.
+4. **The coverage band's allele colors.** The engine's `mismatches` already
+   carries each mismatch's `frequency`; a per-position base-count table from
+   the worker's SNP pass would color the band as the browser does, which the
+   header now admits it does not.
+5. **Mismatch geometry.** A tick is a fixed-width line; a base cell zoomed in
    is wider. A 1 bp `geom_rect` needs a fill scale of its own beside the reads'.
-5. **Insert-size cuts from the browser.** The R estimator re-derives the band
-   per region; the live display already holds it and could bake its cuts into
-   the script.
-6. **Alignments.** Insertions and clips on reads, sashimi arcs, sort, facet,
-   modifications, CRAM. The old CRAM, modification and sort helpers and their
-   oracles are described in R_EXPORT.md and need only their imports fixed.
+6. **Alignments.** Insertions and clips on reads (the worker has them), a key
+   for a linear ramp (the display's `ramps`), sashimi arcs, sort, facet,
+   modifications. Each is an engine table or column first, then a layer.
 7. **The class of bug, not the instances.** Read a rule off the browser's code
-   or config at export time where possible (as MAPQ now reads
-   `colorEncodingOf`), and keep each one by a test against the TypeScript
-   original.
+   at export time, or better run it in the engine, and keep each one by a test
+   against the TypeScript original.
 
 ## Verify a change
 
@@ -82,7 +89,8 @@ without an explicit go.
 
 ## Do not redo
 
-- A bespoke R package, a TS to R transpiler, `facet_grid` for regions, and
-  matching the browser pixel for pixel are settled in R_EXPORT.md.
+- A black-box drawing package, a TS to R transpiler, `facet_grid` for
+  regions, and matching the browser pixel for pixel are settled in
+  R_EXPORT.md; so is hand-porting a browser rule the engine can run.
 - Do not propose Python or Vega-Lite as a replacement; the goal is the R
   ecosystem.

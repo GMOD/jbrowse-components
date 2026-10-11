@@ -1,65 +1,71 @@
 import {
   augmentColor,
-  colorFwdStrand,
-  colorInterchrom,
-  colorLongInsert,
-  colorPairLL,
-  colorPairLR,
-  colorPairRL,
-  colorPairRR,
-  colorRevStrand,
-  colorShortInsert,
-  colorUnmappedMate,
   grey,
   palettePresets,
-  tagColorPalette,
   resolvePalette,
 } from '@jbrowse/core/ui/palette'
-import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
-import {
-  thresholdCuts,
-  thresholdLabels,
-  thresholdPalette,
-} from '@jbrowse/core/util/thresholdScale'
-import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { fileChrom, frameFor } from './frameFor.ts'
-import { markLayer } from './markToPlot.ts'
-import { expr, frame, layer, rIdent, rStr } from './rplot.ts'
-import { applyTransforms } from './transformR.ts'
+import { fileChrom, locationPath, uriOf } from './frameFor.ts'
+import { expr, frame, layer, rName, rStr } from './rplot.ts'
 
-import type { ColorSpec } from './markToPlot.ts'
 import type { Panel, Region } from './rScript.ts'
-import type { Plot, Scale } from './rplot.ts'
-import type { Step } from './transformR.ts'
-import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
+import type { Plot } from './rplot.ts'
 
 /** The slice of a LinearAlignmentsDisplay config snapshot this translates. */
 export interface AlignmentsDisplaySnapshot {
-  color?: string | ColorSpec
-  filter?: ReadFilter
+  /** The display's `color` object, or the plain fill as a string. */
+  color?: string | Record<string, unknown>
+  /** The display's `filter` object. */
+  filter?: Record<string, unknown>
   showCoverage?: boolean
   showMismatches?: boolean
   showPileup?: boolean
   [slot: string]: unknown
 }
 
-type CategoryFilter = 'only' | 'exclude'
-
-/** The display's `filter` object, as its `ReadFilter` config writes it. */
-interface ReadFilter {
-  flagInclude?: number
-  flagExclude?: number
-  readName?: string
-  tagFilters?: { tag: string; value?: string }[]
-  spliced?: CategoryFilter
-  properPairs?: CategoryFilter
-  singletons?: CategoryFilter
-  split?: CategoryFilter
+/** The file an alignments track reads, and its index, which R cannot find beside a remote file. */
+export interface AlignmentsFile {
+  uri: string
+  index: string
 }
 
-/** The read categories the browser decides over a read's whole chain, which R does not group. */
-const CHAIN_CATEGORIES = ['properPairs', 'singletons', 'split'] as const
+const FILE_SLOTS: Record<
+  string,
+  { file: string; index: string; beside: string }
+> = {
+  BamAdapter: { file: 'bamLocation', index: 'index.location', beside: '.bai' },
+  CramAdapter: { file: 'cramLocation', index: 'craiLocation', beside: '.crai' },
+}
+
+/**
+ * The BAM or CRAM behind an adapter config, or why it cannot be read: a type
+ * the engine has no reader for, a config naming no file, or a file opened in
+ * the browser, which R cannot reach.
+ */
+export function alignmentsFile(
+  adapter: Record<string, unknown>,
+): AlignmentsFile | { skipped: string } {
+  const type = String(adapter.type)
+  const slots = FILE_SLOTS[type]
+  if (!slots) {
+    return { skipped: `${type} has no R reader for this display` }
+  }
+  const uri = uriOf(adapter, slots.file)
+  if (!uri) {
+    return { skipped: `${type} names no file` }
+  }
+  if (uri.startsWith('blob:')) {
+    return {
+      skipped: 'it reads a file opened in the browser, which R cannot reach',
+    }
+  }
+  const [slot, sub] = slots.index.split('.')
+  const held = adapter[slot!] as Record<string, unknown> | undefined
+  return {
+    uri,
+    index: locationPath(sub ? held?.[sub] : held) ?? `${uri}${slots.beside}`,
+  }
+}
 
 /** Slots the panels read. */
 const TRANSLATED = new Set([
@@ -91,287 +97,91 @@ function paintsNothing(value: unknown) {
   )
 }
 
-const LEVEL_COLUMN = '.color'
-const NO_VALUE = 'none'
-
-interface Level {
-  value: string
-  color: string
-  label: string
-}
-
-const STRAND_LEVELS: Level[] = [
-  { value: '1', color: colorFwdStrand, label: 'Forward strand' },
-  { value: '-1', color: colorRevStrand, label: 'Reverse strand' },
-]
-
-const MATE_LEVELS: Level[] = [
-  { value: 'unmappedMate', color: colorUnmappedMate, label: 'Mate unmapped' },
-  {
-    value: 'interchrom',
-    color: colorInterchrom,
-    label: 'Mate on another contig',
-  },
-]
-
 /**
- * A read dimension's levels, the column holding them, and whether the mate
- * classes paint over them, as `readColorCategory` lets them for a mate-aware
- * scheme.
+ * A settings object as the R literal ggjbrowse hands the engine: a `list`
+ * per object, `c()` per vector of scalars, `list()` per vector of objects
+ * and per empty vector, which jsonlite would otherwise write as `{}`.
  */
-const READ_DIMENSIONS: Record<
-  string,
-  { column: string; levels: Level[]; mateAware?: boolean }
-> = {
-  strand: { column: 'strand', levels: STRAND_LEVELS },
-  firstOfPairStrand: { column: 'firstOfPairStrand', levels: STRAND_LEVELS },
-  pairOrientation: {
-    column: 'pairOrientation',
-    mateAware: true,
-    levels: [
-      { value: 'LR', color: colorPairLR, label: 'LR' },
-      { value: 'RL', color: colorPairRL, label: 'RL' },
-      { value: 'RR', color: colorPairRR, label: 'RR' },
-      { value: 'LL', color: colorPairLL, label: 'LL' },
-      { value: '', color: colorPairLR, label: 'Unsplit read' },
-    ],
-  },
-  insertSize: {
-    column: 'insertSize',
-    mateAware: true,
-    levels: [
-      { value: 'short', color: colorShortInsert, label: 'Short insert' },
-      { value: 'normal', color: colorPairLR, label: 'Normal' },
-      { value: 'long', color: colorLongInsert, label: 'Long insert' },
-    ],
-  },
-}
-
-function deriveLevel(column: string, mateAware = false) {
-  const level = `ifelse(READS$${column} == "", ${rStr(NO_VALUE)}, as.character(READS$${column}))`
-  return mateAware ? `ifelse(is.na(READS$mate), ${level}, READS$mate)` : level
-}
-
-function writtenColor(color: AlignmentsDisplaySnapshot['color']): ColorSpec {
-  return typeof color === 'string' ? { value: color } : (color ?? {})
-}
-
-/**
- * The `color` object as a mark translator `ColorSpec` over a column the reads
- * frame holds. A read dimension's vocabulary becomes a manual scale of the
- * browser's category colors with `range` laid over them in `domain` order,
- * held apart from the categorical translation, which parts near colors where
- * the category table repeats them on purpose.
- */
-function insertSizeCuts(domain: readonly string[] | undefined) {
-  const cuts = (domain ?? []).map(Number)
-  return cuts.length === 2 && cuts.every(Number.isFinite)
-    ? ([Math.min(...cuts), Math.max(...cuts)] as [number, number])
-    : undefined
-}
-
-function readColor(
-  color: AlignmentsDisplaySnapshot['color'],
-  notes: string[],
-): {
-  spec: ColorSpec
-  manual?: Scale
-  derive?: string
-  tags: string[]
-  cuts?: [number, number]
-} {
-  const written = writtenColor(color)
-  const { field } = written
-  if (!field || written.scale === 'none') {
-    return { spec: { value: written.value ?? colorPairLR }, tags: [] }
+export function rValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return 'NULL'
   }
-  if (field === 'mapq') {
-    return mapqColor(written)
+  if (typeof value === 'string') {
+    return rStr(value)
   }
-  const dimension = READ_DIMENSIONS[field]
-  if (dimension) {
-    const bands = field === 'insertSize' && written.scale !== 'categorical'
-    const cuts = bands ? insertSizeCuts(written.domain) : undefined
-    if (
-      written.scale === 'linear' ||
-      (written.scale === 'threshold' && field !== 'insertSize')
-    ) {
-      notes.push(
-        `color: a ${written.scale} scale over ${field} is not translated`,
-      )
-    }
-    const levels = [
-      ...dimension.levels,
-      ...(dimension.mateAware ? MATE_LEVELS : []),
+  if (typeof value === 'number') {
+    return String(value)
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'TRUE' : 'FALSE'
+  }
+  if (Array.isArray(value)) {
+    const items = value.map(rValue).join(', ')
+    return value.length && value.every(v => typeof v !== 'object')
+      ? `c(${items})`
+      : `list(${items})`
+  }
+  return `list(${Object.entries(value as Record<string, unknown>)
+    .map(([k, v]) => `${rName(k)} = ${rValue(v)}`)
+    .join(', ')})`
+}
+
+function colorObject(color: AlignmentsDisplaySnapshot['color']) {
+  return typeof color === 'string' ? { value: color } : color
+}
+
+/** What the engine paints that the figure's key cannot show. */
+function colorNotes(color: Record<string, unknown> | undefined) {
+  const { field, scale } = color ?? {}
+  if (!field || scale === 'none') {
+    return []
+  }
+  if (scale === 'linear') {
+    return [
+      `color: a linear ramp over ${field} keys no legend; each read still fills in its own color`,
     ]
-    const order = bands
-      ? dimension.levels.map(l => l.value)
-      : (written.domain ?? dimension.levels.map(l => l.value))
-    const declared = new Map(
-      order.map((v, i) => [v, written.range?.[i]] as const),
-    )
-    const named = new Map(
-      order.map((v, i) => [v, written.labels?.[i]] as const),
-    )
-    return {
-      spec: { field: LEVEL_COLUMN, scale: 'categorical' },
-      manual: {
-        kind: 'manual',
-        values: levels.map(
-          l => [l.value || NO_VALUE, declared.get(l.value) || l.color] as const,
-        ),
-        labels: levels.map(l => named.get(l.value) || l.label),
-        name: written.title ?? field,
-      },
-      derive: deriveLevel(dimension.column, dimension.mateAware),
-      tags: [],
-      cuts,
-    }
   }
-  if (field === 'insertSizeAndOrientation' || field === 'mateRefName') {
-    notes.push(`color: ${field} is not translated, so reads draw plain`)
-    return { spec: { value: colorPairLR }, tags: [] }
+  if (field === 'mateRefName') {
+    return [
+      'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',
+    ]
   }
-  const tag = field.startsWith('tags.') ? field.slice(5) : undefined
-  if (!tag) {
-    notes.push(
-      `color: ${field} is a feature attribute a BAM read does not carry`,
-    )
-    return { spec: { value: colorPairLR }, tags: [] }
-  }
-  const scale = written.scale ?? 'categorical'
-  if (scale === 'categorical' && !written.domain?.length) {
-    notes.push(
-      `color: a ${field} value that is not a whole number hashes into the browser's 30 palette shades, and here into the first 10`,
-    )
-  }
-  return {
-    spec: {
-      ...written,
-      scale,
-      range:
-        scale === 'categorical' && !written.range?.length
-          ? tagColorPalette
-          : written.range,
-    },
-    tags: [tag],
-  }
-}
-
-const MAPQ_PRESETS = { mapq: MEASURE_FIELD_PRESETS.mapq }
-const MAPQ_TITLE = MEASURE_FIELD_PRESETS.mapq.title
-
-/**
- * MAPQ through the browser's own encoding: its preset's bins, each painted
- * the color `colorEncodingOf` samples for it, with a read whose MAPQ is 255
- * (NA in R) in the plain fill. A written ramp or category list paints as any
- * numeric field does.
- */
-function mapqColor(written: ColorSpec) {
-  const encoding = colorEncodingOf(
-    {
-      value: undefined,
-      domain: [],
-      range: [],
-      ...written,
-      field: 'mapq',
-    } as ColorSetting,
-    MAPQ_PRESETS,
-  )
-  const title = written.title ?? MAPQ_TITLE
-  if (typeof encoding !== 'object' || encoding.scale !== 'threshold') {
-    return { spec: { ...written, title }, tags: [] }
-  }
-  const cuts = thresholdCuts(encoding.domain ?? [])
-  const colors = thresholdPalette(cuts.length + 1, encoding.range)
-  const labels = encoding.labels ?? thresholdLabels(cuts)
-  const bins = colors.map((color, i) => ({
-    value: `bin${i}`,
-    color,
-    label: labels[i] ?? `bin ${i}`,
-  }))
-  const levels = [
-    ...(encoding.descending ? bins.toReversed() : bins),
-    { value: NO_VALUE, color: colorPairLR, label: 'MAPQ unavailable (255)' },
-  ]
-  return {
-    spec: { field: LEVEL_COLUMN, scale: 'categorical' },
-    manual: {
-      kind: 'manual',
-      values: levels.map(l => [l.value, l.color] as const),
-      labels: levels.map(l => l.label),
-      name: title,
-    } satisfies Scale,
-    derive: `ifelse(is.na(READS$mapq), ${rStr(NO_VALUE)}, paste0("bin", findInterval(READS$mapq, c(${cuts.join(', ')}))))`,
-    tags: [],
-  }
-}
-
-function filterArgs(filter: ReadFilter | undefined, notes: string[]) {
-  const {
-    flagInclude = 0,
-    flagExclude = 1540,
-    readName,
-    tagFilters = [],
-    spliced,
-  } = filter ?? {}
-  for (const category of CHAIN_CATEGORIES) {
-    if (filter?.[category]) {
-      notes.push(
-        `filter: ${category} "${filter[category]}" is not translated, so the figure draws the reads it filters`,
-      )
-    }
-  }
-  return [
-    `flag_include = ${flagInclude}`,
-    `flag_exclude = ${flagExclude}`,
-    ...(readName ? [`read_name = ${rStr(readName)}`] : []),
-    ...(tagFilters.length
-      ? [
-          `tags = list(${tagFilters
-            .map(f => `${f.tag} = ${rStr(f.value ?? '*')}`)
-            .join(', ')})`,
-        ]
-      : []),
-    ...(spliced ? [`spliced = ${rStr(spliced)}`] : []),
-  ].join(', ')
+  return []
 }
 
 const BASES = ['A', 'C', 'G', 'T', 'N'] as const
 
 /**
  * A LinearAlignmentsDisplay config snapshot as R panels: a coverage band over
- * a pileup of reads packed as the browser packs them, colored through its
- * `color` object, with mismatch ticks on the reads. Several regions lie end
- * to end on one axis; a read's `read_index` counts within its region, so the
- * overlays join on it and `.region` together.
+ * a pileup of reads, read through JBrowse's own engine (ggjbrowse), so each
+ * read comes back on the row the browser packs it onto and in the color its
+ * `color` object paints it, with the browser's key beside it and only the
+ * reads its `filter` keeps. Several regions lie end to end on one axis; a
+ * read's `read` counts within its region, so the overlays join on it and
+ * `.region` together.
  */
 export function alignmentsPanels({
   display,
   written,
-  uri,
+  file,
   regions,
   reference,
   key,
   aliases,
-  index,
 }: {
   display: AlignmentsDisplaySnapshot
   /** The config as written, its defaults left out, which names the settings the figure drops. */
   written: Record<string, unknown>
-  uri: string
+  file: AlignmentsFile
   regions: readonly Region[]
   /** Suffixes every R name, so several alignments tracks share one script. */
   key?: string
   /** Canonical refName to the name the file spells it with, where they differ. */
   aliases?: Record<string, string>
-  /** The BAM index, which R cannot find beside a remote file. */
-  index?: string
-  /** The assembly's FASTA or 2bit, which a read with no MD tag is compared against. */
+  /** The assembly's FASTA or 2bit, which a CRAM decodes against and a read with no MD tag is compared against. */
   reference?: string
 }): { panels: Panel[]; notes: string[] } {
   const named = (name: string) => (key ? `${name}_${key}` : name)
-  const readsName = named('reads')
   const pileupShown = display.showPileup !== false
   const coverageShown = display.showCoverage !== false
   const notes: string[] = []
@@ -392,79 +202,72 @@ export function alignmentsPanels({
   if (dropped.length) {
     notes.push(`not translated: ${dropped.join(', ')}`)
   }
-  const color = readColor(display.color, pileupShown ? notes : [])
-  const tagFilters = display.filter?.tagFilters ?? []
-  const base = frameFor({
-    type: 'BamAdapter',
-    uri,
-    name: readsName,
-    aliases,
-    index,
-    fields: [
-      ...new Set([
-        ...color.tags.map(t => `tags.${t}`),
-        ...tagFilters.map(f => `tags.${f.tag}`),
-      ]),
-    ],
-  })
-  const fields = [
-    'firstOfPairStrand',
-    'mapq',
-    'pairOrientation',
-    'insertSize',
-    'mate',
+  const color = colorObject(display.color)
+  if (pileupShown) {
+    notes.push(...colorNotes(color))
+  }
+  const aliased = Object.keys(aliases ?? {}).length > 0
+  const args = [
+    rStr(file.uri),
+    fileChrom('chrom', aliases),
+    'start',
+    'end',
+    ...(reference ? [`reference = ${rStr(reference)}`] : []),
+    ...(reference && aliased ? ['reference_chrom = chrom'] : []),
+    `index = ${rStr(file.index)}`,
+    ...(color && Object.keys(color).length ? [`color = ${rValue(color)}`] : []),
+    ...(display.filter && Object.keys(display.filter).length
+      ? [`filter = ${rValue(display.filter)}`]
+      : []),
   ]
-  const classified = frame({
+  const alnName = named('aln')
+  const aln = frame({
+    name: alnName,
+    columns: [],
+    packages: ['ggjbrowse'],
+    statements: `${alnName} <- alignments_regions(regions, function(chrom, start, end)
+  jbrowse_alignments(${args.join(',\n    ')}))`,
+  })
+  const readsName = named('reads')
+  const legendName = named('legend')
+  const keyName = named('key')
+  const reads = frame({
     name: readsName,
     columns: [
-      ...base.columns,
-      ...fields,
-      ...(color.derive ? [LEVEL_COLUMN] : []),
+      'start',
+      'end',
+      'row',
+      'strand',
+      'mapq',
+      'flags',
+      'name',
+      'insert_size',
+      'pair_orientation',
+      'color',
+      'category',
+      'read',
+      '.region',
     ],
-    coords: base.coords,
-    packages: base.packages,
-    statements: [
-      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filter, notes)})${color.cuts ? `, cuts = c(${color.cuts.join(', ')})` : ''})`,
-      ...(color.derive
-        ? [
-            `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${color.derive.replaceAll('READS', readsName)}`,
-          ]
-        : []),
-    ].join('\n'),
-    parent: base,
+    coords: ['start', 'end'],
+    statements: `${readsName} <- ${alnName}$reads
+${legendName} <- ${alnName}$legend
+${keyName} <- ${legendName}[!duplicated(${legendName}$color), ]`,
+    parent: aln,
   })
-  const pileup: Step = { type: 'pileup', padding: 2 }
-  const packed = applyTransforms({
-    base: classified,
-    steps: [pileup],
-    notes,
-    bpPerPx: 1,
-  })
-  const indexArg = index ? `, index = ${rStr(index)}` : ''
-  const refChromArg = Object.keys(aliases ?? {}).length
-    ? ', ref_chrom = chrom'
-    : ''
-  const at = `${fileChrom('chrom', aliases)}, start, end`
   const gapsName = named('gaps')
   const gaps = frame({
     name: gapsName,
-    columns: ['read_index', 'start', 'end', 'type', '.region', 'row'],
-    packages: ['GenomicAlignments'],
-    statements: `${gapsName} <- read_regions(
-  function(chrom, start, end) bam_gaps(${rStr(uri)}, ${at}${indexArg}),
-  regions, c("start", "end"))
-${gapsName}$row <- ${readsName}$row[match(
-  paste(${gapsName}$.region, ${gapsName}$read_index),
-  paste(${readsName}$.region, ${readsName}$read_index))]
-${gapsName} <- ${gapsName}[!is.na(${gapsName}$row), ]`,
-    parent: packed,
+    columns: ['start', 'end', 'type', 'read', 'row', '.region'],
+    coords: ['start', 'end'],
+    statements: `${gapsName} <- ${alnName}$gaps`,
+    parent: reads,
   })
   const ofType = (type: string) => {
     const name = named(`${type}s`)
     return frame({
       name,
       columns: gaps.columns,
-      packages: gaps.packages,
+      coords: gaps.coords,
       statements: `${name} <- ${gapsName}[${gapsName}$type == ${rStr(type)}, ]`,
       parent: gaps,
     })
@@ -473,78 +276,82 @@ ${gapsName} <- ${gapsName}[!is.na(${gapsName}$row), ]`,
   const blocksName = named('read_blocks')
   const blocks = frame({
     name: blocksName,
-    columns: packed.columns,
-    coords: packed.coords,
-    packages: packed.packages,
+    columns: reads.columns,
+    coords: reads.coords,
     statements: `${blocksName} <- read_blocks(${readsName}, ${skips.name})`,
     parent: skips,
   })
-  const reads = markLayer(
-    {
-      mark: 'span',
-      rowProportion: 0.8,
-      encoding: { row: 'row', color: color.spec },
-    },
-    blocks,
-    expr('0'),
-    notes,
-    { steps: [pileup] },
-  )
   const palette = resolvePalette()
-  const layers = reads
-    ? [
-        reads.layer,
-        layer({
-          geom: 'segment',
-          frame: skips,
-          aes: {
-            x: 'start',
-            xend: 'end',
-            y: expr('row + 0.5'),
-            yend: expr('row + 0.5'),
-          },
-          constants: { colour: palette.skip, linewidth: 0.3 },
-        }),
-        layer({
-          geom: 'rect',
-          frame: ofType('deletion'),
-          aes: {
-            xmin: 'start',
-            xmax: 'end',
-            ymin: expr('row + 0.35'),
-            ymax: expr('row + 0.65'),
-          },
-          constants: { fill: palette.deletion },
-        }),
-      ]
-    : []
+  const layers = [
+    layer({
+      geom: 'rect',
+      frame: blocks,
+      aes: {
+        xmin: 'start',
+        xmax: 'end',
+        ymin: expr('row + 0.1'),
+        ymax: expr('row + 0.9'),
+        fill: 'color',
+      },
+    }),
+    layer({
+      geom: 'segment',
+      frame: skips,
+      aes: {
+        x: 'start',
+        xend: 'end',
+        y: expr('row + 0.5'),
+        yend: expr('row + 0.5'),
+      },
+      constants: { colour: palette.skip, linewidth: 0.3 },
+    }),
+    layer({
+      geom: 'rect',
+      frame: ofType('deletion'),
+      aes: {
+        xmin: 'start',
+        xmax: 'end',
+        ymin: expr('row + 0.35'),
+        ymax: expr('row + 0.65'),
+      },
+      constants: { fill: palette.deletion },
+    }),
+  ]
   const scales: Plot['scales'] = {
-    ...reads?.scales,
-    ...(color.manual ? { fill: color.manual } : {}),
+    fill: {
+      kind: 'identity',
+      key: {
+        name: expr(`attr(${legendName}, "title")`),
+        breaks: expr(`${keyName}$color`),
+        labels: expr(`${keyName}$label`),
+      },
+    },
     y: { kind: 'reverse' },
   }
-  const mismatchesName = named('mismatches')
   if (pileupShown && display.showMismatches !== false) {
+    const mismatchesName = named('mismatches')
     const mismatches = frame({
       name: mismatchesName,
-      columns: ['read_index', 'refpos', 'base', '.region', 'row'],
-      packages: ['GenomicAlignments'],
-      statements: `${mismatchesName} <- read_regions(
-  function(chrom, start, end) bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg}${refChromArg}),
-  regions, "refpos")
-${mismatchesName}$row <- ${readsName}$row[match(
-  paste(${mismatchesName}$.region, ${mismatchesName}$read_index),
-  paste(${readsName}$.region, ${readsName}$read_index))]
-${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
-      parent: packed,
+      columns: [
+        'position',
+        'base',
+        'read',
+        'row',
+        'frequency',
+        'quality',
+        '.region',
+      ],
+      coords: ['position'],
+      statements: `${mismatchesName} <- ${alnName}$mismatches`,
+      parent: reads,
     })
     layers.push(
       layer({
         geom: 'segment',
         frame: mismatches,
         aes: {
-          x: expr('refpos + 0.5'),
-          xend: expr('refpos + 0.5'),
+          x: expr('position + 0.5'),
+          xend: expr('position + 0.5'),
           y: expr('row + 0.1'),
           yend: expr('row + 0.9'),
           colour: 'base',
@@ -582,15 +389,13 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       ]
     : []
   if (coverageShown) {
+    const depthName = named('depth')
     const coverage = frame({
-      name: named('depth'),
-      columns: ['start', 'end', 'depth', '.region'],
-      packages: ['GenomicAlignments'],
-      statements: `${named('depth')} <- read_regions(
-  function(chrom, start, end, region) bam_coverage(${rStr(uri)}, ${at},
-    keep = ${readsName}$read_index[${readsName}$.region == region]${indexArg}),
-  regions, c("start", "end"))`,
-      parent: packed,
+      name: depthName,
+      columns: ['start', 'end', 'depth', 'forward', 'reverse', '.region'],
+      coords: ['start', 'end'],
+      statements: `${depthName} <- ${alnName}$coverage`,
+      parent: aln,
     })
     panels.unshift({
       variable: named('coverage'),

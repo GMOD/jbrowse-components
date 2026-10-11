@@ -72,7 +72,7 @@ export function available(tool: string, run: () => void) {
   }
 }
 
-export function hasR(packages = ['rtracklayer', 'Rsamtools']) {
+export function hasR(packages = ['rtracklayer', 'Rsamtools', 'ggjbrowse']) {
   return available(`R with ${packages.join(', ')}`, () => {
     execFileSync(
       'Rscript',

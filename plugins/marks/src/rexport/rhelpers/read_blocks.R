@@ -1,10 +1,10 @@
 # The read bars split at their skips, so a spliced read draws as its exon
 # blocks: each read in 'reads' with a skip in 'skips' (joined on .region and
-# read_index) becomes one row per block, keeping every other column.
+# read) becomes one row per block, keeping every other column.
 read_blocks <- function(reads, skips) {
   if (!nrow(skips)) return(reads)
-  key <- paste(reads$.region, reads$read_index)
-  by_read <- split(skips, paste(skips$.region, skips$read_index))
+  key <- paste(reads$.region, reads$read)
+  by_read <- split(skips, paste(skips$.region, skips$read))
   has <- key %in% names(by_read)
   blocks <- lapply(which(has), function(i) {
     s <- by_read[[key[i]]]

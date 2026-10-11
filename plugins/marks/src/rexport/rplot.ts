@@ -148,8 +148,12 @@ export type Scale =
       name?: string
     }
   | { kind: 'log' }
-  /** The column already holds the color each row paints. */
-  | { kind: 'identity' }
+  /**
+   * The column already holds the color each row paints. `key` draws a legend
+   * for it: R expressions for the colors listed, what each is called, and
+   * the heading.
+   */
+  | { kind: 'identity'; key?: { breaks: RExpr; labels: RExpr; name: RExpr } }
   /** Rows counted down from the top, as a track stacks them. */
   | { kind: 'reverse' }
 
@@ -185,8 +189,10 @@ export interface Plot {
 export function packagesFor(plot: Plot) {
   const libs = new Set(['ggplot2'])
   for (const l of plot.layers) {
-    for (const pkg of l.frame.packages) {
-      libs.add(pkg)
+    for (const f of frameChain(l.frame)) {
+      for (const pkg of f.packages) {
+        libs.add(pkg)
+      }
     }
   }
   return [...libs].sort()
@@ -233,7 +239,9 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     return `scale_${aesthetic}_reverse()`
   }
   if (s.kind === 'identity') {
-    return `scale_${aesthetic}_identity()`
+    return s.key
+      ? `scale_${aesthetic}_identity(name = ${s.key.name.expr}, breaks = ${s.key.breaks.expr}, labels = ${s.key.labels.expr}, guide = "legend")`
+      : `scale_${aesthetic}_identity()`
   }
   if (s.kind === 'hashed') {
     const entry = (v: string | number) =>

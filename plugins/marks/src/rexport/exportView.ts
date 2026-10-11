@@ -1,5 +1,5 @@
 import { DEFAULT_MARK_TYPE } from '../LinearMarkDisplay/markVocabulary.ts'
-import { alignmentsPanels } from './alignmentsToR.ts'
+import { alignmentsFile, alignmentsPanels } from './alignmentsToR.ts'
 import { featureFields, featurePlot } from './featureToPlot.ts'
 import {
   READERS,
@@ -218,22 +218,20 @@ const featureExporter: RExporter = (track, regions) => {
 }
 
 const alignmentsExporter: RExporter = (track, regions) => {
-  const located = locate(track, ['BamAdapter'])
-  if ('skipped' in located) {
-    return located
+  const file = alignmentsFile(track.adapter)
+  if ('skipped' in file) {
+    return file
   }
-  const { uri, index } = located
   const { panels, notes } = alignmentsPanels({
     display: track.display,
     written: track.writtenDisplay ?? track.display,
-    uri,
-    index,
+    file,
     regions,
     reference: track.reference,
     aliases: track.refNames,
     key: track.key,
   })
-  return { panels, notes: [...sourceNotes(uri), ...notes] }
+  return { panels, notes: [...sourceNotes(file.uri), ...notes] }
 }
 
 export const BUILTIN_EXPORTERS: Record<string, RExporter> = {

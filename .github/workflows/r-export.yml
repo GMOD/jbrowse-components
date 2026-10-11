@@ -38,7 +38,12 @@ jobs:
           sudo apt-get update && sudo apt-get -y install --no-install-recommends
           r-base-core r-bioc-rtracklayer r-bioc-rsamtools
           r-bioc-genomicalignments r-cran-ggplot2 r-cran-patchwork r-cran-curl
-          samtools tabix
+          r-cran-jsonlite r-cran-v8 samtools tabix
+      # ggjbrowse from its main: the engine it bundles is a @jbrowse/tables
+      # release, which the downstream canary keeps current with this repo.
+      - run: |
+          curl -sL https://github.com/GMOD/ggjbrowse/archive/refs/heads/main.tar.gz | tar xz -C "$RUNNER_TEMP"
+          sudo R CMD INSTALL "$RUNNER_TEMP/ggjbrowse-main"
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
