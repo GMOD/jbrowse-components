@@ -18,6 +18,11 @@ export const GENE_GLYPH_MODE_OPTIONS = [
   { value: 'longestCoding', label: 'Representative transcript' },
 ] as const satisfies readonly { value: GeneGlyphMode; label: string }[]
 
+/** `auto` draws every transcript up to 100 bp/px and one per gene past it. */
+export function resolvedGeneGlyphMode(mode: GeneGlyphMode, bpPerPx: number) {
+  return mode === 'auto' ? (bpPerPx > 100 ? 'longestCoding' : 'all') : mode
+}
+
 // The old renderer's 'longest' maps to the closest surviving
 // single-transcript mode, so old configs pass enum validation.
 export function legacyGeneGlyphMode(value: unknown): unknown {

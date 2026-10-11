@@ -15,7 +15,7 @@ import vm from 'node:vm'
 import { parse } from 'acorn'
 
 import { createTablesEngine } from './index.ts'
-import { BAM, CRAM, METHYLATED } from './volvox.fixture.ts'
+import { BAM, BIGBED, CRAM, GFF3, METHYLATED } from './volvox.fixture.ts'
 
 // A host with no web globals at all, as R's V8 is: an empty vm context, where
 // the only thing the bundle is handed is a synchronous byte reader.
@@ -30,7 +30,10 @@ function readRange(url: string, start: number, end: number) {
   return { status: end < 0 && start === 0 ? 200 : 206, size, bytes }
 }
 
-let jbrowse: { alignments: (args: string) => Promise<string> }
+let jbrowse: {
+  alignments: (args: string) => Promise<string>
+  features: (args: string) => Promise<string>
+}
 let code: string
 
 beforeAll(() => {
@@ -72,5 +75,23 @@ test.each([
     expect(bare.modifications.position).toEqual(
       Array.from(direct.modifications.position),
     )
+  },
+)
+
+test.each([
+  ['GFF3', GFF3],
+  ['BigBed', BIGBED],
+])(
+  'the bundle answers a %s feature track as the engine does, in a bare host',
+  async (_, args) => {
+    const bare = JSON.parse(await jbrowse.features(JSON.stringify(args)))
+    const direct = await createTablesEngine().features(args)
+    expect(bare.features.id.length).toBeGreaterThan(0)
+    // jest stubs the adapter's id prefix, so ids differ by it alone
+    const { id: _bareId, ...bareFeatures } = bare.features
+    const { id: _directId, ...directFeatures } = direct.features
+    expect(bareFeatures).toEqual(directFeatures)
+    expect(bare.rects).toEqual(direct.rects)
+    expect(bare.labels).toEqual(direct.labels)
   },
 )

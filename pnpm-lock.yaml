@@ -741,6 +741,18 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
+      '@jbrowse/plugin-bed':
+        specifier: workspace:^
+        version: link:../../plugins/bed
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../../plugins/canvas
+      '@jbrowse/plugin-gff3':
+        specifier: workspace:^
+        version: link:../../plugins/gff3
+      '@jbrowse/plugin-gtf':
+        specifier: workspace:^
+        version: link:../../plugins/gtf
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence

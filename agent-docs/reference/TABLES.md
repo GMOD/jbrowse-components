@@ -95,6 +95,27 @@ segment readers, so a host stacks what the display stacks. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does.
 
+`@jbrowse/plugin-canvas/tables` (`featureTables`) does the same for a feature
+track. It takes the `LinearBasicDisplay`'s config as a track's `displays`
+entry writes it and a `bpPerPx`, runs the feature worker, then the display's
+own layout (`computeLaidOutData`), color resolution (`resolveMapColors`) and
+label placement (`forEachDisplayLabel`):
+
+- `features`, one per top-level feature on its laid-out row (`top`,
+  `bottom` in the display's px), and `subfeatures`, a gene's transcripts.
+- `rects`, `lines`, `chevrons` and `arrows`, the glyph's primitives in their
+  resolved colors. A chevron or arrow comes back only where the display
+  draws one at this zoom (the shaders' `showChevrons` and `arrowDraws`), and
+  `glyph` gives the px sizes they draw at.
+- `labels`, each name, description and transcript label the display shows at
+  this zoom, placed by its rule, with `position` in bp.
+- `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
+  display's own). A ramp keys no legend yet.
+
+The layout is the display's grown to its content, as under `heightMode:
+'grow'`: no fit ladder, no facet sections. `@jbrowse/tables` installs the
+BED, GFF3 and GTF plugins, which register adapters and nothing else.
+
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
 downstream canary is for.

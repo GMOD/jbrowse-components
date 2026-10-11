@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import type { AlignmentTablesArgs } from './index.ts'
+import type { AlignmentTablesArgs, FeatureTablesArgs } from './index.ts'
 
 const VOLVOX = path.resolve('test_data/volvox')
 const METHYLATION = path.resolve('test_data/methylation_test')
@@ -73,4 +73,23 @@ export const CRAM: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region,
+}
+
+/** volvox's genes, mRNAs, exons and CDS over the whole contig, at 50 bp/px. */
+export const GFF3: FeatureTablesArgs = {
+  adapterConfig: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: uri('volvox.sort.gff3.gz'),
+    index: { location: uri('volvox.sort.gff3.gz.tbi'), indexType: 'TBI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+  bpPerPx: 50,
+}
+
+export const BIGBED: FeatureTablesArgs = {
+  adapterConfig: { type: 'BigBedAdapter', bigBedLocation: uri('volvox.bb') },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+  bpPerPx: 50,
 }

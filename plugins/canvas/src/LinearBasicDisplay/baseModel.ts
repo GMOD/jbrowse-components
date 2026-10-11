@@ -78,7 +78,7 @@ import {
   resolveOutlineColor,
   resolveRegionColors,
 } from './components/resolveRegionColors.ts'
-import { derivedColorKey } from './derivedColorKey.ts'
+import { featureColorKey } from './derivedColorKey.ts'
 import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
@@ -101,7 +101,7 @@ import {
 } from './layoutQueries.ts'
 import { colorOf, facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
-import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
+import { labelVisibility, modeCanShowDescription } from './showLabelsMode.ts'
 import {
   canvasTrackMenuItems,
   colorBySubMenuItems,
@@ -560,15 +560,22 @@ export default function baseStateModelFactory(
       // Gated here rather than only at `renderedShowLabels`, so layout, hit
       // testing, the DOM overlay and the SVG export agree; otherwise rows
       // reserve label height nothing uses.
+      get labelVisibility() {
+        return labelVisibility({
+          mode: this.showLabelsMode,
+          collapsed: this.displayMode === 'collapsed',
+          density: self.labelDensityPerPx,
+          geneDensity: () => self.geneLabelDensityPerPx,
+          maxLabelDensity: getConf(self, 'maxLabelFeatureDensity'),
+          maxDescriptionDensity: getConf(self, 'maxDescriptionFeatureDensity'),
+        })
+      },
+
+      /**
+       * #getter
+       */
       get showLabels() {
-        const mode = this.showLabelsMode
-        return (
-          this.displayMode !== 'collapsed' &&
-          modeCanShowName(mode) &&
-          (mode !== 'auto' ||
-            self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity') ||
-            this.geneNamesOnly)
-        )
+        return this.labelVisibility.showLabels
       },
 
       /**
@@ -577,12 +584,7 @@ export default function baseStateModelFactory(
        * under it: gene names stay and every other name goes.
        */
       get geneNamesOnly() {
-        const max = getConf(self, 'maxLabelFeatureDensity')
-        if (this.showLabelsMode !== 'auto' || self.labelDensityPerPx <= max) {
-          return false
-        }
-        const geneDensity = self.geneLabelDensityPerPx
-        return geneDensity !== undefined && geneDensity <= max
+        return this.labelVisibility.geneNamesOnly
       },
 
       /**
@@ -597,20 +599,10 @@ export default function baseStateModelFactory(
       /**
        * #getter
        */
+      // Anded with `showLabels` so a config that inverts the two thresholds
+      // cannot leave descriptions painting after names are gone.
       get effectiveShowDescriptions() {
-        // Anded with `showLabels` so a config that inverts the two
-        // thresholds cannot leave descriptions painting after names are
-        // gone; the pinned modes skip the density gate, `description`
-        // included.
-        return (
-          this.displayMode !== 'collapsed' &&
-          this.showDescriptions &&
-          (this.showLabelsMode !== 'auto' ||
-            (this.showLabels &&
-              !this.geneNamesOnly &&
-              self.labelDensityPerPx <=
-                getConf(self, 'maxDescriptionFeatureDensity')))
-        )
+        return this.labelVisibility.showDescriptions
       },
 
       /**
@@ -1545,44 +1537,18 @@ export default function baseStateModelFactory(
        * scale's key is its `domain` colors whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
-        const { colorKeyTitle } = self
-        const ramp = self.rampColorScales('color')
-        if (ramp.length > 0) {
-          return ramp
-        }
-        const identity = self.identityKeyEntries
-        if (identity.length > 0) {
-          return [...self.rpcDataMap.values()].some(
-            data => data.rectPositions.length > 0,
-          )
-            ? [
-                {
-                  kind: 'categorical',
-                  id: 'color',
-                  ...(colorKeyTitle ? { title: colorKeyTitle } : {}),
-                  entries: identity,
-                },
-              ]
-            : []
-        }
-        const scale = self.paintedColorField
         const { facet, hiddenGroupKeys, categoricalColorField } = self
-        if (!scale) {
-          return []
-        }
         const sectionOf =
           facet && hiddenGroupKeys.size > 0 ? sectionIdsOf(facet) : undefined
-        return derivedColorKey(
-          scale,
-          [...self.rpcDataMap.values()].filter(
-            data => data.colorValues?.field === scale.field,
-          ),
-          sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
-          facet && facet.field === categoricalColorField?.field
-            ? { ...facetField(facet), label: scale.label }
-            : scale,
-          colorKeyTitle,
-        )
+        return featureColorKey(self, [...self.rpcDataMap.values()], {
+          isHidden:
+            sectionOf &&
+            (section => hiddenGroupKeys.has(sectionOf(section).key)),
+          order:
+            facet && facet.field === categoricalColorField?.field
+              ? scale => ({ ...facetField(facet), label: scale.label })
+              : undefined,
+        })
       },
       /**
        * #method

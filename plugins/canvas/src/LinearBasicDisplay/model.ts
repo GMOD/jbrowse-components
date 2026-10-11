@@ -19,7 +19,10 @@ import {
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory from './baseModel.ts'
 import { collapseIntronsMenuItem } from './collapseIntronsMenu.ts'
-import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
+import {
+  GENE_GLYPH_MODE_OPTIONS,
+  resolvedGeneGlyphMode,
+} from './geneGlyphMode.ts'
 import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
@@ -122,11 +125,10 @@ export default function stateModelFactory(
       // mode the view just left read as current for 500ms, and an export in
       // that window drew it.
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
-        return this.geneGlyphMode === 'auto'
-          ? containingLgv(self).bpPerPx > 100
-            ? 'longestCoding'
-            : 'all'
-          : this.geneGlyphMode
+        return resolvedGeneGlyphMode(
+          this.geneGlyphMode,
+          containingLgv(self).bpPerPx,
+        )
       },
 
       // Off the raw mode, not `effectiveGeneGlyphMode`: `auto` resolves to

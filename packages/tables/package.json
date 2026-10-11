@@ -39,6 +39,10 @@
   "dependencies": {
     "@jbrowse/core": "workspace:^",
     "@jbrowse/plugin-alignments": "workspace:^",
+    "@jbrowse/plugin-bed": "workspace:^",
+    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-gff3": "workspace:^",
+    "@jbrowse/plugin-gtf": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^"
   },
   "devDependencies": {

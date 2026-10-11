@@ -20,7 +20,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./LinearBasicDisplay/stateModel": "./src/LinearBasicDisplay/model.ts",
-    "./LinearBasicDisplay/baseStateModel": "./src/LinearBasicDisplay/baseModel.ts"
+    "./LinearBasicDisplay/baseStateModel": "./src/LinearBasicDisplay/baseModel.ts",
+    "./tables": "./src/tables.ts"
   },
   "files": [
     "esm"
@@ -60,7 +61,8 @@
     "exports": {
       ".": "./esm/index.js",
       "./LinearBasicDisplay/stateModel": "./esm/LinearBasicDisplay/model.js",
-      "./LinearBasicDisplay/baseStateModel": "./esm/LinearBasicDisplay/baseModel.js"
+      "./LinearBasicDisplay/baseStateModel": "./esm/LinearBasicDisplay/baseModel.js",
+      "./tables": "./esm/tables.js"
     }
   },
   "sideEffects": false,

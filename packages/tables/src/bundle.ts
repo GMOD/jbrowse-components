@@ -25,6 +25,8 @@ const engine = createTablesEngine()
 ;(globalThis as Record<string, unknown>).jbrowse = {
   alignments: async (args: string) =>
     JSON.stringify(plain(await engine.alignments(JSON.parse(args)))),
+  features: async (args: string) =>
+    JSON.stringify(plain(await engine.features(JSON.parse(args)))),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
   alignmentColors: () => JSON.stringify(alignmentColors()),
 }
