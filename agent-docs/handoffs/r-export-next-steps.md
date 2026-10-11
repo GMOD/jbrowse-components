@@ -35,27 +35,27 @@ not wanted.
 
 ## ggjbrowse API review (2026-10-11)
 
-An adversarial review of ggjbrowse 0.1.1; the first three reproduced by hand.
+ggjbrowse 0.2.0 (4d8b6f1) fixed the review's top four, each reviewed again:
 
-- **V8 aborts R.** `tryCatch(..., warning =)` around a reader that warns
-  (e.g. `display = list(colour = "red")`) leaves V8 broken; the next reader
-  call kills the process. Buffer engine warnings in `call_engine`
-  (`R/engine.R`) and raise them after the call returns.
-- **Several loci rewrite coordinates.** `bind_regions` (`R/regions.R`) moves
-  `start`/`end` onto the end-to-end axis (region 2 of
-  `c("ctgA:1,001-4,000", "ctgA:6,001-9,000")` reads 4072–7069), so a join
-  against the user's own BED is silently wrong. Keep genomic columns and add
-  axis `x`/`xend`.
-- **`jbrowse_stack` takes mismatched regions** without a word, labelling the
-  axis with the last track's contig, and rejects a plain ggplot of the user's
-  own.
-- **Two spellings for alignments settings:** top-level `color = "strand"`
-  means a field and wins silently over `display = list(color = ...)`, where a
-  bare string is a constant. The README uses the first, the export the second.
-- Smaller: `inherit.aes = FALSE` drops plot-level aesthetics; a join on
-  `features` does not reach `geom_jbrowse_glyphs`' other tables;
-  `scale_*_jbrowse` take no `name`/`...`; a bad contig among several loci and
-  a reversed or overlong locus pass silently; `width` vs `px_per_bp` and
-  `min_reads` vs `min_junction_reads`; printed regions are 0-based; tables
-  carry no `chrom`; `jbrowse_sequence` takes no locus; README:217's restyle
-  example draws mismatches twice.
+- Engine warnings and errors queue and are raised once the call returns
+  (`in_engine`, `R/engine.R`), so a `tryCatch(warning =)` no longer leaves V8
+  to abort R on the next read.
+- A result over several loci keeps genomic `start`/`end`/`position`, each row
+  with `chrom` and `.region`; `on_axis()` moves rows onto the end-to-end axis
+  as they draw. Figures render byte-identical to 0.1.1.
+- `jbrowse_stack()` and `autoplot(<alignments>, tracks =)` refuse tracks over
+  different spans (contig names may differ, as aliased files spell them) and
+  stack a plain ggplot as a band.
+- `jbrowse_alignments()` takes its settings in `display` only.
+
+Still open, smaller:
+
+- `inherit.aes = FALSE` drops plot-level aesthetics.
+- A join on `features` does not reach `geom_jbrowse_glyphs`' other tables.
+- `scale_*_jbrowse` take no `name`/`...`.
+- A bad contig among several loci, and a reversed or overlong locus, pass
+  silently.
+- `width` vs `px_per_bp`, and `min_reads` vs `min_junction_reads`.
+- Printed regions are 0-based.
+- `jbrowse_sequence` takes no locus.
+- Two tracks on different contigs with the same span stack under one label.
