@@ -128,7 +128,6 @@ is no longer shared with anything.
 | `farDomeHullPoint` | tests only — `arcHull.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
-| `interbaseBarLeftPx` | nothing |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `wideCircleHullPoint` | tests only — `arcHull.test.ts` |
