@@ -133,7 +133,7 @@ test('the uniforms carry the payload column count beside the frame', () => {
   MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
   const f32 = hal.getLastUniformsF32()!
   expect(f32[shader.UNIFORM_OFFSET_F32.numFeatures]).toBe(4)
-  expect(f32[shader.UNIFORM_OFFSET_F32.canvasWidth]).toBe(400)
+  expect(f32[shader.UNIFORM_OFFSET_F32.backingWidthPx]).toBe(400)
   expect(f32[shader.UNIFORM_OFFSET_F32.canvasHeight]).toBe(300)
   expect(f32[shader.UNIFORM_OFFSET_F32.rowHeight]).toBe(10)
   expect(f32[shader.UNIFORM_OFFSET_F32.scrollTop]).toBe(50)
@@ -266,4 +266,23 @@ describe('draw against hit', () => {
       ),
     ).toEqual([])
   })
+})
+
+// The fragment shader tests framebuffer pixel centres against column edges, so
+// the backing width has to be the store the HAL actually got. A canvas clamped
+// at MAX_CANVAS_DIM_PX, or a WebGL drawing buffer the browser shrank, departs
+// from `canvasWidth * devicePixelRatio`, and columns then miss their pixels.
+test('the backing width is the scale the HAL reported, not the dpr', () => {
+  const data = makeData()
+  const hal = new MockHal([MARK.pass])
+  const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
+  const b = block(data, STATE)
+  const clip = clipBlock(b, STATE.canvasWidth, STATE.canvasHeight, {
+    x: 1.5,
+    y: 2,
+  })!
+  MARK.drawRegion(hal, scratch, b, clip, data, STATE, b.displayedRegionIndex)
+  expect(
+    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.backingWidthPx],
+  ).toBe(600)
 })

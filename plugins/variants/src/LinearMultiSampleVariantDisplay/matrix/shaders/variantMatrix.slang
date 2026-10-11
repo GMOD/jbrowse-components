@@ -42,11 +42,10 @@ struct CellInstance {
 
 struct Uniforms {
   float numFeatures;
-  float canvasWidth;
   float canvasHeight;
   float rowHeight;
   float scrollTop;
-  float devicePixelRatio;
+  float backingWidthPx;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -62,9 +61,10 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;
 
-  // Column edges in physical (framebuffer) pixels. canvasWidth is CSS pixels,
-  // gl_FragCoord / @builtin(position) are physical, so scale by dpr to match.
-  float widthPx = u.canvasWidth * u.devicePixelRatio;
+  // Column edges in framebuffer pixels, the space gl_FragCoord /
+  // @builtin(position) report. The HAL supplies the backing width, because a
+  // clamped or browser-shrunk store is narrower than canvasWidth * dpr.
+  float widthPx = u.backingWidthPx;
   // No mirror: the worker hands the features back in screen order
   // (orderByScreenPosition), so a data column index IS its screen column.
   float col = float(inst.featureIndex);

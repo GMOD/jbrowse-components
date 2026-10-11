@@ -399,7 +399,16 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     if (this.disposed) {
       return { x: getDpr(), y: getDpr() }
     }
-    return syncCanvasSize(this.canvas, width, height).scale
+    // Past 7680x4320 px of area Chrome shrinks the drawing buffer and leaves
+    // canvas.width/height at the requested size, so the scale comes from the
+    // buffer. A lost context reads 0x0 and falls back to syncCanvasSize's.
+    const { scale } = syncCanvasSize(this.canvas, width, height)
+    const { drawingBufferWidth: bufferW, drawingBufferHeight: bufferH } =
+      this.gl
+    return {
+      x: width > 0 && bufferW > 0 ? bufferW / width : scale.x,
+      y: height > 0 && bufferH > 0 ? bufferH / height : scale.y,
+    }
   }
 
   /**
@@ -468,7 +477,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     const gl = this.gl
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     gl.disable(gl.SCISSOR_TEST)
-    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
     gl.clearColor(clearR, clearG, clearB, clearA)
     gl.clear(gl.COLOR_BUFFER_BIT)
   }
@@ -476,7 +485,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   setScissor(x: number, y: number, w: number, h: number) {
     const gl = this.gl
     gl.enable(gl.SCISSOR_TEST)
-    gl.scissor(x, this.canvas.height - y - h, w, h)
+    gl.scissor(x, gl.drawingBufferHeight - y - h, w, h)
   }
 
   clearScissor() {
@@ -484,11 +493,12 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   }
 
   setViewport(x: number, y: number, w: number, h: number) {
-    this.gl.viewport(x, this.canvas.height - y - h, w, h)
+    this.gl.viewport(x, this.gl.drawingBufferHeight - y - h, w, h)
   }
 
   clearViewport() {
-    this.gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    const gl = this.gl
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
   }
 
   drawPass(
@@ -548,7 +558,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   endFrame() {
     const gl = this.gl
     gl.disable(gl.SCISSOR_TEST)
-    gl.viewport(0, 0, this.canvas.width, this.canvas.height)
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
   }
 
   protected releaseResources() {

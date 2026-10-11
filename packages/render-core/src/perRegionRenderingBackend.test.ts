@@ -303,6 +303,31 @@ describe('GpuPerRegionRenderingBackend.renderBlocks block clipping', () => {
     expect(hal.draws()[0]!.scissor).toEqual({ x: 600, y: 0, w: 200, h: 100 })
   })
 
+  // A canvas clamped at MAX_CANVAS_DIM_PX, or a WebGL drawing buffer Chrome
+  // shrank past its area cap, has a backing store smaller than CSS px × dpr. A
+  // rect built from `getDpr()` would then overrun it and land bands in the
+  // wrong rows, so the clip has to come from the scale `resize` reported.
+  test('each block clips in the scale the HAL reported', () => {
+    const { hal, b } = drawingBackend()
+    hal.reportedScale = { x: 0.5, y: 0.25 }
+    b.renderBlocks(
+      [
+        block(0, { screenStartPx: 0, screenEndPx: 400 }),
+        block(1, { screenStartPx: 400, screenEndPx: 800 }),
+      ],
+      new Map([
+        [0, { value: 1 }],
+        [1, { value: 1 }],
+      ]),
+      STATE,
+    )
+
+    expect(hal.draws().map(d => d.scissor)).toEqual([
+      { x: 0, y: 0, w: 200, h: 25 },
+      { x: 200, y: 0, w: 200, h: 25 },
+    ])
+  })
+
   test('the frame ends with the clip released', () => {
     // Not observable on a draw, since nothing draws after — assert the calls.
     // A frame that left a scissor set would clip whatever the next one begins

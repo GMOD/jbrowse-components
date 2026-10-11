@@ -16,31 +16,28 @@ export const UNIFORMS_SIZE_BYTES = 32
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   numFeatures: 0,
-  canvasWidth: 1,
-  canvasHeight: 2,
-  rowHeight: 3,
-  scrollTop: 4,
-  devicePixelRatio: 5,
+  canvasHeight: 1,
+  rowHeight: 2,
+  scrollTop: 3,
+  backingWidthPx: 4,
 } as const
 
 
 export interface Uniforms {
   numFeatures: number
-  canvasWidth: number
   canvasHeight: number
   rowHeight: number
   scrollTop: number
-  devicePixelRatio: number
+  backingWidthPx: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const f32 = new Float32Array(buf)
   f32[0] = uniforms.numFeatures
-  f32[1] = uniforms.canvasWidth
-  f32[2] = uniforms.canvasHeight
-  f32[3] = uniforms.rowHeight
-  f32[4] = uniforms.scrollTop
-  f32[5] = uniforms.devicePixelRatio
+  f32[1] = uniforms.canvasHeight
+  f32[2] = uniforms.rowHeight
+  f32[3] = uniforms.scrollTop
+  f32[4] = uniforms.backingWidthPx
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

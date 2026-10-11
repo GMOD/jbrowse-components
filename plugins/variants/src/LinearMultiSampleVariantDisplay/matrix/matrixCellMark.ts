@@ -1,4 +1,3 @@
-import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -41,17 +40,13 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     pack: c => shader.packInstances(c, c.count),
   },
 
-  writeUniforms(scratch, _clip, _block, frame, params) {
+  writeUniforms(scratch, clip, _block, frame, params) {
     shader.writeUniforms(scratch, {
       numFeatures: params.numFeatures,
-      canvasWidth: frame.canvasWidth,
       canvasHeight: frame.canvasHeight,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
-      // The shader rebuilds the backing-store width as `canvasWidth * dpr` to
-      // snap column edges to physical pixels, so this has to be the ratio
-      // `hal.resize` sized the store with, cap included.
-      devicePixelRatio: getDpr(),
+      backingWidthPx: frame.canvasWidth * clip.scaleX,
     })
   },
 

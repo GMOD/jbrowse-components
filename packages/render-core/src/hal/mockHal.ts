@@ -2,6 +2,7 @@ import { getDpr } from '../canvas2dUtils.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 import { assertUniquePassIds } from './passIds.ts'
 
+import type { CanvasScale } from '../canvas2dUtils.ts'
 import type {
   GpuHal,
   PipelineDescriptor,
@@ -198,11 +199,13 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
     }
     this.record('resize', width, height)
     // The real HALs report the scale their backing store actually got, and
-    // every device-px rect a renderer builds comes from this — so a mock
-    // returning nothing is a renderer whose rects are all NaN. `getDpr()` is
-    // the unclamped answer, which is what a mock canvas of any size would get.
-    return { x: getDpr(), y: getDpr() }
+    // every device-px rect a renderer builds comes from this. `getDpr()` is the
+    // unclamped answer; `reportedScale` stands in for a clamped canvas or a
+    // drawing buffer the browser shrank.
+    return this.reportedScale ?? { x: getDpr(), y: getDpr() }
   }
+
+  reportedScale: CanvasScale | undefined = undefined
 
   releaseRenderTargets() {
     this.record('releaseRenderTargets')
