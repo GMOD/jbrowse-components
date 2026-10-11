@@ -366,3 +366,44 @@ test('a callback can still hide subfeatures', () => {
   expect(model.widget.error).toBeUndefined()
   expect(model.widget.featureData?.subfeatures).toBeUndefined()
 })
+
+test('clicking another feature keeps the sequence panel open on its type', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const mRNA = (uniqueId: string) => ({
+    uniqueId,
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+    type: 'mRNA',
+    subfeatures: [
+      { refName: 'ctgA', start: 0, end: 100, type: 'exon' },
+      { refName: 'ctgA', start: 10, end: 90, type: 'CDS' },
+    ],
+  })
+  const model = Session.create(
+    {
+      widget: { type: 'BaseFeatureWidget', unformattedFeatureData: mRNA('a') },
+    },
+    { pluginManager },
+  )
+  const { findAllByText, findByText, findByRole, getByRole } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  // the first is the clicked feature's own; its exon and CDS cards have theirs
+  fireEvent.click((await findAllByText('Show feature sequence'))[0]!)
+  fireEvent.mouseDown(await findByRole('combobox'))
+  fireEvent.click(getByRole('option', { name: 'Protein' }))
+
+  act(() => {
+    model.widget.setFeatureData(mRNA('b'))
+  })
+  expect(await findByText('Hide feature sequence')).toBeTruthy()
+  expect((await findByRole('combobox')).textContent).toBe('Protein')
+})

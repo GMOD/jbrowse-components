@@ -4,8 +4,10 @@ import {
   localStorageGetBoolean,
   localStorageGetItem,
   localStorageGetNumber,
+  localStorageGetStringArray,
   localStorageSetBoolean,
   localStorageSetItem,
+  localStorageSetJSON,
   localStorageSetNumber,
 } from '../../util/index.ts'
 
@@ -50,8 +52,8 @@ const sequenceDisplayModes = [
 
 export type SequenceDisplayMode = (typeof sequenceDisplayModes)[number]
 
-function parseSequenceDisplayMode(val: string | undefined) {
-  return sequenceDisplayModes.find(m => m === val)
+function isSequenceDisplayMode(val: string): val is SequenceDisplayMode {
+  return (sequenceDisplayModes as readonly string[]).includes(val)
 }
 
 const p = 'sequenceFeatureDetails'
@@ -108,11 +110,11 @@ export function SequenceFeatureDetailsF() {
       ),
       /**
        * #volatile
-       * the sequence type last picked in any panel; `resolveMode` falls back
-       * to a feature's default where it does not offer this one
+       * the sequence types picked in any panel, most recent first;
+       * `resolveMode` shows the first one a feature offers
        */
-      modeSetting: parseSequenceDisplayMode(
-        localStorageGetItem(`${p}-modeSetting`),
+      recentModes: localStorageGetStringArray(`${p}-recentModes`).filter(
+        isSequenceDisplayMode,
       ),
     }))
     .actions(self => ({
@@ -156,8 +158,8 @@ export function SequenceFeatureDetailsF() {
        * #action
        */
       setMode(f: SequenceDisplayMode) {
-        self.modeSetting = f
-        localStorageSetItem(`${p}-modeSetting`, f)
+        self.recentModes = [f, ...self.recentModes.filter(m => m !== f)]
+        localStorageSetJSON(`${p}-recentModes`, self.recentModes)
       },
     }))
     .views(self => ({

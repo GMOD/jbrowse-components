@@ -117,3 +117,38 @@ test('a picked sequence type the next feature lacks falls back to its default', 
   await act(async () => {})
   expect(within(container).getByRole('combobox').textContent).toBe('Genomic')
 })
+
+// the gene card and an exon card under it share one model: a plain type picked
+// on the exon must not cost the gene card its Protein
+test('a pick a feature cannot show leaves its earlier pick in place', async () => {
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <>
+      <div data-testid="transcript">
+        <SequenceFeatureDetails
+          model={model}
+          session={session}
+          assemblyName={undefined}
+          feature={transcript}
+        />
+      </div>
+      <div data-testid="region">
+        <SequenceFeatureDetails
+          model={model}
+          session={session}
+          assemblyName={undefined}
+          feature={region}
+        />
+      </div>
+    </>,
+  )
+  await act(async () => {})
+  pickSequenceType(getByTestId('transcript'), 'Protein')
+  await act(async () => {})
+  pickSequenceType(getByTestId('region'), 'Genomic +/- 100bp up+down stream')
+  await act(async () => {})
+
+  expect(
+    within(getByTestId('transcript')).getByRole('combobox').textContent,
+  ).toBe('Protein')
+})

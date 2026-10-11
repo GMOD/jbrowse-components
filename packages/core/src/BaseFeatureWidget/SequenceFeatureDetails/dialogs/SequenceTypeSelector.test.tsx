@@ -11,7 +11,7 @@ function openedOptions(feature: SimpleFeatureSerialized) {
     <SequenceTypeSelector
       model={SequenceFeatureDetailsF().create()}
       feature={feature}
-      mode={resolveMode(undefined, feature)}
+      mode={resolveMode([], feature)}
     />,
   )
   fireEvent.mouseDown(within(container).getByRole('combobox'))

@@ -89,15 +89,15 @@ export function getAvailableModes(
   return [...coding, ...rest]
 }
 
-// The setting is sticky and global, so clicking from one gene to the next
-// keeps e.g. the protein readout; a feature that does not offer it, such as a
-// noncoding transcript under 'protein', shows its own default instead.
+// The most recent pick this feature offers, so clicking from one gene to the
+// next keeps e.g. the protein readout, and picking Genomic on a plain feature
+// in between does not cost a gene its Protein.
 export function resolveMode(
-  setting: SequenceDisplayMode | undefined,
+  recentModes: readonly SequenceDisplayMode[],
   feature: SimpleFeatureSerializedNoId,
 ) {
   const modes = getAvailableModes(feature)
-  return setting && modes.includes(setting) ? setting : modes[0]!
+  return recentModes.find(m => modes.includes(m)) ?? modes[0]!
 }
 
 // whether the mode renders up/downstream flanks. shared by the sequence body

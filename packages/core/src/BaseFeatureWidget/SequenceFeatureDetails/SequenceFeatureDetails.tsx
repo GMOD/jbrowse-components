@@ -60,7 +60,7 @@ const SequenceFeatureDetailsPanel = observer(
     )
     const effectiveFeature = transcripts[transcriptIndex] ?? feature
 
-    const mode = resolveMode(model.modeSetting, effectiveFeature)
+    const mode = resolveMode(model.recentModes, effectiveFeature)
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
     // spread into whichever readout is mounted, rather than forwarded field by
