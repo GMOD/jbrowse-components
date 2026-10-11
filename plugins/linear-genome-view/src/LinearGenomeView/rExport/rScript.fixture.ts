@@ -4,15 +4,14 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import type { RExportTrack } from './exportView.ts'
+import type { RExportTrack } from './rScript.ts'
 
 export const VOLVOX = path.resolve('test_data/volvox')
-export const BASE_URI = `${pathToFileURL(VOLVOX).href}/`
-export const REGIONS = [{ refName: 'ctgA', start: 1000, end: 6000 }]
+const BASE_URI = `${pathToFileURL(VOLVOX).href}/`
 
 type Conf = Record<string, unknown> & { adapter: Record<string, unknown> }
 
-export function configTracks(file: string) {
+export function configTracks(file = 'config.json') {
   const config = JSON.parse(readFileSync(path.join(VOLVOX, file), 'utf8')) as {
     tracks: (Conf & { trackId: string; name?: string; displays?: Conf[] })[]
   }
@@ -39,11 +38,12 @@ function located(adapter: Record<string, unknown>): Record<string, unknown> {
   return out
 }
 
+/** A volvox track as the live view hands it over, `display` standing for both the written and the resolved config. */
 export function track(
-  source: ReturnType<typeof configTracks>,
   trackId: string,
   displayType: string,
-  display: Record<string, unknown>,
+  display: Record<string, unknown> = {},
+  source = configTracks(),
 ): RExportTrack {
   const t = source.get(trackId)!
   return {
@@ -57,32 +57,25 @@ export function track(
 }
 
 /**
- * Whether a tool the R suites need is present: false skips them, except
- * under `REQUIRE_R=1`, where the R CI job sets it, so a broken install fails
- * rather than going green.
+ * Whether R with ggjbrowse is present: false skips the R suites, except under
+ * `REQUIRE_R=1`, where the R CI job sets it, so a broken install fails rather
+ * than going green.
  */
-export function available(tool: string, run: () => void) {
+export function hasR() {
   try {
-    run()
+    execFileSync('Rscript', ['-e', 'library(ggjbrowse)'], { stdio: 'ignore' })
     return true
   } catch (e) {
     if (process.env.REQUIRE_R === '1') {
-      throw new Error(`REQUIRE_R is set but ${tool} is unavailable: ${e}`, {
-        cause: e,
-      })
+      throw new Error(
+        `REQUIRE_R is set but R with ggjbrowse is unavailable: ${e}`,
+        {
+          cause: e,
+        },
+      )
     }
     return false
   }
-}
-
-export function hasR(packages = ['rtracklayer', 'Rsamtools', 'ggjbrowse']) {
-  return available(`R with ${packages.join(', ')}`, () => {
-    execFileSync(
-      'Rscript',
-      ['-e', packages.map(p => `library(${p})`).join('; ')],
-      { stdio: 'ignore' },
-    )
-  })
 }
 
 export interface RCase {
@@ -92,16 +85,10 @@ export interface RCase {
   probe: string
 }
 
-/**
- * Runs every case's script in one R session, since attaching Bioconductor
- * dominates the cost, and answers each case's `probe` or the error it died
- * with.
- */
+/** Runs every case's script in one R session and answers each probe, or the error its script died with. */
 export function runCases(cases: readonly RCase[]) {
   const dir = mkdtempSync(path.join(tmpdir(), 'rexport-cases-'))
-  const lines: string[] = [
-    'suppressPackageStartupMessages({ library(ggplot2); library(patchwork) })',
-  ]
+  const lines = ['pdf(NULL)']
   for (const c of cases) {
     const file = path.join(dir, `${c.name}.R`)
     writeFileSync(file, c.script)

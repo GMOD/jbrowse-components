@@ -19,6 +19,7 @@ import { copyText } from '@jbrowse/core/util/copyText'
 import { renameIds } from '@jbrowse/core/util/types/mst'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import CodeIcon from '@mui/icons-material/Code'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FitScreenIcon from '@mui/icons-material/FitScreen'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -137,6 +138,17 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             handleClose,
           },
         ])
+      },
+    },
+    {
+      label: 'Export R script',
+      icon: CodeIcon,
+      onClick: () => {
+        import('./rExport/exportLinearView.ts')
+          .then(({ downloadRScript }) => downloadRScript(self))
+          .catch((e: unknown) => {
+            session.notifyError(`${e}`, e)
+          })
       },
     },
     ...(isSessionWithAddSessionTrack(session)

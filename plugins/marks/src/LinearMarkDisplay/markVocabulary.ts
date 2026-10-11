@@ -41,7 +41,6 @@ export type SizeScaleName = (typeof SIZE_SCALES)[number]
 
 export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
-export const DEFAULT_BIN_STEP = 10000
 export const DEFAULT_BIN_AS = ['start', 'end'] as const
 /** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
 export const BIN_OVERLAP_FIELD = 'overlap'

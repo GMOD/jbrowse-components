@@ -1,18 +1,18 @@
 name: R export
 
-# The R exporter's suites run each emitted script under Rscript and skip where R
-# is absent, which is every other job. Here REQUIRE_R=1 makes a missing R,
-# package or samtools a failure, so a broken install cannot pass as a skip.
+# The R exporter's suite runs each emitted script under Rscript and skips where
+# R is absent, which is every other job. Here REQUIRE_R=1 makes a missing R or
+# ggjbrowse a failure, so a broken install cannot pass as a skip.
 #
-# The exporter reads the browser's own rules at export time (palettes, color
-# encodings, presets), so a change outside rexport/ can break it without
-# touching these paths; the nightly run is what catches that.
+# The scripts call ggjbrowse's readers and jbrowse_stack(), so a change to
+# ggjbrowse can break them without touching these paths; the nightly run, which
+# installs ggjbrowse from its main, is what catches that.
 on:
   push:
     branches:
       - '**'
     paths:
-      - 'plugins/marks/src/rexport/**'
+      - 'plugins/linear-genome-view/src/LinearGenomeView/rExport/**'
       - 'test_data/volvox/**'
       - '.github/workflows/r-export.yml'
   schedule:
@@ -29,25 +29,28 @@ permissions:
 jobs:
   r-export:
     name: R export
-    # Pinned rather than -latest: the R stack comes from this release's apt
-    # archive, so its package names and Bioconductor versions move with it.
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
+      # ggjbrowse needs ggplot2 4, newer than the apt archive's, so R and its
+      # packages come from Posit's binary mirror
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2
+        with:
+          use-public-rspm: true
       - run:
-          sudo apt-get update && sudo apt-get -y install --no-install-recommends
-          r-base-core r-bioc-rtracklayer r-bioc-rsamtools
-          r-bioc-genomicalignments r-cran-ggplot2 r-cran-patchwork r-cran-curl
-          r-cran-jsonlite r-cran-v8 samtools tabix
+          Rscript -e 'install.packages(c("ggplot2", "patchwork", "scales",
+          "jsonlite", "curl", "V8"))'
       # ggjbrowse from its main: the engine it bundles is a @jbrowse/tables
       # release, which the downstream canary keeps current with this repo.
       - run: |
           curl -sL https://github.com/GMOD/ggjbrowse/archive/refs/heads/main.tar.gz | tar xz -C "$RUNNER_TEMP"
-          sudo R CMD INSTALL "$RUNNER_TEMP/ggjbrowse-main"
+          R CMD INSTALL "$RUNNER_TEMP/ggjbrowse-main"
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - run: pnpm exec jest plugins/marks/src/rexport --reporters=default
+      - run:
+          pnpm exec jest plugins/linear-genome-view/src/LinearGenomeView/rExport
+          --reporters=default
         env:
           REQUIRE_R: '1'

@@ -3,18 +3,14 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { markPlotSettingsOf } from '../LinearMarkDisplay/markPlot.ts'
-import { exportTracksToR } from './exportView.ts'
-import { locationPath } from './frameFor.ts'
-import { withoutUnset } from './withoutUnset.ts'
+import { exportTracksToR, locationPath, withoutUnset } from './rScript.ts'
 
-import type { RExportTrack } from './exportView.ts'
-import type { Region } from './rScript.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '../model.ts'
+import type { RExportTrack, Region } from './rScript.ts'
 
 type Track = LinearGenomeViewModel['tracks'][number]
 
+/** The regions on screen, each displayed region cut to what the view shows of it. */
 function viewRegions(view: LinearGenomeViewModel): Region[] {
   const blocks = view.coarseDynamicBlocks
   if (blocks.length === 0) {
@@ -69,18 +65,6 @@ async function refNamesOf(view: LinearGenomeViewModel, track: Track) {
   }
 }
 
-function displaySettings(display: {
-  type: string
-  configuration: AnyConfigurationModel
-}) {
-  const settings = withoutUnset(
-    fullConfSnapshot(display.configuration),
-  ) as Record<string, unknown>
-  return display.type === 'LinearMarkDisplay'
-    ? { ...settings, ...markPlotSettingsOf(display.configuration) }
-    : settings
-}
-
 async function tracksOf(view: LinearGenomeViewModel) {
   const reference = referenceOf(view)
   const tracks: RExportTrack[] = []
@@ -92,7 +76,9 @@ async function tracksOf(view: LinearGenomeViewModel) {
         trackName: `${getConf(track, 'name') || track.configuration.trackId}`,
         displayType: display.type,
         adapter: getConf(track, 'adapter') as Record<string, unknown>,
-        display: displaySettings(display),
+        display: withoutUnset(
+          fullConfSnapshot(display.configuration),
+        ) as Record<string, unknown>,
         writtenDisplay: getSnapshot(display.configuration),
         reference,
         viewBpPerPx: view.bpPerPx,
@@ -116,4 +102,32 @@ export async function exportLinearViewToR(
       ? ['view: shown right to left, where the figure runs left to right']
       : [],
   })
+}
+
+/** Downloads the view's R script, telling the user what it leaves out. */
+export async function downloadRScript(view: LinearGenomeViewModel) {
+  const session = getSession(view)
+  try {
+    const { saveAs } = await import('@jbrowse/core/util/FileSaver')
+    const { script, notes } = await exportLinearViewToR(view)
+    if (!script) {
+      session.notify(
+        `No open track has an R export. ${notes.join('; ')}`,
+        'warning',
+      )
+      return
+    }
+    saveAs(
+      new Blob([script], { type: 'text/plain;charset=utf-8' }),
+      'jbrowse_view.R',
+    )
+    if (notes.length) {
+      session.notify(
+        `Exported with ${notes.length} note${notes.length === 1 ? '' : 's'} in the script header`,
+        'info',
+      )
+    }
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+  }
 }

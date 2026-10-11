@@ -1,95 +1,35 @@
 ---
 name: r-export-next-steps
-description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built and reviewed twice, and since 2026-10-11 reads feature, quantitative and alignments tracks through ggjbrowse and draws them with its geoms; not landed. Open: Colin's call on landing, an external plugin or holding; a live-app check of the engine path; real data with R users; variant displays and the multi-BigWig palette."
+description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). Open: Colin's go to land it, a live-app check of this shape, mark displays through an engine marks table, the ggjbrowse vignette and first R users."
 ---
 
 # R export: what is left
 
-Written 2026-10-05, revised 2026-10-11. The exporter turns the open tracks of a linear genome view
-into a `.R` that redraws them in ggplot2, alignments read through ggjbrowse
-(JBrowse's engine in R) and the rest through rtracklayer. Where the code is,
-what it draws and the parity rules are in
-[R_EXPORT.md](../reference/R_EXPORT.md); the user-facing page is
-`website/docs/user_guides/r_export.md`. **Colin has not approved landing it**:
-it was landed once by mistake and taken back, so do not merge or push it
-without an explicit go.
-
-## State
-
-- Feature (GFF3, GTF, BED, BigBed), quantitative (BigWig, multi-BigWig) and
-  alignments (BAM, CRAM) tracks read through ggjbrowse since 2026-10-11 and
-  draw as `ggplot(result)` plus a `geom_jbrowse_*` per table, as ggjbrowse's
-  `autoplot` composes them. Each display's written config and, where it carries
-  a setting, its adapter config go to the engine verbatim (`engineToR.ts`), so
-  the gene glyph, labels, BigWig colors and axis, junctions, allele coverage,
-  insertions and clips are the browser's own. The hand ports (`bed_features`,
-  `gene_parts`, `gene_layout`, `collapse_isoforms`, `alignments_regions`,
-  `featureToPlot.ts`, `wiggleToMarks.ts`) are gone.
-- Several regions bind into one result through `jbrowse_regions`, on the
-  cumulative axis the mark displays share.
-- Mark displays still read through rtracklayer and translate in
-  `markToPlot.ts`.
-- The engine path is unit-tested under R (`exportViewR.test.ts`,
-  `rScriptRun.test.ts`) and was checked in the running app on 2026-10-11:
-  volvox GFF3, BigBed, BigWig, multi-BigWig, BAM and CRAM, over one region and
-  two, downloaded from the menu and run. The live adapter configs come back
-  without their defaults, so a GFF3 or BAM passes as a path and the BigBed as
-  its adapter list (for `aggregateField`).
-- Since 2026-10-11 (later) a feature track exports at the view's
-  `heightMode` and `height`, so under the default `fit` the figure drops the
-  labels and isoforms the browser drops to fit its 100 px; the engine runs the
-  display's fit ladder. A multi-BigWig takes the multi-track defaults and the
-  dealt palette, so it matches the browser too. Left: a label clipped at the
-  region's right edge, which R writes and the browser does not.
-- ggjbrowse needs 6150bd5 or later: a reader taking an adapter config,
-  `scale_y_jbrowse()`, `display$color` read as the config reads it, the bundle
-  with the fit ladder and palette (jbrowse-components 013ec7706f), and
-  `heightMode` defaulting to `grow` for its own users.
+Revised 2026-10-11. The export writes a short script of ggjbrowse reader calls
+and one `jbrowse_stack()`; [R_EXPORT.md](../reference/R_EXPORT.md) has where
+the code is, what it reads and the settled decisions, and
+`website/docs/user_guides/r_export.md` is the user-facing page. ggjbrowse is
+the product and the export a doorway to it (Colin, 2026-10-11); in-browser R is
+not wanted.
 
 ## Decide first (Colin)
 
-1. **Land, ship as an external plugin, or hold.** An external plugin needs the
-   grammar leaf modules (`markVocabulary`, `markSpecs`, `stepChannels`,
-   `autoBin`) reachable outside the repo, and `@jbrowse/core/util/getLocationUri`
-   kept published; see
-   [PLUGIN_ABI_STABILITY.md](../reference/PLUGIN_ABI_STABILITY.md). Its cost is a
-   silent ABI break with no compiler guard.
-2. **Where the translators live.** All three sit in `plugins/marks` because
-   `plugins/marks` cannot import `plugins/canvas` or `plugins/alignments`
-   without a cycle. A per-display export slot with a shared package would put
-   each next to the settings it reads. `BUILTIN_EXPORTERS` in `exportView.ts` is
-   the seam.
+- **Land it.** It was landed once by mistake and taken back, so it waits on an
+  explicit go. It now lives in `plugins/linear-genome-view` beside Export SVG,
+  is lazily imported, needs only core and adds no plugin export.
 
 ## Next, in order
 
-1. **Variant displays** through `jbrowse_variants` and
-   `geom_jbrowse_genotypes`.
-2. **Put it in front of two or three R users with their own tracks.** Ask what
-   they hit first: an unsupported track, a figure that differs from the
-   browser, or a script they could not extend.
-3. **Real data.** An hg38 BAM at a deep locus, a CRAM, a ten-track session,
-   `chr1` against `1` aliases.
-4. **Mark displays through the engine** too, once a mark table exists; then
-   `read_bigbed`, `read_gff` and the rest of `frameFor.ts` go.
-
-## Verify a change
-
-- `npx jest plugins/marks/src/rexport --reporters=default`. `exportViewR.test.ts`
-  runs real scripts in one R session and asserts on what they read
-  (`ggplot_build` rows and literal colors), not on a PNG existing.
-- **Also drive the real app.** Start the jbrowse-web dev server, open a volvox
-  config with a few tracks, click the view menu's Export R script, run the
-  downloaded file with `Rscript`, and read the figure beside a screenshot. The
-  live path caught three bugs the pure layer cannot: a default mark type the
-  config snapshot omits, empty-string placeholders in a resolved config, and a
-  `rowColor` default read as a setting.
-- Add a sabotage check for any new assertion; a green `exportView.test.ts`
-  figure case proves only that a file was written.
-
-## Do not redo
-
-- A black-box drawing package, a TS to R transpiler, `facet_grid` for
-  regions, and matching the browser pixel for pixel are settled in
-  R_EXPORT.md; so is hand-porting a browser rule the engine can run.
-- Do not propose Python or Vega-Lite as a replacement; the goal is the R
-  ecosystem.
+1. **Live-app check of this shape.** The earlier live checks (2026-10-11)
+   covered the previous exporter. Drive the menu over volvox with a feature,
+   a BigWig, a multi-BigWig, a VCF and an alignments track, one region and
+   two, and run the download.
+2. **Mark displays through the engine.** A marks table in `@jbrowse/tables`
+   built on `CoreGetEncodedLayers` / `markLayerRequest`, and one
+   `geom_jbrowse_marks()`, would bring back every arc/link track (BEDPE,
+   Hi-C loops, junctions) and the GWAS display without a hand translator.
+3. **ggjbrowse for its first users:** a vignette built from
+   `scripts/figures.R`, a tagged release once `@jbrowse/tables` publishes, an
+   r-universe build so V8 installs as a binary, then two or three R users with
+   their own tracks.
+4. **Real data:** an hg38 BAM at a deep locus, a CRAM, a ten-track session.

@@ -7,42 +7,56 @@ guide_category: General usage
 ---
 
 The linear genome view's menu has an **Export R script** item. It downloads
-`jbrowse_view.R`, a script that redraws the tracks open in the view over the
-regions on screen, reading the same data files. Run it with `Rscript` to get
-`figure.png`, or `source()` it and keep working with the plot objects.
+`jbrowse_view.R`, a short script that redraws the tracks open in the view, over
+the regions on screen, in R:
 
-- **Feature, quantitative and alignments tracks** read through
-  [ggjbrowse](https://github.com/GMOD/ggjbrowse), which runs JBrowse's own data
-  engine inside R. Each track's settings go to the engine as the track's config
-  writes them, so the figure shows what the browser shows.
-- **Mark displays** read through
-  [`rtracklayer`](https://bioconductor.org/packages/rtracklayer/) and draw as
-  plain `ggplot2` geoms.
+- **Each track is one call** to [ggjbrowse](https://github.com/GMOD/ggjbrowse),
+  which runs JBrowse's own data engine inside R and reads the track with the
+  settings it has in the view.
+- **The figure is one call**, `jbrowse_stack()`, which stacks the tracks as the
+  view does. `source()` the script and the figure appears; `Rscript` writes
+  `figure.png`.
 
-Every panel is an ordinary [`ggplot2`](https://ggplot2.tidyverse.org/) plot. A
-ggjbrowse track is `ggplot(result)` plus a geom per table
-(`geom_jbrowse_reads()`, `geom_jbrowse_glyphs()`, `geom_jbrowse_wiggle()`, ...),
-each taking any column of its table in `aes()`. You can add a `geom_*`, map
-another column, change a theme or stack the panels with `patchwork`.
+```r
+library(ggjbrowse)
+
+locus <- "ctgA:1,001-9,000"
+
+# GFF3Tabix genes
+genes <- jbrowse_features("https://jbrowse.org/volvox/volvox.sort.gff3.gz",
+  locus,
+  display = list(heightMode = "fit", height = 100),
+  width = 1588)
+
+# volvox-sorted.bam
+reads <- jbrowse_alignments("https://jbrowse.org/volvox/volvox-sorted.bam",
+  locus,
+  display = list(color = list(field = "mapq")))
+
+fig <- jbrowse_stack(genes, reads)
+fig
+```
+
+Each reader returns the tables its track draws, and every band is an ordinary
+`ggplot2` plot, so a figure is edited the usual way: draw one band alone with
+`autoplot(reads, "pileup")` and add a `geom_*`, a scale or a theme, or join your
+own table to `genes$features`. A feature track exports at the height the view
+gives it, so it drops the labels the view drops; change `"fit"` to `"grow"` to
+draw them all.
 
 ## What it draws
 
-| Track                                          | Drawn                                                                                                                                          |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Feature tracks (GFF3, GTF, BED, BigBed)        | Each feature's glyph on the display's rows, with transcripts, UTRs, intron lines, strand chevrons and arrows, and the labels shown at the zoom |
-| Quantitative tracks (BigWig, multi-BigWig)     | The display's plot type, colors, score axis and reference lines, a row per source where the display gives one                                  |
-| Alignments tracks (BAM, CRAM)                  | Splice-junction arcs, the coverage band with its allele colors, read-connection arcs, and the pileup with mismatches, indels and clips         |
-| Mark displays over BigWig, GFF3, VCF, BED, BAM | Each mark, color, shape and size scale, transform step, facet and row, as the display's config spells them                                     |
-
-A view of several regions draws them end to end on one axis, each track's panel
-spanning all of them.
+Feature tracks (GFF3, GTF, BED, BigBed), variant tracks and multi-sample variant
+matrices (VCF), quantitative tracks (BigWig, multi-BigWig) and alignments tracks
+(BAM, CRAM). Several regions on screen draw end to end, as the view lays them
+out.
 
 ## What it leaves out
 
-A track the exporter cannot draw, and a setting it cannot reproduce, land in a
-comment block at the top of the script. A figure that differs from the view says
-so there. Today that covers facets on feature tracks, a key for a linear color
-ramp, linked reads and chains, and displays other than those in the table.
+A track ggjbrowse cannot read yet, such as an arc or GWAS track, and a setting
+it cannot draw, such as a key for a linear color ramp, land in a comment block
+at the top of the script, which tells you where its figure differs from the
+view.
 
 ## Where the data lives
 
@@ -60,16 +74,13 @@ session can open.
 
 ## Requirements
 
-`ggplot2` always, `patchwork` when more than one panel is drawn,
-[ggjbrowse](https://github.com/GMOD/ggjbrowse) for feature, quantitative and
-alignments tracks (`remotes::install_github("GMOD/ggjbrowse")`), and for mark
-displays only the Bioconductor packages they need: `rtracklayer` and
-`GenomicRanges` for BigWig, GFF3 and BED, `Rsamtools` for tabix files. A BigBed
-reads with base R and `curl`.
+R with [ggjbrowse](https://github.com/GMOD/ggjbrowse):
+`remotes::install_github("GMOD/ggjbrowse")`. It brings `ggplot2`, `patchwork`
+and `V8`; no Bioconductor packages are needed. The script stops with the install
+line if the installed ggjbrowse is older than it needs.
 
-## Not pixel-perfect
+## How close to the view it is
 
-The export favours idiomatic R over matching the browser's rendering. Palettes
-approximate the browser's, a mark never draws narrower than two figure pixels,
-and ggplot2 chooses its own antialiasing. The aim is a figure that shows the
-same data and that you can restyle, not a screenshot.
+The data, rows, colors and keys are the browser's own, computed by the same
+engine. The drawing is ggplot2's: its text, antialiasing and panel spacing, so
+the figure shows what the view shows without being a screenshot of it.
