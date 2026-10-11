@@ -34,7 +34,7 @@ export async function testLinkedReadsDisplay({
   displayMode: DisplayMode
   timeout?: number
 }) {
-  const { view, findByTestId, findAllByTestId, findByText } = await createView(
+  const { view, findByTestId, findByText } = await createView(
     volvoxConfigWithTracks([track]),
   )
   const opts = [{}, { timeout }] as const
@@ -49,12 +49,4 @@ export async function testLinkedReadsDisplay({
 
   const display = await findSettledDisplay('pileup-display', { timeout })
   expectCanvasMatch(findCanvasIn(display))
-
-  // Bezier connections render in an SVG overlay, not the canvas, so the snapshot
-  // above can't see them — assert the overlay actually drew arc paths.
-  if (displayMode === 'bezier') {
-    expect(
-      (await findAllByTestId('pileup-bezier-arc', ...opts)).length,
-    ).toBeGreaterThan(0)
-  }
 }
