@@ -555,7 +555,7 @@ between the tier and the graph the
 [MAF track](#whole-genome-alignment-maf-projection) shows which strain, since
 its row breaks across each bubble it skips.
 
-<Figure caption="K12 around two insertion sequences, one node per bubble: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and boxed node are the IS5 element insH21, which all four other strains skip, their MAF rows breaking across it; NCTC86's row runs through insZ to its left." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences, variants under 50 bp folded: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and boxed node are the IS5 element insH21, which all four other strains skip, their MAF rows breaking across it; NCTC86's row runs through insZ to its left." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Right-click the IS5 node in the graph track and take **Open in K12**, the route
 [the HPRC page](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)

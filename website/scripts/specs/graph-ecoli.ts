@@ -1030,10 +1030,9 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 730,
     hideTooltip: true,
-    // Charcoal in a tier is a bubble ON K12's coordinates, not an allele off
-    // them: `bubbles_to_tier_bed.py` ranks every bubble 1 and every invariant
-    // stretch 0. The arrowed bubble spans K12 1,299,497-1,300,697, the element
-    // itself; the other four strains take the 1 bp allele.
+    // The fold keeps K12's segments and folds variants under 50 bp into them,
+    // so the boxed node is the IS5 element itself, K12 1,299,498-1,300,697, and
+    // the other four strains take the 1.2 kb deletion edge past it.
     //
     // No legend (review: "the red text box overlaps a bunch of stuff"): the
     // tutorial states what charcoal means just above the figure, and the pill
