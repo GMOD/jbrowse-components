@@ -877,8 +877,8 @@ describe('a mark that draws only in a zoom range', () => {
     ],
   }
   const draws = (viewBpPerPx: number) =>
-    render(display, undefined, undefined, viewBpPerPx).plot.layers.map(
-      l => l.geom,
+    render(display, undefined, undefined, viewBpPerPx).plot.layers.map(l =>
+      'geom' in l ? l.geom : l.jbrowse,
     )
 
   it('draws the mark the view is zoomed into and no other', () => {

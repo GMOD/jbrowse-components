@@ -114,6 +114,46 @@ export function layer<C extends string>(l: {
   return l
 }
 
+/** A ggjbrowse geom, which draws one table of the result it reads as the display draws it. */
+export type JBrowseGeom =
+  | 'reads'
+  | 'skips'
+  | 'deletions'
+  | 'mismatches'
+  | 'insertions'
+  | 'clips'
+  | 'letters'
+  | 'modifications'
+  | 'coverage'
+  | 'alleles'
+  | 'modification_coverage'
+  | 'junctions'
+  | 'junction_counts'
+  | 'arcs'
+  | 'arc_ticks'
+  | 'glyphs'
+  | 'labels'
+  | 'wiggle'
+  | 'rules'
+  | 'genotypes'
+
+export interface JBrowseLayer {
+  jbrowse: JBrowseGeom
+  /** The ggjbrowse result the geom reads. */
+  frame: RFrame
+  args?: Record<string, string | number | boolean | RExpr>
+}
+
+export type PlotLayer = Layer | JBrowseLayer
+
+export function jbrowseLayer(
+  jbrowse: JBrowseGeom,
+  frame: RFrame,
+  args?: JBrowseLayer['args'],
+): JBrowseLayer {
+  return { jbrowse, frame, args }
+}
+
 export type Scale =
   /** A value per listed key, in the key order the config declares. */
   | {
@@ -156,6 +196,8 @@ export type Scale =
   | { kind: 'identity'; key?: { breaks: RExpr; labels: RExpr; name: RExpr } }
   /** Rows counted down from the top, as a track stacks them. */
   | { kind: 'reverse' }
+  /** The display's key for a ggjbrowse result: its colors as they are, listed as the display lists them. */
+  | { kind: 'jbrowse'; of: RFrame; key?: string }
 
 /** A reference line across the panel at a value on the y axis. */
 export interface Rule {
@@ -165,12 +207,22 @@ export interface Rule {
 }
 
 export interface Plot {
-  layers: Layer[]
+  layers: PlotLayer[]
   /** At most one scale per aesthetic, which is all ggplot has. */
   scales?: Partial<Record<Aesthetic, Scale>>
   labs?: Partial<Record<Aesthetic | 'title', string | null>>
-  /** Split into one panel per value of this column, in `levels` order where given. */
-  facetBy?: { field: string; levels?: readonly string[] }
+  /**
+   * Split into one panel per value of this column, in `levels` order where
+   * given. `rows` stacks them as a track stacks its sections: on one y scale
+   * (`shared`), each on its own (`free`), or each as tall as its rows
+   * (`sized`). `when` splits only where that R condition holds.
+   */
+  facetBy?: {
+    field: string
+    levels?: readonly string[]
+    rows?: 'shared' | 'free' | 'sized'
+    when?: string
+  }
   rules?: Rule[]
   /**
    * Pin the x range so stacked panels line up. Without it each panel takes its
@@ -178,7 +230,7 @@ export interface Plot {
    * different loci.
    */
   xlim?: { start: number; end: number } | RExpr
-  ylim?: { min?: number; max?: number }
+  ylim?: { min?: number | RExpr; max?: number | RExpr } | RExpr
   /** A value the y axis reaches whatever the data span, `scales.y.zero`'s 0. */
   expandY?: number | RExpr
   legend?: boolean
@@ -214,7 +266,29 @@ function renderConstant(key: string, v: string | number | RExpr) {
   return rStr(key === 'fill' || key === 'colour' ? rColor(v) : v)
 }
 
-function renderLayer(l: Layer, primary: string) {
+function renderJBrowseLayer(l: JBrowseLayer, primary: string) {
+  const parts = [
+    ...(l.frame.name === primary ? [] : [`data = ${l.frame.name}`]),
+    ...Object.entries(l.args ?? {}).map(([k, v]) => `${k} = ${renderArg(v)}`),
+  ]
+  return `geom_jbrowse_${l.jbrowse}(${parts.join(', ')})`
+}
+
+function renderArg(v: string | number | boolean | RExpr) {
+  if (typeof v === 'boolean') {
+    return v ? 'TRUE' : 'FALSE'
+  }
+  return typeof v === 'object'
+    ? v.expr
+    : typeof v === 'string'
+      ? rStr(v)
+      : String(v)
+}
+
+function renderLayer(l: PlotLayer, primary: string) {
+  if ('jbrowse' in l) {
+    return renderJBrowseLayer(l, primary)
+  }
   const parts = [
     ...(l.frame.name === primary ? [] : [`data = ${l.frame.name}`]),
     `aes(${renderAes(l.aes)})`,
@@ -237,6 +311,9 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   }
   if (s.kind === 'reverse') {
     return `scale_${aesthetic}_reverse()`
+  }
+  if (s.kind === 'jbrowse') {
+    return `scale_${aesthetic}_jbrowse(${[s.of.name, ...(s.key ? [rStr(s.key)] : [])].join(', ')})`
   }
   if (s.kind === 'identity') {
     return s.key
@@ -312,7 +389,21 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     : `scale_${aesthetic}_manual(${args.join(', ')})`
 }
 
-function renderFacet({ field, levels }: NonNullable<Plot['facetBy']>) {
+const ROWS_ARGS = {
+  shared: '',
+  free: ', scales = "free_y"',
+  sized: ', scales = "free_y", space = "free_y"',
+}
+
+function renderFacet(facet: NonNullable<Plot['facetBy']>) {
+  const facets = facetOf(facet)
+  return facet.when ? `(if (${facet.when}) ${facets})` : facets
+}
+
+function facetOf({ field, levels, rows }: NonNullable<Plot['facetBy']>) {
+  if (rows) {
+    return `facet_grid(rows = vars(${rIdent(field)})${ROWS_ARGS[rows]})`
+  }
   const by = levels?.length
     ? `factor(${rIdent(field)}, levels = c(${levels.map(l => rStr(l)).join(', ')}, sort(setdiff(unique(${rIdent(field)}), c(${levels.map(l => rStr(l)).join(', ')})))))`
     : rIdent(field)
@@ -377,10 +468,18 @@ function renderCoordArgs(plot: Plot) {
           `xlim = c(${'expr' in xlim ? xlim.expr : `${xlim.start}, ${xlim.end}`})`,
         ]
       : []),
-    ...(ylim ? [`ylim = c(${ylim.min ?? 'NA'}, ${ylim.max ?? 'NA'})`] : []),
+    ...(ylim
+      ? [
+          `ylim = ${'expr' in ylim ? ylim.expr : `c(${renderBound(ylim.min)}, ${renderBound(ylim.max)})`}`,
+        ]
+      : []),
     // The browser's panel spans the region exactly, with no margin past it.
     'expand = FALSE',
   ].join(', ')
+}
+
+function renderBound(v: number | RExpr | undefined) {
+  return v === undefined ? 'NA' : typeof v === 'number' ? String(v) : v.expr
 }
 
 const SYNTAX_NAME = /^[A-Za-z.][A-Za-z0-9._]*$/

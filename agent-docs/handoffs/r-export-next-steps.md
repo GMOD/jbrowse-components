@@ -1,6 +1,6 @@
 ---
 name: r-export-next-steps
-description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built, reviewed twice, live-verified on volvox and, for alignments, reads through ggjbrowse, but is not landed. Open: Colin's call on landing, an external plugin or holding; feature tracks through the engine too; real data with R users; per-position base counts for the coverage band; insertions, clips, sort, facet and modifications on alignments."
+description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built and reviewed twice, and since 2026-10-11 reads feature, quantitative and alignments tracks through ggjbrowse and draws them with its geoms; not landed. Open: Colin's call on landing, an external plugin or holding; a live-app check of the engine path; real data with R users; variant displays and the multi-BigWig palette."
 ---
 
 # R export: what is left
@@ -16,21 +16,24 @@ without an explicit go.
 
 ## State
 
-- Mark displays (BigWig, GFF3, VCF, BED, BigBed, BAM), the wiggle display, the
-  gene glyph (GFF3, BED, BigBed) and an alignments pileup export, checked in
-  the running app against the browser, over one region or several.
-- Alignments (BAM and CRAM) read through ggjbrowse since 2026-10-11: the
-  display's `color` and `filter` objects go to the engine as written, so every
-  scheme the browser paints (strand, MAPQ bins, insert-size bands, pair
-  orientation, tags, a declared `range`) and every filter comes back exact,
-  with the browser's key; reads draw their deletions, splice gaps and mismatch
-  ticks (MD or the reference). The hand-written BAM readers and the samtools
-  CRAM decode are gone.
-- Two fresh adversarial reviews have run. The second, over the alignments and
-  gene-glyph translators, found no wrong picture in the fixes it was given;
-  its other findings are fixed or listed below.
-- Everything ran on volvox and a remote GENCODE bigBed. Nothing has run on an
-  hg38 BAM, a CRAM or a ten-track session.
+- Feature (GFF3, GTF, BED, BigBed), quantitative (BigWig, multi-BigWig) and
+  alignments (BAM, CRAM) tracks read through ggjbrowse since 2026-10-11 and
+  draw as `ggplot(result)` plus a `geom_jbrowse_*` per table, as ggjbrowse's
+  `autoplot` composes them. Each display's written config and, where it carries
+  a setting, its adapter config go to the engine verbatim (`engineToR.ts`), so
+  the gene glyph, labels, BigWig colors and axis, junctions, allele coverage,
+  insertions and clips are the browser's own. The hand ports (`bed_features`,
+  `gene_parts`, `gene_layout`, `collapse_isoforms`, `alignments_regions`,
+  `featureToPlot.ts`, `wiggleToMarks.ts`) are gone.
+- Several regions bind into one result through `jbrowse_regions`, on the
+  cumulative axis the mark displays share.
+- Mark displays still read through rtracklayer and translate in
+  `markToPlot.ts`.
+- The engine path is unit-tested under R (`exportViewR.test.ts`,
+  `rScriptRun.test.ts`) but **not yet checked in the running app**: the earlier
+  live check covered the hand-port path.
+- ggjbrowse needs 3c8e7ae or later: a reader taking an adapter config,
+  `scale_y_jbrowse()`, and `display$color` read as the config reads it.
 
 ## Decide first (Colin)
 
@@ -48,30 +51,21 @@ without an explicit go.
 
 ## Next, in order
 
-1. **Feature tracks through the engine too.** `read_bigbed`, `bed_features`,
-   `gene_parts`, `collapse_isoforms` and `gene_layout` are the hand ports of
-   browser rules the alignments path just shed; a `featureTables` beside
-   `alignmentTables` (the GFF3, BED, BigBed and VCF adapters plus the gene
-   glyph's layout) would retire them the same way. `TABLES.md` has the
-   contract shape.
-2. **Put it in front of two or three R users with their own tracks.** Ask what
-   they hit first: an unsupported track, a figure that differs from the browser,
-   or a script they could not extend.
-3. **Real data.** An hg38 BAM at a deep locus (time the engine's read and the
-   `alignments_regions` bind), a CRAM, a ten-track session, `chr1` against
-   `1` aliases.
-4. **The coverage band's allele colors.** The engine's `mismatches` already
-   carries each mismatch's `frequency`; a per-position base-count table from
-   the worker's SNP pass would color the band as the browser does, which the
-   header now admits it does not.
-5. **Mismatch geometry.** A tick is a fixed-width line; a base cell zoomed in
-   is wider. A 1 bp `geom_rect` needs a fill scale of its own beside the reads'.
-6. **Alignments.** Insertions and clips on reads (the worker has them), a key
-   for a linear ramp (the display's `ramps`), sashimi arcs, sort, facet,
-   modifications. Each is an engine table or column first, then a layer.
-7. **The class of bug, not the instances.** Read a rule off the browser's code
-   at export time, or better run it in the engine, and keep each one by a test
-   against the TypeScript original.
+1. **Drive the live app** over volvox with a feature, a BigWig, a multi-BigWig
+   and an alignments track, one region and two, and read each figure beside
+   the browser. Watch `getConf(track, 'adapter')`: whether it carries defaults
+   decides how often `engineSource` emits the adapter list over a path.
+2. **Variant displays** through `jbrowse_variants` and
+   `geom_jbrowse_genotypes`.
+3. **The multi-BigWig palette** for sources with no declared color, which the
+   engine does not deal yet (TABLES.md).
+4. **Put it in front of two or three R users with their own tracks.** Ask what
+   they hit first: an unsupported track, a figure that differs from the
+   browser, or a script they could not extend.
+5. **Real data.** An hg38 BAM at a deep locus, a CRAM, a ten-track session,
+   `chr1` against `1` aliases.
+6. **Mark displays through the engine** too, once a mark table exists; then
+   `read_bigbed`, `read_gff` and the rest of `frameFor.ts` go.
 
 ## Verify a change
 

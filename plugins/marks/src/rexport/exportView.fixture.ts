@@ -19,19 +19,22 @@ export function configTracks(file: string) {
   return new Map(config.tracks.map(t => [t.trackId, t]))
 }
 
-function located(adapter: Record<string, unknown>) {
+/** An adapter config with every location under it resolved against the volvox directory, as a loaded config's are. */
+function located(adapter: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = { ...adapter }
   for (const [k, v] of Object.entries(adapter)) {
-    if (k.endsWith('Location') && v && typeof v === 'object') {
-      out[k] = { ...v, baseUri: BASE_URI }
+    if (k === 'uri' && typeof v === 'string') {
+      out.uri = new URL(v, BASE_URI).href
+    } else if (Array.isArray(v)) {
+      out[k] = v.map(e =>
+        e && typeof e === 'object' ? located(e as Record<string, unknown>) : e,
+      )
+    } else if (v && typeof v === 'object') {
+      out[k] =
+        'uri' in v || 'localPath' in v
+          ? { ...v, baseUri: BASE_URI }
+          : located(v as Record<string, unknown>)
     }
-  }
-  const index = adapter.index as { location?: object } | undefined
-  if (index?.location) {
-    out.index = { ...index, location: { ...index.location, baseUri: BASE_URI } }
-  }
-  if (typeof adapter.uri === 'string') {
-    out.uri = new URL(adapter.uri, BASE_URI).href
   }
   return out
 }

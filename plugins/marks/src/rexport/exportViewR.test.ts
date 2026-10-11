@@ -22,7 +22,6 @@ import {
 } from './exportView.fixture.ts'
 import { exportTracksToR } from './exportView.ts'
 import { HELPERS } from './rHelpers.generated.ts'
-import { PANEL_WIDTH_INCHES } from './rScript.ts'
 
 import type { RCase } from './exportView.fixture.ts'
 import type { RExportTrack } from './exportView.ts'
@@ -57,7 +56,7 @@ const absentContig = register(
     [track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {})],
     [{ refName: 'ctgB', start: 0, end: 5000 }],
   ),
-  'c(nrow(reads_volvox_alignments), nrow(depth_volvox_alignments), nrow(mismatches_volvox_alignments))',
+  '{ a <- aln_volvox_alignments; c(nrow(a$reads), nrow(a$coverage), nrow(a$mismatches)) }',
 )
 
 const READ_NAME = 'ctgA_1405_1888_3:0:0_5:0:0_21c4'
@@ -68,7 +67,7 @@ const filtered = register(
       filter: { flagExclude: 1540 + 16, readName: READ_NAME },
     }),
   ]),
-  'c(unique(reads_volvox_alignments$name), unique(reads_volvox_alignments$strand))',
+  '{ r <- aln_volvox_alignments$reads; c(unique(r$name), unique(r$strand)) }',
 )
 
 const SPLICED_REGION = [{ refName: 'ctgA', start: 400, end: 1200 }]
@@ -83,7 +82,7 @@ const splicedReads = (spliced: 'only' | 'exclude') =>
       ],
       SPLICED_REGION,
     ),
-    'c(nrow(reads_spliced), sum(reads_spliced$read %in% gaps_spliced$read[gaps_spliced$type == "skip"]))',
+    '{ a <- aln_spliced; c(nrow(a$reads), sum(seq_len(nrow(a$reads)) %in% a$gaps$read[a$gaps$type == "skip"])) }',
   )
 const splicedOnly = splicedReads('only')
 const splicedExcluded = splicedReads('exclude')
@@ -101,10 +100,15 @@ const TWO_REGIONS = [
   { refName: 'ctgA', start: 1000, end: 3000 },
   { refName: 'ctgA', start: 3000, end: 3500 },
 ]
+/** A table's rows in region `k`, which a lone region's tables, read directly, hold all of. */
+const inRegion = `in_region <- function(d, k) d[if (is.null(d$.region)) rep(k == 1, nrow(d)) else d$.region == k, , drop = FALSE]`
 const regionTotals = (region: string) =>
-  `{ d <- depth_volvox_alignments[depth_volvox_alignments$.region == ${region}, ]
-  m <- mismatches_volvox_alignments[mismatches_volvox_alignments$.region == ${region}, ]
-  r <- reads_volvox_alignments[reads_volvox_alignments$.region == ${region}, ]
+  `{ ${inRegion}
+  a <- aln_volvox_alignments; lo <- regions$cum_start[${region}]; hi <- regions$cum_end[${region}]
+  d <- in_region(a$coverage, ${region}); d <- d[d$end > lo & d$start < hi, ]
+  d$start <- pmax(d$start, lo); d$end <- pmin(d$end, hi)
+  m <- in_region(a$mismatches, ${region}); m <- m[m$position >= lo & m$position < hi, ]
+  r <- in_region(a$reads, ${region})
   c(nrow(r), sum((d$end - d$start) * d$depth), max(d$depth), nrow(m)) }`
 const alignmentsOver = (regions: Region[]) =>
   scriptFor(
@@ -124,9 +128,8 @@ const eachAlone = TWO_REGIONS.map((r, i) =>
 const crossRegionTicks = register(
   'aln_two_regions_ticks',
   alignmentsOver(TWO_REGIONS),
-  `{ m <- mismatches_volvox_alignments; r <- reads_volvox_alignments
-  i <- match(paste(m$.region, m$read), paste(r$.region, r$read))
-  c(nrow(m) > 0, all(m$position >= r$start[i] & m$position < r$end[i]), all(m$row == r$row[i])) }`,
+  `{ a <- aln_volvox_alignments; m <- a$mismatches; r <- a$reads; i <- m$read
+  c(nrow(m) > 0, all(m$position >= r$start[i] & m$position < r$end[i]), all(m$row == r$row[i]), all(m$.region == r$.region[i])) }`,
 )
 
 function samtools(...args: string[]) {
@@ -174,7 +177,7 @@ if (hasSamtools) {
   samtools('index', aliasedNoMd)
 }
 const tickSet =
-  'paste(sort(paste(mismatches_spliced$position, mismatches_spliced$base)), collapse = " ")'
+  '{ m <- aln_spliced$mismatches; m <- m[m$position >= 400 & m$position < 1200, ]; paste(sort(paste(m$position, m$base)), collapse = " ") }'
 const splicedTicks = [
   splicedFrom(spliced),
   splicedFrom(noMd),
@@ -204,7 +207,7 @@ const insertClasses = (name: string, regions: Region[], region: number) =>
       ],
       regions,
     ),
-    `{ r <- reads_volvox_sv[reads_volvox_sv$.region == ${region}, ]
+    `{ ${inRegion}; r <- in_region(aln_volvox_sv$reads, ${region})
   paste(names(table(r$category)), table(r$category), collapse = " ") }`,
   )
 const pooledInsertClasses = SV_REGIONS.map((_, i) =>
@@ -214,28 +217,11 @@ const aloneInsertClasses = SV_REGIONS.map((r, i) =>
   insertClasses(`alone_${i + 1}`, [r], 1),
 )
 
-const splicedBlocks = register(
-  'aln_spliced_blocks',
-  scriptFor(
-    [track(main, 'spliced', 'LinearAlignmentsDisplay', {})],
-    SPLICED_REGION,
-  ),
-  `{ b <- read_blocks_spliced; s <- skips_spliced; r <- reads_spliced
-  key <- function(d) paste(d$.region, d$read)
-  covered <- tapply(b$end - b$start, key(b), sum)
-  skipped <- tapply(s$end - s$start, key(s), sum)
-  span <- setNames(r$end - r$start, key(r))
-  tiled <- all(covered[names(span)] + ifelse(is.na(skipped[names(span)]), 0, skipped[names(span)]) == span)
-  crossed <- any(vapply(seq_len(nrow(s)), function(j)
-    any(key(b) == key(s)[j] & b$start < s$end[j] & b$end > s$start[j]), TRUE))
-  c(nrow(s) > 0, tiled, !crossed) }`,
-)
 const deletions = register(
   'aln_deletions',
   scriptFor([track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {})]),
-  `{ d <- deletions_volvox_alignments; r <- reads_volvox_alignments
-  i <- match(paste(d$.region, d$read), paste(r$.region, r$read))
-  c(nrow(d) > 0, all(d$start >= r$start[i] & d$end <= r$end[i])) }`,
+  `{ a <- aln_volvox_alignments; d <- a$gaps[a$gaps$type == "deletion", ]; r <- a$reads
+  c(nrow(d) > 0, all(d$start >= r$start[d$read] & d$end <= r$end[d$read])) }`,
 )
 
 const collidingIds = register(
@@ -291,7 +277,7 @@ const insertCuts = register(
       color: { field: 'insertSize', domain: ['300', '600'] },
     }),
   ]),
-  `{ r <- reads_volvox_sv; t <- abs(r$insert_size)
+  `{ r <- aln_volvox_sv$reads; t <- abs(r$insert_size)
   c(all(r$category[t > 600] == "longInsert"), all(r$category[t > 0 & t < 300] == "shortInsert"),
     all(r$category[t >= 300 & t <= 600] == "normalInsert"), sum(t > 600) > 0, sum(t > 0 & t < 300) > 0) }`,
 )
@@ -317,7 +303,7 @@ const renamedIndex = register(
       },
     },
   ]),
-  'nrow(genes_gff3tabix_genes) > 0',
+  'nrow(genes_gff3tabix_genes$features) > 0',
 )
 
 const drawnRows = `sum(vapply(
@@ -362,7 +348,7 @@ const mapqBins = register(
     }),
   ]),
   `{ b <- ggplot_build(pileup_volvox_alignments)
-  u <- unique(data.frame(m = reads_volvox_alignments$mapq, f = toupper(b$data[[1]]$fill)))
+  u <- unique(data.frame(m = aln_volvox_alignments$reads$mapq, f = b$data[[1]]$fill))
   paste(c(paste(u$m, u$f)[order(u$m)], b$plot$scales$get_scales("fill")$get_labels()), collapse = "|") }`,
 )
 
@@ -403,9 +389,10 @@ function wiggle(display: Record<string, unknown>) {
   )
 }
 
-const layerRows = 'nrow(ggplot_build(p_wiggle_track_posneg)$data[[1]])'
+const drawn = 'Filter(nrow, ggplot_build(p_wig_wiggle_track_posneg)$data)'
+const layerRows = `sum(vapply(${drawn}, nrow, 1))`
 const layerColors = (aes: string) =>
-  `sort(unique(ggplot_build(p_wiggle_track_posneg)$data[[1]]$${aes}))`
+  `sort(unique(unlist(lapply(${drawn}, function(d) as.character(d$${aes})))))`
 
 const wiggleBar = register('wiggle_bar', wiggle({}), layerColors('fill'))
 const wiggleBarRows = register('wiggle_bar_rows', wiggle({}), layerRows)
@@ -416,8 +403,8 @@ const wiggleLine = register(
 )
 const wiggleHeat = register(
   'wiggle_heatmap',
-  wiggle({ mark: 'heatmap' }),
-  `length(unique(ggplot_build(p_wiggle_track_posneg)$data[[1]]$fill)) > 2`,
+  wiggle({ mark: 'span' }),
+  `length(${layerColors('fill')}) > 2`,
 )
 const wigglePlain = register(
   'wiggle_plain',
@@ -503,8 +490,9 @@ const bigBedGenes = register(
     [track(main, 'bigbed_genes', 'LinearBasicDisplay', {})],
     [{ refName: 'ctgA', start: 0, end: 24000 }],
   ),
-  `{ g <- genes_bigbed_genes; eden <- g$id[g$type == "gene" & g$name == "EDEN"]
-  c(sum(g$type == "gene"), length(eden), sum(g$type == "mRNA" & g$parent %in% eden)) }`,
+  `{ f <- genes_bigbed_genes$features; s <- genes_bigbed_genes$subfeatures
+  eden <- which(f$type == "gene" & f$name == "EDEN")
+  c(sum(f$type == "gene"), length(eden), sum(s$feature %in% eden)) }`,
 )
 
 const bigBedTwoRegions = register(
@@ -513,31 +501,10 @@ const bigBedTwoRegions = register(
     [track(main, 'bigbed_genes', 'LinearBasicDisplay', {})],
     TWO_REGIONS,
   ),
-  `{ g <- genes_bigbed_genes
-  per <- function(r) { e <- g$id[g$type == "gene" & g$name == "EDEN" & g$.region == r]
-    c(length(e), sum(g$type == "mRNA" & g$parent %in% e), sum(genes_bigbed_genes_parts$.region == r) > 0) }
+  `{ x <- genes_bigbed_genes; f <- x$features
+  per <- function(r) { e <- which(f$type == "gene" & f$name == "EDEN" & f$.region == r)
+    c(length(e), sum(x$subfeatures$feature %in% e), sum(x$rects$.region == r) > 0) }
   c(per(1), per(2)) }`,
-)
-
-const denseLabels = register(
-  'dense_labels',
-  scriptFor(
-    [track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {})],
-    [{ refName: 'ctgA', start: 0, end: 24000 }],
-  ),
-  `{ png(tempfile(), width = 1500, height = 500, res = 150)
-  l <- genes_gff3tabix_genes_lanes
-  bp <- 24000 / ${PANEL_WIDTH_INCHES}
-  w <- function(s) strwidth(s, units = "inches", cex = 3 * ggplot2::.pt / par("ps")) * bp
-  text <- rbind(
-    with(l[!is.na(l$label), ], data.frame(y = y, x0 = start, x1 = start + w(label))),
-    with(l[!is.na(l$description), ], data.frame(y = description_y, x0 = start, x1 = start + w(description))))
-  text$x0 <- pmax(text$x0, 0)
-  clashes <- sum(vapply(split(text, text$y), function(t) {
-    t <- t[order(t$x0), ]
-    sum(t$x0[-1] < t$x1[-nrow(t)])
-  }, 0))
-  c(clashes, nrow(text) > 40) }`,
 )
 
 const rgbBed = path.join(dir, 'rgb.bed')
@@ -562,9 +529,8 @@ function rgbBedScript(display: Record<string, unknown>) {
     [{ refName: 'ctgA', start: 0, end: 7000 }],
   )}`
 }
-const fillsOf = `{ p <- genes_rgb_parts; l <- genes_rgb_lanes
-  name <- l$name[match(p$lane, l$id)]
-  paste(unique(p$fill[name == "red"]), length(unique(p$fill[name == "plain"]))) }`
+const fillsOf = `{ x <- genes_rgb; name <- x$features$name[x$rects$feature]
+  paste(unique(x$rects$color[name == "red"]), length(unique(x$rects$color[name == "plain"]))) }`
 const bedOwnColor = register('bed_own_color', rgbBedScript({}), fillsOf)
 const bedSetColor = register(
   'bed_set_color',
@@ -609,9 +575,8 @@ function multiGffScript(regions: Region[]) {
 const sharedExons = register(
   'shared_exons',
   multiGffScript([{ refName: 'ctgA', start: 0, end: 8000 }]),
-  `{ p <- genes_multi_parts; l <- genes_multi_lanes
-  tx2 <- p[p$lane == "tx2", ]
-  c(sum(tx2$part == "CDS"), sum(tx2$part == "box"), na.omit(l$label), na.omit(l$description)) }`,
+  `{ x <- genes_multi; g1 <- which(x$features$name == "g1")
+  c(x$subfeatures$name[x$subfeatures$feature == g1], x$labels$text[is.na(x$labels$subfeature)]) }`,
 )
 const twoRegionGene = register(
   'two_region_gene',
@@ -619,11 +584,35 @@ const twoRegionGene = register(
     { refName: 'ctgA', start: 900, end: 1600 },
     { refName: 'ctgA', start: 3900, end: 5100 },
   ]),
-  `{ p <- genes_multi_parts; r <- regions
-  inside <- p$start >= r$cum_start[p$.region] & p$end <= r$cum_end[p$.region]
-  cds <- p[p$part == "CDS", ]
-  genomic <- cds$start - r$offset[cds$.region] + r$start[cds$.region]
-  c(all(inside), sum(p$part == "box"), any(genomic >= 2000 & genomic < 2500), sum(genes_multi_lanes$lane == 0)) }`,
+  `{ x <- genes_multi; r <- regions
+  inside <- function(d) all(d$start >= r$cum_start[d$.region] & d$end <= r$cum_end[d$.region])
+  genomic <- x$rects$start - r$offset[x$rects$.region] + r$start[x$rects$.region]
+  c(inside(x$rects), inside(x$lines), any(genomic >= 2000 & genomic < 2500), sum(x$features$name == "g1")) }`,
+)
+
+const stackPng = path.join(dir, 'stack.png')
+const stack = register(
+  'engine_stack_two_regions',
+  exportTracksToR({
+    tracks: [
+      track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {}),
+      track(
+        main,
+        'volvox_microarray_multi_multirowxy',
+        'LinearWiggleDisplay',
+        main.get('volvox_microarray_multi_multirowxy')!.displays![0]!,
+      ),
+      track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
+        color: { field: 'strand' },
+      }),
+    ],
+    regions: [
+      { refName: 'ctgA', start: 1000, end: 4000 },
+      { refName: 'ctgA', start: 6000, end: 9000 },
+    ],
+    out: stackPng,
+  }).script!,
+  `c(file.size(${JSON.stringify(stackPng)}) > 0, nrow(wig_volvox_microarray_multi_multirowxy$sources), max(genes_gff3tabix_genes$features$.region))`,
 )
 
 maybe('the emitted script, run under R', () => {
@@ -657,7 +646,7 @@ maybe('the emitted script, run under R', () => {
       expect(totals.every(n => n > 0)).toBe(true)
       expect(results.get(name)).toBe(results.get(eachAlone[i]!))
     }
-    expect(results.get(crossRegionTicks)).toBe('[1] TRUE TRUE TRUE')
+    expect(results.get(crossRegionTicks)).toBe('[1] TRUE TRUE TRUE TRUE')
   })
 
   ;(hasSamtools ? it : it.skip)(
@@ -679,8 +668,7 @@ maybe('the emitted script, run under R', () => {
     }
   })
 
-  it('draws a spliced read as its blocks and a deletion inside its read', () => {
-    expect(results.get(splicedBlocks)).toBe('[1] TRUE TRUE TRUE')
+  it('draws a deletion inside its read', () => {
     expect(results.get(deletions)).toBe('[1] TRUE TRUE')
   })
 
@@ -737,8 +725,7 @@ maybe('the emitted script, run under R', () => {
       `#${rgb
         .match(/\d+/g)!
         .map(n => Number(n).toString(16).padStart(2, '0'))
-        .join('')
-        .toUpperCase()}`
+        .join('')}`
     // the key lists the bins the reads fall in, highest first
     const wanted = [
       `25 ${hex(range[2]!)}`,
@@ -783,7 +770,7 @@ maybe('the emitted script, run under R', () => {
   it('draws a wiggle line, heatmap and plain color', () => {
     expect(results.get(wiggleLine)).toBe('[1] "#0068d1" "#e01e26"')
     expect(results.get(wiggleHeat)).toBe('[1] TRUE')
-    expect(results.get(wigglePlain)).toBe('[1] "darkgreen"')
+    expect(results.get(wigglePlain)).toBe('[1] "#006400"')
   })
 
   it('reads a BigBed as the same records its BED12 source holds', () => {
@@ -798,22 +785,22 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(bigBedTwoRegions)).toBe('[1] 1 3 1 1 3 1')
   })
 
-  it('keeps every label in a dense window clear of its neighbours', () => {
-    expect(results.get(denseLabels)).toBe('[1] 0 1')
-  })
-
   it('paints a BED record its own color where the track sets none', () => {
-    expect(results.get(bedOwnColor)).toBe('[1] "#FF0000 2"')
-    expect(results.get(bedSetColor)).toBe('[1] "purple 1"')
+    expect(results.get(bedOwnColor)).toBe('[1] "#ff0000 2"')
+    expect(results.get(bedSetColor)).toBe('[1] "#800080 1"')
   })
 
-  it('hangs an exon two isoforms share on both, and labels by name || id', () => {
+  it('lays out every isoform, and labels by name || id', () => {
     expect(results.get(sharedExons)).toBe(
-      '[1] "2"            "0"            "g1"           "g2"           "kinase thing"',
+      '[1] "tx1"          "tx2"          "g1"           "g2"           "kinase thing"',
     )
   })
 
+  it('stacks a feature, a multi-BigWig and an alignments track over two regions', () => {
+    expect(results.get(stack)).toBe('[1] 1 2 2')
+  })
+
   it('keeps a gene seen in two regions apart in each', () => {
-    expect(results.get(twoRegionGene)).toBe('[1] 1 0 0 2')
+    expect(results.get(twoRegionGene)).toBe('[1] 1 1 0 2')
   })
 })

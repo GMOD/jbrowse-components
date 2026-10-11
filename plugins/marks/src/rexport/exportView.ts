@@ -1,6 +1,15 @@
 import { DEFAULT_MARK_TYPE } from '../LinearMarkDisplay/markVocabulary.ts'
-import { alignmentsFile, alignmentsPanels } from './alignmentsToR.ts'
-import { featureFields, featurePlot } from './featureToPlot.ts'
+import { alignmentsPanels } from './alignmentsToR.ts'
+import {
+  displayArg,
+  engineDisplay,
+  engineResult,
+  engineSource,
+  featurePanel,
+  readerCall,
+  wigglePanel,
+  zoomOf,
+} from './engineToR.ts'
 import {
   READERS,
   frameFor,
@@ -11,10 +20,9 @@ import {
 } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { assembleRScript } from './rScript.ts'
-import { wiggleDisplaySpec } from './wiggleToMarks.ts'
+import { rStr } from './rplot.ts'
 
 import type { MarkType } from '../LinearMarkDisplay/markVocabulary.ts'
-import type { FeatureDisplaySpec } from './featureToPlot.ts'
 import type { ReaderName } from './frameFor.ts'
 import type { DisplaySpec, MarkConfig } from './markToPlot.ts'
 import type { Panel, Region } from './rScript.ts'
@@ -104,12 +112,6 @@ function locate(
   }
 }
 
-/** The bigGenePred columns that tell a coding transcript from a non-coding one. */
-const BIGGENEPRED_CODING_FIELDS = ['cdsStartStat', 'cdsEndStat', 'exonFrames']
-
-/** `BigBedAdapter`'s `aggregateField` default, bigGenePred's gene name. */
-const BIGBED_AGGREGATE_FIELD = 'geneName2'
-
 /** An adapter's settings its reader takes as arguments. */
 function readerArgs(adapter: Record<string, unknown>): Record<string, string> {
   const { type, scoreColumn } = adapter
@@ -172,66 +174,87 @@ function markPanels(
   }
 }
 
+/** Settings the engine has no table for yet, which the figure draws without. */
+function featureNotes(display: Record<string, unknown>) {
+  const color = display.color as { scale?: string; field?: string } | undefined
+  return [
+    ...(display.facet ? ['facet: drawn as one section'] : []),
+    ...(color?.field && color.scale === 'linear'
+      ? [`color: a linear ramp over ${color.field} keys no legend`]
+      : []),
+  ]
+}
+
 const featureExporter: RExporter = (track, regions) => {
-  const located = locate(track, [
-    'Gff3TabixAdapter',
-    'BedTabixAdapter',
-    'BigBedAdapter',
-  ])
-  if ('skipped' in located) {
-    return located
+  const source = engineSource('features', track.adapter)
+  if ('skipped' in source) {
+    return source
   }
-  const { type, uri, index } = located
-  const { key } = track
-  const display = track.display as unknown as FeatureDisplaySpec
-  const aggregate =
-    type === 'BigBedAdapter'
-      ? String(track.adapter.aggregateField ?? BIGBED_AGGREGATE_FIELD)
-      : undefined
-  const base = frameFor({
-    type,
-    uri,
-    index,
-    name: `genes_${key}`,
-    aliases: track.refNames,
-    fields: [
-      ...new Set([
-        ...featureFields(display, regions, track.viewBpPerPx),
-        ...(aggregate ? [aggregate, ...BIGGENEPRED_CODING_FIELDS] : []),
-      ]),
-    ],
-    args: readerArgs(track.adapter),
-    wholeFeatures: true,
-  })
-  const { plot, notes, heightWeight } = featurePlot({
-    display,
-    frame: base,
+  const written = engineDisplay(track.writtenDisplay ?? track.display)
+  const result = engineResult({
+    name: `genes_${track.key}`,
     regions,
-    aggregate,
-    geneHeuristic: track.adapter.disableGeneHeuristic !== true,
-    viewBpPerPx: track.viewBpPerPx,
+    aliases: track.refNames,
+    bpPerPx: zoomOf(regions, track.viewBpPerPx),
+    call: span =>
+      readerCall('features', [
+        source.file,
+        span.chrom,
+        span.start,
+        span.end,
+        ...(source.index ? [`index = ${rStr(source.index)}`] : []),
+        ...displayArg(written),
+        `width = ${span.width}`,
+      ]),
   })
   return {
-    panels: [{ variable: `p_${key}`, plot, heightWeight }],
-    notes: [...sourceNotes(uri), ...notes],
+    panels: [featurePanel({ result, regions })],
+    notes: [...source.uris.flatMap(sourceNotes), ...featureNotes(written)],
+  }
+}
+
+const wiggleExporter: RExporter = (track, regions) => {
+  const source = engineSource('wiggle', track.adapter)
+  if ('skipped' in source) {
+    return source
+  }
+  const result = engineResult({
+    name: `wig_${track.key}`,
+    regions,
+    aliases: track.refNames,
+    bpPerPx: zoomOf(regions, track.viewBpPerPx),
+    call: span =>
+      readerCall('wiggle', [
+        source.file,
+        span.chrom,
+        span.start,
+        span.end,
+        ...displayArg(engineDisplay(track.writtenDisplay ?? track.display)),
+        `width = ${span.width}`,
+      ]),
+  })
+  return {
+    panels: [wigglePanel({ result, regions, display: track.display })],
+    notes: source.uris.flatMap(sourceNotes),
   }
 }
 
 const alignmentsExporter: RExporter = (track, regions) => {
-  const file = alignmentsFile(track.adapter)
-  if ('skipped' in file) {
-    return file
+  const source = engineSource('alignments', track.adapter)
+  if ('skipped' in source) {
+    return source
   }
   const { panels, notes } = alignmentsPanels({
     display: track.display,
     written: track.writtenDisplay ?? track.display,
-    file,
+    source,
     regions,
     reference: track.reference,
     aliases: track.refNames,
     key: track.key,
+    bpPerPx: zoomOf(regions, track.viewBpPerPx),
   })
-  return { panels, notes: [...sourceNotes(file.uri), ...notes] }
+  return { panels, notes: [...source.uris.flatMap(sourceNotes), ...notes] }
 }
 
 export const BUILTIN_EXPORTERS: Record<string, RExporter> = {
@@ -239,9 +262,7 @@ export const BUILTIN_EXPORTERS: Record<string, RExporter> = {
     Object.keys(READERS),
     track => track.display as unknown as DisplaySpec,
   ),
-  LinearWiggleDisplay: markExporter(['BigWigAdapter'], track =>
-    wiggleDisplaySpec(track.display),
-  ),
+  LinearWiggleDisplay: wiggleExporter,
   LinearBasicDisplay: featureExporter,
   LinearAlignmentsDisplay: alignmentsExporter,
 }

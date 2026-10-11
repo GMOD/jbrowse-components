@@ -193,16 +193,12 @@ export function fileChrom(chrom: string, aliases?: Record<string, string>) {
  *
  * `read_regions` is the only place genomic coordinates become cumulative ones,
  * so a reader stays genomic and a new format needs no axis code.
- *
- * `wholeFeatures` reads each feature with its whole subtree and unclipped, for
- * a glyph laid out from parts outside the region; its caller clips after.
  */
 export function frameFor<K extends ReaderName>({
   type,
   uri,
   name = 'df',
   fields = [],
-  wholeFeatures = false,
   aliases,
   index,
   args = {},
@@ -211,7 +207,6 @@ export function frameFor<K extends ReaderName>({
   uri: string
   name?: string
   fields?: readonly string[]
-  wholeFeatures?: boolean
   aliases?: Record<string, string>
   /** The BAM's index, which R cannot find beside a remote file. */
   index?: string
@@ -237,12 +232,7 @@ export function frameFor<K extends ReaderName>({
     columns: [...reader.columns, ...asked, '.region'],
     coords: reader.coords,
     packages: reader.packages,
-    statements: wholeFeatures
-      ? `${name} <- read_regions(
-  function(chrom, start, end) whole_features(
-    function(chrom, start, end) ${read}, chrom, start, end),
-  regions, c(${coords}), clip = FALSE)`
-      : `${name} <- read_regions(
+    statements: `${name} <- read_regions(
   function(chrom, start, end) ${read},
   regions, c(${coords}))`,
   })

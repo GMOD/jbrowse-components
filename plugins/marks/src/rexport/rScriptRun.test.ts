@@ -13,7 +13,6 @@ import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import { alignmentsPanels } from './alignmentsToR.ts'
 import { hasR } from './exportView.fixture.ts'
-import { featureFields, featurePlot } from './featureToPlot.ts'
 import { frameFor, sourceNotes } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { HELPERS } from './rHelpers.generated.ts'
@@ -21,7 +20,6 @@ import { assembleRScript, helpersIn } from './rScript.ts'
 import { rStr } from './rplot.ts'
 
 import type { AlignmentsDisplaySnapshot } from './alignmentsToR.ts'
-import type { FeatureDisplaySpec } from './featureToPlot.ts'
 import type { ReaderName } from './frameFor.ts'
 import type { DisplaySpec } from './markToPlot.ts'
 import type { Region } from './rScript.ts'
@@ -119,48 +117,6 @@ interface Build {
   type: ReaderName
   uri: string
   regions: Region[]
-}
-
-interface GeneBuild {
-  display: FeatureDisplaySpec
-  type: 'Gff3TabixAdapter' | 'BedTabixAdapter'
-  uri: string
-  regions: Region[]
-}
-
-function geneScript({ display, type, uri, regions }: GeneBuild, out?: string) {
-  const f = frameFor({
-    type,
-    uri,
-    name: 'genes',
-    fields: featureFields(display, regions),
-    wholeFeatures: true,
-  })
-  const { plot, notes, heightWeight } = featurePlot({
-    display,
-    frame: f,
-    regions,
-  })
-  return assembleRScript({
-    regions,
-    panels: [{ variable: 'p1', plot, heightWeight }],
-    notes: [...sourceNotes(uri), ...notes],
-    out,
-  })
-}
-
-function geneFigure(name: string, b: GeneBuild) {
-  const png = path.join(CASES, `${name}.png`)
-  return { name: register(name, geneScript(b, png)), png }
-}
-
-/** The gene panel's frames, built by R, and then `body` over them. */
-function geneProbe(name: string, b: GeneBuild, body: string) {
-  const script = geneScript(b)
-  return register(
-    name,
-    `${script.slice(0, script.indexOf('p1 <- ggplot'))}\n${body}\n`,
-  )
 }
 
 function translate({ display, type, uri, regions }: Build) {
@@ -858,173 +814,6 @@ cat(df$row)
 
 const GENE_WINDOW = [{ refName: 'ctgA', start: 0, end: 24000 }]
 
-maybe('the gene glyph runs', () => {
-  const genes = geneFigure('genes', {
-    display: { showOnlyGenes: true },
-    type: 'Gff3TabixAdapter',
-    uri: GFF,
-    regions: GENE_WINDOW,
-  })
-  it('draws the volvox gene models', () => {
-    ran(genes.name)
-    expect(existsSync(genes.png)).toBe(true)
-  })
-
-  const lanes = geneProbe(
-    'genelanes',
-    {
-      display: { showOnlyGenes: true },
-      type: 'Gff3TabixAdapter',
-      uri: GFF,
-      regions: GENE_WINDOW,
-    },
-    `
-utr <- genes_parts[genes_parts$lane == "cds-Apple2" & genes_parts$part == "UTR", ]
-cat(sum(genes_lanes$gene == "EDEN"), paste(utr$start, utr$end, collapse = ","),
-  any(genes_lanes$type == "match"))
-`,
-  )
-  it('stacks a gene’s transcripts and implies the UTRs an mRNA leaves unnamed', () => {
-    // Apple2 is "mRNA with CDSs but no UTRs": 13000-17200 around CDS 13500-17000
-    expect(ran(lanes)).toBe('3 12999 13499,17000 17200 FALSE')
-  })
-
-  const longest = geneProbe(
-    'longest',
-    {
-      display: { showOnlyGenes: true, geneGlyphMode: 'longestCoding' },
-      type: 'Gff3TabixAdapter',
-      uri: GFF,
-      regions: GENE_WINDOW,
-    },
-    `
-cat(genes_lanes$id[genes_lanes$gene == "EDEN"],
-  sum(genes_parts$lane == "cds-Apple2" & genes_parts$part == "CDS"))
-`,
-  )
-  it('keeps the longest coding isoform and leaves a lone mRNA its CDS', () => {
-    expect(ran(longest)).toBe('EDEN.1 3')
-  })
-
-  const cut = geneProbe(
-    'cut',
-    {
-      display: { showOnlyGenes: true },
-      type: 'Gff3TabixAdapter',
-      uri: GFF,
-      regions: [{ refName: 'ctgA', start: 4000, end: 14000 }],
-    },
-    `
-e1 <- genes_parts[genes_parts$lane == "EDEN.1", ]
-cat(sum(e1$part == "CDS"), min(e1$start))
-`,
-  )
-  it('reads a transcript whole when the window cuts it', () => {
-    // two of EDEN.1's four CDS lie left of the window
-    expect(ran(cut)).toBe('4 1049')
-  })
-
-  const two = {
-    display: { showOnlyGenes: true },
-    type: 'Gff3TabixAdapter' as const,
-    uri: GFF,
-    regions: [
-      { refName: 'ctgA', start: 1000, end: 9500 },
-      { refName: 'ctgA', start: 17000, end: 23500 },
-    ],
-  }
-  const twoFigure = geneFigure('genetwo', two)
-  const twoClipped = geneProbe(
-    'genetwoclipped',
-    two,
-    `
-inside <- function(d) all(d$start >= regions$cum_start[d$.region] &
-  d$end <= regions$cum_end[d$.region])
-cat(inside(genes_parts), inside(genes_lines), nrow(genes_parts) > 0)
-`,
-  )
-  it('clips each region’s glyphs to that region on the shared axis', () => {
-    ran(twoFigure.name)
-    expect(ran(twoClipped)).toBe('TRUE TRUE TRUE')
-  })
-
-  const bed = geneFigure('bedgenes', {
-    display: {},
-    type: 'BedTabixAdapter',
-    uri: BED,
-    regions: GENE_WINDOW,
-  })
-  const bedParts = geneProbe(
-    'bedparts',
-    { display: {}, type: 'BedTabixAdapter', uri: BED, regions: GENE_WINDOW },
-    `
-e1 <- genes_parts[genes_parts$lane == genes_lanes$id[genes_lanes$name == "EDEN.1"], ]
-cat(nrow(genes_lanes), sum(e1$part == "CDS"), sum(e1$part == "UTR"))
-`,
-  )
-  const bedPartsNoImplied = geneProbe(
-    'bedpartsnoimplied',
-    {
-      display: { impliedUTRs: false },
-      type: 'BedTabixAdapter',
-      uri: BED,
-      regions: GENE_WINDOW,
-    },
-    `
-e1 <- genes_parts[genes_parts$lane == genes_lanes$id[genes_lanes$name == "EDEN.1"], ]
-cat(nrow(genes_lanes), sum(e1$part == "CDS"), sum(e1$part == "UTR"))
-`,
-  )
-  it('draws a BED12 record as a transcript', () => {
-    ran(bed.name)
-    expect(existsSync(bed.png)).toBe(true)
-    // EDEN.1: four blocks, thick 1200-7608, so a UTR either end, which the
-    // record states itself and impliedUTRs does not take away
-    expect(ran(bedParts)).toBe('4 4 2')
-    expect(ran(bedPartsNoImplied)).toBe('4 4 2')
-  })
-
-  // Blocks 100-250, 500-600 and 850-1000, thick 200-900 where it codes.
-  const ucscParts = helperProbe(
-    'ucscparts',
-    `
-b <- data.frame(start = 100L, end = 1000L, strand = c(1L, 0L, -1L, -1L, -1L),
-  name = NA_character_, score = NA, thick_start = c(200, 200, 100, 200, 200),
-  thick_end = c(900, 900, 100, 900, 900), block_starts = "0,400,750",
-  block_sizes = "150,100,150", item_rgb = NA_character_,
-  cdsStartStat = c(NA, NA, NA, "none", "none"), cdsEndStat = c(NA, NA, NA, "none", "none"),
-  exonFrames = c(NA, NA, NA, "-1,-1,-1,", "0,1,-1,"), stringsAsFactors = FALSE)
-shape <- function(f, id) {
-  k <- f[f$parent %in% id, ]; k <- k[order(k$start), ]
-  paste(f$type[f$id == id], paste(k$type, k$start, k$end, collapse = ","))
-}
-f <- bed_features(b)
-plain <- bed_features(b[1, ], gene_heuristic = FALSE)
-cat(c(vapply(paste0("bed", 1:5), function(id) shape(f, id), ""), shape(plain, "bed1")), sep = "\n")
-`,
-  )
-  it('shapes BED12 records as generateUcscTranscript does', () => {
-    const blocks = (type: string) =>
-      [
-        [100, 250],
-        [500, 600],
-        [850, 1000],
-      ]
-        .map(([s, e]) => `${type} ${s} ${e}`)
-        .join(',')
-    const coding = (up: string, down: string) =>
-      `mRNA ${up} 100 200,CDS 200 250,CDS 500 600,CDS 850 900,${down} 900 1000`
-    expect(ran(ucscParts).split('\n')).toEqual([
-      coding('five_prime_UTR', 'three_prime_UTR'),
-      `feature ${blocks('block')}`,
-      `transcript ${blocks('exon')}`,
-      `transcript ${blocks('exon')}`,
-      coding('three_prime_UTR', 'five_prime_UTR'),
-      `feature ${blocks('block')}`,
-    ])
-  })
-})
-
 maybe('the BED mark tracks run', () => {
   const config = JSON.parse(
     readFileSync(path.resolve('test_data/volvox/config_marks.json'), 'utf8'),
@@ -1124,25 +913,23 @@ cat(paste(names(t), t, sep = "=", collapse = " "))
   })
 })
 
-maybe('an alignments display draws as a pileup', () => {
+maybe('an alignments display draws through ggjbrowse', () => {
   const region = [{ refName: 'ctgA', start: 1000, end: 6000 }]
   const FASTA = path.resolve('test_data/volvox/volvox.fa')
+  const panelsFor = (display: AlignmentsDisplaySnapshot, uri = BAM) =>
+    alignmentsPanels({
+      display,
+      written: display,
+      source: { file: rStr(uri), uris: [uri] },
+      regions: region,
+      reference: FASTA,
+      bpPerPx: 5000 / 1500,
+    })
   const script = (
     display: AlignmentsDisplaySnapshot,
     uri: string,
     out?: string,
-  ) =>
-    assembleRScript({
-      regions: region,
-      ...alignmentsPanels({
-        display,
-        written: display,
-        file: { uri, index: `${uri}.bai` },
-        regions: region,
-        reference: FASTA,
-      }),
-      out,
-    })
+  ) => assembleRScript({ regions: region, ...panelsFor(display, uri), out })
   const pileupFigure = (
     name: string,
     display: AlignmentsDisplaySnapshot,
@@ -1154,7 +941,7 @@ maybe('an alignments display draws as a pileup', () => {
   const strand = pileupFigure('aln_strand', { color: { field: 'strand' } }, BAM)
   const insert = pileupFigure(
     'aln_insert',
-    { color: { field: 'insertSize' } },
+    { color: { field: 'insertSize' }, readConnections: 'arc' },
     PAIRED_BAM,
   )
   const nm = pileupFigure(
@@ -1162,13 +949,14 @@ maybe('an alignments display draws as a pileup', () => {
     { color: { field: 'tags.NM', scale: 'linear', scheme: 'viridis' } },
     BAM,
   )
-  it('draws coverage over a colored pileup with mismatch ticks', () => {
+  it('draws coverage over a colored pileup with its mismatches', () => {
     for (const f of [strand, insert, nm]) {
       ran(f.name)
       expect(existsSync(f.png)).toBe(true)
     }
   })
 
+  /** The script's reads, with no plot drawn, then `body` over them. */
   const probe = (
     name: string,
     display: AlignmentsDisplaySnapshot,
@@ -1176,16 +964,14 @@ maybe('an alignments display draws as a pileup', () => {
     body: string,
   ) => {
     const s = script(display, uri)
-    return register(
-      name,
-      `${s.slice(0, s.indexOf('coverage <- ggplot'))}\n${body}\n`,
-    )
+    const plots = s.search(/^\w+ <- ggplot\(/m)
+    return register(name, `${s.slice(0, plots)}\na <- aln\n${body}\n`)
   }
   const rows = probe(
     'aln_rows',
     {},
     BAM,
-    'cat(paste(reads$start, reads$end, reads$row), sep = ",")',
+    'cat(paste(a$reads$start, a$reads$end, a$reads$row), sep = ",")',
   )
   it('packs reads into the rows placeRect gives them', () => {
     const placed: number[][] = []
@@ -1202,7 +988,7 @@ maybe('an alignments display draws as a pileup', () => {
     'aln_insert_classes',
     { color: { field: 'insertSize' } },
     PAIRED_BAM,
-    `t <- table(reads$category); o <- table(reads$pair_orientation)
+    `t <- table(a$reads$category); o <- table(a$reads$pair_orientation)
 cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=", collapse = " "))`,
   )
   it('classes insert size and pair orientation as the browser does', () => {
@@ -1212,59 +998,40 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
     )
   })
 
-  const unreadDisplay = {
-    color: { field: 'mateRefName' },
-    facet: { field: 'strand' },
-  }
-  const unread = alignmentsPanels({
-    display: unreadDisplay,
-    written: unreadDisplay,
-    file: { uri: BAM, index: `${BAM}.bai` },
-    regions: region,
-  }).notes
-  it('names the settings it does not draw', () => {
-    expect(unread).toEqual(
-      expect.arrayContaining([
-        'not translated: facet',
-        'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',
-        'mismatches: a read with no MD tag draws no ticks, since no reference was given',
-      ]),
-    )
+  it('names what the figure cannot key', () => {
+    const { notes } = alignmentsPanels({
+      display: { color: { field: 'mateRefName' } },
+      written: {},
+      source: { file: rStr(BAM), uris: [BAM] },
+      regions: region,
+      bpPerPx: 1,
+    })
+    expect(notes).toEqual([
+      'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',
+      'mismatches: a read with no MD tag draws no mismatches, since no reference was given',
+    ])
   })
 
-  it('names a setting the config writes, not one its defaults fill', () => {
-    const resolved = {
-      modifications: { threshold: 10, twoColor: false, cytosineContext: 'CG' },
-      featureHeight: 7,
-      height: 250,
-    }
-    const notes = (written: Record<string, unknown>) =>
-      alignmentsPanels({
-        display: { ...resolved, ...written },
-        written,
-        file: { uri: BAM, index: `${BAM}.bai` },
-        regions: region,
-      }).notes.filter(n => n.startsWith('not translated'))
-    expect(notes({})).toEqual([])
-    expect(notes({ height: 400, showCoverage: false })).toEqual([])
-    expect(notes({ baseColor: { field: 'mapq', scale: 'none' } })).toEqual([])
-    expect(
-      notes({ modifications: { threshold: 20 }, featureHeight: 3 }),
-    ).toEqual(['not translated: modifications, featureHeight'])
+  it('hands the engine the settings the config writes, and keeps the ones that compose the figure', () => {
+    const s = script(
+      {
+        modifications: { threshold: 20 },
+        height: 400,
+        showCoverage: true,
+        minSashimiScore: 5,
+      },
+      BAM,
+    )
+    expect(s).toContain('display = list(modifications = list(threshold = 20))')
+    expect(s).toContain('geom_jbrowse_junctions(min_reads = 5)')
+    expect(s).not.toMatch(/height = 400|showCoverage/)
   })
 
   it('draws the coverage band alone where the pileup is hidden', () => {
-    const { panels, notes } = alignmentsPanels({
-      display: { showPileup: false, color: { field: 'mateRefName' } },
-      written: { showPileup: false, color: { field: 'mateRefName' } },
-      file: { uri: BAM, index: `${BAM}.bai` },
-      regions: region,
-    })
-    expect(notes).toEqual([
-      "coverage: one grey band, without the browser's allele colors or sashimi arcs",
-    ])
-    expect(panels.map(p => [p.variable, p.plot.labs?.x])).toEqual([
-      ['coverage', `${region[0]!.refName} (bp)`],
+    const { panels } = panelsFor({ showPileup: false })
+    expect(panels.map(p => [p.variable, p.when, p.plot.labs?.x])).toEqual([
+      ['junctions', 'any(aln$junctions$count >= 2)', null],
+      ['coverage', undefined, `${region[0]!.refName} (bp)`],
     ])
   })
 })

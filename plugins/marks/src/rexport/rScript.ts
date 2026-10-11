@@ -17,6 +17,8 @@ export interface Panel {
    * R expression for a panel whose height follows what it reads.
    */
   heightWeight?: number | string
+  /** An R condition the panel draws only under, for a band the data decides on, such as splice junctions. */
+  when?: string
 }
 
 /** ggsave refuses a dimension over 50 inches, and a panel stack can ask for more. */
@@ -57,15 +59,22 @@ function regionsFrame(regions: readonly Region[]) {
   end = c(${col(r => r.end)})))`
 }
 
+const guarded = (p: Panel, value: string | number) =>
+  p.when ? `if (${p.when}) ${value}` : String(value)
+
 function heightsFrame(panels: readonly Panel[]) {
-  return `heights <- c(${panels.map(p => p.heightWeight ?? 1).join(', ')})`
+  return `heights <- c(${panels.map(p => guarded(p, p.heightWeight ?? 1)).join(', ')})`
 }
 
 function stacked(panels: readonly Panel[]) {
+  if (panels.some(p => p.when)) {
+    return `patchwork::wrap_plots(Filter(Negate(is.null), list(${panels.map(p => guarded(p, p.variable)).join(', ')})),
+    ncol = 1, heights = heights, guides = "collect")`
+  }
   return panels.length === 1
     ? panels[0]!.variable
     : `${panels.map(p => p.variable).join(' / ')} +
-  patchwork::plot_layout(heights = heights)`
+  patchwork::plot_layout(heights = heights, guides = "collect")`
 }
 
 function rootOf(f: RFrame): RFrame {
@@ -123,7 +132,7 @@ export function assembleRScript({
       packages.add(pkg)
     }
   }
-  if (panels.length > 1) {
+  if (panels.length > 1 || panels.some(p => p.when)) {
     packages.add('patchwork')
   }
   const frames = framesOf(panels).map(f => f.statements)
