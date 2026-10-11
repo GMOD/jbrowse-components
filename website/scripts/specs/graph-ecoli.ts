@@ -192,6 +192,18 @@ const PGGB_ROWS_LOCUS = {
 }
 const PGGB_ROWS_WINDOW = 'chr:1,004,500-1,004,961'
 
+// The sample rows figure's 90 bp inside that window: the graph track folds
+// variants narrower than 10 px, so the 1 bp alleles at 1,004,663, 1,004,680
+// and 1,004,691 draw only below about 0.1 bp per px. CFT073 rejoins at
+// 1,004,686, so its bar still runs off the left edge.
+const PGGB_SAMPLE_ROWS_LOCUS = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 1004650,
+  end: 1004740,
+}
+const PGGB_SAMPLE_ROWS_WINDOW = 'chr:1,004,651-1,004,740'
+
 // The graph pangenome/pggb_out_to_strain opens the CFT073 node's menu on: the
 // rows window, with the cut held to it.
 const PGGB_STRAIN_GRAPH = graphTrack(PGGB_SEGMENTS_TRACK, {
@@ -712,8 +724,9 @@ function pggbLocusSession(
 // is legible ACROSS the composite rather than only within a half:
 //
 // - s2093 (43 bp, blue) and s2095 (558 bp, orange) are where one CFT073 detour
-//   leaves the backbone and rejoins it. At None they are the two loose ends. At
-//   1 hop the same two boxes are the two sides of a closed bubble.
+//   leaves the backbone and rejoins it. At None the cut's fold drops the 43 bp
+//   stub, so s2095 is the one boxed loose end. At 1 hop the two boxes are the
+//   two sides of a closed bubble.
 // - s2094 (5.5 kb) is that detour's interior. It sits on CFT073's own contig, so
 //   no K12 coordinate names it and the region query cannot reach it. It is what
 //   the hop adds, and the red arrow in that half points at it.
@@ -836,18 +849,22 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           [DETOUR_ENTRY, ENTRY_COLOR],
           [DETOUR_EXIT, EXIT_COLOR],
         ] as const
-      ).map(([graphNode, color]): Annotation => ({
-        type: 'box',
-        anchor: { graphNode },
-        strokeWidth: 3,
-        color,
-        // a wash the node's own color cannot be mistaken for, so the pairing
-        // survives being read at thumbnail size, where a 3px outline does not
-        fillOpacity: 0.1,
-        // clear of the node's own "43 bp" / "558 bp" label, which the graph
-        // writes across the node rather than inside its bounding box
-        pad: 22,
-      })),
+      )
+        .filter(
+          ([graphNode]) => subgraphContext > 0 || graphNode !== DETOUR_ENTRY,
+        )
+        .map(([graphNode, color]): Annotation => ({
+          type: 'box',
+          anchor: { graphNode },
+          strokeWidth: 3,
+          color,
+          // a wash the node's own color cannot be mistaken for, so the pairing
+          // survives being read at thumbnail size, where a 3px outline does not
+          fillOpacity: 0.1,
+          // clear of the node's own "43 bp" / "558 bp" label, which the graph
+          // writes across the node rather than inside its bounding box
+          pad: 22,
+        })),
       label(text),
       // the interior only the 1 hop cut reaches, ringed where it draws between
       // the two boxed nodes
@@ -1155,8 +1172,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/pggb_locus_sample_rows',
     url: pggbLocusSession('samplerows', {
-      region: PGGB_ROWS_LOCUS,
-      window: PGGB_ROWS_WINDOW,
+      region: PGGB_SAMPLE_ROWS_LOCUS,
+      window: PGGB_SAMPLE_ROWS_WINDOW,
       mafLane: true,
       // the halos and chips stacked over the rows, and one bubble label ran
       // off the pane's left edge

@@ -742,32 +742,31 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         dx: -10,
         dy: -80,
       },
-      // s352179+ is NA18948's 21 kb allele, the largest off-reference node in
-      // the window. It loops to the lower left of C4A, so the pill hangs off it
-      // to the left and the leader comes in across the node.
+      // s352179+ is NA18948's allele, the largest off-reference node in the
+      // window, at the bottom of the loop below C4A. The pill sits just below
+      // and right of it, where nothing else draws.
       {
         type: 'text',
         text: 'allele',
         leader: true,
         fontSize: 20,
         anchor: { graphNode: 's352179+' },
-        dx: -120,
-        dy: -40,
+        dx: 95,
+        dy: 40,
       },
       // s329764+ is one wall of the clearest lens in the cut: the reference
       // path, and the dashed 32.7 kb deletion arc bypassing it between the same
       // two nodes. An anchor names a node and a bubble is a pair of routes, so
-      // the caption says what the two routes are. Below-left is the one side
-      // where the leader crosses nothing; the offset keeps the pill clear of the
-      // allele arrowhead above it.
+      // the caption says what the two routes are. The pill sits in the gap
+      // between the two loops, above the allele pill.
       {
         type: 'text',
         text: 'bubble',
         leader: true,
         fontSize: 20,
         anchor: { graphNode: 's329764+' },
-        dx: -130,
-        dy: 145,
+        dx: -70,
+        dy: 110,
       },
     ],
     readySelector: GRAPH_DRAWN,

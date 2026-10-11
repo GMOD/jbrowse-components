@@ -99,7 +99,9 @@ const view = (
   ],
 })
 
-const DELETION_NODE = 's621558'
+// The backbone segment the 84.7 kb deletion rejoins. s621558, where it leaves,
+// merges into its neighbours when the cut folds.
+const DELETION_NODE = 's621574'
 const DELETION_LOCUS = 'chr1:196,810,000'
 
 const session = (

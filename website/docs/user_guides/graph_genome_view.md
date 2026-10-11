@@ -320,7 +320,7 @@ groups rows by the assembly each allele came from. A row then shows what that
 strain does to the reference: the backbone sits on top, and each strain's
 charcoal marks sit under it, tied by grey threads to where they attach.
 
-<Figure caption="460 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, where the other strains' rows hold only short alleles." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="90 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, where the other strains' rows hold only short alleles." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
 strain that _first contributed_ the sequence, because `SR` is build order and
@@ -411,7 +411,7 @@ same way, so a segment can be found in either. A hop is one step, so the right
 half still ends in a loose end. The hop expands only over off-reference
 segments, so it does not pull in the backbone on either side of the window.
 
-<Figure caption="The paa island cut from the same graph track twice, each under the lanes of its own linear view. Left, at Graph context None, each of the two boxed nodes has an unlinked end. Right, at 1 hop, the red ring marks the interior nodes the extra queries fetched, which link the two into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same graph track twice, each under the lanes of its own linear view. Left, at Graph context None, the boxed node has an unlinked end. Right, at 1 hop, the red ring marks the interior nodes the extra queries fetched, which link it to the blue-boxed entry as a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph with alleles nested inside alleles. On this
 window 1 hop already closes the cut. The setting stops at two, because hops only
