@@ -9,6 +9,11 @@ import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
+import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
+import {
+  dealtValueColors,
+  resolveRowColors,
+} from '@jbrowse/tree-sidebar/rowColorScale'
 import {
   computeAutoscaleDomain,
   getNiceDomain,
@@ -19,6 +24,11 @@ import {
 
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
+import {
+  UNCOLORED_ROW,
+  markColorOf,
+} from './LinearWiggleDisplay/sourcesLogic.ts'
+import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
 import { renderingOf } from './renderingTypes.ts'
@@ -65,6 +75,12 @@ export interface WiggleTablesArgs {
    * of a BigWig's zoom levels answers, and so how wide each bin is.
    */
   bpPerPx: number
+  /**
+   * The track type whose display defaults `display` fills from: a
+   * `MultiQuantitativeTrack` defaults to a row per source and no min-max
+   * extent. Unset, a `MultiWiggleAdapter` reads as one.
+   */
+  trackType?: 'QuantitativeTrack' | 'MultiQuantitativeTrack'
 }
 
 /**
@@ -82,9 +98,21 @@ export interface WiggleTablesArgs {
  */
 export async function wiggleTables(
   pluginManager: PluginManager,
-  { adapterConfig, region, display = {}, bpPerPx }: WiggleTablesArgs,
+  {
+    adapterConfig,
+    region,
+    display = {},
+    bpPerPx,
+    trackType = adapterConfig.type === 'MultiWiggleAdapter'
+      ? 'MultiQuantitativeTrack'
+      : 'QuantitativeTrack',
+  }: WiggleTablesArgs,
 ) {
-  const conf = linearWiggleDisplayConfigSchema.create({
+  const schema =
+    trackType === 'MultiQuantitativeTrack'
+      ? multiQuantitativeWiggleConfigSchema
+      : linearWiggleDisplayConfigSchema
+  const conf = schema.create({
     ...display,
     type: 'LinearWiggleDisplay',
     displayId: 'tables',
@@ -180,10 +208,37 @@ export async function wiggleTables(
     data.sources,
     readConfObject(conf.rows, 'domain'),
   )
+  const scoreGradientPaints =
+    density || (wiggleColor.rampLut !== null && !isLineMode(renderingType))
+  const rowColorPaintsMarks =
+    !scoreGradientPaints && setting.value === undefined && !setting.field
+  const paletteDeals = !rowLayout && sources.length > 1 && rowColorPaintsMarks
+  const rowColor = liftRowColor({
+    field: readConfObject(conf.rowColor, 'field'),
+    domain: readConfObject(conf.rowColor, 'domain'),
+    range: readConfObject(conf.rowColor, 'range'),
+    unknown: readConfObject(conf.rowColor, 'unknown'),
+  })
+  const rowColors = resolveRowColors(
+    sources,
+    rowColor.field,
+    dealtValueColors(rowColor, () => sources, paletteDeals),
+    undefined,
+  )
+  const uncolored =
+    paletteDeals && rowColors.size > 0 ? UNCOLORED_ROW : undefined
+  const markSources = sources.map(s => ({
+    name: s.name,
+    color:
+      markColorOf(
+        { color: s.color, rowColor: rowColors.get(s.name) },
+        rowColorPaintsMarks || !rowLayout,
+      ) ?? uncolored,
+  }))
   const layers = buildSourceRenderData(data, {
-    sources: sources.map(s => ({ name: s.name, color: s.color })),
+    sources: markSources,
     rowLayout: true,
-    perSource: false,
+    perSource: paletteDeals,
     wiggleColor,
     origin,
     aggregate,
@@ -331,7 +386,7 @@ export async function wiggleTables(
       name: sources.map(s => s.name),
       label: sources.map(s => s.label ?? s.name),
       group: sources.map(s => s.group ?? ''),
-      color: sources.map(s => s.color ?? ''),
+      color: markSources.map(s => (s.color ? cssColorToHex(s.color) : '')),
     },
     rules: {
       value: rules.map(r => r.value),

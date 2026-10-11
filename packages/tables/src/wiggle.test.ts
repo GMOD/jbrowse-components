@@ -1,3 +1,6 @@
+import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+
 import { createTablesEngine } from './index.ts'
 import {
   COVERAGE_BIGWIG,
@@ -158,9 +161,69 @@ test('a multi-wiggle stacks its sources in the order rows.domain gives', async (
     expect(rows.length).toBeGreaterThan(0)
     expect(new Set(rows)).toEqual(new Set([row]))
   })
-  const shared = await engine.wiggle(MULTI_BIGWIG)
+  const shared = await engine.wiggle({
+    ...MULTI_BIGWIG,
+    display: { rows: { field: '' } },
+  })
   expect(new Set(shared.marks.row)).toEqual(new Set([0]))
   expect(new Set(shared.marks.source).size).toBe(3)
+})
+
+test('a multi-wiggle reads under the multi-track defaults: a row per source, no min-max extent', async () => {
+  const zoomedOut = { ...MULTI_BIGWIG, bpPerPx: 500 }
+  const t = await engine.wiggle(zoomedOut)
+  expect(t.rowLayout).toBe(true)
+  expect(t.marks.band.some(Boolean)).toBe(false)
+  expect(t.marks.start).toHaveLength(t.bins.start.length)
+  const single = await engine.wiggle({
+    ...zoomedOut,
+    trackType: 'QuantitativeTrack',
+  })
+  expect(single.rowLayout).toBe(false)
+  expect(single.marks.start.length).toBeGreaterThan(t.marks.start.length)
+})
+
+describe('sources sharing one panel take the colors the display deals them', () => {
+  // the cases rowPalette.test.ts pins on the display model
+  const SHARED = { rows: { field: '' } }
+  const colorsOf = async (display: Record<string, unknown>) => {
+    const t = await engine.wiggle({
+      ...MULTI_BIGWIG,
+      display: { ...SHARED, ...display },
+    })
+    const painted = t.sources.name.map(name => [
+      ...new Set(t.marks.color.filter((_, i) => t.marks.source[i] === name)),
+    ])
+    return { declared: t.sources.color, painted }
+  }
+
+  it('deals each source a tableau10 color, painted on both sides of the cut', async () => {
+    const tableau = [0, 1, 2].map(i => cssColorToHex(rowPaletteColorAt(i)))
+    const { declared, painted } = await colorsOf({})
+    expect(declared).toEqual(tableau)
+    expect(painted).toEqual(tableau.map(c => [c]))
+  })
+
+  it("greys the sources rowColor's pairs leave out under its unknown", async () => {
+    const { declared } = await colorsOf({
+      rowColor: {
+        domain: ['posneg_rw2'],
+        range: ['#123456'],
+        unknown: '#cccccc',
+      },
+    })
+    expect(declared).toEqual(['#cccccc', '#123456', '#cccccc'])
+  })
+
+  it('deals nothing under None, nor over a declared color, nor while a gradient paints', async () => {
+    for (const display of [
+      { rowColor: { unknown: '' } },
+      { color: 'darkgreen' },
+      { mark: 'span' },
+    ]) {
+      expect((await colorsOf(display)).declared).toEqual(['', '', ''])
+    }
+  })
 })
 
 test('an interpolated line breaks into runs where the display breaks it', async () => {

@@ -188,10 +188,13 @@ layer encoder (`buildSourceRenderData`):
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
   resolves to, and `rules` the reference lines it draws.
 
-A source paints its own declared color. The palette the display deals to a
-shared panel's sources with none declared is the tree sidebar's
-(`dealtValueColors` over its arranged rows), which the table does not run
-yet, so those sources all paint the default pos/neg pair.
+A source paints the color the display gives it, through the tree sidebar's
+own rules (`dealtValueColors`, `resolveRowColors`, `markColorOf`): its row
+color where nothing else colors the marks, and in a shared panel the
+tableau10 palette dealt by name, or `rowColor`'s pairs. The `display` config
+fills its defaults from the track type's: a `MultiQuantitativeTrack`
+(`trackType`, inferred from a `MultiWiggleAdapter`) defaults to a row per
+source and no min-max extent.
 
 `@jbrowse/plugin-variants/tables` (`variantTables`) does the same for a
 multi-sample VCF. It takes the `LinearMultiSampleVariantDisplay`'s config,
