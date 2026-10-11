@@ -112,11 +112,13 @@ per axis, so an oversized canvas cannot throw `InvalidStateError`. Display
 height is user-dragged with no maximum, and the resize handle's double-click
 grows a track to its whole content.
 
-- **Chrome shrinks a WebGL drawing buffer past 7680x4320 px of area** and
-  leaves `canvas.width/height` at the requested size. `WebGL2Hal.resize`
-  therefore reports the scale from the drawing buffer. Capping area for every
-  backend was tried and dropped: it cost WebGPU and Canvas2D resolution they
-  never lacked, below 1 device px per CSS px on windows past ~4050 CSS px.
+- **Chrome shrinks a WebGL drawing buffer resized past 7680x4320 px of area**
+  and leaves `canvas.width/height` at the requested size. A canvas sized before
+  `getContext` escapes the cap, so a repro that does that shows no shrink
+  (`GPU_PORTABILITY.md`). `WebGL2Hal.resize` therefore reports the scale from
+  the drawing buffer. Capping area for every backend was tried and dropped: it
+  cost WebGPU and Canvas2D resolution they never lacked, below 1 device px per
+  CSS px on windows past ~4050 CSS px.
 - **Every device-px rect derives from the reported scale**: `clipBlock`,
   alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`.
 - **A shader that rebuilds device px from the dpr breaks this.** The variant

@@ -17,9 +17,12 @@ limits.
 - `MAX_CANVAS_DIM_PX` (`canvas2dUtils.ts`) equals the WebGPU floor; on WebGL2 it
   rests on "at least 8192 on essentially all real hardware".
 - Chrome's WebGL drawing-buffer cap is 7680x4320 px of area, measured identical
-  on SwiftShader, Vulkan and GL ANGLE backends in Chrome 155; Firefox 157 never
-  shrank. `WebGL2Hal.resize` reports the scale from the drawing buffer, so any
-  shrink draws correctly.
+  on SwiftShader, Vulkan and GL ANGLE backends in Chrome 155, headed and
+  headless; Firefox 157 never shrank. Chrome applies it only when a canvas
+  resizes after its context exists: one sized to 5172x8192 before `getContext`
+  keeps the whole buffer, and the same canvas resized afterwards gets 4576x7249.
+  The HAL always resizes after, so it always meets the cap, and
+  `WebGL2Hal.resize` reports the scale from the drawing buffer.
 - `MAX_VERTEX_BUFFER_BYTES` (`webgl2Hal.ts`) pins WebGPU's spec default because
   WebGL2 exposes no equivalent; the unguarded alternative is a dropped context.
 - `SampleCount` is `1 | 4`: 4 is the only multisample count WebGPU permits.
