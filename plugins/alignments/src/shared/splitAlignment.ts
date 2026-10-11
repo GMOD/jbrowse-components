@@ -39,11 +39,15 @@ import type { PanelStop } from '@jbrowse/sv-core'
  * SA on conforming input.
  */
 export function isSplitAlignment(feature: Feature) {
+  const flags = getFlags(feature)
+  if (splitBit(flags, '') === READ_SPLIT) {
+    return true
+  }
   const sa =
     (feature as Partial<MismatchFeature>).hasEndClip === false
       ? ''
       : extractFeatureTagValue(feature, 'SA')
-  return splitBit(getFlags(feature), sa) === READ_SPLIT
+  return splitBit(flags, sa) === READ_SPLIT
 }
 
 /**

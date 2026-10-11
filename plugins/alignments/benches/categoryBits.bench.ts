@@ -30,10 +30,11 @@
 //
 // A long read is the costly case: the walk stops at the region, and the bits
 // read every op, 7,300 a read here. `numericCigarCategoryBits` scans a long
-// CIGAR branch-free, which took the long-read BAM row from 16.7 ms; a pass that
-// only ORs each op's bit ran 9.3, so the pass itself is now the cost. The
-// lever left is `@gmod/bam`'s `_computeLengthOnRef`, which already reads every
-// op to answer `end`.
+// CIGAR branch-free (the branching form took 15.4 ms against 9.7, interleaved
+// in one process, and 11.6 against 13.5 on the short reads, hence the cut at
+// 32 ops); a pass that only ORs each op's bit ran 9.3, so the pass itself is
+// now the cost. The lever left is `@gmod/bam`'s `_computeLengthOnRef`, which
+// already reads every op to answer `end`.
 import { join } from 'node:path'
 
 import { BamFile, BamRecord } from '@gmod/bam'

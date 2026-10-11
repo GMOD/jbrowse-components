@@ -159,9 +159,10 @@ export interface AlignmentTablesArgs {
    */
   display?: Record<string, unknown>
   /**
-   * The assembly's reference sequence names in its own order, which
-   * `color: { field: "mateRefName" }` deals its palette by, as the browser
-   * does. Unset, the file header's order stands in.
+   * The assembly's contigs in its own order, spelled as the file spells them,
+   * which `color: { field: "mateRefName" }` deals its palette by: a read's
+   * mate reference is matched as written, where the browser canonicalizes it
+   * through the assembly first. Unset, the file header's order stands in.
    */
   refNames?: readonly string[]
   /**

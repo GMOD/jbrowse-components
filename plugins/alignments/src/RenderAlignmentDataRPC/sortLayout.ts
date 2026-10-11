@@ -838,8 +838,7 @@ export function computeMultiRegionLayout({
   // order and is canonicalized below.
   const extents = new Map<ReadKey, ReadExtent>()
   const orderedIds: ReadKey[] = []
-  // A read is lifted if any region's copy of it is: one carrying a skip, or
-  // an SA tag.
+  // A read is lifted if any region's copy of it is, by `readCategoryBits`.
   const liftedIds = new Set<ReadKey>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length

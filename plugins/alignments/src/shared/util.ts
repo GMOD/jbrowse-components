@@ -199,7 +199,7 @@ interface FilterableRead {
 
 // Whether `filterBy` drops a read, for every adapter: flags, read name, the
 // AND-ed tag filters and the spliced filter, which reads the record's own
-// `cigarCategoryBits` as the sort and the tables do.
+// `cigarCategoryBits`, the whole-record answer the extract stores for the sort.
 export function dropsRead(filterBy: ReadFilter | undefined) {
   const {
     flagInclude = 0,

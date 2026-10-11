@@ -91,8 +91,8 @@ export function isMismatchFeature(
 
 /**
  * `READ_SPLICED` and `READ_SV_DELETION` for any feature this pipeline serves:
- * an alignment record answers off its own CIGAR store, and a synteny block off
- * its CIGAR string.
+ * a record with `forEachMismatch` (BAM, CRAM, SAM, a synteny block) answers
+ * off its own `cigarCategoryBits`, and any other feature off its CIGAR string.
  */
 export function cigarCategoryBitsOf(feature: Feature) {
   return isMismatchFeature(feature)
