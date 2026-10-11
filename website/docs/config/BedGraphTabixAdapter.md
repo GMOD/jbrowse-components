@@ -55,5 +55,5 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BedGraphTabi
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bedgraphgzlocation">**bedGraphGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }</code> | location of the bgzip-compressed bedGraph (`chrom start end value`, sorted by position). Must be bgzip rather than plain gzip, which tabix cannot index. |
-| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | where the tabix index is and which kind it is. The `uri` shorthand derives both, so a config using it states neither. |
+| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | The tabix index location and its kind. The `uri` shorthand derives both, so a config using it states neither. |
 | <span id="slot-columnnames">**columnNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | List of column names |

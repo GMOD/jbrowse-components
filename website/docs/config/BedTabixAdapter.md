@@ -56,7 +56,7 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BedTabixAdap
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bedgzlocation">**bedGzLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }</code> | location of the bgzip-compressed BED, sorted by position. Must be bgzip rather than plain gzip, which tabix cannot index. |
-| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | where the tabix index is and which kind it is. The `uri` shorthand derives both, so a config using it states neither. |
+| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | The tabix index location and its kind. The `uri` shorthand derives both, so a config using it states neither. |
 | <span id="slot-columnnames">**columnNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text |
 | <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
 | <span id="slot-autosql">**autoSql**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The autoSql definition for the data fields in the file |

@@ -44,7 +44,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | How a count becomes a color: a `linear` or `log` scale onto a named `scheme`, over a domain whose unset ends follow the loaded counts. |
+| <span id="slot-color">**color**</span><br>[HicColor](../hiccolor) | The scale from count to color: a `linear` or `log` scale onto a named `scheme`, over a domain whose unset ends follow the loaded counts. |
 | <span id="slot-resolutionbias">**resolutionBias**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom |
 | <span id="slot-showresolutioncontrols">**showResolutionControls**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the on-figure resolution dropdown in the overlay |
 | <span id="slot-selectednormalization">**selectedNormalization**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'KR'</code> | preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has |

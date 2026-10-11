@@ -101,4 +101,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "PlinkLDTabix
 | Slot | Description |
 | --- | --- |
 | <span id="slot-ldlocation">**ldLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }</code> | Location of the bgzipped PLINK LD table (.ld.gz or .vcor.gz) |
-| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | where the tabix index is and which kind it is. The `uri` shorthand derives both, so a config using it states neither. |
+| <span id="slot-index">**index**</span><br>[TabixIndex](../tabixindex) | The tabix index location and its kind. The `uri` shorthand derives both, so a config using it states neither. |

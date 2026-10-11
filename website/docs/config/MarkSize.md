@@ -37,7 +37,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The px every instance takes: a point's diameter, a rule's thickness, a link's stroke where it reads no `field`. Unset is the mark's own, 4 for a point or a rule and 2 for a link. Writing `size: 7` lands here. |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field a link's width reads, or a jexl expression over `feature`. Empty draws every instance at `value`. Writing `size: "score"` lands here. |
-| <span id="slot-scale">**scale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | How the value becomes a width: `linear` or `log` between `domainMin` and `domainMax`. |
+| <span id="slot-scale">**scale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | The scale from value to width: `linear` or `log` between `domainMin` and `domainMax`. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the thinnest width stands at; unset, the loaded regions' own least. |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the widest width stands at; unset, the loaded regions' own greatest. |
 | <span id="slot-range">**range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The px at each end of the domain, thinnest first. Empty is 1 to 6. |

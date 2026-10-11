@@ -1,7 +1,7 @@
 ---
 id: alignmentsarccolor
 title: AlignmentsArcColor
-description: "The alignments displays' arcColor setting: what colors the read-connection arcs and the read cloud. Empty, the default, the arcs take the reads' color field where it is one an arc paints…"
+description: "The alignments displays' arcColor setting colors the read-connection arcs and the read cloud. Empty, the default, the arcs take the reads' color field where it is one an arc paints (insertSize,…"
 sidebar_label: Display -> AlignmentsArcColor
 ---
 
@@ -23,8 +23,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-The alignments displays' `arcColor` setting: what colors the
-read-connection arcs and the read cloud. Empty, the default, the arcs take the reads'
+The alignments displays' `arcColor` setting colors the read-connection
+arcs and the read cloud. Empty, the default, the arcs take the reads'
 `color` field where it is one an arc paints (`insertSize`,
 `pairOrientation`, `insertSizeAndOrientation`), and paint
 `insertSizeAndOrientation` under any other. A field of its own colors the

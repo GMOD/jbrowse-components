@@ -2940,7 +2940,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "baseUri": {
-          "description": "what relative bigWigs URLs resolve against, stamped from the location the config was loaded from.",
+          "description": "base for relative bigWigs URLs, stamped from the location the config was loaded from.",
           "default": "",
           "if": {
             "type": "null"
@@ -4882,7 +4882,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -5156,7 +5156,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -5222,7 +5222,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLabels": {
-          "description": "Which label text is drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
+          "description": "Label text drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
           "default": "auto",
           "if": {
             "type": "null"
@@ -5631,7 +5631,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -5742,7 +5742,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "what a value domain does not list takes: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting.",
+              "description": "color of a value domain does not list: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting.",
               "if": {
                 "type": "null"
               },
@@ -5952,7 +5952,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -6110,7 +6110,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6238,7 +6238,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -6355,7 +6355,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unmodified": {
-          "description": "which unmodified sites paint blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
+          "description": "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
           "default": "hidden",
           "if": {
             "type": "null"
@@ -6369,7 +6369,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "cytosineContext": {
-          "description": "which cytosines the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
+          "description": "cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
           "default": "CG",
           "if": {
             "type": "null"
@@ -6916,7 +6916,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -7085,7 +7085,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -7530,7 +7530,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -7573,7 +7573,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bezierRadiusRatio": {
-          "description": "how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
+          "description": "a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
           "default": 0.1,
           "if": {
             "type": "null"
@@ -7677,7 +7677,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bezierRadiusRatio": {
-          "description": "how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
+          "description": "a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
           "default": 0.1,
           "if": {
             "type": "null"
@@ -7828,7 +7828,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "strand",
               "if": {
                 "type": "null"
@@ -7956,7 +7956,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
+              "description": "key names for the values domain lists, in order, or with no domain for a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -8153,7 +8153,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -8322,7 +8322,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
           "default": "read",
           "if": {
             "type": "null"
@@ -8540,7 +8540,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "lodMode": {
-          "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
+          "description": "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
           "default": "auto",
           "if": {
             "type": "null"
@@ -8783,7 +8783,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -8881,7 +8881,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -8957,7 +8957,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
+              "description": "field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -9074,7 +9074,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -9198,7 +9198,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "how field becomes a color: categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
+              "description": "categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
@@ -9276,7 +9276,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -10426,7 +10426,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "name": {
-          "description": "what the layer's band is labelled.",
+          "description": "label of the layer's band.",
           "default": "",
           "if": {
             "type": "null"
@@ -10537,7 +10537,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "lodMode": {
-          "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
+          "description": "stored tier of a tiered file to fetch: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
           "default": "auto",
           "if": {
             "type": "null"
@@ -10873,7 +10873,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -10939,7 +10939,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLabels": {
-          "description": "Which label text is drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
+          "description": "Label text drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
           "default": "auto",
           "if": {
             "type": "null"
@@ -11188,7 +11188,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -11320,7 +11320,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -11505,7 +11505,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "unit": {
-          "description": "What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype.",
+          "description": "The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype.",
           "default": "sample",
           "if": {
             "type": "null"
@@ -11582,7 +11582,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "referenceDrawingMode": {
-          "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
+          "description": "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
           "default": "skip",
           "if": {
             "type": "null"
@@ -11624,7 +11624,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "variantLaneLabels": {
-          "description": "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
+          "description": "label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
           "default": "auto",
           "if": {
             "type": "null"
@@ -12104,7 +12104,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "treeProvenance": {
-              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "description": "the locus and settings tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
               "if": {
                 "type": "null"
               },
@@ -12279,7 +12279,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -12535,7 +12535,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "resolution": {
-          "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
+          "description": "points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
           "default": 1,
           "if": {
             "type": "null"
@@ -12592,7 +12592,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "aggregate": {
-          "description": "which of a zoom bin's stored summaries is drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing.",
+          "description": "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing.",
           "default": "mean",
           "if": {
             "type": "null"
@@ -12789,7 +12789,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "what colors a cell: mismatch, base, identity, chromosome or codon.",
+              "description": "field to color each cell by: mismatch, base, identity, chromosome or codon.",
               "default": "mismatch",
               "if": {
                 "type": "null"
@@ -12840,7 +12840,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },
@@ -13009,7 +13009,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "y": {
-          "description": "what a row's bar height carries: identity, or unset for none.",
+          "description": "the value a row's bar height shows: identity, or unset for none.",
           "if": {
             "type": "null"
           },
@@ -13729,7 +13729,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -13975,7 +13975,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "densityTier": {
-          "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
+          "description": "the switch from features to the features-per-bin density band: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
           "default": "auto",
           "if": {
             "type": "null"
@@ -25433,7 +25433,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth grey for a one-to-one MCScan .anchors or .blocks link and orange where genes share an ortholog; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
+              "description": "field to color each alignment by: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth grey for a one-to-one MCScan .anchors or .blocks link and orange where genes share an ortholog; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -25550,7 +25550,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
+              "description": "key name for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
                 "type": "null"
               },

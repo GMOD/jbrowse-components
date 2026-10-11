@@ -43,7 +43,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-svgready">**svgReady**</span><br><code>boolean</code> | the off-screen export gate, on the shared `computeSvgReady` policy. A radial display has no box to draw an error in, so the export fails rather than exporting a message |
 | <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> |  |
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  |
-| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | how far from the center a chord across the circle passes, as a fraction of the radius; a shorter chord bows less, in proportion to its span |
+| <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | a chord's distance from the center at its closest, as a fraction of the radius; a shorter chord bows less, in proportion to its span |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  |
 | <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by canonical assembly AND refName: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. |
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | what the chord components draw |
