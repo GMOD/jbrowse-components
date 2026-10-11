@@ -556,6 +556,8 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
+       * Which labels the `showLabels` mode shows at the on-screen feature
+       * density: names, descriptions, and whether only gene names survive.
        */
       // Gated here rather than only at `renderedShowLabels`, so layout, hit
       // testing, the DOM overlay and the SVG export agree; otherwise rows
