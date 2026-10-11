@@ -26,7 +26,7 @@ interface Row {
 // Each strain is LENGTH bases of N with the bases its rows declare written in,
 // so a row's own bases are findable and a pad, which is not N, never is.
 function genome(placed: Record<number, string>) {
-  const chars = Array<string>(LENGTH).fill('N')
+  const chars = new Array<string>(LENGTH).fill('N')
   for (const [at, bases] of Object.entries(placed)) {
     chars.splice(+at, bases.length, ...bases.split(''))
   }
