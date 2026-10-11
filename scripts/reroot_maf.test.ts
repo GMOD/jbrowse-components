@@ -39,6 +39,8 @@ const GENOMES = {
     100: 'ACGTA',
     600: 'ACGT',
     700: 'AC',
+    800: 'ACGT',
+    840: 'TT',
     900: 'ACGT',
     986: 'CGTT',
   }),
@@ -48,8 +50,9 @@ const GENOMES = {
     500: 'GT',
     700: 'ACGC',
     800: 'GGAC',
+    900: 'ACGT',
   }),
-  'IAI39#1#chr': genome({ 698: 'GT' }),
+  'IAI39#1#chr': genome({ 50: 'GG', 698: 'GT' }),
   'NCTC86#1#chr': genome({ 100: 'AC' }),
   'CFT073#1#chr': genome({ 50: 'TTT' }),
 }
@@ -85,6 +88,15 @@ s CFT073#1#chr 50 3 + ${LENGTH} GGG-
 a
 s K12#1#chr 700 2 + ${LENGTH} --AC
 s Sakai#1#chr 800 4 + ${LENGTH} GGAC
+
+a
+s K12#1#chr 800 4 + ${LENGTH} ----ACGT
+s Sakai#1#chr 900 4 + ${LENGTH} ACGTACGT
+s IAI39#1#chr 50 2 + ${LENGTH} GGGGGG--
+
+a
+s K12#1#chr 840 2 + ${LENGTH} TTTT
+s NCTC86#1#chr 100 2 + ${LENGTH} --AC
 `
 
 function parseMaf(text: string): Row[][] {
@@ -163,7 +175,7 @@ test('PanSN names become sample.contig, derived rather than substituted', () => 
 
 test('blocks come out sorted by reference start', () => {
   const starts = blocks.map(b => b[0]!.start)
-  expect(starts).toEqual([50, 100, 600, 700, 900, 986])
+  expect(starts).toEqual([50, 100, 600, 700, 800, 840, 900, 986])
 })
 
 test('no block overlaps its predecessor on the reference', () => {
@@ -204,7 +216,7 @@ test('a collapsed repeat becomes one block per reference copy', () => {
   for (const block of copies) {
     expect(block[1]).toMatchObject({ name: 'Sakai.chr', start: 700 })
   }
-  expect(stderr).toMatch(/1 of 5 input blocks carried several .* rows/)
+  expect(stderr).toMatch(/1 of 7 input blocks carried several .* rows/)
 })
 
 test('smoothxg padding is blanked wherever the genome places the row', () => {
@@ -235,6 +247,31 @@ test('a row that does not carry its declared bases is dropped', () => {
   expect(blockAt(600).map(r => r.name)).not.toContain('CFT073.chr')
   // counted over blocks that hold the reference, the only ones emitted
   expect(stderr).toMatch(/1 input rows did not carry their declared bases/)
+})
+
+test('a row holding its declared bases twice goes where it agrees with the block', () => {
+  // ACGTACGT holds Sakai's ACGT at 0 and at 4; only 4 lines up with K12's
+  // ACGT, and the first match would have put Sakai's bases over K12's gap
+  expect(blockAt(800)[1]).toMatchObject({
+    name: 'Sakai.chr',
+    start: 900,
+    seq: 'ACGT',
+  })
+})
+
+test('a row whose candidate offsets tie is dropped, unless it is the reference', () => {
+  // IAI39's GG fits at five offsets and no placed row agrees with any of them
+  expect(blockAt(800).map(r => r.name)).not.toContain('IAI39.chr')
+  // K12's TT fits at three, none agreeing either, and the reference is kept
+  // at the first so its coverage stays complete
+  expect(blockAt(840)[0]).toMatchObject({
+    name: 'K12.chr',
+    start: 840,
+    seq: 'TT',
+  })
+  expect(stderr).toMatch(
+    /3 input rows held them at several offsets: 1 placed by agreement with the block, 1 reference rows kept at a tie, 1 other rows dropped as ties/,
+  )
 })
 
 test('cropping a row to the reference span moves its start past what it cut', () => {

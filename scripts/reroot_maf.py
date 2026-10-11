@@ -58,6 +58,7 @@ Usage: reroot_maf.py <in.maf> <out.maf> <genomes.fa[.gz]> [reference_path]
 """
 import gzip
 import sys
+from collections import Counter
 
 REF = sys.argv[4] if len(sys.argv) > 4 else "K12#1#chr"
 _comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
@@ -139,32 +140,88 @@ def declared_bases(row, genome):
     return genome[name][srcsize - start - size:srcsize - start].translate(_comp)[::-1]
 
 
+def pad_offsets(row, genome):
+    """Every offset at which a row's ungapped sequence holds its declared bases."""
+    bases = row[6].replace("-", "").upper()
+    want = declared_bases(row, genome)
+    found, at = [], bases.find(want) if want else -1
+    while at >= 0:
+        found.append(at)
+        at = bases.find(want, at + 1)
+    return found
+
+
+def blank_pad(row, lead, genome):
+    """The row with everything but its declared bases, from ungapped index
+    `lead`, blanked to gap."""
+    bases = len(row[6]) - row[6].count("-")
+    trail = bases - int(row[3]) - lead
+    seq = row[6]
+    if lead:
+        seq = _blank_bases(seq, lead, leading=True)
+    if trail:
+        seq = _blank_bases(seq, trail, leading=False)
+    return row[:6] + [seq]
+
+
 def strip_pad(row, genome):
-    """Blank smoothxg's padding off a row, or return None for a row that does not
-    carry its own declared bases.
+    """The row with smoothxg's padding blanked, when its declared bases sit at
+    exactly one offset in it; None otherwise (strip_block places the rest)."""
+    found = pad_offsets(row, genome)
+    return blank_pad(row, found[0], genome) if len(found) == 1 else None
+
+
+def _agreement(seq, others):
+    """How many of a placed row's bases match a base another row has in the
+    same column."""
+    return sum(1 for i, char in enumerate(seq) if char != "-"
+               and any(o[i].upper() == char.upper() for o in others))
+
+
+def strip_block(rows, genome, stats):
+    """Blank smoothxg's padding off every row of a block, dropping a row that
+    does not carry its declared bases or cannot be placed.
 
     smoothxg's MAF writer pads rows past their declared `size`: 20,111 of the
     26,813 rows in the five-strain E. coli graph. The pad is not where the
     declared interval would put it. Located by matching each row against its
     genome, it sits on the left end of 8,047 rows, the right end of 3,951 and
     BOTH ends of 8,113, so no rule from strand or block position can find it,
-    and a crop that guesses leaves pad in and cuts real bases out. Located by
-    sequence, every surviving row is its genome's bases at its declared start.
-    72 padded rows and 19 unpadded ones carry bases their genome does not have
-    there at all; those are dropped.
+    and a crop that guesses leaves pad in and cuts real bases out.
+
+    Most rows hold their declared bases at one offset. 130 hold them at several
+    (short rows, or a pad repeating the row's own sequence), and the first match
+    is the wrong one for at least 30 of them, which sit 311 bases in. Those are
+    placed after every unambiguous row, at the offset whose bases agree with the
+    most bases the placed rows have in the same columns. A row whose candidates
+    tie is dropped, since nothing in the block says where it goes, except the
+    reference row: its bases are its own at any offset and no other row agrees
+    with any candidate, so it keeps the first, and K12 coverage stays complete.
+    A row holding its declared bases nowhere is dropped too: 72 padded rows and
+    19 unpadded ones.
     """
-    bases = row[6].replace("-", "").upper()
-    want = declared_bases(row, genome)
-    lead = bases.find(want) if want else -1
-    if lead < 0:
-        return None
-    seq = row[6]
-    trail = len(bases) - len(want) - lead
-    if lead:
-        seq = _blank_bases(seq, lead, leading=True)
-    if trail:
-        seq = _blank_bases(seq, trail, leading=False)
-    return row[:6] + [seq]
+    placed, pending = {}, []
+    for i, row in enumerate(rows):
+        found = pad_offsets(row, genome)
+        if len(found) == 1:
+            placed[i] = blank_pad(row, found[0], genome)
+        elif found:
+            pending.append((i, found))
+        else:
+            stats["no declared bases"] += 1
+    for i, found in pending:
+        others = [r[6] for r in placed.values()]
+        scored = sorted(((_agreement(blank_pad(rows[i], at, genome)[6], others), at)
+                         for at in found), reverse=True)
+        if scored[0][0] > (scored[1][0] if len(scored) > 1 else -1):
+            placed[i] = blank_pad(rows[i], scored[0][1], genome)
+            stats["placed by agreement"] += 1
+        elif rows[i][1] == REF:
+            placed[i] = blank_pad(rows[i], found[0], genome)
+            stats["reference kept at a tie"] += 1
+        else:
+            stats["ambiguous, dropped"] += 1
+    return [placed[i] for i in sorted(placed)]
 
 
 def _drop_empty_columns(rows):
@@ -179,7 +236,7 @@ def _drop_empty_columns(rows):
 def crop_to_reference(rows):
     """Trim a block's columns to the span of the reference row's bases.
 
-    Rows arrive with their padding blanked (strip_pad), so the reference row's
+    Rows arrive with their padding blanked (strip_block), so the reference row's
     bases are exactly its declared interval, and those intervals partition the
     reference: every emitted block covers its own, and K12 coverage stays
     complete. A column outside that span holds another row's bases where the
@@ -205,7 +262,7 @@ def crop_to_reference(rows):
     return _drop_empty_columns(cropped)
 
 
-def reroot(rows, genome=None):
+def reroot(rows, genome=None, stats=None):
     """Yield one block per REF row: that row at position 0, plus the other rows.
 
     A block with several REF rows is a collapsed repeat. A block is found through
@@ -223,7 +280,7 @@ def reroot(rows, genome=None):
     afterwards, which an interval index needs.
     """
     if genome is not None:
-        rows = [r for r in (strip_pad(r, genome) for r in rows) if r is not None]
+        rows = strip_block(rows, genome, Counter() if stats is None else stats)
     for i in (k for k, r in enumerate(rows) if r[1] == REF):
         # order-preserving, so i still indexes the same row
         block = _flip(rows) if rows[i][4] == "-" else rows
@@ -239,8 +296,8 @@ def main():
     genome = read_fasta(sys.argv[3])
     with open(sys.argv[1]) as fh:
         parsed = [rows for rows in parse_blocks(fh) if any(r[1] == REF for r in rows)]
-    blocks = [b for rows in parsed for b in reroot(rows, genome)]
-    dropped = sum(1 for rows in parsed for r in rows if strip_pad(r, genome) is None)
+    stats = Counter()
+    blocks = [b for rows in parsed for b in reroot(rows, genome, stats)]
     split = sum(1 for rows in parsed if sum(r[1] == REF for r in rows) > 1)
     padded = sum(1 for rows in parsed for r in rows
                  if len(r[6]) - r[6].count("-") != int(r[3]))
@@ -266,7 +323,14 @@ def main():
                      "match (smoothxg's block padding); padding blanked where the "
                      "genome places the row\n" % (padded, rows_in))
     sys.stderr.write("%d input rows did not carry their declared bases and were "
-                     "dropped\n" % dropped)
+                     "dropped\n" % stats["no declared bases"])
+    sys.stderr.write("%d input rows held them at several offsets: %d placed by "
+                     "agreement with the block, %d reference rows kept at a tie, "
+                     "%d other rows dropped as ties\n" % (
+                         stats["placed by agreement"] + stats["reference kept at a tie"]
+                         + stats["ambiguous, dropped"],
+                         stats["placed by agreement"], stats["reference kept at a tie"],
+                         stats["ambiguous, dropped"]))
     # Should be 0, and NOT because blocks anchor on the leftmost copy -- they
     # anchor in row order and are sorted afterwards, which is the same choice
     # the module docstring records rejecting leftmost for. What makes them
