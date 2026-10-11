@@ -356,11 +356,9 @@ function sourceNotes(uris: readonly string[]) {
     : []
 }
 
-/** A one-band restyle over the script's own names, runnable with only ggjbrowse attached. */
-function restyleExample(first: string, alignments?: string) {
-  return alignments
-    ? `autoplot(${alignments}, "pileup") + geom_jbrowse_mismatches(ggplot2::aes(alpha = quality))`
-    : `autoplot(${first}) + ggplot2::theme_minimal()`
+/** One band drawn alone over the script's own names: an alignments track's pileup, else the first track. */
+function oneBand(first: string, alignments?: string) {
+  return alignments ? `autoplot(${alignments}, "pileup")` : `autoplot(${first})`
 }
 
 /**
@@ -474,8 +472,9 @@ export function exportTracksToR({
     `# Install ggjbrowse with ${INSTALL}`,
     '#',
     '# Each reader returns the tables its track draws; jbrowse_stack() draws',
-    '# them. To restyle one band, draw it alone and add to it, e.g.',
-    `#   ${restyleExample(drawn[0]!, alignments)}`,
+    '# them. Restyle every band with &, or draw one alone and add to it:',
+    '#   fig & ggplot2::theme_classic()',
+    `#   ${oneBand(drawn[0]!, alignments)} + ggplot2::theme_classic()`,
     ...(notes.length
       ? [
           '#',
@@ -484,10 +483,13 @@ export function exportTracksToR({
         ]
       : []),
     '',
-    'library(ggjbrowse)',
-    `if (packageVersion("ggjbrowse") < ${rStr(GGJBROWSE_VERSION)}) {`,
+    'if (',
+    '  !requireNamespace("ggjbrowse", quietly = TRUE) ||',
+    `    packageVersion("ggjbrowse") < ${rStr(GGJBROWSE_VERSION)}`,
+    ') {',
     `  stop("this script needs ggjbrowse ${GGJBROWSE_VERSION} or later: ${INSTALL.replaceAll('"', '\\"')}")`,
     '}',
+    'library(ggjbrowse)',
     '',
     `locus <- ${lociLiteral(loci)}`,
     '',

@@ -45,7 +45,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     .filter(line => !line.startsWith('#'))
     .join('\n')
   expect(script).toContain(
-    '#   autoplot(volvox_alignments, "pileup") + geom_jbrowse_mismatches(ggplot2::aes(alpha = quality))',
+    '#   fig & ggplot2::theme_classic()\n#   autoplot(volvox_alignments, "pileup") + ggplot2::theme_classic()\n',
   )
   expect(code).not.toMatch(/region_layout|jbrowse_regions|geom_jbrowse/)
 })

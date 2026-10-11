@@ -51,9 +51,10 @@ facets on a feature track) land in the script header.
   patchwork of its own: an earlier exporter spelled every panel out in
   TypeScript, reached 100+ lines for three tracks and drifted from
   ggjbrowse's own `autoplot()` (panel heights, band choice). Composition
-  lives in ggjbrowse (`jbrowse_stack`), once. The header shows how to take
-  one band apart over the script's own track names, with `ggplot2::` spelled
-  out since the script attaches only ggjbrowse; `rScriptRun.test.ts` runs it.
+  lives in ggjbrowse (`jbrowse_stack`), once. The header shows how to restyle
+  every band (`fig & ...`, since `+` reaches only the last) and how to take one
+  apart, over the script's own track names, with `ggplot2::` spelled out since
+  the script attaches only ggjbrowse; `rScriptRun.test.ts` runs both.
 - **The engine reads, from the config as written.** A display's written
   config (`getSnapshot`, defaults left out) goes to the reader's `display`
   argument, so a setting the browser gains needs no exporter change and the

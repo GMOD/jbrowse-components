@@ -57,15 +57,19 @@ const stack = register(
   nrow(volvox_filtered_vcf$features) > 0, nrow(volvox_test_vcf$cells) > 0`,
 )
 
-const restyleExample = (script: string) =>
+const restyleExamples = (script: string) =>
   script
     .split('\n')
-    .find(line => line.startsWith('#   autoplot('))!
-    .slice(4)
+    .filter(line => /^# {3}(fig|autoplot)\b/.test(line))
+    .map(line => `print(${line.slice(4)})`)
 
 const restyled = (name: string, tracks: RExportTrack[]) => {
   const { script } = exportTracksToR({ tracks, regions: ONE })
-  return register(name, tracks, `{ print(${restyleExample(script!)}); TRUE }`)
+  return register(
+    name,
+    tracks,
+    `{ ${restyleExamples(script!).join('; ')}; TRUE }`,
+  )
 }
 const restyledReads = restyled('restyle_reads', [
   track('gff3tabix_genes', 'LinearBasicDisplay'),
