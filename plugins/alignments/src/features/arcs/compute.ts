@@ -26,7 +26,7 @@ import {
   nearLoadedRegion,
   regionIndexOf,
 } from './arcRegions.ts'
-import { CLOUD_JITTER_BOUNDS } from './arcTypes.ts'
+import { CLOUD_JITTER_BOUNDS, ordinaryPairsShown } from './arcTypes.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -250,9 +250,12 @@ function resolveArcs(
     colorField,
     cloud = false,
     showInterchrom,
-    showOrdinaryPairs = !cloud,
     minInterchromSupport = 1,
   } = settings
+  const showOrdinaryPairs = ordinaryPairsShown(
+    settings.showOrdinaryPairs,
+    cloud,
+  )
   const arcs: ComputedArc[] = []
   const crossRegion: CrossRegionArc[] = []
   // ONE map over both arrays. An arc is pushed to exactly one of them on first

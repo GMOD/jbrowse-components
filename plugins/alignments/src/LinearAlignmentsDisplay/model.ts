@@ -75,6 +75,7 @@ import {
   writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
+  keySectionOrder,
 } from '../shared/alignmentsColor.ts'
 import {
   paintsEveryBase,
@@ -98,12 +99,10 @@ import {
   readColorCategoryLabel,
   sashimiLegendItems,
 } from '../shared/legendUtils.ts'
-import {
-  DEFAULT_MODIFICATION_THRESHOLD,
-  isLayoutOrder,
-} from '../shared/types.ts'
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
+import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
@@ -214,7 +213,6 @@ import type {
   ColumnSortType,
   SortColumn,
   SortSetting,
-  SortType,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -657,23 +655,9 @@ export default function stateModelFactory(
            * column type missing `refName` or `pos` reads as no sort.
            */
           get sortColumn(): SortColumn | undefined {
-            const type: SortType = getConf(self, ['sort', 'type'])
-            const pos: number | undefined = getConf(self, ['sort', 'pos'])
-            const refName: string | undefined = getConf(self, [
-              'sort',
-              'refName',
-            ])
-            const tag: string | undefined = getConf(self, ['sort', 'tag'])
-            return isLayoutOrder(type) ||
-              pos === undefined ||
-              refName === undefined
-              ? undefined
-              : {
-                  type,
-                  pos,
-                  refName: canonicalizeViewRefName(self, refName),
-                  tag,
-                }
+            return sortOf(self.configuration.sort, refName =>
+              canonicalizeViewRefName(self, refName),
+            ).sortColumn
           },
 
           /**
@@ -1009,12 +993,7 @@ export default function stateModelFactory(
            * or its raw values.
            */
           get keySectionOrder() {
-            const facet = this.effectiveFacet
-            return facet &&
-              facet.field === self.colorField &&
-              self.colorBy.type !== 'mappingQuality'
-              ? sectionOrder(facet.field, facet.domain)
-              : undefined
+            return keySectionOrder(this.effectiveFacet, self.colorBy)
           },
 
           /**

@@ -88,7 +88,7 @@ worker ships it: `insertions` (position, length, sequence, read), `clips`
 as the sashimi band merges them (start, end, supporting-read count, strand off
 the reads' tags or the splice motif, and the motif where the region's sequence
 covers both ends), every junction down to a single read, since the display's
-`minSashimiScore` is the host's to apply. `alignmentColors` names the
+`minSashimiScore` and `showNonCanonicalJunctions` are the host's to apply. `alignmentColors` names the
 insertion, soft-clip and hard-clip colors beside the rest. A mismatch, gap,
 insertion or clip carries `fade`, the worker's own frequency byte: its share
 of the depth at its site, zeroed below the display's depth-dependent
@@ -110,7 +110,11 @@ with the `depth` there) and `modificationCoverage` (each modification state's
 share, in its color and opacity), decoded through alignments-core's own
 segment readers, so a host stacks what the display stacks. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
-rows out as the display does.
+rows out as the display does, through the display's own `sortOf`; a column
+sort may leave out `refName`, which then means the region's, and may name the
+contig as the reference spells it (`originalRefName`). Under
+`color: { field: 'mateRefName' }` the palette is dealt in the assembly's
+contig order, `refNames`, or the file header's where a host passes none.
 
 The display's `facet` object (`field`, `domain`, `hidden`) splits the reads
 into stacked sections as the worker partitions them for the display, ordered

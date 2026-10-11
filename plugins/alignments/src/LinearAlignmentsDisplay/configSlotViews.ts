@@ -4,6 +4,7 @@ import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
+import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
@@ -16,7 +17,7 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
-import { isLayoutOrder } from '../shared/types.ts'
+import { sortOf } from './alignmentsSortConfigSchema.ts'
 import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
@@ -32,7 +33,6 @@ import type {
   LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
-  SortType,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
@@ -114,8 +114,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * drops them.
      */
     get showOrdinaryPairs(): boolean {
-      return (
-        getConf(self, 'showOrdinaryPairs') ?? this.readConnections !== 'cloud'
+      return ordinaryPairsShown(
+        getConf(self, 'showOrdinaryPairs'),
+        this.readConnections === 'cloud',
       )
     },
     /**
@@ -363,8 +364,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * relayout).
      */
     get layoutOrder(): LayoutOrder {
-      const type: SortType = getConf(self, ['sort', 'type'])
-      return isLayoutOrder(type) ? type : 'position'
+      return sortOf(self.configuration.sort, refName => refName).layoutOrder
     },
     /**
      * #getter

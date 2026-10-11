@@ -25,6 +25,7 @@ import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
+import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
@@ -49,6 +50,7 @@ import {
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
 import { arcStrokeScale } from './features/arcs/arcLineWidth.ts'
+import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
@@ -65,6 +67,7 @@ import {
   colorFieldOf,
   declaredReadLabels,
   isBakedScheme,
+  keySectionOrder,
   pinnedInsertSizeBand,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
@@ -77,13 +80,10 @@ import {
   getReadDisplayLegendItems,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
-import {
-  INTERBASE_INSERTION,
-  INTERBASE_SOFTCLIP,
-  isLayoutOrder,
-} from './shared/types.ts'
+import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from './shared/types.ts'
 import { getColorForModification } from './util.ts'
 
+import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { ReadConnectionsMode } from './LinearAlignmentsDisplay/constants.ts'
@@ -96,8 +96,6 @@ import type {
   ArcColorField,
   BaseLayer,
   ModificationColorBy,
-  SortColumn,
-  SortType,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -161,6 +159,12 @@ export interface AlignmentTablesArgs {
    */
   display?: Record<string, unknown>
   /**
+   * The assembly's reference sequence names in its own order, which
+   * `color: { field: "mateRefName" }` deals its palette by, as the browser
+   * does. Unset, the file header's order stands in.
+   */
+  refNames?: readonly string[]
+  /**
    * The most compressed bytes the region may need, refused off the index
    * before any read is fetched. 200 MB by default; a host holds the whole
    * table in memory, where the browser draws it in pieces.
@@ -216,24 +220,9 @@ function alleleFrequencies(d: WorkerPileupData) {
   })
 }
 
-/** The display's `sort` object as the layout and the worker read it. */
-function sortFor(node: AnyConfigurationModel, refName: string) {
-  const type: SortType = readConfObject(node, 'type')
-  const pos: number | undefined = readConfObject(node, 'pos')
-  const column: SortColumn | undefined =
-    isLayoutOrder(type) || pos === undefined
-      ? undefined
-      : {
-          type,
-          pos,
-          refName: readConfObject(node, 'refName') ?? refName,
-          tag: readConfObject(node, 'tag'),
-        }
-  return {
-    layoutOrder: isLayoutOrder(type) ? type : undefined,
-    sortColumn: column,
-    sortTag: column?.type === 'tag' ? column.tag : undefined,
-  }
+function positionIn(refNames: readonly string[]): RefNamePosition {
+  const position = new Map(refNames.map((name, i) => [name, i]))
+  return refName => position.get(refName)
 }
 
 /** The display's per-base layer, from its `baseColor` and `modifications` objects. */
@@ -266,6 +255,7 @@ function colorReads(
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
   facet: { field: string; domain?: readonly string[] } | undefined,
+  refNamePosition: RefNamePosition | undefined,
 ) {
   const { labels, title, ...setting } = colorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
@@ -281,7 +271,7 @@ function colorReads(
     ? bakedColorScale(
         colorBy,
         encoding,
-        undefined,
+        refNamePosition,
         bakedColorExtent(encoding, colorBy, byGroup),
       )
     : undefined
@@ -338,13 +328,9 @@ function colorReads(
     ),
     palette,
     presentTagValues,
+    refNamePosition,
     bakedScale,
-    sectionOrder:
-      facet &&
-      facet.field === colorFieldOf(colorBy) &&
-      colorBy.type !== 'mappingQuality'
-        ? sectionOrder(facet.field, facet.domain)
-        : undefined,
+    sectionOrder: keySectionOrder(facet, colorBy),
     labels: declared,
     descending: withPreset(
       { ...setting, descending: readConfObject(node, 'descending') },
@@ -588,8 +574,10 @@ function readConnectionTables(
             cloud,
             showInterchrom: readConfObject(conf, 'showInterchrom'),
             showLongRange: readConfObject(conf, 'showLongRange'),
-            showOrdinaryPairs:
-              readConfObject(conf, 'showOrdinaryPairs') ?? !cloud,
+            showOrdinaryPairs: ordinaryPairsShown(
+              readConfObject(conf, 'showOrdinaryPairs'),
+              cloud,
+            ),
             minInterchromSupport: readConfObject(conf, 'minInterchromSupport'),
           },
         )
@@ -725,6 +713,7 @@ export async function alignmentTables(
     sequenceAdapter,
     region,
     display = {},
+    refNames,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: AlignmentTablesArgs,
 ) {
@@ -735,10 +724,12 @@ export async function alignmentTables(
   })
   const colorBy = colorByOf(alignmentsColorEncoding(colorSettingOf(conf.color)))
   const baseLayer = baseLayerFor(conf)
-  const { layoutOrder, sortColumn, sortTag } = sortFor(
+  const { layoutOrder, sortColumn } = sortOf(
     conf.sort,
+    refName => (refName === region.originalRefName ? region.refName : refName),
     region.refName,
   )
+  const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
   if (readConfObject(conf, 'unit') === 'chain') {
     throw new Error(
       'unit: "chain" joins a read to its mates and split segments, which the tables do not serve yet; read the region with unit "read"',
@@ -794,7 +785,25 @@ export async function alignmentTables(
       }).get(0)!,
     ]),
   )
-  const colors = colorReads(conf.color, baseLayer, laidByGroup, facetSetting)
+  const colors = colorReads(
+    conf.color,
+    baseLayer,
+    laidByGroup,
+    facetSetting,
+    colorBy.type === 'mateRefName'
+      ? positionIn(
+          refNames ??
+            (await (
+              await getFeatureAdapterOrThrow({
+                pluginManager,
+                sessionId: 'tables',
+                adapterConfig,
+                sequenceAdapter,
+              })
+            ).getRefNames()),
+        )
+      : undefined,
+  )
   const connections = readConnectionTables(
     conf,
     new Map(
@@ -850,7 +859,9 @@ const COMPOSING_SLOTS = [
   'showSashimiArcs',
   'minSashimiScore',
   'coverageSnpMinFrequency',
+  'showNonCanonicalJunctions',
   'fadeLowFrequencyMismatches',
+  'fadeLowQualityMismatches',
   'readConnections',
 ] as const
 

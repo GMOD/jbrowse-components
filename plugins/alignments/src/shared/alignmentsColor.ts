@@ -15,6 +15,7 @@ import {
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
+import { sectionOrder } from './groupFeatures.ts'
 import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
@@ -28,6 +29,7 @@ import type {
   BaseLayerType,
   ColorBy,
   ColorSchemeType,
+  Facet,
   ModificationColorBy,
   ReadColorBy,
   ReadColorSchemeType,
@@ -133,6 +135,20 @@ export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
+
+/**
+ * The sections' order for the color key, where the facet reads the field the
+ * reads are colored by: a key over one field lists it as the sections stack.
+ * Not over `mapq`, whose sections are bins and whose key is its bins or its
+ * raw values.
+ */
+export function keySectionOrder(facet: Facet | undefined, colorBy: ColorBy) {
+  return facet &&
+    facet.field === colorFieldOf(colorBy) &&
+    colorBy.type !== 'mappingQuality'
+    ? sectionOrder(facet.field, facet.domain)
+    : undefined
+}
 
 /** The field a read scheme paints, `''` for the plain fill. */
 export function colorFieldOf(colorBy: ColorBy) {

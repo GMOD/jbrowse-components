@@ -1,7 +1,13 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { SORT_TYPES } from '../shared/types.ts'
+import { SORT_TYPES, isLayoutOrder } from '../shared/types.ts'
+
+import type { LayoutOrder, SortColumn, SortType } from '../shared/types.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config AlignmentsSort
@@ -63,3 +69,34 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
   },
   { shorthand: 'type', closed: true },
 )
+
+/**
+ * The `sort` object as the layout reads it: the whole-window order, `position`
+ * under a column sort, and the column on the refName `canonical` resolves, so
+ * an alias written in a spec meets the region's own spelling. A column missing
+ * `pos`, or missing `refName` where no `fallbackRefName` stands in, is no sort.
+ */
+export function sortOf(
+  sort: Instance<typeof alignmentsSortConfigSchema>,
+  canonical: (refName: string) => string,
+  fallbackRefName?: string,
+): { layoutOrder: LayoutOrder; sortColumn: SortColumn | undefined } {
+  const type: SortType = readConfObject(sort, 'type')
+  const pos: number | undefined = readConfObject(sort, 'pos')
+  const refName: string | undefined =
+    readConfObject(sort, 'refName') ?? fallbackRefName
+  return isLayoutOrder(type)
+    ? { layoutOrder: type, sortColumn: undefined }
+    : {
+        layoutOrder: 'position',
+        sortColumn:
+          pos === undefined || refName === undefined
+            ? undefined
+            : {
+                type,
+                pos,
+                refName: canonical(refName),
+                tag: readConfObject(sort, 'tag'),
+              },
+      }
+}

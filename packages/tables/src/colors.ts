@@ -1,6 +1,5 @@
 import {
   colorFwdStrand,
-  colorPairLR,
   colorRevStrand,
   resolvePalette,
 } from '@jbrowse/core/ui/palette'
@@ -15,7 +14,7 @@ import {
 export function alignmentColors() {
   const p = resolvePalette()
   return {
-    read: colorPairLR,
+    read: p.alignmentFill.pairLR,
     forward: colorFwdStrand,
     reverse: colorRevStrand,
     skip: p.skip,

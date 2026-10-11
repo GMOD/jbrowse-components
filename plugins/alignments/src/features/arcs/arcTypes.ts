@@ -37,6 +37,14 @@ export interface ArcRegions {
   displayed: RegionInfo[]
 }
 
+/** Whether the band draws its ordinary pairs: as written, else arcs do and the cloud doesn't. */
+export function ordinaryPairsShown(
+  setting: boolean | undefined,
+  cloud: boolean,
+) {
+  return setting ?? !cloud
+}
+
 export interface ArcSettings {
   colorField: ArcColorField
   // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
@@ -47,8 +55,7 @@ export interface ArcSettings {
   showLongRange: boolean
   // Whether the band draws its ordinary pairs, each mode by its own rule:
   // concordant flags for arcs (`isConcordantPairRead`, shared with "Show proper
-  // pairs"), a modal |TLEN| for the cloud. Defaults to arcs drawing them and
-  // the cloud not.
+  // pairs"), a modal |TLEN| for the cloud. Unset is `ordinaryPairsShown`'s.
   showOrdinaryPairs?: boolean
   // Reads a translocation breakpoint must gather before its marks are drawn —
   // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
