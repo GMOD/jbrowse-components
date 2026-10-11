@@ -751,6 +751,9 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.0(react@19.3.0)
     devDependencies:
+      acorn:
+        specifier: 8.19.0
+        version: 8.19.0
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2

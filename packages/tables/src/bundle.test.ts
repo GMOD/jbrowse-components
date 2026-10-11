@@ -12,6 +12,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 
+import { parse } from 'acorn'
+
 import { createTablesEngine } from './index.ts'
 import { BAM, CRAM } from './volvox.fixture.ts'
 
@@ -29,6 +31,7 @@ function readRange(url: string, start: number, end: number) {
 }
 
 let jbrowse: { alignments: (args: string) => Promise<string> }
+let code: string
 
 beforeAll(() => {
   const out = path.join(mkdtempSync(path.join(tmpdir(), 'tables-')), 'b.js')
@@ -37,10 +40,18 @@ beforeAll(() => {
     [path.join(__dirname, '../scripts/build-bundle.mjs'), out],
     { env: { ...process.env, MINIFY: '0' } },
   )
+  code = readFileSync(out, 'utf8')
   const sandbox: Record<string, unknown> = { jbrowseHost: { readRange } }
-  vm.runInNewContext(readFileSync(out, 'utf8'), sandbox)
+  vm.runInNewContext(code, sandbox)
   jbrowse = sandbox.jbrowse as typeof jbrowse
 }, 120_000)
+
+// A host reads the bundle as text, so it is printable ASCII plus newline and
+// tab, and ES2020, which every V8 an R user has since 2020 parses.
+test('the bundle is printable ASCII and ES2020', () => {
+  expect(code).toMatch(/^[\n\t\x20-\x7E]*$/)
+  expect(() => parse(code, { ecmaVersion: 2020 })).not.toThrow()
+})
 
 test.each([
   ['BAM', BAM],

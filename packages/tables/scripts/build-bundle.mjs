@@ -1,6 +1,7 @@
 // dist/jbrowse-tables.js: the tables for a bare ECMAScript host, one file
 // with no imports, as R's V8 sources it. Node built-ins resolve to empty
 // modules, since only the host's readRange touches a file.
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { builtinModules } from 'node:module'
 import path from 'node:path'
 
@@ -12,6 +13,19 @@ const names = new Set([
   ...builtinModules.map(m => `node:${m}`),
 ])
 
+// A host reads the bundle as a text file. The CRAM reader inlines its
+// htscodecs wasm as a binary string, and R on Windows failed to source the
+// bundle with those raw control bytes in it, so every byte outside printable
+// ASCII becomes an escape, which reads the same in a string, template or regex.
+function printable(code) {
+  return code.replaceAll(/[^\n\t\x20-\x7E]/g, c => {
+    const n = c.charCodeAt(0)
+    return n < 0x100
+      ? `\\x${n.toString(16).padStart(2, '0')}`
+      : `\\u${n.toString(16).padStart(4, '0')}`
+  })
+}
+
 export async function buildBundle(outfile, minify = true) {
   const result = await build({
     entryPoints: [path.join(root, 'src/bundle.ts')],
@@ -21,9 +35,10 @@ export async function buildBundle(outfile, minify = true) {
     platform: 'neutral',
     mainFields: ['module', 'main'],
     conditions: ['import', 'default'],
-    target: 'es2022',
+    target: 'es2020',
     minify,
     metafile: true,
+    write: false,
     logLevel: 'warning',
     define: { 'process.env.NODE_ENV': '"production"' },
     plugins: [
@@ -42,7 +57,10 @@ export async function buildBundle(outfile, minify = true) {
       },
     ],
   })
-  return Object.values(result.metafile.outputs)[0].bytes
+  const code = printable(result.outputFiles[0].text)
+  mkdirSync(path.dirname(outfile), { recursive: true })
+  writeFileSync(outfile, code)
+  return Buffer.byteLength(code)
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

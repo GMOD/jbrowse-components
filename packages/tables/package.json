@@ -42,6 +42,7 @@
     "@jbrowse/plugin-sequence": "workspace:^"
   },
   "devDependencies": {
+    "acorn": "8.19.0",
     "esbuild": "^0.28.2"
   },
   "peerDependencies": {
