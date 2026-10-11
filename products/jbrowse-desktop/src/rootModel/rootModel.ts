@@ -4,6 +4,7 @@ import {
   HistoryManagementMixin,
   RootAppMenuMixin,
   processMutableMenuActions,
+  summarizeSession,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { DNA } from '@jbrowse/core/ui/Icons'
@@ -269,7 +270,12 @@ export default function rootModelFactory({
          */
         async saveSession(val: SessionSnap) {
           if (self.sessionPath) {
-            await invokeIpc('saveSession', self.sessionPath, val)
+            await invokeIpc(
+              'saveSession',
+              self.sessionPath,
+              val,
+              summarizeSession(val.defaultSession),
+            )
           }
         },
         /**

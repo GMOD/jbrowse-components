@@ -1,3 +1,4 @@
+import { formatSessionSummary } from '@jbrowse/app-core'
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
@@ -8,7 +9,7 @@ import { sessionMenuItems } from './sessionMenuItems.ts'
 
 import type { RecentSessionData } from '../types.ts'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   flexContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -23,11 +24,14 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  summary: {
+    color: theme.palette.text.secondary,
+  },
   icons: {
     display: 'flex',
     flexShrink: 0,
   },
-})
+}))
 
 const SessionNameCell = observer(function SessionNameCell({
   value,
@@ -49,18 +53,28 @@ const SessionNameCell = observer(function SessionNameCell({
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
+  const summary = row.summary && formatSessionSummary(row.summary)
 
   return (
     <div className={classes.flexContainer}>
-      <ActionLink
+      <div
         className={classes.name}
-        title={value}
-        onClick={async () => {
-          await launch(row.path)
-        }}
+        title={
+          summary
+            ? `${value}
+${summary}`
+            : value
+        }
       >
-        {value}
-      </ActionLink>
+        <ActionLink
+          onClick={async () => {
+            await launch(row.path)
+          }}
+        >
+          {value}
+        </ActionLink>
+        {summary ? <span className={classes.summary}> · {summary}</span> : null}
+      </div>
       <div className={classes.icons}>
         <StarIcon
           isFavorite={isFavorite}

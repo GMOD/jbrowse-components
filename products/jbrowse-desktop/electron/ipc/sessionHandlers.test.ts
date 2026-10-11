@@ -609,6 +609,28 @@ test('a repeat autosave leaves recent_sessions.json alone, but a rename lands', 
   expect(rows[0]!.name).toBe('renamed')
 })
 
+test('a changed summary lands in the row without waiting out the touch interval', async () => {
+  const sessionPath = path.join(dir, 'summarized.jbrowse')
+  const snap = { assemblies: [], defaultSession: { name: 'summarized' } }
+
+  await invoke('saveSession', sessionPath, snap, {
+    assemblies: ['hg38'],
+    views: 1,
+    tracks: 0,
+  })
+  await invoke('saveSession', sessionPath, snap, {
+    assemblies: ['hg38'],
+    views: 1,
+    tracks: 3,
+  })
+  const rows = (await invoke('listSessions')) as { summary?: unknown }[]
+  expect(rows[0]!.summary).toEqual({
+    assemblies: ['hg38'],
+    views: 1,
+    tracks: 3,
+  })
+})
+
 // An autosave is machine-written and reread only by JSON.parse, so it carries no
 // indent; a file the user picked a name for is one they may open.
 test('an autosave is compact and a saved-as session is indented', async () => {

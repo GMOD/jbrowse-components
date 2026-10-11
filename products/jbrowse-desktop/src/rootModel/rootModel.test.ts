@@ -75,6 +75,7 @@ test('the autosave fires again on the next change, not just once', async () => {
     expect.objectContaining({
       defaultSession: expect.objectContaining({ name: 'test' }),
     }),
+    expect.objectContaining({ views: 0 }),
   )
 
   root.session.setName('changed')
@@ -89,6 +90,7 @@ test('the autosave fires again on the next change, not just once', async () => {
     expect.objectContaining({
       defaultSession: expect.objectContaining({ name: 'changed' }),
     }),
+    expect.objectContaining({ views: 0 }),
   )
 })
 

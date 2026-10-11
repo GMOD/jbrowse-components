@@ -24,10 +24,20 @@
  */
 export const NAME_INDICES_DIR = 'nameIndices'
 
+// app-core's SessionSummary, restated because the main process does not
+// import app-core; the renderer's saveSession call checks the two agree
+export interface SessionSummary {
+  assemblies: string[]
+  views: number
+  tracks: number
+}
+
 export interface RecentSession {
   path: string
   updated: number
   name?: string
+  /** absent on rows written before the field existed */
+  summary?: SessionSummary
 }
 
 export interface RecentSessionInfo extends RecentSession {
@@ -176,7 +186,10 @@ export interface IpcChannels {
   // the first autosave writes the file and lists it, so a launch that fails
   // before then leaves nothing behind.
   newAutosavePath: { args: []; return: string }
-  saveSession: { args: [sessionPath: string, snap: SessionSnap]; return: void }
+  saveSession: {
+    args: [sessionPath: string, snap: SessionSnap, summary?: SessionSummary]
+    return: void
+  }
   deleteSessions: { args: [sessionPaths: string[]]; return: void }
   // list-only removal (leaves any on-disk file intact) for pruning a recent
   // entry whose session file no longer loads

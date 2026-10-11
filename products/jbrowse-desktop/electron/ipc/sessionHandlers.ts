@@ -174,12 +174,13 @@ let lastSave:
 
 // Whether this save has to reach recent_sessions.json. The first save of a path
 // always does — that is the row that puts the session on the start screen — as
-// does one whose name changed, since the row carries it.
+// does one whose name or summary changed, since the row carries both.
 function needsRecentSessionTouch(entry: RecentSession) {
   const previous = lastSave?.path === entry.path ? lastSave.row : undefined
   return (
     !previous ||
     previous.name !== entry.name ||
+    JSON.stringify(previous.summary) !== JSON.stringify(entry.summary) ||
     entry.updated - previous.updated >= RECENT_SESSION_TOUCH_MS
   )
 }
@@ -241,11 +242,12 @@ export function registerSessionHandlers(
   // rather than the placeholder a caller would have to invent here.
   ipcHandle('newAutosavePath', () => newAutosavePath(paths))
 
-  ipcHandle('saveSession', async (_, sessionPath, snap) => {
+  ipcHandle('saveSession', async (_, sessionPath, snap, summary) => {
     const entry: RecentSession = {
       path: sessionPath,
       updated: Date.now(),
       name: snap.defaultSession?.name,
+      summary,
     }
     // Started, not awaited, before the writes below: capturePage stalls on a
     // full framebuffer readback, and this handler is also the quit flush

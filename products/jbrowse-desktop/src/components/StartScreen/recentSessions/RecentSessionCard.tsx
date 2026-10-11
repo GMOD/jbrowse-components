@@ -1,3 +1,4 @@
+import { formatSessionSummary } from '@jbrowse/app-core'
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -60,7 +61,7 @@ const RecentSessionCard = observer(function RecentSessionCard({
   onToggleFavorite: () => void
 }) {
   const { classes } = useStyles()
-  const { name, path, updated } = sessionData
+  const { name, path, updated, summary } = sessionData
   const { label, tooltip } = formatLastModified(updated)
 
   const { data: screenshot } = useFetch(
@@ -91,6 +92,11 @@ const RecentSessionCard = observer(function RecentSessionCard({
               {name}
             </Typography>
           </Tooltip>
+          {summary ? (
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {formatSessionSummary(summary)}
+            </Typography>
+          ) : null}
           <Tooltip title={tooltip ?? ''} enterDelay={300}>
             <Typography variant="body2" color="text.secondary" noWrap>
               Last modified {label}

@@ -1,3 +1,4 @@
+import type { SessionSummary } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 /**
@@ -11,6 +12,7 @@ export interface RecentSessionData {
   name: string
   updated: number
   isAutosave: boolean
+  summary?: SessionSummary
 }
 
 export interface InternetAccount {
