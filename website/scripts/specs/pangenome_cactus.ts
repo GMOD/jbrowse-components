@@ -206,7 +206,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: { graphNode: '258914' },
-        dx: 220,
+        dx: 120,
         dy: 70,
       },
     ],
