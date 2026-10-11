@@ -62,7 +62,7 @@ export function autorunOnReadyView(
  * changes (chromosome navigation, region reorder, etc). Use for state keyed by
  * `displayedRegionIndex` that intentionally survives `clearAllRpcData` —
  * chromosome navigation reuses indices, so an entry left over from chr1 would
- * be applied to chr2. `CoarseTierMixin`'s held bins are the case to read.
+ * be applied to chr2. `CoarseTierMixin`'s held payloads are the case to read.
  * Plugins whose entire per-region data clears through
  * `clearDisplaySpecificData` don't need this — the per-region family's own
  * `DisplayedRegionsChange` autorun already covers them.

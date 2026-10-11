@@ -473,7 +473,7 @@ test('a failed fetch leaves the freshness gate open', async () => {
 
 // The predicate form is the same gate: a decline on it is a decline, and the
 // reload epoch overrides it. What it buys is a "held" that string equality
-// cannot spell — here "this key was committed once", for the density tier "the
+// cannot spell — here "this key was committed once", for `CoarseTierMixin` "the
 // held read contains the viewport".
 test('a predicate freshness gate declines, and a reload overrides it', async () => {
   const host = makeHost({ held: true })

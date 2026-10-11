@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The picture per zoom level works at any scale. A `bin` step's `step` may be `auto`, resolved before the RPC to the 1/2/5 rung above four pixels of bp and keyed into the fetch, so a zoom inside a rung refetches nothing and a 1,600x sweep in 64 steps costs 11 refetches. And the mark display opts into the byte gate and composes `DensityTierMixin`: past the budget a mark declaring `source: 'density'` draws the adapter's sidecar as its own layer, through the same bar shape, y scale, axis, hover and export the features draw through. The stand-in is declared rather than inferred from a bin-and-count transform, the sidecar's rows are drawn unresampled, and a bin opens nothing"
+summary: "The picture per zoom level works at any scale. A `bin` step's `step` may be `auto`, resolved before the RPC to the 1/2/5 rung above four pixels of bp and keyed into the fetch, so a zoom inside a rung refetches nothing and a 1,600x sweep in 64 steps costs 11 refetches. The mark display opts into the byte gate. Its second half, a mark declaring `source: 'density'` that drew the adapter's sidecar past the budget, was removed with the density tier on 2026-10-11 (ADR-102)"
 ---
 
 # ADR-117: The density tier is a mark layer

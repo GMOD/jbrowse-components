@@ -238,7 +238,7 @@ and key names live. The config below sets them in the track:
 }
 ```
 
-<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies per kilobase above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies per kilobase above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the Alu copies track above the same AluY share, over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
 ## Correlating AluY share with Alu density across the genome
 

@@ -38,7 +38,7 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // One region key's feeds: the laid-out payload the pileup marks read, absent
-// for a connections-only or density region, and the coverage band's region,
+// for a connections-only region, and the coverage band's region,
 // built the way the GPU renderer builds it.
 export interface Canvas2DRegion {
   pileup: PileupDataResult | undefined

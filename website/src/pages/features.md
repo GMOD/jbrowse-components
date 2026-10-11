@@ -107,7 +107,7 @@ For the complete track-to-display mapping, see the
 - **Plots from any feature file** -
   [bars, points and stacked spans](/docs/config_guides/mark_display) from a BED
   column, a read's insert size or a variant's quality, with a density per bin
-  zoomed out and a sidecar past the fetch budget
+  zoomed out
 - **Multi-row feature / chromosome painting** - many feature rows in one track
   with clustering and per-position sorting, for local-ancestry and ChromHMM
   views

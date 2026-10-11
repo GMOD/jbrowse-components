@@ -7,9 +7,9 @@
 # divergence from its consensus as a bar colored by subfamily lineage when
 # zoomed in, the count per bin with the AluY count over it when zoomed out, and
 # a `jbrowse make-density` bigWig of copies per kilobase for a whole chromosome.
-# A second file counts
-# the copies per megabase and tests whether the youngest lineage's share follows
-# the family's density, against a strand split that should not. The tracks are
+# A second file counts the copies per megabase and tests whether the youngest
+# lineage's share follows the family's density, against a strand split that
+# should not. The tracks are
 # mark displays declared in JSON, so the same config over another family's
 # rows, or another genome's RepeatMasker BED, is a change of file and of field
 # name.

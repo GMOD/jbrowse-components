@@ -230,8 +230,8 @@ interface InstallFetchOptionsBase<TArgs, TResult>
   loadedKey?: () => unknown
   /**
    * The predicate form of the freshness gate, for a fetch whose "I have exactly
-   * this already" is not key equality: the density tier holds bins over a
-   * buffered read and answers a viewport those bins *contain*, which no key can
+   * this already" is not key equality: `CoarseTierMixin` holds payloads over a
+   * buffered read and answers a viewport that read *contains*, which no key can
    * spell. Same rules as `fetchKey` — declined runs report `declined`, and a
    * `reloadCounter` advanced since the last issued fetch overrides it — so the
    * comparison lives here and not in `prepare`, where a reload could not reach

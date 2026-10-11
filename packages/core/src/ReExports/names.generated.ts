@@ -402,7 +402,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/ChromeLegend': ['default'],
   '@jbrowse/display-kit/coarseTier': ['coarseTierCovers', 'isSubAdapterConfig'],
   '@jbrowse/display-kit/CoarseTierMixin': ['default'],
-  '@jbrowse/display-kit/coarseTierPhase': ['coarseTierDisplayPhase', 'coarseTierPending', 'coarseTierSvgReady'],
+  '@jbrowse/display-kit/coarseTierPhase': ['coarseTierDisplayPhase', 'coarseTierSvgReady'],
   '@jbrowse/display-kit/colorByMenu': ['colorByMenuItem', 'colorSchemeMenuItem', 'solidColorItem'],
   '@jbrowse/display-kit/colorConfigSchema': ['CATEGORICAL_COLOR_SCALES', 'CATEGORICAL_FIELD_PRESETS', 'COLOR_SCALES', 'DISCRETE_COLOR_SCALES', 'FEATURE_COLOR_SCALES', 'FEATURE_FIELD_PRESETS', 'IDENTITY_SCALE', 'categoricalColorField', 'colorChannelOptions', 'colorChannelSlots', 'colorConfigSchema', 'colorDescendingSlot', 'colorDomainEndsSlots', 'colorDomainQuantileSlot', 'colorDomainSlot', 'colorEncodingOf', 'colorFieldOf', 'colorForField', 'colorForValue', 'colorLabelsSlot', 'colorRampSlots', 'colorRangeSlot', 'colorReverseSlot', 'colorSettingOf', 'colorSnapshotOf', 'colorTitleSlot', 'colorUnknownSlot', 'dealRowColors', 'featureColorEncoding', 'identityKeyEntries', 'matrixColorEncodingOf', 'normalizeChannel', 'paintedColorEncoding', 'paintedScale', 'pairedColorsOf', 'presetOf', 'withPreset'],
   '@jbrowse/display-kit/ColorWritesMixin': ['default', 'writtenColorOf'],

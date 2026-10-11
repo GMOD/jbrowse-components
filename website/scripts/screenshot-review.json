@@ -3216,7 +3216,7 @@
   "alu_age/chromosome": {
     "name": "alu_age/chromosome",
     "status": "answered",
-    "note": "DONE: now the top part of alu_age/young_share (see alu_age/binned): chromosome 1 with the density sidecar, the AluY share per megabase against the genome, and the strand-share control.",
+    "note": "DONE: now the top part of alu_age/young_share (see alu_age/binned): chromosome 1 with the Alu copies per kilobase, the AluY share per megabase against the genome, and the strand-share control.",
     "reviewedAt": "2026-09-14T06:11:48.601Z",
     "hash": "14636a259fbdf264dbf777a343860631d52f52db"
   },

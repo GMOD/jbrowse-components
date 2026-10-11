@@ -254,10 +254,10 @@ function facetLayer(layer: StoredLayer, remap: Uint32Array): StoredLayer {
 /**
  * A region's layers on the one layout, so the chips and the bands they name
  * agree whichever region an instance came from and whatever the reader has
- * hidden. A region no request produced keeps its rows. A region fetched
- * before the split or split on another field draws nothing until its refetch
- * lands, as under `rows`: its rows hold the old field's sections, which a
- * matching key would place in the new layout at the old depth.
+ * hidden. A region fetched before the split or split on another field draws
+ * nothing until its refetch lands, as under `rows`: its rows hold the old
+ * field's sections, which a matching key would place in the new layout at the
+ * old depth.
  */
 export function facetRegion(
   region: MarkRegionData,
@@ -268,7 +268,7 @@ export function facetRegion(
     const remap = rowRemap(sections, layout)
     return { ...region, layers: region.layers.map(l => facetLayer(l, remap)) }
   }
-  return region.request ? hiddenRegion(region) : region
+  return hiddenRegion(region)
 }
 
 /** The region with every instance gone from every layer. */

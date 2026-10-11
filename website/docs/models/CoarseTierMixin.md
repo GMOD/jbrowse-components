@@ -23,9 +23,9 @@ entries under the tier — a display masks them where it draws, and zooming
 back in draws what it held.
 
 A display states its tier through the hooks below: the adapter slot the
-source sits on, its own threshold, what its read depends on beyond the
-span, and the read itself. Composed after `MultiRegionDisplayMixin`, so its `displayPhase` and
-`svgReady` are the ones `types.compose` keeps.
+source sits on, its own threshold, what its read depends on beyond the span,
+and the read itself. Composed after `MultiRegionDisplayMixin`, so its
+`displayPhase` and `svgReady` are the ones `types.compose` keeps.
 
 ## Volatiles
 

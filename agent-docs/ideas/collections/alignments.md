@@ -84,11 +84,12 @@ columns, stopping one layer short of us. If it holds, the fix is columnar all
 the way to the renderer rather than a wrapper per read, which is the same
 direction as the typed-array item above.
 
-**Read downsampling for a force-loaded dense region.** The wide-zoom half of
-large-region viewing landed as the density tier (`bf66d4cbdf`,
-[reference/REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md)): a
-coverage sidecar draws where the byte gate refuses. What is left is a user who
-force-loads anyway. The pileup uploads one GPU instance per read, per mismatch
+**Read downsampling for a force-loaded dense region.** Past the byte gate a
+BAM shows the banner
+([reference/REGION_TOO_LARGE.md](../../reference/REGION_TOO_LARGE.md)); a
+coverage bigWig loaded as its own track is the wide-zoom picture, since the
+density tier that drew one in the banner's place was removed (ADR-102). What is
+left is a user who force-loads anyway. The pileup uploads one GPU instance per read, per mismatch
 and per gap, and `executeRenderAlignmentData` has no per-column cap — a 30×
 whole-chromosome BAM is ~29 M reads, over 1 GiB in the read pass alone, with the
 GPU-OOM overlay as the backstop. Capping reads per column (reservoir-sampled per

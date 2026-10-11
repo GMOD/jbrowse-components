@@ -33,7 +33,7 @@ export interface CoarseTierPhaseHost
  * honest answer there, where 'loading' would never lift. A failed read lands on
  * the display's own `error`, which outranks this.
  */
-export function coarseTierPending(
+function coarseTierPending(
   self: Pick<CoarseTierPhaseHost, 'coarseTierLoading' | 'coarseTierRead'>,
 ) {
   return self.coarseTierLoading || self.coarseTierRead === undefined

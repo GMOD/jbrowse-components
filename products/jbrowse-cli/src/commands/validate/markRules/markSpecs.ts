@@ -116,7 +116,7 @@ export function plotsValue(type: MarkType) {
 }
 
 /** Whether a mark type answers a hover through the hit index the worker builds. */
-export function hitsByIndex(type: MarkType) {
+function hitsByIndex(type: MarkType) {
   return specOf(type).hit === 'index'
 }
 

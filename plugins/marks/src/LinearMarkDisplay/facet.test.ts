@@ -102,15 +102,13 @@ test('a region split on the outgoing field draws nothing, though its keys match 
   expect(facetRegion(fresh, layout).layers[0]!.count).toBe(4)
 })
 
-test('a region fetched before the facet draws nothing, and one no request produced keeps its rows', () => {
+test('a region fetched before the facet draws nothing', () => {
   const layout = facetLayout([], categoricalField('strand'), new Set(), [])
   const unsplit: MarkRegionData = {
     layers: [linkLayer()],
     request: { ...splitOn('strand')!, facet: undefined },
   }
   expect(facetRegion(unsplit, layout).layers[0]!.count).toBe(0)
-  const unrequested: MarkRegionData = { layers: [linkLayer()] }
-  expect(facetRegion(unrequested, layout)).toBe(unrequested)
 })
 
 test('with no split, a region fetched under one draws nothing, and an unsplit one draws as it came', () => {
@@ -125,8 +123,6 @@ test('with no split, a region fetched under one draws nothing, and an unsplit on
     request: { ...splitOn('strand')!, facet: undefined },
   }
   expect(unsplitRegion(unsplit)).toBe(unsplit)
-  const unrequested: MarkRegionData = { layers: [linkLayer()] }
-  expect(unsplitRegion(unrequested)).toBe(unrequested)
 })
 
 function barLayer(rows: number[]): StoredLayer {
