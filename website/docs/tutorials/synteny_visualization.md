@@ -171,19 +171,19 @@ above, then:
 Zoom each row in once with its magnifier, then open each strain's gene track,
 **NCBI RefSeq - RefSeq All (GFF)**, from the track selector for that row.
 
-CHC155 has an inversion that 26695 and J99 lack. To frame it, type one window
-into each row's search box, top to bottom; `[rev]` flips the J99 row so it reads
-in 26695's direction:
+J99 has a short inversion that 26695 and CHC155 lack. To frame it, type one
+window into each row's search box, top to bottom; `[rev]` flips the 26695 row,
+which runs opposite to the other two strains here:
 
 ```text
-NC_018939v1:672,000-782,000
-NZ_AP026446v1:780,000-890,000
-NZ_CP011330v1:305,000-415,000[rev]
+NC_018939v1:1,489,400-1,509,400[rev]
+NZ_AP026446v1:99,000-119,000
+NZ_CP011330v1:1,238,100-1,258,100
 ```
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
-<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
+<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across a block inverted in J99. The ribbons between 26695 and CHC155 run straight, and the ribbons into J99 cross only over the inverted block, between flanking genes that line up in all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 ## Coloring genes by ortholog
 
@@ -192,10 +192,11 @@ effectively an ortholog id. In grammar-of-graphics terms, a track's `color` is a
 color scale, a `field` mapped to colors. Pick **Color by... → Attribute...** on
 each gene track's menu and enter `gene` as the field. An ortholog is one color
 down all three panels, and features with no `gene` value (most genes here have
-only a locus tag) stay grey. **Advanced → Edit plot...** in the same menu shows
-the setting as text and applies edits live.
+only a locus tag) stay grey. Inside the inversion, _rsmA_ and _rlmN_ trade
+places in J99. **Advanced → Edit plot...** in the same menu shows the setting as
+text and applies edits live.
 
-<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the middle row shows the colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
+<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the J99 row shows the inverted block's colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
 The config below is the same setting on the hub's gene track:
 
