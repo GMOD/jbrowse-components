@@ -1,11 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
-  cssColorToNormalizedRgb,
-} from '@jbrowse/core/util/colorBits'
+import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
   CATEGORICAL_FIELD_PRESETS,
   withPreset,
@@ -27,6 +22,7 @@ import { executeVariantCellData } from './VariantRPC/executeVariantCellData.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { cellHueOf } from './shared/cellHue.ts'
+import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 import { parseRowName } from './shared/getSources.ts'
 
 import type { VariantUnit } from './shared/constants.ts'
@@ -62,20 +58,6 @@ export interface VariantTablesArgs {
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
 
-function hex(n: number) {
-  return n.toString(16).padStart(2, '0')
-}
-
-function hexOfAbgr(c: number) {
-  return `#${hex(abgrRed(c))}${hex(abgrGreen(c))}${hex(abgrBlue(c))}`
-}
-
-function hexOfCss(css: string) {
-  return `#${cssColorToNormalizedRgb(css)
-    .map(c => hex(Math.round(c * 255)))
-    .join('')}`
-}
-
 /** A categorical key's swatches; a ramp keys no legend yet. */
 function legendOf(scales: ColorScale[]) {
   const label: string[] = []
@@ -86,7 +68,7 @@ function legendOf(scales: ColorScale[]) {
       for (const entry of scale.entries) {
         if (entry.color !== undefined && !entry.hidden) {
           label.push(entry.label)
-          color.push(hexOfCss(entry.color))
+          color.push(cssColorToHex(entry.color))
           section.push(scale.title ?? '')
         }
       }
@@ -173,7 +155,7 @@ export async function variantTables(
   const data = value.perRegionCellData[0]
 
   const samples = new Set(value.sampleNames)
-  const sampleIndex = new Map(value.sampleNames.map((s, i) => [s, i]))
+  const sampleIndex = buildSampleIndex(value.sampleNames)
   const rowsParsed = value.rowNames.map(name => parseRowName(name, samples))
   const rows = {
     name: value.rowNames,
@@ -209,7 +191,7 @@ export async function variantTables(
       variants.ref.push(info.ref)
       variants.alt.push(info.alt.join(','))
       variants.type.push(info.type)
-      variants.color.push(hexOfAbgr(laneColors[f]!))
+      variants.color.push(abgrToHex(laneColors[f]!))
     })
     const colors = paintCellColors(data, cellHue, {
       phased: unit === 'haplotype',
@@ -219,13 +201,18 @@ export async function variantTables(
     for (let i = 0; i < data.numCells; i++) {
       const f = data.cellFeatureIndices[i]!
       const row = data.cellRowIndices[i]!
-      const code =
-        data.featureInfo[f]!.genotypeCodes[sampleIndex.get(rows.sample[row]!)!]!
       cells.variant.push(f)
       cells.row.push(value.rowNames[row]!)
-      cells.genotype.push(code ? value.genotypeDict[code - 1]! : '')
+      cells.genotype.push(
+        decodeGenotype(
+          value.genotypeDict,
+          sampleIndex,
+          data.featureInfo[f]!.genotypeCodes,
+          rows.sample[row]!,
+        ) ?? '',
+      )
       cells.dosage.push(data.cellAltDosage[i]! / 255)
-      cells.color.push(hexOfAbgr(colors[i]!))
+      cells.color.push(abgrToHex(colors[i]!))
     }
   }
 
