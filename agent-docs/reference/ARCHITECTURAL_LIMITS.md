@@ -108,22 +108,22 @@ draws.
 **Status:** Mitigated; kept because the trap recurs.
 
 `backingSize` (`canvas2dUtils.ts`) caps a backing store at `MAX_CANVAS_DIM_PX`
-per axis, so an oversized canvas cannot throw `InvalidStateError`, and at
-`MAX_CANVAS_AREA_PX` of area by giving up height. Display height is
-user-dragged with no maximum, and the resize handle's double-click grows a track
-to its whole content.
+per axis, so an oversized canvas cannot throw `InvalidStateError`. Display
+height is user-dragged with no maximum, and the resize handle's double-click
+grows a track to its whole content.
 
-- **The area cap is Chrome's.** Past 7680x4320 px Chrome shrinks a WebGL
-  drawing buffer and leaves `canvas.width/height` at the requested size. A
-  2560-CSS-wide view at dpr 2 reaches it at 3240 px tall, and MAF and multi-row
-  reach it on any window wider than about 2025 CSS px.
+- **Chrome shrinks a WebGL drawing buffer past 7680x4320 px of area** and
+  leaves `canvas.width/height` at the requested size. `WebGL2Hal.resize`
+  therefore reports the scale from the drawing buffer. Capping area for every
+  backend was tried and dropped: it cost WebGPU and Canvas2D resolution they
+  never lacked, below 1 device px per CSS px on windows past ~4050 CSS px.
 - **Every device-px rect derives from the reported scale**: `clipBlock`,
   alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`.
-  `WebGL2Hal.resize` takes that scale from the drawing buffer, so a browser that
-  shrinks under the cap still draws correctly.
 - **A shader that rebuilds device px from the dpr breaks this.** The variant
   matrix did, and painted 0.2% of its columns on a shrunk buffer. The `dpr`
-  uniforms that remain only size antialias ramps, which want screen density.
+  uniforms that remain size antialias ramps and minimum stroke widths
+  (`connectorStrokePx`, `linkMark`), so a hairline can break into dashes once
+  the reported scale falls well below the dpr.
 - **`MockHal.reportedScale`** is how a backend test sees a capped scale; the
   default reports `getDpr()`.
 

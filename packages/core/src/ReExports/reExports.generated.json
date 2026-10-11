@@ -4971,7 +4971,6 @@
       "names": [
         "CANVAS_SEAM_PX",
         "CappedPath",
-        "MAX_CANVAS_AREA_PX",
         "MAX_CANVAS_DIM_PX",
         "MAX_DPR",
         "bpAtPx",

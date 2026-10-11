@@ -1,10 +1,9 @@
 import { WebGL2Hal } from './webgl2Hal.ts'
 
-// A browser may shrink a WebGL drawing buffer, aspect kept, while
-// `canvas.width/height` keep the requested size. Chrome does past 7680x4320 px,
-// which `backingSize` stays under; this models one that shrinks sooner, which
-// the spec permits and the HAL has to survive.
-const BROWSER_DRAWING_BUFFER_AREA = 4096 * 4096
+// Chrome caps a WebGL drawing buffer at 7680x4320 px of area and shrinks it,
+// aspect kept, while `canvas.width/height` keep the requested size. Three ANGLE
+// backends shrank 5120x6600 to 5073x6539.
+const BROWSER_DRAWING_BUFFER_AREA = 7680 * 4320
 
 function shrunk(w: number, h: number) {
   const k = Math.min(1, Math.sqrt(BROWSER_DRAWING_BUFFER_AREA / (w * h)))
@@ -54,11 +53,11 @@ beforeEach(() => {
 
 test('a shrunk drawing buffer reports the scale it got, and flips on its height', async () => {
   const { hal, calls } = await halOverShrinkingCanvas()
-  const scale = hal.resize(2560, 3000)
-  const [bufferW, bufferH] = shrunk(5120, 6000)
-  expect(bufferW).toBeLessThan(5120)
+  const scale = hal.resize(2560, 3300)
+  const [bufferW, bufferH] = shrunk(5120, 6600)
+  expect([bufferW, bufferH]).toEqual([5073, 6539])
   expect(scale.x).toBeCloseTo(bufferW / 2560, 6)
-  expect(scale.y).toBeCloseTo(bufferH / 3000, 6)
+  expect(scale.y).toBeCloseTo(bufferH / 3300, 6)
 
   calls.length = 0
   hal.beginFrame(0, 0, 0, 0)

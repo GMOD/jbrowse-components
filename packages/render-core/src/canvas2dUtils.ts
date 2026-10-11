@@ -43,12 +43,6 @@ export function getDpr() {
 // hardware. 8192 is under all of them.
 export const MAX_CANVAS_DIM_PX = 8192
 
-// Ceiling on backing-store area. Past exactly 7680x4320 px Chrome shrinks a
-// WebGL drawing buffer and leaves canvas.width/height at the requested size, so
-// staying under it keeps every backend drawing the same pixels, and bounds a
-// WebGPU canvas's 4x MSAA target with it.
-export const MAX_CANVAS_AREA_PX = 7680 * 4320
-
 /**
  * The largest CSS-px extent a canvas may take on one axis before its backing
  * store (`× dpr`) reaches {@link MAX_CANVAS_DIM_PX}.
@@ -67,18 +61,14 @@ export function maxCanvasCssPx() {
   return MAX_CANVAS_DIM_PX / getDpr()
 }
 
-// CSS px → backing-store px under both ceilings. Height gives way to the area
-// cap, since horizontal resolution is where a genome browser's detail is. Every
-// device-px rect derives from the scale this leaves (`syncCanvasSize`,
-// `prepareCanvas`), so a capped canvas draws whole at a lower resolution.
+// CSS px → backing-store px, each axis under MAX_CANVAS_DIM_PX. Every device-px
+// rect derives from the scale this leaves (`syncCanvasSize`, `prepareCanvas`),
+// so a capped canvas draws whole at a lower resolution on that axis.
 function backingSize(cssWidth: number, cssHeight: number, dpr: number) {
-  const width = Math.min(Math.round(cssWidth * dpr), MAX_CANVAS_DIM_PX)
-  const height = Math.min(
-    Math.round(cssHeight * dpr),
-    MAX_CANVAS_DIM_PX,
-    Math.floor(MAX_CANVAS_AREA_PX / Math.max(width, 1)),
-  )
-  return { width, height }
+  return {
+    width: Math.min(Math.round(cssWidth * dpr), MAX_CANVAS_DIM_PX),
+    height: Math.min(Math.round(cssHeight * dpr), MAX_CANVAS_DIM_PX),
+  }
 }
 
 /**
