@@ -36,14 +36,17 @@ cost is linear in lanes.
   answering lane pairs draws neighbour against neighbour, and a pair it has not
   answered draws nothing.
 - **A lane opens a hole at each deletion it carries against the anchor**
-  (`laneOpeningsOf`, `LaneOpening`): where two pieces of one alignment record
-  abut in the lane, or nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or
-  more further apart. `clipFeatureToRegion` stamps each piece with its record
-  (`recordId`). Two records meeting in a lane are a rearrangement's breakpoint
-  and open nothing: before that rule, chains meeting in a duplication region
-  opened holes of 2-7 Mb, which inflated the lane's rung to as much as 20x and
-  made it depend on how far the fetch reached past the viewport. A source
-  naming no records still opens on the gap alone.
+  (`laneOpeningsOf`, `LaneOpening`): where two pieces abut in the lane, or
+  nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or more further apart,
+  and either they are one alignment record (`recordId`, stamped by
+  `clipFeatureToRegion`) or the lane places the anchor between them nowhere.
+  Two records meeting where that stretch went elsewhere in the lane are a
+  rearrangement's breakpoint and open nothing: chains meeting in a duplication
+  region opened holes of 2-7 Mb, which inflated the lane's rung to as much as
+  20x and made it depend on how far the fetch reached past the viewport. The
+  record alone is not the test: `hprc_multiway_gfa.pif.gz` writes the CFHR3–CFHR1
+  deletion as two abutting records, and over chr17:10-25 Mb of the liftOver
+  lanes every cross-record gap of a megabase or more went elsewhere.
   The frame's `min`/`max` are in the opened coordinate (lane bp plus every hole
   before it), so what follows the hole sits under its own anchor stretch and every
   carrier of one deletion draws the same gap, whoever its neighbour is. Before

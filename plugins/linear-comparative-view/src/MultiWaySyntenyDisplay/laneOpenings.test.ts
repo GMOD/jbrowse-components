@@ -23,8 +23,8 @@ import type { LaneDecision } from './laneDecision.ts'
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 
-// HPRC v2.1 at CFH: four haplotypes share one alignment record carrying the
-// 84,684 bp CFHR3-CFHR1 deletion, which the fetch splits into two pieces.
+// HPRC v2.1 at CFH: four haplotypes carry the 84,684 bp CFHR3-CFHR1 deletion
+// as two records that abut in the haplotype, as hprc_multiway_gfa.pif.gz does.
 const WINDOW_START = 196_739_994
 const WINDOW_END = 196_849_994
 const DEL_START = 196_759_449
@@ -80,14 +80,14 @@ function cfhFeatures() {
     }),
   )
   return [
-    piece('cfh/0', WINDOW_START, DEL_START, carriers, 1, 'cfh'),
+    piece('cfh/0', WINDOW_START, DEL_START, carriers, 1, 'cfh-before'),
     piece(
       'cfh/1',
       DEL_END,
       WINDOW_END,
       carriers.map(c => ({ ...c, start: c.start + BEFORE })),
       1,
-      'cfh',
+      'cfh-after',
     ),
     ...Object.entries(NON_CARRIERS).map(([assemblyName, [ref, at]]) =>
       piece(`whole-${assemblyName}`, WINDOW_START, WINDOW_END, [
@@ -196,16 +196,35 @@ describe('a deletion the lane carries against the anchor', () => {
     }
   })
 
-  test('opens nothing where two records meet in the lane', () => {
+  describe('two pieces whose anchors sit apart', () => {
     const [ref, at] = CARRIERS['HG01123.1']
-    const lane = (start: number) => [
-      { assemblyName: 'HG01123.1', refName: ref, start },
+    const lane = (refName: string, start: number) => [
+      { assemblyName: 'HG01123.1', refName, start },
     ]
-    const breakpoint = groupFeatures([
-      piece('a/0', 10_000_000, 10_050_000, lane(at), 1, 'a'),
-      piece('b/0', 14_000_000, 14_050_000, lane(at + 50_000), 1, 'b'),
-    ])
-    expect(laneOpeningsOf(breakpoint)('HG01123.1', ref)).toEqual([])
+    const between = piece('moved', 12_000_000, 12_050_000, lane('other', 0))
+    const meeting = (left: string, right: string) => [
+      piece('a/0', 10_000_000, 10_050_000, lane(ref, at), 1, left),
+      piece('b/0', 14_000_000, 14_050_000, lane(ref, at + 50_000), 1, right),
+    ]
+
+    test('open nothing as two records whose gap the lane places elsewhere', () => {
+      const groups = groupFeatures([...meeting('a', 'b'), between])
+      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([])
+    })
+
+    test('open the gap as one record, wherever the lane places it', () => {
+      const groups = groupFeatures([...meeting('a', 'a'), between])
+      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+        { at: at + 50_000, bp: 3_950_000 },
+      ])
+    })
+
+    test('open the gap as two records when the lane places it nowhere', () => {
+      const groups = groupFeatures(meeting('a', 'b'))
+      expect(laneOpeningsOf(groups)('HG01123.1', ref)).toEqual([
+        { at: at + 50_000, bp: 3_950_000 },
+      ])
+    })
   })
 
   test('puts both pieces of every carrier under their own anchor stretch', () => {

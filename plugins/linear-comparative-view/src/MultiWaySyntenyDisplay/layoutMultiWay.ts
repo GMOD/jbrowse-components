@@ -151,21 +151,65 @@ export function frameOpenings(frame: RowFrame) {
   return frame.openings ?? NO_OPENINGS
 }
 
-// Pieces of two records meeting in a lane are a rearrangement's breakpoint,
-// whose anchor distance can run to megabases; only a source naming no
-// records leaves the call to the gap alone.
 function oneRecord(left: MatePlacement, right: MatePlacement) {
-  const a: unknown = left.feature.get('recordId')
-  const b: unknown = right.feature.get('recordId')
-  return a === undefined || b === undefined || a === b
+  const record: unknown = left.feature.get('recordId')
+  return record !== undefined && record === right.feature.get('recordId')
 }
 
 /**
- * Where two pieces of one alignment record abut in a lane, or nearly, while
- * their anchor ends sit at least `SPLIT_AT_GAP_BP` further apart. Named
- * records are genes, whose spacing says nothing about a deletion.
+ * Whether a lane places any of the anchor strictly between `lo` and `hi`,
+ * from every group's anchor sorted by start with a running reach, so a query
+ * is one binary search.
  */
+function placedAnchorOf(groups: MultiWayGroup[]) {
+  const byKey = new Map<string, MultiWayPlacement[]>()
+  for (const group of groups) {
+    for (const assemblyName of group.mates.keys()) {
+      const key = `${assemblyName}\u0000${group.anchor.refName}`
+      let list = byKey.get(key)
+      if (!list) {
+        list = []
+        byKey.set(key, list)
+      }
+      list.push(group.anchor)
+    }
+  }
+  const index = new Map<string, { starts: number[]; reach: number[] }>()
+  for (const [key, anchors] of byKey) {
+    anchors.sort((a, b) => a.start - b.start)
+    let reach = Number.NEGATIVE_INFINITY
+    index.set(key, {
+      starts: anchors.map(a => a.start),
+      reach: anchors.map(a => (reach = Math.max(reach, a.end))),
+    })
+  }
+  return (assemblyName: string, refName: string, lo: number, hi: number) => {
+    const entry = index.get(`${assemblyName}\u0000${refName}`)
+    if (!entry) {
+      return false
+    }
+    let below = 0
+    let above = entry.starts.length
+    while (below < above) {
+      const mid = (below + above) >> 1
+      if (entry.starts[mid]! < hi) {
+        below = mid + 1
+      } else {
+        above = mid
+      }
+    }
+    return below > 0 && entry.reach[below - 1]! > lo
+  }
+}
 
+/**
+ * Where two pieces of a lane abut, or nearly, while their anchor ends sit at
+ * least `SPLIT_AT_GAP_BP` further apart, and the gap is a deletion: the two
+ * pieces are one alignment record, or the lane places the anchor between them
+ * nowhere. Two records meeting where that stretch went elsewhere in the lane
+ * are a rearrangement's breakpoint, whose anchor distance runs to megabases.
+ * Named records are genes, whose spacing says nothing about a deletion.
+ */
 export function laneOpeningsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
     string,
@@ -186,16 +230,24 @@ export function laneOpeningsOf(groups: MultiWayGroup[]) {
       }
     }
   }
+  const placedAnchor = placedAnchorOf(groups)
   const byLane = new Map<string, LaneOpening[]>()
   for (const [key, list] of pieces) {
+    const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
     const openings: LaneOpening[] = []
     forEachLaneGap(list, (left, right, laneGap, anchorGap) => {
       if (
-        oneRecord(left.lane, right.lane) &&
         anchorGap !== undefined &&
         laneGap >= 0 &&
-        anchorGap - laneGap >= SPLIT_AT_GAP_BP
+        anchorGap - laneGap >= SPLIT_AT_GAP_BP &&
+        (oneRecord(left.lane, right.lane) ||
+          !placedAnchor(
+            assemblyName,
+            left.anchor.refName,
+            left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
+            left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
+          ))
       ) {
         openings.push({ at: left.lane.end, bp: anchorGap - laneGap })
       }
