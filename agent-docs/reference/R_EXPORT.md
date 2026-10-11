@@ -19,7 +19,7 @@ All of it is in `plugins/marks/src/rexport/`, because the grammar's translator l
 - `engineToR.ts` (`LinearBasicDisplay`, `LinearWiggleDisplay`) and `alignmentsToR.ts` (`LinearAlignmentsDisplay`): a ggjbrowse reader per track, then `ggplot(result)` and a `geom_jbrowse_*` per table, as ggjbrowse's own `autoplot` composes them.
 - `rplot.ts` (typed plot model), `rScript.ts` (assembler), `frameFor.ts` (the mark displays' `READERS` table: BigWig, GFF3, VCF, BED, BigBed, BAM), `rhelpers/*.R` bundled by `pnpm gen:rhelpers`.
 
-Not exported yet: linked reads and chains, facets on a feature track, a key for a linear color ramp, the multi-BigWig palette for sources that declare no color, multi-sample variant displays (`jbrowse_variants` exists, no exporter calls it) and `LinearManhattanDisplay` (no GWAS reader). Each lands in the script header when set.
+Not exported yet: linked reads and chains, facets on a feature track, a key for a linear color ramp, multi-sample variant displays (`jbrowse_variants` exists, no exporter calls it) and `LinearManhattanDisplay` (no GWAS reader). Each lands in the script header when set.
 
 The live path reads each display's resolved config (`fullConfSnapshot`), drops the empty strings, lists and objects an unset slot resolves to (`withoutUnset`), and hands the translators that. The translators keep their own defaults for the partial specs the unit tests build; a live export never needs them.
 
@@ -87,6 +87,7 @@ Each cost a wrong figure to find.
 - **rtracklayer returns 1-based inclusive coords.** Every reader converts to 0-based half-open; one that did not left a 1bp hole between BigWig bins that antialiased into white seams.
 - **`ggsave()` refuses a dimension over 50 inches**, and figure height is the unbounded sum of panel weights. Clamp it, or a large cohort dies at the script's last line after every read.
 - **A feature panel's y axis is the display's pixels**, pinned to `c(0, height)`, and its height follows `height`: the engine lays the rows out, so the figure only has to keep its aspect.
+- **A feature track exports at the view's `heightMode` and `height`.** The script writes both, so under the default `fit` it drops what the browser drops to fit the track, and a reader who wants every label edits one word to `grow`. ggjbrowse's own default is `grow`, since a figure has no track height.
 
 ## Verification
 

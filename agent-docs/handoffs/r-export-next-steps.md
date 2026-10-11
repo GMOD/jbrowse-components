@@ -35,14 +35,16 @@ without an explicit go.
   two, downloaded from the menu and run. The live adapter configs come back
   without their defaults, so a GFF3 or BAM passes as a path and the BigBed as
   its adapter list (for `aggregateField`).
-- Two differences from the browser remain, both deliberate or known:
-  - A feature track draws every row and label. The browser's `heightMode:
-    'fit'` squeezes rows into the track's height and drops labels; the engine
-    lays out as `grow`, which a figure that sizes itself wants.
-  - A multi-BigWig with no declared colors draws navy where the browser draws
-    blue (the palette gap in TABLES.md).
-- ggjbrowse needs 3c8e7ae or later: a reader taking an adapter config,
-  `scale_y_jbrowse()`, and `display$color` read as the config reads it.
+- Since 2026-10-11 (later) a feature track exports at the view's
+  `heightMode` and `height`, so under the default `fit` the figure drops the
+  labels and isoforms the browser drops to fit its 100 px; the engine runs the
+  display's fit ladder. A multi-BigWig takes the multi-track defaults and the
+  dealt palette, so it matches the browser too. Left: a label clipped at the
+  region's right edge, which R writes and the browser does not.
+- ggjbrowse needs 6150bd5 or later: a reader taking an adapter config,
+  `scale_y_jbrowse()`, `display$color` read as the config reads it, the bundle
+  with the fit ladder and palette (jbrowse-components 013ec7706f), and
+  `heightMode` defaulting to `grow` for its own users.
 
 ## Decide first (Colin)
 
@@ -62,14 +64,12 @@ without an explicit go.
 
 1. **Variant displays** through `jbrowse_variants` and
    `geom_jbrowse_genotypes`.
-2. **The multi-BigWig palette** for sources with no declared color, which the
-   engine does not deal yet (TABLES.md).
-3. **Put it in front of two or three R users with their own tracks.** Ask what
+2. **Put it in front of two or three R users with their own tracks.** Ask what
    they hit first: an unsupported track, a figure that differs from the
    browser, or a script they could not extend.
-4. **Real data.** An hg38 BAM at a deep locus, a CRAM, a ten-track session,
+3. **Real data.** An hg38 BAM at a deep locus, a CRAM, a ten-track session,
    `chr1` against `1` aliases.
-5. **Mark displays through the engine** too, once a mark table exists; then
+4. **Mark displays through the engine** too, once a mark table exists; then
    `read_bigbed`, `read_gff` and the rest of `frameFor.ts` go.
 
 ## Verify a change
