@@ -110,9 +110,9 @@ import {
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
+  bakedColorExtent,
   bakedColorScale,
   numericExtentAcrossGroups,
-  quantileExtentAcrossGroups,
 } from './bakedColorScale.ts'
 import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import {
@@ -179,7 +179,6 @@ import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
   mapqExtentAcrossGroups,
-  mapqQuantileExtentAcrossGroups,
   presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
@@ -1472,26 +1471,11 @@ export default function stateModelFactory(
            * scale paints, so a region arriving rebakes nothing then.
            */
           get bakedColorExtent(): NumericExtent | undefined {
-            const encoding = self.colorEncoding
-            return typeof encoding === 'object' &&
-              encoding.scale === 'linear' &&
-              (encoding.domainMin === undefined ||
-                encoding.domainMax === undefined)
-              ? (encoding.domainQuantile ?? 1) < 1 &&
-                self.colorBy.type === 'tag'
-                ? quantileExtentAcrossGroups(
-                    this.laidOutByGroupFramed,
-                    d => d.readTagValues,
-                    encoding.domainQuantile!,
-                  )
-                : (encoding.domainQuantile ?? 1) < 1 &&
-                    self.colorBy.type === 'mappingQuality'
-                  ? mapqQuantileExtentAcrossGroups(
-                      this.laidOutByGroupFramed,
-                      encoding.domainQuantile!,
-                    )
-                  : this.tagValueExtent
-              : undefined
+            return bakedColorExtent(
+              self.colorEncoding,
+              self.colorBy,
+              this.laidOutByGroupFramed,
+            )
           },
 
           /**

@@ -16,10 +16,15 @@ import {
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { bakedValueColor } from './colorTagUtils.ts'
+import {
+  mapqExtentAcrossGroups,
+  mapqQuantileExtentAcrossGroups,
+} from './qualitySpans.ts'
 
 import type { AlignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import type { ColorBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
+import type { LaidOutByGroup } from './groupLayout.ts'
 import type { RampStop } from '@jbrowse/core/ui'
 import type {
   ContinuousRef,
@@ -234,4 +239,36 @@ export function numericExtentAcrossGroups<D>(
     }
   }
   return min <= max ? [min, max] : undefined
+}
+
+/**
+ * The span of a linear color field over the laid-out reads, which a ramp's
+ * open ends stretch across: their extremes, or below a `domainQuantile` of 1
+ * that quantile of each sign. Undefined while `domainMin` and `domainMax`
+ * both pin the ramp or another scale paints.
+ */
+export function bakedColorExtent(
+  encoding: AlignmentsColorEncoding,
+  colorBy: ColorBy,
+  byGroup: LaidOutByGroup,
+): NumericExtent | undefined {
+  if (
+    typeof encoding !== 'object' ||
+    encoding.scale !== 'linear' ||
+    (encoding.domainMin !== undefined && encoding.domainMax !== undefined)
+  ) {
+    return undefined
+  }
+  const quantile = encoding.domainQuantile ?? 1
+  if (colorBy.type === 'tag') {
+    return quantile < 1
+      ? quantileExtentAcrossGroups(byGroup, d => d.readTagValues, quantile)
+      : numericExtentAcrossGroups(byGroup, d => d.readTagValues)
+  }
+  if (colorBy.type === 'mappingQuality') {
+    return quantile < 1
+      ? mapqQuantileExtentAcrossGroups(byGroup, quantile)
+      : mapqExtentAcrossGroups(byGroup)
+  }
+  return undefined
 }

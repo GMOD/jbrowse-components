@@ -90,6 +90,60 @@ test('a mismatch\u2019s frequency is its base\u2019s share of the depth there', 
   )
 })
 
+test('reads paint as the display\u2019s color object paints them, with its key', async () => {
+  const plain = await engine.alignments(BAM)
+  expect(new Set(plain.reads.color).size).toBe(1)
+  expect(plain.reads.color[0]).toMatch(/^#[0-9a-f]{6}$/)
+  expect(plain.reads.category.every(c => c === 'plain')).toBe(true)
+  expect(plain.legend.label).toEqual(['Reads'])
+
+  const strand = await engine.alignments({ ...BAM, color: { field: 'strand' } })
+  const painted = (t: typeof strand, s: number) =>
+    new Set(t.reads.color.filter((_, i) => t.reads.strand[i] === s))
+  const [fwd] = painted(strand, 1)
+  const [rev] = painted(strand, -1)
+  expect(painted(strand, 1).size).toBe(1)
+  expect(painted(strand, -1).size).toBe(1)
+  expect(fwd).not.toEqual(rev)
+  expect(new Set(strand.reads.category)).toEqual(
+    new Set(['fwdStrand', 'revStrand']),
+  )
+  expect(strand.legend).toEqual({
+    label: ['Forward strand', 'Reverse strand'],
+    color: [fwd, rev],
+  })
+  expect(strand.legendTitle).toBe('Read colors')
+
+  const written = await engine.alignments({
+    ...BAM,
+    color: { field: 'strand', range: ['#ff0000', '#0000ff'], title: 'Mine' },
+  })
+  expect([...painted(written, 1)]).toEqual(['#ff0000'])
+  expect([...painted(written, -1)]).toEqual(['#0000ff'])
+  expect(written.legendTitle).toBe('Mine')
+
+  // a threshold key lists every bin, reads in it or not, highest first
+  const mapq = await engine.alignments({ ...BAM, color: { field: 'mapq' } })
+  expect(mapq.legendTitle).toBe('Mapping quality')
+  expect(mapq.legend.label[0]).toMatch(/^MAPQ 30\+/)
+  expect(mapq.legend.label.length).toBe(4)
+  for (const color of new Set(mapq.reads.color)) {
+    expect(mapq.legend.color).toContain(color)
+  }
+  expect(new Set(mapq.reads.category)).toEqual(new Set(['mapq']))
+})
+
+test('the display\u2019s filter object keeps the reads it keeps', async () => {
+  const all = await engine.alignments(BAM)
+  const reverse = await engine.alignments({
+    ...BAM,
+    filter: { flagInclude: 16 },
+  })
+  expect(reverse.reads.strand.every(s => s === -1)).toBe(true)
+  expect(reverse.reads.name.length).toBeGreaterThan(0)
+  expect(reverse.reads.name.length).toBeLessThan(all.reads.name.length)
+})
+
 test('a region over the byte limit is refused before any read is fetched', async () => {
   await expect(engine.alignments({ ...BAM, byteLimit: 1000 })).rejects.toThrow(
     /over the 1000-byte limit/,

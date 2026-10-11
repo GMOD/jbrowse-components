@@ -50,6 +50,17 @@ size, since a host holds the whole table in memory.
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
+**A table takes the display's own settings objects and answers what the
+display draws with them.** `alignmentTables` takes the `color` and `filter`
+objects as a config writes them, resolves each through the display's config
+schema, and runs the display's pipeline: the worker filters and fetches under
+`colorBy`, the main-thread bake and classification (`applyReadColorsByGroup`)
+paint each read, and the display's own key (`getReadDisplayLegendItems`) comes
+back as `legend` with `legendTitle`. Each read carries its painted `color` as
+`#rrggbb` and its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...). A host
+draws `color` as given and keys the legend off `legend`, so a scheme the
+browser gains paints in R with no port. A linear ramp keys no legend yet.
+
 The field names are an external contract once ggjbrowse reads them: renaming
 one breaks a downstream repo with no compiler between them, which is what the
 downstream canary is for.
