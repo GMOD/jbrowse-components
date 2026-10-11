@@ -232,10 +232,10 @@ odgi extract -i graph.og -r K12#1#chr:1004500-1004900 -E -o - \
 vg chunk -x graph.xg -p K12#1#chr:1004500-1004900 -c 20 > window.vg
 ```
 
-A plain GFA states no reference, so pick the path to anchor on under **View menu
-→ Settings → Reference path**. `odgi extract` writes the window into the path
-name (`K12#1#chr:1004500-1004961`), and the view takes the offsets from that
-name. A whole-genome path starts at zero.
+**View menu → Graph settings... → Reference path** picks the path to anchor on,
+since a plain GFA states no reference. `odgi extract` writes the window into the
+path name (`K12#1#chr:1004500-1004961`), and the view takes the offsets from
+that name. A whole-genome path starts at zero.
 
 The paths also show which samples go through a node. The `P` and `W` lines state
 every traversal, and **Node details** lists them under `samples`. A true rGFA
@@ -270,15 +270,15 @@ opened this way from the GFA's P/W lines.
 The track menu's **Layout** submenu draws the same subgraph seven ways, and the
 axes mean something different in each:
 
-| Layout                    | x                  | y                       |
-| ------------------------- | ------------------ | ----------------------- |
-| Anchored                  | reference bp       | one row per stable rank |
-| Sample rows               | reference bp       | one row per assembly    |
-| Walk rows                 | each walk's own bp | one bar per haplotype   |
-| Ordered                   | reference order    | a lane per allele       |
-| Tube map                  | node order         | a tube per path         |
-| Tube map on reference     | reference bp       | a tube per path         |
-| **Force-directed layout** | nothing (FMMM)     | nothing                 |
+| Layout                | x                  | y                       |
+| --------------------- | ------------------ | ----------------------- |
+| Anchored              | reference bp       | one row per stable rank |
+| Sample rows           | reference bp       | one row per assembly    |
+| Walk rows             | each walk's own bp | one bar per haplotype   |
+| Ordered               | reference order    | a lane per allele       |
+| Tube map              | node order         | a tube per path         |
+| Tube map on reference | reference bp       | a tube per path         |
+| **Force-directed**    | nothing (FMMM)     | nothing                 |
 
 **Ordered** keeps x monotone in reference order, ignoring bp. A SNP allele gets
 the same room as the kilobase segment beside it, and a bubble draws as a lens.
@@ -288,7 +288,7 @@ path as a colored tube through boxed nodes.
 
 The track opens in **Anchored**, whose x is the view's own coordinate, so the
 graph lines up under the other tracks and pans and zooms with them. **Ordered**
-and **Force-directed layout** give x another meaning, so the track draws them in
+and **Force-directed** give x another meaning, so the track draws them in
 coordinates of their own, fitted to it, the way a variant matrix does, and adds
 **Zoom in**, **Zoom out** and **Zoom to fit** to its menu; moving the view still
 cuts the new window. A strip along the top of such a track draws each reference
@@ -350,37 +350,37 @@ The graph draws the session's gene track onto the backbone. Exons are dark
 stretches along their reference nodes, and each gene's name is pinned under the
 backbone at the gene's midpoint. An allele has no reference coordinates and
 shows no exon. **Show... → Show genes on the backbone** in the track menu turns
-the genes off, and **Gene track** in its **Settings** picks the track when the
-assembly has more than one.
+the genes off, and **Gene track** in its **Graph settings...** picks the track
+when the assembly has more than one.
 
 A graph with walks, such as a GBZ cut or a GFA with P or W lines, supports three
-more displays. **Node width** in the track menu's **Settings** draws a node
-thicker the more walks visit it, scaled by the square root of its depth against
-the mean, which is Bandage's rule. **Uniform** turns that off. In a bubble with
-a route over a kilobase, every route has a chip at the far point of its loop
-while the halos are on. The chip names the walks that take the route and gives
-the route's length. The track menu's **Haplotypes** submenu highlights one walk.
-Its nodes keep their color, its links draw dark, and everything else fades, on
-the reference strip too, so the stretches of reference the walk skips read at
-their bp. A readout beside the legend compares the walk's length with the
-reference walk's.
+more displays. **Node width** in the track menu's **Graph settings...** draws a
+node thicker the more walks visit it, scaled by the square root of its depth
+against the mean, which is Bandage's rule. **Uniform** turns that off. In a
+bubble with a route over a kilobase, every route has a chip at the far point of
+its loop while the halos are on. The chip names the walks that take the route
+and gives the route's length. The track menu's **Haplotypes** submenu highlights
+one walk. Its nodes keep their color, its links draw dark, and everything else
+fades, on the reference strip too, so the stretches of reference the walk skips
+read at their bp. A readout beside the legend compares the walk's length with
+the reference walk's.
 
 A gbz-base track draws one lane per haplotype, and **Display types → Graph** in
 its track menu draws the same track as a graph of the haplotypes' walks. The
-**Haplotypes** field in **Settings** lists the haplotypes the cut holds beside
-the reference, and with the field empty the track cuts every haplotype in the
-graph. Past 5 Mb, or for a cut over the adapter's `nodeLimit`, the track asks
-you to zoom in. A variant track over the graph's VCF covers a wider window.
+**Haplotypes** field in **Graph settings...** lists the haplotypes the cut holds
+beside the reference, and with the field empty the track cuts every haplotype in
+the graph. Past 5 Mb, or for a cut over the adapter's `nodeLimit`, the track
+asks you to zoom in. A variant track over the graph's VCF covers a wider window.
 [Repeat lengths across HPRC haplotypes](/docs/tutorials/pangenome_hprc_repeats#one-haplotypes-copies)
 reads a repeat array this way.
 
 ## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
 
-**Bubble spread** in the track menu's **Settings** sets how a node's bp becomes
-its drawn length in the force layout. The anchored layouts place a node from its
-coordinates, so the setting has no effect there. The engine comes from Bandage,
-whose graphs are assembled contigs of kb to Mb. It maps length linearly with a
-tiny floor, so a pangenome allele of a few bases clamps to a stub.
+**Bubble spread** in the track menu's **Graph settings...** sets how a node's bp
+becomes its drawn length in the force layout. The anchored layouts place a node
+from its coordinates, so the setting has no effect there. The engine comes from
+Bandage, whose graphs are assembled contigs of kb to Mb. It maps length linearly
+with a tiny floor, so a pangenome allele of a few bases clamps to a stub.
 
 Two alternative settings fix that:
 
@@ -397,14 +397,14 @@ Two alternative settings fix that:
 **Proportional** is the unmodified Bandage map. Keep it when a figure is about
 relative length.
 
-**Graph context**, in the same **Settings**, sets how far the cut follows links
-past the region, and defaults to **1 hop**. It is the in-app counterpart of
-`odgi extract -c N`. An allele's interior segments are indexed under the
-sequence of their haplotype, so a reference query never reaches them. A detour
-that leaves the backbone before the window and rejoins after it therefore
-arrives as two stubs. A hop closes those stubs, at the cost of one query per
-off-reference segment already reached. **None** shows what the region query
-alone reaches.
+**Graph context**, in the same **Graph settings...**, sets how far the cut
+follows links past the region, and defaults to **1 hop**. It is the in-app
+counterpart of `odgi extract -c N`. An allele's interior segments are indexed
+under the sequence of their haplotype, so a reference query never reaches them.
+A detour that leaves the backbone before the window and rejoins after it
+therefore arrives as two stubs. A hop closes those stubs, at the cost of one
+query per off-reference segment already reached. **None** shows what the region
+query alone reaches.
 
 Both halves below share the genes and segments lanes and color each node the
 same way, so a segment can be found in either. A hop is one step, so the right

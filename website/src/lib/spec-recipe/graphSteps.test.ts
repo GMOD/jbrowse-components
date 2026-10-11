@@ -39,10 +39,10 @@ test("a graph track's pane settings are track menu steps", () => {
   )
   expect(titles).toEqual(
     expect.arrayContaining([
-      'Track menu → Layout → Force-directed layout',
+      'Track menu → Layout → Force-directed',
       'Track menu → Color → Reference position',
       'Track menu → Show... → Show bubble halos (unchecked)',
-      'Track menu → Settings → Bubble spread → Open bubbles',
+      'Track menu → Graph settings... → Bubble spread → Open bubbles',
     ]),
   )
   expect(unmapped).toEqual([])

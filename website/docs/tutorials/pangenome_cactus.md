@@ -519,8 +519,7 @@ Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
 the other four skip. To see it:
 
 - Type `chr:1,978,100-1,979,700`.
-- Pick **Force-directed layout** under the **Layout** row of the graph track's
-  menu.
+- Pick **Force-directed** under the **Layout** row of the graph track's menu.
 - Add a second copy of the segments track, colored by how many strains the
   `SM:Z:` tag lists for each segment
   ([config on the pggb page](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track)).

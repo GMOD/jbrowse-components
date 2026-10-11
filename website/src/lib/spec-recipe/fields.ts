@@ -1125,8 +1125,8 @@ const numberField =
 // is third-party, so there is no option table to import the way the alignments
 // ones are imported: every label below is read off its source. `Layout` and
 // `Color` are submenus of the track menu and selects in the view's toolbar. The
-// rest are in the `Graph settings` dialog, which both open with a `Settings`
-// item, and which is the answer to "where is this in the GUI" for a reader who
+// rest are in the `Graph settings` dialog, which both open with a `Graph
+// settings...` item, and which is the answer to "where is this in the GUI" for a reader who
 // only has the figure.
 //
 // The unmapped list cannot see a rename in the plugin, so check-spec-recipes
@@ -1195,7 +1195,7 @@ export const GRAPH_LABELS: Record<string, string[]> = {
     'Show bubble halos',
     'Show deletion edges',
     'Show genes on the backbone',
-    'Settings',
+    'Graph settings...',
   ],
   'the view toolbar': ['Highlight haplotypes...'],
   'the settings dialog itself': [
@@ -1218,15 +1218,19 @@ function graphSurface(context: FieldContext, onView: string) {
 }
 
 const graphSettings = (context: FieldContext) =>
-  `${graphSurface(context, 'Graph view menu')} → Settings`
+  `${graphSurface(context, 'Graph view menu')} → Graph settings...`
 
+// The track menu drops a trailing " layout" the view's select keeps, as the
+// plugin's layoutMenuLabel does.
 const graphToolbarField =
   (label: string, table: Record<string, string>): FieldRecipe =>
   (value, context) => {
     const option = typeof value === 'string' ? table[value] : undefined
     return option
       ? {
-          path: `${graphSurface(context, 'Graph view toolbar')} → ${label} → ${option}`,
+          path: `${graphSurface(context, 'Graph view toolbar')} → ${label} → ${
+            isGraphTrack(context) ? option.replace(/ layout$/, '') : option
+          }`,
         }
       : undefined
   }

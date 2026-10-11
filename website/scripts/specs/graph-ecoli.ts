@@ -1564,7 +1564,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           { type: 'waitForSelector', selector: GRAPH_DRAWN },
           ...graphTrackMenu(ECOLI_SEGMENTS_TRACK, [
             'Layout: Anchored',
-            'Force-directed layout',
+            'Force-directed',
           ]),
           {
             type: 'waitForSelector',
