@@ -112,10 +112,16 @@ describe('workspace layering', () => {
       // `LinearGenomeViewModel`. There is no value import, and there is nothing
       // lower to move the type to — it is the LGV's own model type.
       '@jbrowse/sv-core -> @jbrowse/plugin-linear-genome-view',
-      // `tables` is the columnar export surface over the alignments and
-      // sequence plugins' data; it reads their adapters' output.
+      // `tables` is the columnar export surface over these plugins' data; it
+      // reads their adapters' output and display settings.
       '@jbrowse/tables -> @jbrowse/plugin-alignments',
+      '@jbrowse/tables -> @jbrowse/plugin-bed',
+      '@jbrowse/tables -> @jbrowse/plugin-canvas',
+      '@jbrowse/tables -> @jbrowse/plugin-gff3',
+      '@jbrowse/tables -> @jbrowse/plugin-gtf',
       '@jbrowse/tables -> @jbrowse/plugin-sequence',
+      '@jbrowse/tables -> @jbrowse/plugin-variants',
+      '@jbrowse/tables -> @jbrowse/plugin-wiggle',
       // A real value edge, and the right way round despite appearances.
       // tree-sidebar renders *into* LGV chrome: `TrackOverlayPortal` /
       // `TrackOverlayContext` escape the display sandbox above the LGV's own

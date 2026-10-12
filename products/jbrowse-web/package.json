@@ -70,6 +70,7 @@
     "@jbrowse/web-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
+    "@mui/system": "^9.5.0",
     "@mui/x-data-grid": "^9.15.0",
     "idb": "^8.0.4",
     "mobx": "^7.0.6",
