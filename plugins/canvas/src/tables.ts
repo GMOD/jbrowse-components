@@ -1,6 +1,6 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
-import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 
 import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'

@@ -1610,7 +1610,7 @@
         "colorScaleIsEmpty",
         "legendSpecOf",
         "missingRowLast",
-        "rampKeyOf"
+        "rampLabels"
       ],
       "worker": "real"
     },
@@ -1976,6 +1976,13 @@
       "uiVia": [
         "@mui/material"
       ]
+    },
+    "@jbrowse/core/ui/rampKey": {
+      "package": "@jbrowse/core",
+      "names": [
+        "rampKeyOf"
+      ],
+      "worker": "real"
     },
     "@jbrowse/core/ui/ResizeHandle": {
       "package": "@jbrowse/core",

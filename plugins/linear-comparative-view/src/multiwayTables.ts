@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
+import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
 import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 import { cssColorToHex } from '@jbrowse/core/util/colorBits'

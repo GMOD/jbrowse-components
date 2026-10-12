@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
+import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {

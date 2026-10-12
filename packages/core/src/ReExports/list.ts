@@ -237,6 +237,7 @@ export default [
   '@jbrowse/core/ui/PluginStoreCard',
   '@jbrowse/core/ui/PopoverPicker',
   '@jbrowse/core/ui/ProgressChip',
+  '@jbrowse/core/ui/rampKey',
   '@jbrowse/core/ui/ResizeHandle',
   '@jbrowse/core/ui/ReturnToImportFormDialog',
   '@jbrowse/core/ui/SanitizedHTML',

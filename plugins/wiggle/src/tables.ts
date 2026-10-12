@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
+import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import {
   abgrToHex,
   cssColorToHex,

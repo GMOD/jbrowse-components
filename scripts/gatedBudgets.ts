@@ -8,7 +8,7 @@
 // hand-transcribed and went stale the moment CRAM's own limit moved from 3 Mb to
 // 5 Mb — in two docs at once, one of them generated from a source comment that
 // restated the number.
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { basename, dirname, join, relative } from 'node:path'
 
 export const root = join(import.meta.dirname, '..')
@@ -122,6 +122,9 @@ export function collectGatedAdapterBudgets(): Record<string, string> {
   for (const file of liveFiles) {
     // Adapters live in a directory named for them, alongside their configSchema
     const dir = dirname(file)
+    if (!existsSync(join(dir, 'configSchema.ts'))) {
+      continue
+    }
     const limit = declaredLimit(join(dir, 'configSchema.ts'))
     found[basename(dir)] = limit === undefined ? 'display' : `own:${limit}`
   }

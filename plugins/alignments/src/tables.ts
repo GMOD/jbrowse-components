@@ -6,8 +6,8 @@ import {
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import {
   abgrAlpha,
   abgrToHex,
