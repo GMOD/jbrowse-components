@@ -16,6 +16,12 @@ hotspot on a crystal to find its codon, and open an NMR ensemble of the
 transactivation domain. The protein3d plugin maps each structure to the
 transcript, and Mol\* draws the structures.
 
+## Prerequisites
+
+- the protein3d plugin: the hosted config the links open already loads it; for
+  your own JBrowse,
+  [install it from the plugin store](/docs/user_guides/plugin_store)
+
 ## Where the data comes from
 
 Nothing to download: the links open a hosted hg38 config with NCBI RefSeq genes,

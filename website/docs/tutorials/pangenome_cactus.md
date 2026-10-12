@@ -30,7 +30,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - htslib (`bgzip`, `tabix`) and `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the GraphGenomeView plugin, for
-  [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view)
+  [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view):
+  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later and
   [`gfatools`](https://github.com/lh3/gfatools), for
   [indexing the graph](#indexing-the-graph)

@@ -86,9 +86,9 @@ writes holds this entry:
 
 <!-- GRAPH_PLUGIN_CONFIG END -->
 
-On [JBrowse Desktop](/docs/quickstart_desktop) v5.0.0-beta.1 or later, install
-it once at **Global plugins... → Add custom plugin**: open **Advanced options**,
-paste that `esmUrl` into **ESM build URL** and leave the rest empty.
+On [JBrowse Desktop](/docs/quickstart_desktop) v5.0.0-beta.1 or later, add that
+`esmUrl` as a
+[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store).
 
 ## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 

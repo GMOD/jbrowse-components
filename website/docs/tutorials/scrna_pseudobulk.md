@@ -26,6 +26,9 @@ the pooled rows.
 - a JBrowse instance to load the finished BigWigs into (see the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
+- the zarr plugin, for
+  [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store), which that
+  section loads by URL
 
 ## Where the data comes from
 
@@ -235,7 +238,9 @@ The `MultiWiggleZarrAdapter` from
 the store, the same adapter [](/docs/tutorials/population_cnv) uses for the 1000
 Genomes panel. The build step writes the cell list, bin size and row colors as
 attributes of the store. The plugin is not in the plugin store yet, so load it
-from `config.json` first:
+from `config.json` first, or on Desktop add the same URL as a
+[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
+`Zarr`:
 
 ```json
 {

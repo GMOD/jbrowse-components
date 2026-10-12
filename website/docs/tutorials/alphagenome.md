@@ -22,8 +22,9 @@ model's output. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- [the AlphaGenome plugin](#the-alphagenome-plugin), which contributes the
-  adapters these tracks use, the query panel, and the variant right-click item
+- the AlphaGenome plugin, which contributes the adapters these tracks use, the
+  query panel, and the variant right-click item: the sessions below already load
+  it; for your own JBrowse, [load it by URL](#the-alphagenome-plugin)
 
 ## Where the data comes from
 
@@ -74,9 +75,9 @@ it loads by URL from the `plugins` array in `config.json` (see
 }
 ```
 
-On [JBrowse Desktop](/docs/quickstart_desktop), install it from the start screen
-at **Global plugins... → Add custom plugin**, with that URL as the plugin URL
-and the name `AlphaGenome`.
+On [JBrowse Desktop](/docs/quickstart_desktop), add that URL as a
+[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
+`AlphaGenome`.
 
 The plugin sends requests to a small service that holds the API key, runs the
 prediction and stores the arrays. The public instance is the default. To use

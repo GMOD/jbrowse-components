@@ -17,6 +17,12 @@ that session from a gene symbol, then make the same views by hand for _TP53_ as
 an AlphaFold structure and _NLRP1_ as an MSA, and read the MSA's domains back on
 the genome.
 
+## Prerequisites
+
+- the protein3d and msaview plugins: genomes.jbrowse.org already loads both; for
+  your own JBrowse, see
+  [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
+
 ## Where the data comes from
 
 Nothing to download: the protein3d and msaview plugins fetch from these
@@ -194,10 +200,8 @@ in the linear view you launched from, then narrow it to one record:
 
 ## Adding the plugins to your own instance
 
-- Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
-  install **Protein3d** and **MSAView**, or
-- As an admin, add them to your `config.json` so they load for all users (see
-  [configuring plugins](/docs/config_guides/plugins))
+Both are in the plugin store as **Protein3d** and **MSAView**;
+[](/docs/user_guides/plugin_store) covers each way to install them.
 
 The protein3d and msaview plugins add view types launched from a gene's
 right-click menu in JBrowse Web and Desktop. The single-view embedded components
