@@ -1,4 +1,11 @@
-import { mafPointerAt, resolveMafRowHover, rowSpanAtY } from './mafHitTest.ts'
+import { pxToBp as corePxToBp } from '@jbrowse/core/util/Base1DUtils'
+
+import {
+  mafPointerAt,
+  pointerLocation,
+  resolveMafRowHover,
+  rowSpanAtY,
+} from './mafHitTest.ts'
 
 import type { MafHover } from '../util.ts'
 import type { MafHitTestModel } from './mafHitTest.ts'
@@ -66,6 +73,30 @@ describe('mafPointerAt', () => {
     // leftmost pixel column of a flipped region resolve no hover at all.
     expect(mafPointerAt(reversed, 0, 100).gposFrac).toBe(2000)
     expect(mafPointerAt(reversed, 0, 100).baseBp).toBe(1999)
+  })
+
+  test('the caption names the painted base on a reversed region at an integer bpPerPx', () => {
+    const view = {
+      bpPerPx: 2,
+      offsetPx: 0,
+      width: 500,
+      minimumBlockWidth: 3,
+      displayedRegions: [
+        {
+          refName: 'chr1',
+          assemblyName: 'hg38',
+          start: 1000,
+          end: 2000,
+          reversed: true,
+        },
+      ],
+    }
+    const model = makeModel({
+      view: { pxToBp: px => corePxToBp(view, px), bpPerPx: 2 },
+    })
+    const pointer = mafPointerAt(model, 10, 100)
+    expect(pointer.baseBp).toBe(1979)
+    expect(pointerLocation(pointer)).toEqual({ refName: 'chr1', coord: 1980 })
   })
 
   test('row index is measured from the bottom of the stacked bands', () => {

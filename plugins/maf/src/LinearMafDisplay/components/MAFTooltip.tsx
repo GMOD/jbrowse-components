@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 
 import { selectionRegion } from '../openSubsequenceWidget.ts'
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
+import { pointerLocation } from './mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
@@ -133,7 +134,7 @@ const MAFTooltip = observer(function MAFTooltip({
     <BaseTooltip clientPoint={clientPoint}>
       <MafAlignmentTooltipContents
         selection={selection}
-        p2={p2}
+        p2={pointerLocation(hit)}
         hover={hover}
         frame={frame}
         codon={codon}

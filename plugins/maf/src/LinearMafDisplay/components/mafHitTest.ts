@@ -9,7 +9,7 @@ import {
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
 
-import type { MafHover } from '../util.ts'
+import type { GenomicPosition, MafHover } from '../util.ts'
 import type { HoverBp } from './findRowHover.ts'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 
@@ -70,6 +70,17 @@ export function mafPointerAt(
     rowIndex: rowIndexUnder(model, mouseY),
     inBands: mouseY < model.rowsTopOffset,
   }
+}
+
+/**
+ * The 1-based position a tooltip caption names: the base painted under the
+ * pointer, which on a reversed region is not `pos.coord`.
+ */
+export function pointerLocation({
+  pos,
+  baseBp,
+}: Pick<MafPointer, 'pos' | 'baseBp'>): GenomicPosition {
+  return { refName: pos.refName, coord: baseBp + 1 }
 }
 
 type RowGeometry = Pick<
