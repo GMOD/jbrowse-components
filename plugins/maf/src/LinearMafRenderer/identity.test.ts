@@ -3,8 +3,8 @@ import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import {
   buildIdentityRuns,
   identityBars,
-  identityColor,
   identityOver,
+  identityRgb,
   identitySpans,
 } from './identity.ts'
 
@@ -139,19 +139,18 @@ test('the hover reads the mean over its window', () => {
   expect(identityOver(blocks, 0, 500, 504)).toBeUndefined()
 })
 
-test('identityColor ramps from divergent red through grey to conserved blue', () => {
-  expect(identityColor(0)).toEqual([199, 67, 56])
-  expect(identityColor(0.5)).toEqual([140, 140, 140])
-  expect(identityColor(1)).toEqual([47, 102, 176])
-  expect(identityColor(-1)).toEqual([199, 67, 56])
-  expect(identityColor(2)).toEqual([47, 102, 176])
+test('identityRgb ramps from divergent red through grey to conserved blue', () => {
+  expect(identityRgb(0)).toBe('rgb(199,67,56)')
+  expect(identityRgb(0.5)).toBe('rgb(140,140,140)')
+  expect(identityRgb(1)).toBe('rgb(47,102,176)')
+  expect(identityRgb(-1)).toBe('rgb(199,67,56)')
+  expect(identityRgb(2)).toBe('rgb(47,102,176)')
 })
 
 test('the redgreyblue scheme is the identity ramp, at every hundredth', () => {
   const stops = colorRampStops({ scheme: 'redgreyblue' })
   for (let i = 0; i <= 100; i++) {
-    expect(sampleColorRamp(stops, i / 100).slice(0, 3)).toEqual(
-      identityColor(i / 100),
-    )
+    const [r, g, b] = sampleColorRamp(stops, i / 100)
+    expect(`rgb(${r},${g},${b})`).toBe(identityRgb(i / 100))
   }
 })

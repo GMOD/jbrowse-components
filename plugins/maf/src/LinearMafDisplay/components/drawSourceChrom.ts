@@ -23,11 +23,6 @@ export const SOURCE_CHROM_PALETTE = [
   'hsl(150, 45%, 42%)', // rank 4+ — green
 ]
 
-// Rank -> color, clamped to the last palette entry for deep ranks.
-export function sourceChromRankColor(rank: number): string {
-  return SOURCE_CHROM_PALETTE[Math.min(rank, SOURCE_CHROM_PALETTE.length - 1)]!
-}
-
 // Descriptive legend labels paired with the palette (index = rank). Tail ranks
 // reuse the last "other" label, matching the clamped color.
 export const SOURCE_CHROM_RANK_LABELS = [

@@ -1,7 +1,6 @@
 /**
  * What color a MAF cell is, as a packed ABGR int, for the one walk both
- * backends draw from (`buildMafChannels`). `RESOLVE_PACKED_SKIP` for a
- * reference insertion column, which the insertion pass renders.
+ * backends draw from (`buildMafChannels`).
  */
 
 import {
@@ -80,8 +79,8 @@ export interface MafCellPackedConfig extends MafCellPackedColors {
    * place of the cascade (3.3x on the main-thread encode, 16ns → 6ns a cell).
    * Built by stamping one resolved mismatch row per reference byte (~0.2ms),
    * since running the cascade 65536 times costs more than a narrow viewport
-   * saves. Unsigned, so it cannot hold `RESOLVE_PACKED_SKIP`: white
-   * `0xffffffff` is -1 as a signed int.
+   * saves. A reference-gap row holds a mismatch row, not the cascade's skip:
+   * `colForGpos` never yields a reference-gap column.
    */
   packedByRefAln: Uint32Array
 }
@@ -139,15 +138,10 @@ export function packMafCellColorConfig(
   return { ...colors, packedByRefAln }
 }
 
-/** "Skip this cell" (a reference insertion); negative, so no packed ABGR is it. */
-export const RESOLVE_PACKED_SKIP = -1
-
 export function resolveCellPacked(
   refByte: number,
   alnByte: number,
   cfg: MafCellPackedConfig,
-): number {
-  return refByte === DASH
-    ? RESOLVE_PACKED_SKIP
-    : cfg.packedByRefAln[(refByte << 8) | alnByte]!
+) {
+  return cfg.packedByRefAln[(refByte << 8) | alnByte]!
 }

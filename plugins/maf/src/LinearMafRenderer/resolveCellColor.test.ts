@@ -1,7 +1,6 @@
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 import {
-  RESOLVE_PACKED_SKIP,
   packMafCellColorConfig,
   resolveCellPacked,
   resolvePackedUncached,
@@ -40,12 +39,12 @@ test('the packed color table agrees with the cascade over every byte pair', () =
   for (const colorMatches of [false, true]) {
     const packed = packMafCellColorConfig({ ...cfg, colorMatches })
     for (let refByte = 0; refByte < 256; refByte++) {
+      if (refByte === DASH) {
+        continue
+      }
       for (let alnByte = 0; alnByte < 256; alnByte++) {
         const int = resolveCellPacked(refByte, alnByte, packed)
-        const want =
-          refByte === DASH
-            ? RESOLVE_PACKED_SKIP
-            : resolvePackedUncached(refByte, alnByte, packed)
+        const want = resolvePackedUncached(refByte, alnByte, packed)
         if (int !== want) {
           disagreements.push(
             `ref=${refByte} aln=${alnByte} colorMatches=${colorMatches}: table ${int} !== cascade ${want}`,
@@ -55,12 +54,6 @@ test('the packed color table agrees with the cascade over every byte pair', () =
     }
   }
   expect(disagreements).toEqual([])
-})
-
-test('reference insertion (ref dash) is skipped', () => {
-  expect(
-    resolveCellPacked(byte('-'), byte('A'), packMafCellColorConfig(cfg)),
-  ).toBe(RESOLVE_PACKED_SKIP)
 })
 
 test('a match paints the match color, or its own base under colorMatches', () => {

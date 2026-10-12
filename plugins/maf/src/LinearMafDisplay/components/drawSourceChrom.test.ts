@@ -1,9 +1,4 @@
-import {
-  SOURCE_CHROM_PALETTE,
-  perRowChromRanks,
-  sourceChromRankColor,
-  sourceChromRankLabel,
-} from './drawSourceChrom.ts'
+import { perRowChromRanks, sourceChromRankLabel } from './drawSourceChrom.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -29,14 +24,11 @@ function region(
   } as unknown as MafRegionData
 }
 
-describe('sourceChromRankColor / label', () => {
-  test('rank 0 is the primary palette entry', () => {
-    expect(sourceChromRankColor(0)).toBe(SOURCE_CHROM_PALETTE[0])
+describe('sourceChromRankLabel', () => {
+  test('rank 0 is the main chromosome', () => {
     expect(sourceChromRankLabel(0)).toBe('Main chromosome')
   })
-  test('deep ranks clamp to the last palette entry / label', () => {
-    const last = SOURCE_CHROM_PALETTE.length - 1
-    expect(sourceChromRankColor(99)).toBe(SOURCE_CHROM_PALETTE[last])
+  test('deep ranks clamp to the last label', () => {
     expect(sourceChromRankLabel(99)).toBe('Other source')
   })
 })

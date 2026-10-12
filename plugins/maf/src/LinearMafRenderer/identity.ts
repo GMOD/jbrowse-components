@@ -74,11 +74,6 @@ function rgbOf([r, g, b]: ColorRampStop) {
  * conserved blue (1). The grey middle keeps low identity visible where a white
  * one would vanish.
  */
-export function identityColor(t: number): [number, number, number] {
-  const [r, g, b] = DEFAULT_IDENTITY_SCALE.at(t)
-  return [r, g, b]
-}
-
 export function identityRgb(t: number) {
   return rgbOf(DEFAULT_IDENTITY_SCALE.at(t))
 }

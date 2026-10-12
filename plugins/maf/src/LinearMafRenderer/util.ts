@@ -29,7 +29,7 @@ export interface MafColorPalette {
   codonFill: Record<CodonChange, string | undefined>
 }
 
-export function getColorBaseMap(palette: JBrowsePalette) {
+function getColorBaseMap(palette: JBrowsePalette) {
   const { bases } = palette
   return {
     a: bases.A.main,
