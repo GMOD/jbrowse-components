@@ -38,7 +38,10 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   expect(script).toContain(
     'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.1.1"')
+  expect(script).toContain(
+    'height = jbrowse_height(gff3tabix_genes, volvox_microarray, volvox_alignments))',
+  )
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.3.0"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')

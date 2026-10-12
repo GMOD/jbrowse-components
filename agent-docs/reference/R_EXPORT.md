@@ -81,6 +81,10 @@ facets on a feature track) land in the script header.
 - **`width` is the view's pixels** (`bp / bpPerPx`), so a feature or
   quantitative track resolves its labels, chevrons and BigWig zoom level as
   the view did.
+- **The figure is as tall as the view's bands.** `ggsave()` takes
+  `jbrowse_height()` over the drawn tracks, which keeps each band at the
+  display's pixels, a compact pileup included, rather than a height per
+  track kind in the exporter.
 - **The script checks its ggjbrowse.** `GGJBROWSE_VERSION` is the release
   whose readers and `jbrowse_stack` it calls; an older install stops with the
   install line rather than an "unused argument" error.
