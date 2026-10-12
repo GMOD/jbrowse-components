@@ -393,18 +393,23 @@ test.each([
   [
     'run_javascript',
     { code: 'return 1', timeout: 60000 },
-    'unknown argument arguments.timeout; arguments takes code, maxBytes, timeoutMs',
+    'unknown argument "timeout"; run_javascript takes code, maxBytes, timeoutMs',
   ],
   [
     'run_javascript',
     { code: 'return 1', timeoutMs: '60000' },
-    'arguments.timeoutMs must be a number, got string',
+    '"timeoutMs" must be a number, got string',
   ],
-  ['run_javascript', {}, 'missing required argument arguments.code'],
+  ['run_javascript', {}, 'missing required argument "code"'],
   [
     'screenshot',
     { rect: { x: 0, y: 0, width: 10 } },
-    'missing required argument arguments.rect.height',
+    'missing required argument "rect.height"',
+  ],
+  [
+    'screenshot',
+    { rect: { x: 0, y: 0, width: 10, height: 10, z: 1 } },
+    'unknown argument "rect.z"; rect takes x, y, width, height',
   ],
   ['docs', 'live-model', 'arguments must be an object, got string'],
 ])(
@@ -423,9 +428,7 @@ test.each([
     })
     const call = await server.next()
     expect(call.result?.isError).toBe(true)
-    expect(call.result?.content?.[0]?.text).toBe(
-      `${name}: ${message}. Nothing ran.`,
-    )
+    expect(call.result?.content?.[0]?.text).toBe(`${message}. Nothing ran.`)
     expect(reached).toEqual([])
     bridge.close()
   },

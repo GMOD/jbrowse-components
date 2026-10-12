@@ -243,10 +243,14 @@ function typeOf(value: unknown) {
 function schemaError(
   schema: ArgSchema,
   value: unknown,
-  where: string,
+  path: string[],
+  owner: string,
 ): string | undefined {
+  const name = (key?: string) =>
+    `"${[...path, ...(key === undefined ? [] : [key])].join('.')}"`
   if (schema.type !== undefined && typeOf(value) !== schema.type) {
-    return `${where} must be ${schema.type === 'object' ? 'an' : 'a'} ${schema.type}, got ${typeOf(value)}`
+    const what = path.length > 0 ? name() : 'arguments'
+    return `${what} must be ${schema.type === 'object' ? 'an' : 'a'} ${schema.type}, got ${typeOf(value)}`
   }
   const { properties, required = [] } = schema
   if (properties === undefined) {
@@ -256,17 +260,17 @@ function schemaError(
   const accepted = Object.keys(properties)
   const unknownKey = Object.keys(obj).find(key => !accepted.includes(key))
   if (unknownKey !== undefined) {
-    return `unknown argument ${where}.${unknownKey}; ${where} takes ${accepted.join(', ')}`
+    return `unknown argument ${name(unknownKey)}; ${owner} takes ${accepted.join(', ')}`
   }
   const missing = required.find(key => obj[key] === undefined)
   if (missing !== undefined) {
-    return `missing required argument ${where}.${missing}`
+    return `missing required argument ${name(missing)}`
   }
   for (const [key, propSchema] of Object.entries(properties)) {
     const error =
       obj[key] === undefined
         ? undefined
-        : schemaError(propSchema, obj[key], `${where}.${key}`)
+        : schemaError(propSchema, obj[key], [...path, key], key)
     if (error) {
       return error
     }
@@ -280,6 +284,6 @@ function schemaError(
  * dropped for its default.
  */
 export function argumentError(tool: McpToolDefinition, args: unknown) {
-  const error = schemaError(tool.inputSchema, args, 'arguments')
-  return error && `${tool.name}: ${error}. Nothing ran.`
+  const error = schemaError(tool.inputSchema, args, [], tool.name)
+  return error && `${error}. Nothing ran.`
 }
