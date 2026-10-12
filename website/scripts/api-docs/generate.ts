@@ -191,6 +191,16 @@ async function main() {
       names: modelGaps.noExample,
     },
     {
+      title: 'configs with no description',
+      fix: 'write an opening sentence under the type’s #config tag',
+      names: configGaps.noDescription,
+    },
+    {
+      title: 'models with no description',
+      fix: 'write an opening sentence under the type’s #stateModel tag',
+      names: modelGaps.noDescription,
+    },
+    {
       title: 'configs that fell back to the General category',
       fix: 'add #category to the #config JSDoc',
       names: configGaps.general,

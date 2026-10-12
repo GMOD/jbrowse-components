@@ -571,6 +571,7 @@ export function writeModelDocs(
     ...headerGaps({
       items: withHeader,
       getName: m => m.header.name,
+      getDocs: m => m.header.docs,
       hasExample: m => m.header.examples.length > 0,
       // A model page's #example renders a pasteable config/session snapshot, so
       // the gap only means anything for the categories that appear in one. Every

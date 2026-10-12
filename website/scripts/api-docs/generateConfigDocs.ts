@@ -1948,6 +1948,7 @@ export function writeConfigDocs(
     ...headerGaps({
       items: withHeader,
       getName: c => c.header.name,
+      getDocs: c => stripNameTautology(c.header.docs, c.header.name),
       hasExample: c => c.header.examples.length > 0,
       // Was a filter on `items`, which also dropped these from the General gap —
       // a base schema that fell out of every category is still a real gap, and

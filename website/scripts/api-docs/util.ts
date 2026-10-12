@@ -2326,12 +2326,14 @@ export function assertSingleHeader({
 export function headerGaps<T>({
   items,
   getName,
+  getDocs,
   hasExample,
   wantsExample = () => true,
   isGeneralCategory,
 }: {
   items: T[]
   getName: (item: T) => string
+  getDocs: (item: T) => string
   hasExample: (item: T) => boolean
   wantsExample?: (item: T) => boolean
   isGeneralCategory: (item: T) => boolean
@@ -2339,6 +2341,9 @@ export function headerGaps<T>({
   return {
     noExample: items
       .filter(item => wantsExample(item) && !hasExample(item))
+      .map(getName),
+    noDescription: items
+      .filter(item => !pageDescription(getDocs(item), ''))
       .map(getName),
     general: items.filter(isGeneralCategory).map(getName),
   }
