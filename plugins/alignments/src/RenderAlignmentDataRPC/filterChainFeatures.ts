@@ -127,9 +127,25 @@ function keepCategory(
     : chains.filter(c => predicate(c) === (filter === 'only'))
 }
 
+// Both read-filter steps, for a caller with no use for the sample between them.
+export function filterChainFeatures(
+  features: Feature[],
+  filterBy?: ReadFilter,
+) {
+  return selectChains(sampleFeatures(features, filterBy), filterBy)
+}
+
+// The reads the sample filters keep: one per record, at or above `minMapq`.
+// These define what the track measures, so the insert-size band reads them
+// (executeRenderAlignmentData) before `selectChains` picks what to show.
+export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
+  return passingMapq(dedupeById(features), filterBy?.minMapq)
+}
+
 // The three read-category filters that need a whole chain to answer, applied
-// after grouping reads by name. `filterBy.spliced` is the fourth and is not
-// here: it is per-record, so the adapters answer it as they parse.
+// to `sampleFeatures`' output after grouping reads by name. `filterBy.spliced`
+// is the fourth and is not here: it is per-record, so the adapters answer it
+// as they parse.
 //
 // PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
 // "chain of one" means "one alignment in THIS window", and in a multi-region
@@ -141,23 +157,19 @@ function keepCategory(
 // the other two, which are about what is on screen. Making them view-wide means
 // moving the filter to the main thread, where the coverage histogram these also
 // thin is no longer being computed.
-export function filterChainFeatures(
-  features: Feature[],
-  filterBy?: ReadFilter,
-) {
-  const { minMapq, properPairs, singletons, split } = filterBy ?? {}
-  const deduped = passingMapq(dedupeById(features), minMapq)
+export function selectChains(sample: Feature[], filterBy?: ReadFilter) {
+  const { properPairs, singletons, split } = filterBy ?? {}
   if (
     properPairs === undefined &&
     singletons === undefined &&
     split === undefined
   ) {
-    return deduped
+    return sample
   }
-  let rawChains = Object.values(groupBy(deduped, featureChainKey))
+  let rawChains = Object.values(groupBy(sample, featureChainKey))
   if (singletons !== undefined) {
     const mateCounts = new Map<string, number>()
-    for (const f of deduped) {
+    for (const f of sample) {
       const key = mateKey(f)
       mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
     }
@@ -177,5 +189,5 @@ export function filterChainFeatures(
       keptIds.add(readKeyOf(f))
     }
   }
-  return deduped.filter(f => keptIds.has(readKeyOf(f)))
+  return sample.filter(f => keptIds.has(readKeyOf(f)))
 }

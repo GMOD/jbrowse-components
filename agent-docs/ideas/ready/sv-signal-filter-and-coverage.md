@@ -1,6 +1,6 @@
 ---
 name: sv-signal-filter-and-coverage
-description: Decided 2026-10-12. `properPairs` gives way to one chain-wide `svSignal` category (split, an SV-size deletion or insertion, a pair the aligner did not call concordant), shared by the read filter, a tiered sort, the breakpoint split view and jb2export. The category filters then stop thinning the coverage band, with the tooltip and SNP hit test counting every read. A grey-for-no-evidence `svSignal` color replaces a dim mode. Insert-size stats from the unfiltered fetch go first and are underway.
+description: Decided 2026-10-12. `properPairs` gives way to one chain-wide `svSignal` category (split, an SV-size deletion or insertion, a pair the aligner did not call concordant), shared by the read filter, a tiered sort, the breakpoint split view and jb2export. The category filters then stop thinning the coverage band, with the tooltip and SNP hit test counting every read. A grey-for-no-evidence `svSignal` color replaces a dim mode. Step 0 has landed, so the insert-size band comes from the deduped, MAPQ-passed sample ahead of the category filters.
 ---
 
 # One SV-evidence category, and category filters that leave coverage whole
@@ -29,11 +29,6 @@ Paths are under `plugins/alignments/src/` unless they say otherwise.
   `executeRenderAlignmentData.ts:305`, ahead of the facet (318), the extract
   (356) and `runCoveragePipeline` (171). `website/scripts/specs/ui.ts:1061`
   records that `properPairs: 'exclude'` "was never the answer" for this reason.
-- **The insert-size band goes empty or wrong.** `computePairedInsertSizeStats`
-  (`executeRenderAlignmentData.ts:374`) reads the proper pairs that survived
-  the filter. A scratch run gave 152-610 unfiltered and `undefined` under
-  `properPairs: 'exclude'`. Where RF pairs have 0x2 they survive the exclude
-  and set the band to 376-5200, so 5 kb pairs color as normal.
 - **jb2export's SV recipe equals `split:only`.** Since `2e630d59d0` no split
   chain is proper, so `properPairs:exclude split:only`
   (`products/jbrowse-img/README.md:673-675`) never keeps a discordant pair.
@@ -47,23 +42,33 @@ One worker call per displayed region:
 
 1. **Adapter parse:** `dropsRead` (`shared/util.ts:203-216`) drops by flag
    masks, `readName`, `tagFilters` and `spliced`.
-2. **`filterChainFeatures`:** dedupe, `minMapq` per record, then `singletons`,
-   `properPairs` and `split` per chain grouped by name.
-3. **`partitionFeatures`** cuts facet sections; **`extractFeatureArrays`**
+2. **`sampleFeatures`:** dedupe, then `minMapq` per record.
+3. **Insert-size stats** (`computePairedInsertSizeStats`) over that sample.
+4. **`selectChains`:** `singletons`, `properPairs` and `split` per chain
+   grouped by name.
+5. **`partitionFeatures`** cuts facet sections; **`extractFeatureArrays`**
    fills `readCategoryBits` per section (`shared/extractFeatureArrays.ts:173-174`).
-4. **Insert-size stats**, pooled over the sections.
-5. **`buildGroupResult`** (145-190): detail arrays, then `runCoveragePipeline`
+6. **`buildGroupResult`** (145-190): detail arrays, then `runCoveragePipeline`
    (depth, per-instance frequencies, SNP, interbase, modification, sashimi).
-6. **Main thread:** layout, color bakes, the coverage tooltip, arcs and cloud.
+7. **Main thread:** layout, color bakes, the coverage tooltip, arcs and cloud.
 
 `GetConsensusSequence.ts:105` and `GetGlobalValueForTag.ts:83` call
-`filterChainFeatures` too, and `tables.ts:837` calls the same RPC.
+`filterChainFeatures`, steps 2 and 4 in one, and `tables.ts:837` calls the
+same RPC.
 
-## Step 0: insert-size stats from the unfiltered fetch (underway)
+## Step 0: insert-size stats from the sample (landed)
 
-Another agent is building it. `computePairedInsertSizeStats` reads the
-deduped, MAPQ-passed fetch ahead of the category filters, which fixes both
-the empty and the wrong band whatever happens to Ideas 1 and 2.
+The band follows Idea 2's line. The sample filters (flags, `minMapq`, tags)
+shape it, and the category filters do not. `computePairedInsertSizeStats`
+reads `sampleFeatures`' output, so a filter that keeps only discordant pairs
+still colors them against the concordant ones it hid, while MAPQ-0 pairs in
+repeats and a duplicated record stay out. The pins and their sabotages are in
+`executeRenderAlignmentData.test.ts`.
+
+- **Open: `readName` on one pair leaves no band.** The adapter drops every
+  other read before the worker sees them, and one pair's sample collapses to
+  `upper === lower`. Idea 2 moves `readName` and `spliced` out of `dropsRead`;
+  placing them after `sampleFeatures` then fixes both.
 
 ## Idea 1: one `svSignal` category
 
@@ -224,9 +229,7 @@ evidence. No opacity channel and no `dim` filter value:
 
 Each pin names the sabotage that turns it red.
 
-1. **Step 0** (underway): insert-size stats defined under a category filter.
-   Sabotage: feed the stats the filtered sections.
-2. **Idea 1**, with an ADR amending ADR-226's definition:
+1. **Idea 1**, with an ADR amending ADR-226's definition:
    - `filterChainFeatures.test.ts`, a row per line of the table. Sabotage:
      drop the insertion or the unmapped-mate clause.
    - `sortLayout.test.ts`: a split read above a discordant pair at depth.
@@ -235,7 +238,7 @@ Each pin names the sabotage that turns it red.
      revert `isEvidence` to its own rule.
    - jb2export `properPairs:` refuses naming `svSignal:only`. Sabotage: fall
      through to the unknown-modifier warning.
-3. **Idea 2**, after the per-position table:
+2. **Idea 2**, after the per-position table:
    - Depth identical with and without each category filter. Sabotage: filter
      ahead of the extract.
    - Tooltip SNP counts and depth agree under a filter. Sabotage: skip the
@@ -245,7 +248,7 @@ Each pin names the sabotage that turns it red.
    - Each per-read array's read index after compaction. Sabotage: skip the
      remap.
    - The 300x bench, and the four figures rebuilt.
-4. **Idea 3**: the color field, pinned by a canvas2d-against-WebGPU capture.
+3. **Idea 3**: the color field, pinned by a canvas2d-against-WebGPU capture.
 
 ## Rejected variants
 

@@ -293,8 +293,10 @@ export interface WorkerPileupData {
   detectedModifications: string[]
 
   // The short/normal/long |TLEN| thresholds for insert-size coloring: robust
-  // median ± 3·1.4826·MAD over the fetch's primary proper pairs, pooled across
-  // every group (see computePairedInsertSizeStats / getInsertSizeStats). Absent
+  // median ± 3·1.4826·MAD over the fetch's primary proper pairs that pass
+  // dedupe and `minMapq`, before the category filters and facet sections drop
+  // or split any (see
+  // computePairedInsertSizeStats / getInsertSizeStats). Absent
   // when the fetch has no usable paired sample, which classifyInsertSize reads
   // as "everything normal".
   insertSizeStats?: InsertSizeBand

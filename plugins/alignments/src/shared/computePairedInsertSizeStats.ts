@@ -5,8 +5,9 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { getInsertSizeStats, widenBandToEventScale } from './insertSizeStats.ts'
+import { getFlags } from './util.ts'
 
-import type { FeatureData } from './webglRpcTypes.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 const PRIMARY_PROPER_PAIR_MASK = SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
 
@@ -18,15 +19,14 @@ function isPrimaryProperPair(flags: number) {
  * Insert-size stats (robust median ± 3·1.4826·MAD, widened to the event scale
  * — see getInsertSizeStats and widenBandToEventScale) from primary proper-pair
  * reads only. This is the band anything COLORS from, which is why the floor is
- * applied here and not in the statistics. `insertSize` is
- * already `abs(template_length)`, so this is the
- * chain denominator (template length) too — pileup and chain share one scale.
- * The insert-size distribution is a property of the whole fetched read set, so
- * the caller pools every read of a region (across groups) and feeds one shared
- * scale to all stacked sections — not a per-group denominator that would color
- * the same insert size differently between sections. Takes the per-group feature
- * arrays and iterates them in place, so pooling across groups costs no flattened
- * copy of every read.
+ * applied here and not in the statistics. |TLEN| is the chain denominator
+ * (template length) too, so pileup and chain share one scale.
+ *
+ * The caller passes the region's sample (`sampleFeatures`: deduped, MAPQ
+ * passed), ahead of the category filters and facet sections. The band
+ * describes the library: a filter that keeps only the discordant pairs still
+ * colors them against the concordant ones it hid, and every stacked section
+ * colors on one scale.
  *
  * Returns undefined — no insert-size coloring at all, as for unpaired data —
  * when the sample yields a collapsed `upper === lower` band. One proper pair, or
@@ -35,28 +35,23 @@ function isPrimaryProperPair(flags: number) {
  * a long or short outlier and floods the pileup red/pink. A band with no width
  * carries no information, so it is better to paint nothing than to paint that.
  */
-export function computePairedInsertSizeStats(groups: FeatureData[][]) {
+export function computePairedInsertSizeStats(features: readonly Feature[]) {
+  // An Int32Array because |TLEN| is int32, and an integer typed array is what
+  // buys getInsertSizeStats its comparator-free sort (see sortedCopy).
+  const sample = new Int32Array(features.length)
   let count = 0
-  for (const features of groups) {
-    for (const f of features) {
-      if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
-        count++
+  for (const f of features) {
+    if (isPrimaryProperPair(getFlags(f))) {
+      const insertSize = Math.abs(
+        (f.get('template_length') as number | undefined) ?? 0,
+      )
+      if (insertSize > 0) {
+        sample[count++] = insertSize
       }
     }
   }
-  // Counted first so the sample lands in one exact-size Int32Array rather than a
-  // growing number[]: |TLEN| is int32, and an integer typed array is what buys
-  // getInsertSizeStats its comparator-free sort (see sortedCopy).
-  const pairedInsertSizes = new Int32Array(count)
-  let i = 0
-  for (const features of groups) {
-    for (const f of features) {
-      if (isPrimaryProperPair(f.flags) && f.insertSize > 0) {
-        pairedInsertSizes[i++] = f.insertSize
-      }
-    }
-  }
-  const band = count > 0 ? getInsertSizeStats(pairedInsertSizes) : undefined
+  const band =
+    count > 0 ? getInsertSizeStats(sample.subarray(0, count)) : undefined
   // Widened AFTER the degenerate check, not before: the check's whole signal is
   // `upper === lower`, and a floor is a widening, so applying it first would
   // turn every collapsed band into a plausible-looking wide one built on a

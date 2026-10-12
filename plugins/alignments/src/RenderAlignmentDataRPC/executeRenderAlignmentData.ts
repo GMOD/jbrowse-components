@@ -23,7 +23,7 @@ import {
   buildReadNextRefs,
 } from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
-import { filterChainFeatures } from './filterChainFeatures.ts'
+import { sampleFeatures, selectChains } from './filterChainFeatures.ts'
 
 import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
@@ -56,8 +56,8 @@ interface GroupContext {
   // once for the whole fetch and only when some group carries a skip gap.
   junctionReference: JunctionReference | undefined
   detectedSimplexModifications: ReadonlySet<string>
-  // Shared insert-size color scale, pooled across every group of the fetch so
-  // all stacked sections color long/short inserts on one comparable scale.
+  // One insert-size color scale for every section, from the sample before the
+  // category filters (see computePairedInsertSizeStats).
   insertSizeStats: InsertSizeBand | undefined
   statusCallback: StatusCallback | undefined
   signal?: AbortSignal
@@ -230,8 +230,6 @@ async function buildGroupResult(
     readCategoryBits: categoryBits,
     readClipAtStart: new Uint32Array(clipAtStart),
 
-    // One shared insert-size scale for every group of the fetch (pooled in the
-    // worker entry), so stacked sections stay color-comparable.
     insertSizeStats,
 
     sortTagValues,
@@ -294,15 +292,17 @@ export async function executeRenderAlignmentData({
     statusCallback,
     signal,
   })
+  const sample = sampleFeatures(featuresArray, filterBy)
+  const insertSizeStats = computePairedInsertSizeStats(sample)
 
-  // The singleton/proper-pair filter groups reads by name (it short-circuits to
-  // a plain dedupe when both are kept, the default). Only bisulfite needs the reference sequence (its
-  // methylation is read-vs-reference C->T). modBAM modifications/methylation
+  // The category filters group reads by name (they short-circuit to the sample
+  // when none is set, the default). Only bisulfite needs the reference
+  // sequence (its methylation is read-vs-reference C->T). modBAM modifications/methylation
   // derive everything from the reads, including the mod-coverage denominator
   // (computeReadBaseCounts), so they fetch nothing.
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
-  const inputFeatures = filterChainFeatures(featuresArray, filterBy)
+  const inputFeatures = selectChains(sample, filterBy)
   if (baseLayer?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
@@ -366,15 +366,6 @@ export async function executeRenderAlignmentData({
     ...seenModTypes.values(),
   ])
 
-  // One insert-size color scale pooled across ALL groups — the insert-size
-  // distribution is a property of the whole fetched read set, not of a group,
-  // so a per-group scale would color the same insert size differently between
-  // stacked sections. Same cross-section comparability as the simplex-mod set
-  // above.
-  const sharedInsertSizeStats = computePairedInsertSizeStats(
-    extractions.map(e => e.features),
-  )
-
   checkAbortSignal(signal)
 
   const modCoverage: ModCoverageKind | undefined =
@@ -417,7 +408,7 @@ export async function executeRenderAlignmentData({
     modCoverage,
     junctionReference,
     detectedSimplexModifications,
-    insertSizeStats: sharedInsertSizeStats,
+    insertSizeStats,
     statusCallback,
     signal,
   }
