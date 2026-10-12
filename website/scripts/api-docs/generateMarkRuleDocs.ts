@@ -74,7 +74,7 @@ function collectRules(): Rule[] {
   return rules
 }
 
-export function writeMarkRuleDocs({ check = false } = {}) {
+export function writeMarkRuleDocs() {
   const rules = collectRules()
   const ordered = [
     ...rules.filter(r => r.level === 'error'),
@@ -88,6 +88,5 @@ export function writeMarkRuleDocs({ check = false } = {}) {
         r => `| \`${r.id}\` | ${r.level} | ${proseCell(r.summary)} |`,
       ),
     ),
-    { check },
   )
 }

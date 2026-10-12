@@ -499,13 +499,10 @@ function renderGroup(
 export function writeSpecKeyDocs(
   models: Record<string, StateModel>,
   corpus: SourceCorpus,
-  { check = false } = {},
 ) {
   const scan = scanSpecKeys(corpus)
-  const { stale, seen } = rewriteGroupedMarkerBlocks(
-    'SPEC_KEYS',
-    group => renderGroup(group, models, scan),
-    { check },
+  const { changed, seen } = rewriteGroupedMarkerBlocks('SPEC_KEYS', group =>
+    renderGroup(group, models, scan),
   )
   // Every view type a launcher registers is one a session spec can open, so
   // every one of them needs a table. Read off the `LaunchView-<type>` registry
@@ -526,5 +523,5 @@ export function writeSpecKeyDocs(
       `${undocumented.join(', ')} — a session spec can launch these, but no doc has a \`<!-- SPEC_KEYS <type> START -->\` marker for them, so what they accept is documented nowhere.`,
     )
   }
-  return stale
+  return changed
 }

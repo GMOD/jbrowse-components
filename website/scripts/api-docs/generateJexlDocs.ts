@@ -118,10 +118,6 @@ function slug(category: string) {
   return category.toLowerCase().replaceAll(/\s+/g, '-')
 }
 
-// In `check` mode, report which docs have a stale catalog instead of rewriting —
-// used by CI to fail when a jexl function changed but the docs were not
-// regenerated.
-//
 // Two markers over one scan. `JEXL_CATALOG` is the whole catalog, for the jexl
 // guide. `JEXL_CATEGORY <slug>` is one category, for a guide that documents the
 // plugin those functions came with — variant_track.md listed the variants
@@ -131,23 +127,19 @@ function slug(category: string) {
 // A category with no per-category block is normal, unlike a `#color` group:
 // every category already renders in the catalog, so a page pulling one in
 // separately is an extra, not the only home.
-export function writeJexlDocs(corpus: SourceCorpus, { check = false } = {}) {
+export function writeJexlDocs(corpus: SourceCorpus) {
   const groups = collectFunctions(corpus, taggedSources(corpus))
   const bySlug = new Map([...groups].map(([c, e]) => [slug(c), e]))
   return [
-    ...rewriteMarkerBlock('JEXL_CATALOG', renderCatalog(groups), { check }),
-    ...rewriteGroupedMarkerBlocks(
-      'JEXL_CATEGORY',
-      (group, file) => {
-        const entries = bySlug.get(group)
-        if (!entries) {
-          throw new Error(
-            `${file}: JEXL_CATEGORY "${group}" is not a #jexlFunction category — the tagged ones are ${[...bySlug.keys()].join(', ')}`,
-          )
-        }
-        return renderCategory(entries)
-      },
-      { check },
-    ).stale,
+    ...rewriteMarkerBlock('JEXL_CATALOG', renderCatalog(groups)),
+    ...rewriteGroupedMarkerBlocks('JEXL_CATEGORY', (group, file) => {
+      const entries = bySlug.get(group)
+      if (!entries) {
+        throw new Error(
+          `${file}: JEXL_CATEGORY "${group}" is not a #jexlFunction category — the tagged ones are ${[...bySlug.keys()].join(', ')}`,
+        )
+      }
+      return renderCategory(entries)
+    }).changed,
   ]
 }

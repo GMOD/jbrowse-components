@@ -52,7 +52,7 @@ export function collectGraphPlugin(): PluginEntry[] {
   return first!.plugins
 }
 
-export function writeGraphPluginDocs({ check = false } = {}) {
+export function writeGraphPluginDocs() {
   // Two spaces and a trailing newline is what oxfmt leaves a json fence at, and
   // markers.ts writes without a formatting sweep, so the emitted bytes have to
   // already be the committed ones or `--check` reports every page stale forever.
@@ -60,8 +60,5 @@ export function writeGraphPluginDocs({ check = false } = {}) {
   return rewriteMarkerBlock(
     'GRAPH_PLUGIN_CONFIG',
     `\`\`\`json\n${json}\n\`\`\``,
-    {
-      check,
-    },
   )
 }

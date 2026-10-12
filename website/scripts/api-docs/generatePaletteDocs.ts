@@ -139,8 +139,6 @@ function renderTable(keys: Key[]) {
   )
 }
 
-export function writePaletteDocs({ check = false } = {}) {
-  return rewriteMarkerBlock('PALETTE_KEYS', renderTable(collectPaletteKeys()), {
-    check,
-  })
+export function writePaletteDocs() {
+  return rewriteMarkerBlock('PALETTE_KEYS', renderTable(collectPaletteKeys()))
 }

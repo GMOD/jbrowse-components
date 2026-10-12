@@ -107,14 +107,12 @@ function renderTable(rows: Row[]) {
   )
 }
 
-// In `check` mode, report which docs have a stale table instead of rewriting —
-// used by CI to fail when a color changed but the docs were not regenerated.
-export function writeColorDocs({ check = false } = {}) {
+export function writeColorDocs() {
   const groups: Record<string, Row[]> = {}
   for (const file of COLOR_SOURCES) {
     collectColors(file, groups)
   }
-  const { stale, seen } = rewriteGroupedMarkerBlocks(
+  const { changed, seen } = rewriteGroupedMarkerBlocks(
     'COLOR_TABLE',
     (group, file) => {
       const rows = groups[group]
@@ -125,7 +123,6 @@ export function writeColorDocs({ check = false } = {}) {
       }
       return renderTable(rows)
     },
-    { check },
   )
   // A tagged group no page renders is a silent no-op — the tag exists so a color
   // documents itself, so an unrendered group means either a typo or a table
@@ -138,5 +135,5 @@ export function writeColorDocs({ check = false } = {}) {
       )
     }
   }
-  return stale
+  return changed
 }

@@ -118,19 +118,13 @@ function renderStackTable(foundations: Foundation[]) {
   )
 }
 
-export function writeDisplayFoundationDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeDisplayFoundationDocs(corpus: SourceCorpus) {
   const foundations = collectFoundations(corpus)
   return [
-    ...rewriteMarkerBlock('DISPLAY_FOUNDATIONS', renderTable(foundations), {
-      check,
-    }),
+    ...rewriteMarkerBlock('DISPLAY_FOUNDATIONS', renderTable(foundations)),
     ...rewriteMarkerBlock(
       'DISPLAY_FOUNDATION_STACKS',
       renderStackTable(foundations),
-      { check },
     ),
   ]
 }

@@ -133,8 +133,6 @@ function renderTree(entries: Entry[]) {
   ].join('\n')
 }
 
-export function writeExamplePluginDocs({ check = false } = {}) {
-  return rewriteMarkerBlock('EXAMPLE_PLUGIN_TREE', renderTree(collect()), {
-    check,
-  })
+export function writeExamplePluginDocs() {
+  return rewriteMarkerBlock('EXAMPLE_PLUGIN_TREE', renderTree(collect()))
 }

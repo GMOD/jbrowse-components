@@ -251,7 +251,7 @@ function undocumented(rows: SlotTypeRow[]) {
     )
 }
 
-export function writeSlotTypeDocs({ check = false } = {}) {
+export function writeSlotTypeDocs() {
   const rows = collectSlotTypes()
   const missing = undocumented(rows)
   if (missing.length > 0) {
@@ -270,6 +270,5 @@ export function writeSlotTypeDocs({ check = false } = {}) {
         return `| ${codeCell(r.name)} | ${value(r.model)} | ${value(r.readsAs)} | ${tableCell(r.editor)} |`
       }),
     ),
-    { check },
   )
 }

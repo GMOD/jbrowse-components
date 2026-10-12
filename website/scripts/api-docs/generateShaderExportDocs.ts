@@ -74,13 +74,12 @@ export function collectShaderExports(): ShaderExport[] {
   return exports
 }
 
-export function writeShaderExportDocs({ check = false } = {}) {
+export function writeShaderExportDocs() {
   return rewriteMarkerBlock(
     'SHADER_EXPORTS',
     markdownTable(
       ['Export', 'What it is'],
       collectShaderExports().map(e => `| \`${e.name}\` | ${e.description} |`),
     ),
-    { check },
   )
 }

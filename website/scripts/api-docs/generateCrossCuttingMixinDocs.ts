@@ -160,13 +160,9 @@ function renderTable(mixins: CrossCuttingMixin[]) {
   )
 }
 
-export function writeCrossCuttingMixinDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeCrossCuttingMixinDocs(corpus: SourceCorpus) {
   return rewriteMarkerBlock(
     'CROSS_CUTTING_MIXINS',
     renderTable(collectCrossCuttingMixins(corpus)),
-    { check },
   )
 }

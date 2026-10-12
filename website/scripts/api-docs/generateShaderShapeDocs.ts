@@ -85,7 +85,7 @@ export function collectShapeConsumers() {
 // answers "all of them" in 700 characters.
 const NAME_THEM_UP_TO = 12
 
-export function writeShaderShapeDocs({ check = false } = {}) {
+export function writeShaderShapeDocs() {
   const rows = collectShapeConsumers().map(({ name, importers }) => {
     const who = !importers.length
       ? '—'
@@ -97,6 +97,5 @@ export function writeShaderShapeDocs({ check = false } = {}) {
   return rewriteMarkerBlock(
     'SHADER_SHAPE_CONSUMERS',
     markdownTable(['Module', 'Importers', 'Imported by'], rows),
-    { check },
   )
 }

@@ -224,10 +224,8 @@ function checkDiagram(autoruns: Autorun[]) {
   }
 }
 
-export function writeFetchAutorunDocs({ check = false } = {}) {
+export function writeFetchAutorunDocs() {
   const autoruns = collectAutoruns()
   checkDiagram(autoruns)
-  return rewriteMarkerBlock('FETCH_AUTORUNS', render(autoruns), {
-    check,
-  })
+  return rewriteMarkerBlock('FETCH_AUTORUNS', render(autoruns))
 }

@@ -118,15 +118,10 @@ function renderTable(rows: Row[]) {
   )
 }
 
-// In `check` mode, report which docs have a stale table instead of rewriting —
-// used by CI to fail when an adapter changed but the docs were not regenerated.
-export function writeFileTypeDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeFileTypeDocs(corpus: SourceCorpus) {
   const groups: Record<string, Row[]> = {}
   collectFormats(corpus, groups)
-  const { stale, seen } = rewriteGroupedMarkerBlocks(
+  const { changed, seen } = rewriteGroupedMarkerBlocks(
     'FILE_TYPES',
     (group, file) => {
       const rows = groups[group]
@@ -137,7 +132,6 @@ export function writeFileTypeDocs(
       }
       return renderTable(rows)
     },
-    { check },
   )
   // A tagged adapter whose group no page renders is a silent no-op — the whole
   // point of the tag is that a new adapter shows up without anyone editing the
@@ -149,7 +143,7 @@ export function writeFileTypeDocs(
       )
     }
   }
-  return stale
+  return changed
 }
 
 // The track -> display table in the tracks guide, from the same
@@ -165,7 +159,6 @@ export function writeFileTypeDocs(
 export function writeDisplayTypeDocs(
   displayTypesByTrack: Map<string, string[]>,
   configNames: Set<string>,
-  { check = false } = {},
 ) {
   const link = (name: string) =>
     configNames.has(name) ? `[](/docs/config/${name.toLowerCase()})` : name
@@ -181,7 +174,6 @@ export function writeDisplayTypeDocs(
   return rewriteMarkerBlock(
     'DISPLAY_TYPES',
     markdownTable(['Track type', 'Display types'], rows),
-    { check },
   )
 }
 
@@ -207,7 +199,6 @@ export function assertEveryDisplayDeclaresAViewType(links: DisplayTrackLink[]) {
 export function writeDisplayViewTypeDocs(
   links: DisplayTrackLink[],
   configNames: Set<string>,
-  { check = false } = {},
 ) {
   const link = (name: string) =>
     configNames.has(name) ? `[](/docs/config/${name.toLowerCase()})` : name
@@ -237,7 +228,6 @@ export function writeDisplayViewTypeDocs(
   return rewriteMarkerBlock(
     'DISPLAY_VIEW_TYPES',
     markdownTable(['Track type', 'Display type', 'Renders in'], rows),
-    { check },
   )
 }
 
@@ -249,21 +239,14 @@ export function writeDisplayViewTypeDocs(
 // so the warning is authored once, at the definition site, and appears both on
 // the generated config page and in the guide. Restating it by hand is how the
 // query/target warning ended up phrased three different ways.
-export function writeGotchaDocs(
-  gotchasByConfig: Map<string, string[]>,
-  { check = false } = {},
-) {
-  return rewriteGroupedMarkerBlocks(
-    'GOTCHA',
-    (name, file) => {
-      const gotchas = gotchasByConfig.get(name)
-      if (!gotchas?.length) {
-        throw new Error(
-          `${file}: GOTCHA "${name}" has no #gotcha-tagged text on its #config`,
-        )
-      }
-      return gotchas.map(g => `:::caution Gotcha\n\n${g}\n\n:::`).join('\n\n')
-    },
-    { check },
-  ).stale
+export function writeGotchaDocs(gotchasByConfig: Map<string, string[]>) {
+  return rewriteGroupedMarkerBlocks('GOTCHA', (name, file) => {
+    const gotchas = gotchasByConfig.get(name)
+    if (!gotchas?.length) {
+      throw new Error(
+        `${file}: GOTCHA "${name}" has no #gotcha-tagged text on its #config`,
+      )
+    }
+    return gotchas.map(g => `:::caution Gotcha\n\n${g}\n\n:::`).join('\n\n')
+  }).changed
 }

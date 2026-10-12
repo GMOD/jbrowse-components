@@ -24,7 +24,7 @@ function mb(bytes: number) {
     : `${bytes.toLocaleString('en-US')} bytes`
 }
 
-export function writeGatedBudgetDocs({ check = false } = {}) {
+export function writeGatedBudgetDocs() {
   const adapters = collectGatedAdapterBudgets()
   const displays = collectDisplayBudgets()
 
@@ -70,6 +70,5 @@ export function writeGatedBudgetDocs({ check = false } = {}) {
         .map(n => `\`${n}\``)
         .join(', ')}.`,
     ].join('\n'),
-    { check },
   )
 }

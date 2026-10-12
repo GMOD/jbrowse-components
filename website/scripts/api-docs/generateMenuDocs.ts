@@ -222,7 +222,7 @@ function collect(corpus: SourceCorpus) {
 
 const code = (s: string) => `\`${s}\``
 
-export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
+export function writeMenuDocs(corpus: SourceCorpus) {
   const { itemTypes, fields, builders } = collect(corpus)
   return [
     ...rewriteMarkerBlock(
@@ -234,7 +234,6 @@ export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
             `| ${code(t.value)} | ${t.fields.map(code).join(', ') || '—'} | ${t.description} |`,
         ),
       ),
-      { check },
     ),
     ...rewriteMarkerBlock(
       'MENU_ITEM_FIELDS',
@@ -245,7 +244,6 @@ export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
             `| ${code(f.name)}${f.optional ? '' : ' (required)'} | ${code(f.type)} | ${f.description} |`,
         ),
       ),
-      { check },
     ),
     ...rewriteMarkerBlock(
       'MENU_ITEM_BUILDERS',
@@ -253,7 +251,6 @@ export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
         ['Builder', 'Description'],
         builders.map(b => `| ${code(b.name)} | ${b.description} |`),
       ),
-      { check },
     ),
     ...rewriteMarkerBlock(
       'MENU_ACTIONS',
@@ -264,7 +261,6 @@ export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
             `| [${code(a.signature)}](/docs/models/rootappmenumixin#action-${a.signature.split('(')[0]!.toLowerCase()}) | ${a.description} |`,
         ),
       ),
-      { check },
     ),
   ]
 }

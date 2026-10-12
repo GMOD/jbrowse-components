@@ -46,113 +46,47 @@ import type { SourceCorpus } from './util.ts'
 export interface MarkerGenerator {
   // Names the table in the run's output, and what `markers.ts <filter>` matches.
   label: string
-  // Returns the docs whose block content changed (empty when up to date).
-  write: (corpus: SourceCorpus, opts: { check: boolean }) => string[]
+  // Returns the docs whose block changed; under `--check` none reach disk.
+  write: (corpus: SourceCorpus) => string[]
 }
 
 export const MARKER_GENERATORS: MarkerGenerator[] = [
-  {
-    label: 'Color tables',
-    write: (_corpus, opts) => writeColorDocs(opts),
-  },
-  {
-    label: 'Jexl catalog',
-    write: (corpus, opts) => writeJexlDocs(corpus, opts),
-  },
-  {
-    label: 'Adapter base table',
-    write: (_corpus, opts) => writeAdapterBaseDocs(opts),
-  },
-  {
-    label: 'BGZF pool sites',
-    write: (corpus, opts) => writeBgzfPoolSiteDocs(corpus, opts),
-  },
-  {
-    label: 'Example plugin tree',
-    write: (_corpus, opts) => writeExamplePluginDocs(opts),
-  },
-  {
-    label: 'Search result field table',
-    write: (_corpus, opts) => writeSearchResultDocs(opts),
-  },
-  {
-    label: 'Shader export table',
-    write: (_corpus, opts) => writeShaderExportDocs(opts),
-  },
-  {
-    label: 'Shader shape consumers',
-    write: (_corpus, opts) => writeShaderShapeDocs(opts),
-  },
-  {
-    label: 'Menu tables',
-    write: (corpus, opts) => writeMenuDocs(corpus, opts),
-  },
-  {
-    label: 'Extension point index',
-    write: (corpus, opts) => writeExtensionPointDocs(corpus, opts),
-  },
-  {
-    label: 'LaunchView point table',
-    write: (corpus, opts) => writeLaunchViewDocs(corpus, opts),
-  },
-  {
-    label: 'Element creation phases',
-    write: (_corpus, opts) => writeElementPhaseDocs(opts),
-  },
-  {
-    label: 'File type tables',
-    write: (corpus, opts) => writeFileTypeDocs(corpus, opts),
-  },
-  {
-    label: 'Gated adapter budgets table',
-    write: (_corpus, opts) => writeGatedBudgetDocs(opts),
-  },
-  {
-    label: 'Display foundations table',
-    write: (corpus, opts) => writeDisplayFoundationDocs(corpus, opts),
-  },
-  {
-    label: 'Cross-cutting mixins table',
-    write: (corpus, opts) => writeCrossCuttingMixinDocs(corpus, opts),
-  },
-  {
-    label: 'Fetch autoruns table',
-    write: (_corpus, opts) => writeFetchAutorunDocs(opts),
-  },
-  {
-    label: 'Palette keys table',
-    write: (_corpus, opts) => writePaletteDocs(opts),
-  },
-  {
-    label: 'Helper package table',
-    write: (corpus, opts) => writeHelperPackageDocs(corpus, opts),
-  },
-  {
-    label: 'Re-export module table',
-    write: (_corpus, opts) => writeReExportDocs(opts),
-  },
-  {
-    label: 'Slot type table',
-    write: (_corpus, opts) => writeSlotTypeDocs(opts),
-  },
+  { label: 'Color tables', write: writeColorDocs },
+  { label: 'Jexl catalog', write: writeJexlDocs },
+  { label: 'Adapter base table', write: writeAdapterBaseDocs },
+  { label: 'BGZF pool sites', write: writeBgzfPoolSiteDocs },
+  { label: 'Example plugin tree', write: writeExamplePluginDocs },
+  { label: 'Search result field table', write: writeSearchResultDocs },
+  { label: 'Shader export table', write: writeShaderExportDocs },
+  { label: 'Shader shape consumers', write: writeShaderShapeDocs },
+  { label: 'Menu tables', write: writeMenuDocs },
+  { label: 'Extension point index', write: writeExtensionPointDocs },
+  { label: 'LaunchView point table', write: writeLaunchViewDocs },
+  { label: 'Element creation phases', write: writeElementPhaseDocs },
+  { label: 'File type tables', write: writeFileTypeDocs },
+  { label: 'Gated adapter budgets table', write: writeGatedBudgetDocs },
+  { label: 'Display foundations table', write: writeDisplayFoundationDocs },
+  { label: 'Cross-cutting mixins table', write: writeCrossCuttingMixinDocs },
+  { label: 'Fetch autoruns table', write: writeFetchAutorunDocs },
+  { label: 'Palette keys table', write: writePaletteDocs },
+  { label: 'Helper package table', write: writeHelperPackageDocs },
+  { label: 'Re-export module table', write: writeReExportDocs },
+  { label: 'Slot type table', write: writeSlotTypeDocs },
   {
     // The one generator whose source is a build script rather than TypeScript.
     // Same reason as the rest: the tutorial was restating values the script
     // owns, and nothing connected the two.
     label: 'OrthoFinder set tables',
-    write: (_corpus, opts) => writeOrthofinderSetDocs(opts),
+    write: writeOrthofinderSetDocs,
   },
   {
     // Source is a deployed demo config rather than TypeScript, for the same
     // reason again: four pages hand-carried the plugin URL a reader pastes,
     // and the configs serving it are tracked in this repo.
     label: 'Graph plugin config fence',
-    write: (_corpus, opts) => writeGraphPluginDocs(opts),
+    write: writeGraphPluginDocs,
   },
-  {
-    label: 'Mark rule table',
-    write: (_corpus, opts) => writeMarkRuleDocs(opts),
-  },
+  { label: 'Mark rule table', write: writeMarkRuleDocs },
   {
     // The index of every other entry in this list, and of the marker blocks the
     // whole-repo scan in generate.ts writes. Its source is the docs' own marker
@@ -160,6 +94,6 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
     // invokes it — which is why it can sit here rather than at the end of
     // generate.ts, and so gets the `--check` gate the rest of this list has.
     label: 'Marker index',
-    write: (_corpus, opts) => writeMarkerIndexDocs(opts),
+    write: writeMarkerIndexDocs,
   },
 ]

@@ -42,12 +42,12 @@ const corpus = sourceCorpus(await getAllFiles())
 const stale = new Map<string, string[]>()
 
 for (const { label, write } of selected) {
-  const docs = write(corpus, { check })
-  if (docs.length) {
+  const docs = write(corpus)
+  if (check && docs.length) {
     stale.set(label, docs)
   }
   console.log(
-    `${label}: ${docs.length ? `${docs.length} stale` : 'up to date'}`,
+    `${label}: ${docs.length ? `${docs.length} ${check ? 'stale' : 'rewritten'}` : 'up to date'}`,
   )
 }
 

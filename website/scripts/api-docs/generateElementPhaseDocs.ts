@@ -109,7 +109,7 @@ function heading(group: string) {
   return `${words.join(' ')} types`
 }
 
-export function writeElementPhaseDocs({ check = false } = {}) {
+export function writeElementPhaseDocs() {
   return rewriteMarkerBlock(
     'ELEMENT_PHASES',
     markdownTable(
@@ -119,6 +119,5 @@ export function writeElementPhaseDocs({ check = false } = {}) {
           `| ${i + 1} | ${tableCell(heading(p.group))} | ${codeCell(`pluginManager.${p.method}()`)} |`,
       ),
     ),
-    { check },
   )
 }

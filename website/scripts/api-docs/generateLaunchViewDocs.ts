@@ -130,10 +130,7 @@ export function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
   return rows
 }
 
-export function writeLaunchViewDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeLaunchViewDocs(corpus: SourceCorpus) {
   const rows = collectLaunchViews(corpus)
   return rewriteMarkerBlock(
     'LAUNCH_VIEW_POINTS',
@@ -146,6 +143,5 @@ export function writeLaunchViewDocs(
           `| \`${tableCell(r.id)}\` | [${tableCell(r.section)}](/docs/urlparams#${r.anchor}) | [\`${tableCell(r.argsType)}\`](https://github.com/GMOD/jbrowse-components/blob/main/${r.argsFile}) |`,
       ),
     ),
-    { check },
   )
 }

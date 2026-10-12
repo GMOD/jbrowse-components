@@ -115,10 +115,6 @@ function renderTable(rows: Row[]) {
   )
 }
 
-export function writeReExportDocs({ check = false } = {}) {
-  return rewriteMarkerBlock(
-    'REEXPORT_MODULES',
-    renderTable(collectReExports()),
-    { check },
-  )
+export function writeReExportDocs() {
+  return rewriteMarkerBlock('REEXPORT_MODULES', renderTable(collectReExports()))
 }

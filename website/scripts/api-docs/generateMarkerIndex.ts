@@ -23,7 +23,7 @@ import {
 // it compares this same scan against what the run actually wrote, so neither a
 // generated table with no page nor a page with an ungenerated block can survive
 // a run.
-export function writeMarkerIndexDocs({ check = false } = {}) {
+export function writeMarkerIndexDocs() {
   const rows = [...markerBlocksInDocs(), ...generatedBlocksInDocs()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(
@@ -36,6 +36,5 @@ export function writeMarkerIndexDocs({ check = false } = {}) {
   return rewriteMarkerBlock(
     'MARKER_INDEX',
     markdownTable(['Marker', 'Rendered in'], rows),
-    { check },
   )
 }

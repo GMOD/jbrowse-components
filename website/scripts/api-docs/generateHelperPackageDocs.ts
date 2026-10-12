@@ -140,13 +140,9 @@ function renderTable(packages: Pkg[]) {
   )
 }
 
-export function writeHelperPackageDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeHelperPackageDocs(corpus: SourceCorpus) {
   return rewriteMarkerBlock(
     'HELPER_PACKAGES',
     renderTable(collectHelperPackages(corpus)),
-    { check },
   )
 }

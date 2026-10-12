@@ -135,16 +135,9 @@ function renderTable(points: ExtensionPoint[]) {
   )
 }
 
-// In `check` mode, report which docs have a stale index instead of rewriting —
-// used by CI to fail when an extension point was added but the docs were not
-// regenerated.
-export function writeExtensionPointDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeExtensionPointDocs(corpus: SourceCorpus) {
   return rewriteMarkerBlock(
     'EXTENSION_POINTS_INDEX',
     renderTable(collectExtensionPoints(corpus)),
-    { check },
   )
 }

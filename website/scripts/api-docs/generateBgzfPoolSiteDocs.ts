@@ -87,15 +87,12 @@ function renderTable(sites: Site[]) {
   )
 }
 
-export function writeBgzfPoolSiteDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeBgzfPoolSiteDocs(corpus: SourceCorpus) {
   const sites = collectBgzfPoolSites(corpus)
   if (sites.length === 0) {
     throw new Error(
       'no sharedBgzfWorkerPool() call sites found — the helper was renamed, or the pool is wired nowhere',
     )
   }
-  return rewriteMarkerBlock('BGZF_POOL_SITES', renderTable(sites), { check })
+  return rewriteMarkerBlock('BGZF_POOL_SITES', renderTable(sites))
 }

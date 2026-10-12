@@ -120,7 +120,7 @@ function inheritedMembers(base: AdapterBase, all: AdapterBase[]): string[] {
     : base.members
 }
 
-export function writeAdapterBaseDocs({ check = false } = {}) {
+export function writeAdapterBaseDocs() {
   const bases = collectAdapterBases()
   return rewriteMarkerBlock(
     'ADAPTER_BASES',
@@ -133,6 +133,5 @@ export function writeAdapterBaseDocs({ check = false } = {}) {
             .join(', ')} | ${b.description} |`,
       ),
     ),
-    { check },
   )
 }

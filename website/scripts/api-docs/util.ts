@@ -2805,13 +2805,14 @@ export function replaceMarkerRegions({
   block: string
   file: string
 }) {
+  // A marker heads its own line, so prose quoting one in backticks is not one.
   const region = new RegExp(
-    `${escapeRegExp(startMarker)}[\\s\\S]*?${escapeRegExp(endMarker)}`,
-    'g',
+    `^${escapeRegExp(startMarker)}$[\\s\\S]*?^${escapeRegExp(endMarker)}$`,
+    'gm',
   )
   // A region is non-greedy, so `START … START … END` matches once and consumes
   // both starts — which is what makes comparing the two counts catch it.
-  const starts = text.split(startMarker).length - 1
+  const starts = text.split('\n').filter(line => line === startMarker).length
   const regions = text.match(region)?.length ?? 0
   if (starts !== regions) {
     throw new Error(
@@ -2828,7 +2829,8 @@ export function replaceMarkerRegions({
 
 // Rewrite the region between every `<!-- MARKER START -->`/`<!-- MARKER END -->`
 // pair in every doc that contains it, returning the docs whose block content
-// changed (used by --check to flag stale generated blocks without rewriting).
+// changed. `writeDoc` keeps them off disk under `--check`, so the list is then
+// the stale docs.
 // Shared by the single-marker generators (jexl catalog, extension-point index);
 // the color tables use a per-group variant of the same idea.
 //
@@ -2842,18 +2844,14 @@ export function replaceMarkerRegions({
 // doc whose only change was a hyphen run. Renaming a documented flag from
 // `--force` to `-force`, or an em-dash `--` to `-`, regenerated the table and
 // reported it up to date.
-export function rewriteMarkerBlock(
-  marker: string,
-  block: string,
-  { check = false } = {},
-): string[] {
+export function rewriteMarkerBlock(marker: string, block: string): string[] {
   const startMarker = `<!-- ${marker} START -->`
   const endMarker = `<!-- ${marker} END -->`
-  const stale: string[] = []
+  const changed: string[] = []
   markersWritten.add(marker)
   for (const file of markerDocs()) {
     const original = readDoc(file)
-    if (original.includes(startMarker)) {
+    if (original.split('\n').includes(startMarker)) {
       const updated = replaceMarkerRegions({
         text: original,
         startMarker,
@@ -2861,16 +2859,13 @@ export function rewriteMarkerBlock(
         block,
         file,
       })
-      if (check) {
-        if (updated !== original) {
-          stale.push(file)
-        }
-      } else if (updated !== original) {
+      if (updated !== original) {
         writeDoc(file, updated)
+        changed.push(file)
       }
     }
   }
-  return stale
+  return changed
 }
 
 // The grouped sibling of rewriteMarkerBlock, for markers that name which group
@@ -2879,9 +2874,9 @@ export function rewriteMarkerBlock(
 // block body, and throws when the group is unknown — the message belongs to the
 // caller, since an unrecognized group is always an authoring typo.
 //
-// Returns the docs whose block content changed (used by --check to flag stale
-// blocks without rewriting) and the groups some doc actually rendered, so a
-// caller can catch a tagged group that no page pulls in.
+// Returns the docs whose block content changed (the stale ones, under
+// `--check`) and the groups some doc actually rendered, so a caller can catch a
+// tagged group that no page pulls in.
 //
 // Sweeps the same docs as `rewriteMarkerBlock`, agent-docs included. It used to
 // walk website/docs alone, which made a grouped block in agent-docs worse than
@@ -2892,10 +2887,9 @@ export function rewriteMarkerBlock(
 export function rewriteGroupedMarkerBlocks(
   marker: string,
   render: (group: string, file: string) => string,
-  { check = false } = {},
 ) {
-  const markerRe = new RegExp(`<!-- ${marker} (\\S+) START -->`, 'g')
-  const stale: string[] = []
+  const markerRe = new RegExp(`^<!-- ${marker} (\\S+) START -->$`, 'gm')
+  const changed: string[] = []
   const seen = new Set<string>()
   markersWritten.add(marker)
   for (const file of markerDocs()) {
@@ -2916,15 +2910,12 @@ export function rewriteGroupedMarkerBlocks(
         file,
       })
     }
-    if (check) {
-      if (updated !== original) {
-        stale.push(file)
-      }
-    } else if (updated !== original) {
+    if (updated !== original) {
       writeDoc(file, updated)
+      changed.push(file)
     }
   }
-  return { stale, seen }
+  return { changed, seen }
 }
 
 // Every source file the generators document, tracked plus untracked-but-not-

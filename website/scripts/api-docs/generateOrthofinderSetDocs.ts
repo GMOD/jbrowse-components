@@ -98,7 +98,7 @@ export function collectOrthofinderCuts() {
   })
 }
 
-export function writeOrthofinderSetDocs({ check = false } = {}) {
+export function writeOrthofinderSetDocs() {
   const sets = collectOrthofinderSets()
   return [
     ...rewriteMarkerBlock(
@@ -110,7 +110,6 @@ export function writeOrthofinderSetDocs({ check = false } = {}) {
             `| ${codeCell(s.name)} | ${tableCell(s.genomes.join(', '))} | ${s.genomes.length ** 2} | ${tableCell(s.release)} |`,
         ),
       ),
-      { check },
     ),
     ...rewriteMarkerBlock(
       'ORTHOFINDER_CUTS',
@@ -120,7 +119,6 @@ export function writeOrthofinderSetDocs({ check = false } = {}) {
           c => `| ${codeCell(c.name)} | ${c.default} | ${tableCell(c.cuts)} |`,
         ),
       ),
-      { check },
     ),
   ]
 }

@@ -74,7 +74,7 @@ export function collectResultFields(): ResultField[] {
   return fields
 }
 
-export function writeSearchResultDocs({ check = false } = {}) {
+export function writeSearchResultDocs() {
   return rewriteMarkerBlock(
     'SEARCH_RESULT_FIELDS',
     markdownTable(
@@ -84,6 +84,5 @@ export function writeSearchResultDocs({ check = false } = {}) {
           `| \`${f.name}\`${f.optional ? '' : ' (required)'} | \`${f.type}\` | ${f.description} |`,
       ),
     ),
-    { check },
   )
 }

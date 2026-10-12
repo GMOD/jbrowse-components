@@ -252,7 +252,7 @@ async function main() {
   // The program-independent marker tables, from the one list markers.ts also
   // runs — so the set can't drift between a full run and the `--check` gate.
   for (const { write } of MARKER_GENERATORS) {
-    write(corpus, { check: false })
+    write(corpus)
   }
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
   writeDisplayViewTypeDocs(displayLinks, configNames)
