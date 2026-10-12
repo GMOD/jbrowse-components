@@ -19,9 +19,10 @@ the genome.
 
 ## Prerequisites
 
-- the protein3d and msaview plugins. genomes.jbrowse.org already loads them, and
-  [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
-  covers your own JBrowse
+- the protein3d and msaview plugins. In your own JBrowse, install both from the
+  plugin store
+  ([Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance));
+  genomes.jbrowse.org already loads them
 
 ## Where the data comes from
 

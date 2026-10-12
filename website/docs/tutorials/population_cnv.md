@@ -18,8 +18,8 @@ time, so the second half of the page packs the values into one Zarr store.
 - a JBrowse instance to paste a track into (see the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
-- the zarr plugin, for [the Zarr store](#a-zarr-store-for-the-whole-panel); that
-  section gives its URL
+- the zarr plugin, for [the Zarr store](#a-zarr-store-for-the-whole-panel). In
+  your own JBrowse, load it by the URL that section gives
 - `node` 24 or newer, to
   [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs)
 - QuicK-mer2 and a 30x alignment, to add

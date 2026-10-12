@@ -30,11 +30,10 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the `GraphTrack` below. The
-  [portal page](https://genomes.jbrowse.org/pangenomes/bovine) already loads it,
-  and
-  [installing it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
-  adds it to your own JBrowse
+- the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
+  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin);
+  the [portal page](https://genomes.jbrowse.org/pangenomes/bovine) already loads
+  it
 - `python3` and htslib (`bgzip`, `tabix`), to build the
   [OMIA track](#the-celtic-polled-allele)
 - [`vg`](https://github.com/vgteam/vg), to

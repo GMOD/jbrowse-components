@@ -37,9 +37,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   CLI
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
-- the GraphGenomeView plugin, for the same track.
-  [Installing it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
-  adds it to your own JBrowse
+- the GraphGenomeView plugin, for the same track. In your own JBrowse,
+  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
 
 `apt install samtools tabix unzip python3` covers four of those on
 Debian/Ubuntu, and `datasets` and `bedGraphToBigWig` are each a

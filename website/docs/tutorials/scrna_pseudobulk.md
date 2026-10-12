@@ -27,8 +27,8 @@ the pooled rows.
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 - the zarr plugin, for
-  [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store); that section
-  gives its URL
+  [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store). In your own
+  JBrowse, load it by the URL that section gives
 
 ## Where the data comes from
 
