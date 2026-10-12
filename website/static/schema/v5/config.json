@@ -6452,6 +6452,15 @@
               "else": {
                 "$ref": "#/$defs/PlainString"
               }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             }
           },
           "patternProperties": {
@@ -7678,6 +7687,15 @@
               },
               "else": {
                 "$ref": "#/$defs/PlainString"
+              }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
               }
             }
           },

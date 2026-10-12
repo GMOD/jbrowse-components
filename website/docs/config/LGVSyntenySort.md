@@ -32,7 +32,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | Slot | Description |
 | --- | --- |
 | <span id="slot-type">**type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'length'</code> | position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos |
-| <span class="slot-group">Inherited from [AlignmentsSort](../alignmentssort)</span> | <span class="slot-group-count">3 slots</span> |
+| <span class="slot-group">Inherited from [AlignmentsSort](../alignmentssort)</span> | <span class="slot-group-count">4 slots</span> |
 | <span id="slot-pos">**pos**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a column sort's 0-based position |
 | <span id="slot-refname">**refName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | a column sort's reference sequence |
 | <span id="slot-tag">**tag**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the SAM tag a tag sort ranks by |
+| <span id="slot-within">**within**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark |

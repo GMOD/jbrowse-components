@@ -3931,6 +3931,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "tag",
               "type": "(string | undefined)"
+            },
+            {
+              "name": "within",
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": {
@@ -4660,6 +4664,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "tag",
               "type": "(string | undefined)"
+            },
+            {
+              "name": "within",
+              "type": "(number | undefined)"
             }
           ],
           "shorthand": {

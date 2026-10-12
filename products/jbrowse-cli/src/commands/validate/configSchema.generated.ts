@@ -6654,6 +6654,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "$ref": "#/$defs/PlainString"
               }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             }
           },
           "patternProperties": {
@@ -7914,6 +7923,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/PlainString"
+              }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
               }
             }
           },

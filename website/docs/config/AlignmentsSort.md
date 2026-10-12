@@ -30,8 +30,9 @@ reads and reads carrying a deletion of 50 bp or more first, the evidence for
 a structural variant). A column sort ranks the reads over one base, `pos`
 (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
 `pairOrientation` (the abnormal orientations over LR), `tag` (naming `tag`),
-or the `insertion`, `softclip` or `hardclip` there; the reads not over it
-lay out by position. On another chromosome a column sort orders by position.
+or the `insertion`, `softclip` or `hardclip` there, or up to `within` bases
+either side; the reads not over it lay out by position. On another
+chromosome a column sort orders by position.
 
 ## Related links
 
@@ -48,3 +49,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-pos">**pos**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a column sort's 0-based position |
 | <span id="slot-refname">**refName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | a column sort's reference sequence |
 | <span id="slot-tag">**tag**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the SAM tag a tag sort ranks by |
+| <span id="slot-within">**within**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark |
