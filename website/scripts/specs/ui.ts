@@ -2095,10 +2095,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 800 },
     ],
     clicksOpen: 'the plugin store, filtered to MsaView',
-    annotations: [
-      { type: 'box', anchor: { text: 'Filter plugins' } },
-      { type: 'box', anchor: { text: 'Install' } },
-    ],
+    annotations: [{ type: 'box', anchor: { text: 'Install' } }],
   },
   {
     mode: 'url',
@@ -2113,7 +2110,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Plugin store' },
       { type: 'waitForText', text: 'Available plugins' },
       { type: 'type', text: 'Filter plugins', value: 'MsaView' },
-      { type: 'click', text: 'Install' },
+      {
+        type: 'click',
+        selector: "::-p-xpath(//button[normalize-space(.)='Install'])",
+      },
       {
         type: 'waitForSelector',
         selector: '[data-testid="keepPlugin-MsaView"]',
