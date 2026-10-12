@@ -73,7 +73,7 @@ describe('a container sub-schema', () => {
   })
 })
 
-// assertExampleKeysAreSlots walks an example for objects it can attribute to a
+// assertExamplesValidate walks an example for objects it can attribute to a
 // type. What it reaches decides what gets checked at all, and an object it
 // misses is silently unchecked — which is how three display examples came to
 // document a key JBrowse drops.

@@ -20,9 +20,6 @@ right as of that date; the gaps that let them drift are still open.
   fragment, JSON inside a table cell, a session fence and commented JSON are
   never validated. `tutorials/chromhmm.md` wrote `rows` and `height` on a
   display snapshot in a session fence, where the app drops both.
-- **The generated `config/` pages.** Each `#example` block in a schema's
-  docstring is published and unread; the Manhattan example wrote a constant
-  color as a field there.
 - **The CLI README**, regenerated only on prepack, so
   `generate-cli-doc --check` passes over stale text between releases.
 - **What a build script writes.** `scripts/build_circular_synteny.sh` and its
@@ -30,6 +27,10 @@ right as of that date; the gaps that let them drift are still open.
   until someone opens the demo.
 
 ## What is checked now
+
+`assertExamplesValidate` in `website/scripts/api-docs/generateConfigDocs.ts`
+validates every js/json fence in a `#config` `#example` against the config
+schema, keys and values, on each `pnpm autogen`.
 
 `scripts/inTreeConfigLiterals.test.ts` reads the config literals written in
 TypeScript: the examples sites' demos, the browser-test suites and probes, and

@@ -539,4 +539,8 @@ export const rootConfigurationSlots = new Set(
   Object.keys(defs.RootConfiguration!.properties as Schema),
 )
 
+export function hasSchemaDefinition(name: string) {
+  return Object.hasOwn(defs, name)
+}
+
 export { schemaId as configSchemaUrl }

@@ -1,4 +1,5 @@
 import fs from 'fs'
+import vm from 'node:vm'
 
 import slugify from 'slugify'
 import * as ts from 'typescript'
@@ -7,6 +8,10 @@ import {
   matchFormat,
   trackTypeForAdapter,
 } from '../../../packages/add-track-core/src/index.ts'
+import {
+  hasSchemaDefinition,
+  schemaProblems,
+} from '../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 import {
   agentPage,
   exampleBlock,
@@ -682,7 +687,7 @@ type ManifestCategories = Record<string, Record<string, ManifestEntry>>
 export type TypedManifestEntry = ManifestEntry & { category: string }
 
 // Categories whose objects an `#example` can be checked against
-// (assertExampleKeysAreSlots).
+// (assertExamplesValidate).
 //
 // TEXT SEARCH adapters are the one type table left out: the manifest computes
 // `shorthandKeys` only for `group === 'adapter'` (`generateConfigManifest`), so
@@ -1556,23 +1561,51 @@ export function exampleObjects(
   return out
 }
 
-// Every key an `#example` writes must be one the type declares, or a shorthand
-// its snapshot normalizer rewrites.
-//
-// The examples are the most-copied config in the docs and were the one config
-// surface with no checker: `check-config-blocks` validates the hand-written
-// blocks in the guides and skips the generated pages precisely because these
-// come from source — so "fixed in the source" was true and nothing checked the
-// source. A key that is not a slot is the failure that matters, because JBrowse
-// ignores an undeclared key rather than rejecting it: the example loads, does
-// nothing, and reads as the documented way to do the thing.
+// Each object in an example whose `type` names a schema definition, validated
+// against it by `jbrowse validate`'s own schema checker. Keys alone are
+// `unknownExampleKeys`' job; this is the values — a constant color written as a
+// field, a number where an enum goes.
+export function exampleSchemaProblems(code: string) {
+  const body = code.trim()
+  const value: unknown = vm.runInNewContext(
+    `(${body.startsWith('{') ? body : `{${body}}`})`,
+  )
+  const problems: string[] = []
+  const descend = (node: unknown, path: string) => {
+    if (Array.isArray(node)) {
+      node.forEach((child, i) => {
+        descend(child, `${path}[${i}]`)
+      })
+    } else if (node && typeof node === 'object') {
+      const { type } = node as { type?: unknown }
+      if (typeof type === 'string' && hasSchemaDefinition(type)) {
+        for (const p of schemaProblems(node, `/$defs/${type}`)) {
+          problems.push(`${path}${p.where}: ${p.message}`)
+        }
+      } else {
+        for (const [key, child] of Object.entries(node)) {
+          descend(child, path ? `${path}.${key}` : key)
+        }
+      }
+    }
+  }
+  descend(value, '')
+  return problems
+}
+
+// Every js/json fence in an `#example` must validate: each key one the type
+// declares or a shorthand its snapshot normalizer rewrites, each value of the
+// type the schema states. The examples are the most-copied config in the docs,
+// and JBrowse ignores an undeclared key rather than rejecting it, so a wrong
+// one loads, does nothing, and reads as the documented way to do the thing.
+// `check-config-blocks` skips these pages because the fix belongs in source.
 //
 // Keys come from the same manifest the shorthand line above reads, so a type
-// the manifest does not carry (the root config schemas) is
-// skipped rather than guessed at — checking against an empty slot list would
-// report every key as unknown. The type tables checkable at all are
-// EXAMPLE_CHECKED_CATEGORIES.
-function assertExampleKeysAreSlots(
+// the manifest does not carry (the root config schemas) is skipped rather than
+// guessed at. The type tables checkable at all are EXAMPLE_CHECKED_CATEGORIES.
+const CONFIG_FENCE = /```(?:js|json)\n([\s\S]*?)```/g
+
+function assertExamplesValidate(
   configs: ConfigWithHeader[],
   displayTypesByTrack: Map<string, string[]>,
 ) {
@@ -1584,21 +1617,34 @@ function assertExampleKeysAreSlots(
   )
   const problems: string[] = []
   for (const config of configs) {
+    const where = `  ${config.filename}: ${config.header.name} #example`
     for (const ex of config.header.examples) {
-      const code = /```[\w]*\n([\s\S]*?)```/.exec(ex.content)?.[1]
-      for (const obj of code ? exampleObjects(code, checkable) : []) {
-        const unknown = unknownExampleKeys(obj, checkable, displayTypesByTrack)
-        for (const [key, why] of unknown) {
-          problems.push(
-            `  ${config.filename}: ${config.header.name} #example writes \`${key}\` on its ${obj.typeName} — ${why}`,
+      for (const [, code] of ex.content.matchAll(CONFIG_FENCE)) {
+        try {
+          for (const p of exampleSchemaProblems(code!)) {
+            problems.push(`${where} ${p}`)
+          }
+        } catch (e) {
+          problems.push(`${where} does not evaluate: ${String(e)}`)
+        }
+        for (const obj of exampleObjects(code!, checkable)) {
+          const unknown = unknownExampleKeys(
+            obj,
+            checkable,
+            displayTypesByTrack,
           )
+          for (const [key, why] of unknown) {
+            problems.push(
+              `${where} writes \`${key}\` on its ${obj.typeName} — ${why}`,
+            )
+          }
         }
       }
     }
   }
   if (problems.length) {
     throw new Error(
-      `${problems.length} #example key(s) name something the type does not declare. JBrowse ignores an undeclared key, so such an example loads and silently does nothing — which is worse than no example. Fix the key, or add the slot:\n${problems.join('\n')}`,
+      `${problems.length} #example problem(s). JBrowse ignores an undeclared key, so such an example loads and silently does nothing. Fix the example, or add the slot:\n${problems.join('\n')}`,
     )
   }
 }
@@ -1862,7 +1908,7 @@ export function writeConfigDocs(
   // slot, or write one page for two types fails without having rewritten
   // anything.
   assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
-  assertExampleKeysAreSlots(withHeader, displayTypesByTrack)
+  assertExamplesValidate(withHeader, displayTypesByTrack)
   assertManifestSlotsAreDocumented(withHeader, index)
   assertUniquePages(
     '#config',
