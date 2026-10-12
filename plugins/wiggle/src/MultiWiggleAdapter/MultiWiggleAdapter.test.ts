@@ -1,3 +1,4 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
   addRelativeUris,
@@ -839,11 +840,9 @@ describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti', () => {
   })
 })
 
-// disambiguateSources renames a colliding entry AFTER its subadapter was built
-// from the original config, so the subadapter keeps stamping the pre-rename
-// `source` on every feature it emits. getFeatures has to correct that: the
-// score-matrix clustering groups on feature.get('source') while keying its rows
-// off the disambiguated names, so both rows came back empty (#5598 follow-up).
+// The score-matrix clustering groups on feature.get('source') while keying its
+// rows off the disambiguated names, so a subtrack whose features carry another
+// name comes back empty (#5598 follow-up).
 describe('MultiWiggleAdapter.getFeatures source stamping', () => {
   const region = {
     refName: 'chr1',
@@ -865,64 +864,83 @@ describe('MultiWiggleAdapter.getFeatures source stamping', () => {
     })
   }
 
-  // both files are `sample.bw`, so disambiguateSources grows them to
-  // cond1/sample and cond2/sample while each BigWigAdapter still says 'sample'
-  function makeAdapter(emittedSource: string | undefined) {
-    const mockGetSubAdapter = jest.fn().mockImplementation(
-      async (conf: { source?: string }) =>
-        ({
-          dataAdapter: {
-            id: conf.source ?? 'mock',
-            getFeatures: () =>
-              of(
-                new SimpleFeature({
-                  uniqueId: 'f1',
-                  refName: 'chr1',
-                  start: 0,
-                  end: 10,
-                  score: 1,
-                  ...(emittedSource === undefined
-                    ? {}
-                    : { source: emittedSource }),
-                }),
-              ),
-          },
-        }) as any,
-    )
-    return new MultiWiggleAdapter(
-      configSchema.create({
-        bigWigs: [
-          'https://example.com/cond1/sample.bw',
-          'https://example.com/cond2/sample.bw',
-        ],
-      }),
-      mockGetSubAdapter,
-    )
+  function feature(source: unknown) {
+    return new SimpleFeature({
+      uniqueId: 'f1',
+      refName: 'chr1',
+      start: 0,
+      end: 10,
+      score: 1,
+      source,
+    })
   }
 
-  it('restamps features carrying the pre-disambiguation source', async () => {
-    const feats = await collect(makeAdapter('sample'))
+  // Each feature names the source its config carried, as a BigWig's does.
+  function makeAdapter(
+    subadapters: Record<string, unknown>[],
+    pluginManager?: PluginManager,
+  ) {
+    const getSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: {
+          id: 'adp-7',
+          getFeatures: () => of(feature(conf.source)),
+        },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({ subadapters }),
+      getSubAdapter,
+      pluginManager,
+    )
+    return { adapter, getSubAdapter }
+  }
+
+  // both files are `sample.bw`, which disambiguateSources grows to
+  // cond1/sample and cond2/sample
+  const sameBasename = ['cond1', 'cond2'].map(dir => ({
+    type: 'BigWigAdapter',
+    bigWigLocation: { uri: `https://example.com/${dir}/sample.bw` },
+  }))
+
+  it('builds each subadapter under its disambiguated name and keeps its features', async () => {
+    const { adapter, getSubAdapter } = makeAdapter(sameBasename)
+    const feats = await collect(adapter)
+    expect(
+      getSubAdapter.mock.calls.map(
+        ([conf]: [{ source: string }]) => conf.source,
+      ),
+    ).toEqual(['cond1/sample', 'cond2/sample'])
     expect(feats.map(f => f.get('source'))).toEqual([
       'cond1/sample',
       'cond2/sample',
     ])
-    // uniqueIds must diverge too, or the two subtracks collide downstream
+    expect(feats.map(f => f.id())).toEqual(['f1', 'f1'])
+  })
+
+  it('restamps a subadapter whose schema drops the name', async () => {
+    const noSourceSlot = ConfigurationSchema(
+      'NoSourceAdapter',
+      { bigWigLocation: { type: 'fileLocation', defaultValue: { uri: '' } } },
+      { explicitlyTyped: true },
+    )
+    const { adapter } = makeAdapter(sameBasename, {
+      getAdapterType: () => ({ configSchema: noSourceSlot }),
+    } as unknown as PluginManager)
+    const feats = await collect(adapter)
+    expect(feats.map(f => f.get('source'))).toEqual([
+      'cond1/sample',
+      'cond2/sample',
+    ])
     expect(new Set(feats.map(f => f.id())).size).toBe(2)
   })
 
-  it('still stamps adapters that set no source at all', async () => {
-    const feats = await collect(makeAdapter(undefined))
-    expect(feats.map(f => f.get('source'))).toEqual([
-      'cond1/sample',
-      'cond2/sample',
-    ])
-  })
-
-  it('passes an already-correct feature through untouched', async () => {
-    const adapter = makeAdapter('cond1/sample')
+  it('restamps a member its adapter id names, built once', async () => {
+    const { adapter, getSubAdapter } = makeAdapter([{ type: 'NoPathAdapter' }])
     const feats = await collect(adapter)
-    // the cond1 subadapter's feature needs no wrapping, so it keeps its own id
-    expect(feats.find(f => f.get('source') === 'cond1/sample')!.id()).toBe('f1')
+    expect(getSubAdapter).toHaveBeenCalledTimes(1)
+    expect(feats.map(f => f.get('source'))).toEqual(['adp-7'])
+    expect(feats.map(f => f.id())).toEqual(['adp-7-f1'])
   })
 })
 
@@ -1174,15 +1192,18 @@ test("a subadapter's row metadata stays off the config its adapter is created fr
       getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
     } as unknown as PluginManager,
   )
-  expect(await adapter.getSources([])).toEqual([
+  const sources = await adapter.getSources([])
+  expect(sources).toEqual([
     expect.objectContaining({
       name: 'Alpha',
       group: 'Islet',
       color: '#e6194b',
     }),
   ])
+  expect(sources[0]).not.toHaveProperty('stamped')
   expect(getSubAdapter).toHaveBeenCalledWith({
     type: 'BigWigAdapter',
+    source: 'Alpha',
     bigWigLocation: { uri: 'https://x/a.bw', baseUri: undefined },
   })
 })
