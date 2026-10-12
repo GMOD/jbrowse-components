@@ -169,7 +169,7 @@ function pairOrientationKey(feature: Feature): GroupKey {
 }
 
 const [SPLIT_KEY, UNSPLIT_KEY] = SPLIT_LEVELS
-const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split' }
+const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split (SA)' }
 const UNSPLIT_GROUP: GroupKey = { key: UNSPLIT_KEY, label: 'Not split' }
 
 // Reads that cross a breakpoint and reads that don't — at an SV locus, the

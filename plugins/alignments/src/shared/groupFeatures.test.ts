@@ -188,7 +188,7 @@ test('split-read grouping keeps both pieces of a split read together', () => {
   const groups = partitionFeatures(features, { field: 'split' })
   // 'split' sorts before 'unsplit', which is also the order that helps: at an SV
   // locus the reads crossing the breakpoint sit at the top of the pileup.
-  expect(groups.map(g => g.label)).toEqual(['Split', 'Not split'])
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'a-supp'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['c'])
 })
@@ -203,7 +203,7 @@ test('split-read grouping counts a supplementary record with no SA tag', () => {
     feat('plain', { flags: 0, tags: {} }),
   ]
   const groups = partitionFeatures(features, { field: 'split' })
-  expect(groups.map(g => g.label)).toEqual(['Split', 'Not split'])
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)', 'Not split'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['supp'])
 })
 
@@ -444,7 +444,7 @@ test('split-read grouping keys a chain off any read carrying SA', () => {
     field: 'split',
     unit: 'chain',
   })
-  expect(groups.map(g => g.label)).toEqual(['Split'])
+  expect(groups.map(g => g.label)).toEqual(['Split (SA)'])
   expect(groups[0]!.features).toHaveLength(2)
 })
 

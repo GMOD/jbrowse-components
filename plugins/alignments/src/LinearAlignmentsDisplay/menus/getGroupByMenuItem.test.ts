@@ -28,7 +28,7 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
     'First-of-pair strand',
     'Pair orientation',
     'Pairing',
-    'Split read',
+    'Split read (SA tag)',
     'Spliced read',
     'Mapping quality',
     'Tag...',
@@ -41,7 +41,7 @@ test('chain mode offers only the fragment-level dimensions', () => {
     'First-of-pair strand',
     'Pair orientation',
     'Pairing',
-    'Split read',
+    'Split read (SA tag)',
     'Spliced read',
     'Tag...',
   ])
@@ -66,7 +66,7 @@ test('the active dimension is the only one checked', () => {
 test('picking a per-read dimension sets it; picking None ungroups', () => {
   const { model, setFacet } = makeModel({ field: 'strand' })
   radios(model)
-    .find(i => i.label === 'Split read')!
+    .find(i => i.label === 'Split read (SA tag)')!
     .onClick()
   expect(setFacet).toHaveBeenCalledWith({ field: 'split' })
 

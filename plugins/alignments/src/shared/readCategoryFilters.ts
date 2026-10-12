@@ -66,11 +66,12 @@ export const READ_CATEGORIES = [
     only: 'Only split alignments',
     exclude: 'Hide split alignments',
     helpText:
-      'Reads the aligner gave a supplementary segment (SAM flag 0x800) — ' +
-      'chimeric SV/breakpoint evidence. Read off the SA tag rather than off ' +
-      'what this window happened to fetch, so unlike the mate filter above it ' +
-      'means the same thing at any zoom. Grouped by read name, so it applies ' +
-      'to a plain pileup too.',
+      'Reads aligned in pieces — chimeric SV/breakpoint evidence: a read ' +
+      'carrying an SA tag, which the aligner writes on every piece, the ' +
+      'primary included, or the supplementary flag (0x800). Read off the ' +
+      'record rather than off what this window happened to fetch, so unlike ' +
+      'the mate filter above it means the same thing at any zoom. Grouped by ' +
+      'read name, so it applies to a plain pileup too.',
   },
   {
     key: 'spliced',
