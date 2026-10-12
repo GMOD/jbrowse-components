@@ -204,6 +204,8 @@ export const figureLiveRefs: Record<string, string> = {
   "recent_tracks": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%221%3A1-100%2C000%22%7D%5D%7D&sessionName=Screenshot",
   "favorite_tracks": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%2C%22tracks%22%3A%5B%22volvox_bam%22%5D%7D%5D%7D&sessionName=Screenshot",
   "plugin_store": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%7D%5D%7D&sessionName=Screenshot",
+  "plugin_store_install": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%7D%5D%7D&sessionName=Screenshot",
+  "plugin_store_keep": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20000%22%7D%5D%7D&sessionName=Screenshot",
   "lgv_assembly": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "add_hg38_assembly": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "sample_config": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-50000%22%7D%5D%7D&sessionName=Screenshot",
@@ -1548,6 +1550,14 @@ export const figureFrames: Record<
     "width": 1500,
     "height": 800
   },
+  "plugin_store_install": {
+    "width": 1500,
+    "height": 800
+  },
+  "plugin_store_keep": {
+    "width": 1500,
+    "height": 800
+  },
   "lgv_assembly": {
     "width": 900,
     "height": 231
@@ -2657,6 +2667,8 @@ export const figureCallouts: Record<string, object[]> = {
   "hierarchical/hierarchical_user_menu-fs8": [{"type":"box","anchor":{"text":"Collapse top-level categories"}},{"type":"box","anchor":{"text":"Collapse subcategories"}}],
   "recent_tracks": [{"type":"circle","anchor":{"selector":"[data-testid=\"recently-used-tracks-button\"]"}}],
   "plugin_store": [{"type":"circle","anchor":{"text":"Tools"},"radius":24,"dy":8},{"type":"box","anchor":{"text":"Plugin store"}},{"type":"box","anchor":{"text":"Installed plugins"}}],
+  "plugin_store_install": [{"type":"box","anchor":{"text":"Install"}}],
+  "plugin_store_keep": [{"type":"box","anchor":{"selector":"[data-testid=\"keepPlugin-MsaView\"]"}}],
   "chromhmm": [{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr9:36,833,266-37,034,265"},"pad":2},{"type":"text","text":"PAX5 transcribed, with genic enhancers, in B cells only","leader":true,"anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr9:36,900,000","fracY":0.3188976377952756},"dx":-260,"dy":-60}],
   "chromhmm_hoxa_fibroblasts": [{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr7:27,132,613-27,196,294"},"pad":2},{"type":"box","anchor":{"trackId":"roadmap_chromhmm_multirow_hg19","loc":"chr7:27,202,056-27,246,878"},"pad":2,"color":"#1565c0"}],
   "multirow/display_types_pick": [{"type":"box","anchor":{"selector":"[data-testid=\"cascading-submenu-display_types\"]"}},{"type":"box","anchor":{"selector":"[data-testid=\"cascading-menuitem-multi-row_feature_display_(painting)\"], [data-testid=\"cascading-submenu-multi-row_feature_display_(painting)\"]"}}],
@@ -2838,6 +2850,8 @@ export const figureClicks: Record<
   "recent_tracks": {},
   "favorite_tracks": {"stages":2},
   "plugin_store": {},
+  "plugin_store_install": {"open":"the plugin store, filtered to MsaView"},
+  "plugin_store_keep": {"change":"install MsaView from the plugin store"},
   "lgv_assembly": {},
   "add_hg38_assembly": {},
   "sample_config": {},
