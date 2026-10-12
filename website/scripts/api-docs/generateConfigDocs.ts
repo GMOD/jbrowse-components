@@ -716,21 +716,13 @@ function readManifest() {
     adapterShorthands = parsed.adapters
     // Every type table, each entry tagged with the category it came from — the
     // two gates that read this want different subsets, and a gate that widened
-    // the table would otherwise silently widen the other one too.
-    // `migratedDisplayKeys` is not a type table and is dropped by the shape
-    // guard.
+    // the table would otherwise silently widen the other one too. The shape
+    // guard drops what is not a type table: `views` (state-model props only)
+    // and `migratedDisplayKeys`.
     manifestByType = Object.fromEntries(
-      (
-        [
-          'adapters',
-          'connections',
-          'tracks',
-          'displays',
-          'textSearchAdapters',
-        ] as const
-      )
-        .flatMap(category =>
-          Object.entries(parsed[category] ?? {}).map(
+      Object.entries(parsed)
+        .flatMap(([category, table]) =>
+          Object.entries(table).map(
             ([name, entry]) => [name, { ...entry, category }] as const,
           ),
         )
@@ -1576,7 +1568,7 @@ export function exampleObjects(
 // nothing, and reads as the documented way to do the thing.
 //
 // Keys come from the same manifest the shorthand line above reads, so a type
-// the manifest does not carry (internet accounts, the root config schemas) is
+// the manifest does not carry (the root config schemas) is
 // skipped rather than guessed at — checking against an empty slot list would
 // report every key as unknown. The type tables checkable at all are
 // EXAMPLE_CHECKED_CATEGORIES.
