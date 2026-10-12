@@ -1,4 +1,4 @@
-import { asTable } from './featureTable.ts'
+import { ColumnTable, asTable } from './featureTable.ts'
 import {
   facetLayers as facetTables,
   layerTables,
@@ -9,7 +9,7 @@ import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
 
-import type { FeatureTable } from './featureTable.ts'
+import type { Column, FeatureTable } from './featureTable.ts'
 import type { Feature } from './simpleFeature.ts'
 
 function feature(
@@ -591,6 +591,72 @@ test('rows already in section order reach the layers as the table they came in',
   expect(
     facetTables(shuffled, { field: 'sample' }, [{}]).layers[0]!.table,
   ).not.toBe(shuffled)
+})
+
+// A typed source column, as MultiWiggleAdapter's table carries one: the
+// sections come from its codes, and the rows reorder only when they must.
+test('a category column splits on its codes, reordering only rows out of section order', () => {
+  const sourceTable = (codes: number[]) =>
+    new ColumnTable(
+      codes.length,
+      new Map<string, Column>([
+        [
+          'start',
+          {
+            kind: 'number',
+            values: Uint32Array.from(codes, (_, i) => i * 10),
+            at: undefined,
+          },
+        ],
+        [
+          'end',
+          {
+            kind: 'number',
+            values: Uint32Array.from(codes, (_, i) => i * 10 + 5),
+            at: undefined,
+          },
+        ],
+        [
+          'source',
+          {
+            kind: 'category',
+            codes: Uint8Array.from(codes),
+            labels: ['s1', 's2'],
+            at: undefined,
+          },
+        ],
+      ]),
+      String,
+    )
+  const split = (table: FeatureTable) => {
+    const { layers, sections } = facetTables(table, { field: 'source' }, [{}])
+    const out = layers[0]!.table
+    return {
+      table: out,
+      starts: Array.from({ length: out.length }, (_, i) =>
+        out.row(i).get('start'),
+      ),
+      rows: [...layers[0]!.rows],
+      sections: sections.map(s => s.key),
+    }
+  }
+
+  const grouped = sourceTable([0, 0, 1])
+  expect(split(grouped)).toEqual({
+    table: grouped,
+    starts: [0, 10, 20],
+    rows: [0, 0, 1],
+    sections: ['s1', 's2'],
+  })
+
+  const reversed = split(sourceTable([1, 1, 0]))
+  expect(reversed.starts).toEqual([20, 0, 10])
+  expect(reversed.rows).toEqual([0, 1, 1])
+  expect(reversed.sections).toEqual(['s1', 's2'])
+
+  const interleaved = split(sourceTable([0, 1, 0]))
+  expect(interleaved.starts).toEqual([0, 20, 10])
+  expect(interleaved.rows).toEqual([0, 0, 1])
 })
 
 // The rowless layer's features carry a `row` field a display-level pileup

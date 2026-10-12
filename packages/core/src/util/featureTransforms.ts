@@ -1289,18 +1289,6 @@ export interface FacetedLayer {
   rows: Uint32Array
 }
 
-// Whether the rows already arrive grouped in section order, as a
-// multi-source adapter's rows do, so the split reorders nothing and the steps
-// read the table directly rather than through a row view.
-function inSectionOrder(keyOfRow: Uint32Array, sectionOf: Uint32Array) {
-  for (let i = 1; i < keyOfRow.length; i++) {
-    if (sectionOf[keyOfRow[i]!]! < sectionOf[keyOfRow[i - 1]!]!) {
-      return false
-    }
-  }
-  return true
-}
-
 // The counting sort's row order: each section's rows in arrival order.
 function sectionOrder(
   keyOfRow: Uint32Array,
@@ -1341,30 +1329,53 @@ export function facetLayers(
   const categories = categoricalField(field)
   const n = table.length
   const sectionOfKey = new Map<string, number>()
-  const keyOfRow = new Uint32Array(n)
   const keys: string[] = []
+  const countOfKey: number[] = []
   const keyIndex = (key: string) => {
     let k = sectionOfKey.get(key)
     if (k === undefined) {
       k = keys.length
       sectionOfKey.set(key, k)
       keys.push(key)
+      countOfKey.push(0)
     }
     return k
   }
+  // Runs of one key down the rows: as many as the keys exactly when each
+  // key's rows arrive together, as a multi-source adapter's do.
+  let runs = 0
+  let keyOfRow: () => Uint32Array
   const column = isPlainFieldRef(field) ? table.column(field) : undefined
   if (column?.kind === 'category') {
-    // A label's key is filed once, and each row looks its code up.
+    // Counted per code, and a label's key filed once, in arrival order; the
+    // row-by-row keys are read only for a table that needs reordering.
     const { codes, labels, at } = column
-    const ofCode = new Int32Array(labels.length).fill(-1)
+    const countOfCode = new Uint32Array(labels.length)
+    const arrived: number[] = []
+    let prev = -1
     for (let i = 0; i < n; i++) {
       const code = codes[at ? at[i]! : i]!
-      let k = ofCode[code]!
-      if (k < 0) {
-        k = keyIndex(categories.key(labels[code]))
-        ofCode[code] = k
+      if (code !== prev) {
+        if (countOfCode[code] === 0) {
+          arrived.push(code)
+        }
+        runs++
+        prev = code
       }
-      keyOfRow[i] = k
+      countOfCode[code]!++
+    }
+    const keyOfCode = new Uint32Array(labels.length)
+    for (const code of arrived) {
+      const k = keyIndex(categories.key(labels[code]))
+      keyOfCode[code] = k
+      countOfKey[k]! += countOfCode[code]!
+    }
+    keyOfRow = () => {
+      const keyOf = new Uint32Array(n)
+      for (let i = 0; i < n; i++) {
+        keyOf[i] = keyOfCode[codes[at ? at[i]! : i]!]!
+      }
+      return keyOf
     }
   } else {
     const read = column
@@ -1373,9 +1384,16 @@ export function facetLayers(
           const r = fieldReader(field, jexl)
           return (i: number) => r(table.row(i))
         })()
+    const keyOf = new Uint32Array(n)
     for (let i = 0; i < n; i++) {
-      keyOfRow[i] = keyIndex(categories.key(read(i)))
+      const k = keyIndex(categories.key(read(i)))
+      keyOf[i] = k
+      countOfKey[k]!++
+      if (i === 0 || k !== keyOf[i - 1]) {
+        runs++
+      }
     }
+    keyOfRow = () => keyOf
   }
   const ordered = [...keys.keys()].sort((a, b) =>
     categories.compare(keys[a]!, keys[b]!),
@@ -1385,18 +1403,19 @@ export function facetLayers(
     sectionOf[k] = s
   }
   const bounds = new Uint32Array(keys.length + 1)
-  for (let i = 0; i < n; i++) {
-    bounds[sectionOf[keyOfRow[i]!]! + 1]!++
+  for (const [s, k] of ordered.entries()) {
+    bounds[s + 1] = bounds[s]! + countOfKey[k]!
   }
-  for (let s = 0; s < keys.length; s++) {
-    bounds[s + 1] = bounds[s + 1]! + bounds[s]!
-  }
+  // Rows arriving grouped, in section order, reach the steps as the table
+  // they came in rather than through a row view.
+  const inSectionOrder =
+    runs === keys.length && ordered.every((k, s) => k === s)
   const labels = ordered.map(k => keys[k]!)
   const layered = runLayers(
     {
-      table: inSectionOrder(keyOfRow, sectionOf)
+      table: inSectionOrder
         ? table
-        : selectRows(table, sectionOrder(keyOfRow, sectionOf, bounds)),
+        : selectRows(table, sectionOrder(keyOfRow(), sectionOf, bounds)),
       bounds,
     },
     sectionSteps,
@@ -1415,8 +1434,9 @@ export function facetLayers(
               const r = fieldReader(row, jexl)
               return (i: number) => r(out.table.row(i))
             })()
-    const local = new Uint32Array(out.table.length)
+    let local: Uint32Array | undefined
     if (readRow) {
+      local = new Uint32Array(out.table.length)
       for (let i = 0; i < local.length; i++) {
         local[i] = rowOf(readRow(i))
       }
@@ -1425,6 +1445,9 @@ export function facetLayers(
   })
   const rowCount = new Uint32Array(keys.length).fill(1)
   for (const { bounds: b, local } of placed) {
+    if (!local) {
+      continue
+    }
     for (let s = 0; s < keys.length; s++) {
       for (let i = b[s]!; i < b[s + 1]!; i++) {
         if (local[i]! + 1 > rowCount[s]!) {
@@ -1445,8 +1468,12 @@ export function facetLayers(
     layers: placed.map(({ table: t, bounds: b, local }) => {
       const rows = new Uint32Array(t.length)
       for (let s = 0; s < keys.length; s++) {
-        for (let i = b[s]!; i < b[s + 1]!; i++) {
-          rows[i] = firstRow[s]! + local[i]!
+        if (local) {
+          for (let i = b[s]!; i < b[s + 1]!; i++) {
+            rows[i] = firstRow[s]! + local[i]!
+          }
+        } else {
+          rows.fill(firstRow[s]!, b[s], b[s + 1])
         }
       }
       return { table: t, rows }

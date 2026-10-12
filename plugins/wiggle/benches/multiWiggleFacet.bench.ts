@@ -3,10 +3,11 @@
 //
 //   node --experimental-transform-types plugins/wiggle/benches/multiWiggleFacet.bench.ts
 //
-// Flags: --members (12), --rounds (15), --bpPerPx (1).
+// Flags: --members (12), --rounds (15), --bpPerPx (1), --reversed.
 //
 // Members are named m0, m1, ... so the facet's natural order is the declared
-// order, the case where the table already arrives in section order.
+// order, the case where the table already arrives in section order;
+// --reversed declares them m11 first, so the facet has to reorder.
 import { resolve } from 'node:path'
 import { performance } from 'node:perf_hooks'
 
@@ -24,6 +25,7 @@ const flag = (name: string) =>
 const rounds = Number(flag('rounds') ?? 15)
 const members = Number(flag('members') ?? 12)
 const bpPerPx = Number(flag('bpPerPx') ?? 1)
+const reversed = process.argv.includes('--reversed')
 const files = [
   'volvox_microarray.bw',
   'volvox-sorted.bam.coverage.bw',
@@ -38,7 +40,7 @@ const adapter = new MultiWiggleAdapter(
   multiSchema.create({
     subadapters: Array.from({ length: members }, (_, i) => ({
       type: 'BigWigAdapter',
-      source: `m${i}`,
+      source: `m${reversed ? members - 1 - i : i}`,
       bigWigLocation: {
         localPath: files[i % files.length],
         locationType: 'LocalPathLocation',
