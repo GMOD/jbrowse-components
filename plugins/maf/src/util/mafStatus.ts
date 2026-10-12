@@ -1,20 +1,5 @@
 import type { MafStatus } from '../types.ts'
 
-// Cast-free lookup: returns the MafStatus for a recognized character, else
-// undefined for malformed/absent input.
-const STATUS_BY_CHAR: Record<string, MafStatus> = {
-  C: 'C',
-  I: 'I',
-  N: 'N',
-  n: 'n',
-  M: 'M',
-  T: 'T',
-}
-
-export function toMafStatus(s: string | undefined): MafStatus | undefined {
-  return s ? STATUS_BY_CHAR[s] : undefined
-}
-
 /**
  * The wire encoding of a `MafStatus`: its 1-based index here, with 0 meaning
  * absent. Statuses travel as `Uint8Array` columns in `MafWireRegionData`, so
@@ -33,6 +18,15 @@ export const MAF_STATUS_WIRE: readonly MafStatus[] = [
   'M',
   'T',
 ]
+
+const STATUS_BY_CHAR = new Map<string, MafStatus>(
+  MAF_STATUS_WIRE.map(status => [status, status]),
+)
+
+/** The status a character names, or undefined for one MAF does not define. */
+export function toMafStatus(s: string | undefined) {
+  return s === undefined ? undefined : STATUS_BY_CHAR.get(s)
+}
 
 export function encodeMafStatus(status: MafStatus | undefined) {
   return status === undefined ? 0 : MAF_STATUS_WIRE.indexOf(status) + 1

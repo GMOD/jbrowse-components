@@ -62,9 +62,9 @@ export function flipBlockToForwardStrand({
 
 // A row's own aligned length. Counted rather than read off the `s` line, whose
 // `size` field states it but is not carried onto an `AlignmentRecord`. `-` is
-// the gap character MAF declares; the space is what the TAF reader writes for a
-// row absent from a column (`finalizeBlock`), and the render path treats both as
-// no base.
+// the gap character MAF declares. A space reaches a row only from a malformed
+// column: a TAF column with spaces in it, such as an RLE file whose header does
+// not say so. The render path treats both as no base.
 function alignedBaseCount(seq: string) {
   let n = 0
   for (let i = 0; i < seq.length; i++) {
