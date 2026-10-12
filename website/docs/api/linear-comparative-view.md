@@ -7,6 +7,27 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## multiwayTables
+
+A multi-genome synteny track as the multi-way display stacks it under a
+linear genome view, as tables: `lanes`, the anchor first and then each
+mate lane in the order it stacks, with the contig, zoom and orientation
+it picked; `segments`, the stretches of each lane's sequence across the
+view, cut where a lane opens a hole for a deletion, each with the px it
+spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
+each gutter draws in paint order, a trapezoid from a span on its upper
+lane to a span on its lower one, with its color and the alpha it
+composites at; `alignments`, the records the ribbons draw; and `legend`,
+the key. Positions are genomic on each lane, and px across the view's
+`width`, where a lane's own frame puts them.
+
+```js
+// type signature
+(pluginManager: PluginManager, { adapterConfig, anchor: anchorArgs, pins, display }: MultiWayTablesArgs) => Promise<…>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/multiwayTables.ts)
+
 ## syntenyTables
 
 A pair of rows of a linear synteny view as the display fetches, lays out
