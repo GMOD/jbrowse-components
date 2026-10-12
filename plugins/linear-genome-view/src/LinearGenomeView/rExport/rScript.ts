@@ -77,7 +77,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.4.0'
+export const GGJBROWSE_VERSION = '0.5.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
