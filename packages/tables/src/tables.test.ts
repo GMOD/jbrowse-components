@@ -434,6 +434,13 @@ test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded ov
   expect(log.coverageScale.type).toBe('log')
   expect(log.coverageScale.domain[0]).toBe(1)
 
+  // 0 asks for the constant the domain gives, which the display resolves
+  const symlog = await engine.alignments({
+    ...BAM,
+    display: { scales: { y: { type: 'symlog', symlogConstant: 0 } } },
+  })
+  expect(symlog.coverageScale.symlogConstant).toBeGreaterThan(0)
+
   const faceted = await engine.alignments({
     ...BAM,
     display: { facet: 'strand' },

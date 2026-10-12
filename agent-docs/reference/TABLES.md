@@ -121,8 +121,9 @@ draws neither while `settings.showInterbaseIndicators` is false.
 
 `coverageScale` is the band's depth axis as the display autoscales it:
 `domain` over every shown section's visible depths under `scales.y` (quantile,
-rules, bounds, nice rounding, a log scale floored at one read), its `type`, and
-the `ticks` the display labels at `coverageHeight`. Every section shares it.
+rules, bounds, nice rounding, a log scale floored at one read), its `type`,
+the `symlogConstant` it resolves from that domain, and the `ticks` the display
+labels at `coverageHeight`. Every section shares it.
 `glyph` gives the px the band draws in: the triangle's width and height,
 `coverageInset` (the label room the band keeps at both ends, inside which the
 depth axis runs) and `interbaseTop` (where the histogram starts below the

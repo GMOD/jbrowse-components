@@ -31,7 +31,11 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
-import { getNiceDomain, widenRangeToRules } from '@jbrowse/wiggle-core'
+import {
+  getNiceDomain,
+  resolveSymlogConstant,
+  widenRangeToRules,
+} from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import BamAdapterF from './BamAdapter/index.ts'
@@ -837,7 +841,7 @@ function coverageScale(
   return {
     domain,
     type,
-    symlogConstant,
+    symlogConstant: resolveSymlogConstant(domain[0], domain[1], symlogConstant),
     ticks: computeCoverageTicks(
       domain,
       readConfObject(conf, 'coverageHeight'),
