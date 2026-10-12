@@ -10,8 +10,9 @@ const TICK_PX = 4
 
 /**
  * Each quantitative ring's y axis, drawn radially in the gap before the first
- * slice so it covers no data. Drawn in the figure's rotated frame; the labels
- * turn back so they stay level on screen.
+ * slice. A ring closed on itself has no gap, so there the axis sits on the
+ * origin, over the data. Drawn in the figure's rotated frame; the labels turn
+ * back so they stay level on screen.
  */
 export const RingAxes = observer(function RingAxes({
   model,
