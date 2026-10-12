@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
 import { createTablesEngine } from './index.ts'
-import { DOG_VCF } from './volvox.fixture.ts'
+import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -72,4 +75,36 @@ test('the display’s filters drop records before any cell is painted', async ()
     display: { filter: ['jexl:get(feature,"start") > 38262000'] },
   })
   expect(Math.min(...late.variants.start)).toBeGreaterThan(38262000)
+})
+
+test('each row takes the display’s rowColor from the samples file, under the attribute’s key', async () => {
+  const t = await engine.variants({
+    ...DOG_SV,
+    display: { rowColor: { field: 'group' } },
+  })
+  const groupOf = new Map(
+    readFileSync(
+      path.resolve('test_data/dog10k/dog10k_amy2b_samples.tsv'),
+      'utf8',
+    )
+      .trim()
+      .split('\n')
+      .slice(1)
+      .map(line => line.split('\t') as [string, string]),
+  )
+  expect(t.rowLegendTitle).toBe('Group')
+  expect([...t.rowLegend.label].sort()).toEqual([
+    'Breed dog',
+    'Gray wolf',
+    'Village dog',
+  ])
+  const keyed = new Map(
+    t.rowLegend.label.map((l, i) => [l, t.rowLegend.color[i]]),
+  )
+  t.rows.name.forEach((name, i) => {
+    expect(t.rows.color[i]).toBe(keyed.get(groupOf.get(name)!))
+  })
+  const plain = await engine.variants(DOG_SV)
+  expect(new Set(plain.rows.color)).toEqual(new Set(['']))
+  expect(plain.rowLegend.label).toEqual([])
 })

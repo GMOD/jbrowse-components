@@ -1,5 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
   CATEGORICAL_FIELD_PRESETS,
@@ -8,7 +10,14 @@ import {
 import {
   colorEncodingOf,
   paintedColorEncoding,
+  pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
+import {
+  dealtValueColors,
+  resolveRowColors,
+  rowColorKeyEntries,
+} from '@jbrowse/tree-sidebar/rowColorScale'
 
 import configSchemaFactory from './LinearMultiSampleVariantDisplay/configSchema.ts'
 import {
@@ -157,11 +166,22 @@ export async function variantTables(
   const samples = new Set(value.sampleNames)
   const sampleIndex = buildSampleIndex(value.sampleNames)
   const rowsParsed = value.rowNames.map(name => parseRowName(name, samples))
+  const rowSamples = rowsParsed.map(
+    (r, i) => r?.sampleName ?? value.rowNames[i]!,
+  )
+  const rowColor = await rowColorsOf(
+    pluginManager,
+    adapterConfig,
+    conf,
+    value.rowNames,
+    rowSamples,
+  )
   const rows = {
     name: value.rowNames,
-    sample: rowsParsed.map((r, i) => r?.sampleName ?? value.rowNames[i]!),
+    sample: rowSamples,
     haplotype: rowsParsed.map(r => r?.HP ?? 0),
     ploidy: rowsParsed.map(r => value.samplePloidy[r?.sampleName ?? ''] ?? 0),
+    color: rowColor.colors,
   }
 
   const variants = {
@@ -230,7 +250,65 @@ export async function variantTables(
       colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).title,
     }),
   )
-  return { variants, cells, rows, legend }
+  return {
+    variants,
+    cells,
+    rows,
+    legend,
+    rowLegend: rowColor.legend,
+    rowLegendTitle: rowColor.title,
+  }
+}
+
+/**
+ * Each row's label-bar color as the display resolves it: the `rowColor`
+ * field's value for the row's sample in the samples file, dealt the row
+ * palette, else the sample's own `color`, else `''`; and the key the display
+ * shows for an attribute.
+ */
+async function rowColorsOf(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
+  rowNames: readonly string[],
+  rowSamples: readonly string[],
+) {
+  const adapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig,
+  })
+  const bySample = new Map(
+    (await adapter.getSources([])).map(source => [source.name, source]),
+  )
+  const sources = rowNames.map((name, i) => ({
+    ...bySample.get(rowSamples[i]!),
+    name,
+  }))
+  const setting = liftRowColor({
+    field: readConfObject(conf.rowColor, 'field'),
+    domain: readConfObject(conf.rowColor, 'domain'),
+    range: readConfObject(conf.rowColor, 'range'),
+    unknown: readConfObject(conf.rowColor, 'unknown'),
+  })
+  const dealt = dealtValueColors(setting, () => sources, false)
+  const resolved = resolveRowColors(sources, setting.field, dealt, undefined)
+  const attribute = setting.field === 'name' ? '' : setting.field
+  const entries = attribute
+    ? rowColorKeyEntries(
+        sources,
+        { setting, pairs: pairedColorsOf(setting), dealt, resolved },
+        name => name,
+      )
+    : []
+  return {
+    colors: rowNames.map(name => resolved.get(name) ?? ''),
+    legend: {
+      label: entries.map(e => e.label),
+      color: entries.map(e => e.color ?? ''),
+    },
+    title: attribute ? capitalizeFirst(attribute) : '',
+  }
 }
 
 export type VariantTables = Awaited<ReturnType<typeof variantTables>>

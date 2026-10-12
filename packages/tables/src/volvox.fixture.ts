@@ -154,6 +154,17 @@ export const DOG_VCF: VariantTablesArgs = {
   region: { refName: 'chr30', start: 38258000, end: 38265000 },
 }
 
+/** Dog10K structural variants at AMY2B, each sample's group and breed in a samples file. */
+export const DOG_SV: VariantTablesArgs = {
+  adapterConfig: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: uri('dog10k_amy2b_svs.vcf.gz', DOG10K),
+    index: { location: uri('dog10k_amy2b_svs.vcf.gz.tbi', DOG10K) },
+    samplesTsvLocation: uri('dog10k_amy2b_samples.tsv', DOG10K),
+  },
+  region: { refName: 'chr6', start: 47340000, end: 47420000 },
+}
+
 /** Three signed BigWigs as one multi-wiggle track, `posneg_rw1` to `3`. */
 export const MULTI_BIGWIG: WiggleTablesArgs = {
   adapterConfig: {
