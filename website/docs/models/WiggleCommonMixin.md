@@ -1,13 +1,13 @@
 ---
 id: wigglecommonmixin
 title: WiggleCommonMixin
-description: "Extends ScoreFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings."
+description: "Extends YFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings."
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
-Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
+Extends `YFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
 domain and the wiggle-specific config: the origin, rendering type,
 aggregate, resolution and the line/gap settings. Extended on this chain
 with `.props()`/`.views()` rather than a mixin composed in, so no
@@ -52,7 +52,7 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 <details class="inherited-members" data-pagefind-ignore>
 <summary>23 inherited getters from 4 models</summary>
 
-From [ScoreFieldConfigMixin](../scorefieldconfigmixin): <span id="getter-scorefield">[`scoreField`](../scorefieldconfigmixin#getter-scorefield)</span>
+From [YFieldConfigMixin](../yfieldconfigmixin): <span id="getter-yfield">[`yField`](../yfieldconfigmixin#getter-yfield)</span>
 
 From [WiggleScoreConfigMixin](../wigglescoreconfigmixin): <span id="getter-isdensitymode">[`isDensityMode`](../wigglescoreconfigmixin#getter-isdensitymode)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../wigglescoreconfigmixin#getter-axisreacheszero)</span>
 
@@ -71,10 +71,9 @@ From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-valuescales">[`valueS
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  |
 | <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  |
+| <span id="action-setmark">**setMark**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "span", interpolate?: "linear…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(mark: "bar" &#124; "line" &#124; "point" &#124; "span", interpolate?: "linear" &#124; "step" &#124; undefined) =&gt; void</code></pre></dialog></span> | The plot's `mark`, and a line's `interpolate`; any other mark resets `interpolate`, which only a line reads. |
 | <span id="action-setaggregate">**setAggregate**</span><br><code>(val: "max" &#124; "mean" &#124; "min") =&gt; void</code> |  |
 | <span id="action-setextent">**setExtent**</span><br><code>(val: "min-max" &#124; "none") =&gt; void</code> |  |
-| <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

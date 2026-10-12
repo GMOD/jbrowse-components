@@ -5130,6 +5130,7 @@
     "@jbrowse/render-core/marks": {
       "package": "@jbrowse/render-core",
       "names": [
+        "BandPen",
         "CONNECTOR_ARROW",
         "CONNECTOR_BOW",
         "CONNECTOR_DASHED",

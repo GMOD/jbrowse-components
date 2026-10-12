@@ -1102,6 +1102,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
               {
                 tracks,
                 leftOut,
+                assemblyManager: session.assemblyManager,
                 onClose: (result?: MakeTrackArg) => {
                   if (result) {
                     makeTrack({ model, arg: result })

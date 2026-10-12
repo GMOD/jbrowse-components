@@ -274,16 +274,16 @@ session holds each track config as the frozen plain object it was written as, a
 refuses one at compile time. Read its `trackId` and `type` directly, and any
 other slot with its default supplied, such as `getConfAssemblyNamesOrNone` for
 its assemblies. The multi-wiggle "combine selected tracks" menu item works on
-the track selector's selection, which holds those entries:
+the track selector's selection, which holds those entries; its `stackAssemblies`
+reads each entry's assemblies that way:
 
 <!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#trackConfigEntry -->
 
 ```ts
 // `tracks` are the selection's track configs, mostly frozen entries
 // that omit a slot at its default, so each read supplies the default
-assemblyNames: [
-  ...new Set(tracks.flatMap(c => getConfAssemblyNamesOrNone(c))),
-],
+assemblyNames: stackAssemblies(tracks, session.assemblyManager)
+  .assemblyNames,
 adapter: {
   subadapters: tracks.map(toTrackConfigEntry).map(c => ({
     ...(c.adapter as Record<string, unknown>),

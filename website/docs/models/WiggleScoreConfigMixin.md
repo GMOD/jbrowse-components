@@ -1,7 +1,7 @@
 ---
 id: wigglescoreconfigmixin
 title: WiggleScoreConfigMixin
-description: "The score-plot config every display with a score axis shares: the axis and its guides (ScoreScaleMixin). A display plotting one configured field composes ScoreFieldConfigMixin, which adds the y slot."
+description: "The score-plot config every display with a score axis shares: the axis and its guides (ScoreScaleMixin). A display plotting one configured field composes YFieldConfigMixin, which adds the y slot."
 sidebar_label: Mixin -> WiggleScoreConfigMixin
 ---
 
@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 The score-plot config every display with a score axis shares: the axis
 and its guides (`ScoreScaleMixin`). A display plotting one configured
-field composes `ScoreFieldConfigMixin`,
+field composes `YFieldConfigMixin`,
 which adds the `y` slot.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.

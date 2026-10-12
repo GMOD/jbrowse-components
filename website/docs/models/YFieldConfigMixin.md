@@ -1,11 +1,11 @@
 ---
-id: scorefieldconfigmixin
-title: ScoreFieldConfigMixin
+id: yfieldconfigmixin
+title: YFieldConfigMixin
 description: "WiggleScoreConfigMixin plus the y slot, for a display that plots one configured feature field and so declares yFieldConfigSchemaFields: the wiggle display."
-sidebar_label: Mixin -> ScoreFieldConfigMixin
+sidebar_label: Mixin -> YFieldConfigMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreFieldConfigMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/YFieldConfigMixin.ts).
 
 `WiggleScoreConfigMixin` plus the `y` slot, for a display that plots one
 configured feature field and so declares `yFieldConfigSchemaFields`:
@@ -28,7 +28,7 @@ From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are. |
+| <span id="getter-yfield">**yField**</span><br><code>string</code> | The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited getters from 3 models</summary>
