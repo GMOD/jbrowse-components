@@ -10,7 +10,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ## Example usage
 
 ```js
-{ type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude', split: 'only' } }
+{ type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude' } }
 ```
 
 ```js
@@ -42,6 +42,6 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-readname">**readName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the one read name shown; unset shows every read |
 | <span id="slot-tagfilters">**tagFilters**</span><br>[TagFilter](../tagfilter) | The tags a read has to carry, every one of them: a `{ tag, value }` each, the value `*` or unset passing any read with the tag. |
 | <span id="slot-spliced">**spliced**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose CIGAR carries a reference skip. |
-| <span id="slot-properpairs">**properPairs**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: pairs the aligner flagged proper, in normal orientation. |
+| <span id="slot-properpairs">**properPairs**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: pairs the aligner flagged proper, in normal orientation, with no split read. |
 | <span id="slot-singletons">**singletons**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose mate and supplementary segments are all outside the window. |
 | <span id="slot-split">**split**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads with a supplementary segment, a chimeric alignment. |
