@@ -19,7 +19,7 @@ import {
   DEFAULT_POINT_DIAMETER_PX,
   makeScoreAxisMenuItem,
 } from '@jbrowse/wiggle-core'
-import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
+import { makeMarkSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
@@ -84,11 +84,11 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
       },
     },
     makeScoreAxisMenuItem(self),
-    ...makePointSizeSubMenu({
+    ...makeMarkSizeSubMenu({
       label: 'Point size',
       applies: self.hasPointMark,
       value: () => self.pointSize,
-      defaultValue: DEFAULT_POINT_DIAMETER_PX,
+      isDefault: self.pointSize === DEFAULT_POINT_DIAMETER_PX,
       set: n => {
         self.setPointSize(n)
       },

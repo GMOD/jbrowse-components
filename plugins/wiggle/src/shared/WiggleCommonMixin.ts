@@ -339,12 +339,6 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setLineWidth(val?: number) {
-        setConf(confNode(self), 'size', val)
-      },
-      /**
-       * #action
-       */
       setSize(val?: number) {
         setConf(confNode(self), 'size', val)
       },

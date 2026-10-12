@@ -68,8 +68,7 @@ import {
 } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
-  makeLineWidthMenuItems,
-  makePointSizeMenuItems,
+  makeMarkSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
@@ -866,10 +865,7 @@ export default function stateModelFactory(
             self.isDensityMode ? { label: SCORE_RANGE_LABEL } : {},
           ),
           ...makeShowSubMenu(showItems),
-          // point size / line width are top-level submenus, each present only in
-          // its respective scatter / line rendering
-          ...makePointSizeMenuItems(self),
-          ...makeLineWidthMenuItems(self),
+          ...makeMarkSizeMenuItems(self),
           // `ready: true`: a swatch waits for no row list, and a gate would grey
           // out the only color route on a plain BigWig until a fetch lands
           rowArrangementMenuItem(self, {

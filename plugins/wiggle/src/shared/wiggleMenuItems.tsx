@@ -1,19 +1,16 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { makeSizeMenu } from '@jbrowse/core/ui'
 import {
   makeRadioSubMenu,
   radioItems,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import {
-  makePointSizeSubMenu,
+  makeMarkSizeSubMenu,
   makeResolutionSubMenuItem,
-  pointSizeAccess,
 } from '@jbrowse/wiggle-core/chrome'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
-import { DEFAULT_POINT_SIZE_PX } from '../renderingTypes.ts'
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
@@ -96,50 +93,39 @@ export function makeRenderingTypeSubMenu(
   }
 }
 
-export function makePointSizeMenuItems(
-  self: { renderingType: string } & Parameters<typeof pointSizeAccess>[0],
-): MenuItem[] {
-  return makePointSizeSubMenu({
-    label: 'Scatter point size',
-    applies: isScatterMode(self.renderingType),
-    ...pointSizeAccess(self, DEFAULT_POINT_SIZE_PX),
-  })
-}
-
-export function makeLineWidthMenuItems(self: {
+// One `size` slot, a point's diameter or a line's width, each with its own
+// default while unset, so the default is the unset slot and not either value.
+export function makeMarkSizeMenuItems(self: {
   renderingType: string
+  size: number
   lineWidth: number
-  setLineWidth: (n?: number) => void
+  setSize: (n?: number) => void
   configuration: ConfigModelForFields<{ size: { type: 'maybeNumber' } }>
 }): MenuItem[] {
+  const isDefault = readConfObject(self.configuration, 'size') === undefined
+  const set = (n?: number) => {
+    self.setSize(n)
+  }
   return isLineMode(self.renderingType)
-    ? [
-        {
-          label: 'Line width',
-          icon: LineWeightIcon,
-          subMenu: [
-            makeSizeMenu({
-              label: 'Line width',
-              title: 'Line width',
-              // whole px from 1, so a drag fully left lands on 1px rather than
-              // crowding it into the default 0.5-step range's first stops
-              min: 1,
-              max: 10,
-              step: 1,
-              getValue: () => self.lineWidth,
-              isDefault:
-                readConfObject(self.configuration, 'size') === undefined,
-              onChange: n => {
-                self.setLineWidth(n)
-              },
-              onReset: () => {
-                self.setLineWidth(undefined)
-              },
-            }),
-          ],
-        },
-      ]
-    : []
+    ? makeMarkSizeSubMenu({
+        label: 'Line width',
+        title: 'Line width',
+        icon: LineWeightIcon,
+        applies: true,
+        value: () => self.lineWidth,
+        isDefault,
+        set,
+        min: 1,
+        max: 10,
+        step: 1,
+      })
+    : makeMarkSizeSubMenu({
+        label: 'Scatter point size',
+        applies: isScatterMode(self.renderingType),
+        value: () => self.size,
+        isDefault,
+        set,
+      })
 }
 
 function formatResolution(n: number) {
