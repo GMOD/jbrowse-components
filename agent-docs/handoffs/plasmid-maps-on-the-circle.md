@@ -16,7 +16,8 @@ Landed, each with a test that fails on the code before it:
 - A circle of one region is titled in the middle (`middleTitle`), and closes
   its gap and ticks its first base only where the region is a whole sequence
   the assembly lists in `circularRefNames` (`closesRing`, from the view's
-  `circleRegions`).
+  `circleRegions`). jb2hubs writes it into the hosted configs: hg38 lists
+  `chrM`, GenArk GRCh38 `NC_012920.1`, E. coli K-12 `NC_000913.3`.
 - GFF3 features past a sequence's `##sequence-region` length cut at the origin:
   `plugins/gff3/src/originSpanning.ts`, used by both GFF3 adapters. The piece
   past the origin takes `originTailId` of the id (`@jbrowse/core/util/originCut`).
@@ -56,12 +57,6 @@ Landed, each with a test that fails on the code before it:
    twice in `displayedRegions` with zero inter-region padding gives the `2L`
    space and true coordinates for free, and the two pieces then abut at the
    seam. Try it by hand on a bacterial genome before building anything.
-5. **`Is_circular=true` reaches JBrowse only through jb2hubs.** The circle's
-   geometry is settled from the assembly before any track loads, so JBrowse
-   reads `circularRefNames` alone. jb2hubs writes it: GenArk configs from the
-   NCBI GFF's region records (`deriveCircularSeqids.sh`), UCSC configs for the
-   chrM/chrMT contig (`addMitochondrion.ts`). The hosted configs carry it once
-   the pipeline next runs on ada and uploads.
-6. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
+5. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
    past the contig length still draws into virtual space. Count first whether
    jb2hubs serves any origin-spanning features, or only `Is_circular` contigs.

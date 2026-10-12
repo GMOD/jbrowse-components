@@ -1,6 +1,6 @@
 ---
 name: reshoot-agent-client-clips
-description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app. E. coli Take 1 (2026-09-16) is shot and its flaws fixed in the take, so it is ship-or-reshoot; derivative and geo_ratio are not shot. Blocked only on a quiet desktop, since the tiling keystroke needs focus. Read before filming any agent-client clip.
+description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app. None of the three is shot — E. coli Take 1's video is gone, so it is a reshoot, with the fixes its notes record. Blocked only on a quiet desktop, since the tiling keystroke needs focus. Read before filming any agent-client clip.
 ---
 
 # Reshoot the agent client clips
@@ -12,14 +12,15 @@ shot with `recordDemoTui.mjs`, so every one shows the real Claude Code TUI
 beside JBrowse. **Delete this file when the new clips are embedded.**
 
 The harness, its traps and how to run a take are `scripts/agent-demos/CLAUDE.md`;
-each take's plan is `scripts/agent-demos/takes/<take>.md`. Pre-staged inputs
-are in `~/agent-takes/ecoli_synteny/cwd` and `~/agent-takes/derivative/cwd`.
+each take's plan, and its staging under "Before filming", is
+`scripts/agent-demos/takes/<take>.md`.
 
-1. **ecoli_synteny.** Take 1 is `~/agent-takes/ecoli_synteny/demo-captioned-fixed.mp4`
-   and `takes/ecoli_synteny.md` §"Take 1, 2026-09-16" records its flaws and
-   fixes: ship it or reshoot. It replaces the fly synteny clip, whose recipes
-   quote the 2.4% divergence of that very pair, so an agent could copy the
-   number rather than measure it.
+1. **ecoli_synteny.** Take 1 (2026-09-16) is no longer on disk, here or on
+   ada, so reshoot. `takes/ecoli_synteny.md` §"Take 1, 2026-09-16" records
+   its four flaws, each fixed in the SYSTEM or jbApi since, and §"Open" the
+   checks to run before shooting. It replaces the fly synteny clip, whose
+   recipes quote the 2.4% divergence of that very pair, so an agent could copy
+   the number rather than measure it.
 2. **derivative.**
 3. **geo_ratio.** Reshoot so all three match the Linux harness's look.
 
