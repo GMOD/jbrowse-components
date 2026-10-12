@@ -20,8 +20,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * a structural variant). A column sort ranks the reads over one base, `pos`
  * (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
  * `pairOrientation` (the abnormal orientations over LR), `tag` (naming `tag`),
- * or the `insertion`, `softclip` or `hardclip` there; the reads not over it
- * lay out by position. On another chromosome a column sort orders by position.
+ * or the `insertion`, `softclip` or `hardclip` there, or up to `within` bases
+ * either side; the reads not over it lay out by position. On another
+ * chromosome a column sort orders by position.
  *
  * #example
  * ```js
@@ -68,6 +69,14 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
       type: 'maybeString',
       description: 'the SAM tag a tag sort ranks by',
     },
+    /**
+     * #slot within
+     */
+    within: {
+      type: 'maybeNumber',
+      description:
+        'how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark',
+    },
   },
   { shorthand: 'type', closed: true },
 )
@@ -99,6 +108,7 @@ export function sortOf(
                 pos,
                 refName: canonical(refName),
                 tag: readConfObject(sort, 'tag'),
+                within: readConfObject(sort, 'within'),
               },
       }
 }

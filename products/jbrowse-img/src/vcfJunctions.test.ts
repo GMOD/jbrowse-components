@@ -1,4 +1,4 @@
-import { recordAllele, recordFlank } from './batch.ts'
+import { recordAllele, recordFlank, recordSortColumn } from './batch.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
 
 function vcf(...lines: string[]) {
@@ -206,14 +206,20 @@ describe('parseVcfJunctions', () => {
       ],
       [undefined, undefined],
     ])
-    // an SV-sized insertion is counted across its window, a small one in place
     expect(records.map(r => recordAllele(r))).toEqual([
       { base: '*', minDeletion: 36 },
-      { minInsertion: 174, within: 500 },
+      { minInsertion: 174 },
       undefined,
     ])
-    expect(recordAllele(records[1]!, 600)).toEqual({
-      minInsertion: 174,
+    // an SV-sized insertion is counted and sorted across its window
+    expect(records.map(r => recordSortColumn(r))).toEqual([
+      { type: 'basePair', pos: 1000 },
+      { type: 'insertion', pos: 3000, within: 500 },
+      undefined,
+    ])
+    expect(recordSortColumn(records[1]!, 600)).toEqual({
+      type: 'insertion',
+      pos: 3000,
       within: 600,
     })
   })

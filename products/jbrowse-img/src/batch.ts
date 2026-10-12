@@ -47,18 +47,26 @@ export type CarriedCall =
   | { base: string; minDeletion?: number }
   | { minInsertion: number; anywhere: boolean }
 
-/** A record's `carried`, as the count is asked for at its flank */
-export function recordAllele(
-  rec: BatchRecord,
-  flank?: number,
-): VariantAllele | undefined {
+/** A record's `carried`, as the count is asked for */
+export function recordAllele(rec: BatchRecord): VariantAllele | undefined {
   const { carried } = rec
   return carried && 'minInsertion' in carried
-    ? {
-        minInsertion: carried.minInsertion,
-        within: carried.anywhere ? recordFlank(rec, flank) : 0,
-      }
+    ? { minInsertion: carried.minInsertion }
     : carried
+}
+
+/**
+ * A record's `sort` column, reaching across its flank for an insertion counted
+ * `anywhere`, so the sort lifts every read the count reports
+ */
+export function recordSortColumn(
+  rec: BatchRecord,
+  flank?: number,
+): VariantSortColumn | undefined {
+  const { sort, carried } = rec
+  return sort && carried && 'anywhere' in carried && carried.anywhere
+    ? { ...sort, within: recordFlank(rec, flank) }
+    : sort
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {

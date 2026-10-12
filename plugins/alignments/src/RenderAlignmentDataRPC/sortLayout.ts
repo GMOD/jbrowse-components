@@ -184,14 +184,13 @@ function remapYs(readIndices: Uint32Array, readYs: Uint16Array) {
 }
 
 // Build the per-read sort key for the two data-driven sort types: the base
-// call at `sortPos` (basePair) or the longest interbase length at `sortPos`
-// (insertion/softclip/hardclip). `desc` is true for interbases (longest first)
-// and false for base calls. Returns undefined for the comparator-based types
-// (strand/tag), which don't go through a key map.
+// call at `sortPos` (basePair) or the longest interbase length within `within`
+// bases of `sortPos` (insertion/softclip/hardclip). `desc` is true for
+// interbases (longest first) and false for base calls. Returns undefined for
+// the comparator-based types (strand/tag), which don't go through a key map.
 function buildSortKeyMap(
   data: WorkerPileupData,
-  type: SortColumn['type'],
-  sortPos: number,
+  { type, pos: sortPos, within = 0 }: SortColumn,
 ): { map: Map<number, number>; desc: boolean } | undefined {
   let result: { map: Map<number, number>; desc: boolean } | undefined
   const targetType = INTERBASE_SORT_TYPES[type]
@@ -224,7 +223,7 @@ function buildSortKeyMap(
     for (let i = 0; i < interbasePositions.length; i++) {
       if (
         interbaseTypes[i] === targetType &&
-        interbasePositions[i] === sortPos
+        Math.abs(interbasePositions[i]! - sortPos) <= within
       ) {
         const readIdx = interbaseReadIndices[i]!
         const len = interbaseLengths[i]!
@@ -325,9 +324,9 @@ function sortOverlappingByIndex(
  * spelled the span test separately, and a rule spelled twice is one that drifts.
  */
 function partitionBySort(data: WorkerPileupData, sortColumn: SortColumn) {
-  const { type, pos: sortPos } = sortColumn
+  const { pos: sortPos } = sortColumn
   const { readPositions } = data
-  const keyMap = buildSortKeyMap(data, type, sortPos)
+  const keyMap = buildSortKeyMap(data, sortColumn)
   const ranked: number[] = []
   const rest: number[] = []
   for (let i = 0; i < data.readKeys.length; i++) {

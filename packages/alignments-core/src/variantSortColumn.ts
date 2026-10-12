@@ -2,20 +2,24 @@ export interface VariantSortColumn {
   type: 'basePair' | 'insertion'
   /** 0-based */
   pos: number
+  /**
+   * At an `insertion` column, how many bases either side an insertion still
+   * counts and sorts as at `pos`: an aligner places a long insertion wherever
+   * in a repeat it scores best, often tens of bases from the caller's position
+   */
+  within?: number
 }
 
 /**
  * What a read carrying a variant's ALT has at its sort column. At a `basePair`
  * column, that base, or `*` where the ALT deletes it, in a gap of at least
  * `minDeletion` bases: a read with a few bases missing at the first base of a
- * 30 kb deletion does not carry it. At an `insertion` column,
- * an insertion of at least `minInsertion` bases within `within` bases of it: an
- * aligner places a long insertion wherever in a repeat it scores best, often
- * tens of bases from the caller's position.
+ * 30 kb deletion does not carry it. At an `insertion` column, an insertion of
+ * at least `minInsertion` bases.
  */
 export type VariantAllele =
   | { base: string; minDeletion?: number }
-  | { minInsertion: number; within: number }
+  | { minInsertion: number }
 
 /**
  * A VCF record's sort column, and what the ALT it was taken from has there: its

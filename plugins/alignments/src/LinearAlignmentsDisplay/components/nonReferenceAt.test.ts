@@ -115,9 +115,8 @@ test('given an insertion allele, counts each read with one long enough, near eno
     numInsertions: 4,
   })
   const at = (minInsertion: number, within: number) =>
-    nonReferenceAt({ type: 'insertion', pos: 95 }, data, {
+    nonReferenceAt({ type: 'insertion', pos: 95, within }, data, {
       minInsertion,
-      within,
     })
   expect(at(150, 0)).toEqual({ count: 0, depth: 10 })
   expect(at(150, 10)).toEqual({ count: 2, depth: 10 })

@@ -289,7 +289,7 @@ function insertionReadsNear(
  * `data` does not reach the column.
  */
 export function nonReferenceAt(
-  { type, pos }: VariantSortColumn,
+  { type, pos, within = 0 }: VariantSortColumn,
   data: WorkerPileupData,
   allele?: VariantAllele,
 ) {
@@ -299,10 +299,12 @@ export function nonReferenceAt(
     return undefined
   }
   if (type === 'insertion') {
+    const minInsertion =
+      allele && 'minInsertion' in allele ? allele.minInsertion : undefined
     return {
       count:
-        allele && 'minInsertion' in allele
-          ? insertionReadsNear(pos, data, allele.minInsertion, allele.within)
+        minInsertion !== undefined || within > 0
+          ? insertionReadsNear(pos, data, minInsertion ?? 1, within)
           : (collectInterbaseStats(pos, data).insertion?.count ?? 0),
       depth: interbaseDepthAt(coverageDepths, coverageStartPos, pos),
     }

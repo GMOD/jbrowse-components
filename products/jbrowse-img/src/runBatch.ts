@@ -11,6 +11,7 @@ import {
   outputName,
   parseBedpe,
   recordAllele,
+  recordSortColumn,
   recordHighlight,
   recordRows,
 } from './batch.ts'
@@ -407,8 +408,8 @@ async function renderRows(
               argv,
               loc: only.join(' '),
               joined: only.length > 1,
-              sortAt: rec.sort,
-              sortAllele: recordAllele(rec, flank),
+              sortAt: recordSortColumn(rec, flank),
+              sortAllele: recordAllele(rec),
               highlight: only.length === 1 ? recordHighlight(rec) : undefined,
             }
           : {

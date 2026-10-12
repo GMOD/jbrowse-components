@@ -1034,6 +1034,37 @@ describe('computeSortedLayout', () => {
       expect(readYs[0]).toBe(1)
     })
 
+    test('an insertion sort with within lifts insertions placed off the column', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 300, id: 'aThrough' },
+          {
+            start: 100,
+            end: 300,
+            id: 'zInsNear',
+            softclip: { pos: 230, length: 300, type: INTERBASE_INSERTION },
+          },
+          {
+            start: 100,
+            end: 300,
+            id: 'zInsFar',
+            softclip: { pos: 260, length: 400, type: INTERBASE_INSERTION },
+          },
+        ],
+      })
+      const at = (within?: number) =>
+        computeSortedLayout(data, {
+          ...makeSortColumn(200, 'insertion'),
+          within,
+        }).readYs
+      expect(at()).toEqual(at(0))
+      expect(at(40)[1]).toBe(0)
+      expect(at(40)[2]).not.toBe(1)
+      expect(at(60)[2]).toBe(0)
+      expect(at(60)[1]).toBe(1)
+    })
+
     // A read whose alignment neither covers nor is marked at the column keeps
     // gap-filling around the sorted ones, so widening membership doesn't drag
     // unrelated reads into the "one row each" pass.

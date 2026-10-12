@@ -276,6 +276,7 @@ export interface SortColumn {
   pos: number
   refName: string
   tag?: string
+  within?: number
 }
 
 // What `setSort` writes: a whole-window order, or a column sort.
