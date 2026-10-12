@@ -9,9 +9,10 @@
 // because a page that sets up a display and then opens `## Reading the plot`
 // with the picture is following the house order rather than breaking it.
 //
-// Two menu paths are excluded, and neither draws anything: `File → ...` opens a
-// session or a file, and `Global plugins...` installs a plugin. What either
-// produces is whatever the next instruction then shows.
+// Some menu paths are excluded because none draws anything: `File → ...` opens a
+// session or a file, and `Global plugins...` (Desktop) or `Tools → Plugin
+// store` (Web) installs a plugin. What each produces is whatever the next
+// instruction then shows.
 
 // The figure has to come AFTER the setting. A page whose section shows a
 // picture and then names a setting has shown something else: `dog10k_lof`
@@ -26,7 +27,7 @@
 const MENU_PATH =
   /\*\*[^*\n]*→[^*\n]*\*\*|\*\*[^*\n]+\*\*\s*→\s*\*\*[^*\n]+\*\*/
 const PLUMBING =
-  /\*\*File\s*→|Global plugins|Add custom plugin|Open JBrowse Web link/
+  /\*\*File\s*→|Global plugins|Add custom plugin|Plugin store|Open JBrowse Web link/
 const TAG = /<(Figure|Video)\b/
 const HEADING = /^#{2,3}\s/
 const TAIL = /^##\s+(See also|External links|Citations)/

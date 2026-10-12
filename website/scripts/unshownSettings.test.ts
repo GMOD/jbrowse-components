@@ -42,6 +42,7 @@ test('opening a file or installing a plugin draws nothing of its own', () => {
   for (const plumbing of [
     'Choose **File → Session → Open JBrowse Web link**.',
     'The start screen at **Global plugins... → Add custom plugin** takes the URL.',
+    'Install it at **Tools → Plugin store** in JBrowse Web.',
   ]) {
     expect(unshownSettings(page(`## Set up\n\n${plumbing}`))).toEqual([])
   }
