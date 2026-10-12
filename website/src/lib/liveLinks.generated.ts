@@ -2531,7 +2531,7 @@ export const figureFrames: Record<
   },
   "pangenome/hprc_amylase_walk_rows": {
     "width": 1400,
-    "height": 470,
+    "height": 540,
     "timeout": 240000
   },
   "pangenome/host_your_own": {

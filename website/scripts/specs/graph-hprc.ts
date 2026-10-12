@@ -1317,7 +1317,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 470,
+    viewportHeight: 540,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },
