@@ -31,12 +31,15 @@ import {
 } from '@jbrowse/core/util/bandHeight'
 import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
-import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import ColorWritesMixin, {
+  writtenColorOf,
+} from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
@@ -3036,18 +3039,13 @@ export default function stateModelFactory(
            */
           setBaseLayer(layer?: BaseLayer) {
             if (!compareStructural(layer, self.baseLayer)) {
-              const field: string | undefined = getConf(self, [
-                'baseColor',
-                'field',
-              ])
               setConf(
                 self,
                 'baseColor',
-                layer
-                  ? { field: BASE_COLOR_FIELDS[layer.type] }
-                  : field
-                    ? { field, scale: 'none' }
-                    : {},
+                colorForField(
+                  writtenColorOf(self.configuration.baseColor),
+                  layer ? BASE_COLOR_FIELDS[layer.type] : '',
+                ),
               )
               if (layer?.modifications) {
                 setConf(self, 'modifications', layer.modifications)
