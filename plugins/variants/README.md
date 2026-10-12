@@ -13,12 +13,12 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 A region of a multi-sample VCF as the multi-sample variant display fetches,
 filters and paints it, as tables: `variants`, each record the display keeps,
 with its lane color; `cells`, each sample's (or under `unit: 'haplotype'` each
-haplotype's) cell at each record, with its genotype, its alt dosage and the fill
-the display paints it, `shade(hue, dosage)`; `rows`, the rows the cells name;
-and `legend` and `ramps`, the key the display shows. Under
-`referenceDrawingMode: 'skip'`, the default, a reference call draws no cell. For
-a host that draws them itself, such as R through V8. The adapters must be
-registered on `pluginManager` (`registerVariantAdapters`).
+haplotype's) cell at each record, with its genotype, its `dosage` and the fill
+the display paints it; `rows`, the rows the cells name; and `legend` and
+`ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the
+default, a reference call draws no cell. For a host that draws them itself, such
+as R through V8. The adapters must be registered on `pluginManager`
+(`registerVariantAdapters`).
 
 ```js
 // type signature
