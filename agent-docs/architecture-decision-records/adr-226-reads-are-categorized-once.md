@@ -67,5 +67,11 @@ mapping-quality filter.
   every `color.domain` edit.
 - **A `filter.where` predicate list.** Its gains, a MAPQ filter and one tag
   reader, need no list, and GRAMMAR_OF_GRAPHICS.md declines the shorthand.
+- **`pairing` as the read filter, in place of `properPairs`.** `pairing`
+  answers for a chain by its primary read, so "hide concordant" would hide a
+  concordant pair whose mate is split at a breakpoint, short-read SV evidence
+  that `properPairs: 'exclude'` keeps by asking whether every record is
+  concordant. A fifth `pairing` level for that chain would put the filter's
+  question into every facet.
 - **Renaming the color runtime's scheme names to field names.** The config
   already speaks fields (ADR-148); the rename changes nothing a user sees.

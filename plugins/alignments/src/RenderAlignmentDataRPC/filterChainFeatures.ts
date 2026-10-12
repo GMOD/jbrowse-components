@@ -27,6 +27,10 @@ import type { Feature } from '@jbrowse/core/util'
 // What is local here is only the quantifier and the conversion: this side holds
 // `Feature`s, so the orientation string goes through `pairOrientationToNum` to
 // reach the numeric form both callers share.
+//
+// The filter keeps this chain question rather than the `pairing` field, which
+// answers by the primary read and would hide a concordant pair whose mate is
+// split at a breakpoint (ADR-226).
 function isProperPairChain(chain: Feature[]) {
   return chain.every((f: Feature) =>
     isConcordantPairRead(
