@@ -52,7 +52,10 @@ import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { SourceRenderData } from '@jbrowse/wiggle-core'
+import type {
+  SourceRenderData,
+  ValueScaleRuleConfig,
+} from '@jbrowse/wiggle-core'
 
 /** Registers the adapters `wiggleTables` reads through, BigWig and multi-wiggle. */
 export function registerWiggleAdapters(pluginManager: PluginManager) {
@@ -171,16 +174,11 @@ export async function wiggleTables(
   const scale = conf.scales.y
   const scaleType: string = readConfObject(scale, 'type')
   const zero = readConfObject(scale, 'zero') && !density
-  const rules = (scale.rules as Parameters<typeof readConfObject>[0][]).map(
-    rule => ({
-      value: readConfObject(rule, 'value') as number,
-      color: cssColorToHex(
-        (readConfObject(rule, 'color') as string | undefined) ??
-          DEFAULT_RULE_COLOR,
-      ),
-      label: (readConfObject(rule, 'label') as string | undefined) ?? '',
-    }),
-  )
+  const rules = scale.rules.map((rule: ValueScaleRuleConfig) => ({
+    value: readConfObject(rule, 'value'),
+    color: cssColorToHex(readConfObject(rule, 'color') ?? DEFAULT_RULE_COLOR),
+    label: readConfObject(rule, 'label'),
+  }))
   const range = computeAutoscaleDomain(
     readConfObject(scale, 'domainQuantile'),
     aggregate,

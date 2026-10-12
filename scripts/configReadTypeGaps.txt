@@ -32,18 +32,18 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 78 unchecked in source, 183 in tests,
-# of 1336 total config accessor calls. The gate counts source only.
+# 75 unchecked in source, 183 in tests,
+# of 1351 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1228	readConfObject('adapter')
 packages/app-core/src/JBrowseModel/index.ts  (1)
-  99	readConfObject('name')
+  100	readConfObject('name')
 packages/core/src/assemblyManager/assemblyManager.ts  (4)
-  294	readConfObject('name')
-  306	readConfObject('name')
-  307	readConfObject('aliases')
-  482	readConfObject('name')
+  296	readConfObject('name')
+  308	readConfObject('name')
+  309	readConfObject('aliases')
+  484	readConfObject('name')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (5)  [test]
@@ -92,7 +92,7 @@ packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.tes
   82	readConfObject('adapter')
   93	readConfObject('adapter')
 packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx  (1)
-  119	getConf('adapter')
+  122	getConf('adapter')
 packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (2)
   167	getConf('name')
   201	getConf('adapter')
@@ -144,10 +144,10 @@ packages/product-core/src/Session/SessionTracks.ts  (2)
   92	readConfObject('name')
   93	readConfObject('aliases')
 packages/product-core/src/Session/Themes.ts  (4)
-  110	getConf('extraThemes')
-  172	getConf('theme')
-  173	getConf('extraThemes')
-  251	getConf('theme')
+  112	getConf('extraThemes')
+  174	getConf('theme')
+  175	getConf('extraThemes')
+  253	getConf('theme')
 packages/product-core/src/ui/AssemblyInfoPanel.tsx  (1)
   99	readConfObject('name')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
@@ -173,7 +173,7 @@ plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts  (1)
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
   140	getConf('adapter')
 plugins/alignments/src/tables.ts  (1)
-  337	readConfObject('descending')
+  367	readConfObject('descending')
 plugins/authentication/src/tokenEntryModelFactory.ts  (1)
   53	getConf('validateWithHEAD')
 plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
@@ -187,7 +187,7 @@ plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (1)
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/CircularView/model.ts  (1)
-  1162	readConfObject('trackId')
+  1164	readConfObject('trackId')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
@@ -218,7 +218,7 @@ plugins/data-management/src/HierarchicalTrackSelectorWidget/components/dialogs/M
 plugins/data-management/src/HierarchicalTrackSelectorWidget/components/tree/HamburgerMenu.tsx  (1)
   169	readConfObject('name')
 plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts  (1)
-  615	readConfObject('name')
+  617	readConfObject('name')
 plugins/data-management/src/JB2TrackHubConnection/doConnect.ts  (1)
   14	getConf('configJsonLocation')
 plugins/data-management/src/lazyConnect.ts  (1)
@@ -273,16 +273,12 @@ plugins/variants/src/LinearMultiSampleVariantDisplay/jexlFilterContract.test.ts 
   111	readConfObject('filter')
 plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.test.ts  (1)  [test]
   31	getConf('notARealSlot')
-plugins/wiggle/src/MultiQuantitativeTrack/displayDefaults.test.ts  (2)  [test]
+plugins/wiggle/src/rowsShorthand.test.ts  (2)  [test]
   69	readConfObject('height')
   70	readConfObject('extent')
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   15	getConf('posColor')
   34	getConf('origin')
-plugins/wiggle/src/tables.ts  (3)
-  161	readConfObject('value')
-  163	readConfObject('color')
-  166	readConfObject('label')
 products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
   352	readConfObject('adapter')
 products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (11)  [test]
@@ -326,7 +322,7 @@ products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
   156	readConfObject('name')
   265	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.ts  (1)
-  492	readConfObject('preConfiguredSessions')
+  496	readConfObject('preConfiguredSessions')
 products/jbrowse-web/src/schemaTests/LegacyConfigKeysLoadSilently.test.ts  (2)  [test]
   324	readConfObject('cytobandLocation')
   328	readConfObject('useNameOverride')

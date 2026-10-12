@@ -129,6 +129,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { ValueScaleRuleConfig } from '@jbrowse/wiggle-core'
 
 /**
  * #api
@@ -819,8 +820,8 @@ function coverageScale(
         quantile: readConfObject(scale, 'domainQuantile'),
         entries,
       }),
-      (scale.rules as Parameters<typeof readConfObject>[0][]).map(
-        rule => readConfObject(rule, 'value') as number,
+      scale.rules.map((rule: ValueScaleRuleConfig) =>
+        readConfObject(rule, 'value'),
       ),
     )
   const domain = coverageDepthDomain(

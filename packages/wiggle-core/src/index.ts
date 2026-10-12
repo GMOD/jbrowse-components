@@ -9,6 +9,7 @@ export type {
   ScalesConfigSchema,
   ValueScaleConfigSchema,
   ValueScaleOptions,
+  ValueScaleRuleConfig,
 } from './valueScaleConfigSchema.ts'
 
 export { getNiceDomain, getNiceScale, getScale } from './scale.ts'
