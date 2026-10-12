@@ -99,15 +99,6 @@ export async function executeMafAlignmentData({
   // Rows outside the focus are dropped rather than shipped and hidden. The
   // returned `samples` stays the full set so the sidebar tree + "clear filter"
   // still see every genome.
-  //
-  // **The packer is given no `reserve`, so its arena and columns grow by
-  // doubling, and that is the deliberate trade.** Sizing them exactly needs
-  // every block counted before any is encoded, which means holding the whole
-  // region's records — and that intermediate, not the memcpy, is what dominates
-  // the shape real files have. Buffering to size the arena measured
-  // **1.18x slower** and **491 MB against 263 MB** of peak RSS on 20000 blocks
-  // of 8 columns; agent-docs reference/MAF_LARGE_BLOCKS.md has the table and
-  // the profile behind it.
   const visible = visibleSamples(rowFocus, configSamples)
   const sink = new MafRegionSink(visible)
   await adapter.readBlocks(region, sink, args)
@@ -120,7 +111,7 @@ export async function executeMafAlignmentData({
     sink.discovered,
   )
 
-  const packed = sink.packer.finishBlocks()
+  const packed = sink.finishBlocks()
   const isVisible = (sampleId: string) => isRowVisible(sampleId, visible)
 
   // `packed` already contains exactly the visible rows (narrowed by the subtree

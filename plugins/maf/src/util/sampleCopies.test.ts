@@ -203,7 +203,7 @@ test('a focus on a sample ships its copy rows', async () => {
     sink,
   )
   expect([...sink.discovered]).toEqual(['GRCh38', ...COPY_IDS])
-  expect([...sink.packer.finishBlocks().sampleIds].toSorted()).toEqual(COPY_IDS)
+  expect([...sink.finishBlocks().sampleIds].toSorted()).toEqual(COPY_IDS)
 })
 
 test('withCopyRows puts copies after their sample in its color', () => {

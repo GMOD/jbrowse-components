@@ -33,12 +33,22 @@ export interface TestWireBlock {
 
 export function packTestWire(blocks: TestWireBlock[]): MafWirePacked {
   const packer = new MafWirePacker()
-  for (const block of blocks) {
-    packer.startBlock(block.startBp, block.refSeq)
-    for (const row of block.rows) {
-      packer.addRow(row)
+  for (const [i, { startBp, refSeq, rows, empties }] of blocks.entries()) {
+    packer.startBlock(String(i), startBp, startBp, refSeq, 0, refSeq.length)
+    for (const row of rows) {
+      packer.addRow(
+        row.sampleId,
+        row.seq,
+        0,
+        row.seq.length,
+        row.chr ?? '',
+        row.srcStart ?? 0,
+        row.strand ?? 1,
+        row.srcSize,
+        row.context,
+      )
     }
-    for (const empty of block.empties ?? []) {
+    for (const empty of empties ?? []) {
       packer.addEmpty(empty.sampleId, empty)
     }
   }

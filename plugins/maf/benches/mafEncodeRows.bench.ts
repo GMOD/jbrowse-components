@@ -88,18 +88,22 @@ function pack(features: readonly Feature[]): MafWireRegionData {
       string,
       AlignmentRecord
     >
-    packer.startBlock(feature.get('start'), feature.get('seq') as string)
+    const ref = feature.get('seq') as string
+    const start = feature.get('start')
+    packer.startBlock(feature.id(), start, start, ref, 0, ref.length)
     for (const sampleId in alignments) {
       const a = alignments[sampleId]!
-      packer.addRow({
+      packer.addRow(
         sampleId,
-        seq: a.seq,
-        chr: a.chr,
-        srcStart: a.srcStart,
-        strand: a.strand ?? 1,
-        srcSize: a.srcSize,
-        context: a.context,
-      })
+        a.seq,
+        0,
+        a.seq.length,
+        a.chr,
+        a.srcStart,
+        a.strand ?? 1,
+        a.srcSize,
+        a.context,
+      )
     }
   }
   return { ...packer.finishBlocks(), coverage: EMPTY_MAF_COVERAGE }

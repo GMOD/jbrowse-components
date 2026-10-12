@@ -58,7 +58,7 @@ async function bothWays(
   visible?: Set<string>,
 ) {
   const packedView = (sink: MafRegionSink) => ({
-    packed: sink.packer.finishBlocks(),
+    packed: sink.finishBlocks(),
     refSampleId: sink.refSampleId,
     discovered: [...sink.discovered],
   })

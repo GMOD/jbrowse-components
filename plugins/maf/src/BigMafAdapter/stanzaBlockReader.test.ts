@@ -118,7 +118,7 @@ async function packedBothWays(adapter: BigMafAdapter, visible?: Set<string>) {
   const features = new MafRegionSink(visible)
   await featureBlocks(adapter.getFeatures(region), features)
   const view = (sink: MafRegionSink) => ({
-    packed: sink.packer.finishBlocks(),
+    packed: sink.finishBlocks(),
     refSampleId: sink.refSampleId,
     discovered: [...sink.discovered],
   })

@@ -2,7 +2,6 @@ import { isRowVisible } from '../util/sampleCopies.ts'
 import { MafWirePacker } from './mafWirePacker.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
-import type { MafBlockSink } from '../util/mafBlockSink.ts'
 
 /**
  * The MAF display's region as it arrives: the visible rows packed, every
@@ -17,9 +16,7 @@ import type { MafBlockSink } from '../util/mafBlockSink.ts'
  * still returns every genome for the sidebar tree; the packer's own sample
  * dictionary sees only the visible rows.
  */
-export class MafRegionSink implements MafBlockSink {
-  readonly packer = new MafWirePacker()
-
+export class MafRegionSink extends MafWirePacker {
   readonly discovered = new Set<string>()
 
   refSampleId: string | undefined
@@ -27,23 +24,24 @@ export class MafRegionSink implements MafBlockSink {
   private visible: Set<string> | undefined
 
   constructor(visible: Set<string> | undefined) {
+    super()
     this.visible = visible
   }
 
-  startBlock(
-    _id: string,
+  override startBlock(
+    id: string,
     start: number,
-    _end: number,
+    end: number,
     ref: string,
     refFrom: number,
     refTo: number,
     refSampleId: string | undefined,
   ) {
-    this.packer.startBlockText(start, ref, refFrom, refTo)
+    super.startBlock(id, start, end, ref, refFrom, refTo)
     this.refSampleId ??= refSampleId
   }
 
-  addRow(
+  override addRow(
     sampleId: string,
     text: string,
     from: number,
@@ -56,7 +54,7 @@ export class MafRegionSink implements MafBlockSink {
   ) {
     this.discovered.add(sampleId)
     if (isRowVisible(sampleId, this.visible)) {
-      this.packer.addRowText(
+      super.addRow(
         sampleId,
         text,
         from,
@@ -70,10 +68,10 @@ export class MafRegionSink implements MafBlockSink {
     }
   }
 
-  addEmpty(sampleId: string, empty: EmptyRecord) {
+  override addEmpty(sampleId: string, empty: EmptyRecord) {
     this.discovered.add(sampleId)
     if (isRowVisible(sampleId, this.visible)) {
-      this.packer.addEmpty(sampleId, empty)
+      super.addEmpty(sampleId, empty)
     }
   }
 }

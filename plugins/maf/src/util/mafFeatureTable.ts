@@ -5,15 +5,13 @@ import { addFeatureBlock, featureBlocks } from './mafBlockSink.ts'
 import { decodeMafStatus } from './mafStatus.ts'
 
 import type { MafWirePacked } from '../LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
-import type { AlignmentContext, EmptyRecord } from '../types.ts'
-import type { MafBlockSink } from './mafBlockSink.ts'
+import type { AlignmentContext } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Column } from '@jbrowse/core/util/featureTable'
 import type { Observable } from 'rxjs'
 
 interface Blocks {
   ids: string[]
-  start: number[]
   end: number[]
   refName: string
 }
@@ -25,16 +23,15 @@ interface Blocks {
  * arena, so a `flatten` over `alignments` and the `cells` walk behind it read
  * packed bytes and make no record or string.
  */
-export class MafTableSink implements MafBlockSink {
-  private packer = new MafWirePacker()
-
+export class MafTableSink extends MafWirePacker {
   private blocks: Blocks
 
   constructor(refName: string) {
-    this.blocks = { ids: [], start: [], end: [], refName }
+    super()
+    this.blocks = { ids: [], end: [], refName }
   }
 
-  startBlock(
+  override startBlock(
     id: string,
     start: number,
     end: number,
@@ -43,41 +40,12 @@ export class MafTableSink implements MafBlockSink {
     refTo: number,
   ) {
     this.blocks.ids.push(id)
-    this.blocks.start.push(start)
     this.blocks.end.push(end)
-    this.packer.startBlockText(start, ref, refFrom, refTo)
-  }
-
-  addRow(
-    sampleId: string,
-    text: string,
-    from: number,
-    to: number,
-    chr: string,
-    srcStart: number,
-    strand: number,
-    srcSize: number | undefined,
-    context: AlignmentContext | undefined,
-  ) {
-    this.packer.addRowText(
-      sampleId,
-      text,
-      from,
-      to,
-      chr,
-      srcStart,
-      strand,
-      srcSize,
-      context,
-    )
-  }
-
-  addEmpty(sampleId: string, empty: EmptyRecord) {
-    this.packer.addEmpty(sampleId, empty)
+    super.startBlock(id, start, end, ref, refFrom, refTo)
   }
 
   table() {
-    return tableOfPacked(this.packer.finishBlocks(), this.blocks)
+    return tableOfPacked(this.finishBlocks(), this.blocks)
   }
 }
 
@@ -182,7 +150,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
   return new ColumnTable(
     blocks.ids.length,
     new Map<string, Column>([
-      ['start', number(Uint32Array.from(blocks.start))],
+      ['start', number(packed.blockStartBp)],
       ['end', number(Uint32Array.from(blocks.end))],
       ['refName', { kind: 'value', read: () => blocks.refName }],
       ['strand', number(new Int8Array(blocks.ids.length).fill(1))],

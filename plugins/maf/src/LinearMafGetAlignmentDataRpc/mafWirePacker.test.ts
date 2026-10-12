@@ -247,15 +247,12 @@ test('empties are ranged per block alongside rows', () => {
   expect(packed.chrNames[packed.emptyChr[0]!]).toBe('chrX')
 })
 
-// The reserve hints are an optimization, so being wrong about them has to stay
-// invisible: `executeMafAlignmentData` counts exactly, but the test helper
-// passes nothing at all and drives every column through its growth path.
-test('columns and arena grow correctly when nothing is reserved', () => {
+test('columns and arena grow and right-size', () => {
   const packer = new MafWirePacker()
   const n = 500
   for (let b = 0; b < n; b++) {
-    packer.startBlock(b * 10, 'ACGT')
-    packer.addRow({ sampleId: `sp${b % 7}`, seq: 'ACGT', srcStart: b })
+    packer.startBlock(`b${b}`, b * 10, b * 10 + 4, 'ACGT', 0, 4)
+    packer.addRow(`sp${b % 7}`, 'ACGT', 0, 4, '', b, 1, undefined, undefined)
   }
   const packed = packer.finishBlocks()
   expect(packed.blockStartBp).toHaveLength(n)
@@ -267,19 +264,4 @@ test('columns and arena grow correctly when nothing is reserved', () => {
   // right-sized, not a view onto the doubling slack
   expect(packed.rowOffset.buffer.byteLength).toBe(n * 4)
   expect(packed.arena.buffer.byteLength).toBe(n * 8)
-})
-
-test('an exactly-reserved pack allocates once and still right-sizes', () => {
-  const packer = new MafWirePacker({
-    blocks: 1,
-    rows: 2,
-    empties: 0,
-    bytes: 12,
-  })
-  packer.startBlock(0, 'ACGT')
-  packer.addRow({ sampleId: 'a', seq: 'ACGT' })
-  packer.addRow({ sampleId: 'b', seq: 'ACGT' })
-  const packed = packer.finishBlocks()
-  expect(packed.arena).toHaveLength(12)
-  expect(rowSeq(packed, 1)).toBe('ACGT')
 })

@@ -152,7 +152,7 @@ test('the direct parse packs the region and answers the table its MafFeatures do
     await narrowed.readBlocks(region, direct)
     const features = new MafRegionSink(undefined)
     await featureBlocks(narrowed.getFeatures(region), features)
-    expect(direct.packer.finishBlocks()).toEqual(features.packer.finishBlocks())
+    expect(direct.finishBlocks()).toEqual(features.finishBlocks())
     expect(direct.refSampleId).toBe(features.refSampleId)
     expect([...direct.discovered]).toEqual([...features.discovered])
 

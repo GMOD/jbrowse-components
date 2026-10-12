@@ -299,18 +299,22 @@ function pack(features: readonly Feature[]): MafWireRegionData {
       string,
       AlignmentRecord
     >
-    packer.startBlock(feature.get('start'), feature.get('seq') as string)
+    const ref = feature.get('seq') as string
+    const start = feature.get('start')
+    packer.startBlock(feature.id(), start, start, ref, 0, ref.length)
     for (const sampleId in alignments) {
       const a = alignments[sampleId]!
-      packer.addRow({
+      packer.addRow(
         sampleId,
-        seq: a.seq,
-        chr: a.chr,
-        srcStart: a.srcStart,
-        strand: a.strand ?? 1,
-        srcSize: a.srcSize,
-        context: a.context,
-      })
+        a.seq,
+        0,
+        a.seq.length,
+        a.chr,
+        a.srcStart,
+        a.strand ?? 1,
+        a.srcSize,
+        a.context,
+      )
     }
   }
   return { ...packer.finishBlocks(), coverage: EMPTY_MAF_COVERAGE }
@@ -1104,7 +1108,7 @@ type LegacyRead = (region: Region) => Observable<Feature>
 async function parseMafFeatures(legacy: LegacyRead, region: Region) {
   const sink = new MafRegionSink(undefined)
   await featureBlocks(legacy(region), sink)
-  const packed = sink.packer.finishBlocks()
+  const packed = sink.finishBlocks()
   const coverage = buildMafCoverageRegion(
     packed,
     region.start,
@@ -1116,7 +1120,7 @@ async function parseMafFeatures(legacy: LegacyRead, region: Region) {
 async function parseMafControl(legacy: LegacyRead, region: Region) {
   const sink = new MafRegionSink(undefined)
   await featureBlocks(legacy(region), sink)
-  const packed = sink.packer.finishBlocks()
+  const packed = sink.finishBlocks()
   const coverage = buildMafCoverageRegion(
     packed,
     region.start,
@@ -1128,7 +1132,7 @@ async function parseMafControl(legacy: LegacyRead, region: Region) {
 async function parseMafDirect(adapter: MafAdapterBase, region: Region) {
   const sink = new MafRegionSink(undefined)
   await adapter.readBlocks(region, sink)
-  const packed = sink.packer.finishBlocks()
+  const packed = sink.finishBlocks()
   const coverage = buildMafCoverageRegion(
     packed,
     region.start,

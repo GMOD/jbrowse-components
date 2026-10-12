@@ -4,6 +4,7 @@ import { encodeMafStatus } from '../util/mafStatus.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 
 /**
  * A finished pack: every column of the wire except the two things the packer
@@ -13,29 +14,10 @@ import type { AlignmentContext, EmptyRecord } from '../types.ts'
 export type MafWirePacked = Omit<MafWireRegionData, 'coverage' | 'refSampleId'>
 
 /**
- * Up-front sizes for the packer's allocations, for a caller that already knows
- * them. Wrong hints are safe — every writer grows — and so is passing nothing,
- * which is what the RPC does.
- *
- * **It used to buffer a region's blocks to make these exact, and that was the
- * more expensive half of the trade.** Growing the arena by doubling copies it,
- * but sizing it exactly means holding every block's records and `seq` strings
- * until the last one arrives, and on the block shape real files have that
- * intermediate costs 1.18x and 228 MB of peak RSS. See the comment in
- * `executeMafAlignmentData` for the measurement.
- */
-export interface MafWireReserve {
-  blocks?: number
-  rows?: number
-  empties?: number
-  bytes?: number
-}
-
-/**
- * Growable typed-array column. The `Writer` pattern the plugin already uses for
- * per-base output (`MismatchWriter`, `InstanceWriter`): seeded with the caller's
- * count so the common path allocates exactly once, with doubling as a
- * correctness backstop rather than the expected route.
+ * Growable typed-array column, doubling as it fills. Sizing a region exactly
+ * up front means holding every block's records until the last one arrives,
+ * which measured 1.18x slower and 491 MB against 263 MB of peak RSS on 20000
+ * blocks of 8 columns.
  */
 class Column<T extends Uint8Array | Int8Array | Uint32Array> {
   private array: T
@@ -87,10 +69,9 @@ class Column<T extends Uint8Array | Int8Array | Uint32Array> {
  */
 const ASCII_COPY_MAX_LENGTH = 64
 
-const u32 = (n: number) =>
-  new Column(new Uint32Array(n), c => new Uint32Array(c))
-const u8 = (n: number) => new Column(new Uint8Array(n), c => new Uint8Array(c))
-const i8 = (n: number) => new Column(new Int8Array(n), c => new Int8Array(c))
+const u32 = () => new Column(new Uint32Array(0), c => new Uint32Array(c))
+const u8 = () => new Column(new Uint8Array(0), c => new Uint8Array(c))
+const i8 = () => new Column(new Int8Array(0), c => new Int8Array(c))
 
 /** Interns a repeated string to its index, building the wire's dictionary. */
 class Dictionary {
@@ -110,8 +91,8 @@ class Dictionary {
 }
 
 /**
- * Builds a `MafWireRegionData` by streaming: `startBlock` then `addRow` /
- * `addEmpty` per row, no intermediate row objects anywhere.
+ * Builds a `MafWireRegionData` as a {@link MafBlockSink}: `startBlock` then
+ * `addRow` / `addEmpty` per row, no intermediate row objects anywhere.
  *
  * Sequence text is encoded straight into the shared arena with `encodeInto`,
  * so a row's bases are copied exactly once between the adapter's string and
@@ -129,10 +110,10 @@ class Dictionary {
  * The reference sequence is written as its own arena slice rather than aliasing
  * the reference species' row — see `MafWireRegionData.arena`.
  */
-export class MafWirePacker {
+export class MafWirePacker implements MafBlockSink {
   private encoder = new TextEncoder()
 
-  private arena: Uint8Array
+  private arena = new Uint8Array(0)
 
   private arenaLength = 0
 
@@ -158,58 +139,28 @@ export class MafWirePacker {
       }
     | undefined
 
-  private rowOffset
-  private rowLength
-  private rowSample
-  private rowChr
-  private rowStart
-  private rowStrand
-  private rowSrcSize
+  private rowOffset = u32()
+  private rowLength = u32()
+  private rowSample = u32()
+  private rowChr = u32()
+  private rowStart = u32()
+  private rowStrand = i8()
+  private rowSrcSize = u32()
 
-  private blockStartBp
-  private blockEndBp
-  private blockRefOffset
-  private blockRefLength
-  private blockRowStart
-  private blockEmptyStart
+  private blockStartBp = u32()
+  private blockEndBp = u32()
+  private blockRefOffset = u32()
+  private blockRefLength = u32()
+  private blockRowStart = u32()
+  private blockEmptyStart = u32()
 
-  private emptySample
-  private emptyChr
-  private emptyStatus
-  private emptyStart
-  private emptySize
-  private emptyStrand
-  private emptySrcSize
-
-  constructor(reserve: MafWireReserve = {}) {
-    const blocks = reserve.blocks ?? 0
-    const rows = reserve.rows ?? 0
-    const empties = reserve.empties ?? 0
-    this.arena = new Uint8Array(reserve.bytes ?? 0)
-
-    this.rowOffset = u32(rows)
-    this.rowLength = u32(rows)
-    this.rowSample = u32(rows)
-    this.rowChr = u32(rows)
-    this.rowStart = u32(rows)
-    this.rowStrand = i8(rows)
-    this.rowSrcSize = u32(rows)
-
-    this.blockStartBp = u32(blocks)
-    this.blockEndBp = u32(blocks)
-    this.blockRefOffset = u32(blocks)
-    this.blockRefLength = u32(blocks)
-    this.blockRowStart = u32(blocks + 1)
-    this.blockEmptyStart = u32(blocks + 1)
-
-    this.emptySample = u32(empties)
-    this.emptyChr = u32(empties)
-    this.emptyStatus = u8(empties)
-    this.emptyStart = u32(empties)
-    this.emptySize = u32(empties)
-    this.emptyStrand = i8(empties)
-    this.emptySrcSize = u32(empties)
-  }
+  private emptySample = u32()
+  private emptyChr = u32()
+  private emptyStatus = u8()
+  private emptyStart = u32()
+  private emptySize = u32()
+  private emptyStrand = i8()
+  private emptySrcSize = u32()
 
   /** Appends `text[from..to)` to the arena and returns its `[offset, length]`. */
   private write(text: string, from: number, to: number) {
@@ -267,18 +218,22 @@ export class MafWirePacker {
   }
 
   /**
-   * Opens a block at `startBp` with `refSeq` as its reference row. `endBp` is
-   * derived here from the reference's non-dash byte count — the block's genomic
-   * extent — so no consumer has to re-walk the reference to learn it.
+   * Opens a block at `startBp` with `ref[refFrom..refTo)` as its reference row.
+   * `endBp` is derived here from the reference's non-dash byte count — the
+   * block's genomic extent — so no consumer has to re-walk the reference to
+   * learn it.
    */
-  startBlock(startBp: number, refSeq: string) {
-    this.startBlockText(startBp, refSeq, 0, refSeq.length)
-  }
-
-  /** {@link startBlock} with the reference as `text[from..to)`. */
-  startBlockText(startBp: number, text: string, from: number, to: number) {
+  startBlock(
+    _id: string,
+    startBp: number,
+    _end: number,
+    ref: string,
+    refFrom: number,
+    refTo: number,
+    _refSampleId?: string,
+  ) {
     const block = this.blockCount++
-    const { offset, length } = this.write(text, from, to)
+    const { offset, length } = this.write(ref, refFrom, refTo)
     let refLen = 0
     for (let i = offset; i < offset + length; i++) {
       if (this.arena[i] !== DASH) {
@@ -293,30 +248,7 @@ export class MafWirePacker {
     this.blockEmptyStart.set(block, this.emptyCount)
   }
 
-  addRow(row: {
-    sampleId: string
-    seq: string
-    chr?: string
-    srcStart?: number
-    strand?: number
-    srcSize?: number
-    context?: AlignmentContext
-  }) {
-    this.addRowText(
-      row.sampleId,
-      row.seq,
-      0,
-      row.seq.length,
-      row.chr ?? '',
-      row.srcStart ?? 0,
-      row.strand ?? 1,
-      row.srcSize,
-      row.context,
-    )
-  }
-
-  /** {@link addRow} with the row's sequence as `text[from..to)`. */
-  addRowText(
+  addRow(
     sampleId: string,
     text: string,
     from: number,
@@ -338,11 +270,11 @@ export class MafWirePacker {
     this.rowSrcSize.set(i, srcSize ?? 0)
     if (context) {
       this.context ??= {
-        has: u8(0),
-        leftStatus: u8(0),
-        leftCount: u32(0),
-        rightStatus: u8(0),
-        rightCount: u32(0),
+        has: u8(),
+        leftStatus: u8(),
+        leftCount: u32(),
+        rightStatus: u8(),
+        rightCount: u32(),
       }
       const { leftStatus, leftCount, rightStatus, rightCount } = context
       this.context.has.set(i, 1)
