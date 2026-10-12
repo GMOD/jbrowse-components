@@ -47,3 +47,13 @@ aligned regions of two stacked linear genome views.
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
 - **State model:** [runtime API](../../models/linearsyntenydisplay)
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `renderer` | ignored |
+| `middle` | ignored |

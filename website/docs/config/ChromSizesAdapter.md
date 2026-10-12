@@ -20,8 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads the chromosome names and lengths in a UCSC-style `.chrom.sizes` file
 (tab-separated `name<TAB>length`), for an assembly with no sequence. Use it
 for karyotype, whole-genome or synteny views that need no base-level

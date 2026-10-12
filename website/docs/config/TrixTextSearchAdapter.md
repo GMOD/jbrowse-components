@@ -25,8 +25,6 @@ config's one assembly.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Looks up search-box terms in a Trix index (`.ix` and `.ixx`) built by
 `jbrowse text-index`.
 

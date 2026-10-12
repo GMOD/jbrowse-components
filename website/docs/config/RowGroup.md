@@ -19,8 +19,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 One entry of the multi-row feature display's `rowGroups`: a row joins the
 `group` of the first entry whose `match` regex its name matches, and
 `rowColor: { field: 'group' }` colors the groups.

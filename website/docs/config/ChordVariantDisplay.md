@@ -36,8 +36,6 @@ chord's resting color, a constant or a field of the record with a key, and
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws the structural variants of a `VariantTrack` in a `CircularView`, each
 translocation as a chord across the circle.
 
@@ -63,3 +61,15 @@ These slots go on a display entry: `"displays": [{ "type": "ChordVariantDisplay"
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'black'</code> | the line color of a chord that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#555'</code> | the line color of a chord that is being hovered over with the mouse<br>_callback args:_ `feature` |
 | <span id="slot-bezierradiusratio">**bezierRadiusRatio**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | a chord's distance from the center at its closest, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `strokeColor` | moved into a current slot |
+| `strokeColorSelected` | moved into a current slot |
+| `strokeColorHover` | moved into a current slot |
+| `renderer` | moved into a current slot |

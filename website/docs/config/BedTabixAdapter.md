@@ -35,8 +35,6 @@ The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads bgzip-compressed, tabix-indexed BED files.
 
 ## Related links

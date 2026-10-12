@@ -20,8 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The alignments displays' `sort` setting: the pileup's row order. A
 whole-window order is a string — `"position"` (by start, the default),
 `"length"` (widest first), `"spliced"` (reads whose CIGAR carries a skip

@@ -23,8 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
 
 ## Related links
@@ -42,3 +40,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "HtsgetBamAda
 | --- | --- |
 | <span id="slot-htsgetbase">**htsgetBase**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | The endpoint tickets are requested from. `htsgetTrackId` is appended to it, so a trailing slash produces a doubled one in the request path. |
 | <span id="slot-htsgettrackid">**htsgetTrackId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | the trackId, which is appended to the base URL |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `sequenceAdapter` | ignored |

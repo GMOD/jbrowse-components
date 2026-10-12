@@ -16,8 +16,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The multi-way synteny display's `rows`: one lane per assembly below the
 anchor, so `assembly` is the one field, and the object is the arrangement a
 reader gives the lanes, written whole as every display's `rows` is. `domain`

@@ -24,8 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The `rows` setting of the displays that draw one row per value of a field,
 with the dendrogram sidebar beside them: the field, and the arrangement a
 reader gives the rows. A string is the field; the object adds the order,

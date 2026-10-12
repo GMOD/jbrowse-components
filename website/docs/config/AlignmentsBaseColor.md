@@ -22,8 +22,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The alignments displays' `baseColor` setting: the per-base variable painted
 as a cell per base over the reads, whatever `color` fills them with.
 `modifications` paints the MM/ML calls and `bisulfite` the conversion state

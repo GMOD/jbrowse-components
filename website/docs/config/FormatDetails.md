@@ -29,8 +29,6 @@ is turned into a link for you, so no `<a>` markup is needed:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Holds jexl callbacks that add, rewrite or hide fields in the feature-details
 panel. Every track has this schema, and so does the root config as
 `configuration.formatDetails`, which applies to every track at once. Where

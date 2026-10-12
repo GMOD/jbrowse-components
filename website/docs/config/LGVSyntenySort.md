@@ -13,8 +13,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 { type: 'LGVSyntenyDisplay', sort: 'position' }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The LGVSyntenyDisplay's `sort` setting: the
 [AlignmentsSort](../alignmentssort) object with `type` defaulting to
 `length`, so big syntenic blocks cluster at the top instead of interleaving

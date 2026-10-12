@@ -36,8 +36,6 @@ the full slot form:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads BAM alignment files, with a BAI or CSI index.
 
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
@@ -59,3 +57,13 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BamAdapter",
 | <span id="slot-bamlocation">**bamLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bam', locationType: 'UriLocation' }</code> | location of the BAM file. Per-base mismatches come from the record's MD tag when it has one, and are otherwise computed against the assembly's reference sequence. |
 | <span id="slot-index">**index**</span><br>[BamIndex](../bamindex) | The BAM index location and its kind. The `uri` shorthand derives both, so a config using it states neither. |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | size to fetch in bytes over which to display a warning to the user that too much data will be fetched<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `sequenceAdapter` | ignored |
+| `chunkSizeLimit` | ignored |

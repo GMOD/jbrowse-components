@@ -62,8 +62,6 @@ searchable as an alias:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
 file.
 
@@ -76,3 +74,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "NcbiSequence
 | --- | --- |
 | <span id="slot-location">**location**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of the `sequence_report.tsv` NCBI publishes with an assembly. It carries the RefSeq, GenBank and UCSC-style name of every sequence, so one file aliases them all without hand-writing a chromAlias table. |
 | <span id="slot-usenameoverride">**useNameOverride**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | forces usage of the UCSC names over the NCBI style names from a FASTA |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `useUcscNameOverride` | moved into a current slot |

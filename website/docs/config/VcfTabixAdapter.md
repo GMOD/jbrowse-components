@@ -35,8 +35,6 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 :::caution Gotcha
 
 TBI cannot index a chromosome longer than 512 Mb, which some plant and animal genomes exceed. Index those with CSI instead: pass `csi: true` alongside the `uri` shorthand, or set both `index.location` and `index.indexType: 'CSI'` explicitly.

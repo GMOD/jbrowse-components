@@ -21,8 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 { type: 'LinearAlignmentsDisplay', filter: { tagFilters: [{ tag: 'HP', value: '1' }] } }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Every read filter of the alignments display in one object, its `filter`
 slot: the SAM flag masks, a minimum mapping quality, a read name, the tag
 filters a read has to pass every one of, and the four read categories, each

@@ -50,8 +50,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The canvas feature displays' `color` setting: a CSS color or `jexl:`
 callback in `value`, or a field whose values each take a range color,
 whose numbers each take the color of the interval between cut points they

@@ -59,8 +59,6 @@ guides are found in the right places and drawn cutting in the wrong ones:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
 track is displayed against. Setting it by hand pins the scan to one sequence
 source, and the track keeps scanning that source after the assembly's

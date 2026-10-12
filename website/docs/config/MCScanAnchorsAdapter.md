@@ -25,8 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 :::caution Gotcha
 
 The anchors file carries no coordinates: a gene is placed by matching its id against column 4 of a BED, byte for byte. A row naming a gene neither BED has is dropped, so a partial mismatch draws fewer ribbons than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes, by BLAST truncating a FASTA header at the first space, and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.
@@ -60,3 +58,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "MCScanAnchor
 | <span id="slot-bed1location">**bed1Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> | BED giving coordinates for the gene names in the anchors file's first column, i.e. the query assembly's genes. Written by `python -m jcvi.formats.gff bed`. |
 | <span id="slot-bed2location">**bed2Location**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/file.bed', locationType: 'UriLocation' }</code> | BED giving coordinates for the gene names in the anchors file's second column, i.e. the target assembly's genes. |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | `[query, target]` — the assembly `bed1Location` describes, then the one `bed2Location` describes. Getting the order backwards draws every link against the wrong genome rather than erroring. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `subadapters` | ignored |

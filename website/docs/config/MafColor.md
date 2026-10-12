@@ -24,8 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The MAF display's `color` setting colors each species row's aligned cells
 by one field.
 `mismatch` paints a base only where it differs from the reference,

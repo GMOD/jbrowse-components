@@ -57,3 +57,12 @@ Every DotplotDisplay has a unique `displayId`, a required top-level field that i
 - **Adapter:** [PAFAdapter](../pafadapter)
 - **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
 - **State model:** [runtime API](../../models/dotplotdisplay)
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `renderer` | ignored |

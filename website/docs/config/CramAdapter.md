@@ -34,8 +34,6 @@ The `uri` shorthand auto-resolves the `.crai` index:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads CRAM alignments, fetching only the containers overlapping the visible
 region through the `.crai` index. Decoding happens against the enclosing
 assembly's sequence, so it has to be the reference the file was compressed
@@ -61,3 +59,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "CramAdapter"
 | <span id="slot-usesliceworkerpool">**useSliceWorkerPool**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | decode CRAM slices on a pool of workers rather than in the thread that asked<br>_advanced_ |
 | <span id="slot-cramlocation">**cramLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram', locationType: 'UriLocation' }</code> | location of the CRAM file |
 | <span id="slot-crailocation">**craiLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }</code> | location of the CRAM index (`.crai`). Only needed when it is not named `<file>.cram.crai`, the name the `uri` shorthand assumes. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `sequenceAdapter` | ignored |

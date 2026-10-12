@@ -13,8 +13,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 { type: 'LGVSyntenyDisplay', color: { field: 'mateRefName' } }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The LGVSyntenyDisplay's `color` setting: the
 [AlignmentsColor](../alignmentscolor) object with `field` defaulting to
 `strand`, where the alignments display paints one fill. A string is the

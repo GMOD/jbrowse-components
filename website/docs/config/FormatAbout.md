@@ -29,8 +29,6 @@ dialog shows the track's own configuration rather than a feature:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Holds jexl callbacks that add, rewrite or hide fields in a track's About
 dialog. Every track has this schema, and so does the root config as
 `configuration.formatAbout`, which applies to every track at once. Where both

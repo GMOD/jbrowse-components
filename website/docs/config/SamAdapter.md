@@ -32,8 +32,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads plain-text SAM alignments, from a file or an inline string.
 
 There is no index, so the whole file is loaded and held in memory — this is

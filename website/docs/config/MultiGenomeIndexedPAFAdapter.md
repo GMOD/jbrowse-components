@@ -23,8 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The tabix-indexed (PIF) form of the `MultiGenomePAFAdapter`. Run
 `jbrowse make-pif all_vs_all.paf` on a multi-genome PAF whose sequence names
 are PanSN-prefixed (`sample#haplotype#contig`) and point this adapter at the

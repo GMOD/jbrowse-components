@@ -2475,7 +2475,6 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
 export function exampleSection(
   examples: Example[],
   heading = '## Example usage',
-  note = '',
 ) {
   if (!examples.length) {
     return ''
@@ -2487,7 +2486,7 @@ export function exampleSection(
   const labelHeading = (label: string) =>
     label ? (subPrefix ? `${subPrefix} Example: ${label}` : `_${label}_`) : ''
   const bodies = examples.map(ex => section(labelHeading(ex.label), ex.content))
-  return section(heading, ...bodies, note ? `_${note}_` : '')
+  return section(heading, ...bodies)
 }
 
 // Composition is now derived from each model's factory (see

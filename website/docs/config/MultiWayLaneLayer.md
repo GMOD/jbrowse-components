@@ -43,8 +43,6 @@ lane, a hub star's lanes on genomes the session lacks included:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 One row of data drawn in every lane through that lane's own frame, from
 each genome's own track, on one value scale shared by every lane.
 

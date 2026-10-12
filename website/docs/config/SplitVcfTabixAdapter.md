@@ -29,8 +29,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a set of tabix-indexed VCF files, one per chromosome and keyed by
 refName, for a large call set split by chromosome.
 

@@ -54,8 +54,6 @@ To color per feature off some other attribute, set the `color` slot to a
 `jexl:` expression reading it.
 Omit `rows.domain` and the rows sort by value.
 
-_See the **Config slots** section below for all available configuration fields._
-
 Paints interval features as colored blocks on stacked rows partitioned by a
 feature attribute ("chromosome / ancestry painting").
 
@@ -102,3 +100,15 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMultiRowFeatur
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |

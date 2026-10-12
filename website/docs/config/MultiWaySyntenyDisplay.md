@@ -72,8 +72,6 @@ cluster, and ribbons colored by percent identity:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws a multi-genome `SyntenyTrack` in a linear genome view as one lane per
 assembly, with ribbons joining each gene's placements in adjacent lanes.
 
@@ -121,3 +119,15 @@ These slots go on a display entry: `"displays": [{ "type": "MultiWaySyntenyDispl
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |

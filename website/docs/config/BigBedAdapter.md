@@ -32,8 +32,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads BigBed files, the indexed binary form of BED.
 
 ## Related links

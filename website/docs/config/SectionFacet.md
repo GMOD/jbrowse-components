@@ -16,8 +16,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The facet of a display that stacks labelled sections, each of which a
 reader can hide from its chip: Facet's `field` and `domain`, and the
 sections hidden. A hide-set rather than a show-set, so a section a later

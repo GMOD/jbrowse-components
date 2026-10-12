@@ -59,8 +59,6 @@ the header; `refNameColumn` takes a zero-based index instead.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
 other tab-separated table of aliases.
 

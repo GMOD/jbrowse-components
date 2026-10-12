@@ -24,8 +24,6 @@ others subscribe to.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Adds the tracks of another JBrowse 2 `config.json` to the session, along
 with any assemblies it declares that the session lacks.
 

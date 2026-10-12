@@ -25,8 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The multi-sample variant display's `color` setting: the hue of every
 alt-carrying genotype cell, which `shadeByDosage` then lightens for a
 heterozygote. Unset, the cells paint the genotype colors. A CSS color or

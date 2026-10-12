@@ -34,8 +34,6 @@ or `superCompact`), or `collapsed` for a single-row overview:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
 similar file. The display adds the gene-glyph slots (isoforms, subparts,
 UTRs, chevrons) to the shared canvas base. The color slots `color`,
@@ -102,3 +100,20 @@ These slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay",
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | default height for the track |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxDisplayedBpPerPx` | ignored |
+| `jexlFilters` | moved into a current slot |
+| `color1` | moved into a current slot |
+| `color2` | moved into a current slot |
+| `color3` | moved into a current slot |
+| `outline` | moved into a current slot |
+| `maxHeight` | ignored |
+| `renderer` | moved into a current slot |
+| `showDescriptions` | moved into a current slot |

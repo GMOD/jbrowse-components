@@ -21,8 +21,6 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Searches a names index written by JBrowse 1's `generate-names.pl`. The
 `tracks` and `assemblyNames` slots list the tracks and assemblies the index
 covers.

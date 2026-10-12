@@ -64,8 +64,6 @@ molecule's:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws the reads of an `AlignmentsTrack` as a pileup under a coverage
 histogram.
 
@@ -130,3 +128,39 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | ignored |
+| `colorBy` | moved into a current slot |
+| `drawInter` | moved into a current slot |
+| `drawLongRange` | moved into a current slot |
+| `filterBy` | moved into a current slot |
+| `pileupDisplay` | moved into a current slot |
+| `snpCoverageDisplay` | moved into a current slot |
+| `defaultRendering` | ignored |
+| `renderers` | moved into a current slot |
+| `colorScheme` | ignored |
+| `scaleType` | moved into a current slot |
+| `autoscale` | moved into a current slot |
+| `minScore` | moved into a current slot |
+| `maxScore` | moved into a current slot |
+| `numStdDev` | ignored |
+| `inverted` | ignored |
+| `multiTicks` | ignored |
+| `jitter` | ignored |
+| `lineWidth` | moved into a current slot |
+| `hideSmallIndels` | ignored |
+| `hideMismatches` | moved into a current slot |
+| `mismatchAlpha` | moved into a current slot |
+| `hideLargeIndels` | ignored |
+| `minSubfeatureWidth` | ignored |
+| `flipStrandLongReadChains` | ignored |

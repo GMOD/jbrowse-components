@@ -24,8 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Supplies features written inline in the config, for a small feature set
 added through a URL or session spec.
 
@@ -48,3 +46,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigAd
 | --- | --- |
 | <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
 | <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | the features themselves, as an array of plain objects. Each needs a `uniqueId`, `refName`, `start` and `end` (0-based half-open); anything else — `name`, `type`, `score`, `strand`, nested `subfeatures` — is carried through onto the feature as-is. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `featureClass` | ignored |

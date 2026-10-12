@@ -71,8 +71,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A mark's `encoding.color`: one CSS color or `jexl:` callback for every
 instance, or a field through a categorical scale (a `range` color per
 value), a `linear` or `log` scale (a ramp between `domainMin` and

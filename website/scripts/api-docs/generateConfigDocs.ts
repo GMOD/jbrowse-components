@@ -679,6 +679,8 @@ interface ManifestEntry {
   // session snapshot sets and a track config cannot. Lets the example gate say
   // which wrong place a key is in rather than only that it is wrong.
   stateModelProps?: string[]
+  legacyKeys?: string[]
+  droppedKeys?: string[]
 }
 type ManifestCategories = Record<string, Record<string, ManifestEntry>>
 export type TypedManifestEntry = ManifestEntry & { category: string }
@@ -924,15 +926,6 @@ function renderConfig(
     derivesLine,
   ].filter(Boolean)
 
-  // Keyed on the rendered table, not on whether any slot exists: `slotsTable`
-  // drops container sub-schema rows (see isContainerSlot), so a config whose
-  // every slot is a container has slots and no table — and the note would point
-  // at a "Config slots" section this page does not emit. No page hits that
-  // today; the two were separate predicates for the same question, which is the
-  // part worth removing.
-  const slotsNote = table
-    ? 'See the **Config slots** section below for all available configuration fields.'
-    : ''
   // On adapter pages, show the full track config a user pastes, not just the
   // bare adapter snapshot the #example is authored as. Then, on the first
   // example either kind of page shows that the file name alone reaches, the
@@ -953,7 +946,7 @@ function renderConfig(
           return { ...ex, content: section(content, loose) }
         })
       : header.examples
-  const exSection = exampleSection(examples, '## Example usage', slotsNote)
+  const exSection = exampleSection(examples)
   const docsSection = overviewSection(
     stripNameTautology(header.docs, header.name),
     overviewParts,
@@ -961,6 +954,7 @@ function renderConfig(
   const relatedSection = relatedLines.length
     ? section('## Related links', relatedLines.join('\n'))
     : ''
+  const retiredSection = retiredKeysSection(header.name)
   // #gotcha text renders as a caution callout directly under the example, where
   // someone copying that example will actually read it. Footguns documented at
   // the definition site can't drift out of a hand-written guide.
@@ -987,8 +981,30 @@ function renderConfig(
       docsSection,
       relatedSection,
       slotsSection,
+      retiredSection,
     ),
   })
+}
+
+// Keys an older config wrote that this schema still accepts, from the manifest
+// `jbrowse validate` reads: each one either moves into a current slot on load
+// or is read by nothing.
+function retiredKeysSection(name: string) {
+  const { legacyKeys = [], droppedKeys = [] } = configManifest()[name] ?? {}
+  const dropped = new Set(droppedKeys)
+  return legacyKeys.length
+    ? section(
+        '## Retired keys',
+        'An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.',
+        markdownTable(
+          ['Key', 'On load'],
+          legacyKeys.map(
+            key =>
+              `| \`${key}\` | ${dropped.has(key) ? 'ignored' : 'moved into a current slot'} |`,
+          ),
+        ),
+      )
+    : ''
 }
 
 // The `#identifier` tag sits on the schema's `explicitIdentifier: '<field>'`
@@ -1295,20 +1311,47 @@ function enumList(values: readonly string[]) {
   return values.map(v => (v === '' ? '""' : v)).join(', ')
 }
 
+// A slot holding another pluggable element's config, which its source spells
+// `pluginManager.pluggableConfigSchemaType('display')`, maybe inside
+// `types.array(...)`. Named by the config index section listing that kind.
+const PLUGGABLE_SLOT =
+  /^(types\.array\(\s*)?pluginManager\.pluggableConfigSchemaType\('([^']+)'\),?\s*\)?$/
+const PLUGGABLE_INDEX_SECTION: Record<string, string> = {
+  adapter: 'adapter',
+  'text search adapter': 'adapter',
+  display: 'display',
+  track: 'track',
+  connection: 'connection',
+  'internet account': 'internet-account',
+}
+
+function pluggableSlotType(code: string | undefined) {
+  const [, array, kind] = PLUGGABLE_SLOT.exec(code?.trim() ?? '') ?? []
+  return kind
+    ? {
+        name: array ? `list of ${kind} configs` : `${kind} config`,
+        section: PLUGGABLE_INDEX_SECTION[kind],
+      }
+    : undefined
+}
+
 // The Type cell: the slot's declared type, linked to the slot-types guide, with
 // a stringEnum's choices after it. A slot whose value isn't a `{ type, ... }`
-// object at all (`pluginManager.pluggableConfigSchemaType('adapter')`, a nested
-// `ConfigurationSchema`) has no type to name, so its source stands in — that
-// expression is the only thing there is to say about it.
+// object at all has no type to name: a nested schema links its page, another
+// element's config names that kind, and otherwise the source stands in.
 function slotTypeCell(meta: SlotMeta, schemaPage: Item['schemaPage']) {
   const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
+  const code = meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode))
+  const pluggable = pluggableSlotType(code)
   return meta.type
     ? `${typeLink(meta.type)}${enums}`
     : schemaPage
       ? `[${schemaPage.name}](../${schemaPage.id})`
-      : codeCell(
-          meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
-        )
+      : pluggable
+        ? pluggable.section
+          ? `[${pluggable.name}](/docs/config#${pluggable.section})`
+          : pluggable.name
+        : codeCell(code)
 }
 
 // A default the factory takes as a parameter has no one value to print, and its
@@ -1805,12 +1848,10 @@ const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
 function agentSlotLine(item: Item) {
   const { meta } = slotMetaFor(item)
   const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
+  const code = meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode))
   const type = meta.type
     ? `${meta.type}${enums}`
-    : (item.schemaPage?.name ??
-      flatCode(
-        meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
-      ))
+    : (item.schemaPage?.name ?? pluggableSlotType(code)?.name ?? flatCode(code))
   const dflt = item.parameterisedDefault
     ? PARAMETERISED_DEFAULT
     : flatCode(

@@ -16,8 +16,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The LD display's `color` setting paints the statistic the cells show,
 `r2` or `dprime`, through a linear scale onto a named `scheme`. An unset `scheme` is the
 metric's own, reds for r² and blues for D'. The domain is the statistic's

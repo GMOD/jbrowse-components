@@ -34,8 +34,6 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads bgzip-compressed, tabix-indexed bedGraph signal files.
 
 Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:

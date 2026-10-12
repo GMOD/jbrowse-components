@@ -83,8 +83,6 @@ track shows only the subtracks the table lists:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads several BigWig files as the sources of one multi-row quantitative
 track.
 

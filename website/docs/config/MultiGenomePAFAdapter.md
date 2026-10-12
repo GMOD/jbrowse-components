@@ -23,8 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Loads a single PAF holding alignments among several genomes, where every
 sequence name is PanSN-prefixed with its assembly (`sample#haplotype#contig`).
 The file may state any set of pairs: a complete all-vs-all (`minimap2 all.fa

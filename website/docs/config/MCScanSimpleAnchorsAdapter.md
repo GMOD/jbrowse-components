@@ -25,8 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 :::caution Gotcha
 
 A block row names four genes, the first and last on each side, and all four are placed by matching column 4 of a BED byte for byte. A row with any of the four missing is dropped, so a partial mismatch draws fewer blocks than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.

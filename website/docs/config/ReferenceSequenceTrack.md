@@ -23,8 +23,6 @@ sequence: {
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 ## Overview
 
 Holds an assembly's reference sequence, which
@@ -52,10 +50,20 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-adapter">**adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> | configuration for track adapter |
-| <span id="slot-displays">**displays**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('display'))</code> | configuration for the displays e.g. LinearReferenceSequenceDisplay |
+| <span id="slot-adapter">**adapter**</span><br>[adapter config](/docs/config#adapter) | configuration for track adapter |
+| <span id="slot-displays">**displays**</span><br>[list of display configs](/docs/config#display) | configuration for the displays e.g. LinearReferenceSequenceDisplay |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
 | <span id="slot-sequencetype">**sequenceType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (dna, pep) = <code>'dna'</code> | `pep` for a protein sequence, which draws one row of residues with no reverse or translation rows |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
 | <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
 | <span id="slot-formatabout">**formatAbout**</span><br>[FormatAbout](../formatabout) | jexl callbacks that add, rewrite or hide fields in this track's About dialog. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `rpcDriverName` | ignored |
+| `rendering` | ignored |

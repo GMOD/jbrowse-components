@@ -17,8 +17,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The mark display's `facet`: the [Facet](../facet) the feature and alignments
 displays take, one labelled section of the track per value of a field, plus
 the steps the facet runs over each section's features alone, after the

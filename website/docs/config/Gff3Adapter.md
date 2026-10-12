@@ -32,8 +32,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads plain-text GFF3 files. The adapter loads the whole file into memory,
 so use `Gff3TabixAdapter` for large files.
 

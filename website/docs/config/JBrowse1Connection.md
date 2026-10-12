@@ -24,8 +24,6 @@ an existing JBrowse 1 instance's data without re-processing it.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Adds the tracks of a JBrowse 1 data directory to the session, translated to
 their JBrowse 2 equivalents.
 

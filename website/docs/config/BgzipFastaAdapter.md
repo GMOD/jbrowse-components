@@ -22,8 +22,6 @@ The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a bgzip-compressed FASTA reference sequence, with its `.fai` and
 `.gzi` indexes.
 

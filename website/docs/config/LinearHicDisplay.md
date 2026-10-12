@@ -24,8 +24,6 @@ A log color scale, one step coarser than the zoom picks, through the
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 ## Overview
 
 Draws a `HicTrack`'s contact matrix as a triangular heatmap in the linear
@@ -54,3 +52,17 @@ These slots go on a display entry: `"displays": [{ "type": "LinearHicDisplay", .
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | default height for the Hi-C track |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |
 | <span id="slot-squashtoheight">**squashToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | squash the triangle vertically to fill the display height instead of drawing square cells |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `fetchSizeLimit` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |
+| `renderer` | ignored |

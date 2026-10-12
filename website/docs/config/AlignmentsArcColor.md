@@ -21,8 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The alignments displays' `arcColor` setting colors the read-connection
 arcs and the read cloud. Empty, the default, the arcs take the reads'
 `color` field where it is one an arc paints (`insertSize`,

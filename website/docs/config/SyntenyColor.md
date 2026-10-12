@@ -38,8 +38,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The linear synteny and dotplot views' `color` setting, which every track
 in the view paints with: one color for every alignment, or a field each
 alignment carries — its strand, the sequence at either end, the anchor

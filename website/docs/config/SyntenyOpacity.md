@@ -29,8 +29,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The synteny views' `opacity` setting, as `color` is their color: one
 opacity for every alignment, or a field each alignment carries read into
 opacities. A number is the constant and lands in `value`; a string is the

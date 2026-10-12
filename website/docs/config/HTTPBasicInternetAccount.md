@@ -23,8 +23,6 @@ sends them as an `Authorization: Basic …` header from then on.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Prompts for a username and password, and sends them in an HTTP Basic
 `Authorization` header on requests to a matching domain.
 

@@ -13,8 +13,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 { type: 'MultiWaySyntenyDisplay', color: { field: 'cluster' } }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The multi-way synteny display's gene `color`: a CSS color or `jexl:`
 callback in `value`, or a field whose values each take a range color, or
 whose numbers each take the color of the interval between cut points they

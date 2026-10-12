@@ -32,8 +32,6 @@ result columns become feature fields, so the query has to select at least
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Fetches features from a SPARQL endpoint, substituting the queried region into
 a query template.
 

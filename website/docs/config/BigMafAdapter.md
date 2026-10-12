@@ -28,8 +28,6 @@ error:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a UCSC bigMaf file, a BigBed that holds a MAF multiple alignment
 block in each record.
 

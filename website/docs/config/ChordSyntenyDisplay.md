@@ -37,8 +37,6 @@ slots are the hovered and selected fills:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
 spans of each alignment.
 

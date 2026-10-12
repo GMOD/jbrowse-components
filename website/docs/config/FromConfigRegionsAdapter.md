@@ -26,8 +26,6 @@ Supplies refNames+sizes with no sequence, as the adapter of an assembly's
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Supplies an assembly's reference names and sizes inline in the config, with
 no sequence.
 
@@ -45,3 +43,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigRe
 | --- | --- |
 | <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
 | <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one entry per reference sequence, each with a `uniqueId`, `refName`, `start: 0` and `end` set to that sequence's length. This is what defines the assembly's reference names and sizes; no bases are supplied, so base-level views are empty. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `featureClass` | ignored |

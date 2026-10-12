@@ -28,8 +28,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The quantitative display's `color`: one CSS color for every bar, or `score`
 through a scale. Through a `threshold` scale it is the bicolor plot — a
 color each side of one cut, the `origin` where the domain names none, and a

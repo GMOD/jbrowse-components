@@ -27,8 +27,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The `rowColor` setting of the row displays: one categorical color channel
 on the row axis. `field` names the row attribute whose values take the
 colors, `name` (the row itself) by default, and `domain`/`range` pair those

@@ -20,8 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a plain (non-bgzipped) FASTA file with no index. The adapter holds the
 whole sequence in memory, so use `IndexedFastaAdapter` for large genomes.
 

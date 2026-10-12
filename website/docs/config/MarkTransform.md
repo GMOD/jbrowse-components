@@ -32,8 +32,6 @@ transform: [
 ]
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 One step of a `transform` list, which runs over the region's features in
 order, each step reading what the one before it answered. A step names its
 `type` and takes that step's own settings; a key belonging to another step

@@ -24,8 +24,6 @@ Used as the adapter of an assembly's `sequence` (a `ReferenceSequenceTrack`):
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Supplies a reference sequence inline in the config, as features whose `seq`
 holds the bases for each region.
 
@@ -43,3 +41,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "FromConfigSe
 | --- | --- |
 | <span id="slot-adapterid">**adapterId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
 | <span id="slot-features">**features**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | one entry per reference sequence, each with a `uniqueId`, `refName`, `start`, `end`, and a `seq` string holding the bases for that span. The bases live in the config, so this is for small sequences — a plasmid, a test contig — not a genome. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `featureClass` | ignored |

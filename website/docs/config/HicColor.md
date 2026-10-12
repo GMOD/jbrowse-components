@@ -16,8 +16,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The Hi-C display's `color`: a bin's contact count through a `linear` or
 `log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
 counts, saturating at their `domainQuantile`, the 95th percentile by

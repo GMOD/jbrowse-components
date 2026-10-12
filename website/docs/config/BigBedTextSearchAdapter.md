@@ -18,8 +18,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Finds features by the names a BigBed was built to look up, its
 `bedToBigBed -extraIndex` columns, which a UCSC hub declares with
 `searchIndex`. The hub's `searchTrix` index, when given, adds prefix and

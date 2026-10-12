@@ -117,8 +117,6 @@ A selection scan as a plain `FeatureTrack`: a point per window at its
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The Manhattan plot: the default display of a GWAS track, and one a
 FeatureTrack can switch to. It is the mark display with a point per feature
 at its `score` as its default plot, so every mark, scale, facet and row
@@ -182,3 +180,15 @@ These slots go on a display entry: `"displays": [{ "type": "LinearManhattanDispl
 | <span id="slot-treeareawidth">**treeAreaWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>80</code> | width in px of the tree sidebar, which a drag on its edge also writes |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them |
 | <span id="slot-filter">**filter**</span><br>[`expressionArray`](/docs/config_guides/slot_types#expressionarray) = <code>[]</code> | jexl: expressions a feature must pass to be drawn |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |

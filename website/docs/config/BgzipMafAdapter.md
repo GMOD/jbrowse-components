@@ -25,8 +25,6 @@ Newick tree:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A bgzip-compressed MAF with a Taffy `.tai` index — the form whole-genome
 multiple alignments are actually distributed in. HPRC release 2 publishes
 `hprc-v2.1-mc-grch38.full.maf.gz` (53 GB, 464 haplotypes) with a sibling

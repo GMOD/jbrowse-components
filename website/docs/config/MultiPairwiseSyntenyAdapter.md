@@ -35,8 +35,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Composes pairwise synteny adapters that all name one assembly — the anchor —
 into the star an N-genome view draws from one track: hg38 against each UCSC
 genome's liftOver PIF, say. A query on the anchor fans out to every child and

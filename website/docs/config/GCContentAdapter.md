@@ -21,8 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Computes GC content (or GC skew) from an assembly's sequence at render time,
 so there is no data file to prepare: the sequence comes from the assembly
 the track is displayed against. The window, the step and the mode are

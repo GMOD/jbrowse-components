@@ -32,8 +32,6 @@ for every viewer.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The display for a `MafTrack`: one row per aligned species, with a
 conservation summary above them. The slots are show/hide defaults and band
 sizes; the bands and overlays derive from the alignment and toggle from the
@@ -82,3 +80,15 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMafDisplay", .
 | <span id="slot-treeareawidth">**treeAreaWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>80</code> | width in px of the tree sidebar, which a drag on its edge also writes |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |

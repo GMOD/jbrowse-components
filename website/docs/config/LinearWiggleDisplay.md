@@ -58,8 +58,6 @@ Taller track, log scale, custom color:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Draws quantitative signal as an XY plot, density, line or scatter plot, for
 one source or many; `rows: 'source'` draws each source in a separate row.
 
@@ -109,3 +107,28 @@ These slots go on a display entry: `"displays": [{ "type": "LinearWiggleDisplay"
 | <span id="slot-showrowlabels">**showRowLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Name each subtrack row down the left edge |
 | <span id="slot-treeareawidth">**treeAreaWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>80</code> | width in px of the tree sidebar, which a drag on its edge also writes |
 | <span id="slot-showrowseparators">**showRowSeparators**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `fetchSizeLimit` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |
+| `displayCrossHatches` | moved into a current slot |
+| `minimalTicks` | moved into a current slot |
+| `scaleType` | moved into a current slot |
+| `autoscale` | moved into a current slot |
+| `minScore` | moved into a current slot |
+| `maxScore` | moved into a current slot |
+| `numStdDev` | ignored |
+| `inverted` | ignored |
+| `renderers` | moved into a current slot |
+| `summaryScoreMode` | moved into a current slot |
+| `defaultRendering` | moved into a current slot |
+| `lineWidth` | moved into a current slot |

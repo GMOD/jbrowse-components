@@ -24,8 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
 `nhLocation` newick tree orders and labels the species rows; `refAssemblyName`
 names the MAF's reference species when it differs from the assembly name.

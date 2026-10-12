@@ -25,8 +25,6 @@ Newick tree:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
 `.tai` index.
 

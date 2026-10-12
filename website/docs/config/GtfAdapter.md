@@ -34,8 +34,6 @@ The `uri` shorthand works for plain or gzipped GTF:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads plain-text GTF files, optionally gzipped. The adapter loads the whole
 file into memory, so use `GtfTabixAdapter` for large files.
 

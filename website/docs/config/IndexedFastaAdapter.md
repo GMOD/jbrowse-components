@@ -22,8 +22,6 @@ The `uri` shorthand auto-resolves the `.fai` index:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads an uncompressed FASTA reference sequence through its `samtools faidx`
 index, fetching the bases in view as byte ranges.
 

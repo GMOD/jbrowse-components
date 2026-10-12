@@ -24,8 +24,6 @@ truth. `assemblyNames` limits which of the hub's genomes are used.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Adds the tracks a UCSC track hub's `hub.txt` declares for each matching
 assembly to the session.
 

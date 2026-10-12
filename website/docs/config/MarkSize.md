@@ -20,8 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A mark's size in px, as `color` is its color: a point's diameter, a rule's
 thickness or a link's stroke. A number is the constant every instance
 takes, and lands in `value`; a string is a feature field, and lands in

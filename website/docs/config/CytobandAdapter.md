@@ -32,8 +32,6 @@ ideogram banding in the linear genome view's overview bar:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads an assembly's cytoband file, which the linear genome view draws as
 ideogram banding in its overview bar.
 
@@ -45,3 +43,12 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "CytobandAdap
 | Slot | Description |
 | --- | --- |
 | <span id="slot-cytobandlocation">**cytobandLocation**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | location of a UCSC-style `cytoBand.txt` (`chrom start end name gieStain`), which draws the ideogram banding in the view's overview bar. May be gzipped. Configured on an assembly, not on a track. |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `cytobandsLocation` | moved into a current slot |

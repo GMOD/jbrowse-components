@@ -49,8 +49,6 @@ Reading a raw p-value column instead, transformed to -log10(p) at load:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like file. The
 adapter is a `BedTabixAdapter` whose `scoreColumn` defaults to
 `neg_log_pvalue`, so a file loads with a Manhattan plot score and no further

@@ -20,8 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A quantitative display's `rows`: `source` is the one field a quantitative row
 can be, since a wiggle carries a score per base and a subtrack name and
 nothing else to put on rows. The arrangement members are the shared `Rows`

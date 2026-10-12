@@ -22,8 +22,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Scans the reference for a list of named motifs, e.g. restriction enzyme
 recognition sites.
 

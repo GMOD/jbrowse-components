@@ -13,8 +13,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 { type: 'ChordVariantDisplay', color: { field: 'svType' }, opacity: 0.45 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A variant chord's `color`: a CSS color or `jexl:` callback in `value` for
 every chord, or a `field` of the record whose values each take a range
 color, with a key on the circle. `svType` paints the structural-variant

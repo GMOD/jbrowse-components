@@ -25,8 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The alignments displays' `modifications` setting configures the
 `modifications` and `bisulfite` fields of
 [AlignmentsBaseColor](../alignmentsbasecolor). The by-type view paints each MM/ML call its type's color above

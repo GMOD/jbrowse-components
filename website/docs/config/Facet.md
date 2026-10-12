@@ -27,8 +27,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The `facet` setting of the feature, multi-sample variant, multi-row and
 alignments displays: one labelled section of the track per value of a field. A string
 is the field; the object adds the order. The mark display's `MarkFacet`

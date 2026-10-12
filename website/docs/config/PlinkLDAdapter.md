@@ -32,8 +32,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Adapter for reading pre-computed LD data from a PLINK LD table, either PLINK
 2.0's .vcor or PLINK 1.9's .ld.
 Loads the entire file into memory - suitable for small to medium files.

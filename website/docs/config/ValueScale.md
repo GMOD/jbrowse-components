@@ -62,8 +62,6 @@ suggestive one:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The value scale of a quantitative display, written as `scales.y`: the
 wiggle plot, the alignments coverage band and the mark display, the
 Manhattan plot among them, each carry one, with the axis guides it draws —

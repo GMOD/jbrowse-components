@@ -23,8 +23,6 @@ full-file scan on genomes with many contigs:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Reads a UCSC `.2bit` reference sequence, optionally with a `chrom.sizes`
 file to speed up loading.
 

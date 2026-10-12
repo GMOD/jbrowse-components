@@ -22,8 +22,6 @@ on every request to a matching domain.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Sends a token that the user pastes in, or that an embedding portal supplies,
 with every request to a matching domain.
 

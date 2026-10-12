@@ -30,8 +30,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 ## Overview
 
 Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file —
@@ -65,3 +63,29 @@ These slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", ...
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | default height of the display, the band above the triangle included |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | show the color scale legend |
 | <span id="slot-squashtoheight">**squashToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | squash the triangle vertically to fill the display height instead of drawing square cells |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `fetchSizeLimit` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |
+| `ldMetric` | moved into a current slot |
+| `fitToHeight` | moved into a current slot |
+| `useGenomicPositions` | moved into a current slot |
+| `maxHeight` | ignored |
+| `colorScheme` | ignored |
+| `signedLD` | ignored |
+| `showLDTriangle` | ignored |
+| `showRecombination` | ignored |
+| `recombinationZoneHeight` | ignored |
+| `minorAlleleFrequencyFilter` | ignored |
+| `lengthCutoffFilter` | ignored |
+| `hweFilterThreshold` | ignored |
+| `callRateFilter` | ignored |

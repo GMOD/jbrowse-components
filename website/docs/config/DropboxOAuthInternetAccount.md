@@ -22,8 +22,6 @@ hand in the Add Track form.
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
 endpoints and domains filled in.
 

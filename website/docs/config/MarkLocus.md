@@ -18,8 +18,6 @@ A BEDPE-like file whose second end sits in its own columns:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A mark's far end as a position that may lie on another sequence: `pos`,
 the feature field holding its coordinate, and `chrom`, the field holding
 its refName, as a paired record states its mate. Writing a field name

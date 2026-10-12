@@ -16,8 +16,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The `rows` setting of a display whose rows are its own — a sample, a
 species — rather than the values of a field: the arrangement a reader gives
 them, which every product writes as a session edit to this object. The

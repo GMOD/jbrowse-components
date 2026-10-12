@@ -44,8 +44,6 @@ per px:
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 A grammar of graphics over a feature, alignments or variant track: a list of
 marks — bars, points, rules, lines, spans, text or links — each with an encoding naming which
 feature fields feed its channels and a transform list run before it. One fetch per
@@ -119,3 +117,15 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMarkDisplay", 
 | <span id="slot-treeareawidth">**treeAreaWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>80</code> | width in px of the tree sidebar, which a drag on its edge also writes |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them |
 | <span id="slot-filter">**filter**</span><br>[`expressionArray`](/docs/config_guides/slot_types#expressionarray) = <code>[]</code> | jexl: expressions a feature must pass to be drawn |
+
+## Retired keys
+
+An older config may still write these. Each loads without an error, and `jbrowse validate` reports it as stale.
+
+<!-- prettier-ignore -->
+| Key | On load |
+| --- | --- |
+| `maxFeatureScreenDensity` | ignored |
+| `maxDisplayedBpPerPx` | ignored |
+| `mouseover` | ignored |
+| `jexlFilters` | moved into a current slot |

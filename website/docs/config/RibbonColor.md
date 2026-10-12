@@ -35,8 +35,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 The multi-way synteny display's `ribbonColor` setting: one color for every
 ribbon, or a field each ribbon carries: the record's strand, a measurement
 through its preset (`identity`, `mapq`, `dnds`), or a column the table

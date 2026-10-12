@@ -32,8 +32,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 }
 ```
 
-_See the **Config slots** section below for all available configuration fields._
-
 :::caution Gotcha
 
 Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...) are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes them generically as `field6`, `field7`, ... and a jexl callback reading `feature.itemRgb` gets `undefined`. Set `columnNames` to refer to them by name.
