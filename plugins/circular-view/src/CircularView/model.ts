@@ -1265,16 +1265,35 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       zoomInButton() {
-        self.autoFit = false
-        this.setBpPerPx(self.bpPerPx / 1.4)
+        this.zoomAboutViewMiddle(self.bpPerPx / 1.4)
       },
 
       /**
        * #action
        */
       zoomOutButton() {
+        this.zoomAboutViewMiddle(self.bpPerPx * 1.4)
+      },
+
+      /**
+       * #action
+       * zoom about the circle's middle while the figure sits where the fit
+       * put it, and about the view's middle once a zoom to the cursor has
+       * panned it, so what the user zoomed toward stays in view
+       */
+      zoomAboutViewMiddle(newBpPerPx: number) {
         self.autoFit = false
-        this.setBpPerPx(self.bpPerPx * 1.4)
+        if (!self.panX && !self.panY) {
+          this.setBpPerPx(newBpPerPx)
+          return
+        }
+        const [originX, originY] = self.figureOriginXY
+        const [cx, cy] = self.centerXY
+        this.zoomToPoint(
+          newBpPerPx,
+          self.width / 2 - originX - cx,
+          self.height / 2 - originY - cy,
+        )
       },
 
       /**

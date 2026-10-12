@@ -222,6 +222,7 @@ From [TrackColorsMixin](../trackcolorsmixin): <span id="method-colorsurface">[`c
 | <span id="action-resetview">**resetView**</span><br><code>() =&gt; void</code> | reset rotation, pan, and zoom back to the default fit-to-window view |
 | <span id="action-zoominbutton">**zoomInButton**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-zoomoutbutton">**zoomOutButton**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-zoomaboutviewmiddle">**zoomAboutViewMiddle**</span><br><code>(newBpPerPx: number) =&gt; void</code> | zoom about the circle's middle while the figure sits where the fit put it, and about the view's middle once a zoom to the cursor has panned it, so what the user zoomed toward stays in view |
 | <span id="action-setbpperpx">**setBpPerPx**</span><br><code>(newVal: number) =&gt; void</code> |  |
 | <span id="action-zoomtopoint">**zoomToPoint**</span><br><code>(newBpPerPx: number, cursorX: number, cursorY: number) =&gt; void</code> | zoom toward/away from a point on the figure, keeping whatever is under it visually fixed. The point is its offset in screen px from the middle of the circle — what `offsetFromCenter` in the component hands back |
 | <span id="action-setdisplayedregions">**setDisplayedRegions**</span><br><code>(regions: Region[]) =&gt; void</code> |  |

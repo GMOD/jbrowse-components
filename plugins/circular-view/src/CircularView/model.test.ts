@@ -230,6 +230,29 @@ test('the tall-box zoom above stays inside the box', () => {
   expect(view.figureSize).toBeLessThan(900)
 })
 
+test.each(['zoomInButton', 'zoomOutButton'] as const)(
+  '%s after a zoom to the cursor holds the view middle still',
+  button => {
+    const view = createView({ regions: [region('chr1', 1_000_000)] })
+    view.zoomToPoint(view.bpPerPx / 8, 150, -60)
+    const figurePointAtMiddle = () => {
+      const [originX, originY] = view.figureOriginXY
+      const [cx, cy] = view.centerXY
+      return [
+        (view.width / 2 - originX - cx) / view.radiusPx,
+        (view.height / 2 - originY - cy) / view.radiusPx,
+      ]
+    }
+    const [beforeX, beforeY] = figurePointAtMiddle()
+    const oldRadiusPx = view.radiusPx
+    view[button]()
+    expect(view.radiusPx).not.toBeCloseTo(oldRadiusPx)
+    const [afterX, afterY] = figurePointAtMiddle()
+    expect(afterX).toBeCloseTo(beforeX!)
+    expect(afterY).toBeCloseTo(beforeY!)
+  },
+)
+
 test('resetView refits and clears the zoom-to-cursor pan', () => {
   const view = createView({ regions: [region('chr1', 1_000_000)] })
   view.zoomToPoint(view.bpPerPx / 4, 100, 0)
