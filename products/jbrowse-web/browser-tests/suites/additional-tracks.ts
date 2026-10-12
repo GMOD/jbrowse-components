@@ -16,7 +16,7 @@ interface LiveModel {
     views: {
       tracks: {
         displays: {
-          setRenderingType: (type: string) => void
+          setMark: (mark: string, interpolate?: string) => void
           setOrigin: (pivot: number) => void
         }[]
       }[]
@@ -42,12 +42,15 @@ function whiskersBandTest(rendering: 'line' | 'linecenter') {
       })
       await findDisplayPainted(page, 'wiggle-display', 60000)
       await waitForDataLoaded(page)
-      await page.evaluate(renderingType => {
-        const { JBrowseSession } = window as unknown as LiveModel
-        const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
-        display.setRenderingType(renderingType)
-        display.setOrigin(20)
-      }, rendering)
+      await page.evaluate(
+        interpolate => {
+          const { JBrowseSession } = window as unknown as LiveModel
+          const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
+          display.setMark('line', interpolate)
+          display.setOrigin(20)
+        },
+        rendering === 'linecenter' ? 'linear' : 'step',
+      )
       await waitForDataLoaded(page)
       await dualSnapshot(
         page,

@@ -189,12 +189,12 @@ layer encoder (`buildSourceRenderData`):
   and max where the file summarizes.
 - `marks`: the encoder's layers in paint order, so a min-max extent comes
   back as the max, aggregate and min bands, tinted as the display tints them,
-  and a line's whisker band as rows with `band` set, at the `opacity` the
+  and a line's min-max band as rows with `band` set, at the `opacity` the
   display paints it. `low` is where a mark reaches down to: the band's min,
   or the `origin` bars grow from.
 - Each mark's `color` is the display's. A bar takes its value's color; a line
-  takes the color of the band between the cuts its score is in (`cutBand`);
-  a whisker band comes back in pieces split at the cuts, each in its band's
+  takes the color of the band between the cuts its score is in
+  (`thresholdBandOf`); a min-max band comes back in pieces split at the cuts, each in its band's
   color, as the display fills it. Under density and a gradient the color is
   the shared ramp's (`makeDensityRgbStringFn`, `makeDensityLutFillFn`) over
   the resolved domain.

@@ -34,7 +34,7 @@ import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // Four per-instance records, one packer each: fill (20 bytes, xyplot, scatter
-// and density), step line (32), center line (36) and whiskers band (44). Each
+// and density), step line (32), center line (36) and min-max band (44). Each
 // packer returns an empty buffer for layers that aren't its rendering's, which
 // is how a pass releases its buffer (GpuPerRegionRenderingBackend.upload), so
 // switching plot type frees the layout that is no longer drawn.
@@ -53,7 +53,7 @@ function totalOf(sources: SourceRenderData[], band = false) {
   return total
 }
 
-function renderingOf(sources: SourceRenderData[]) {
+function layerRendering(sources: SourceRenderData[]) {
   return sources[0]?.renderingType
 }
 
@@ -69,7 +69,7 @@ function negColorOf(source: SourceRenderData) {
 
 // xyplot / density / scatter: startEnd, score, color, rowIndex.
 export function packFillInstances(sources: SourceRenderData[]) {
-  const type = renderingOf(sources)
+  const type = layerRendering(sources)
   if (type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER) {
     return new ArrayBuffer(0)
   }
@@ -82,8 +82,7 @@ export function packFillInstances(sources: SourceRenderData[]) {
     const colorAbgr = colorOf(source)
     const positions = source.featurePositions
     const scores = source.featureScores
-    // Per-instance colors (bicolor whiskers); falls back to the single per-layer
-    // colorAbgr when absent.
+    // Per-instance threshold colors, else the layer's one colorAbgr
     const colorsAbgr = source.colorsAbgr
     const n = source.numFeatures
     for (let i = 0; i < n; i++) {
@@ -113,7 +112,7 @@ export function packFillInstances(sources: SourceRenderData[]) {
 // the *next* feature's v0–v1 draws the real transition. (Drawing it on both
 // sides would double-stroke the seam.)
 export function packLineInstances(sources: SourceRenderData[]) {
-  if (renderingOf(sources) !== RENDERING_TYPE_LINE) {
+  if (layerRendering(sources) !== RENDERING_TYPE_LINE) {
     return new ArrayBuffer(0)
   }
   const buf = new ArrayBuffer(totalOf(sources) * LINE_STRIDE_BYTES)
@@ -163,7 +162,7 @@ export function packLineInstances(sources: SourceRenderData[]) {
 // averages in clip space exactly as it does the current feature's, so the joint
 // lands on one point.
 export function packLineCenterInstances(sources: SourceRenderData[]) {
-  if (renderingOf(sources) !== RENDERING_TYPE_LINE_CENTER) {
+  if (layerRendering(sources) !== RENDERING_TYPE_LINE_CENTER) {
     return new ArrayBuffer(0)
   }
   const buf = new ArrayBuffer(totalOf(sources) * CENTER_STRIDE_BYTES)

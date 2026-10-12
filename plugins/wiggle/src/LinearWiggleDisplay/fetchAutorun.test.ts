@@ -359,7 +359,7 @@ describe('LinearWiggleDisplay solid color', () => {
     mode => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
-      display.setRenderingType('density')
+      display.setMark('span')
       display.setAggregate(mode)
 
       const layers = buildSourceRenderData(

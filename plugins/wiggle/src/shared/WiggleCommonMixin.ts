@@ -1,7 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import {
-  ScoreFieldConfigMixin,
+  YFieldConfigMixin,
   autoscaleDomainFromStats,
   computeScoreStats,
   visibleStatsRange,
@@ -11,12 +11,15 @@ import {
 import {
   DEFAULT_LINE_WIDTH_PX,
   DEFAULT_POINT_SIZE_PX,
-  markOf,
   renderingOf,
 } from '../renderingTypes.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
-import type { WiggleRendering } from '../renderingTypes.ts'
+import type {
+  LineInterpolation,
+  WiggleMark,
+  WiggleRendering,
+} from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
 import type {
   Aggregate,
@@ -72,7 +75,7 @@ export const RESOLUTION_STEP = 2
  * #stateModel WiggleCommonMixin
  * #category display
  *
- * Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
+ * Extends `YFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
  * domain and the wiggle-specific config: the origin, rendering type,
  * aggregate, resolution and the line/gap settings. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
@@ -81,7 +84,7 @@ export const RESOLUTION_STEP = 2
  * Used by LinearWiggleDisplay and gccontent's two GC displays.
  */
 export function WiggleCommonMixin() {
-  return ScoreFieldConfigMixin()
+  return YFieldConfigMixin()
     .views(self => ({
       /**
        * #getter
@@ -314,15 +317,16 @@ export function WiggleCommonMixin() {
       },
       /**
        * #action
+       * The plot's `mark`, and a line's `interpolate`; any other mark resets
+       * `interpolate`, which only a line reads.
        */
-      setRenderingType(type: string) {
-        const written = markOf(type)
-        if (written) {
-          setConf(confNode(self), 'mark', written.mark)
-          if (written.interpolate) {
-            setConf(confNode(self), 'interpolate', written.interpolate)
-          }
-        }
+      setMark(mark: WiggleMark, interpolate?: LineInterpolation) {
+        setConf(confNode(self), 'mark', mark)
+        setConf(
+          confNode(self),
+          'interpolate',
+          mark === 'line' ? interpolate : undefined,
+        )
       },
       /**
        * #action

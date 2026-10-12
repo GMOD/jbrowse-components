@@ -70,16 +70,16 @@ const PLOTS = [
 // minimal stand-in for the display: the two axes a leaf writes, and the raw
 // adapter rows that decide whether there is a layout axis at all
 function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
-  const writes: (string | boolean)[] = []
+  const writes: unknown[] = []
   return {
     writes,
     renderingType: 'xyplot',
-    setRenderingType: (t: string) => {
-      writes.push(t)
+    setMark: (mark: string, interpolate?: string) => {
+      writes.push({ mark, interpolate })
     },
     isRowLayout,
-    setPlot: (rendering: string, rowLayout: boolean) => {
-      writes.push(rendering, rowLayout)
+    setPlot: (plot: { mark: string; rowLayout: boolean }) => {
+      writes.push(plot)
     },
     discoveredRows: Array.from({ length: sourceCount }, (_, i) => i),
   }
@@ -135,5 +135,5 @@ test('one leaf writes both axes in one action', () => {
     throw new Error('no Density row under Multi-row')
   }
   density.onClick()
-  expect(self.writes).toEqual(['density', true])
+  expect(self.writes).toEqual([{ mark: 'span', rowLayout: true }])
 })

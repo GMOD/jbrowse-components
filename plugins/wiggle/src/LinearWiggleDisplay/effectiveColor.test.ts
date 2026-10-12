@@ -233,11 +233,11 @@ const scoreKey = (display: ReturnType<typeof scoredDisplay>) =>
 
 const viridis = { field: 'score', scale: 'linear', scheme: 'viridis' } as const
 
-test.each(['xyplot', 'scatter'])(
+test.each(['bar', 'point'] as const)(
   'a gradient on %s keys its ramp, into the export too, and keeps the axis',
-  renderingType => {
+  mark => {
     const display = scoredDisplay([{ name: 'a' }])
-    display.setRenderingType(renderingType)
+    display.setMark(mark)
     display.applyPlot({ color: viridis })
     expect(display.domain).toBeDefined()
     expect(scoreKey(display)?.kind).toBe('ramp')
@@ -271,11 +271,11 @@ test('a color per source on xyplot draws no gradient key', () => {
 
 test('density keeps its key: the fade is keyed until a row brings its own color', () => {
   const display = scoredDisplay([{ name: 'a' }])
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.valueScales).toEqual([])
   const colored = scoredDisplay([{ name: 'a', color: '#ff0000' }])
-  colored.setRenderingType('density')
+  colored.setMark('span')
   expect(scoreKey(colored)).toBeUndefined()
 })
 
@@ -297,7 +297,7 @@ test('a gradient keys its ramp over rows with their own colors, which keep their
 
 test('a gradient on a line keys nothing and says why', () => {
   const display = scoredDisplay([{ name: 'a' }])
-  display.setRenderingType('line')
+  display.setMark('line')
   display.applyPlot({ color: viridis })
   expect(scoreKey(display)).toBeUndefined()
   expect(display.scoreGradientPaints).toBe(false)

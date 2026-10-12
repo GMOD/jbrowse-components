@@ -142,7 +142,7 @@ export async function wiggleTables(
       RESOLUTION_MAX,
       Math.max(RESOLUTION_MIN, readConfObject(conf, 'resolution')),
     ),
-    scoreField: readConfObject(conf, 'y'),
+    yField: readConfObject(conf, 'y'),
     statusCallback: () => {},
   }
   const results = (await executeRenderMultiWiggleData({ pluginManager, args }))

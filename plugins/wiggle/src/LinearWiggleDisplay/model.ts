@@ -83,7 +83,12 @@ import {
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
-import type { WiggleHoveredFeature, Source } from '../util.ts'
+import type {
+  LineInterpolation,
+  Source,
+  WiggleHoveredFeature,
+  WiggleMark,
+} from '../util.ts'
 import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
@@ -720,8 +725,16 @@ export default function stateModelFactory(
        * A Plot type leaf whole, so the regions encode once and never as the
        * new plot in the old layout.
        */
-      setPlot(rendering: string, rowLayout: boolean) {
-        self.setRenderingType(rendering)
+      setPlot({
+        mark,
+        interpolate,
+        rowLayout,
+      }: {
+        mark: WiggleMark
+        interpolate?: LineInterpolation
+        rowLayout: boolean
+      }) {
+        self.setMark(mark, interpolate)
         setConf(self, ['rows', 'field'], rowLayout ? 'source' : '')
       },
 

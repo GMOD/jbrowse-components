@@ -124,7 +124,7 @@ test('leaves tied rows in their incoming order', () => {
 })
 
 test('ranks by the summary band the plot is painting', () => {
-  // the three modes rank these three rows three different ways, so an avg-only
+  // the three modes rank these three rows three different ways, so an mean-only
   // sort under a min or max rendering would order the rows by a number no bar
   // on screen carries
   const d: WiggleDataResult = {

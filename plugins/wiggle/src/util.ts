@@ -197,10 +197,10 @@ export function processFeaturesFromArrays(
 function summaryChannels(
   features: readonly Feature[],
   encoded: { featureIndex?: Uint32Array; y: Float32Array },
-  scoreField: string,
+  yField: string,
 ) {
   const scores = encoded.y
-  if (scoreField !== 'score' || !features.some(f => f.get('summary'))) {
+  if (yField !== 'score' || !features.some(f => f.get('summary'))) {
     return { minScores: undefined, maxScores: undefined }
   }
   const n = scores.length
@@ -225,14 +225,14 @@ function summaryChannels(
 // the walk — is declined.
 export function featuresToRaw(
   features: readonly Feature[],
-  scoreField = 'score',
+  yField = 'score',
   jexl?: JexlInstance,
 ): RawFeatureArrays {
   // a plain name keeps the direct call; a path or an expression pays for
   // its reader
-  const read = isPlainFieldRef(scoreField)
-    ? (f: Feature) => f.get(scoreField)
-    : fieldReader(scoreField, jexl)
+  const read = isPlainFieldRef(yField)
+    ? (f: Feature) => f.get(yField)
+    : fieldReader(yField, jexl)
   const encoded = encodeFeatures(features, { y: f => Number(read(f) ?? 0) }, [
     'y',
   ])
@@ -241,7 +241,7 @@ export function featuresToRaw(
     starts: x,
     ends: x2,
     scores: y,
-    ...summaryChannels(features, encoded, scoreField),
+    ...summaryChannels(features, encoded, yField),
     count,
   }
 }

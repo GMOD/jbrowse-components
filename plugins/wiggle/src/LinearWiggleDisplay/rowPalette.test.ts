@@ -2,15 +2,17 @@ import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
+import type { WiggleMark } from '../util.ts'
+
 function makeDisplay({
   names = ['a', 'b', 'c'],
   rows = true,
-  renderingType,
+  mark,
   displayConfig,
 }: {
   names?: string[]
   rows?: boolean
-  renderingType?: string
+  mark?: WiggleMark
   displayConfig?: Record<string, unknown>
 } = {}) {
   const { createDisplay } = createTestEnvironment({ displayConfig })
@@ -21,8 +23,8 @@ function makeDisplay({
     { sources: names.map(makeSource) },
     view.displayedRegions[0],
   )
-  if (renderingType) {
-    display.setRenderingType(renderingType)
+  if (mark) {
+    display.setMark(mark)
   }
   return display
 }
@@ -74,7 +76,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
   })
 
   it('deals nothing while a gradient paints', () => {
-    const display = makeDisplay({ rows: false, renderingType: 'density' })
+    const display = makeDisplay({ rows: false, mark: 'span' })
     expect(display.rowPaletteDeals).toBe(false)
     expect(display.rowColorChoice).toBe('')
   })

@@ -7,7 +7,7 @@ import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
-// One feature with positive avg, one with negative avg; each carries diverging
+// One feature with positive mean, one with negative mean; each carries diverging
 // min/max so it counts as a real summary feature.
 function makeData(): WiggleDataResult {
   const arrays = processFeaturesFromArrays({
@@ -58,7 +58,7 @@ const baseGpuProps: WiggleGpuProps = {
 }
 
 describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
-  test('avg mode is one layer colored by sign per instance', () => {
+  test('mean mode is one layer colored by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       aggregate: 'mean',
@@ -72,9 +72,9 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
 
   // Regression: the min-max bands used to be silently dropped under the default bicolor
   // (no solid color set). In filled xyplot each band is split by sign so the two
-  // sides stack back-to-front independently: positive max..avg..min, then
-  // negative min..avg..max (most-negative/lightest at the back). The one positive
-  // feature (avg 5) and one negative feature (avg -5) yield a single value per
+  // sides stack back-to-front independently: positive max..mean..min, then
+  // negative min..mean..max (most-negative/lightest at the back). The one positive
+  // feature (mean 5) and one negative feature (mean -5) yield a single value per
   // side per band.
   test('a min-max extent splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
@@ -84,10 +84,10 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
     })
     expect(out.map(s => [...s.featureScores])).toEqual([
       [9], // pos max
-      [5], // pos avg
+      [5], // pos mean
       [2], // pos min
       [-8], // neg min (deepest, drawn first/back)
-      [-5], // neg avg
+      [-5], // neg mean
       [-1], // neg max (drawn last/front, near pivot)
     ])
   })
@@ -184,7 +184,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   )
 
   // A line plot is one continuous line through every bin whatever the mode,
-  // colored by pivot side when drawn: the worker's avg split would leave the
+  // colored by pivot side when drawn: the worker's mean split would leave the
   // positive line chording across every negative stretch.
   test.each([
     ['mean', [5, -5]],
@@ -234,7 +234,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   // sees it (`effectiveExtent`, covered in densityMode.test.ts), so what
   // arrives here is 'none' — and density is the one mode that still needs
   // solid-color layers, `drawDensity` building one gradient per layer.
-  test('density + avg splits into solid pos/neg layers', () => {
+  test('density + mean splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       aggregate: 'mean',

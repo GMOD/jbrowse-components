@@ -2,6 +2,7 @@ import { makeSizeMenu } from '@jbrowse/core/ui'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ElementType } from 'react'
 
 /**
  * A top-level submenu holding a mark's size slider, or nothing where the plot
@@ -23,7 +24,7 @@ export function makeMarkSizeSubMenu({
 }: {
   label: string
   title?: string
-  icon?: MenuItem['icon']
+  icon?: ElementType
   applies: boolean
   value: () => number
   isDefault: boolean

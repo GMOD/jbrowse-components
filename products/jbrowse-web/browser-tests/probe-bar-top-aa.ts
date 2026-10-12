@@ -81,7 +81,7 @@ const OUT = arg('out')
 const DPR = Number(arg('dpr') ?? 2)
 const LOC = arg('loc') ?? 'ctgA:1-4,000'
 
-// One capture each. `rendering` drives `setRenderingType` after load rather
+// One capture each. `rendering` drives `setMark` after load rather
 // than relying on a configured track, so the xyplot and the line arms are the
 // same data drawn two ways and a difference between them is the shader.
 const SCENES = [
@@ -323,8 +323,8 @@ async function captureScene(
     })
     await page.evaluate(rendering => {
       const w = window as any
-      w.JBrowseSession.views[0].tracks[0].displays[0].setRenderingType(
-        rendering,
+      w.JBrowseSession.views[0].tracks[0].displays[0].setMark(
+        ...(rendering === 'linecenter' ? ['line', 'linear'] : ['bar']),
       )
     }, scene.rendering)
     await waitForDataLoaded(page)

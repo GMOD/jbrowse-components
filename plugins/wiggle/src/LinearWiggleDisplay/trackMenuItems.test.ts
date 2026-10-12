@@ -2,6 +2,7 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
+import type { WiggleMark } from '../util.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Driven off a real display instance rather than a structural stand-in: the menu
@@ -10,7 +11,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // restate — and then wouldn't notice drifting from.
 function makeDisplay({
   sources = ['a', 'b'],
-  renderingType,
+  mark,
   faceted = true,
   clusterTree,
   // the tree's leaves, in tree order — hclust's `order` is exactly its newick
@@ -18,7 +19,7 @@ function makeDisplay({
   leafOrder = ['b', 'a'],
 }: {
   sources?: string[]
-  renderingType?: string
+  mark?: WiggleMark
   faceted?: boolean
   clusterTree?: string
   leafOrder?: string[]
@@ -30,8 +31,8 @@ function makeDisplay({
     { sources: sources.map(makeSource) },
     view.displayedRegions[0],
   )
-  if (renderingType) {
-    display.setRenderingType(renderingType)
+  if (mark) {
+    display.setMark(mark)
   }
   display.setRowLayout(faceted)
   if (clusterTree) {
@@ -203,12 +204,9 @@ describe('the wiggle display track menu', () => {
   })
 
   it('offers the min and max wherever the plot can draw them', () => {
-    const binSummary = (renderingType: string) =>
+    const binSummary = (mark: WiggleMark) =>
       subMenuOf(
-        subMenuOf(
-          makeDisplay({ renderingType }).display.trackMenuItems(),
-          'Resolution',
-        ),
+        subMenuOf(makeDisplay({ mark }).display.trackMenuItems(), 'Resolution'),
         'Bin summary',
       )
     const checked = (items: MenuItem[]) =>
@@ -216,7 +214,7 @@ describe('the wiggle display track menu', () => {
         .filter(i => 'checked' in i && i.checked)
         .map(i => 'label' in i && i.label)
 
-    const bars = binSummary('xyplot')
+    const bars = binSummary('bar')
     expect(labels(bars)).toEqual([
       'Minimum',
       'Maximum',
@@ -227,7 +225,7 @@ describe('the wiggle display track menu', () => {
 
     // density maps score to color and draws no min and max, so offering them
     // would tick a setting nothing on screen follows
-    expect(labels(binSummary('density'))).toEqual([
+    expect(labels(binSummary('span'))).toEqual([
       'Minimum',
       'Maximum',
       'Average',

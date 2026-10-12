@@ -108,7 +108,7 @@ describe('findOverlayHit', () => {
     expect(result).toBeUndefined()
   })
 
-  test('attaches summary fields when score has min/max and mode is not avg', () => {
+  test('attaches summary fields when score has min/max and mode is not mean', () => {
     const data = {
       sources: [
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
@@ -124,7 +124,7 @@ describe('findOverlayHit', () => {
     })
   })
 
-  test('omits summary fields when mode is avg', () => {
+  test('omits summary fields when mode is mean', () => {
     const data = {
       sources: [
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),

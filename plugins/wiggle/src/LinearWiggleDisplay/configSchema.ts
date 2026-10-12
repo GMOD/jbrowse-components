@@ -25,8 +25,8 @@ import { retiredConfigSpellings } from './retired.ts'
 /**
  * #config LinearWiggleDisplay
  * #category display
- * Draws quantitative signal as an XY plot, density, line or scatter plot, for
- * one source or many; `rows: 'source'` draws each source in a separate row.
+ * Draws quantitative signal as bars, points, a line or a color strip (`span`),
+ * for one source or many; `rows: 'source'` draws each source in a separate row.
  *
  * Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
  * the *adapter* rather than here — see `MultiWiggleAdapter`'s `subadapters`

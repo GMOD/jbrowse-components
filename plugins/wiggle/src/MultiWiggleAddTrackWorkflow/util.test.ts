@@ -204,7 +204,7 @@ describe('stackAssemblies', () => {
     getCanonicalAssemblyName: (name: string) => aliases[name],
   }
   const track = (assemblyNames: string[]) => ({
-    trackId: assemblyNames.join(),
+    trackId: assemblyNames.join(','),
     type: 'QuantitativeTrack',
     assemblyNames,
   })

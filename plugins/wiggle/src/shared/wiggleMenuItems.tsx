@@ -11,6 +11,7 @@ import {
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
+import { markOf } from '../renderingTypes.ts'
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
@@ -18,6 +19,7 @@ import {
 } from './WiggleCommonMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
+import type { LineInterpolation, WiggleMark } from '../renderingTypes.ts'
 import type { Aggregate, Extent } from './aggregateConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -47,9 +49,13 @@ const leafKey = (layout: string, rendering: string) => `${layout}:${rendering}`
 export function makeRenderingTypeSubMenu(
   self: {
     renderingType: string
-    setRenderingType: (t: string) => void
+    setMark: (mark: WiggleMark, interpolate?: LineInterpolation) => void
     isRowLayout: boolean
-    setPlot: (rendering: string, rowLayout: boolean) => void
+    setPlot: (plot: {
+      mark: WiggleMark
+      interpolate?: LineInterpolation
+      rowLayout: boolean
+    }) => void
     discoveredRows: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
@@ -65,7 +71,8 @@ export function makeRenderingTypeSubMenu(
       icon: ShowChartIcon,
       value: self.renderingType,
       onChange: t => {
-        self.setRenderingType(t)
+        const { mark, interpolate } = markOf(t)!
+        self.setMark(mark, interpolate)
       },
       options: renderings,
     })
@@ -83,7 +90,10 @@ export function makeRenderingTypeSubMenu(
         value: current,
         onChange: key => {
           const cut = key.indexOf(':')
-          self.setPlot(key.slice(cut + 1), key.slice(0, cut) === 'rows')
+          self.setPlot({
+            ...markOf(key.slice(cut + 1))!,
+            rowLayout: key.slice(0, cut) === 'rows',
+          })
         },
         options: renderings.map(
           ([value, label]) => [leafKey(layout, value), label] as const,

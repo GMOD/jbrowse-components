@@ -8,6 +8,6 @@ export interface ReducedModel extends IStateTreeNode, ClusterRunModel<Source> {
   // `clusterableSources`, and `clusteredCladeLayout` for why not `sources`.
   clusterableSources: Source[]
   adapterConfig: Record<string, unknown>
-  scoreField: string
+  yField: string
   aggregate: Aggregate
 }

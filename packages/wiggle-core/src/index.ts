@@ -98,7 +98,7 @@ export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'
 export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
-export { ScoreFieldConfigMixin } from './ScoreFieldConfigMixin.ts'
+export { YFieldConfigMixin } from './YFieldConfigMixin.ts'
 export {
   DEFAULT_SCORE_FIELD,
   yFieldConfigSchemaFields,

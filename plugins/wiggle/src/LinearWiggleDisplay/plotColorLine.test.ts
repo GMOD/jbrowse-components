@@ -2,6 +2,8 @@ import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { plotColorEdit, plotColorLine } from './plotColorLine.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
+import type { WiggleMark } from '../util.ts'
+
 // Driven off a real display rather than a hand-built ResolvedWiggleColor: what
 // the line shows is whatever `wiggleColor` resolved, layout default included,
 // and a stand-in would restate the resolution this is checking.
@@ -10,13 +12,13 @@ function makeDisplay({
   rows = true,
   color,
   origin,
-  renderingType,
+  mark,
 }: {
   names?: string[]
   rows?: boolean
   color?: Record<string, unknown> | string
   origin?: number
-  renderingType?: string
+  mark?: WiggleMark
 } = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
@@ -32,8 +34,8 @@ function makeDisplay({
   if (origin !== undefined) {
     display.setOrigin(origin)
   }
-  if (renderingType) {
-    display.setRenderingType(renderingType)
+  if (mark) {
+    display.setMark(mark)
   }
   return display
 }
@@ -103,7 +105,7 @@ describe('what the line reads out', () => {
   // is the whole color story there too — it is not a gradient.
   it('still edits in density, where the pair is the fade\u2019s two ends', () => {
     const display = makeDisplay({
-      renderingType: 'density',
+      mark: 'span',
       color: {
         field: 'score',
         scale: 'threshold',
@@ -303,7 +305,7 @@ describe('a round trip changes nothing', () => {
     [
       'a threshold pair in density',
       {
-        renderingType: 'density',
+        mark: 'span' as const,
         color: {
           field: 'score',
           scale: 'threshold',

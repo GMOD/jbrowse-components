@@ -54,7 +54,7 @@ export async function executeRenderMultiWiggleData({
     signal,
     bpPerPx = 0,
     resolution = 1,
-    scoreField,
+    yField,
     statusCallback,
   } = args
 
@@ -65,7 +65,7 @@ export async function executeRenderMultiWiggleData({
     bpPerPx,
     resolution,
     sources: sourcesArg,
-    scoreField,
+    yField,
     signal,
     statusCallback,
   }

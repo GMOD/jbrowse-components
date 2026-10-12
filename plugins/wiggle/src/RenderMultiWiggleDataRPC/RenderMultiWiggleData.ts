@@ -13,7 +13,7 @@ interface RenderMultiWiggleDataArgs {
   sources?: SourceInfo[]
   bpPerPx?: number
   resolution?: number
-  scoreField?: string
+  yField?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

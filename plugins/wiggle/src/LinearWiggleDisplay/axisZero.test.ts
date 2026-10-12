@@ -47,7 +47,7 @@ test('the score menu toggle writes the slot', () => {
 // says.
 test('a density plot spans its values whatever zero says', () => {
   const display = makeDisplay()
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.scaleZero).toBe(true)
   expect(display.domain).toEqual([30, 60])
 })

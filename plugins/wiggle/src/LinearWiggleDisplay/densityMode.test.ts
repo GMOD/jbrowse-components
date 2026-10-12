@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
@@ -42,7 +43,7 @@ it('scales a density domain to the averages it actually paints', () => {
   // density has no min-max presentation, so a domain over the min and max
   // would leave the color ramp — and the score legend printing it —
   // describing a range nothing on screen reaches
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.effectiveExtent).toBe('none')
   expect(display.domain).toEqual([1, 2])
 
@@ -54,7 +55,7 @@ it('scales a density domain to the averages it actually paints', () => {
 it("lists a bin's min and max in the tooltip only where the plot shows them", () => {
   const display = makeDisplay()
   expect(display.tooltipShowsMinMax).toBe(true)
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.tooltipShowsMinMax).toBe(false)
   display.setAggregate('max')
   expect(display.tooltipShowsMinMax).toBe(true)
@@ -70,28 +71,35 @@ it('stops drawing cross hatches in density mode', () => {
   // the hatches rule a score axis density doesn't have, and the track menu
   // drops the toggle there — so leaving them drawn strands them on with no way
   // back off
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.grid).toBe(true)
   expect(hatchedBands()).toEqual([])
 })
 
 it("writes the plot type as the mark and the line's interpolation it draws", () => {
   const display = makeDisplay()
-  display.setRenderingType('linecenter')
+  display.setMark('line', 'linear')
   expect(display.configuration.mark).toBe('line')
   expect(display.configuration.interpolate).toBe('linear')
   expect(display.renderingType).toBe('linecenter')
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.configuration.mark).toBe('span')
   expect(display.renderingType).toBe('density')
-  display.setRenderingType('line')
+  display.setMark('line')
   expect(display.configuration.interpolate).toBe('step')
   expect(display.renderingType).toBe('line')
 })
 
+it('a mark other than a line leaves no interpolate written, which only a line reads', () => {
+  const display = makeDisplay()
+  display.setMark('line', 'linear')
+  display.setMark('bar')
+  expect(getSnapshot(display.configuration)).not.toHaveProperty('interpolate')
+})
+
 it('titles the density key with the scale title, the axis it replaces', () => {
   const display = makeDisplay()
-  display.setRenderingType('density')
+  display.setMark('span')
   expect(display.scoreColorScale?.title).toBe('Score')
   setConf(display, ['scales', 'y', 'title'], 'phyloP')
   expect(display.scoreColorScale?.title).toBe('phyloP')

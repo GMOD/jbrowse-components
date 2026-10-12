@@ -37,7 +37,7 @@ const ScoreText = observer(function ScoreText({
 }) {
   return row.summary ? (
     <span>
-      min:{toP(row.minScore)} avg:{toP(row.score)} max:{toP(row.maxScore)}
+      min:{toP(row.minScore)} mean:{toP(row.score)} max:{toP(row.maxScore)}
     </span>
   ) : (
     <span>{toP(row.score)}</span>

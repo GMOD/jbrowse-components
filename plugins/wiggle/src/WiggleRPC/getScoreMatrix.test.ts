@@ -38,13 +38,13 @@ function callArgs({
   regions,
   sources,
   bpPerPx,
-  scoreField,
+  yField,
   aggregate = 'mean',
 }: {
   regions: Region[]
   sources: string[]
   bpPerPx: number
-  scoreField?: string
+  yField?: string
   aggregate?: Aggregate
 }) {
   return {
@@ -52,7 +52,7 @@ function callArgs({
     adapterConfig,
     regions,
     bpPerPx,
-    scoreField,
+    yField,
     aggregate,
     sources: sources.map(name => ({ name, source: name })),
   } satisfies GetScoreMatrixArgs & RpcCallContext
@@ -65,7 +65,7 @@ async function run(opts: {
   regions: Region[]
   sources: string[]
   bpPerPx: number
-  scoreField?: string
+  yField?: string
 }) {
   const { features, regions } = opts
   const perRegion = Array.isArray(features[0]) ? features : [features]
@@ -145,7 +145,7 @@ describe('getScoreMatrix', () => {
       regions: [region('chr1', 0, 100)],
       sources: ['a'],
       bpPerPx: 50,
-      scoreField: 'coverage',
+      yField: 'coverage',
     })
     expect(Array.from(rows.get('a')!)).toEqual([30, 30])
   })

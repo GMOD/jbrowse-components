@@ -1,6 +1,6 @@
 import { hitTestMouse, wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
-test('the details payload lists min, avg and max for a summary bin', () => {
+test('the details payload lists min, mean and max for a summary bin', () => {
   expect(
     wiggleFeatureWidgetData({
       refName: 'chr1',
@@ -11,7 +11,7 @@ test('the details payload lists min, avg and max for a summary bin', () => {
         { source: 'b', score: 3 },
       ],
     }).sources,
-  ).toEqual({ a: { min: 1, avg: 5, max: 9 }, b: 3 })
+  ).toEqual({ a: { min: 1, mean: 5, max: 9 }, b: 3 })
 })
 
 describe('hitTestMouse', () => {

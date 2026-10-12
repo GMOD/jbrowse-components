@@ -4,5 +4,5 @@ export interface WiggleAdapterOptions extends BaseOptions {
   resolution?: number
   // The feature field, path or `jexl:` expression `featuresToRaw` plots for an
   // adapter with no array fast path; the fast paths serve `score` and ignore it
-  scoreField?: string
+  yField?: string
 }

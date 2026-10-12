@@ -37,7 +37,7 @@ function hasFeatureArrays(
 // One RawFeatureArrays per region, aligned to input order. Adapters that
 // coalesce (BigWig) serve every region in a single pass; the others fall back
 // to a per-region loop, and non-array adapters to plain features, whose
-// `scoreField` may be a `jexl:` expression the worker's instance evaluates.
+// `yField` may be a `jexl:` expression the worker's instance evaluates.
 export function fetchRegionRaws(
   adapter: BaseFeatureDataAdapter,
   regions: Region[],
@@ -54,7 +54,7 @@ export function fetchRegionRaws(
           regions.map(region =>
             adapter
               .getFeaturesArray(region, opts)
-              .then(features => featuresToRaw(features, opts.scoreField, jexl)),
+              .then(features => featuresToRaw(features, opts.yField, jexl)),
           ),
         )
 }
@@ -91,7 +91,7 @@ export async function fetchSourceRaws(
   return [...sources].map(source => ({
     source,
     raws: groupsPerRegion.map(groups =>
-      featuresToRaw(groups.get(source) ?? [], opts.scoreField, jexl),
+      featuresToRaw(groups.get(source) ?? [], opts.yField, jexl),
     ),
   }))
 }

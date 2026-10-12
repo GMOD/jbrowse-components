@@ -8,5 +8,5 @@ export interface GetScoreMatrixArgs {
   bpPerPx: number
   sources: Source[]
   aggregate: Aggregate
-  scoreField?: string
+  yField?: string
 }

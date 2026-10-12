@@ -124,9 +124,9 @@ describe('makeSummaryLayers', () => {
 
   test('filled splits each band by sign, stacking each side back-to-front', () => {
     // pivot 6. Per band, values >= 6 go to the positive side, the rest to the
-    // negative side. max [9,12] -> both pos; avg [5,8] -> 8 pos, 5 neg; min [2,4]
-    // -> both neg. Positive side stacks max..avg..min (light at the back);
-    // negative side reverses to min..avg..max.
+    // negative side. max [9,12] -> both pos; mean [5,8] -> 8 pos, 5 neg; min [2,4]
+    // -> both neg. Positive side stacks max..mean..min (light at the back);
+    // negative side reverses to min..mean..max.
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
@@ -140,17 +140,17 @@ describe('makeSummaryLayers', () => {
     expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
     expect(result.map(l => [...l.featureScores])).toEqual([
       [9, 12], // pos max
-      [8], // pos avg
+      [8], // pos mean
       // pos min empty (both below pivot) -> dropped
       [2, 4], // neg min (deepest, back)
-      [5], // neg avg
+      [5], // neg mean
       // neg max empty (both above pivot) -> dropped
     ])
   })
 
   test('filled bands stack by the origin and color by the pivot', () => {
     // origin 0, pivot 6: every value grows up from 0, so there is one stack
-    // max..avg..min, and each bar takes pos or neg by its side of 6.
+    // max..mean..min, and each bar takes pos or neg by its side of 6.
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
@@ -275,9 +275,9 @@ describe('makeSummaryLayers', () => {
   // tint to carry, so the two colors are plain posColor/negColor — the very
   // ones a min-max render's mean band uses.
   test('the min/max band is untinted', () => {
-    // noSummaryData collapses to the avg band alone; its scores [5, 8] straddle
+    // noSummaryData collapses to the mean band alone; its scores [5, 8] straddle
     // pivot 6, so it yields both untinted colors in one layer.
-    const avg = makeSummaryLayers({
+    const mean = makeSummaryLayers({
       data: noSummaryData,
       ...base,
       pivot: 6,
@@ -286,16 +286,16 @@ describe('makeSummaryLayers', () => {
       origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })[0]!.colorsAbgr!
-    const [below, above] = [avg[0]!, avg[1]!]
+    const [below, above] = [mean[0]!, mean[1]!]
     // min [2, 4] is entirely below the pivot, max [9, 12] entirely above
     expect([...bandOnly('min')[0]!.colorsAbgr!]).toEqual([below, below])
     expect([...bandOnly('max')[0]!.colorsAbgr!]).toEqual([above, above])
   })
 
   test('colors each band per feature by sign vs pivot', () => {
-    // pivot 6: avg [5,8] -> neg,pos (differ); max [9,12] -> pos,pos (same);
+    // pivot 6: mean [5,8] -> neg,pos (differ); max [9,12] -> pos,pos (same);
     // min [2,4] -> neg,neg (same).
-    const [min, avg, max] = makeSummaryLayers({
+    const [min, mean, max] = makeSummaryLayers({
       data: summaryData,
       ...base,
       pivot: 6,
@@ -304,15 +304,15 @@ describe('makeSummaryLayers', () => {
       origin: 6,
       renderingType: RENDERING_TYPE_SCATTER,
     })
-    expect(avg!.colorsAbgr).toHaveLength(2)
-    expect(avg!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1]) // neg vs pos
+    expect(mean!.colorsAbgr).toHaveLength(2)
+    expect(mean!.colorsAbgr![0]).not.toBe(mean!.colorsAbgr![1]) // neg vs pos
     expect(max!.colorsAbgr![0]).toBe(max!.colorsAbgr![1]) // both pos
     expect(min!.colorsAbgr![0]).toBe(min!.colorsAbgr![1]) // both neg
-    // the max band's pos color is a lightened variant of the avg band's pos
-    expect(max!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1])
-    // below-pivot avg color equals the min band's (both plain neg, but min is
+    // the max band's pos color is a lightened variant of the mean band's pos
+    expect(max!.colorsAbgr![0]).not.toBe(mean!.colorsAbgr![1])
+    // below-pivot mean color equals the min band's (both plain neg, but min is
     // darkened) — so they must differ by the tint
-    expect(min!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![0])
+    expect(min!.colorsAbgr![0]).not.toBe(mean!.colorsAbgr![0])
   })
 
   test('negative bands mirror the tint: most-negative min band is lightest', () => {

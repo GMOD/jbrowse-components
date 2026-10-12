@@ -4,14 +4,14 @@ import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 
 import type { YFieldConfigModel } from './yFieldConfigSchemaFields.ts'
 
-export interface ScoreFieldConfigHost {
+export interface YFieldConfigHost {
   configuration: YFieldConfigModel
 }
 
-const confNode = (self: object) => self as ScoreFieldConfigHost
+const confNode = (self: object) => self as YFieldConfigHost
 
 /**
- * #stateModel ScoreFieldConfigMixin
+ * #stateModel YFieldConfigMixin
  * #category display
  *
  * `WiggleScoreConfigMixin` plus the `y` slot, for a display that plots one
@@ -19,7 +19,7 @@ const confNode = (self: object) => self as ScoreFieldConfigHost
  * the wiggle display. `LinearMarkDisplay` names a field per mark and composes
  * the base instead.
  */
-export function ScoreFieldConfigMixin() {
+export function YFieldConfigMixin() {
   return WiggleScoreConfigMixin().views(self => ({
     /**
      * #getter
@@ -27,7 +27,7 @@ export function ScoreFieldConfigMixin() {
      * `score` by default. A fetch input: every composing display carries it in
      * its `rpcProps()`, since the field is read where the features are.
      */
-    get scoreField(): string {
+    get yField(): string {
       return getConf(confNode(self), 'y')
     },
   }))

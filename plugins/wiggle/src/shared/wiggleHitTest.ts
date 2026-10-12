@@ -76,7 +76,7 @@ export function makeTooltipRow(
 }
 
 // Feature-widget payload for a clicked wiggle hit. An unnamed row is keyed as
-// `score`; named sources take one entry each. A summary bin lists its min, avg
+// `score`; named sources take one entry each. A summary bin lists its min, mean
 // and max as the tooltip does, since the plot may be drawing any of the three.
 export function wiggleFeatureWidgetData(
   feat: WiggleHoveredFeature,
@@ -90,7 +90,7 @@ export function wiggleFeatureWidgetData(
       feat.rows.map(r => [
         r.source ?? 'score',
         r.summary
-          ? { min: r.minScore, avg: r.score, max: r.maxScore }
+          ? { min: r.minScore, mean: r.score, max: r.maxScore }
           : r.score,
       ]),
     ),

@@ -8,7 +8,7 @@ import type { RampScale } from '@jbrowse/core/ui/colorScale'
 /**
  * Where a wiggle-family display puts its plot inside its own height: one plot
  * box insets by the scalebar label gutter so its end labels aren't clipped, a
- * faceted stack puts `numRows` rows edge-to-edge over the full height.
+ * stack of rows puts `numRows` rows edge-to-edge over the full height.
  *
  * One value because the halves have to move together — the render height, the
  * on-screen canvas box, the SVG clip group and `computeYTicks`' offset — or the
@@ -34,7 +34,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   effectiveExtent: string
   maxGapMultiple: number
   resolution: number
-  scoreField: string
+  yField: string
   /** `scales.y.title`, empty where it names none. */
   scaleTitle: string
   /**
@@ -105,13 +105,13 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
     sharedRpcProps() {
       return {
         resolution: self.resolution,
-        scoreField: self.scoreField,
+        yField: self.yField,
       }
     },
 
     /**
      * #method
-     * The encoder inputs — everything but the row list and the facet. Spread
+     * The encoder inputs — everything but the row list and the row layout. Spread
      * into the display's `gpuProps()`; see `sharedRpcProps` for why it isn't an
      * override.
      */

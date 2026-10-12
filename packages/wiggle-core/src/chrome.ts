@@ -14,4 +14,3 @@ export {
 
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
 export { makeMarkSizeSubMenu } from './pointSizeMenu.tsx'
-export type { PointSizeAccess } from './pointSizeMenu.tsx'

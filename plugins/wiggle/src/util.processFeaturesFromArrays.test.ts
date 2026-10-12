@@ -201,10 +201,10 @@ describe('processFeaturesFromArrays', () => {
     ])
   })
 
-  // The display's `scoreField` slot names which field a fallback adapter's
+  // The display's `yField` slot names which field a fallback adapter's
   // features plot; `score` stays the default so every existing config reads
   // as before, and a feature with nothing in the named field plots at 0.
-  test('featuresToRaw plots the named scoreField, a missing one as 0', () => {
+  test('featuresToRaw plots the named yField, a missing one as 0', () => {
     const features = [
       feature({ start: 0, end: 10, score: 5, fst: 0.25 }, 0),
       feature({ start: 10, end: 20, score: 7 }, 1),

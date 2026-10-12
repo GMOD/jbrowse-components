@@ -25,9 +25,9 @@ async function resetDisabled(items: MenuItem[], label: string) {
 test('a line width carried into a scatter plot is its point size, not the default', async () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setRenderingType('line')
+  display.setMark('line')
   display.setSize(2)
-  display.setRenderingType('scatter')
+  display.setMark('point')
   expect(display.size).toBe(2)
   expect(
     await resetDisabled(display.trackMenuItems(), 'Scatter point size'),
@@ -37,6 +37,6 @@ test('a line width carried into a scatter plot is its point size, not the defaul
 test('an unset size reads as the default under either mark', async () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setRenderingType('line')
+  display.setMark('line')
   expect(await resetDisabled(display.trackMenuItems(), 'Line width')).toBe(true)
 })
