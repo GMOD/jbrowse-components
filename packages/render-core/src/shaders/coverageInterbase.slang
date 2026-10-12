@@ -25,9 +25,9 @@ struct Instance {
 // at 40bp/px to opaque, while this pass resolves their union once and stays at
 // 50%. drawInterbaseSegments `//! js-export`s this so both sides round alike.
 //
-// The bar starts on the triangle's last pixel row, floor(TRIANGLE_H), rather
-// than the row after it: the tip anti-aliases to nothing, so starting below it
-// leaves a visible gap between triangle and bar.
+// The bar starts on the row holding the triangle's tip, floor(TRIANGLE_H),
+// rather than the row after it: the tip covers only a sliver of that row, so
+// starting below it leaves a visible gap between triangle and bar.
 float interbaseEdgePx(float offset, float interbaseHeight) {
   return floor(TRIANGLE_H) + floor(offset * interbaseHeight + 0.5);
 }

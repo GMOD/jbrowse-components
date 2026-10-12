@@ -7,7 +7,9 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u', stages: ['vertex'] },
 ]
 
-export const VERTS_PER_INSTANCE = 3
+export const VERTS_PER_INSTANCE = 6
+
+export const COVERAGE = 'analytic' as const
 
 export const UNIFORMS_SIZE_BYTES = 112
 

@@ -1,16 +1,18 @@
 // Indicator triangles: a single 7x4.5px triangle per instance pinned to the top
 // of the coverage band, marking an insertion / softclip / hardclip site whose
-// histogram bar hangs below it. Barycentric coords in the fragment shader give
-// cheap diagonal-edge anti-aliasing. See coverageBand.slang.
+// histogram bar hangs below it. Each instance is a quad padded past the
+// triangle and shaded by edge coverage, so the ink, tip included, matches
+// Canvas2D's `drawIndicatorTriangle`. See coverageBand.slang.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! layout-out: packages/alignments-core/src/indicatorLayout.generated.ts
 
+import antialias;
 import coverageBand;
 import hpmath;
 
-public static const uint VERTS_PER_INSTANCE = 3u;
-// TRIANGLE_HW / TRIANGLE_H come from coverageBand — coverageInterbase hangs its
-// bars below this triangle and must use the same height.
+public static const uint VERTS_PER_INSTANCE = 6u;
+static const float PAD_PX = 1.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<CoverageBandUniforms> u;
 
@@ -22,40 +24,35 @@ struct Instance {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  float3 bary     : COLOR1;
+  // CSS px from the triangle's top centre, y pointing down.
+  float2 local    : COLOR1;
 };
 
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
-  uint v = vid % 3u;
+  float2 corner = quadLocal(vid);
+  o.local = float2(
+    lerp(-TRIANGLE_HW - PAD_PX, TRIANGLE_HW + PAD_PX, corner.x),
+    lerp(TRIANGLE_H + PAD_PX, -PAD_PX, corner.y)
+  );
 
-  float cx = covBpToClipX(inst.position, u);
-  float tw = pxToClipLen(TRIANGLE_HW * 2.0, u.canvasW);  // full triangle width
-  float th = pxToClipLen(TRIANGLE_H, u.canvasH);
-
-  float top = covAreaTop(u);
-  float sx, sy;
-  if (v == 0u)      { sx = cx - tw * 0.5; sy = top;      o.bary = float3(1.0, 0.0, 0.0); }
-  else if (v == 1u) { sx = cx + tw * 0.5; sy = top;      o.bary = float3(0.0, 1.0, 0.0); }
-  else              { sx = cx;            sy = top - th; o.bary = float3(0.0, 0.0, 1.0); }
-
-  o.position = float4(covFlipX(sx, u), sy, 0.0, 1.0);
+  float cx = covFlipX(covBpToClipX(inst.position, u), u);
+  o.position = float4(
+    cx + pxToClipLen(o.local.x, u.canvasW),
+    covAreaTop(u) - pxToClipLen(o.local.y, u.canvasH),
+    0.0,
+    1.0
+  );
   o.color = float4(covClipKindColor(inst.colorType, u), 1.0);
   return o;
 }
 
-// Barycentric -> approximate px distance from each diagonal edge, for the
-// smoothstep fade below. NOT the triangle's altitude despite the round number:
-// for the 7x4.5 triangle that is 7*4.5/hypot(3.5, 4.5) = 5.53px, so this scale
-// spreads the fade over ~1.5px rather than 1px. Left as-is — it is a softness
-// knob, and tightening it visibly sharpens every indicator.
-static const float EDGE_FADE_SCALE_PX = 3.7;
-
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float dLeft = fragIn.bary.y * EDGE_FADE_SCALE_PX;
-  float dRight = fragIn.bary.x * EDGE_FADE_SCALE_PX;
-  float aa = smoothstep(0.0, 1.0, min(dLeft, dRight));
+  float2 p = fragIn.local;
+  float slantInk = (TRIANGLE_H * (TRIANGLE_HW - abs(p.x)) - TRIANGLE_HW * p.y)
+    / length(float2(TRIANGLE_HW, TRIANGLE_H));
+  float aa = aaRamp(min(p.y, slantInk), aaGradient(p.y));
   return float4(fragIn.color.rgb, fragIn.color.a * aa);
 }
