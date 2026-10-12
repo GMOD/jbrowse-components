@@ -160,9 +160,9 @@ generator resolves the base config automatically through the TypeScript checker
 to be written — `createBaseTrackConfig(pluginManager)`,
 `baseLinearDisplayConfigSchema`, an aliased default import, and even
 `pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` (resolved by
-the quoted name) all link. Each config page then renders an "Inherited config
-slots" section reproducing every base slot in full, so the page is
-self-contained; an unresolved base is listed in `coverage-gaps.txt`.
+the quoted name) all link. The slot table then reproduces every base slot in
+full under an "Inherited from <base>" group row, so the page is self-contained;
+an unresolved base is listed in `coverage-gaps.txt`.
 
 ## Slots a spread brings in
 
@@ -216,7 +216,9 @@ the prose that `extends` resolution reads:
 
 The content between `#example` and the end of the JSDoc (or the next `#example`
 marker) is rendered verbatim — prose lines explain the snippet, fenced code
-blocks are copy-pasteable.
+blocks are copy-pasteable. Every `js`/`json` fence in a `#config` example is
+validated against the config schema, keys and values, and a failure stops the
+run with the file named.
 
 ### Multiple labeled examples
 
@@ -272,11 +274,11 @@ step in `push.yml` diffs it alongside the generated pages, so the list can't go
 stale.
 
 The file carries one section per gap kind, each naming the tag that clears it:
-missing `#example` (configs, models), model members with no description,
-`General`-category fallbacks, members the structural pass can't see, unresolved
-`baseConfiguration` references, and adapters whose example defaulted to
-`FeatureTrack`. A section stays in the file at `(0)` so a regression is a `+`
-line under a heading that was already there.
+missing `#example` (configs, models), pages with no opening description, model
+members with no description, `General`-category fallbacks, members the
+structural pass can't see, unresolved `baseConfiguration` references, and
+adapters whose example defaulted to `FeatureTrack`. A section stays in the file
+at `(0)` so a regression is a `+` line under a heading that was already there.
 
 This replaces relying on `console.warn`: a warning fails nothing and scrolls
 past in a CI log, which is how 40 config pages and 90 model pages came to be
