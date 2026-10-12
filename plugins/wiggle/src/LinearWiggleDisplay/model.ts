@@ -58,8 +58,8 @@ import {
   declaredCuts,
   paintedWiggleColor,
   resolveWiggleColor,
-  scoreGradientPaints,
   wiggleColorEncoding,
+  wiggleMarkColoring,
   wiggleColorNotices,
 } from '../shared/wiggleColor.ts'
 import {
@@ -327,13 +327,27 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether color is spent on the score, so a row's color shows only on
-       * its label bar: density always, where the white fade counts, and
-       * bars or points under a declared `linear` color. Lines part
-       * in two colors even then.
+       * How the plot spends color (`wiggleMarkColoring`): whether the score
+       * gradient paints, whether row colors do, and which of a source's
+       * colors its marks take.
+       */
+      get markColoring() {
+        return wiggleMarkColoring({
+          colorSetting: self.colorSetting,
+          wiggleColor: this.wiggleColor,
+          renderingType: self.renderingType,
+          rowLayout: self.isRowLayout,
+        })
+      },
+
+      /**
+       * #getter
+       * Whether color is spent on the score: density always, where the white
+       * fade counts, and bars or points under a declared `linear` color.
+       * Lines part in two colors even then.
        */
       get scoreGradientPaints() {
-        return scoreGradientPaints(this.wiggleColor, self.renderingType)
+        return this.markColoring.gradientPaints
       },
 
       /**
@@ -374,18 +388,7 @@ export default function stateModelFactory(
        * nothing else colors it: no score gradient, and no declared `color`.
        */
       get rowColorPaintsMarks(): boolean {
-        const { value, field } = self.colorSetting
-        return !this.scoreGradientPaints && value === undefined && !field
-      },
-
-      /**
-       * #getter
-       * Whether each source's marks paint in its `rowColor`: while
-       * `rowColorPaintsMarks`, and always in one shared box, which draws no
-       * label bar to carry it.
-       */
-      get marksTakeRowColor(): boolean {
-        return self.rowColorPaintsMarks || self.isOverlay
+        return this.markColoring.rowColorPaintsMarks
       },
     }))
     .views(self => ({
@@ -398,14 +401,14 @@ export default function stateModelFactory(
        * of the dealt.
        */
       get markSources(): { name: string; color?: string }[] {
-        const paints = self.marksTakeRowColor
+        const { markColor } = self.markColoring
         const uncolored =
           self.rowPaletteDeals && self.resolvedRowColors.size > 0
             ? UNCOLORED_ROW
             : undefined
         return self.sources.map(s => ({
           name: s.name,
-          color: markColorOf(s, paints) ?? uncolored,
+          color: markColorOf(s, markColor) ?? uncolored,
         }))
       },
 
@@ -495,13 +498,13 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * `scoreRampApplies` over the display's sources
+       * `scoreRampApplies` over the colors the marks paint in
        */
       get scoreRampApplies() {
         return scoreRampApplies(
           self.scoreGradientPaints,
           self.wiggleColor,
-          self.sources,
+          this.markSources,
         )
       },
 
@@ -670,7 +673,7 @@ export default function stateModelFactory(
         if (this.thresholdColorScale) {
           scales.push(this.thresholdColorScale)
         }
-        if (!(self.isOverlay && self.scoreGradientPaints)) {
+        if (self.isRowLayout || self.markColoring.markColor === 'row') {
           scales.push(...self.rowColorScales)
         }
         return scales

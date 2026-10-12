@@ -78,7 +78,9 @@ scheme }` over `score` — and a subtrack's color is `rowColor`'s:
 | row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
 | density, either of the above | the **score ramp** | the row's own `color` (overlay: `rowColor`) | by an attribute only |
 
-A row's `rowColor` draws its label bar in every layout that has row labels.
+A written `color`, a constant or a scale, paints every mark in any layout;
+the table is what an unset one leaves to the rows. A row's `rowColor` draws
+its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
   as every display's color does, and `resolveWiggleColor` turns that into

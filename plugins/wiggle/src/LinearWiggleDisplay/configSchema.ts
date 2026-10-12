@@ -148,9 +148,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     rows: quantitativeRowsConfigSchema,
     /**
      * #slot rowColor
-     * The color a reader set on a named subtrack, as `domain`/`range` pairs:
-     * its plot, or under a score gradient the tint beside its label, ahead of
-     * the adapter's color and the palette.
+     * The color a reader set on a named subtrack, as `domain`/`range` pairs,
+     * ahead of the adapter's color and the palette: its plot while `color` is
+     * unset, and otherwise, or under a score gradient, the tint beside its
+     * label.
      * #example
      * ```json
      * {

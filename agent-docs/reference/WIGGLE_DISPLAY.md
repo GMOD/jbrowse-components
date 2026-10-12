@@ -270,14 +270,16 @@ The ramp wherever `scoreGradientPaints` — density, and bars or points under
 `linear` — a row per source for `categorical`, a row per interval for a
 `threshold` whose cut the config declared, and none for a string. A threshold
 cutting at the `origin` draws none either: the axis already shows where the
-origin is. Density's white fade is keyed only while no row brings its own
-color; a declared gradient ignores row colors, so it is keyed regardless, and
-only density gives the ramp the axis's place.
+origin is. Density's white fade is keyed only while no mark paints a row
+color (`scoreRampApplies` reads `markSources`); a declared gradient ignores row
+colors, so it is keyed regardless, and only density gives the ramp the axis's
+place.
 
 **The row colors are keyed by tree-sidebar's one row color key**
 (`rowColorScales`, TREE_SIDEBAR.md): an overlay of several subtracks keys each by
 name, a row per subtrack keys only an attribute such as `group`, and an overlay
-painting a score gradient keys none, since no row color shows there.
+keys them only while its marks paint them: an overlaid density with row
+colors keys each row, and a written color keys none.
 
 **`scoreGradientPaints` leaves a row's color on its label bar only**, and the
 plot's per-row fade end is the row's own `color`, which nothing in the UI
@@ -318,13 +320,15 @@ its baseline and a row per subtrack draws each in the plot color unless
 resolved `rowColor` and writes the dialog's submit. `group` has no config home,
 so a `group` pasted into the bulk editor is not kept.
 
-**`markSources` is what the plot paints.** A source's marks take its `rowColor`
-where `marksTakeRowColor` — `rowColorPaintsMarks`, or one shared box, which has
-no label bar to carry it — and its own `color` otherwise, which the density fade
-ends on (`markColorOf`). The encoder and the tooltip read `markSources`; the
-label bar reads `rowColor` always, so a color set on a row stays on its bar
-when a gradient starts painting rather than going into the ramp. A `group`
-colors nothing until `rowColor` names it.
+**`markSources` is what the plot paints**, by one rule the model and
+`wiggleTables` share (`wiggleMarkColoring`). A written `color` paints every
+mark, so no source color reaches them. Unset, a source's marks take its
+`rowColor`, except a density row in a stack of rows, which fades to the
+source's own `color` so an attribute's row color never stands in for the
+score's scale. The encoder and the tooltip read `markSources`; the label bar
+reads `rowColor` always, so a color set on a row stays on its bar when a
+gradient starts painting rather than going into the ramp. A `group` colors
+nothing until `rowColor` names it.
 
 **A row left uncolored beside dealt ones paints grey** (`UNCOLORED_ROW`,
 `#999`, ggplot's `na.value`): where the palette deals the shared box and some

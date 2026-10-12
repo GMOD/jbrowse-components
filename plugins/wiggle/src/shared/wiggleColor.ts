@@ -58,6 +58,37 @@ export function scoreGradientPaints(
   )
 }
 
+/** Which of a source's colors its marks paint in, if either. */
+export type MarkColorSource = 'row' | 'own' | 'none'
+
+/**
+ * How a plot spends color, for the model and `wiggleTables` alike. A written
+ * `color` paints every mark. Unset, a source's marks take its row color, but
+ * a density row in a stack of rows fades to the source's own color, so an
+ * attribute's row color never stands in for the score's scale.
+ */
+export function wiggleMarkColoring({
+  colorSetting,
+  wiggleColor,
+  renderingType,
+  rowLayout,
+}: {
+  colorSetting: { value?: unknown; field?: string }
+  wiggleColor: ResolvedWiggleColor
+  renderingType: string
+  rowLayout: boolean
+}) {
+  const gradientPaints = scoreGradientPaints(wiggleColor, renderingType)
+  const written = colorSetting.value !== undefined || !!colorSetting.field
+  const rowColorPaintsMarks = !written && !gradientPaints
+  const markColor: MarkColorSource = written
+    ? 'none'
+    : rowColorPaintsMarks || !rowLayout
+      ? 'row'
+      : 'own'
+  return { gradientPaints, rowColorPaintsMarks, markColor }
+}
+
 /** A wiggle color as it paints. Unset beside `score`, the scale is the bicolor cut. */
 export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)

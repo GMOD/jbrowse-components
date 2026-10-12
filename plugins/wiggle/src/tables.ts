@@ -45,8 +45,8 @@ import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generat
 import {
   paintedWiggleColor,
   resolveWiggleColor,
-  scoreGradientPaints,
   wiggleColorEncoding,
+  wiggleMarkColoring,
 } from './shared/wiggleColor.ts'
 import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 
@@ -225,20 +225,9 @@ export async function wiggleTables(
     data.sources,
     readConfObject(conf.rows, 'domain'),
   )
-  const gradientPaints = scoreGradientPaints(wiggleColor, renderingType)
-  const ramp = scoreRampApplies(gradientPaints, wiggleColor, sources)
-    ? rampKeyOf(
-        scoreRampScale(
-          domain,
-          scaleType,
-          readConfObject(scale, 'symlogConstant'),
-          wiggleColor,
-          readConfObject(scale, 'title') || 'Score',
-        ),
-      )
-    : undefined
-  const rowColorPaintsMarks =
-    !gradientPaints && setting.value === undefined && !setting.field
+  const { gradientPaints, rowColorPaintsMarks, markColor } = wiggleMarkColoring(
+    { colorSetting: setting, wiggleColor, renderingType, rowLayout },
+  )
   const paletteDeals = !rowLayout && sources.length > 1 && rowColorPaintsMarks
   const rowColor = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
@@ -259,9 +248,20 @@ export async function wiggleTables(
     color:
       markColorOf(
         { color: s.color, rowColor: rowColors.get(s.name) },
-        rowColorPaintsMarks || !rowLayout,
+        markColor,
       ) ?? uncolored,
   }))
+  const ramp = scoreRampApplies(gradientPaints, wiggleColor, markSources)
+    ? rampKeyOf(
+        scoreRampScale(
+          domain,
+          scaleType,
+          readConfObject(scale, 'symlogConstant'),
+          wiggleColor,
+          readConfObject(scale, 'title') || 'Score',
+        ),
+      )
+    : undefined
   const regionLayers = results.map(result =>
     buildSourceRenderData(result, {
       sources: markSources,

@@ -15,19 +15,27 @@ const sources: Source[] = [
 ]
 
 describe('markColorOf', () => {
-  it("paints each row's resolved color while the row color paints the marks", () => {
-    expect(sources.map(s => markColorOf(s, true))).toEqual([
+  it("paints each row's resolved row color", () => {
+    expect(sources.map(s => markColorOf(s, 'row'))).toEqual([
       '#a0a0a0',
       '#0000ff',
       undefined,
     ])
   })
 
-  it('paints the row its own color otherwise', () => {
-    expect(sources.map(s => markColorOf(s, false))).toEqual([
+  it('paints the row its own color, which a density row fades to', () => {
+    expect(sources.map(s => markColorOf(s, 'own'))).toEqual([
       '#0a0a0a',
       undefined,
       '#0c0c0c',
+    ])
+  })
+
+  it('paints no source color under a written color', () => {
+    expect(sources.map(s => markColorOf(s, 'none'))).toEqual([
+      undefined,
+      undefined,
+      undefined,
     ])
   })
 })

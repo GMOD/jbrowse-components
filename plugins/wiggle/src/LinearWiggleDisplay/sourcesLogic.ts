@@ -1,3 +1,4 @@
+import type { MarkColorSource } from '../shared/wiggleColor.ts'
 import type { Source } from '../util.ts'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -52,13 +53,14 @@ export function sourceWarnings(
  */
 export const UNCOLORED_ROW = '#999'
 
-/**
- * The color a source's marks paint in: its resolved `rowColor` where
- * `marksTakeRowColor`, else its own `color`, which a density row fades to.
- */
+/** The color a source's marks paint in, by `wiggleMarkColoring`'s rule. */
 export function markColorOf(
   source: Pick<Source, 'color' | 'rowColor'>,
-  marksTakeRowColor: boolean,
+  markColor: MarkColorSource,
 ) {
-  return marksTakeRowColor ? source.rowColor : source.color
+  return markColor === 'row'
+    ? source.rowColor
+    : markColor === 'own'
+      ? source.color
+      : undefined
 }
