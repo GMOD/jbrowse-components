@@ -1,6 +1,6 @@
 ---
 name: plasmid-maps-on-the-circle
-description: Plasmid and organelle maps on the circular view (2026-10-09). Open are overlay labels overrunning on inner lines, radial labels, overlay canvases (waiting on Colin), the linear view's scroll through the origin, and cutting formats other than GFF3 at the origin. Read before touching ring labels or circular GFF3.
+description: Plasmid and organelle maps on the circular view (2026-10-09). Open are overlay labels overrunning on inner lines, radial labels, overlay canvases (waiting on Colin), and the linear view's scroll through the origin. Read before touching ring labels or circular GFF3.
 ---
 
 # Plasmid and organelle maps on the circular view
@@ -57,6 +57,3 @@ Landed, each with a test that fails on the code before it:
    twice in `displayedRegions` with zero inter-region padding gives the `2L`
    space and true coordinates for free, and the two pieces then abut at the
    seam. Try it by hand on a bacterial genome before building anything.
-5. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
-   past the contig length still draws into virtual space. Count first whether
-   jb2hubs serves any origin-spanning features, or only `Is_circular` contigs.
