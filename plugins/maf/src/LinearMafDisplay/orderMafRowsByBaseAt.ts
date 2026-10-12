@@ -1,5 +1,5 @@
 import { cmpStr } from '@jbrowse/core/util'
-import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { buildColumnForGenomicOffset } from '../LinearMafRenderer/binning.ts'
@@ -55,9 +55,7 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
         if (name !== undefined && code !== undefined) {
           baseByName.set(
             name,
-            code === DASH || code === SPACE
-              ? GAP
-              : String.fromCharCode(code & ~LOWER_BIT),
+            isGapByte(code) ? GAP : String.fromCharCode(code & ~LOWER_BIT),
           )
         }
       }

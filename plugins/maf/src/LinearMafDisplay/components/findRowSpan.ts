@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { DASH, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { forwardPos } from './findRowHover.ts'
 
@@ -39,7 +39,7 @@ function widenRowSpan(
     let found = false
     for (let i = 0; i < len; i++) {
       const code = aln[i]!
-      const isBase = code !== DASH && code !== SPACE
+      const isBase = !isGapByte(code)
       const bp = block.startBp + genomicOffset
       // `bp` only ever increases, so the right edge ends this block's walk
       if (bp >= endBp) {

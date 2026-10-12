@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { DASH, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 
@@ -55,8 +55,7 @@ export function forEachInsertion(
       const byteStart = i
       let length = 0
       while (i < len && refBytes[i] === DASH) {
-        const code = alnBytes[i]!
-        if (code !== DASH && code !== SPACE) {
+        if (!isGapByte(alnBytes[i]!)) {
           length++
           baseOffset++
         }
@@ -66,8 +65,7 @@ export function forEachInsertion(
         cb(anchorBp, length, runBaseStart, byteStart, i)
       }
     } else {
-      const code = alnBytes[i]!
-      if (code !== DASH && code !== SPACE) {
+      if (!isGapByte(alnBytes[i]!)) {
         baseOffset++
       }
       refCount++

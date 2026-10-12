@@ -1,5 +1,5 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
-import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { DASH, LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
@@ -136,7 +136,7 @@ export function alignedColumnAt(
     if (refIsBase && block.startBp + genomicOffset === targetBp) {
       return { code, baseOffset }
     }
-    if (code !== DASH && code !== SPACE) {
+    if (!isGapByte(code)) {
       baseOffset++
     }
     if (refIsBase) {
@@ -153,7 +153,7 @@ function cellHitInRow(
   showAsUpperCase: boolean,
 ): CellHit | undefined {
   const column = alignedColumnAt(block, row, targetBp)
-  if (!column || column.code === DASH || column.code === SPACE) {
+  if (!column || isGapByte(column.code)) {
     return undefined
   }
   const { code, baseOffset } = column
@@ -237,7 +237,7 @@ function describeInsertion(
         let sequence = ''
         for (let k = byteStart; k < byteEnd; k++) {
           const code = aln[k]!
-          if (code !== DASH && code !== SPACE) {
+          if (!isGapByte(code)) {
             sequence += String.fromCharCode(
               showAsUpperCase ? code & ~LOWER_BIT : code,
             )

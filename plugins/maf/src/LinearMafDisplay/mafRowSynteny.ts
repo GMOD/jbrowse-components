@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { forwardPos } from './components/findRowHover.ts'
 
@@ -34,10 +34,6 @@ export interface MafRowSynteny {
   start: number
   end: number
   reversed: boolean
-}
-
-function isGap(code: number) {
-  return code === DASH || code === SPACE
 }
 
 class CigarRuns {
@@ -130,8 +126,8 @@ export function buildMafRowSynteny({
     let firstBase: number | undefined
     let lastBase: number | undefined
     for (let i = 0; i < len; i++) {
-      const refBase = !isGap(ref[i]!)
-      const rowBase = !isGap(aln[i]!)
+      const refBase = !isGapByte(ref[i]!)
+      const rowBase = !isGapByte(aln[i]!)
       let included = false
       if (refBase) {
         included = refBp >= startBp && refBp < endBp

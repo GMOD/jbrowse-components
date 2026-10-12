@@ -1,4 +1,4 @@
-import { DASH, SPACE } from '@jbrowse/core/util/alignedBytes'
+import { isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import type { MafBlock } from '../mafRenderingBackendTypes.ts'
 
@@ -10,7 +10,7 @@ export interface RowFlank {
 }
 
 function isAligned(byte: number | undefined) {
-  return byte !== undefined && byte !== DASH && byte !== SPACE
+  return byte !== undefined && !isGapByte(byte)
 }
 
 // A neighbouring block resolves a run only when it abuts in reference

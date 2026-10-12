@@ -2,7 +2,7 @@ import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import {
   DASH,
   LOWER_BIT,
-  SPACE,
+  isGapByte,
   sameBase,
 } from '@jbrowse/core/util/alignedBytes'
 
@@ -88,7 +88,7 @@ export function computeVisibleLabels(
               break
             }
             const alnCode = alignmentBytes[i]!
-            if (bp >= bpLo && alnCode !== DASH && alnCode !== SPACE) {
+            if (bp >= bpLo && !isGapByte(alnCode)) {
               if (showAllLetters || !sameBase(refCode, alnCode)) {
                 const displayCode = showAsUpperCase
                   ? alnCode & ~LOWER_BIT
