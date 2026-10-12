@@ -181,6 +181,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      - name: Check codebase format
+        run: pnpm check-format
       - name: Fast lint (oxlint) — fail fast before slower checks
         run: pnpm lint:fast
       - name: Type-aware lint (oxlint + tsgolint)
@@ -433,43 +435,11 @@ jobs:
       - name: Check generated twins against the C++ oracle
         run: pnpm check-shader-oracle
 
-  format:
-    name: Format
-    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - name: Check codebase format
-        run: pnpm check-format
-
-  typecheck_infrastructure:
-    name: Typecheck infrastructure
-    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: npm ci
-        working-directory: products/aws/newsletter
-      - name: Typecheck newsletter infrastructure
-        run: npm run typecheck
-        working-directory: products/aws/newsletter
-
-  # blat-proxy is a standalone pnpm project (its own lockfile + pnpm-workspace.yaml
-  # workspace-root marker), not a member of the root workspace, so it installs and
-  # runs independently in products/aws/blat-proxy.
-  blat_proxy:
-    name: Test blat-proxy Lambda
+  # Each Lambda is a standalone project with its own lockfile, outside the root
+  # workspace: the newsletter on npm, blat-proxy on pnpm (its pnpm-workspace.yaml
+  # marks it a workspace root).
+  lambdas:
+    name: AWS Lambdas
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -480,15 +450,12 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           working-directory: products/aws/blat-proxy
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Typecheck, test and bundle blat-proxy
+        run: pnpm typecheck && pnpm test && pnpm build
         working-directory: products/aws/blat-proxy
-      - name: Test
-        run: pnpm test
-        working-directory: products/aws/blat-proxy
-      - name: Build bundle
-        run: pnpm build
-        working-directory: products/aws/blat-proxy
+      - name: Typecheck newsletter infrastructure
+        run: npm ci && npm run typecheck
+        working-directory: products/aws/newsletter
 
   spellcheck:
     name: Spell check
@@ -767,37 +734,45 @@ jobs:
         with:
           args: website/testing/ --check-anchors
 
-  # Separate job for component_tests with no permissions.
-  # These tests install npm packages without a yarn.lock, so untrusted
-  # dependencies could potentially run malicious code. By isolating this
-  # in a job with `permissions: {}`, we ensure that even if a rogue
-  # dependency executes, it has no GitHub token access and cannot push
-  # code, create issues/PRs, access secrets, or call GitHub APIs.
+  # The packed tarballs, installed the way a user installs them. No permissions:
+  # each leg installs npm packages without a lockfile, so a rogue dependency
+  # that runs here has no GitHub token and cannot push code, open issues or
+  # PRs, read secrets or call GitHub APIs. cli-node18 holds the CLI to the
+  # oldest Node it supports; jbrowse-img needs Node 24 for
+  # module.registerHooks.
   component_tests:
-    name: Test embedded components
+    name: Test packed ${{ matrix.dir }}
     needs: build_and_pack_artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     permissions: {}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: lgv-vite, node: '24', script: e2e }
+          - { dir: cgv-vite, node: '24', script: e2e }
+          - { dir: app-vite, node: '24', script: e2e }
+          - { dir: cli-node18, node: '18', script: testcli }
+          - { dir: jbrowse-img, node: '24', script: testimg }
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: ${{ matrix.node }}
       - name: Download packed artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: packed-artifacts
           path: component_tests/
-      - name: Test embedded components
-        run: |
-          for dir in component_tests/lgv-vite component_tests/cgv-vite component_tests/app-vite; do
-            echo "Testing $dir"
-            (cd $dir && yarn install && yarn e2e)
-          done
+      - name: Install and test
+        run: yarn install && yarn "$SCRIPT"
+        working-directory: component_tests/${{ matrix.dir }}
+        env:
+          SCRIPT: ${{ matrix.script }}
 
   # The external-plugin-author guard: the only job that resolves @jbrowse/*
   # through publishConfig exports maps and built esm/ (from packed tarballs)
@@ -832,61 +807,6 @@ jobs:
       - name: Smoke-test the rendered display
         run: pnpm e2e
         working-directory: component_tests/plugin-vite
-
-  # Test CLI on Node 18 to ensure compatibility with older Node versions.
-  # This job has no permissions since it installs npm packages without a lockfile.
-  test_cli_compat:
-    name: Test CLI on Node 18
-    needs: build_and_pack_artifacts
-    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions: {}
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '18'
-      - name: Download packed artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: packed-artifacts
-          path: component_tests/
-      - name: Test CLI on Node 18
-        run: |
-          cd component_tests/cli-node18
-          yarn install
-          yarn testcli
-
-  # Test @jbrowse/img to ensure the jb2export CLI works.
-  # Requires Node ~24 for module.registerHooks API.
-  # This job has no permissions since it installs npm packages without a lockfile.
-  test_jbrowse_img:
-    name: Test @jbrowse/img
-    needs: build_and_pack_artifacts
-    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions: {}
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-      - name: Download packed artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: packed-artifacts
-          path: component_tests/
-      - name: Test @jbrowse/img
-        run: |
-          cd component_tests/jbrowse-img
-          yarn install
-          yarn testimg
 
   windows_electron_e2e:
     name: Windows Electron E2E Tests

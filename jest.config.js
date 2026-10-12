@@ -348,7 +348,7 @@ export default {
         '<rootDir>/products/jbrowse-img/',
         // every jbrowse-web suite but the schema-level ones, which boot nothing
         `<rootDir>/${WEB_SUITES}(?!${LOCAL_DIR})`,
-        // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).
+        // Own lockfile/test runner (vitest), CI'd separately (lambdas job).
         '<rootDir>/products/aws/',
       ],
       ...jsdomConfig,
