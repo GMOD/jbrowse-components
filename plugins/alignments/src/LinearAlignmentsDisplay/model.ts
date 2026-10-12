@@ -3383,6 +3383,9 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Paint the arcs by `field`, `''` following the reads. `arcColor`
+           * holds a field and nothing else, so it skips `colorForField`, whose
+           * `scale: 'none'` it has no slot for.
            */
           setArcColorField(field: ArcColorField | '') {
             setConf(self, ['arcColor', 'field'], field)
