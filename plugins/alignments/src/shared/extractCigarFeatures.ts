@@ -72,8 +72,9 @@ export interface MismatchFeature extends Feature {
   // looked up as before.
   readonly hasEndClip?: boolean
 
-  // REQUIRED. `READ_SPLICED` and `READ_SV_DELETION` (readCategoryBits.ts) over
-  // the whole record, where the extraction walk stops at the region. Each
+  // REQUIRED. `cigarCategoryBits` (`@jbrowse/cigar-utils`): the skip and the
+  // SV-size deletion and insertion bits over the whole record, where the
+  // extraction walk stops at the region. Each
   // format reads its own CIGAR store: BAM and SAM the packed CIGAR, CRAM its
   // read-feature columns.
   readonly cigarCategoryBits: number
@@ -90,7 +91,7 @@ export function isMismatchFeature(
 }
 
 /**
- * `READ_SPLICED` and `READ_SV_DELETION` for any feature this pipeline serves:
+ * The skip and SV-size indel bits for any feature this pipeline serves:
  * a record with `forEachMismatch` (BAM, CRAM, SAM, a synteny block) answers
  * off its own `cigarCategoryBits`, and any other feature off its CIGAR string.
  */

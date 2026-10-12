@@ -33,6 +33,14 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
   origin: 0,
 }
 
+// The category bit a read-feature code sets: a skip at any length, and an
+// indel from SV_INDEL_MIN_BP
+const RF_SKIP_BIT = new Uint8Array(128)
+RF_SKIP_BIT[RF_REF_SKIP] = CIGAR_HAS_SKIP
+const RF_SV_INDEL_BIT = new Uint8Array(128)
+RF_SV_INDEL_BIT[RF_DELETION] = CIGAR_HAS_SV_DELETION
+RF_SV_INDEL_BIT[RF_INSERTION] = CIGAR_HAS_SV_INSERTION
+
 /**
  * EXTENDS CramRecord because CramAdapter passes this class to `@gmod/cram` as
  * `recordClass`, so every record a query hands out is already the feature and
@@ -44,14 +52,6 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
  * A record is a view onto its slice's columns, handed out fresh per query, so
  * what is memoized here lives exactly as long as the query that built it.
  */
-// The category bit a read-feature code sets: a skip at any length, and an
-// indel from SV_INDEL_MIN_BP
-const RF_SKIP_BIT = new Uint8Array(128)
-RF_SKIP_BIT[RF_REF_SKIP] = CIGAR_HAS_SKIP
-const RF_SV_INDEL_BIT = new Uint8Array(128)
-RF_SV_INDEL_BIT[RF_DELETION] = CIGAR_HAS_SV_DELETION
-RF_SV_INDEL_BIT[RF_INSERTION] = CIGAR_HAS_SV_INSERTION
-
 export default class CramSlightlyLazyFeature
   extends CramRecord
   implements MismatchFeature

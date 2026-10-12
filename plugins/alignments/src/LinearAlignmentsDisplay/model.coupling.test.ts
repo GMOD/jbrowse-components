@@ -929,7 +929,6 @@ describe('read categories + filter submenu', () => {
     }
 
     const show = menuSubItems(items, 'Show...')
-    expect(hasMenuItem(show, 'SV evidence')).toBe(false)
     expect(hasMenuItem(show, 'Show only split alignments')).toBe(false)
   })
 

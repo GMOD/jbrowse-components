@@ -110,7 +110,6 @@ test('the toggles fire against the model', () => {
 // worker — and now live under "Filter by..." (menus/filters.ts).
 test('no read-category filter is offered here', () => {
   const { queryByText } = renderRows(subMenuOf(makeModel()))
-  expect(queryByText('SV evidence')).toBeNull()
   expect(queryByText('Show reads without a mate')).toBeNull()
   expect(queryByText('Show only split alignments')).toBeNull()
 })

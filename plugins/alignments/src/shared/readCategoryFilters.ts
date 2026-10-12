@@ -25,14 +25,16 @@ export const READ_CATEGORIES = [
     only: 'Only SV evidence',
     exclude: 'Hide SV evidence',
     helpText:
-      'Reads carrying structural-variant evidence, with the rest of their ' +
-      'pair: a split read (SA tag or supplementary flag), an insertion or ' +
-      'deletion of 50 bp or more, or a paired read the aligner did not call ' +
-      'concordant (no proper-pair flag 0x2, a mate unmapped or on another ' +
-      'chromosome, or a pair not facing forward/reverse). Works on long ' +
-      'reads through the first two. The minimum mapping quality judges each ' +
-      'read alone, so a read whose mate was placed at low quality still ' +
-      'counts by its flags.',
+      'Reads carrying structural-variant evidence, and the rest of their ' +
+      'pair in the same window: a split read (SA tag or supplementary ' +
+      'flag), an insertion or deletion of 50 bp or more, or a paired read ' +
+      'the aligner did not call concordant (no proper-pair flag 0x2, a mate ' +
+      'unmapped or on another chromosome, or a pair not facing ' +
+      'forward/reverse). Works on long reads through the first two. Each ' +
+      'window is judged on its own, so in a multi-region view a mate in ' +
+      'another window counts only by what that window holds. The minimum ' +
+      'mapping quality judges each read alone, so a read whose mate was ' +
+      'placed at low quality still counts by its flags.',
   },
   {
     key: 'singletons',

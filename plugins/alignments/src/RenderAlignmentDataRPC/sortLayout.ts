@@ -859,7 +859,8 @@ export function computeMultiRegionLayout({
   // order and is canonicalized below.
   const extents = new Map<ReadKey, ReadExtent>()
   const orderedIds: ReadKey[] = []
-  // A read takes the highest tier any region's copy of it has.
+  // A read's bits are the whole record's, the same in every region that
+  // fetched it, so any copy's tier is the read's.
   const liftedTierById = new Map<ReadKey, number>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length
@@ -869,8 +870,8 @@ export function computeMultiRegionLayout({
     const lifted = liftedTiers(layoutOrder, data, numReads)
     for (let i = 0; i < numReads; i++) {
       const id = data.readKeys[i]!
-      const tier = lifted?.[i] ?? 0
-      if (tier > (liftedTierById.get(id) ?? 0)) {
+      const tier = lifted?.[i]
+      if (tier) {
         liftedTierById.set(id, tier)
       }
       const start = ext.starts[i]!
