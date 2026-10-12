@@ -296,8 +296,9 @@ export interface WorkerPileupData {
   // as "everything normal".
   insertSizeStats?: InsertSizeBand
 
-  // Per-read tag values for tag sort, parallel to readKeys (only populated when sortColumn.type === 'tag').
-  // Main thread uses these to compute sorted layout without needing a re-fetch.
+  // Per-read tag values for a tag sort, parallel to readKeys; the
+  // `readTagValues` array itself when the reads are colored by the same tag.
+  // The main thread lays out from them, so moving the sort needs no refetch.
   sortTagValues?: string[]
 
   // Per-read mate position (PNEXT) for main-thread arc computation

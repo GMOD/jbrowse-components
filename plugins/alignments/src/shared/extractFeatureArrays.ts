@@ -140,7 +140,14 @@ export function extractFeatureArrays<T extends FeatureData>(
   // — which is uncolored rather than a hash of the empty string.
   const isMateRefNameMode = colorBy?.type === 'mateRefName'
   const paintsModificationMarks = baseLayer?.type === 'modifications'
-  const sortTagValues: string[] | undefined = sortTag ? [] : undefined
+  // A sort on the tag the reads are colored by shares their column, which
+  // structured clone then ships once
+  const sortsByColorTag = isTagColorMode && colorBy.tag === sortTag
+  const sortTagValues: string[] | undefined = !sortTag
+    ? undefined
+    : sortsByColorTag
+      ? tagColorValues
+      : []
 
   // readIndex is the feature's position here; it equals its index in the
   // returned `features` array and the per-read TypedArrays (buildBaseReadArrays),
@@ -187,7 +194,7 @@ export function extractFeatureArrays<T extends FeatureData>(
       tagColorValues.push(getMateRefName(feature) ?? '')
     }
 
-    if (sortTagValues && sortTag) {
+    if (sortTagValues && sortTag && !sortsByColorTag) {
       sortTagValues.push(extractFeatureTagValue(feature, sortTag))
     }
 

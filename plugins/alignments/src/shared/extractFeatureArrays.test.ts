@@ -174,6 +174,42 @@ describe('SA tags are extracted whatever the display is drawing', () => {
 // BED of graph alleles read by an AlignmentsTrack — used to contribute no indels
 // at all, so an assembly alignment drew as one flat block and its insertions
 // were invisible. Locks the contract both of those displays now depend on.
+describe('tag sort values', () => {
+  const tagged = (HP: string, PS: string) =>
+    new SimpleFeature({
+      uniqueId: `read-${HP}-${PS}`,
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      tags: { HP, PS },
+    })
+  const sortedBy = (sortTag: string) =>
+    extractFeatureArrays(
+      [tagged('1', 'a'), tagged('2', 'b')],
+      buildFeatureData,
+      {
+        colorBy: { type: 'tag', tag: 'HP' },
+        showSoftClipping: false,
+        region,
+        perBaseBinBp: 1,
+        sortTag,
+      },
+    )
+
+  test('a sort on the color tag shares the color column', () => {
+    const { tagColorValues, sortTagValues } = sortedBy('HP')
+    expect(tagColorValues).toEqual(['1', '2'])
+    expect(sortTagValues).toBe(tagColorValues)
+  })
+
+  test('a sort on another tag reads its own', () => {
+    const { tagColorValues, sortTagValues } = sortedBy('PS')
+    expect(tagColorValues).toEqual(['1', '2'])
+    expect(sortTagValues).toEqual(['a', 'b'])
+  })
+})
+
 describe('CIGAR-only features', () => {
   function alleleFeature(cigar: string) {
     return new SimpleFeature({

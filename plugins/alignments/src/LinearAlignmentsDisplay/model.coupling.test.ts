@@ -642,6 +642,21 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
+  test('a sort the fetched arrays answer leaves the fetch key alone', () => {
+    const display = createDisplay()
+    const fetchKey = JSON.stringify(display.rpcProps())
+    for (const type of ['basePair', 'mapq', 'insertion'] as const) {
+      display.setSort({ type, pos: 50, refName: 'ctgA', within: 10 })
+      expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
+    }
+    display.setSort('svSignal')
+    expect(JSON.stringify(display.rpcProps())).toBe(fetchKey)
+    display.setSort({ type: 'tag', pos: 50, refName: 'ctgA', tag: 'HP' })
+    const tagKey = JSON.stringify(display.rpcProps())
+    display.setSort({ type: 'tag', pos: 900, refName: 'ctgA', tag: 'HP' })
+    expect(JSON.stringify(display.rpcProps())).toBe(tagKey)
+  })
+
   // Chain mode degrades a per-read grouping to none (`facetForUnit`), so it
   // has to leave the key too. The menu won't offer one in chain mode, but a
   // session or the settings editor can hold one — and then clearing or
