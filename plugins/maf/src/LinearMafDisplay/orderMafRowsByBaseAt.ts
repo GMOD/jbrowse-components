@@ -2,8 +2,8 @@ import { cmpStr } from '@jbrowse/core/util'
 import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
+import { buildColumnForGenomicOffset } from '../LinearMafRenderer/binning.ts'
 import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
-import { refColumnAt } from './components/findRowHover.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -41,11 +41,12 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
   const blockIdx = blockIndexAtBp(region.blocks, bp)
   if (blockIdx !== -1) {
     const block = region.blocks[blockIdx]!
-    // Resolved once for the block, not once per row: which column holds `bp` is
-    // a fact about the reference, and this runs over every drawn row of a
-    // deep alignment.
-    const column = refColumnAt(block, bp)
-    if (column !== -1) {
+    const { colForGpos, refLen } = buildColumnForGenomicOffset(
+      block.refSeqBytes,
+    )
+    const offset = bp - block.startBp
+    if (offset < refLen) {
+      const column = colForGpos[offset]!
       for (const row of block.rows) {
         const name = drawnRows[row.rowIndex]?.name
         // A malformed file can ship a row shorter than the reference, which has
