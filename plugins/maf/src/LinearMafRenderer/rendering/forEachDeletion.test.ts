@@ -35,6 +35,10 @@ test('reference-gap (insertion) columns consume no coordinate and split runs', (
   ])
 })
 
+test('a reference-gap column this row also gaps does not split the run', () => {
+  expect(runs('AA-AAA', 'a---aa')).toEqual([{ start: 101, length: 2 }])
+})
+
 test('a space (missing data) is not a deletion', () => {
   expect(runs('AAA', 'a a')).toEqual([])
 })

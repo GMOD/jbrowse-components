@@ -13,7 +13,8 @@ import type { RowFlank } from './rowFlank.ts'
  *
  * Only `-` counts as a deletion; a space (`SPACE`) is missing data, not an
  * alignment gap, so it does not start or extend a deletion run. Reference-gap
- * columns (insertion columns) consume no reference coordinate and break a run.
+ * columns (insertion columns) consume no reference coordinate; one where this
+ * row carries a base ends the run, one where this row is also a gap does not.
  *
  * **A run must be observable to be a deletion.** Only runs inside
  * `resolvedExtent` are emitted: one reaching the edge of the row is truncated
@@ -41,13 +42,13 @@ export function forEachDeletion(
       const delStart = startBp + refCount
       const runStart = i
       let length = 0
-      while (i < len && refBytes[i] !== DASH && alnBytes[i] === DASH) {
-        length++
-        refCount++
+      while (i < len && alnBytes[i] === DASH) {
+        if (refBytes[i] !== DASH) {
+          length++
+          refCount++
+        }
         i++
       }
-      // `i` lands one past the run, so the run occupies columns
-      // [runStart, i-1] and is observable when that sits inside the range.
       if (runStart >= firstCol && i <= lastCol + 1) {
         cb(delStart, length)
       }

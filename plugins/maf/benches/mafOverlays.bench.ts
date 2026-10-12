@@ -297,8 +297,9 @@ const SHAPES: Shape[] = [
   },
   // The one shape whose deletions actually LABEL, and it takes both knobs to
   // get there. A label needs the run to clear the narrowest digit — 7.5px, so
-  // ~906bp at 120bp/px — and `forEachDeletion` ends a run at any *reference*
-  // gap, so a run is capped by `refGapEvery` however long `rowGapRun` is. Every
+  // ~906bp at 120bp/px — and `forEachDeletion` ends a run at a *reference* gap
+  // the row fills, which every row here does, so a run is capped by
+  // `refGapEvery` however long `rowGapRun` is. Every
   // other shape here has a reference gap every ~30 columns and therefore no run
   // over 30bp: they measure the culled path, where the deletion overlay emits
   // nothing and the walk is the whole cost. Without this row the bench reports
