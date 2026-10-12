@@ -94,10 +94,10 @@ export function breakpointTracks(
     }
     return {
       trackId,
-      // The reads crossing the breakpoint, split or across a deletion of
-      // structural-variant size, take the top rows, so a pileup deeper than
-      // its track cuts off the ones that cross nothing. Ahead of the
-      // snapshot, so a `sort=position` of the track's own wins.
+      // The SV evidence takes the top rows, split reads first
+      // (`svSignalTier`), so a pileup deeper than its track cuts off the
+      // reads that carry none. Ahead of the snapshot, so a `sort=position` of
+      // the track's own wins.
       ...(category === 'alignments' ? { sort: 'svSignal' } : {}),
       ...snap,
       ...(displayType ? { type: displayType } : {}),

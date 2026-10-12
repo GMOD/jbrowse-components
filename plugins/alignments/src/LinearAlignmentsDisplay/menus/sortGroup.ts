@@ -134,13 +134,9 @@ export function getSortMenuItem(
     split: radio('split', `Split ${noun}s first`, () => {
       model.setSort('split')
     }),
-    svSignal: radio(
-      'svSignal',
-      `Split ${noun}s and 50+ bp deletions first`,
-      () => {
-        model.setSort('svSignal')
-      },
-    ),
+    svSignal: radio('svSignal', 'SV evidence first', () => {
+      model.setSort('svSignal')
+    }),
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
       model.sortAtCenterLine('strand')
     }),

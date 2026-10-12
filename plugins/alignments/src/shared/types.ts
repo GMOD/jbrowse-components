@@ -243,7 +243,8 @@ const INTERBASE_TYPE_NAMES = ['insertion', 'softclip', 'hardclip'] as const
 
 // The pileup's row orders over the whole window: by start, widest first,
 // spliced reads first, split reads first, or the structural-variant evidence
-// first, split reads and reads across a deletion of 50 bp or more.
+// first: split reads, then 50 bp or larger indels, then discordant pairs
+// (`svSignalTier`).
 export const LAYOUT_ORDERS = [
   'position',
   'length',

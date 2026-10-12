@@ -819,7 +819,7 @@ export async function applyDisplayOpts(
 ) {
   const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
   // A junction's two ends in one row: the arc over them is the call, and the
-  // reads crossing it, split or across a long deletion, take the top rows. A
+  // SV evidence takes the top rows, split reads first (`svSignalTier`). A
   // track saying otherwise keeps it.
   if (joined && category === 'alignments') {
     snap.readConnections ??= 'arc'
