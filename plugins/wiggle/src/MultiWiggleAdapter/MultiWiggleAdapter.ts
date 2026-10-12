@@ -57,7 +57,7 @@ interface AdapterConfig extends MemberConfig {
 // `sample` shared by `cond1/sample.bw` and `cond2/sample.bw` becomes
 // `cond1/sample` vs `cond2/sample`.
 function parentDirLabel(label: string, path?: string) {
-  const trimmed = path?.replace(/\/+$/, '') ?? ''
+  const trimmed = path?.replaceAll('\\', '/').replace(/\/+$/, '') ?? ''
   const dirSlash = trimmed.lastIndexOf('/')
   const dir = dirSlash === -1 ? '' : trimmed.slice(0, dirSlash)
   const parent = dir.slice(dir.lastIndexOf('/') + 1)

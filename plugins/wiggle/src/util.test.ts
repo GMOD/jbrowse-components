@@ -225,7 +225,7 @@ describe('getFilename', () => {
   test.each([
     ['sample#2.bw', 'sample#2'],
     ['/home/me/data/sample#2.bw', 'sample#2'],
-    ['C:\\data\\sample#2.bw', 'C:\\data\\sample#2'],
+    ['C:\\data\\sample#2.bw', 'sample#2'],
   ])('local %s -> %s', (input, expected) => {
     expect(getFilename(input)).toBe(expected)
   })

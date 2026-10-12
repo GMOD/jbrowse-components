@@ -266,12 +266,12 @@ export const WIGGLE_MIN_PX = MIN_FILL_WIDTH_PX
 // a file called `sample` with a fragment.
 //
 // Two or more characters before the colon, so a Windows drive letter is not
-// read as a scheme. `C:\data\sample#2.bw` is a localPath, and one-letter
-// schemes do not exist in practice.
+// read as a scheme. `C:\data\sample#2.bw` is a localPath, whose separator is
+// a backslash, and one-letter schemes do not exist in practice.
 export function getFilename(uriOrName: string) {
   const path = /^[a-z][a-z\d+.-]+:/i.test(uriOrName)
     ? uriOrName.split(/[?#]/, 1)[0]!
-    : uriOrName
+    : uriOrName.replaceAll('\\', '/')
   const filename = path.slice(path.lastIndexOf('/') + 1)
   const dotIdx = filename.lastIndexOf('.')
   return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename

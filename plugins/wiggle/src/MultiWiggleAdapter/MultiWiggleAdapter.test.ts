@@ -139,6 +139,34 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     expect(adapters[1]!.source).toBe('cond2/sample')
   })
 
+  it('labels Windows local paths by file and parent folder', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const local = (localPath: string) => ({
+      type: 'BigWigAdapter',
+      bigWigLocation: { localPath, locationType: 'LocalPathLocation' },
+    })
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          local('C:\\cond1\\sample.bw'),
+          local('C:\\cond2\\sample.bw'),
+          local('C:\\cond2\\other.bw'),
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters.map(a => a.source)).toEqual([
+      'cond1/sample',
+      'cond2/sample',
+      'other',
+    ])
+  })
+
   it('falls back to a numeric suffix when paths do not disambiguate', async () => {
     const mockGetSubAdapter = jest
       .fn()
