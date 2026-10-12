@@ -125,6 +125,8 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
   return flat.toBuffer()
 }
 
+export const RECOLOR_THRESHOLD = 0.00005
+
 export function expectCanvasMatch(
   canvas: HTMLElement,
   failureThreshold = 0.01,

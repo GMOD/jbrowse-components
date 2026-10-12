@@ -6,6 +6,7 @@ import {
   findCanvasIn,
   findSettledDisplay,
   hts,
+  RECOLOR_THRESHOLD,
   volvoxConfigWithTracks,
 } from './util.tsx'
 
@@ -48,5 +49,5 @@ export async function testLinkedReadsDisplay({
   }
 
   const display = await findSettledDisplay('pileup-display', { timeout })
-  expectCanvasMatch(findCanvasIn(display))
+  expectCanvasMatch(findCanvasIn(display), RECOLOR_THRESHOLD)
 }

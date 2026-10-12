@@ -7,6 +7,7 @@ import {
   findCanvasIn,
   findDisplayPainted,
   hts,
+  RECOLOR_THRESHOLD,
   setup,
   volvoxConfigWithTracks,
 } from './util.tsx'
@@ -113,7 +114,7 @@ test('group draws per-section paired-end arcs', async () => {
   )
 
   const el = await findDisplayPainted('pileup-display', delay)
-  expectCanvasMatch(findCanvasIn(el), 0.05)
+  expectCanvasMatch(findCanvasIn(el), RECOLOR_THRESHOLD)
 }, 90000)
 
 // Read cloud is in scope alongside arcs and shares the per-section
@@ -148,7 +149,7 @@ test('group draws per-section read-cloud lines', async () => {
   )
 
   const el = await findDisplayPainted('pileup-display', delay)
-  expectCanvasMatch(findCanvasIn(el), 0.05)
+  expectCanvasMatch(findCanvasIn(el), RECOLOR_THRESHOLD)
 }, 90000)
 
 // Sashimi junction arcs draw per stacked section. Grouping spliced RNA-seq
@@ -193,7 +194,7 @@ test('group draws per-section sashimi arcs', async () => {
   )
 
   const el = await findDisplayPainted('pileup-display', delay)
-  expectCanvasMatch(findCanvasIn(el), 0.05)
+  expectCanvasMatch(findCanvasIn(el), RECOLOR_THRESHOLD)
 }, 90000)
 
 // The forward strand's empty band above is the score filter at work, not a dead
