@@ -4,8 +4,8 @@ description: What changed for plugin authors and embedders in JBrowse 2 v5.0.0
 guide_category: Plugins
 ---
 
-Sessions and configs from v4 migrate automatically, apart from the value scale
-below. Plugins do not: the renderer registry is gone, names left the
+Most v4 sessions and configs load, and `jbrowse validate` names the keys that no
+longer do. Plugins do not migrate: the renderer registry is gone, names left the
 `@jbrowse/core/*` re-export ABI, config models were flattened, display types
 collapsed, and the extension point APIs changed shape. Run your bundle against a
 v5 build before your users do.
@@ -14,11 +14,13 @@ v5 build before your users do.
 
 - **Web** — `jbrowse upgrade` updates an installation in place.
 - **Desktop** — updates itself.
-- **Embedded** — bump `@jbrowse/react-linear-genome-view` and friends to their
-  v5 line.
+- **Embedded** — bump `@jbrowse/react-linear-genome-view2`,
+  `@jbrowse/react-circular-genome-view2` and `@jbrowse/react-app2` to their v5
+  line. The packages without the `2` are deprecated.
 
-A config from v4 loads as it is, and
-[`jbrowse validate`](/docs/cli#jbrowse-validate) will tell you if it does not.
+Most v4 configs load as they are, and
+[`jbrowse validate`](/docs/cli#jbrowse-validate) names any key v5 no longer
+reads.
 
 ## Migrations that happen automatically
 
@@ -40,7 +42,7 @@ that expressed it are **not** migrated. A v4 session with a dismissed band — t
 LGV's own `highlightsVisible`, or grid-bookmark's `bookmarkHighlightsVisible`,
 both written out only when the user turned the band off — reopens with the band
 visible, because MST drops a snapshot key the model no longer declares.
-Dismissing it again is one click on the "Toggle highlights" item, and it now
+Dismissing it again is one click on the **Show highlights** item, and it now
 applies to every view at once. The setting is the only thing lost; nothing about
 the session fails to load.
 
@@ -70,7 +72,7 @@ ones, `jbrowse-plugin-gwas-hoot` and `NucContent`.
 ## Removed RPC methods
 
 An RPC method is addressed by string — `rpcManager.call(sessionId, name, args)`
-— so a plugin naming one of these has nothing that resolves. Seven went in v5,
+— so a plugin naming one of these has nothing that resolves. These went in v5,
 alongside `CoreRender` above:
 
 - `WiggleGetGlobalQuantitativeStats` and
@@ -94,23 +96,30 @@ alongside `CoreRender` above:
   registry (`RendererType.getFeatureById`), so it went with the registry.
   `MultiSampleVariantGetCellData` answers the same question from the display's
   own data.
+- `MultiVariantClusterGenotypeMatrix` is
+  `MultiSampleVariantClusterGenotypeMatrix`.
+- `MultiVariantGetSimplifiedFeatures`, `CoreGetFeatureDetails`,
+  `ComparativeRender` and `PileupGetVisibleModifications` are not registered.
+- `CoreGetFeatureDensityStats` went with the density tier.
+- `RenderLinearReadArcsDisplay` and `RenderLinearReadCloudDisplay` went with
+  their displays, which are `LinearAlignmentsDisplay` now.
 
 Removed RPC methods are the one removal on this page that fails **loudly**:
 `getRpcMethodType` bottoms out in a registry lookup that throws
 `RpcMethodType 'X' is not registered`, names the method and lists what this
 build does register — which is also the answer to "which plugin is missing".
 
-## Every `@jbrowse` package is served to plugins
+## The host serves four `@jbrowse` packages to plugins
 
-The re-export list used to name 25 `@jbrowse/core` subpaths by hand. It is
-generated now, from the `exports` map of every `@jbrowse` package the host
-bundles: all 240 subpaths of core, the display layer (`@jbrowse/display-kit`,
-`@jbrowse/render-core`, `@jbrowse/display-ui`, `@jbrowse/wiggle-core`), the
-helper packages, and each core plugin's entry. A plugin importing
-`@jbrowse/display-kit/DisplayChrome` or `@jbrowse/plugin-linear-genome-view`
+The re-export list used to name a hand-written handful of `@jbrowse/core`
+subpaths. It is generated now, from the `exports` map of the four packages the
+host serves: `@jbrowse/core`, `@jbrowse/display-kit`, `@jbrowse/display-ui` and
+`@jbrowse/render-core`. A plugin importing `@jbrowse/display-kit/DisplayChrome`
 gets the host's copy rather than bundling its own; a display mixin or a React
-context works no other way. [](/docs/developer_guides/imports_and_reexports) has
-the table.
+context works no other way. A plugin bundles every other `@jbrowse` package,
+core plugins such as `@jbrowse/plugin-linear-genome-view` included, and gets no
+other plugin's code at run time.
+[](/docs/developer_guides/imports_and_reexports) has the table.
 
 Two things follow for a plugin author:
 
@@ -194,11 +203,11 @@ stopped serving, the same break as a `module` line.
 The host no longer serves `@material-ui/core`, `@material-ui/core/<Component>`,
 `@material-ui/core/styles`, `@material-ui/core/utils` or `@material-ui/lab/*`.
 They were aliases onto the same `@mui/material` modules, kept since the v2
-migration for bundles built against Material UI v4. Of the plugins in the store,
-only `jbrowse-plugin-reactome` 1.0.1 still reads them, and it reads them at
-module scope, so it fails to load on v5 with a notification rather than
-degrading. A rebuild against the current template imports `@mui/material` and
-resolves to the host's copy as before.
+migration for bundles built against Material UI v4. A bundle that still reads
+them reads them at module scope, so it fails to load on v5 with a notification
+rather than degrading. The Reactome store plugin was the last such bundle in the
+store, and has been rebuilt. A rebuild against the current template imports
+`@mui/material` and resolves to the host's copy as before.
 
 ## Subpaths removed from `@jbrowse/core`
 
@@ -320,19 +329,29 @@ and calling it throws inside the reaching plugin's own `install`.
 The removals table above and `scripts/check-published-plugins.ts` both work from
 module exports and are not checked against a published bundle, so neither
 reaches a plugin `exports` object or the session.
-`pluginFacingSessionApi.test.ts` pins the fifteen session members published
-bundles actually call, and performs the call rather than just asserting the
-member exists, which is why `getReferring`'s changed signature is on this list
-rather than caught by a presence check. For everything else, reading them here
-is the record.
+`pluginFacingSessionApi.test.ts` pins the session members published bundles
+actually call, and performs the call rather than just asserting the member
+exists. For everything else, including `getReferring`'s changed signature,
+reading them here is the record.
 
 ## Display types collapsed
 
-Pileup, SNPCoverage, ReadArcs and ReadCloud are now one
-`LinearAlignmentsDisplay`, which registers the four old names as aliases and
-migrates their settings across, so a saved config's `type:` still resolves. A
-plugin that extended or referenced the old display classes directly needs
-updating.
+A saved config's `type:` still resolves, because each old name is registered as
+an alias that migrates its settings across. A plugin that matched on the old
+name, or extended or referenced the old display classes directly, needs updating
+and otherwise stops applying with no error.
+
+<!-- prettier-ignore -->
+| The v4 display | Now |
+| --- | --- |
+| `LinearPileupDisplay`, `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay`, `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` |
+| `LinearFeatureDisplay` | `LinearBasicDisplay` |
+| `MultiLinearVariantDisplay`, `LinearVariantMatrixDisplay` | `LinearMultiSampleVariantDisplay` |
+| `LinearGCContentDisplay`, `LinearGCContentTrackDisplay` | `LinearWiggleDisplay` |
+| `LinearArcDisplay`, `LinearPairedArcDisplay` | `LinearMarkDisplay`, with `link` marks |
+
+A plugin that retires one of its own displays registers the old name the same
+way, through `retiredTypes`.
 
 ## The quantitative displays are one display
 
@@ -425,9 +444,10 @@ jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
 
 `color` on `LinearWiggleDisplay` is a CSS color string, or
 `{ field, scale, domain, range, scheme }` — the object every other display's
-color already was. `posColor`, `negColor`, `useBicolor` and `densityColorRamp`
-stop loading, and `bicolorPivot` is `origin`, the mark display's slot, which is
-also the value the bars grow from.
+color already was. A v4 config or session lifts `posColor` and `negColor` into
+the threshold object. `useBicolor` and `densityColorRamp` stop loading, and
+`bicolorPivot` is `origin`, the mark display's slot, which is also the value the
+bars grow from.
 
 <!-- prettier-ignore -->
 | v4 | v5 |
@@ -437,8 +457,8 @@ also the value the bars grow from.
 | `densityColorRamp: 'viridis'` | `color: { field: 'score', scale: 'linear', scheme: 'viridis' }` |
 
 `setPosColor`, `setNegColor`, `setUseBicolor` and `setBicolorPivot` are
-`setColor` and `setOrigin`. **None of it migrates**, in a config, a session or
-an `applyDisplaySettings` bag: MST drops a snapshot key the model no longer
+`setColor` and `setOrigin`. **`useBicolor`, `densityColorRamp` and
+`bicolorPivot` do not migrate**: MST drops a snapshot key the model no longer
 declares, so a track that named one of them reopens in the default colors.
 `domainMid` is new on the ramp. The track menu has no color row of its own any
 more: **Edit colors/arrangement...** offers the plot's two colors on one line,
@@ -511,18 +531,19 @@ updating.
 
 ## The value scale is one `scales.y` object
 
-Every quantitative display — wiggle, Manhattan, the alignments coverage band and
-the mark display — writes its value axis as one sub-schema. `scaleType` is
-`scales.y.type`, `minScore` and `maxScore` are `scales.y.domainMin` and
-`scales.y.domainMax`, `symlogConstant` keeps its name inside `scales.y`, and
-`autoscale`, `numStdDev` and `numQuantile` are one number, `domainQuantile`:
-`localpercentile` is `0.99` and `local` and `localsd` are `1`, the extremes.
+Every quantitative display — wiggle, the alignments coverage band and the mark
+display, which Manhattan now is — writes its value axis as one sub-schema.
+`scaleType` is `scales.y.type`, `minScore` and `maxScore` are
+`scales.y.domainMin` and `scales.y.domainMax`, `symlogConstant` keeps its name
+inside `scales.y`, and `autoscale` is one number, `domainQuantile`:
+`localpercentile` is `0.99` and every other value is `1`, the extremes.
 
-**None of them migrates.** A config or session still spelling one at the display
-level loses it in silence, since MST drops a snapshot key the model no longer
-declares, so a track that pinned its axis reopens autoscaled. The
-`Number.MIN_VALUE`/`MAX_VALUE` sentinels went with them: an end left unset is
-what autoscales.
+**A v4 config or session lifts these spellings when it loads**, along with
+`displayCrossHatches` as `scales.y.grid` and `minimalTicks` as
+`scales.y.minimalTicks`. `numStdDev` and `inverted` have no successor and are
+dropped, and so is `numQuantile`. Code that reads a retired slot with `getConf`
+needs updating. The `Number.MIN_VALUE`/`MAX_VALUE` sentinels went away: an end
+left unset is what autoscales.
 
 [](/docs/config/valuescale) lists the members each display has.
 
@@ -770,6 +791,11 @@ column:
 `isStateModelLoaded` is the question to ask when you cannot await: it is what
 `addView` checks before throwing.
 
+The embedded products follow the same split. The circular product's
+`createViewState` is async, and `createViewStateAsync` is the same function
+under the name the other products use. The linear and app products keep a
+synchronous `createViewState` and add an async `createViewStateAsync`.
+
 ## The `Launch view` menu is now `Launch`
 
 The submenu that `pushLaunchViewMenuItem` collects contributions under is
@@ -805,6 +831,19 @@ triangle's own first off-diagonal on an axis of allele frequency.
 
 **The `lollipop` plugin was removed.** A `LinearLollipopDisplay` in a v4 config
 is dropped with a console warning, and its track opens on its default display.
+
+**The `arc` plugin was removed.** `LinearArcDisplay` and
+`LinearPairedArcDisplay` migrate to the mark display, where an arc is a `link`
+mark, and the `logThickness` and `defaultPairedArcColor` jexl functions went
+with them. A plugin importing `@jbrowse/plugin-arc` has nothing to import.
+
+**The CommonJS plugin format was removed.** A plugin entry naming `cjsUrl` fails
+to load, naming that plugin. Point it at `umdUrl` or `esmUrl`. Desktop was the
+only host that loaded `cjsUrl`, and no store plugin published a CJS build.
+
+**Text search adapters no longer take `textSearchAdapterId`.** A config still
+carrying the key loads and ignores it. The search manager caches an adapter by a
+hash of its config, so an edited index loads fresh.
 
 **`SNPCoverageAdapter`, `LinearComparativeDisplay`, `BasicTrack` and
 `LinearBareDisplay` are no longer registered**, and no migration maps them to a
