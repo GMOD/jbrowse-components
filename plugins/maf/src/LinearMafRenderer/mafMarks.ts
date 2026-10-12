@@ -22,30 +22,56 @@ const rowsBand = (s: MafGPURenderState) => ({
 })
 
 /**
- * The rows band, as a declaration: one `span` mark per run of same-colored
- * cells, its channels already encoded by `buildMafChannels`, clipped to the
- * rows viewport under the band stack.
+ * The params of a `span` mark tiling each row base by base, as the cells do.
  *
  * `scrollTop` is the shape's scroll offset less `rowsTop`, which places the
  * band inside a canvas that also carries the coverage strip above it: the shape
  * paints row i at `rowHeight*i - scrollTop`, so offsetting the scroll is
  * offsetting the band.
+ *
+ * MAF does not floor. Its cells tile the row, so a sub-pixel cell is read as
+ * part of the run around it, and widening one to a whole pixel paints ink the
+ * alignment does not contain: measured at 2.3x the color of a supersampled
+ * ground truth, against 1.05x for no floor
+ * (agent-docs/reference/MAF_LARGE_BLOCKS.md).
+ */
+const cellSpanParams = (s: MafGPURenderState) => ({
+  rowHeight: s.rowHeight,
+  rowProportion: s.rowProportion,
+  minWidthPx: 0,
+  seamPx: GAP_STROKE_OFFSET,
+  scrollTop: s.scrollTop - s.rowsTop,
+})
+
+/**
+ * The params of a mark drawing each block of a row whole rather than base by
+ * base. Unlike the cells these are sparse intervals, so a block narrower than a
+ * pixel is widened to one and still reads as present.
+ */
+const blockSpanParams = (s: MafGPURenderState) => ({
+  ...cellSpanParams(s),
+  minWidthPx: 1,
+  seamPx: 0,
+})
+
+/** Where a row's drawn band starts within its slot, on the canvas, and its height. */
+function rowBandPx(s: MafGPURenderState) {
+  return {
+    offsetPx:
+      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
+    heightPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
+  }
+}
+
+/**
+ * The rows band, as a declaration: one `span` mark per run of same-colored
+ * cells, its channels already encoded by `buildMafChannels`, clipped to the
+ * rows viewport under the band stack.
  */
 export const MAF_ROW_MARK = defineMark({
   shape: spanMark,
   channels: (d: MafRowsPayload) => d.cells,
-  params: (s: MafGPURenderState) => ({
-    rowHeight: s.rowHeight,
-    rowProportion: s.rowProportion,
-    // MAF does not floor. Its cells tile the row, so a sub-pixel cell is read
-    // as part of the run around it, and widening one to a whole pixel paints
-    // ink the alignment does not contain: measured at 2.3x the color of a
-    // supersampled ground truth, against 1.05x for no floor
-    // (agent-docs/reference/MAF_LARGE_BLOCKS.md).
-    minWidthPx: 0,
-    seamPx: GAP_STROKE_OFFSET,
-    scrollTop: s.scrollTop - s.rowsTop,
-  }),
+  params: cellSpanParams,
   band: rowsBand,
 })
 
@@ -54,33 +80,11 @@ function passOf<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
   return { ...shape, id, pass: { ...shape.pass, id } }
 }
 
-/**
- * The params of a mark drawing each block of a row whole rather than base by
- * base. Unlike the cells these are sparse intervals, so a block narrower than a
- * pixel is widened to one and still reads as present.
- */
-const blockSpanParams = (s: MafGPURenderState) => ({
-  rowHeight: s.rowHeight,
-  rowProportion: s.rowProportion,
-  minWidthPx: 1,
-  seamPx: 0,
-  scrollTop: s.scrollTop - s.rowsTop,
-})
-
-/**
- * The identity heatmap: each row's mean identity per window, tiling like the
- * cells, so it takes their params.
- */
+/** The identity heatmap: each row's mean identity per window, tiling like the cells. */
 export const MAF_IDENTITY_MARK = defineMark({
   shape: passOf(spanMark, 'mafIdentity'),
   channels: (d: MafRowsPayload) => d.identity,
-  params: (s: MafGPURenderState) => ({
-    rowHeight: s.rowHeight,
-    rowProportion: s.rowProportion,
-    minWidthPx: 0,
-    seamPx: GAP_STROKE_OFFSET,
-    scrollTop: s.scrollTop - s.rowsTop,
-  }),
+  params: cellSpanParams,
   band: rowsBand,
 })
 
@@ -91,16 +95,18 @@ export const MAF_IDENTITY_MARK = defineMark({
 export const MAF_IDENTITY_BAR_MARK = defineMark({
   shape: passOf(barMark, 'mafIdentityBar'),
   channels: (d: MafRowsPayload) => d.identityBars,
-  params: (s: MafGPURenderState) => ({
-    domain: [0, 1] as [number, number],
-    origin: 0,
-    minWidthPx: 0,
-    seamPx: GAP_STROKE_OFFSET,
-    rowHeight: s.rowHeight,
-    rowBandPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
-    rowOffsetPx:
-      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
-  }),
+  params: (s: MafGPURenderState) => {
+    const { offsetPx, heightPx } = rowBandPx(s)
+    return {
+      domain: [0, 1] as [number, number],
+      origin: 0,
+      minWidthPx: 0,
+      seamPx: GAP_STROKE_OFFSET,
+      rowHeight: s.rowHeight,
+      rowBandPx: heightPx,
+      rowOffsetPx: offsetPx,
+    }
+  },
   band: rowsBand,
 })
 
@@ -167,11 +173,11 @@ export const MAF_COVERAGE_MARKS = coverageBandMarks({
  * cells' band.
  */
 export function mafInsertionParams(s: MafGPURenderState) {
+  const { offsetPx, heightPx } = rowBandPx(s)
   return {
     rowHeight: s.rowHeight,
-    rowOffsetPx:
-      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
-    bandHeightPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
+    rowOffsetPx: offsetPx,
+    bandHeightPx: heightPx,
     spanFloorPx: 0,
     outline: false,
   }
