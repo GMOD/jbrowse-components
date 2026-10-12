@@ -22,7 +22,7 @@ such as R through V8. The adapters must be registered on `pluginManager`
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, display, byteLimit, }: VariantTablesArgs) => Promise<{ variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; }; cells: { variant: number[]; row: string[]; genotype: string[]; dosage: number[]; color: string[]; }; rows: { name: string[]; sample: string[]; haplotype: number[]; ploidy: number[]; }; legend: { label: string[]; color: string[]; section: string[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, region, display, byteLimit, }: VariantTablesArgs) => Promise<{ variants: { start: number[]; end: number[]; id: string[]; name: string[]; ref: string[]; alt: string[]; type: string[]; color: string[]; }; cells: { variant: number[]; row: string[]; genotype: string[]; dosage: number[]; color: string[]; }; rows: { name: string[]; sample: string[]; haplotype: number[]; ploidy: number[]; color: string[]; }; legend: { label: string[]; color: string[]; section: string[]; }; rowLegend: { label: string[]; color: string[]; }; rowLegendTitle: string; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
