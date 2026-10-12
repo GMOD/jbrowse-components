@@ -173,6 +173,7 @@ test('a multi-wiggle reads under the multi-track defaults: a row per source, no 
   const zoomedOut = { ...MULTI_BIGWIG, bpPerPx: 500 }
   const t = await engine.wiggle(zoomedOut)
   expect(t.rowLayout).toBe(true)
+  expect(t.height).toBe(200)
   expect(t.marks.band.some(Boolean)).toBe(false)
   expect(t.marks.start).toHaveLength(t.bins.start.length)
   const single = await engine.wiggle({

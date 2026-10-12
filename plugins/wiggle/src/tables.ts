@@ -399,6 +399,7 @@ export async function wiggleTables(
     rendering: renderingType,
     origin,
     rowLayout,
+    height: readConfObject(conf, 'height'),
   }
 }
 
