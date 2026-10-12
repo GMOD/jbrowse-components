@@ -166,12 +166,8 @@ const [results, frames] = await Promise.all([
       })
     : NO_FRAMES,
 ])
-// The batch's own byte number, whichever way it goes: the budget is what
-// one region may cost, so the largest is what was judged and what the
-// banner quotes.
-//
-// `partial` travels with it: the first refusal aborts the siblings, so a
-// refused batch's largest is the largest among the regions that reported.
+// The batch's byte number whichever way it goes: the largest region is what
+// was judged and what the banner quotes. `partial` travels with it.
 const perRegionBytes = results.map(r => measuredBytes(r.result))
 const bytes = largestRegionBytes(perRegionBytes)
 const partial = results.length < regions.length
