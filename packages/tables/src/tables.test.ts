@@ -652,6 +652,24 @@ test('a chain over split reads paints a read by its strand against its chain’s
   expect(new Set(chained.reads.color).size).toBeGreaterThan(1)
 })
 
+test('the glyph hands R the splice line’s fade at the read height, and the size labels’ rules', async () => {
+  const tall = await engine.alignments(SPLICED)
+  const compact = await engine.alignments({
+    ...SPLICED,
+    display: { featureHeight: 3 },
+  })
+  expect(tall.glyph.intronAlpha).toBe(1)
+  expect(compact.glyph.intronAlpha).toBeGreaterThan(0.25)
+  expect(compact.glyph.intronAlpha).toBeLessThan(1)
+  const { minHeight, digitPx, fadeLo, fadeHi, fadeFloor } = tall.glyph.label
+  expect(minHeight).toBeGreaterThan(3)
+  expect(digitPx).toBeGreaterThan(3)
+  expect(fadeLo).toBeGreaterThan(1)
+  expect(fadeHi).toBeGreaterThan(fadeLo)
+  expect(fadeFloor).toBeGreaterThan(0)
+  expect(fadeFloor).toBeLessThan(1)
+})
+
 test('the display’s showSoftClipping lays reads out by their clipped extent', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const clipped = await engine.alignments({

@@ -5,7 +5,12 @@ import {
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
   coverageDepthDomain,
+  LABEL_FADE_FLOOR,
+  LABEL_FADE_HI_RATIO,
+  LABEL_FADE_LO_RATIO,
+  MIN_HEIGHT_FOR_TEXT,
   interbaseEdgePx,
+  labelFont,
   pairDirectionOfNum,
   readInterbaseSegments,
   readModCovSegments,
@@ -66,6 +71,7 @@ import {
   presentMapqs,
 } from './LinearAlignmentsDisplay/qualitySpans.ts'
 import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
+import { intronAlpha } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { buildLaidOutPileupMap } from './RenderAlignmentDataRPC/sortLayout.ts'
 import {
@@ -929,6 +935,7 @@ export async function alignmentTables(
   )
   const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
   const chain = readConfObject(conf, 'unit') === 'chain'
+  const featureHeight: number = readConfObject(conf, 'featureHeight')
   const showSoftClipping: boolean =
     !chain && readConfObject(conf, 'showSoftClipping')
   const facetNode = conf.facet
@@ -1073,6 +1080,14 @@ export async function alignmentTables(
       region,
     ),
     glyph: {
+      intronAlpha: intronAlpha(featureHeight),
+      label: {
+        minHeight: MIN_HEIGHT_FOR_TEXT,
+        digitPx: labelFont(featureHeight).measure('0'),
+        fadeLo: LABEL_FADE_LO_RATIO,
+        fadeHi: LABEL_FADE_HI_RATIO,
+        fadeFloor: LABEL_FADE_FLOOR,
+      },
       indicatorWidth: 2 * INDICATOR_TRIANGLE_HW,
       indicatorHeight: INDICATOR_TRIANGLE_H,
       coverageInset: YSCALEBAR_LABEL_OFFSET,
