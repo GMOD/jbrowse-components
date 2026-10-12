@@ -1,7 +1,7 @@
 ---
 id: readfilter
 title: ReadFilter
-description: "Every read filter of the alignments display in one object, its filter slot: the SAM flag masks, a read name, the tag filters a read has to pass every one of, and the four read categories, each…"
+description: "Every read filter of the alignments display in one object, its filter slot: the SAM flag masks, a minimum mapping quality, a read name, the tag filters a read has to pass every one of, and the four…"
 sidebar_label: Display -> ReadFilter
 ---
 
@@ -14,16 +14,20 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 ```js
+{ type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
+```
+
+```js
 { type: 'LinearAlignmentsDisplay', filter: { tagFilters: [{ tag: 'HP', value: '1' }] } }
 ```
 
 _See the **Config slots** section below for all available configuration fields._
 
 Every read filter of the alignments display in one object, its `filter`
-slot: the SAM flag masks, a read name, the tag filters a read has to pass
-every one of, and the four read categories, each `only`, `exclude` or
-unset for unfiltered. The default excludes unmapped, QC-failed and duplicate
-reads (flag 1540).
+slot: the SAM flag masks, a minimum mapping quality, a read name, the tag
+filters a read has to pass every one of, and the four read categories, each
+`only`, `exclude` or unset for unfiltered. The default excludes unmapped,
+QC-failed and duplicate reads (flag 1540).
 
 ## Config slots
 
@@ -34,6 +38,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | --- | --- |
 | <span id="slot-flaginclude">**flagInclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>defaultFilterFlags.flagInclude</code> | a read passes only with every one of these SAM flag bits set, samtools -f |
 | <span id="slot-flagexclude">**flagExclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>defaultFilterFlags.flagExclude</code> | a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads |
+| <span id="slot-minmapq">**minMapq**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read |
 | <span id="slot-readname">**readName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the one read name shown; unset shows every read |
 | <span id="slot-tagfilters">**tagFilters**</span><br>[TagFilter](../tagfilter) | The tags a read has to carry, every one of them: a `{ tag, value }` each, the value `*` or unset passing any read with the tag. |
 | <span id="slot-spliced">**spliced**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose CIGAR carries a reference skip. |

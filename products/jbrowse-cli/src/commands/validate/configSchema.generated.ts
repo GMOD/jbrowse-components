@@ -6302,6 +6302,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
+        "minMapq": {
+          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
         "readName": {
           "description": "the one read name shown; unset shows every read.",
           "if": {
@@ -6582,6 +6591,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "strand",
             "basePair",
             "tag",
+            "mapq",
+            "pairOrientation",
             "insertion",
             "softclip",
             "hardclip"
@@ -6594,7 +6605,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "position",
               "if": {
                 "type": "null"
@@ -6609,6 +6620,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "strand",
                   "basePair",
                   "tag",
+                  "mapq",
+                  "pairOrientation",
                   "insertion",
                   "softclip",
                   "hardclip"
@@ -7839,6 +7852,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "strand",
             "basePair",
             "tag",
+            "mapq",
+            "pairOrientation",
             "insertion",
             "softclip",
             "hardclip"
@@ -7851,7 +7866,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "length",
               "if": {
                 "type": "null"
@@ -7866,6 +7881,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "strand",
                   "basePair",
                   "tag",
+                  "mapq",
+                  "pairOrientation",
                   "insertion",
                   "softclip",
                   "hardclip"

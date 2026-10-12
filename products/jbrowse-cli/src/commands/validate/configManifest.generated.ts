@@ -3761,6 +3761,10 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
+              "name": "minMapq",
+              "type": "(number | undefined)"
+            },
+            {
               "name": "readName",
               "type": "(string | undefined)"
             },
@@ -4484,6 +4488,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "flagExclude",
               "type": "number"
+            },
+            {
+              "name": "minMapq",
+              "type": "(number | undefined)"
             },
             {
               "name": "readName",
