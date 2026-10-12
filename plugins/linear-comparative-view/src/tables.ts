@@ -55,6 +55,8 @@ import type {
 } from '@jbrowse/synteny-core'
 
 export { registerComparativeAdapters }
+export { multiwayTables } from './multiwayTables.ts'
+export type { MultiWayTables, MultiWayTablesArgs } from './multiwayTables.ts'
 
 export interface SyntenyTablesArgs {
   adapterConfig: Record<string, unknown>

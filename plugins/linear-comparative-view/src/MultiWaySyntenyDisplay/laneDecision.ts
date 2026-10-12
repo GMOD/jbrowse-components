@@ -582,7 +582,7 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
   return inside
 }
 
-function laneBpAt(frame: RowFrame, px: number, width: number) {
+export function laneBpAt(frame: RowFrame, px: number, width: number) {
   const bpPerPx = (frame.max - frame.min) / width
   return laneBpOfOpened(
     frameOpenings(frame),

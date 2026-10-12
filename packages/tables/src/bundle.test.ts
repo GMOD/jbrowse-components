@@ -15,7 +15,12 @@ import vm from 'node:vm'
 import { parse } from 'acorn'
 
 import { createTablesEngine } from './index.ts'
-import { INV_INDELS, INV_INDELS_DOTPLOT } from './synteny.fixture.ts'
+import {
+  ALL_VS_ALL,
+  INV_INDELS,
+  INV_INDELS_DOTPLOT,
+  SYRI,
+} from './synteny.fixture.ts'
 import {
   BAM,
   BIGBED,
@@ -49,6 +54,7 @@ let jbrowse: {
   synteny: (args: string) => Promise<string>
   dotplot: (args: string) => Promise<string>
   contigs: (args: string) => Promise<string>
+  multiway: (args: string) => Promise<string>
 }
 let code: string
 
@@ -170,4 +176,18 @@ test('the bundle answers a PAF as the engine does, in a bare host', async () => 
   expect(JSON.parse(await jbrowse.contigs(JSON.stringify(args)))).toEqual(
     await createTablesEngine().contigs(args),
   )
+})
+
+test('the bundle stacks a multi-genome PAF as the engine does, in a bare host', async () => {
+  for (const args of [ALL_VS_ALL, SYRI]) {
+    const bare = JSON.parse(await jbrowse.multiway(JSON.stringify(args)))
+    const direct = await createTablesEngine().multiway(args)
+    expect(bare.ribbons.kind.length).toBeGreaterThan(2)
+    expect(bare.lanes).toEqual(direct.lanes)
+    expect(bare.segments).toEqual(direct.segments)
+    expect(bare.blocks).toEqual(direct.blocks)
+    expect(bare.ribbons).toEqual(direct.ribbons)
+    expect(bare.alignments).toEqual(direct.alignments)
+    expect(bare.legend).toEqual(direct.legend)
+  }
 })

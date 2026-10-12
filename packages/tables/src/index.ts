@@ -13,6 +13,7 @@ import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
 import {
+  multiwayTables,
   registerComparativeAdapters,
   syntenyTables,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
@@ -30,7 +31,10 @@ import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
 import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
-import type { SyntenyTablesArgs } from '@jbrowse/plugin-linear-comparative-view/tables'
+import type {
+  MultiWayTablesArgs,
+  SyntenyTablesArgs,
+} from '@jbrowse/plugin-linear-comparative-view/tables'
 import type { VariantTablesArgs } from '@jbrowse/plugin-variants/tables'
 import type { WiggleTablesArgs } from '@jbrowse/plugin-wiggle/tables'
 
@@ -51,6 +55,8 @@ export type {
   DotplotTablesArgs,
 } from '@jbrowse/plugin-dotplot-view/tables'
 export type {
+  MultiWayTables,
+  MultiWayTablesArgs,
   SyntenyTables,
   SyntenyTablesArgs,
 } from '@jbrowse/plugin-linear-comparative-view/tables'
@@ -145,6 +151,7 @@ export function createTablesEngine() {
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
     contigs: (args: ContigTablesArgs) => contigTables(pluginManager, args),
+    multiway: (args: MultiWayTablesArgs) => multiwayTables(pluginManager, args),
     sequence: (args: Parameters<typeof referenceSequence>[1]) =>
       referenceSequence(pluginManager, args),
   }

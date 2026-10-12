@@ -8,7 +8,13 @@ import { toArray } from 'rxjs/operators'
 import { SPLIT_AT_GAP_BP } from './layoutMultiWay.ts'
 
 import type { AlignmentOpsById } from './alignmentOps.ts'
-import type { RegionLike, RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  RegionLike,
+  RpcArgs,
+  RpcCallContext,
+  RpcExecuteArgs,
+} from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { RpcResult } from '@jbrowse/core/util/librpc'
 import type { ComparativeOptions } from '@jbrowse/synteny-core'
@@ -51,38 +57,65 @@ export default class MultiWayGetFeatures extends RpcMethodTypeWithRenameRegions<
   name = 'MultiWayGetFeatures' as const
 
   async deserializeReturn(wire: RpcResult<MultiWayFeaturesWire>) {
-    const { features, ops } = unwrapRpcResult(wire)
-    return {
-      features: features.map(feat => new SimpleFeature(feat)),
-      ops: new Map(ops),
-    }
+    return multiWayFeaturesOf(unwrapRpcResult(wire))
   }
 
   async execute(args: RpcExecuteArgs<'MultiWayGetFeatures'>) {
-    const { signal, statusCallback, regions, haplotypes, opts } = args
-    const dataAdapter = await getFeatureAdapterOrThrow({
-      ...args,
-      pluginManager: this.pluginManager,
-    })
-    const withOps: ComparativeOptions = {
-      ...opts,
-      haplotypes,
-      keepAlignment: true,
-      clipToRegion: true,
-      splitAtGapBp: SPLIT_AT_GAP_BP,
-      statusCallback,
-      signal,
-    }
-    const found = await firstValueFrom(
-      dataAdapter
-        .getFeaturesInMultipleRegions(regions, withOps)
-        .pipe(toArray()),
+    const wire = liftAlignmentOps(
+      await executeMultiWayFeatures({
+        ...args,
+        pluginManager: this.pluginManager,
+      }),
     )
-    const wire = liftAlignmentOps(found)
     return rpcResult(
       wire,
       wire.ops.map(([, packed]) => packed.buffer),
     )
+  }
+}
+
+/**
+ * The features a multi-way fetch reads, each alignment carrying its
+ * `alignmentOps`, clipped to the regions and split at the gaps a lane opens.
+ */
+export async function executeMultiWayFeatures({
+  pluginManager,
+  sessionId,
+  adapterConfig,
+  regions,
+  haplotypes,
+  opts,
+  statusCallback,
+  signal,
+}: RpcArgs<'MultiWayGetFeatures'> &
+  RpcCallContext & { pluginManager: PluginManager }) {
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
+  const withOps: ComparativeOptions = {
+    ...opts,
+    haplotypes,
+    keepAlignment: true,
+    clipToRegion: true,
+    splitAtGapBp: SPLIT_AT_GAP_BP,
+    statusCallback,
+    signal,
+  }
+  return firstValueFrom(
+    dataAdapter.getFeaturesInMultipleRegions(regions, withOps).pipe(toArray()),
+  )
+}
+
+/** The features as a display holds them, the ops lifted off beside them. */
+export function multiWayFeaturesOf({
+  features,
+  ops,
+}: MultiWayFeaturesWire): MultiWayFeatures {
+  return {
+    features: features.map(feat => new SimpleFeature(feat)),
+    ops: new Map(ops),
   }
 }
 
