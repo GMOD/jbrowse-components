@@ -1,5 +1,8 @@
 import {
   READ_SV_SIGNAL,
+  flagsOf,
+  isConcordantPairRead,
+  pairFieldEntry,
   readGroupConnections,
   readIdAt,
   readNameAt,
@@ -47,12 +50,25 @@ export interface ReadChain {
   connections: ReadConnection<ReadEntry>[]
 }
 
-// The `svSignal` definition the read filter and the sort use (ADR-229). Read
-// by read rather than by chain: the filter keeps a split read's concordant mate,
-// but a curve to it would show no rearrangement, so a pair's link joins two
-// evidence reads.
+// The `svSignal` definition the read filter and the sort use (ADR-229), read
+// by read rather than by chain: the filter keeps a split read's concordant
+// mate, but a curve to it would show no rearrangement.
 export function isEvidenceRead(data: OverlayReadArrays, i: number) {
   return (data.readCategoryBits[i]! & READ_SV_SIGNAL) !== 0
+}
+
+// A junction is always evidence; a mate link only for a pair the aligner did
+// not call concordant, so two split mates of a proper pair draw their
+// junctions and no link between them.
+function isEvidenceLink(c: ReadConnection<ReadEntry>) {
+  const src = pairFieldEntry(c.e1, c.e2)
+  return (
+    c.isSplit ||
+    !isConcordantPairRead(
+      flagsOf(src),
+      src.data.readPairOrientations[src.readIdx]!,
+    )
+  )
 }
 
 export function readIdOf(e: ReadEntry) {
@@ -113,7 +129,7 @@ export function buildReadChains(
       const assembly = assemblies[entries[0]!.level]
       const connections = readGroupConnections(entries, refName =>
         assembly ? assembly.getCanonicalRefName2(refName) : refName,
-      )
+      ).filter(isEvidenceLink)
       if (connections.length > 0) {
         chains.push({ entries, connections })
       }
