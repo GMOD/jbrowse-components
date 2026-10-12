@@ -20,6 +20,8 @@ for the caller to route or refuse, and a declared key whose write throws
 costs that key alone.
 
 ```js
+import { applyConfSettings } from '@jbrowse/core/configuration'
+
 // type signature
 (target: AnyConfigurationModel | { configuration: AnyConfigurationModel; }, settings: Record<string, unknown>) => ConfSettingsReport
 ```
@@ -32,6 +34,8 @@ The `ConfigurationSchemaUnion` an array slot's entries answer to, read off
 the slot's MST type, or undefined for any other slot.
 
 ```js
+import { arraySlotUnion } from '@jbrowse/core/configuration'
+
 // type signature
 (slotType: IAnyType) => ConfigurationSchemaUnionMetadata | undefined
 ```
@@ -50,6 +54,8 @@ another member is named on a load and refused on a write rather than
 dropped; one that is not throws here.
 
 ```js
+import { ConfigurationSchemaUnion } from '@jbrowse/core/configuration'
+
 // type signature
 <const MEMBERS extends Record<string, AnyConfigurationSchemaType>>(name: string, members: MEMBERS) => ConfigurationSchemaUnionType<MEMBERS>
 ```
@@ -63,6 +69,8 @@ config half of an entry that carries its owner's keys beside one, as a
 `MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
 
 ```js
+import { declaredSnapshot } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: Record<string, unknown>) => Record<string, unknown>
 ```
@@ -75,6 +83,8 @@ A config value as `feature` reads it: a `jexl:` callback evaluated against
 the feature, anything else as written.
 
 ```js
+import { evaluateForFeature } from '@jbrowse/core/configuration'
+
 // type signature
 (value: unknown, feature: Feature, jexl: JexlInstance) => unknown
 ```
@@ -87,6 +97,8 @@ Reads a configuration value from a track or display state model: exactly
 `readConfObject(model.configuration, path)`, with the same slot-name check.
 
 ```js
+import { getConf } from '@jbrowse/core/configuration'
+
 // type signature
 (model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { configuration: CONFMODEL; }, slotPath: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
@@ -107,6 +119,8 @@ object. Hydrating one entry twice returns one node. A shown track resolves to
 the session's working copy instead (ADR-032), which has the same content.
 
 ```js
+import { hydrateTrackConfig } from '@jbrowse/core/configuration'
+
 // type signature
 (pluginManager: PluginManager, config: Record<string, unknown>) => AnyConfigurationModel | undefined
 ```
@@ -123,6 +137,8 @@ reads its typed members off it. The draft is copied first, since MST
 freezes what it creates from.
 
 ```js
+import { liftPlot } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel, draft: Plot) => AnyConfigurationModel
 ```
@@ -135,6 +151,8 @@ The text as a plot, refusing a key the display's plot does not hold. The
 schema is the parser past this point.
 
 ```js
+import { parsePlot } from '@jbrowse/core/configuration'
+
 // type signature
 (text: string, keys: readonly string[]) => Plot
 ```
@@ -157,6 +175,8 @@ display's `plot`. A display's plot is the ones its config declares
 (`plotKeysOf`).
 
 ```js
+import { PLOT_VOCABULARY } from '@jbrowse/core/configuration'
+
 // type signature
 Readonly<Record<string, string>>
 ```
@@ -175,6 +195,8 @@ and what it does.
 The plot keys a display config declares.
 
 ```js
+import { plotKeysOf } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel) => string[]
 ```
@@ -188,6 +210,8 @@ default it shares with no other display, a default plot's marks, shows its
 entries, since they are what is drawn.
 
 ```js
+import { plotOf } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel) => Plot
 ```
@@ -202,6 +226,8 @@ spelled another way but lifting to the same setting writes nothing.
 Throws a refusal before anything is written.
 
 ```js
+import { plotWrites } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel, draft: Plot) => Record<string, unknown>
 ```
@@ -216,6 +242,8 @@ undeclared key included. Throws what the schema's `preProcessSnapshot`
 throws.
 
 ```js
+import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: unknown) => Record<string, unknown>
 ```
@@ -233,6 +261,8 @@ from one. A `session.tracks` entry is one (`TrackConfigEntry`): read its
 default, such as `getConfAssemblyNamesOrNone`.
 
 ```js
+import { readConfObject } from '@jbrowse/core/configuration'
+
 // type signature
 (confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
@@ -249,6 +279,8 @@ way, so a typo in an edit is an error and a config written for another
 version still draws.
 
 ```js
+import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
+
 // type signature
 <T>(write: () => T) => T
 ```
@@ -263,6 +295,8 @@ its default, so a `when` value that is the default fires for an absent slot,
 which is what the generated JSON Schema's `if` does.
 
 ```js
+import { requirementProblems } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: Record<string, unknown>) => RequirementProblem[]
 ```
@@ -283,6 +317,8 @@ and `setSlot` refuses one at runtime (ADR-052). A wrong value type throws at
 runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
 ```js
+import { setConf } from '@jbrowse/core/configuration'
+
 // type signature
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
 ```

@@ -27,6 +27,8 @@ track the session owns was added with; empty in a session that keeps no
 base.
 
 ```js
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
+
 // type signature
 (self: object) => Record<string, unknown>
 ```
@@ -52,6 +54,8 @@ rather than each band re-deriving the reasoning — that is how the two
 this rule and a doc comment claiming to be the whole of it.
 
 ```js
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (n: number, { min, max }?: BandBounds) => number
 ```
@@ -87,6 +91,8 @@ loaded, and a caller reading an untyped `frozen` slot must first check that
 the value is a refName.
 
 ```js
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode, refName: string) => string
 ```
@@ -114,6 +120,8 @@ a component computing the target from a rendered height drops every tick that
 lands before React re-renders.
 
 ```js
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (current: number, target: number, bounds?: BandBounds) => number
 ```
@@ -133,6 +141,8 @@ manager is the one thing on `AbstractSessionModel` a third-party host cannot
 simply implement.
 
 ```js
+import { getAssemblyHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AssemblyHost
 ```
@@ -145,6 +155,8 @@ Returns the display model that contains the given node. Throws if the node has
 no containing display.
 
 ```js
+import { getContainingDisplay } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractDisplayModel
 ```
@@ -157,6 +169,8 @@ Returns the track model that contains the given node. Throws if the node has
 no containing track.
 
 ```js
+import { getContainingTrack } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractTrackModel
 ```
@@ -169,6 +183,8 @@ Returns the view model that contains the given node. Throws if the node has no
 containing view.
 
 ```js
+import { getContainingView } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractViewModel
 ```
@@ -180,6 +196,8 @@ containing view.
 Where a display puts a dialog it cannot mount itself.
 
 ```js
+import { getDialogHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => DialogHost
 ```
@@ -191,6 +209,8 @@ Where a display puts a dialog it cannot mount itself.
 Returns the MST environment for a node, which carries the `pluginManager`.
 
 ```js
+import { getEnv } from '@jbrowse/core/util'
+
 // type signature
 (obj: IAnyStateTreeNode) => { pluginManager: PluginManager; }
 ```
@@ -202,6 +222,8 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 Where a display puts a message it cannot draw itself.
 
 ```js
+import { getNotificationSink } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => NotificationSink
 ```
@@ -213,6 +235,8 @@ Where a display puts a message it cannot draw itself.
 The colors to draw with, and the args that rebuild them in a worker.
 
 ```js
+import { getPaletteHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => PaletteHost
 ```
@@ -225,6 +249,8 @@ Everything a display needs of its host in order to draw a region: the
 assemblies, the RPC entry point and the colors.
 
 ```js
+import { getRenderingServices } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => RenderingServices
 ```
@@ -236,6 +262,8 @@ assemblies, the RPC entry point and the colors.
 The host's RPC entry point, for a module that issues RPCs and nothing else.
 
 ```js
+import { getRpcHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => RpcHost
 ```
@@ -248,6 +276,8 @@ Returns the JBrowse session model for any node in the state tree. Throws if
 the node has no session ancestor.
 
 ```js
+import { getSession } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractSessionModel
 ```
@@ -261,6 +291,8 @@ Prefer one of the narrower accessors below, which say which of them the
 calling module actually uses.
 
 ```js
+import { getSessionServices } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => SessionServices
 ```
@@ -273,6 +305,8 @@ calling module actually uses.
 the synchronous `addOrReplaceView` requires it loaded already.
 
 ```js
+import { launchOrReplaceView } from '@jbrowse/core/util'
+
 // type signature
 (args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<AbstractViewModel>
 ```
@@ -286,6 +320,8 @@ bound) stated height when on. This is the single spelling of "off spends
 0 px".
 
 ```js
+import { reservedPx } from '@jbrowse/core/util/bandLayout'
+
 // type signature
 (band: Band) => number
 ```
@@ -304,6 +340,8 @@ what `reload()` clears, and nothing would re-run the install behind it.
 Three displays hand-rolled this IIFE and each drew the lines differently.
 
 ```js
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
+
 // type signature
 <Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void
 ```
@@ -320,6 +358,8 @@ none goes below `floor`, or below its own height if it already sits under it
 remainder, so the stack moves by exactly the rounded distance.
 
 ```js
+import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (heights: number[], distance: number, floor?: number) => number[]
 ```
@@ -339,6 +379,8 @@ the result is projected to the screen, and a band drawn outside its
 reservation (an overlay) carries its own draw rect beside the stack.
 
 ```js
+import { stackBands } from '@jbrowse/core/util/bandLayout'
+
 // type signature
 <K extends string>(order: readonly K[], bands: Record<K, Band>) => BandStack<K>
 ```

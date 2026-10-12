@@ -282,10 +282,11 @@ const GENERATORS: Generator[] = [
     // blocks that need the whole-repo program (DISPLAY_TYPES, GOTCHA,
     // SPEC_KEYS, ...), each package's API_DOCS README block,
     // and api-docs/coverage-gaps.txt. generateConfigDocs reads the shorthand
-    // keys out of the manifest.
+    // keys out of the manifest, and generateApiDocs each export's import
+    // specifier out of reExports.generated.json.
     name: 'config/model/api docs',
     argv: api('generate.ts'),
-    needs: ['config schema manifest'],
+    needs: ['config schema manifest', 'runtime re-exports'],
     wholeRepoProgram: true,
   },
 ]

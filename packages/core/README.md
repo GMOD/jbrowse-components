@@ -58,6 +58,8 @@ in `config.json`. A key the config does not declare is reported for the caller
 to route or refuse, and a declared key whose write throws costs that key alone.
 
 ```js
+import { applyConfSettings } from '@jbrowse/core/configuration'
+
 // type signature
 (target: AnyConfigurationModel | { configuration: AnyConfigurationModel; }, settings: Record<string, unknown>) => ConfSettingsReport
 ```
@@ -70,6 +72,8 @@ The `ConfigurationSchemaUnion` an array slot's entries answer to, read off the
 slot's MST type, or undefined for any other slot.
 
 ```js
+import { arraySlotUnion } from '@jbrowse/core/configuration'
+
 // type signature
 (slotType: IAnyType) => ConfigurationSchemaUnionMetadata | undefined
 ```
@@ -81,6 +85,8 @@ slot's MST type, or undefined for any other slot.
 A table over a feature list, or the table itself.
 
 ```js
+import { asTable } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (input: readonly Feature[] | FeatureTable) => FeatureTable
 ```
@@ -106,6 +112,8 @@ this the reader's" compares against: the config.json's, or the one a track the
 session owns was added with; empty in a session that keeps no base.
 
 ```js
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
+
 // type signature
 (self: object) => Record<string, unknown>
 ```
@@ -147,6 +155,8 @@ rather than each band re-deriving the reasoning — that is how the two
 this rule and a doc comment claiming to be the whole of it.
 
 ```js
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (n: number, { min, max }?: BandBounds) => number
 ```
@@ -174,6 +184,8 @@ Split out of `parseSvAlt` because a consumer holding an already-parsed
 polarity — the shape that produced 78bb7b84f9.
 
 ```js
+import { breakendKeepsDirections } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (bnd: Breakend) => { mateDirection: number; joinDirection: number; }
 ```
@@ -192,6 +204,8 @@ off the centre of the domain reads it through `rampMidT`, the shader's rule and
 its generated twin, so the middle follows a moving domain without a new table.
 
 ```js
+import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
 ```
@@ -226,6 +240,8 @@ and a caller reading an untyped `frozen` slot must first check that the value is
 a refName.
 
 ```js
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode, refName: string) => string
 ```
@@ -240,6 +256,8 @@ domain does not list a color of its own on first sight (`categoricalScale`); the
 caller keeps it for as long as the colors should hold.
 
 ```js
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (field: string, { domain, range, labels, held, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; }) => CategoricalField
 ```
@@ -314,6 +332,8 @@ component computing the target from a rendered height drops every tick that
 lands before React re-renders.
 
 ```js
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (current: number, target: number, bounds?: BandBounds) => number
 ```
@@ -326,6 +346,8 @@ The quantile a clip toggle writes: a scale's declared default where that clips,
 below 1, else DEFAULT_CLIP_QUANTILE.
 
 ```js
+import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (declaredDefault: unknown) => number
 ```
@@ -353,6 +375,8 @@ RdYlBu turned round, so low reads cool and high hot through a pale yellow
 middle, as `dnds` paints.
 
 ```js
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+
 // type signature
 readonly[
   ('viridis',
@@ -378,6 +402,8 @@ The packed color instance `i` of `channels` paints: `color[i]`, or `color`
 itself where the color is a constant and so shipped as one number.
 
 ```js
+import { colorAt } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (channels: Pick<EncodedChannels, "color">, i: number) => number | undefined
 ```
@@ -399,6 +425,8 @@ unscaled arm of ColorEncoding, on its own for a display that carries a plain
 `color` slot.
 
 ```js
+import { colorEvaluator } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (color: string, jexl: JexlInstance | undefined) => (feature: Feature) => number
 ```
@@ -412,6 +440,8 @@ any, else the named `scheme`, viridis while that is unset, turned round under
 `reverse`.
 
 ```js
+import { colorRampStops } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 ({ range, scheme, reverse, }: RampDeclaration) => readonly ColorRampStop[]
 ```
@@ -447,6 +477,8 @@ A table an adapter answers from the typed arrays it already holds, where
 row's id. A row's hover JSON is every field it holds.
 
 ```js
+import { ColumnTable } from '@jbrowse/core/util/featureTable'
+
 // type signature
 typeof ColumnTable
 ```
@@ -465,6 +497,8 @@ its key, so a key belonging to another member is named on a load and refused on
 a write rather than dropped; one that is not throws here.
 
 ```js
+import { ConfigurationSchemaUnion } from '@jbrowse/core/configuration'
+
 // type signature
 <const MEMBERS extends Record<string, AnyConfigurationSchemaType>>(name: string, members: MEMBERS) => ConfigurationSchemaUnionType<MEMBERS>
 ```
@@ -481,6 +515,8 @@ number, the misconfiguration grey. The encoder and every display painting a ramp
 itself read it, so a value takes one color whoever paints it.
 
 ```js
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (encoding: ContinuousRef, extent: readonly [number, number]) => { domain: [number, number]; lut: Uint8Array<ArrayBufferLike>; midNorm: number; colorOf: (value: number) => number; }
 ```
@@ -513,6 +549,8 @@ Whether a named ramp runs dark at its low end, drawn over white: viridis and its
 siblings do, juicebox, fall, reds and blues do not.
 
 ```js
+import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (scheme: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis") => boolean
 ```
@@ -526,6 +564,8 @@ first seen together takes do not depend on the order they arrive in. A no-op for
 a field that deals nothing.
 
 ```js
+import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (field: CategoricalField, keys: Iterable<string>) => void
 ```
@@ -539,6 +579,8 @@ half of an entry that carries its owner's keys beside one, as a
 `MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
 
 ```js
+import { declaredSnapshot } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: Record<string, unknown>) => Record<string, unknown>
 ```
@@ -551,6 +593,8 @@ The ramp a continuous scale samples while it names no `range` and no `scheme`,
 so a declaration spelling it out and one leaving it unset resolve alike.
 
 ```js
+import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
+
 // type signature
 ;'blues' |
   'blueyellowred' |
@@ -598,6 +642,8 @@ feature `i` (featureIndexAt). A lane is present when the caller asked for it
 The buffers an EncodedChannels owns, for `rpcResult`'s transfer list.
 
 ```js
+import { encodedChannelTransferables } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (c: EncodedChannels) => ArrayBufferLike[]
 ```
@@ -629,6 +675,8 @@ its own loop over the admitted rows, a lane straight off a typed column and a
 categorical over a `category` column per label.
 
 ```js
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 <L extends LaneName>(input: readonly Feature[] | FeatureTable, encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
 ```
@@ -641,6 +689,8 @@ A config value as `feature` reads it: a `jexl:` callback evaluated against the
 feature, anything else as written.
 
 ```js
+import { evaluateForFeature } from '@jbrowse/core/configuration'
+
 // type signature
 (value: unknown, feature: Feature, jexl: JexlInstance) => unknown
 ```
@@ -670,6 +720,8 @@ every step runs once over the ordered rows, keeping section order, and one that
 groups rows groups within a section.
 
 ```js
+import { facetLayers } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
@@ -697,6 +749,8 @@ The input feature instance `i` of `channels` was: `featureIndex[i]`, or `i`
 itself where the encoder skipped none and so shipped no index.
 
 ```js
+import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (channels: Pick<EncodedChannels, "featureIndex">, i: number) => number
 ```
@@ -722,6 +776,8 @@ Quantiles that meet span their own size, as a flat domain widens in
 `getNiceDomain`.
 
 ```js
+import { fenceOutliers } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 ({ extremes, quantiles, zero, }: { extremes: readonly [number, number]; quantiles: readonly [number, number]; zero: boolean; }) => [number, number]
 ```
@@ -736,6 +792,8 @@ record), or a `jexl:` expression over `feature`. A jexl expression that does not
 compile throws here, once, rather than on every feature.
 
 ```js
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+
 // type signature
 (ref: string, jexl: JexlInstance | undefined) => (feature: Feature) => unknown
 ```
@@ -763,6 +821,8 @@ The least and greatest finite values of `values[0, count)`,
 `[Infinity, -Infinity]` where none is finite.
 
 ```js
+import { finiteExtremes } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number) => [number, number]
 ```
@@ -800,6 +860,8 @@ wanted, and because that cost is the finding: the assembly manager is the one
 thing on `AbstractSessionModel` a third-party host cannot simply implement.
 
 ```js
+import { getAssemblyHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AssemblyHost
 ```
@@ -816,6 +878,8 @@ allele id where a contig name belongs. Callers that navigate or split-view a
 mate must drop both rather than treat `<DEL>` as a refName.
 
 ```js
+import { getBreakendMateLocString } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (breakend?: Breakend | undefined) => string | undefined
 ```
@@ -828,6 +892,8 @@ Reads a configuration value from a track or display state model: exactly
 `readConfObject(model.configuration, path)`, with the same slot-name check.
 
 ```js
+import { getConf } from '@jbrowse/core/configuration'
+
 // type signature
 (model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { configuration: CONFMODEL; }, slotPath: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
@@ -841,6 +907,8 @@ Returns the display model that contains the given node. Throws if the node has
 no containing display.
 
 ```js
+import { getContainingDisplay } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractDisplayModel
 ```
@@ -853,6 +921,8 @@ Returns the track model that contains the given node. Throws if the node has no
 containing track.
 
 ```js
+import { getContainingTrack } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractTrackModel
 ```
@@ -865,6 +935,8 @@ Returns the view model that contains the given node. Throws if the node has no
 containing view.
 
 ```js
+import { getContainingView } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractViewModel
 ```
@@ -876,6 +948,8 @@ containing view.
 Where a display puts a dialog it cannot mount itself.
 
 ```js
+import { getDialogHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => DialogHost
 ```
@@ -887,6 +961,8 @@ Where a display puts a dialog it cannot mount itself.
 Returns the MST environment for a node, which carries the `pluginManager`.
 
 ```js
+import { getEnv } from '@jbrowse/core/util'
+
 // type signature
 (obj: IAnyStateTreeNode) => { pluginManager: PluginManager; }
 ```
@@ -898,6 +974,8 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 Where a display puts a message it cannot draw itself.
 
 ```js
+import { getNotificationSink } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => NotificationSink
 ```
@@ -909,6 +987,8 @@ Where a display puts a message it cannot draw itself.
 The colors to draw with, and the args that rebuild them in a worker.
 
 ```js
+import { getPaletteHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => PaletteHost
 ```
@@ -921,6 +1001,8 @@ Everything a display needs of its host in order to draw a region: the
 assemblies, the RPC entry point and the colors.
 
 ```js
+import { getRenderingServices } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => RenderingServices
 ```
@@ -932,6 +1014,8 @@ assemblies, the RPC entry point and the colors.
 The host's RPC entry point, for a module that issues RPCs and nothing else.
 
 ```js
+import { getRpcHost } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => RpcHost
 ```
@@ -944,6 +1028,8 @@ Returns the JBrowse session model for any node in the state tree. Throws if the
 node has no session ancestor.
 
 ```js
+import { getSession } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => AbstractSessionModel
 ```
@@ -957,6 +1043,8 @@ Prefer one of the narrower accessors below, which say which of them the calling
 module actually uses.
 
 ```js
+import { getSessionServices } from '@jbrowse/core/util'
+
 // type signature
 (node: IAnyStateTreeNode) => SessionServices
 ```
@@ -969,6 +1057,8 @@ The `HeldSlots` `owner` keeps under `key`, made empty on first ask. Lives as
 long as `owner` and is never persisted, so a reload deals afresh.
 
 ```js
+import { heldSlotsOf } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (owner: object, key: string) => HeldSlots
 ```
@@ -988,6 +1078,8 @@ The hit index over `count` instances: each a box from `x` to `x2` at its `y`, or
 at 0 for a mark with no value.
 
 ```js
+import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (x: Uint32Array<ArrayBufferLike>, x2: Uint32Array<ArrayBufferLike>, y: Float32Array<ArrayBufferLike> | undefined, count?: number) => Flatbush
 ```
@@ -1007,6 +1099,8 @@ Hydrating one entry twice returns one node. A shown track resolves to the
 session's working copy instead (ADR-032), which has the same content.
 
 ```js
+import { hydrateTrackConfig } from '@jbrowse/core/configuration'
+
 // type signature
 (pluginManager: PluginManager, config: Record<string, unknown>) => AnyConfigurationModel | undefined
 ```
@@ -1020,6 +1114,8 @@ breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, an angle bracket
 past position 0; a leading `<` is a plain symbolic allele).
 
 ```js
+import { isBreakend } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string) => boolean
 ```
@@ -1032,6 +1128,8 @@ Whether a field holds no value at all, as against text that fails to parse:
 absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
 
 ```js
+import { isMissing } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (value: unknown) => boolean
 ```
@@ -1045,6 +1143,8 @@ no path to walk and no expression to evaluate. A loop over a plain name keeps
 the direct call, and only a config that writes a path pays for one.
 
 ```js
+import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
+
 // type signature
 (ref: string) => ref is never
 ```
@@ -1068,6 +1168,8 @@ face each other. A PAF row's strand is the query's orientation and states none
 for the target, so it names no side.
 
 ```js
+import { junctionEnds } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature, alt?: string | undefined, alleleIndex?: number | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
 ```
@@ -1082,6 +1184,8 @@ takes `labels` reads them through this, so a config means one thing by them
 everywhere.
 
 ```js
+import { keyNames } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (keys: readonly unknown[], labels?: readonly string[]) => ReadonlyMap<string, string>
 ```
@@ -1104,6 +1208,8 @@ hovers declines the index, which is most of the encoder's cost after the walk.
 synchronous `addOrReplaceView` requires it loaded already.
 
 ```js
+import { launchOrReplaceView } from '@jbrowse/core/util'
+
 // type signature
 (args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<AbstractViewModel>
 ```
@@ -1126,6 +1232,8 @@ early as it can: after the last shared step that must see every row, so the
 steps that follow it read the rows already in section order.
 
 ```js
+import { layerTables } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[] | undefined; facet?: FacetSpec | undefined; layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
@@ -1142,6 +1250,8 @@ members off it. The draft is copied first, since MST freezes what it creates
 from.
 
 ```js
+import { liftPlot } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel, draft: Plot) => AnyConfigurationModel
 ```
@@ -1168,6 +1278,8 @@ and `color` are what the adapter names and colors that row with.
 Whether an adapter implements RowSourceLister.
 
 ```js
+import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+
 // type signature
 (adapter: object) => adapter is RowSourceLister
 ```
@@ -1221,6 +1333,8 @@ whether links are the picture a track wants asks here rather than re-reading the
 fields.
 
 ```js
+import { matedBy } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (f: Feature) => "alt" | "mate" | "pair" | undefined
 ```
@@ -1247,6 +1361,8 @@ answered no string, a ramp value that is no number, text a threshold cannot
 read.
 
 ```js
+import { MISCONFIGURED_ABGR } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 number
 ```
@@ -1259,6 +1375,8 @@ The no-value grey packed as the encoder paints it: a feature with nothing in the
 field a threshold reads.
 
 ```js
+import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 number
 ```
@@ -1271,8 +1389,10 @@ The row a feature with nothing in a categorical field lands on, so a key says
 why a mark is grey rather than listing a blank value.
 
 ```js
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
+
 // type signature
-'(no value)'
+;('(no value)')
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1283,8 +1403,10 @@ The key a value holding text that is no number files under on a threshold scale,
 painted the misconfiguration grey rather than passing for a missing value.
 
 ```js
+import { NOT_A_NUMBER_LABEL } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
-'(not a number)'
+;('(not a number)')
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1301,6 +1423,8 @@ readerOf as the number a quantitative channel or step reads, `NaN` where a row
 holds none, by `numericValue`'s rules.
 
 ```js
+import { numberReaderOf } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column) => (i: number) => number
 ```
@@ -1314,6 +1438,8 @@ back as the numbers it names. A member that is not a number reads NaN, which
 every comparison against it declines.
 
 ```js
+import { numericDomain } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly (string | number)[]) => number[]
 ```
@@ -1326,6 +1452,8 @@ The text as a plot, refusing a key the display's plot does not hold. The schema
 is the parser past this point.
 
 ```js
+import { parsePlot } from '@jbrowse/core/configuration'
+
 // type signature
 (text: string, keys: readonly string[]) => Plot
 ```
@@ -1340,6 +1468,8 @@ alt's place in `ALT`, which a record repeating one symbolic allele with several
 lengths needs; it defaults to the first place `alt` appears.
 
 ```js
+import { parseSvAlt } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
 ```
@@ -1372,6 +1502,8 @@ and what each holds: what "Edit plot..." shows and an agent reads as a display's
 `plot`. A display's plot is the ones its config declares (`plotKeysOf`).
 
 ```js
+import { PLOT_VOCABULARY } from '@jbrowse/core/configuration'
+
 // type signature
 Readonly<Record<string, string>>
 ```
@@ -1390,6 +1522,8 @@ what it does.
 The plot keys a display config declares.
 
 ```js
+import { plotKeysOf } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel) => string[]
 ```
@@ -1403,6 +1537,8 @@ shares with no other display, a default plot's marks, shows its entries, since
 they are what is drawn.
 
 ```js
+import { plotOf } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel) => Plot
 ```
@@ -1417,6 +1553,8 @@ way but lifting to the same setting writes nothing. Throws a refusal before
 anything is written.
 
 ```js
+import { plotWrites } from '@jbrowse/core/configuration'
+
 // type signature
 (conf: AnyConfigurationModel, draft: Plot) => Record<string, unknown>
 ```
@@ -1430,6 +1568,8 @@ applies, so a dialog or a validator refuses what an edit cannot hold, an
 undeclared key included. Throws what the schema's `preProcessSnapshot` throws.
 
 ```js
+import { preProcessConfigSnapshot } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: unknown) => Record<string, unknown>
 ```
@@ -1452,6 +1592,8 @@ value axis fences instead (fenceOutliers); a ramp takes the same fence once a
 color default below 1 meets tied data.
 
 ```js
+import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
 ```
@@ -1465,6 +1607,8 @@ of them sit at or below, so a handful of values clips at their maximum. Permutes
 `a`; 0 where `n` is.
 
 ```js
+import { quantileOf } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (a: Float32Array<ArrayBufferLike>, n: number, quantile: number) => number
 ```
@@ -1485,6 +1629,8 @@ ramp's. An open end stops at a pinned one rather than crossing it, and an extent
 holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 
 ```js
+import { rampDomain } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (min: number | undefined, max: number | undefined, extent: readonly [number, number]) => [number, number]
 ```
@@ -1498,6 +1644,8 @@ not-a-number and no-value rows a threshold's key ends with. Empty while neither
 painted.
 
 ```js
+import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (id: string, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }) => CategoricalScale[]
 ```
@@ -1511,6 +1659,8 @@ for the same declaration, since a GPU backend re-uploads its ramp texture when
 the identity changes and a render state is rebuilt far more often than its ramp.
 
 ```js
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (ramp: RampDeclaration) => Uint8Array<ArrayBufferLike>
 ```
@@ -1525,6 +1675,8 @@ The table stays straight and `domainMid` a value, so the middle stop follows the
 widened domain with no table baked again.
 
 ```js
+import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
@@ -1542,6 +1694,8 @@ and `type` directly, and a slot through a helper that supplies the default, such
 as `getConfAssemblyNamesOrNone`.
 
 ```js
+import { readConfObject } from '@jbrowse/core/configuration'
+
 // type signature
 (confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
@@ -1555,6 +1709,8 @@ A reader of a column's values by row, its kind resolved here once. A `number`
 lane with no index reads straight off the lane.
 
 ```js
+import { readerOf } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column) => (i: number) => unknown
 ```
@@ -1573,8 +1729,10 @@ other adapter keys on its config alone: a synteny adapter is fetched from each
 of its assemblies and reads no reference.
 
 ```js
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
 // type signature
-'readsReference'
+;('readsReference')
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
@@ -1587,6 +1745,8 @@ console. `setConf`, a settings bag and a plot draft write this way, so a typo in
 an edit is an error and a config written for another version still draws.
 
 ```js
+import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
+
 // type signature
 <T>(write: () => T) => T
 ```
@@ -1614,6 +1774,8 @@ same coefficient moves a yellow and a blue by visibly different amounts: a lap
 has to read as one tone across the whole palette or it reads as noise.
 
 ```js
+import { relight } from '@jbrowse/core/util/color'
+
 // type signature
 (color: string, lightnessShift: number, chromaScale?: number) => string
 ```
@@ -1628,6 +1790,8 @@ default, so a `when` value that is the default fires for an absent slot, which
 is what the generated JSON Schema's `if` does.
 
 ```js
+import { requirementProblems } from '@jbrowse/core/configuration'
+
 // type signature
 (type: IAnyType, snapshot: Record<string, unknown>) => RequirementProblem[]
 ```
@@ -1640,6 +1804,8 @@ The pixels a band takes from the plot below it: 0 when off, the (optionally
 bound) stated height when on. This is the single spelling of "off spends 0 px".
 
 ```js
+import { reservedPx } from '@jbrowse/core/util/bandLayout'
+
 // type signature
 (band: Band) => number
 ```
@@ -1672,6 +1838,8 @@ what `reload()` clears, and nothing would re-run the install behind it. Three
 displays hand-rolled this IIFE and each drew the lines differently.
 
 ```js
+import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
+
 // type signature
 <Self extends IStateTreeNode>(self: Self, load: () => Promise<(self: Self) => void>) => void
 ```
@@ -1685,6 +1853,8 @@ The table a step answers is what the next one reads, and the last one is what
 the encoder walks.
 
 ```js
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
 ```
@@ -1697,6 +1867,8 @@ parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
 user data and malformed breakends do occur;
 
 ```js
+import { safeParseBreakend } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string) => Breakend | undefined
 ```
@@ -1710,6 +1882,8 @@ interpolated per channel. `t` is clamped, so the ends are the end stops rather
 than an extrapolation past them, and a one-stop ramp is that stop everywhere.
 
 ```js
+import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (stops: readonly ColorRampStop[], t: number) => ColorRampStop
 ```
@@ -1726,6 +1900,8 @@ clampBandHeight rule). Whole pixels, rounded by largest remainder, so the stack
 moves by exactly the rounded distance.
 
 ```js
+import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
+
 // type signature
 (heights: number[], distance: number, floor?: number) => number[]
 ```
@@ -1740,6 +1916,8 @@ met there would floor the domain at 1 and fold a domain below 1 flat.
 `[Infinity, -Infinity]` where the scale reads nothing.
 
 ```js
+import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number, scale: string, quantile?: number) => [number, number]
 ```
@@ -1764,6 +1942,8 @@ and the worker answers the entry of `layer`'s list that the instance's
 steps made. A second click aborts the first.
 
 ```js
+import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
+
 // type signature
 (self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { layer: number; featureIndex: number; }) => void
 ```
@@ -1778,6 +1958,8 @@ a sort of 4.5M counts measured ~1s. Median-of-three because Hi-C contacts arrive
 nearly sorted.
 
 ```js
+import { selectNth } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (a: Float32Array<ArrayBufferLike>, n: number, k: number) => number
 ```
@@ -1791,6 +1973,8 @@ source table over those features again, so every field still reads straight off
 them; over rows a step made, a table standing on them.
 
 ```js
+import { selectRows } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (table: FeatureTable, rows: Uint32Array<ArrayBufferLike>) => FeatureTable
 ```
@@ -1824,6 +2008,8 @@ The session is the only thing that resolves a palette here, so a host supplying
 colors of its own mounts `PaletteProvider` directly instead.
 
 ```js
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+
 // type signature
 ({ session, mode, children, }: { session: ThemeModeSession; mode?: "dark" | "light" | undefined; children: ReactNode; }) => Element
 ```
@@ -1844,6 +2030,8 @@ together. On a concrete schema an unknown slot name is a compile error, and
 runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
 ```js
+import { setConf } from '@jbrowse/core/configuration'
+
 // type signature
 <CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
 ```
@@ -1855,6 +2043,8 @@ runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 The `point` mark's painter code for each shape an encoding can name.
 
 ```js
+import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
+
 // type signature
 Record<ShapeName, number>
 ```
@@ -1915,6 +2105,8 @@ projected to the screen, and a band drawn outside its reservation (an overlay)
 carries its own draw rect beside the stack.
 
 ```js
+import { stackBands } from '@jbrowse/core/util/bandLayout'
+
 // type signature
 <K extends string>(order: readonly K[], bands: Record<K, Band>) => BandStack<K>
 ```
@@ -1932,6 +2124,8 @@ ramp entry both backends read at `t`, through the ramp's middle stop at
 into the color string.
 
 ```js
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (lut: Uint8Array<ArrayBufferLike>, n: number, midNorm?: number) => RampStop[]
 ```
@@ -1941,8 +2135,10 @@ into the color string.
 ### STRAND_FIELD
 
 ```js
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+
 // type signature
-'strand'
+;('strand')
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1952,6 +2148,8 @@ into the color string.
 The conventional size floor for calling a sequence indel structural.
 
 ```js
+import { SV_MIN_LENGTH } from '@jbrowse/core/util/svAlt'
+
 // type signature
 50
 ```
@@ -1964,8 +2162,10 @@ The structural-variant class `svClassOf` names. A VCF record and a BEDPE row
 carry it, and the mark display's `mate` step writes it per allele.
 
 ```js
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
+
 // type signature
-'svType'
+;('svType')
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1977,6 +2177,8 @@ alleles state, CNV where they are losses and gains of one segment, OTHER where
 they otherwise disagree, and `''` for a record with no structural allele.
 
 ```js
+import { svClassOf } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature) => string
 ```
@@ -1992,6 +2194,8 @@ than BND, and a sequence allele is an insertion or deletion by its length
 against REF, else its `SVTYPE`'s class.
 
 ```js
+import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string, { ref, info, alleleIndex, }?: { ref?: string | undefined; info?: Record<string, unknown> | undefined; alleleIndex?: number | undefined; }) => string
 ```
@@ -2008,6 +2212,8 @@ none is a deletion and two or more a duplication. `''` for an empty or missing
 token.
 
 ```js
+import { svClassOfToken } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (raw: string) => string
 ```
@@ -2030,6 +2236,8 @@ are, left the middle interval unreachable, the walk stopping at the first cut a
 value is under.
 
 ```js
+import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly (string | number)[]) => number[]
 ```
@@ -2046,6 +2254,8 @@ each from the lowest, where a config spells them for a reader; a bin's key stays
 its interval.
 
 ```js
+import { thresholdField } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (field: string, { domain, range, labels: names, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
@@ -2061,6 +2271,8 @@ bin and answers -1; an infinite one takes the end bin on its side, as d3's
 threshold scale places it, so a `-log10` of a zero p-value lands in the top bin.
 
 ```js
+import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (value: unknown, domain: readonly number[]) => number
 ```
@@ -2074,6 +2286,8 @@ whole domain, then the not-a-number and no-value rows where a feature took one,
 in the order `thresholdField` sorts them.
 
 ```js
+import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
@@ -2086,6 +2300,8 @@ What a threshold scale's bins are called in a key, one label per palette entry:
 `< a` below the first cut, `a – b` between two, `≥ b` past the last.
 
 ```js
+import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly number[]) => string[]
 ```
@@ -2098,6 +2314,8 @@ The color of each interval, in order: the declared palette, and the default
 categorical palette where it runs out.
 
 ```js
+import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (bins: number, palette?: readonly string[]) => string[]
 ```
@@ -2125,6 +2343,8 @@ the last answered.
 A column's value at a row, whatever its kind: for a loop that reads few rows.
 
 ```js
+import { valueAt } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column, i: number) => unknown
 ```
@@ -2137,6 +2357,8 @@ The 256 viridis stops, fully opaque. Feed them to buildColorRampLut for the
 texture/fillStyle form, or to sampleColorRamp for legend stops.
 
 ```js
+import { VIRIDIS_STOPS } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 readonly ColorRampStop[]
 ```
@@ -2149,6 +2371,8 @@ The table's rows with `written` beside them, in the order `rows` names where it
 names one.
 
 ```js
+import { withColumns } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (table: FeatureTable, written: ReadonlyMap<string, Column>, rows?: Uint32Array<ArrayBufferLike> | undefined) => FeatureTable
 ```
@@ -2160,6 +2384,8 @@ names one.
 HitIndexed over what the worker shipped.
 
 ```js
+import { withHitIndex } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 <T extends EncodedChannels>(channels: T) => HitIndexed<T>
 ```

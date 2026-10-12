@@ -42,8 +42,7 @@ function groupId(group: string) {
 
 // Route one extracted node into its API-group bucket. Unlike the config and
 // state-model accumulators, many `#api` exports can share one group/page, so
-// these append rather than overwrite. The empty-name match that the extractor
-// also emits for the parent VariableStatement is dropped via `!obj.name`.
+// these append rather than overwrite.
 export function accumulateApi(
   byGroup: Record<string, ApiGroup>,
   obj: ExtractedNode,
@@ -74,13 +73,61 @@ function renderExport(
   { name, docs, examples, signature, filename }: ApiExport,
   heading = '###',
 ) {
+  const from = servedSpecifier(name, filename)
   return section(
     `${heading} ${name}`,
     docs,
-    signature && codeBlock('// type signature', signature),
+    signature &&
+      codeBlock(
+        ...(from ? [`import { ${name} } from '${from}'`, ''] : []),
+        '// type signature',
+        signature,
+      ),
     exampleSection(examples, `${heading}# Example usage`),
     `[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})`,
   )
+}
+
+// The module a plugin imports an export from at runtime: the shortest
+// specifier of the export's own package that the re-export manifest serves the
+// name under (`@jbrowse/core/util`, not `@jbrowse/core/util/mstUtils`).
+// Undefined for an export no plugin can reach that way.
+const REEXPORTS = 'packages/core/src/ReExports/reExports.generated.json'
+let specifiersByName: Map<string, { specifier: string; pkg: string }[]>
+
+function servedSpecifier(name: string, filename: string) {
+  if (!specifiersByName) {
+    const { modules } = JSON.parse(fs.readFileSync(REEXPORTS, 'utf8')) as {
+      modules: Record<string, { package: string; names: string[] }>
+    }
+    specifiersByName = new Map()
+    for (const [specifier, { package: pkg, names }] of Object.entries(
+      modules,
+    )) {
+      for (const n of names) {
+        specifiersByName.set(n, [
+          ...(specifiersByName.get(n) ?? []),
+          { specifier, pkg },
+        ])
+      }
+    }
+  }
+  const pkg = packageName(filename)
+  return (specifiersByName.get(name) ?? [])
+    .filter(s => s.pkg === pkg)
+    .map(s => s.specifier)
+    .sort((a, b) => a.length - b.length)[0]
+}
+
+function packageName(filename: string) {
+  const root = packageRoot(filename)
+  return root && fs.existsSync(`${root}/package.json`)
+    ? (
+        JSON.parse(fs.readFileSync(`${root}/package.json`, 'utf8')) as {
+          name?: string
+        }
+      ).name
+    : undefined
 }
 
 function sortByName(exports: ApiExport[]) {

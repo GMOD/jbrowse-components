@@ -33,6 +33,8 @@ every `ops` entry.
 A table over a feature list, or the table itself.
 
 ```js
+import { asTable } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (input: readonly Feature[] | FeatureTable) => FeatureTable
 ```
@@ -77,6 +79,8 @@ Split out of `parseSvAlt` because a consumer holding an already-parsed
 polarity — the shape that produced 78bb7b84f9.
 
 ```js
+import { breakendKeepsDirections } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (bnd: Breakend) => { mateDirection: number; joinDirection: number; }
 ```
@@ -96,6 +100,8 @@ rule and its generated twin, so the middle follows a moving domain without a
 new table.
 
 ```js
+import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
 ```
@@ -111,6 +117,8 @@ each key the domain does not list a color of its own on first sight
 hold.
 
 ```js
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (field: string, { domain, range, labels, held, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; }) => CategoricalField
 ```
@@ -173,6 +181,8 @@ The quantile a clip toggle writes: a scale's declared default where that
 clips, below 1, else DEFAULT_CLIP_QUANTILE.
 
 ```js
+import { clipQuantileOf } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (declaredDefault: unknown) => number
 ```
@@ -201,6 +211,8 @@ not, as `identity` paints;
 high hot through a pale yellow middle, as `dnds` paints.
 
 ```js
+import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+
 // type signature
 readonly ["viridis", "magma", "inferno", "cividis", "juicebox", "fall", "reds", "blues", "redblue", "purpleorange", "redgreyblue", "blueyellowred"]
 ```
@@ -213,6 +225,8 @@ The packed color instance `i` of `channels` paints: `color[i]`, or `color`
 itself where the color is a constant and so shipped as one number.
 
 ```js
+import { colorAt } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (channels: Pick<EncodedChannels, "color">, i: number) => number | undefined
 ```
@@ -235,6 +249,8 @@ the unscaled arm of ColorEncoding, on its own for a display that
 carries a plain `color` slot.
 
 ```js
+import { colorEvaluator } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (color: string, jexl: JexlInstance | undefined) => (feature: Feature) => number
 ```
@@ -248,6 +264,8 @@ lists any, else the named `scheme`, viridis while that is unset, turned
 round under `reverse`.
 
 ```js
+import { colorRampStops } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 ({ range, scheme, reverse, }: RampDeclaration) => readonly ColorRampStop[]
 ```
@@ -284,6 +302,8 @@ A table an adapter answers from the typed arrays it already holds, where
 each row's id. A row's hover JSON is every field it holds.
 
 ```js
+import { ColumnTable } from '@jbrowse/core/util/featureTable'
+
 // type signature
 typeof ColumnTable
 ```
@@ -301,6 +321,8 @@ display painting a ramp itself read it, so a value takes one color whoever
 paints it.
 
 ```js
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (encoding: ContinuousRef, extent: readonly [number, number]) => { domain: [number, number]; lut: Uint8Array<ArrayBufferLike>; midNorm: number; colorOf: (value: number) => number; }
 ```
@@ -333,6 +355,8 @@ Whether a named ramp runs dark at its low end, drawn over white: viridis
 and its siblings do, juicebox, fall, reds and blues do not.
 
 ```js
+import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (scheme: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis") => boolean
 ```
@@ -346,6 +370,8 @@ of keys first seen together takes do not depend on the order they arrive
 in. A no-op for a field that deals nothing.
 
 ```js
+import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (field: CategoricalField, keys: Iterable<string>) => void
 ```
@@ -359,6 +385,8 @@ The ramp a continuous scale samples while it names no `range` and no
 alike.
 
 ```js
+import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
+
 // type signature
 "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis"
 ```
@@ -397,6 +425,8 @@ The buffers an EncodedChannels owns, for `rpcResult`'s transfer
 list.
 
 ```js
+import { encodedChannelTransferables } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (c: EncodedChannels) => ArrayBufferLike[]
 ```
@@ -428,6 +458,8 @@ filled in its own loop over the admitted rows, a lane straight off a typed
 column and a categorical over a `category` column per label.
 
 ```js
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 <L extends LaneName>(input: readonly Feature[] | FeatureTable, encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
 ```
@@ -457,6 +489,8 @@ section: every step runs once over the ordered rows, keeping section order,
 and one that groups rows groups within a section.
 
 ```js
+import { facetLayers } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
@@ -484,6 +518,8 @@ The input feature instance `i` of `channels` was: `featureIndex[i]`, or `i`
 itself where the encoder skipped none and so shipped no index.
 
 ```js
+import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (channels: Pick<EncodedChannels, "featureIndex">, i: number) => number
 ```
@@ -509,6 +545,8 @@ least half the axis. Quantiles that meet span their own size, as a flat
 domain widens in `getNiceDomain`.
 
 ```js
+import { fenceOutliers } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 ({ extremes, quantiles, zero, }: { extremes: readonly [number, number]; quantiles: readonly [number, number]; zero: boolean; }) => [number, number]
 ```
@@ -523,6 +561,8 @@ VCF record), or a `jexl:` expression over `feature`. A jexl expression that
 does not compile throws here, once, rather than on every feature.
 
 ```js
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+
 // type signature
 (ref: string, jexl: JexlInstance | undefined) => (feature: Feature) => unknown
 ```
@@ -550,6 +590,8 @@ The least and greatest finite values of `values[0, count)`,
 `[Infinity, -Infinity]` where none is finite.
 
 ```js
+import { finiteExtremes } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number) => [number, number]
 ```
@@ -586,6 +628,8 @@ puts a symbolic allele id where a contig name belongs. Callers that navigate
 or split-view a mate must drop both rather than treat `<DEL>` as a refName.
 
 ```js
+import { getBreakendMateLocString } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (breakend?: Breakend | undefined) => string | undefined
 ```
@@ -598,6 +642,8 @@ The `HeldSlots` `owner` keeps under `key`, made empty on first ask. Lives as
 long as `owner` and is never persisted, so a reload deals afresh.
 
 ```js
+import { heldSlotsOf } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (owner: object, key: string) => HeldSlots
 ```
@@ -617,6 +663,8 @@ The hit index over `count` instances: each a box from `x` to `x2` at its
 `y`, or at 0 for a mark with no value.
 
 ```js
+import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (x: Uint32Array<ArrayBufferLike>, x2: Uint32Array<ArrayBufferLike>, y: Float32Array<ArrayBufferLike> | undefined, count?: number) => Flatbush
 ```
@@ -630,6 +678,8 @@ breakends (`.A` / `G.`), and the symbolic-mate form (`G<DEL>`, an angle
 bracket past position 0; a leading `<` is a plain symbolic allele).
 
 ```js
+import { isBreakend } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string) => boolean
 ```
@@ -642,6 +692,8 @@ Whether a field holds no value at all, as against text that fails to parse:
 absent, empty, or a VCF's `AF=.`, which arrives as `[undefined]`.
 
 ```js
+import { isMissing } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (value: unknown) => boolean
 ```
@@ -655,6 +707,8 @@ with no path to walk and no expression to evaluate. A loop over a plain name
 keeps the direct call, and only a config that writes a path pays for one.
 
 ```js
+import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
+
 // type signature
 (ref: string) => ref is never
 ```
@@ -678,6 +732,8 @@ blocks face each other. A PAF row's strand is the query's orientation and
 states none for the target, so it names no side.
 
 ```js
+import { junctionEnds } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature, alt?: string | undefined, alleleIndex?: number | undefined) => { own: JunctionEnd; mate: JunctionEnd; } | undefined
 ```
@@ -692,6 +748,8 @@ that takes `labels` reads them through this, so a config means one thing by
 them everywhere.
 
 ```js
+import { keyNames } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 (keys: readonly unknown[], labels?: readonly string[]) => ReadonlyMap<string, string>
 ```
@@ -725,6 +783,8 @@ comes as early as it can: after the last shared step that must see every
 row, so the steps that follow it read the rows already in section order.
 
 ```js
+import { layerTables } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[] | undefined; facet?: FacetSpec | undefined; layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
@@ -751,6 +811,8 @@ One row an adapter lists: `name` is a value of the listing's field, and
 Whether an adapter implements RowSourceLister.
 
 ```js
+import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
+
 // type signature
 (adapter: object) => adapter is RowSourceLister
 ```
@@ -804,6 +866,8 @@ deciding whether links are the picture a track wants asks here rather than
 re-reading the fields.
 
 ```js
+import { matedBy } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (f: Feature) => "alt" | "mate" | "pair" | undefined
 ```
@@ -830,6 +894,8 @@ that answered no string, a ramp value that is no number, text a threshold
 cannot read.
 
 ```js
+import { MISCONFIGURED_ABGR } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 number
 ```
@@ -842,6 +908,8 @@ The no-value grey packed as the encoder paints it: a feature with nothing in
 the field a threshold reads.
 
 ```js
+import { NO_VALUE_ABGR } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 number
 ```
@@ -854,6 +922,8 @@ The row a feature with nothing in a categorical field lands on, so a key
 says why a mark is grey rather than listing a blank value.
 
 ```js
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 "(no value)"
 ```
@@ -867,6 +937,8 @@ scale, painted the misconfiguration grey rather than passing for a missing
 value.
 
 ```js
+import { NOT_A_NUMBER_LABEL } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 "(not a number)"
 ```
@@ -885,6 +957,8 @@ readerOf as the number a quantitative channel or step reads,
 `NaN` where a row holds none, by `numericValue`'s rules.
 
 ```js
+import { numberReaderOf } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column) => (i: number) => number
 ```
@@ -898,6 +972,8 @@ read back as the numbers it names. A member that is not a number reads NaN,
 which every comparison against it declines.
 
 ```js
+import { numericDomain } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly (string | number)[]) => number[]
 ```
@@ -912,6 +988,8 @@ the alt's place in `ALT`, which a record repeating one symbolic allele with
 several lengths needs; it defaults to the first place `alt` appears.
 
 ```js
+import { parseSvAlt } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
 ```
@@ -946,6 +1024,8 @@ color. A value axis fences instead (fenceOutliers); a ramp takes
 the same fence once a color default below 1 meets tied data.
 
 ```js
+import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number, quantile?: number) => [number, number]
 ```
@@ -959,6 +1039,8 @@ share of them sit at or below, so a handful of values clips at their
 maximum. Permutes `a`; 0 where `n` is.
 
 ```js
+import { quantileOf } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (a: Float32Array<ArrayBufferLike>, n: number, quantile: number) => number
 ```
@@ -979,6 +1061,8 @@ is the ramp's. An open end stops at a pinned one rather than crossing it,
 and an extent holding no value (`[Infinity, -Infinity]`) spans [0, 1].
 
 ```js
+import { rampDomain } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (min: number | undefined, max: number | undefined, extent: readonly [number, number]) => [number, number]
 ```
@@ -992,6 +1076,8 @@ not-a-number and no-value rows a threshold's key ends with. Empty while
 neither painted.
 
 ```js
+import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (id: string, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }) => CategoricalScale[]
 ```
@@ -1006,6 +1092,8 @@ ramp texture when the identity changes and a render state is rebuilt far
 more often than its ramp.
 
 ```js
+import { rampLutOf } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (ramp: RampDeclaration) => Uint8Array<ArrayBufferLike>
 ```
@@ -1020,6 +1108,8 @@ kept. The table stays straight and `domainMid` a value, so the middle stop
 follows the widened domain with no table baked again.
 
 ```js
+import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 (table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
@@ -1032,6 +1122,8 @@ A reader of a column's values by row, its kind resolved here once. A
 `number` lane with no index reads straight off the lane.
 
 ```js
+import { readerOf } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column) => (i: number) => unknown
 ```
@@ -1050,6 +1142,8 @@ for its life. Every other adapter keys on its config alone: a synteny adapter
 is fetched from each of its assemblies and reads no reference.
 
 ```js
+import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
 // type signature
 "readsReference"
 ```
@@ -1078,6 +1172,8 @@ the same coefficient moves a yellow and a blue by visibly different amounts:
 a lap has to read as one tone across the whole palette or it reads as noise.
 
 ```js
+import { relight } from '@jbrowse/core/util/color'
+
 // type signature
 (color: string, lightnessShift: number, chromaScale?: number) => string
 ```
@@ -1106,6 +1202,8 @@ worker. The table a step answers is what the next one reads, and the last
 one is what the encoder walks.
 
 ```js
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
+
 // type signature
 (input: readonly Feature[] | FeatureTable, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
 ```
@@ -1118,6 +1216,8 @@ parseBreakend, honoring its `Breakend | undefined` signature. ALT strings are
 user data and malformed breakends do occur;
 
 ```js
+import { safeParseBreakend } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string) => Breakend | undefined
 ```
@@ -1132,6 +1232,8 @@ rather than an extrapolation past them, and a one-stop ramp is that stop
 everywhere.
 
 ```js
+import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (stops: readonly ColorRampStop[], t: number) => ColorRampStop
 ```
@@ -1146,6 +1248,8 @@ value on a linear scale, and on a log scale over the positive ones, since a
 below 1 flat. `[Infinity, -Infinity]` where the scale reads nothing.
 
 ```js
+import { scaleExtent } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (values: ArrayLike<number>, count: number, scale: string, quantile?: number) => [number, number]
 ```
@@ -1170,6 +1274,8 @@ instance's `featureIndex` names: the record as the adapter wrote it, or the
 bin or run the steps made. A second click aborts the first.
 
 ```js
+import { selectEncodedFeature } from '@jbrowse/core/util/selectEncodedFeature'
+
 // type signature
 (self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { layer: number; featureIndex: number; }) => void
 ```
@@ -1184,6 +1290,8 @@ where a sort of 4.5M counts measured ~1s. Median-of-three because Hi-C
 contacts arrive nearly sorted.
 
 ```js
+import { selectNth } from '@jbrowse/core/util/quantileExtent'
+
 // type signature
 (a: Float32Array<ArrayBufferLike>, n: number, k: number) => number
 ```
@@ -1197,6 +1305,8 @@ source table over those features again, so every field still reads straight
 off them; over rows a step made, a table standing on them.
 
 ```js
+import { selectRows } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (table: FeatureTable, rows: Uint32Array<ArrayBufferLike>) => FeatureTable
 ```
@@ -1231,6 +1341,8 @@ The session is the only thing that resolves a palette here, so a host
 supplying colors of its own mounts `PaletteProvider` directly instead.
 
 ```js
+import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+
 // type signature
 ({ session, mode, children, }: { session: ThemeModeSession; mode?: "dark" | "light" | undefined; children: ReactNode; }) => Element
 ```
@@ -1242,6 +1354,8 @@ supplying colors of its own mounts `PaletteProvider` directly instead.
 The `point` mark's painter code for each shape an encoding can name.
 
 ```js
+import { SHAPE_CODES } from '@jbrowse/core/util/shapeNames'
+
 // type signature
 Record<ShapeName, number>
 ```
@@ -1301,6 +1415,8 @@ read at `t`, through the ramp's middle stop at `midNorm` (`rampMidT`). Alpha rid
 the color string.
 
 ```js
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 (lut: Uint8Array<ArrayBufferLike>, n: number, midNorm?: number) => RampStop[]
 ```
@@ -1310,6 +1426,8 @@ the color string.
 ## STRAND_FIELD
 
 ```js
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 "strand"
 ```
@@ -1321,6 +1439,8 @@ the color string.
 The conventional size floor for calling a sequence indel structural.
 
 ```js
+import { SV_MIN_LENGTH } from '@jbrowse/core/util/svAlt'
+
 // type signature
 50
 ```
@@ -1333,6 +1453,8 @@ The structural-variant class `svClassOf` names. A VCF record and a BEDPE
 row carry it, and the mark display's `mate` step writes it per allele.
 
 ```js
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
+
 // type signature
 "svType"
 ```
@@ -1347,6 +1469,8 @@ where they otherwise disagree, and `''` for a record with no structural
 allele.
 
 ```js
+import { svClassOf } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (feature: Feature) => string
 ```
@@ -1362,6 +1486,8 @@ than BND, and a sequence allele is an insertion or deletion by its length
 against REF, else its `SVTYPE`'s class.
 
 ```js
+import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (alt: string, { ref, info, alleleIndex, }?: { ref?: string | undefined; info?: Record<string, unknown> | undefined; alleleIndex?: number | undefined; }) => string
 ```
@@ -1378,6 +1504,8 @@ copies, so none is a deletion and two or more a duplication. `''` for an
 empty or missing token.
 
 ```js
+import { svClassOfToken } from '@jbrowse/core/util/svAlt'
+
 // type signature
 (raw: string) => string
 ```
@@ -1400,6 +1528,8 @@ thresholds often are, left the middle interval unreachable, the walk stopping
 at the first cut a value is under.
 
 ```js
+import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly (string | number)[]) => number[]
 ```
@@ -1416,6 +1546,8 @@ bins in a key, one each from the lowest, where a config spells them for a
 reader; a bin's key stays its interval.
 
 ```js
+import { thresholdField } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (field: string, { domain, range, labels: names, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
@@ -1432,6 +1564,8 @@ d3's threshold scale places it, so a `-log10` of a zero p-value lands in
 the top bin.
 
 ```js
+import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (value: unknown, domain: readonly number[]) => number
 ```
@@ -1445,6 +1579,8 @@ the whole domain, then the not-a-number and no-value rows where a feature
 took one, in the order `thresholdField` sorts them.
 
 ```js
+import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
@@ -1457,6 +1593,8 @@ What a threshold scale's bins are called in a key, one label per palette
 entry: `< a` below the first cut, `a – b` between two, `≥ b` past the last.
 
 ```js
+import { thresholdLabels } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (domain: readonly number[]) => string[]
 ```
@@ -1469,6 +1607,8 @@ The color of each interval, in order: the declared palette, and the
 default categorical palette where it runs out.
 
 ```js
+import { thresholdPalette } from '@jbrowse/core/util/thresholdScale'
+
 // type signature
 (bins: number, palette?: readonly string[]) => string[]
 ```
@@ -1497,6 +1637,8 @@ reads what the last answered.
 A column's value at a row, whatever its kind: for a loop that reads few rows.
 
 ```js
+import { valueAt } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (column: Column, i: number) => unknown
 ```
@@ -1510,6 +1652,8 @@ for the texture/fillStyle form, or to sampleColorRamp for legend
 stops.
 
 ```js
+import { VIRIDIS_STOPS } from '@jbrowse/core/util/colorRamp'
+
 // type signature
 readonly ColorRampStop[]
 ```
@@ -1522,6 +1666,8 @@ The table's rows with `written` beside them, in the order `rows` names
 where it names one.
 
 ```js
+import { withColumns } from '@jbrowse/core/util/featureTable'
+
 // type signature
 (table: FeatureTable, written: ReadonlyMap<string, Column>, rows?: Uint32Array<ArrayBufferLike> | undefined) => FeatureTable
 ```
@@ -1533,6 +1679,8 @@ where it names one.
 HitIndexed over what the worker shipped.
 
 ```js
+import { withHitIndex } from '@jbrowse/core/util/markEncoding'
+
 // type signature
 <T extends EncodedChannels>(channels: T) => HitIndexed<T>
 ```

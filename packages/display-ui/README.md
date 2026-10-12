@@ -105,6 +105,8 @@ the SVG export), where `BottomRightIndicators` keeps its own anchored box. That
 fallback is why this can be added without every consumer changing.
 
 ```js
+import { BottomRightCornerContext } from '@jbrowse/display-ui'
+
 // type signature
 Context<HTMLElement | null>
 ```
@@ -172,6 +174,8 @@ no toolkit. See
 [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
 
 ```js
+import { DisplayUIProvider } from '@jbrowse/display-ui'
+
 // type signature
 ({ overlays, trackControl, children, }: { overlays?: Partial<DisplayChromeOverlays> | undefined; trackControl?: TrackControlComponent | undefined; children: ReactNode; }) => Element
 ```
@@ -199,6 +203,8 @@ A plain object is never destroyed, so it is always callable. The liveness
 question only exists for an MST node.
 
 ```js
+import { isLiveModel } from '@jbrowse/display-ui'
+
 // type signature
 (model: unknown) => boolean
 ```
@@ -221,6 +227,8 @@ systems key on, so a replacement set that keeps them can be driven by those
 suites too.
 
 ```js
+import { plainChromeOverlays } from '@jbrowse/display-ui'
+
 // type signature
 DisplayChromeOverlays
 ```
@@ -265,6 +273,8 @@ two consecutive measurements rather than from a threshold; see
 `ByteEstimate.zoomIneffective`.
 
 ```js
+import { tooLargeBannerText } from '@jbrowse/display-ui'
+
 // type signature
 (regionTooLargeReason: string, { zoomCanRelease }?: { zoomCanRelease?: boolean | undefined; }) => string
 ```
@@ -303,6 +313,8 @@ chrome is built on, uses the same trigger pattern; only the toolkit differs.
 without the cloning, for a host writing its own markup.
 
 ```js
+import { Tooltip } from '@jbrowse/display-ui'
+
 // type signature
 ({ title, placement, children, }: { title: ReactNode; placement?: TooltipPlacement | undefined; children: ReactElement<TriggerProps, string | JSXElementConstructor<any>>; }) => Element
 ```
@@ -324,6 +336,8 @@ default), which preserves chrome that is still meaningful unescaped. Pass
 draws itself some other way elsewhere.
 
 ```js
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
+
 // type signature
 ({ children, fallbackInline, }: { children: ReactNode; fallbackInline?: boolean | undefined; }) => ReactNode
 ```
@@ -373,6 +387,8 @@ wants them takes them back on its own positioned box; it also carries
 click-drag pan.
 
 ```js
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
+
 // type signature
 ({ children, zIndex, style, overlayStyle, }: { children: ReactNode; zIndex: number; style?: CSSProperties | undefined; overlayStyle?: CSSProperties | undefined; }) => Element
 ```
@@ -402,6 +418,8 @@ with it. Any other handler on this list has to compose rather than replace —
 spread first, then call `triggerProps.onFocus` from yours.
 
 ```js
+import { useTooltip } from '@jbrowse/display-ui'
+
 // type signature
 (title: ReactNode, { placement }?: { placement?: TooltipPlacement | undefined; }) => TooltipTrigger
 ```
@@ -422,6 +440,8 @@ Render `menuProps` only while `open`, and portal it to `document.body` —
 carries position only.
 
 ```js
+import { useTrackControlMenu } from '@jbrowse/display-ui'
+
 // type signature
 (onClose?: (() => void) | undefined) => TrackControlMenu
 ```
