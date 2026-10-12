@@ -247,9 +247,6 @@ export function accumulateConfig(
       trackType: item.trackType,
       union: obj.node.includes('ConfigurationSchemaUnion('),
     }
-    // assigned, not appended: extractWithComment can emit one declaration twice
-    // (the variable statement and its inner declaration), and appending would
-    // then document every spread slot twice
     file.spreadSlots = spreadSlots(obj.node)
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item

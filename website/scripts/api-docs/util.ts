@@ -211,16 +211,9 @@ export function extractWithComment(
     // drops it in silence. Reported rather than fatal because the count is not
     // zero — an `extendViewType` augmentation tags members onto a model owned by
     // another plugin, which is a real shape this generator has no page for.
-    // Deduped by label: a member declared as an exported `const` is visited
-    // twice, as the statement and as the declaration, and the two nodes carry
-    // different positions but name one member.
-    orphanMembers: [
-      ...new Set(
-        [...memberTagged]
-          .filter(([key]) => !claimed.has(key))
-          .map(([, label]) => label),
-      ),
-    ],
+    orphanMembers: [...memberTagged]
+      .filter(([key]) => !claimed.has(key))
+      .map(([, label]) => label),
   }
 
   function visit(node: ts.Node, isStateModel: boolean, isConfig: boolean) {
@@ -256,21 +249,25 @@ export function extractWithComment(
       tags.length > 0 &&
       tags.every(isMemberTag) &&
       claimed.has(memberKey(node))
-    if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
+    if (ts.isVariableStatement(node) && tags.length) {
+      // Each declaration under it reads this JSDoc (getOwnJSDocText) and is
+      // visited next, with a name to carry it.
+    } else if (ts.isSpreadAssignment(node) && tags.includes('slot')) {
       emitSpreadSlots(node, comment, cb)
     } else if (tags.length && !delegatedAway) {
+      const { name, signature, declId } = describeSymbol(checker, node)
       if (!isStateModel && tags.some(isMemberTag)) {
         memberTagged.set(
           memberKey(node),
-          `${repoRelative(node.getSourceFile().fileName)} ${describeSymbol(checker, node).name}`,
+          `${repoRelative(node.getSourceFile().fileName)} ${name}`,
         )
       }
-      const { name, signature, declId } = describeSymbol(checker, node)
       const base = {
         name,
         comment,
         signature,
-        node: node.getFullText(),
+        node:
+          (tags.includes('slot') && slotTableEntry(node)) || node.getFullText(),
         filename: node.getSourceFile().fileName,
         selfDeclId: declId,
         baseDeclId: tags.includes('baseConfiguration')
@@ -307,6 +304,20 @@ export function extractWithComment(
       visit(n, isStateModel, isConfig)
     })
   }
+}
+
+// A `#slot` on a shared one-slot table (`export const colorTitleSlot = { title:
+// {...} } as const`) documents the slot inside it, so its source is that entry.
+function slotTableEntry(node: ts.Node) {
+  let init = ts.isVariableDeclaration(node) ? node.initializer : undefined
+  while (init && ts.isAsExpression(init)) {
+    init = init.expression
+  }
+  return init &&
+    ts.isObjectLiteralExpression(init) &&
+    init.properties.length === 1
+    ? init.properties[0]!.getText()
+    : undefined
 }
 
 // A JSDoc above a spread documents the slots it brings in, one `#slot <name>`
@@ -2286,11 +2297,8 @@ function provenance(sourcePath: string): string {
 // a file that already documents one. Both accumulators key by filename and
 // overwrite, so without this only the last header would render and the rest
 // would vanish with no trace (this once silently dropped a whole model page) —
-// far better to abort the run and make the author split the file.
-// A #config/#stateModel const is tagged twice (the VariableStatement and its
-// inner declaration); the statement half resolves to an empty name when the tag
-// carries none, so an empty `incoming` never trips this — only two non-empty,
-// differing names do. Shared by both accumulators.
+// far better to abort the run and make the author split the file. Shared by
+// both accumulators.
 export function assertSingleHeader({
   filename,
   tag,

@@ -119,8 +119,6 @@ async function main() {
   for (const { displayName, trackType } of displayLinks) {
     const displayNames = displayTypesByTrack.get(trackType)
     if (displayNames) {
-      // extractWithComment can emit the same link twice (the VariableStatement
-      // and its inner declaration), so guard against a duplicate display bullet
       if (!displayNames.includes(displayName)) {
         displayNames.push(displayName)
       }
