@@ -51,6 +51,17 @@ function isFieldTint(colorClass: number) {
 }
 
 /**
+ * The two codon stripes over a box of `css`, packed: the light tint for even
+ * residues, the mid tint for odd. The worker bakes them over a literal box,
+ * and the main thread derives them for a themed or field-painted one, so this
+ * is the one place the lightening is spelled.
+ */
+export function codonTints(css: string): readonly [light: number, mid: number] {
+  const hex = formatHEX(parseCssColor(css))
+  return [cssColorToABGR(lighten(hex, 0.5)), cssColorToABGR(lighten(hex, 0.35))]
+}
+
+/**
  * The colors a color field's values paint, `paint` being its scale: each
  * value's packed color and its two codon tints, resolved once for the
  * palette's life however many regions and re-encodes ask for them. `field`
@@ -73,15 +84,10 @@ export function createFieldPalette(
     }
     return packed
   }
-  // Through the hex, as a stripe over a literal box is lightened in the worker.
   const tintsOf = (value: string) => {
     let pair = tints.get(value)
     if (pair === undefined) {
-      const hex = formatHEX(parseCssColor(paint(value)))
-      pair = [
-        cssColorToABGR(lighten(hex, 0.5)),
-        cssColorToABGR(lighten(hex, 0.35)),
-      ]
+      pair = codonTints(paint(value))
       tints.set(value, pair)
     }
     return pair
@@ -157,10 +163,10 @@ export function themedColorTable(palette: JBrowsePalette) {
   table[OUTLINE] = cssColorToABGR(faintOutline(palette))
   for (const [i, frame] of FRAMES.entries()) {
     const solid = palette.framesCDS.at(frame)!.main
-    const hex = formatHEX(parseCssColor(solid))
+    const [light, mid] = codonTints(solid)
     table[FIRST_FRAME + i] = cssColorToABGR(solid)
-    table[FIRST_FRAME + i + LIGHT_TINT] = cssColorToABGR(lighten(hex, 0.5))
-    table[FIRST_FRAME + i + MID_TINT] = cssColorToABGR(lighten(hex, 0.35))
+    table[FIRST_FRAME + i + LIGHT_TINT] = light
+    table[FIRST_FRAME + i + MID_TINT] = mid
   }
   return table
 }

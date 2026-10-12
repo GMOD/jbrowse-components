@@ -1,6 +1,6 @@
-import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
+
+import { fieldColorCandidates } from '../shared/fieldColorCandidates.ts'
 
 import type {
   ColorValues,
@@ -24,33 +24,12 @@ export function derivedColorKey(
   order: CategoricalField = field,
   title?: string,
 ): ColorScale[] {
-  const packed = new Map<string, number>()
-  const colorOf = (key: string) => {
-    let color = packed.get(key)
-    if (color === undefined) {
-      color = cssColorToABGR(field.color(key))
-      packed.set(key, color)
-    }
-    return color
-  }
   return derivedColorScale(
     regions,
-    ({ colorValues }) => {
-      if (colorValues) {
-        dealKeyColors(field, colorValues.values.map(field.key))
-      }
-      return {
-        candidates:
-          colorValues?.painted.map(({ rowIndex, valueIndex }) => {
-            const value = field.key(colorValues.values[valueIndex])
-            return { rowIndex, value, color: colorOf(value) }
-          }) ?? [],
-        rowPaintsCandidateColor: rowIndex => {
-          const section = colorValues?.rows[rowIndex]
-          return !(isHidden && section && isHidden(section))
-        },
-      }
-    },
+    fieldColorCandidates(field, ({ colorValues }, rowIndex) => {
+      const section = colorValues?.rows[rowIndex]
+      return !(isHidden && section && isHidden(section))
+    }),
     { id: 'color', field: order, title },
   )
 }
@@ -103,7 +82,7 @@ export function featureColorKey(
   return scale
     ? derivedColorKey(
         scale,
-        regions.filter(data => data.colorValues?.field === scale.field),
+        regions,
         isHidden,
         order?.(scale) ?? scale,
         colorKeyTitle,

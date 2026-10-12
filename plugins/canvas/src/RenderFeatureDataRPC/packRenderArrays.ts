@@ -53,57 +53,51 @@ function spanInWindow(
     : end > regionStart && start < regionEnd
 }
 
-// Length zero tells the main thread the pass is off, without a parallel boolean
-// that could disagree with the array it gates. Uint16 because the count is
-// labelled transcripts within one gene, which runs past 255.
+// A lane that is LENGTH ZERO while every item holds its default, which tells
+// the main thread the pass is off without a parallel boolean that could
+// disagree with the array it gates.
+function optionalLane<T, A extends Uint8Array | Uint16Array | Uint32Array>(
+  items: readonly T[],
+  Lane: new (n: number) => A,
+  read: (item: T) => number,
+  defaultValue: number,
+) {
+  const values = items.map(read)
+  if (values.every(v => v === defaultValue)) {
+    return new Lane(0)
+  }
+  const out = new Lane(values.length)
+  for (const [i, v] of values.entries()) {
+    out[i] = v
+  }
+  return out
+}
+
+// Uint16 because the count is labelled transcripts within one gene, which runs
+// past 255.
 function labelRowArray(items: { labelRowsAbove: number }[]) {
-  if (!items.some(i => i.labelRowsAbove > 0)) {
-    return new Uint16Array(0)
-  }
-  const out = new Uint16Array(items.length)
-  for (const [i, item] of items.entries()) {
-    out[i] = item.labelRowsAbove
-  }
-  return out
+  return optionalLane(items, Uint16Array, i => i.labelRowsAbove, 0)
 }
 
-// LENGTH ZERO when this region stacks no gene. `ROOT_CHILD_ORDINAL` marks the
-// root feature's own primitives, which no trim may drop.
+// `ROOT_CHILD_ORDINAL` marks the root feature's own primitives, which no trim
+// may drop; the lane is empty while the region stacks no gene.
 function childOrdinalArray(items: { childOrdinal?: number }[]) {
-  if (!items.some(i => i.childOrdinal !== undefined)) {
-    return new Uint16Array(0)
-  }
-  const out = new Uint16Array(items.length)
-  for (const [i, item] of items.entries()) {
-    out[i] = item.childOrdinal ?? ROOT_CHILD_ORDINAL
-  }
-  return out
+  return optionalLane(
+    items,
+    Uint16Array,
+    i => i.childOrdinal ?? ROOT_CHILD_ORDINAL,
+    ROOT_CHILD_ORDINAL,
+  )
 }
 
-// LENGTH ZERO when every primitive resolved to a literal color, which the
-// main-thread encode reads as "nothing to resolve here" and hands the worker's
-// color lane back untouched.
+// Empty when every primitive resolved to a literal color, so the main-thread
+// encode hands the worker's color lane back untouched.
 function colorClassArray(items: { colorClass: number }[]) {
-  if (!items.some(i => i.colorClass !== LITERAL)) {
-    return new Uint8Array(0)
-  }
-  const out = new Uint8Array(items.length)
-  for (const [i, item] of items.entries()) {
-    out[i] = item.colorClass
-  }
-  return out
+  return optionalLane(items, Uint8Array, i => i.colorClass, LITERAL)
 }
 
-// LENGTH ZERO when no rect carries a color field value.
 function colorValueArray(items: { colorValue?: number }[]) {
-  if (!items.some(i => i.colorValue)) {
-    return new Uint32Array(0)
-  }
-  const out = new Uint32Array(items.length)
-  for (const [i, item] of items.entries()) {
-    out[i] = item.colorValue ?? 0
-  }
-  return out
+  return optionalLane(items, Uint32Array, i => i.colorValue ?? 0, 0)
 }
 
 // Filters a per-feature accumulator down to the visible bp window and packs the
@@ -122,11 +116,8 @@ export function packRenderArrays(
   const visibleLines = lines.filter(l =>
     spanInWindow(l.start, l.end, regionStart, regionEnd),
   )
-  // Arrows are points, so this window test is closed at both ends: an exclusive
-  // upper bound drops the arrow of a feature ending exactly at regionEnd while
-  // keeping its box.
-  const visibleArrows = arrows.filter(
-    a => a.x >= regionStart && a.x <= regionEnd,
+  const visibleArrows = arrows.filter(a =>
+    spanInWindow(a.x, a.x, regionStart, regionEnd),
   )
 
   const rectPositions = new Uint32Array(visibleRects.length * 2)

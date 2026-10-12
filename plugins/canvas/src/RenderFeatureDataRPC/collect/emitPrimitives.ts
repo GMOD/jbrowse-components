@@ -1,15 +1,9 @@
-import { lighten } from '@jbrowse/core/ui/palette'
-import {
-  cssColorToABGR as colorToUint32,
-  formatHEX,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
-
 import {
   FIELD_LIGHT_TINT,
   FIELD_MID_TINT,
   LITERAL,
   codonStripeClass,
+  codonTints,
 } from '../colorClasses.ts'
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'
@@ -113,14 +107,8 @@ export function emitCodonRects(
   const { aminoAcids, baseColor, topPx: y, height, strand, flatbushIdx } = args
   const { labelRowsAbove } = args
   const { rects, aminoAcidOverlay: overlayItems } = collector
-  const baseHex =
-    baseColor.color === undefined
-      ? undefined
-      : formatHEX(parseCssColor(baseColor.color))
-  const color1 =
-    baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.5))
-  const color2 =
-    baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.35))
+  const [color1, color2] =
+    baseColor.color === undefined ? [0, 0] : codonTints(baseColor.color)
   const { colorValue } = baseColor
   const class1 = colorValue
     ? FIELD_LIGHT_TINT

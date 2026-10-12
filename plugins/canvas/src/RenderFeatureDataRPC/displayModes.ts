@@ -1,7 +1,7 @@
 /**
- * The size presets a canvas display draws at. `compact` halves the row height,
- * `superCompact` quarters it, and `collapsed` packs every feature onto one row
- * with all labels suppressed.
+ * The size presets a canvas display draws at. `compact` and `superCompact`
+ * shrink the row by `HEIGHT_MULTIPLIERS`, and `collapsed` packs every feature
+ * onto one row with all labels suppressed.
  *
  * A leaf module rather than one beside the menus, because the website's figure
  * recipes import these labels and the node script that builds them cannot load

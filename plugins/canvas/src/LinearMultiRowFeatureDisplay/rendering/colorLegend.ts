@@ -1,13 +1,11 @@
-import {
-  categoricalField,
-  dealKeyColors,
-} from '@jbrowse/core/util/categoricalField'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
 
+import { fieldColorCandidates } from '../../shared/fieldColorCandidates.ts'
 import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
@@ -121,33 +119,10 @@ export function buildFieldColorLegend(
   }
   const [scale] = derivedColorScale(
     regions,
-    data => {
-      const { colorValues } = data
-      const rowForLocal = resolveLocalRowIndices(
-        data.rowValues,
-        rowIndexByValue,
-      )
-      if (colorValues?.field === field.field) {
-        dealKeyColors(field, colorValues.values.map(field.key))
-      }
-      return {
-        candidates:
-          colorValues?.field === field.field
-            ? colorValues.painted.map(({ rowIndex, valueIndex }) => {
-                const value = field.key(colorValues.values[valueIndex])
-                return {
-                  rowIndex,
-                  value,
-                  color: cssColorToABGR(field.color(value)),
-                }
-              })
-            : [],
-        rowPaintsCandidateColor: rowValueIndex => {
-          const row = rowForLocal[rowValueIndex]
-          return row !== undefined && rowColorsByIndex[row] === undefined
-        },
-      }
-    },
+    fieldColorCandidates(field, (data, rowValueIndex) => {
+      const row = rowIndexByValue.get(data.rowValues[rowValueIndex]!)
+      return row !== undefined && rowColorsByIndex[row] === undefined
+    }),
     { id: 'features', field, maxItems: MAX_LEGEND_ENTRIES },
   )
   return scale?.kind === 'categorical'

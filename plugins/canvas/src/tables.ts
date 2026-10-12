@@ -30,6 +30,7 @@ import {
   chevronOffset,
   showChevrons,
 } from './LinearBasicDisplay/passes/shaders/chevron.js.generated.ts'
+import { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -75,14 +76,38 @@ export interface FeatureTablesArgs {
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
 
-function pairs(a: ArrayLike<number>) {
-  const first: number[] = []
-  const second: number[] = []
-  for (let i = 0; i + 1 < a.length; i += 2) {
-    first.push(a[i]!)
-    second.push(a[i + 1]!)
+// A primitive's row in the output tables, where it belongs to a placed
+// feature: the packer leaves a feature past its row ceiling at `OFFSCREEN_Y`,
+// and a table row a million px up is no row.
+interface PlacedRows {
+  // Indices into the lane arrays whose owner the layout placed.
+  keep: (featureIndices: Uint32Array) => number[]
+  // A lane's feature index to its row in the `features` table.
+  feature: (laneFeatureIndex: number) => number
+}
+
+function placedRows(d: FeatureDataResult): PlacedRows {
+  const row: number[] = []
+  let next = 0
+  for (const item of d.flatbushItems) {
+    row.push(isPlacedRow(item.topPx) ? next++ : -1)
   }
-  return [first, second] as const
+  return {
+    keep: featureIndices => {
+      const keep: number[] = []
+      for (let i = 0; i < featureIndices.length; i++) {
+        if (row[featureIndices[i]!]! >= 0) {
+          keep.push(i)
+        }
+      }
+      return keep
+    },
+    feature: i => row[i]!,
+  }
+}
+
+function take<T>(lane: ArrayLike<T>, keep: readonly number[]) {
+  return keep.map(i => lane[i]!)
 }
 
 /**
@@ -92,8 +117,8 @@ function pairs(a: ArrayLike<number>) {
  */
 function chevrons(
   d: FeatureDataResult,
-  starts: number[],
-  ends: number[],
+  lines: readonly number[],
+  rows: PlacedRows,
   bpPerPx: number,
 ) {
   const out = {
@@ -103,19 +128,18 @@ function chevrons(
     color: [] as string[],
     feature: [] as number[],
   }
-  for (let i = 0; i < starts.length; i++) {
+  for (const i of lines) {
     const direction = d.lineDirections[i]!
-    const widthPx = (ends[i]! - starts[i]!) / bpPerPx
+    const start = d.linePositions[i * 2]!
+    const widthPx = (d.linePositions[i * 2 + 1]! - start) / bpPerPx
     if (direction !== 0 && showChevrons(widthPx)) {
       const count = chevronCount(widthPx)
       for (let c = 0; c < count; c++) {
-        out.position.push(
-          starts[i]! + chevronOffset(widthPx, count, c) * bpPerPx,
-        )
+        out.position.push(start + chevronOffset(widthPx, count, c) * bpPerPx)
         out.y.push(d.lineYs[i]!)
         out.direction.push(direction)
         out.color.push(abgrToHex(d.lineColors[i]!))
-        out.feature.push(d.lineFeatureIndices[i]!)
+        out.feature.push(rows.feature(d.lineFeatureIndices[i]!))
       }
     }
   }
@@ -126,7 +150,7 @@ function chevrons(
  * The strand arrows off feature ends where the display draws them: a feature
  * narrower on screen than `arrowDraws` allows gets none.
  */
-function arrows(d: FeatureDataResult, bpPerPx: number) {
+function arrows(d: FeatureDataResult, rows: PlacedRows, bpPerPx: number) {
   const out = {
     position: [] as number[],
     y: [] as number[],
@@ -135,14 +159,14 @@ function arrows(d: FeatureDataResult, bpPerPx: number) {
     color: [] as string[],
     feature: [] as number[],
   }
-  for (let i = 0; i < d.arrowXs.length; i++) {
+  for (const i of rows.keep(d.arrowFeatureIndices)) {
     if (arrowDraws(d.arrowWidthsBp[i]! / bpPerPx, d.arrowGene[i] === 1)) {
       out.position.push(d.arrowXs[i]!)
       out.y.push(d.arrowYs[i]!)
       out.direction.push(d.arrowDirections[i]!)
       out.headHalfHeight.push(arrowHeadHalfHeightPx(d.arrowHeights[i]!))
       out.color.push(abgrToHex(d.arrowColors[i]!))
-      out.feature.push(d.arrowFeatureIndices[i]!)
+      out.feature.push(rows.feature(d.arrowFeatureIndices[i]!))
     }
   }
   return out
@@ -184,6 +208,11 @@ export async function featureTables(
   })
   const displayMode = readConfObject(conf, 'displayMode')
   const collapsed = displayMode === 'collapsed'
+  // Collapsed mode forces 'none' as the display does, since the label is baked
+  // in the worker.
+  const subfeatureLabels = collapsed
+    ? 'none'
+    : readConfObject(conf, 'subfeatureLabels')
   const args: RpcExecuteArgs<'RenderFeatureData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -191,9 +220,7 @@ export async function featureTables(
     region: { assemblyName: '', ...region },
     displayConfig: {
       ...pickDisplayConfig(fullConfSnapshot(conf)),
-      subfeatureLabels: collapsed
-        ? 'none'
-        : readConfObject(conf, 'subfeatureLabels'),
+      subfeatureLabels,
     },
     geneGlyphMode: resolvedGeneGlyphMode(
       readConfObject(conf, 'geneGlyphMode'),
@@ -253,8 +280,7 @@ export async function featureTables(
     fitHeightToDisplay: heightMode === 'fit',
     autoHeight: heightMode === 'grow',
     showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
-    reservesBelowLabelRows:
-      readConfObject(conf, 'subfeatureLabels') === 'below',
+    reservesBelowLabelRows: subfeatureLabels === 'below',
     fitTargetHeight: trackHeight,
     labelFontSize: fontSize,
   }).fitStage
@@ -277,12 +303,13 @@ export async function featureTables(
     feature: [] as number[],
     subfeature: [] as number[],
   }
-  const featureIndex = new Map(
-    d.flatbushItems.map((item, i) => [item.featureId, i]),
+  const rows = placedRows(d)
+  const items = d.flatbushItems.filter(item => isPlacedRow(item.topPx))
+  const featureIndex = new Map(items.map((item, i) => [item.featureId, i]))
+  const subfeatures = d.subfeatureInfos.filter(s =>
+    featureIndex.has(s.parentFeatureId),
   )
-  const subfeatureIndex = new Map(
-    d.subfeatureInfos.map((s, i) => [s.featureId, i]),
-  )
+  const subfeatureIndex = new Map(subfeatures.map((s, i) => [s.featureId, i]))
   forEachDisplayLabel(
     [
       {
@@ -313,9 +340,7 @@ export async function featureTables(
           labels.subfeature.push(sub ?? -1)
           labels.feature.push(
             featureIndex.get(
-              sub === undefined
-                ? featureId
-                : d.subfeatureInfos[sub]!.parentFeatureId,
+              sub === undefined ? featureId : subfeatures[sub]!.parentFeatureId,
             ) ?? -1,
           )
         }
@@ -323,14 +348,13 @@ export async function featureTables(
     },
   )
 
-  const [rectStart, rectEnd] = pairs(d.rectPositions)
-  const [lineStart, lineEnd] = pairs(d.linePositions)
+  const rects = rows.keep(d.rectFeatureIndices)
+  const lines = rows.keep(d.lineFeatureIndices)
   const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
   const key = featureColorKey(colors, [raw]).find(
     scale => scale.kind === 'categorical',
   )
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
-  const items = d.flatbushItems
   return {
     features: {
       id: items.map(item => item.featureId),
@@ -344,36 +368,32 @@ export async function featureTables(
       gene: items.map(item => !!item.gene),
     },
     subfeatures: {
-      id: d.subfeatureInfos.map(s => s.featureId),
-      name: d.subfeatureInfos.map(s => s.displayLabel ?? ''),
-      type: d.subfeatureInfos.map(s => s.type ?? ''),
-      start: d.subfeatureInfos.map(s => s.startBp),
-      end: d.subfeatureInfos.map(s => s.endBp),
-      top: d.subfeatureInfos.map(s => s.topPx),
-      bottom: d.subfeatureInfos.map(s => s.bottomPx),
-      feature: d.subfeatureInfos.map(
-        s => featureIndex.get(s.parentFeatureId) ?? -1,
-      ),
+      id: subfeatures.map(s => s.featureId),
+      name: subfeatures.map(s => s.displayLabel ?? ''),
+      type: subfeatures.map(s => s.type ?? ''),
+      start: subfeatures.map(s => s.startBp),
+      end: subfeatures.map(s => s.endBp),
+      top: subfeatures.map(s => s.topPx),
+      bottom: subfeatures.map(s => s.bottomPx),
+      feature: subfeatures.map(s => featureIndex.get(s.parentFeatureId)!),
     },
     rects: {
-      start: rectStart,
-      end: rectEnd,
-      top: Array.from(d.rectYs),
-      height: Array.from(d.rectHeights),
-      color: Array.from(d.rectColors, abgrToHex),
-      feature: Array.from(d.rectFeatureIndices),
+      start: rects.map(i => d.rectPositions[i * 2]!),
+      end: rects.map(i => d.rectPositions[i * 2 + 1]!),
+      top: take(d.rectYs, rects),
+      height: take(d.rectHeights, rects),
+      color: take(d.rectColors, rects).map(abgrToHex),
+      feature: take(d.rectFeatureIndices, rects).map(rows.feature),
     },
     lines: {
-      start: lineStart,
-      end: lineEnd,
-      y: Array.from(d.lineYs),
-      color: Array.from(d.lineColors, abgrToHex),
-      feature: Array.from(d.lineFeatureIndices),
+      start: lines.map(i => d.linePositions[i * 2]!),
+      end: lines.map(i => d.linePositions[i * 2 + 1]!),
+      y: take(d.lineYs, lines),
+      color: take(d.lineColors, lines).map(abgrToHex),
+      feature: take(d.lineFeatureIndices, lines).map(rows.feature),
     },
-    chevrons: hideChevrons
-      ? chevrons(d, [], [], bpPerPx)
-      : chevrons(d, lineStart, lineEnd, bpPerPx),
-    arrows: arrows(d, bpPerPx),
+    chevrons: chevrons(d, hideChevrons ? [] : lines, rows, bpPerPx),
+    arrows: arrows(d, rows, bpPerPx),
     labels,
     legend: {
       label: entries.map(e => e.label),
