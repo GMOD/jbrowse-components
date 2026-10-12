@@ -136,8 +136,8 @@ writes the entry for you.
 
 ## Embedded components
 
-[Embedded components](/docs/embedded_components) take their plugins as a prop;
-see the
+An embedded component takes its plugins as a prop; see
+[](/docs/embedded_components) and the
 [inline plugins example](https://jbrowse.org/storybook/lgv/inline-plugin/).
 
 ## How long each install lasts
