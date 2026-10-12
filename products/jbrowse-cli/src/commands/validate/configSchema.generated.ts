@@ -5952,7 +5952,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: split, spliced, pairing, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6578,6 +6578,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "length",
             "spliced",
             "split",
+            "svSignal",
             "strand",
             "basePair",
             "tag",
@@ -6593,7 +6594,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "position, length, spliced or split order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "position",
               "if": {
                 "type": "null"
@@ -6604,6 +6605,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "length",
                   "spliced",
                   "split",
+                  "svSignal",
                   "strand",
                   "basePair",
                   "tag",
@@ -7646,7 +7648,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: split, spliced, pairing, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "strand",
               "if": {
                 "type": "null"
@@ -7833,6 +7835,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "length",
             "spliced",
             "split",
+            "svSignal",
             "strand",
             "basePair",
             "tag",
@@ -7848,7 +7851,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "type": {
-              "description": "position, length, spliced or split order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
               "default": "length",
               "if": {
                 "type": "null"
@@ -7859,6 +7862,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "length",
                   "spliced",
                   "split",
+                  "svSignal",
                   "strand",
                   "basePair",
                   "tag",

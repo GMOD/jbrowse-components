@@ -21,7 +21,7 @@ registered on `pluginManager` (`registerAlignmentsAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, display, byteLimit, }: AlignmentTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, display, refNames, byteLimit, }: AlignmentTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/tables.ts)
