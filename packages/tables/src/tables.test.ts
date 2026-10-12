@@ -353,6 +353,64 @@ test('the coverage band\u2019s stacks are the worker\u2019s: alleles, and modifi
   })
 })
 
+test('the interbase histogram counts the reads\u2019 insertions and clips, and the indicators mark where they pile up', async () => {
+  const types = new Set<string>()
+  let indicated = 0
+  for (const fixture of [PAIRED_INVERSION, LONG_READS]) {
+    const { insertions, clips, coverage, interbaseCoverage, indicators } =
+      await engine.alignments(fixture)
+    const expected = new Map<string, number>()
+    const total = new Map<number, number>()
+    const bump = (position: number, type: string) => {
+      const key = `${position} ${type}`
+      expected.set(key, (expected.get(key) ?? 0) + 1)
+      total.set(position, (total.get(position) ?? 0) + 1)
+    }
+    insertions.position.forEach(p => {
+      bump(p, 'insertion')
+    })
+    clips.position.forEach((p, i) => {
+      bump(p, clips.type[i] === 'soft' ? 'softclip' : 'hardclip')
+    })
+    const counted = new Map<string, number>()
+    const stackTop = new Map<number, number>()
+    interbaseCoverage.position.forEach((p, i) => {
+      const from = interbaseCoverage.from[i]!
+      expect(from).toBe(stackTop.get(p) ?? 0)
+      stackTop.set(p, interbaseCoverage.to[i]!)
+      counted.set(
+        `${p} ${interbaseCoverage.type[i]}`,
+        interbaseCoverage.to[i]! - from,
+      )
+      types.add(interbaseCoverage.type[i]!)
+    })
+    expect(counted).toEqual(expected)
+
+    // an indicator stands where the events outnumber 30% of the deeper
+    // flanking depth, at 8 reads or more, in its most common type's color
+    const depthAt = (bp: number) => {
+      const i = coverage.start.findIndex(
+        (s, j) => s <= bp && bp < coverage.end[j]!,
+      )
+      return i === -1 ? 0 : coverage.depth[i]!
+    }
+    const shown = new Set(indicators.position)
+    for (const [p, n] of total) {
+      const depth = Math.max(depthAt(p - 1), depthAt(p))
+      expect(shown.has(p)).toBe(depth >= 8 && n > depth * 0.3)
+    }
+    indicators.position.forEach((p, i) => {
+      const own = expected.get(`${p} ${indicators.type[i]}`)!
+      for (const type of ['insertion', 'softclip', 'hardclip']) {
+        expect(own).toBeGreaterThanOrEqual(expected.get(`${p} ${type}`) ?? 0)
+      }
+    })
+    indicated += indicators.position.length
+  }
+  expect(types).toEqual(new Set(['insertion', 'softclip', 'hardclip']))
+  expect(indicated).toBeGreaterThan(0)
+})
+
 test('the display\u2019s sort object orders the rows', async () => {
   const plain = await engine.alignments(BAM)
   const site = plain.mismatches.position[0]!

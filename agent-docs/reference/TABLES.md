@@ -112,7 +112,13 @@ stacks come back as the worker packs them for the display: `alleleCoverage`
 (each mismatch position's alleles as fractions of its bar, `from` and `to`,
 with the `depth` there) and `modificationCoverage` (each modification state's
 share, in its color and opacity), decoded through alignments-core's own
-segment readers, so a host stacks what the display stacks. The display's
+segment readers, so a host stacks what the display stacks. The interbase
+histogram comes back the same way, as `interbaseCoverage` (each position's
+insertions, soft clips and hard clips stacked in that order, `from` and `to`
+in reads), with `indicators` (the positions whose events pass the display's
+share of the local depth, and the most common `type` there). The display
+hangs the histogram from the band's top at half a depth unit per read, and
+`settings.showInterbaseIndicators` says whether it draws either. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does, through the display's own `sortOf`; a column
 sort may leave out `refName`, which then means the region's, and may name the

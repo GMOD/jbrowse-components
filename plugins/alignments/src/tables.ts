@@ -1,5 +1,7 @@
 import {
   pairDirectionOfNum,
+  readIndicators,
+  readInterbaseSegments,
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
@@ -91,7 +93,11 @@ import {
   getReadDisplayLegendItems,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
-import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from './shared/types.ts'
+import {
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+  interbaseTypeName,
+} from './shared/types.ts'
 import { getColorForModification } from './util.ts'
 
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
@@ -453,6 +459,38 @@ function coverageStacks(d: WorkerPileupData) {
 }
 
 /**
+ * The coverage band's interbase histogram and its indicators, as the worker
+ * packs them for the display. `interbaseCoverage` stacks each position's
+ * insertions, soft clips and hard clips in that order, `from` and `to` in
+ * reads, which the display hangs from the band's top at half a depth unit per
+ * read. `indicators` are the positions where those events pass the display's
+ * share of the local depth, each with its most common `type`.
+ */
+function interbaseStacks(d: WorkerPileupData) {
+  const segments = readInterbaseSegments(d.interbasePackedBuffer)
+  const indicators = readIndicators(d.indicatorPackedBuffer)
+  const reads = (fraction: number) => Math.round(fraction * d.interbaseMaxCount)
+  const n = segments.count
+  const k = indicators.count
+  return {
+    interbaseCoverage: {
+      position: Array.from({ length: n }, (_, i) => segments.position(i)),
+      type: Array.from({ length: n }, (_, i) =>
+        interbaseTypeName(segments.colorType(i)),
+      ),
+      from: Array.from({ length: n }, (_, i) => reads(segments.stackStart(i))),
+      to: Array.from({ length: n }, (_, i) => reads(segments.stackEnd(i))),
+    },
+    indicators: {
+      position: Array.from({ length: k }, (_, i) => indicators.position(i)),
+      type: Array.from({ length: k }, (_, i) =>
+        interbaseTypeName(indicators.colorType(i)),
+      ),
+    },
+  }
+}
+
+/**
  * The share of the depth a mark's site holds, as the display fades a
  * sub-pixel mark by it: the worker's byte, zeroed below its depth-dependent
  * threshold, so a sequencing error on a deep pileup fades to the floor.
@@ -740,6 +778,7 @@ function sectionTables(
     modifications: modifications(d),
     qualities: qualities(d, plainRead),
     ...coverageStacks(d),
+    ...interbaseStacks(d),
     junctions: junctions(d, refName),
   }
 }
@@ -913,6 +952,7 @@ const COMPOSING_SLOTS = [
   'showSashimiArcs',
   'minSashimiScore',
   'coverageSnpMinFrequency',
+  'showInterbaseIndicators',
   'showNonCanonicalJunctions',
   'fadeLowFrequencyMismatches',
   'fadeLowQualityMismatches',
