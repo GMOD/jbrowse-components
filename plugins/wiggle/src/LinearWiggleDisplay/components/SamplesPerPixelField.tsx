@@ -1,8 +1,6 @@
 import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-// Sampling-density control shared by the auto and manual cluster dialogs — the
-// two rendered it identically, so the copy lives here to prevent drift.
 const SamplesPerPixelField = observer(function SamplesPerPixelField({
   value,
   onChange,

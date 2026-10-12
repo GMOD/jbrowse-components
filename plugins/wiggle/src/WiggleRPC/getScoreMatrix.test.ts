@@ -7,6 +7,7 @@ import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { MultiWiggleGetScoreMatrix } from './MultiWiggleGetScoreMatrix.ts'
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
+import type { Aggregate } from '../shared/aggregateConfigSchemaFields.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -38,11 +39,13 @@ function callArgs({
   sources,
   bpPerPx,
   scoreField,
+  aggregate = 'mean',
 }: {
   regions: Region[]
   sources: string[]
   bpPerPx: number
   scoreField?: string
+  aggregate?: Aggregate
 }) {
   return {
     sessionId: 'sid',
@@ -50,6 +53,7 @@ function callArgs({
     regions,
     bpPerPx,
     scoreField,
+    aggregate,
     sources: sources.map(name => ({ name, source: name })),
   } satisfies GetScoreMatrixArgs & RpcCallContext
 }
@@ -244,6 +248,36 @@ describe('getScoreMatrix multi-source adapter', () => {
     expect(Array.from(rows.get('a')!)).toEqual([1, 0, 2, 2])
     // sub-column feature in region 0 column 0, nothing in region 1
     expect(Array.from(rows.get('b')!)).toEqual([8, 0, 0, 0])
+  })
+
+  it('bins the aggregate the plot draws, and skips a NaN score', async () => {
+    const summary = {
+      starts: new Int32Array([0, 50]),
+      ends: new Int32Array([50, 100]),
+      scores: new Float32Array([2, Number.NaN]),
+      minScores: new Float32Array([1, Number.NaN]),
+      maxScores: new Float32Array([9, Number.NaN]),
+      count: 2,
+    }
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getMultiSourceFeatureArraysMulti: jest
+        .fn()
+        .mockResolvedValue([{ source: 'a', raws: [summary] }]),
+    } as never)
+    const matrix = (aggregate: Aggregate) =>
+      getScoreMatrix({
+        pluginManager: pm,
+        args: callArgs({
+          regions: [region('chr1', 0, 100)],
+          sources: ['a'],
+          bpPerPx: 50,
+          aggregate,
+        }),
+      })
+
+    expect(Array.from((await matrix('mean')).get('a')!)).toEqual([2, 0])
+    expect(Array.from((await matrix('min')).get('a')!)).toEqual([1, 0])
+    expect(Array.from((await matrix('max')).get('a')!)).toEqual([9, 0])
   })
 
   it('leaves a subtrack the adapter did not report an all-zero row', async () => {

@@ -8,21 +8,36 @@ import {
 
 import { fetchSourceRaws } from '../fetchRegionRaws.ts'
 
+import type { Aggregate } from '../shared/aggregateConfigSchemaFields.ts'
 import type { RawFeatureArrays } from '../util.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColumnSegment } from '@jbrowse/tree-sidebar/binColumns'
 
+function aggregateScores(raw: RawFeatureArrays, aggregate: Aggregate) {
+  return aggregate === 'min'
+    ? (raw.minScores ?? raw.scores)
+    : aggregate === 'max'
+      ? (raw.maxScores ?? raw.scores)
+      : raw.scores
+}
+
 function addValues(
   sums: Float64Array,
   counts: Int32Array,
   seg: ColumnSegment,
   invBpPerPx: number,
-  { starts, ends, scores, count }: RawFeatureArrays,
+  raw: RawFeatureArrays,
+  aggregate: Aggregate,
 ) {
+  const { starts, ends, count } = raw
+  const scores = aggregateScores(raw, aggregate)
   for (let i = 0; i < count; i++) {
-    binSpan(sums, counts, 0, seg, invBpPerPx, starts[i]!, ends[i]!, scores[i]!)
+    const score = scores[i]!
+    if (!Number.isNaN(score)) {
+      binSpan(sums, counts, 0, seg, invBpPerPx, starts[i]!, ends[i]!, score)
+    }
   }
 }
 
@@ -37,7 +52,7 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const { sources, regions, bpPerPx, signal } = args
+  const { sources, regions, bpPerPx, aggregate, signal } = args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
   const { segments, width, invBpPerPx } = columnSegments(regions, bpPerPx)
@@ -88,7 +103,7 @@ export async function getScoreMatrix({
     for (const [i, seg] of segments.entries()) {
       const values = perRegion?.[i]
       if (values) {
-        addValues(sums, counts, seg, invBpPerPx, values)
+        addValues(sums, counts, seg, invBpPerPx, values, aggregate)
       }
     }
     columnMeans(sums, counts, 0, row)

@@ -12,11 +12,8 @@ import type { Region } from '@jbrowse/core/util'
 // to be reproducible on a machine that has never opened the dialog.
 export const DEFAULT_SAMPLES_PER_PIXEL = '1'
 
-// The auto and manual dialogs persist the sampling density to the same
-// localStorage key so a value set in one dialog carries to the other — sharing
-// one hook keeps the key from drifting apart. The advanced-options disclosure
-// is `ClusterAdvancedOptions`', which owns that key for every clusterable
-// display.
+// `ClusterAdvancedOptions` reads the same localStorage key for every
+// clusterable display.
 export function useClusterSamplingOptions() {
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',
@@ -25,19 +22,11 @@ export function useClusterSamplingOptions() {
   return { samplesPerPixel, setSamplesPerPixel }
 }
 
-// Score-matrix RPC args shared by MultiWiggleClusterScoreMatrix (auto) and
-// MultiWiggleGetScoreMatrix (manual). bpPerPx is divided by the sampling
-// density so both RPCs bin at the same resolution and produce comparable
-// matrices.
-//
-// `regions` is the run's own — the `clusterRegion` locus for a session-triggered
-// run, the visible blocks for a dialog one — and both entry points resolve it
-// before they get here (`ClusterRunArgs.regions`). The density is derived from
-// that span rather than from the view's own zoom. It has to be: the columns are
-// pixel bins, so clustering a 140 kb locus while the view shows 10 Mb would bin
-// it into a handful of columns and the matrix would be degenerate without
-// anything saying so. Deriving it from the span is the density the same locus
-// would have if you had zoomed to it, which is what the setting means.
+// Score-matrix RPC args for both the session-triggered run and the dialog.
+// The density comes from the run's own span, not the view's zoom: the columns
+// are pixel bins, so clustering a 140 kb locus while the view shows 10 Mb would
+// otherwise bin it into a handful of columns. The aggregate is the plot's, so
+// rows cluster on the numbers on screen, as `sortSourcesByScoreAt` sorts them.
 export function clusterScoreMatrixArgs(
   model: ReducedModel,
   samplesPerPixel: string,
@@ -52,6 +41,7 @@ export function clusterScoreMatrixArgs(
     sources: model.clusterableSources,
     adapterConfig: model.adapterConfig,
     scoreField: model.scoreField,
+    aggregate: model.aggregate,
     bpPerPx: span / width / density,
   }
 }
