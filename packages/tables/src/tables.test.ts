@@ -568,9 +568,6 @@ test('a key over the facet’s own field lists its values as the sections stack'
 })
 
 test('settings the tables cannot serve are refused, not drawn some other way', async () => {
-  await expect(
-    engine.alignments({ ...BAM, display: { unit: 'chain' } }),
-  ).rejects.toThrow(/unit: "chain"/)
   const t = await engine.alignments({
     ...BAM,
     display: { facet: { field: 'strand' } },
@@ -581,6 +578,78 @@ test('settings the tables cannot serve are refused, not drawn some other way', a
       display: { facet: { field: 'strand', hidden: t.sections.key } },
     }),
   ).rejects.toThrow(/every section/)
+})
+
+test('a chain puts a read, its mate and its split segments on one row, joined by a line', async () => {
+  const plain = await engine.alignments(PAIRED_INVERSION)
+  const chained = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { unit: 'chain' },
+  })
+  expect(plain.chains.start).toHaveLength(0)
+  expect(chained.chains.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
+  expect(chained.chains.opacity[0]).toBeGreaterThan(0)
+  expect(chained.reads.start).toEqual(plain.reads.start)
+  const rows = new Map<string, Set<number>>()
+  for (let i = 0; i < chained.reads.name.length; i++) {
+    const row = rows.get(chained.reads.name[i]!) ?? new Set<number>()
+    row.add(chained.reads.row[i]!)
+    rows.set(chained.reads.name[i]!, row)
+  }
+  expect([...rows.values()].every(r => r.size === 1)).toBe(true)
+  const paired = new Map<string, number[]>()
+  for (let i = 0; i < chained.reads.name.length; i++) {
+    const at = paired.get(chained.reads.name[i]!) ?? []
+    at.push(i)
+    paired.set(chained.reads.name[i]!, at)
+  }
+  const mates = [...paired.values()].filter(at => at.length > 1)
+  expect(mates.length).toBeGreaterThan(10)
+  expect(chained.chains.start).toHaveLength(mates.length)
+  for (let i = 0; i < chained.chains.start.length; i++) {
+    const on = mates.find(
+      at => chained.reads.row[at[0]!] === chained.chains.row[i],
+    )
+    expect(on).toBeDefined()
+  }
+  const spans = new Map<number, [number, number][]>()
+  for (let i = 0; i < chained.reads.name.length; i++) {
+    const at = paired.get(chained.reads.name[i]!)!
+    const row = chained.reads.row[i]!
+    const span: [number, number] = [
+      Math.min(...at.map(j => chained.reads.start[j]!)),
+      Math.max(...at.map(j => chained.reads.end[j]!)),
+    ]
+    const list = spans.get(row) ?? []
+    if (!list.some(x => x[0] === span[0] && x[1] === span[1])) {
+      list.push(span)
+    }
+    spans.set(row, list)
+  }
+  for (const list of spans.values()) {
+    list.sort((a, b) => a[0] - b[0])
+    for (let i = 1; i < list.length; i++) {
+      expect(list[i]![0]).toBeGreaterThanOrEqual(list[i - 1]![1])
+    }
+  }
+})
+
+test('a chain over split reads paints a read by its strand against its chain’s', async () => {
+  const both = {
+    ...LONG_READS,
+    region: { refName: 'ctgA', start: 1000, end: 36000 },
+  }
+  const chained = await engine.alignments({
+    ...both,
+    display: { unit: 'chain', color: { field: 'strand' } },
+  })
+  const split = await engine.alignments({
+    ...both,
+    display: { color: { field: 'strand' } },
+  })
+  expect(chained.chains.start.length).toBeGreaterThan(0)
+  expect(chained.reads.start).toEqual(split.reads.start)
+  expect(new Set(chained.reads.color).size).toBeGreaterThan(1)
 })
 
 test('the display’s showSoftClipping lays reads out by their clipped extent', async () => {

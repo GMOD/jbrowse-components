@@ -46,13 +46,17 @@ import {
   bakedColorScale,
   linearFieldExtent,
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
+import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
+  framesUnpairedChainStrand,
   readColorFromCategoryIndex,
 } from './LinearAlignmentsDisplay/colorUtils.ts'
 import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
+import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
 import {
+  applyChainStrandFrames,
   applyReadColorsByGroup,
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
@@ -80,6 +84,7 @@ import {
 import { mergeJunctions } from './features/sashimi/junctions.ts'
 import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
+import { CONNECTING_LINE_ALPHA } from './shaders/slang/connectingLine.consts.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -285,6 +290,7 @@ function colorReads(
   node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
+  readColorOpts: { chainMode?: boolean; framesChainStrand?: boolean },
   facet: { field: string; domain?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
 ) {
@@ -309,7 +315,7 @@ function colorReads(
   const colored = applyReadColorsByGroup(byGroup, {
     colorBy,
     bodyScheme: bodyColorScheme(colorBy, baseLayer),
-    readColorOpts: {},
+    readColorOpts,
     bakedScale,
   })
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
@@ -725,6 +731,37 @@ function qualities(d: WorkerPileupData, plainRead: string) {
 }
 
 /**
+ * The chains that join more than one read: the span of each, on the row its
+ * reads share, with the hairline's color and opacity. Empty unless the
+ * display's unit is a chain.
+ */
+function chainTables(laid: LaidOutPileupData | undefined, color: string) {
+  const [start, end] = pairs(laid?.connectingLinePositions ?? new Uint32Array())
+  return {
+    chains: {
+      start,
+      end,
+      row: Array.from(laid?.connectingLineYs ?? []),
+      color: Array.from(start, () => color),
+      opacity: Array.from(start, () => CONNECTING_LINE_ALPHA),
+    },
+  }
+}
+
+/**
+ * Every lane's chain-laid reads with the strand frames the colors read: the
+ * display settles which way "same strand" points across every chain on
+ * screen, so the lanes go through together.
+ */
+function chainLaidOut(
+  laidByGroup: Map<string, Map<number, LaidOutPileupData>>,
+  framed: boolean,
+) {
+  const out = applyChainStrandFrames(laidByGroup, true, framed)
+  return new Map([...out].map(([key, map]) => [key, map.get(0)!]))
+}
+
+/**
  * One section's reads as the alignments display draws them, as columns. Every
  * coordinate is 0-based genomic; `read` in the other tables is a 0-based index
  * into `reads`.
@@ -891,12 +928,9 @@ export async function alignmentTables(
     region.refName,
   )
   const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
-  if (readConfObject(conf, 'unit') === 'chain') {
-    throw new Error(
-      'unit: "chain" joins a read to its mates and split segments, which the tables do not serve yet; read the region with unit "read"',
-    )
-  }
-  const showSoftClipping: boolean = readConfObject(conf, 'showSoftClipping')
+  const chain = readConfObject(conf, 'unit') === 'chain'
+  const showSoftClipping: boolean =
+    !chain && readConfObject(conf, 'showSoftClipping')
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
@@ -910,8 +944,8 @@ export async function alignmentTables(
     filterBy: readFilterOf(conf.filter),
     colorBy,
     baseLayer,
-    sortTag,
-    facet: workerFacet(facetSetting, 'read'),
+    sortTag: chain ? undefined : sortTag,
+    facet: workerFacet(facetSetting, chain ? 'chain' : 'read'),
     showSoftClipping,
     byteLimit,
     statusCallback: () => {},
@@ -934,22 +968,47 @@ export async function alignmentTables(
     )
   }
   const dataOf = new Map(result.value.groups.map(g => [g.key, g.data]))
-  const laidByGroup = new Map(
-    order.map(({ key }) => [
-      key,
-      buildLaidOutPileupMap({
-        dataMap: new Map([[0, dataOf.get(key)!]]),
-        sortColumn,
-        layoutOrder,
-        showSoftClipping,
-        regions: new Map([[0, region]]),
-      }).get(0)!,
-    ]),
+  const regions = new Map([[0, region]])
+  const chained = chain
+    ? attachChainFields(
+        new Map(
+          order.map(({ key }) => [key, new Map([[0, dataOf.get(key)!]])]),
+        ),
+      )
+    : undefined
+  const dataFor = (key: string) =>
+    chained ? chained.get(key)!.get(0)! : dataOf.get(key)!
+  const framesChainStrand = framesUnpairedChainStrand(
+    bodyColorScheme(colorBy, baseLayer),
+    chain,
   )
+  const laidByGroup = chain
+    ? chainLaidOut(
+        new Map(
+          order.map(({ key }) => [
+            key,
+            buildLaidOutChainMap({ dataMap: chained!.get(key)!, regions }),
+          ]),
+        ),
+        framesChainStrand,
+      )
+    : new Map(
+        order.map(({ key }) => [
+          key,
+          buildLaidOutPileupMap({
+            dataMap: new Map([[0, dataOf.get(key)!]]),
+            sortColumn,
+            layoutOrder,
+            showSoftClipping,
+            regions,
+          }).get(0)!,
+        ]),
+      )
   const colors = colorReads(
     conf.color,
     baseLayer,
     laidByGroup,
+    chain ? { chainMode: true, framesChainStrand } : {},
     facetSetting,
     colorBy.type === 'mateRefName'
       ? positionIn(
@@ -982,8 +1041,12 @@ export async function alignmentTables(
       order.map(({ key, label }) => ({
         label,
         tables: {
+          ...chainTables(
+            chain ? laidByGroup.get(key) : undefined,
+            normalizedRgbToHex(colors.palette.colorConnectingLine),
+          ),
           ...sectionTables(
-            dataOf.get(key)!,
+            dataFor(key),
             laidByGroup.get(key)!.readYs,
             colors.sections.get(key)!,
             region.refName,
