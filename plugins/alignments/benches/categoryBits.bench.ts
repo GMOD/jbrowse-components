@@ -19,22 +19,22 @@
 // The added cost is `bits / walk`, a share of one piece of extraction rather
 // than of the whole, so it is an upper bound on what the byte adds to a fetch.
 //
-// WHAT IT SAYS (2026-10-11, chr22_mask:124000-143000, load ~4.5, controls
-// 0.99-1.00, MIN of 30):
+// WHAT IT SAYS (2026-10-12, chr22_mask:124000-143000, load ~3-5, controls
+// 0.99-1.04, MIN of 30), with the SV-insertion bit against main without it:
 //
-//   fixture                 reads     walk     bits   bits/walk
-//   200x.longread.bam         335   26.6 ms   9.8 ms    0.37
-//   200x.longread.cram        335   45.5 ms   3.8 ms    0.08
-//   1000x.shortread.bam   153,677   36.6 ms  11.3 ms    0.31
-//   1000x.shortread.cram  153,677   20.4 ms   8.0 ms    0.39
+//   fixture                 reads     walk     bits   main bits   bits/walk
+//   200x.longread.bam         335   24.9 ms   9.6 ms   9.4-9.9     0.39
+//   200x.longread.cram        335   45.9 ms   3.2 ms   3.4-3.9     0.07
+//   1000x.shortread.bam   153,677   33.9 ms  10.9 ms  10.7         0.32
+//   1000x.shortread.cram  153,677   20.2 ms   7.7 ms   7.5         0.38
 //
 // A long read is the costly case: the walk stops at the region, and the bits
 // read every op, 7,300 a read here. `numericCigarCategoryBits` scans a long
-// CIGAR branch-free (the branching form took 15.4 ms against 9.7, interleaved
-// in one process, and 11.6 against 13.5 on the short reads, hence the cut at
-// 32 ops); a pass that only ORs each op's bit ran 9.3, so the pass itself is
-// now the cost. The lever left is `@gmod/bam`'s `_computeLengthOnRef`, which
-// already reads every op to answer `end`.
+// CIGAR branch-free, ORing a bit per op kind seen and per op kind seen at SV
+// length; a third compare per op for the insertion cost 10.3-10.9 ms on the
+// long BAM. CRAM looks each code's bit up in a table, where three compares
+// took 4.6. Neither fixture region holds a read with a category bit, so the
+// numbers are the scan alone.
 import { join } from 'node:path'
 
 import { BamFile, BamRecord } from '@gmod/bam'

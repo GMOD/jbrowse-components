@@ -44,6 +44,14 @@ const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
  * A record is a view onto its slice's columns, handed out fresh per query, so
  * what is memoized here lives exactly as long as the query that built it.
  */
+// The category bit a read-feature code sets: a skip at any length, and an
+// indel from SV_INDEL_MIN_BP
+const RF_SKIP_BIT = new Uint8Array(128)
+RF_SKIP_BIT[RF_REF_SKIP] = CIGAR_HAS_SKIP
+const RF_SV_INDEL_BIT = new Uint8Array(128)
+RF_SV_INDEL_BIT[RF_DELETION] = CIGAR_HAS_SV_DELETION
+RF_SV_INDEL_BIT[RF_INSERTION] = CIGAR_HAS_SV_INSERTION
+
 export default class CramSlightlyLazyFeature
   extends CramRecord
   implements MismatchFeature
@@ -217,25 +225,18 @@ export default class CramSlightlyLazyFeature
   // insertion as one `I`, so an SV-size one is one feature.
   get cigarCategoryBits() {
     const arena = this.readFeatureArena
-    let skip = 0
-    let svDeletion = 0
-    let svInsertion = 0
+    let bits = 0
     if (arena) {
       const { codes, num } = arena
       const end = this.readFeatureStart + this.readFeatureCount
       for (let i = this.readFeatureStart; i < end; i++) {
-        const code = codes[i]
-        const sv = +(num[i]! >= SV_INDEL_MIN_BP)
-        skip |= +(code === RF_REF_SKIP)
-        svDeletion |= +(code === RF_DELETION) & sv
-        svInsertion |= +(code === RF_INSERTION) & sv
+        const code = codes[i]!
+        bits |=
+          RF_SKIP_BIT[code]! |
+          (RF_SV_INDEL_BIT[code]! & -+(num[i]! >= SV_INDEL_MIN_BP))
       }
     }
-    return (
-      (skip ? CIGAR_HAS_SKIP : 0) |
-      (svDeletion ? CIGAR_HAS_SV_DELETION : 0) |
-      (svInsertion ? CIGAR_HAS_SV_INSERTION : 0)
-    )
+    return bits
   }
 
   get CIGAR() {

@@ -42,21 +42,19 @@ export function numericCigarCategoryBits(cigar: ArrayLike<number>) {
     }
     return bits
   }
-  let skip = 0
-  let svDeletion = 0
-  let svInsertion = 0
+  // One bit per op kind seen, and per op kind seen at SV length
+  let seen = 0
+  let svLength = 0
   for (let i = 0; i < cigar.length; i++) {
     const packed = cigar[i]!
     const op = packed & 0xf
-    const sv = +(packed >= SV_INDEL_MIN_PACKED)
-    skip |= +(op === CIGAR_N)
-    svDeletion |= +(op === CIGAR_D) & sv
-    svInsertion |= +(op === CIGAR_I) & sv
+    seen |= 1 << op
+    svLength |= +(packed >= SV_INDEL_MIN_PACKED) << op
   }
   return (
-    (skip ? CIGAR_HAS_SKIP : 0) |
-    (svDeletion ? CIGAR_HAS_SV_DELETION : 0) |
-    (svInsertion ? CIGAR_HAS_SV_INSERTION : 0)
+    (seen & (1 << CIGAR_N) ? CIGAR_HAS_SKIP : 0) |
+    (svLength & (1 << CIGAR_D) ? CIGAR_HAS_SV_DELETION : 0) |
+    (svLength & (1 << CIGAR_I) ? CIGAR_HAS_SV_INSERTION : 0)
   )
 }
 

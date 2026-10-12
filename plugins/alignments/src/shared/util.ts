@@ -1,6 +1,6 @@
-import { READ_SPLICED } from '@jbrowse/alignments-core'
 import {
   CIGAR_H,
+  CIGAR_HAS_SKIP,
   CIGAR_S,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
@@ -211,7 +211,10 @@ export function dropsRead(filterBy: ReadFilter | undefined) {
     filterReadFlag(read.flags, flagInclude, flagExclude) ||
     (readName !== undefined && read.name !== readName) ||
     !!tagFilters?.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
-    filterSpliced(spliced, () => (read.cigarCategoryBits & READ_SPLICED) !== 0)
+    filterSpliced(
+      spliced,
+      () => (read.cigarCategoryBits & CIGAR_HAS_SKIP) !== 0,
+    )
 }
 
 export interface SamHeaderLine {
