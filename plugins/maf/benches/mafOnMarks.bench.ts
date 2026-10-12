@@ -146,11 +146,11 @@ import {
   legacyIdentityMatrix,
   legacyMafTabixFeatures,
 } from '../src/util/legacyMafParse.fixture.ts'
-import { featureBlocks } from '../src/util/mafBlockSink.ts'
 import {
+  featureBlocks,
   mafFeatureTable,
   mafFeatureTableOf,
-} from '../src/util/mafFeatureTable.ts'
+} from '../src/util/mafFeatureBlocks.fixture.ts'
 import {
   DEFAULT_SPEC,
   ensureBigMafFixture,

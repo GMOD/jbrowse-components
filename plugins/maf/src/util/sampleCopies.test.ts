@@ -9,7 +9,7 @@ import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
 import { MafRegionSink } from '../LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
 import MafTabixAdapter from '../MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../MafTabixAdapter/configSchema.ts'
-import { featureBlocks } from './mafBlockSink.ts'
+import { featureBlocks } from './mafFeatureBlocks.fixture.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
 import {
   copyParent,

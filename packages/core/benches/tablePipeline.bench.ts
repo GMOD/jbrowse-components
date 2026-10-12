@@ -392,7 +392,7 @@ const scenarios: Scenario[] = [
 if (withMaf) {
   const blocks = await mafFeatures()
   const { mafFeatureTableOf } =
-    await import('../../../plugins/maf/src/util/mafFeatureTable.ts')
+    await import('../../../plugins/maf/src/util/mafFeatureBlocks.fixture.ts')
   const cells = {
     input: blocks,
     steps: [

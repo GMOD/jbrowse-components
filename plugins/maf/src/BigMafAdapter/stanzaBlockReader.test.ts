@@ -8,8 +8,10 @@ import {
   featureView,
   legacyBigMafFeatures,
 } from '../util/legacyMafParse.fixture.ts'
-import { featureBlocks } from '../util/mafBlockSink.ts'
-import { mafFeatureTable } from '../util/mafFeatureTable.ts'
+import {
+  featureBlocks,
+  mafFeatureTable,
+} from '../util/mafFeatureBlocks.fixture.ts'
 import BigMafAdapter from './BigMafAdapter.ts'
 import BigMafConfigSchema from './configSchema.ts'
 

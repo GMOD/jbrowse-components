@@ -8,8 +8,10 @@ import {
   featureView,
   legacyMafTabixFeatures,
 } from '../util/legacyMafParse.fixture.ts'
-import { featureBlocks } from '../util/mafBlockSink.ts'
-import { mafFeatureTable } from '../util/mafFeatureTable.ts'
+import {
+  featureBlocks,
+  mafFeatureTable,
+} from '../util/mafFeatureBlocks.fixture.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 

@@ -20,7 +20,7 @@ import {
   legacyIdentityMatrix,
   legacyMafTabixFeatures,
 } from '../util/legacyMafParse.fixture.ts'
-import { featureBlocks } from '../util/mafBlockSink.ts'
+import { featureBlocks } from '../util/mafFeatureBlocks.fixture.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readIdentityMatrix } from './buildIdentityMatrix.ts'
 

@@ -2,7 +2,7 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { of } from 'rxjs'
 
-import { featureBlocks } from '../util/mafBlockSink.ts'
+import { featureBlocks } from '../util/mafFeatureBlocks.fixture.ts'
 import { executeMafAlignmentData } from './executeMafAlignmentData.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'

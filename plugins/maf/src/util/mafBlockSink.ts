@@ -1,12 +1,8 @@
-import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
-
 import type {
   AlignmentContext,
   AlignmentRecord,
   EmptyRecord,
 } from '../types.ts'
-import type { Feature } from '@jbrowse/core/util'
-import type { Observable } from 'rxjs'
 
 /**
  * Where a MAF adapter writes a region's blocks when the reader wants them
@@ -80,26 +76,4 @@ export function addParsedBlock(sink: MafBlockSink, block: ParsedMafBlock) {
   for (const sampleId in empties) {
     sink.addEmpty(sampleId, empties[sampleId]!)
   }
-}
-
-export function addFeatureBlock(sink: MafBlockSink, feature: Feature) {
-  addParsedBlock(sink, {
-    uniqueId: feature.id(),
-    start: feature.get('start'),
-    end: feature.get('end'),
-    seq: feature.get('seq') as string,
-    refSampleId: feature.get('refSampleId') as string | undefined,
-    alignments: feature.get('alignments') as Record<string, AlignmentRecord>,
-    empties: feature.get('empties') as Record<string, EmptyRecord> | undefined,
-  })
-}
-
-/** Every `MafFeature` of `features` into `sink`. */
-export function featureBlocks(
-  features: Observable<Feature>,
-  sink: MafBlockSink,
-) {
-  return subscribeToObservable(features, feature => {
-    addFeatureBlock(sink, feature)
-  })
 }

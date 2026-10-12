@@ -1,14 +1,11 @@
 import { ColumnTable } from '@jbrowse/core/util/featureTable'
 
 import { MafWirePacker } from '../LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
-import { addFeatureBlock, featureBlocks } from './mafBlockSink.ts'
 import { decodeMafStatus } from './mafStatus.ts'
 
 import type { MafWirePacked } from '../LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
 import type { AlignmentContext } from '../types.ts'
-import type { Feature } from '@jbrowse/core/util'
 import type { Column } from '@jbrowse/core/util/featureTable'
-import type { Observable } from 'rxjs'
 
 interface Blocks {
   ids: string[]
@@ -47,28 +44,6 @@ export class MafTableSink extends MafWirePacker {
   table() {
     return tableOfPacked(this.finishBlocks(), this.blocks)
   }
-}
-
-/** {@link MafTableSink} over blocks as `MafFeature`s. */
-export async function mafFeatureTable(
-  features: Observable<Feature>,
-  refName: string,
-) {
-  const sink = new MafTableSink(refName)
-  await featureBlocks(features, sink)
-  return sink.table()
-}
-
-/** {@link mafFeatureTable} over blocks already fetched. */
-export function mafFeatureTableOf(
-  features: Iterable<Feature>,
-  refName: string,
-) {
-  const sink = new MafTableSink(refName)
-  for (const feature of features) {
-    addFeatureBlock(sink, feature)
-  }
-  return sink.table()
 }
 
 function contextOf(packed: MafWirePacked, i: number) {

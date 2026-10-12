@@ -58,7 +58,7 @@ jest.mock('../util/loadMafSamplesAdapter.ts', () => ({
         // required inside the factory: jest hoists this above the imports, so a
         // module referenced from the enclosing scope is not defined yet
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('../util/mafBlockSink.ts').featureBlocks(
+        require('../util/mafFeatureBlocks.fixture.ts').featureBlocks(
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           require('rxjs').from(
             pluginManager.features.filter(

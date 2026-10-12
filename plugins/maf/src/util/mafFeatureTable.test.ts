@@ -3,7 +3,7 @@ import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import { from } from 'rxjs'
 
 import MafFeature from '../MafFeature.ts'
-import { mafFeatureTable } from './mafFeatureTable.ts'
+import { mafFeatureTable } from './mafFeatureBlocks.fixture.ts'
 
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 
