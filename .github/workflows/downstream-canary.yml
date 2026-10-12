@@ -43,14 +43,8 @@ jobs:
           - repo: JBrowseR
           - repo: jbrowse-anywidget
           - repo: ggjbrowse
-            apt:
-              r-base-core r-cran-v8 r-cran-jsonlite r-cran-curl r-cran-ggplot2
-              r-cran-testthat
+            r: true
     steps:
-      - if: matrix.apt
-        run:
-          sudo apt-get update && sudo apt-get -y install --no-install-recommends
-          ${{ matrix.apt }}
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           path: jbrowse-components
@@ -60,6 +54,15 @@ jobs:
           repository: GMOD/${{ matrix.repo }}
           path: ${{ matrix.repo }}
           persist-credentials: false
+      - if: matrix.r
+        uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        with:
+          use-public-rspm: true
+      - if: matrix.r
+        uses: r-lib/actions/setup-r-dependencies@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        with:
+          working-directory: ${{ matrix.repo }}
+          extra-packages: any::testthat
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           package_json_file: jbrowse-components/package.json
