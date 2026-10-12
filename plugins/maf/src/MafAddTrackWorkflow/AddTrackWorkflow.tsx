@@ -121,6 +121,8 @@ const MultiMAFWidget = observer(function MultiMAFWidget({
           getOptionLabel={value => fileTypeLabel[value]}
           onChange={value => {
             setFileTypeChoice(value)
+            setIndexLoc(undefined)
+            setSummaryLoc(undefined)
           }}
         />
         <FileSelector
