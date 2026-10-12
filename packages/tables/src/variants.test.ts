@@ -30,8 +30,15 @@ test('a multi-sample VCF comes back as the display paints its genotypes', async 
   t.cells.dosage.forEach((d, i) => {
     const called = t.cells.genotype[i]!.split(/[/|]/).filter(a => a !== '.')
     const alt = called.filter(a => a !== '0').length
-    expect(d).toBeCloseTo(called.length ? alt / called.length : 0, 1)
+    if (called.length) {
+      expect(d).toBeCloseTo(alt / called.length, 6)
+    } else {
+      expect(d).toBeNull()
+    }
   })
+  expect(t.cells.dosage[t.cells.genotype.indexOf('0/1')]).toBe(0.5)
+  expect(t.cells.dosage[t.cells.genotype.indexOf('0/2')]).toBe(0.5)
+  expect(t.cells.dosage[t.cells.genotype.indexOf('./.')]).toBeNull()
   for (const color of new Set(t.cells.color)) {
     expect(t.legend.color).toContain(color)
   }
@@ -60,6 +67,15 @@ test('haplotype rows split each sample, and an unphased call paints as unphased'
   )
   expect(new Set(unphased).size).toBe(2)
   expect(t.legend.label.some(l => /unphased/i.test(l))).toBe(true)
+  t.cells.genotype.forEach((gt, i) => {
+    const d = t.cells.dosage[i]
+    const hp = t.rows.haplotype[t.rows.name.indexOf(t.cells.row[i]!)]!
+    if (gt.includes('/') || gt.split('|')[hp] === '.') {
+      expect(d).toBeNull()
+    } else {
+      expect(d).toBe(gt.split('|')[hp] === '0' ? 0 : 1)
+    }
+  })
 })
 
 test('the display’s filters drop records before any cell is painted', async () => {

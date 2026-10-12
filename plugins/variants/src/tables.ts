@@ -29,6 +29,10 @@ import {
 import { getVariantColorScales } from './LinearMultiSampleVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { executeVariantCellData } from './VariantRPC/executeVariantCellData.ts'
+import {
+  readAltDosages,
+  readPhasedAlleleIndicators,
+} from './VariantRPC/genotypeMatrixEncoding.ts'
 import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { cellHueOf } from './shared/cellHue.ts'
@@ -93,8 +97,8 @@ function legendOf(scales: ColorScale[]) {
  * filters and paints it, as tables: `variants`, each record the display
  * keeps, with its lane color; `cells`, each sample's (or under
  * `unit: 'haplotype'` each haplotype's) cell at each record, with its
- * genotype, its alt dosage and the fill the display paints it,
- * `shade(hue, dosage)`; `rows`, the rows the cells name; and `legend` and
+ * genotype, its `dosage` and the fill the display paints it; `rows`, the
+ * rows the cells name; and `legend` and
  * `ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
  * a reference call draws no cell. For a host that draws them itself, such as
  * R through V8. The adapters must be registered on `pluginManager`
@@ -199,7 +203,7 @@ export async function variantTables(
     variant: [] as number[],
     row: [] as string[],
     genotype: [] as string[],
-    dosage: [] as number[],
+    dosage: [] as (number | null)[],
     color: [] as string[],
   }
   if (data) {
@@ -232,7 +236,14 @@ export async function variantTables(
           rows.sample[row]!,
         ) ?? '',
       )
-      cells.dosage.push(data.cellAltDosage[i]! / 255)
+      cells.dosage.push(
+        cellDosage(
+          cells.genotype[cells.genotype.length - 1]!,
+          data.featureInfo[f]!.alt.length,
+          unit === 'haplotype' ? rows.haplotype[row]! : undefined,
+          rows.ploidy[row]!,
+        ),
+      )
       cells.color.push(abgrToHex(colors[i]!))
     }
   }
@@ -258,6 +269,33 @@ export async function variantTables(
     rowLegend: rowColor.legend,
     rowLegendTitle: rowColor.title,
   }
+}
+
+/**
+ * A cell's dosage as the display's clustering reads its genotype: a
+ * sample's share of its called alleles that are any ALT, or under
+ * `haplotype` that haplotype's allele, 1 for an ALT and 0 for the reference.
+ * null where nothing was called, and for a haplotype of an unphased call,
+ * which says a sample carries an ALT but not on which haplotype: null, not
+ * NaN, so a JSON host reads what the engine answers.
+ */
+function cellDosage(
+  genotype: string,
+  numAlts: number,
+  haplotype: number | undefined,
+  ploidy: number,
+) {
+  let dosage = 0
+  if (haplotype !== undefined) {
+    const out = new Float32Array(Math.max(ploidy, haplotype + 1))
+    readPhasedAlleleIndicators(genotype, 0, genotype.length, out, 0, ploidy)
+    dosage = out[haplotype]!
+  } else if (numAlts > 0) {
+    const out = new Float32Array(numAlts)
+    readAltDosages(genotype, 0, genotype.length, out, 0, numAlts)
+    dosage = out.reduce((sum, d) => sum + d, 0) / 2
+  }
+  return Number.isNaN(dosage) ? null : dosage
 }
 
 /**
