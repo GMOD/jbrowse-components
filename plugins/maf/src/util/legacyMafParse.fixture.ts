@@ -9,11 +9,16 @@ import {
 
 import { buildSegments } from '../LinearMafClusterIdentityRpc/buildIdentityMatrix.ts'
 import MafFeature from '../MafFeature.ts'
-import { MafStanzaRows, applyMafLine } from './mafLines.ts'
+import { applyMafLine } from './mafLines.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
 import { freeRowId } from './sampleCopies.ts'
 
-import type { AlignmentRecord } from '../types.ts'
+import type {
+  AlignmentContext,
+  AlignmentRecord,
+  EmptyRecord,
+} from '../types.ts'
+import type { MafLineTarget, MafSourceLine } from './mafLines.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
 import type {
   BaseFeatureDataAdapter,
@@ -77,6 +82,38 @@ export function selectReferenceSequenceString(
     }
   }
   return firstEntrySeq
+}
+
+class MafStanzaRows implements MafLineTarget {
+  alignments: Record<string, AlignmentRecord> = {}
+  empties: Record<string, EmptyRecord> = {}
+  private lastRowId = new Map<string, string>()
+
+  row(sampleId: string, chr: string, line: MafSourceLine) {
+    const { alignments } = this
+    const rowId = freeRowId(sampleId, id => Object.hasOwn(alignments, id))
+    this.lastRowId.set(sampleId, rowId)
+    alignments[rowId] = {
+      chr,
+      srcStart: line.start,
+      seq: line.seq,
+      strand: line.strand,
+      srcSize: line.srcSize,
+    }
+  }
+
+  context(sampleId: string, context: AlignmentContext) {
+    const rowId = this.lastRowId.get(sampleId)
+    const rec = rowId === undefined ? undefined : this.alignments[rowId]
+    if (rec) {
+      rec.context = context
+    }
+  }
+
+  empty(sampleId: string, empty: EmptyRecord) {
+    const { empties } = this
+    empties[freeRowId(sampleId, id => Object.hasOwn(empties, id))] = empty
+  }
 }
 
 export function parseBigMafStanza(maf: string, resolve: SourceResolver) {

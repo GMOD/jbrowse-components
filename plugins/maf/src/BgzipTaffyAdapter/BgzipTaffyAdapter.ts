@@ -10,15 +10,15 @@ import {
   parseRowInstructions,
 } from './rowInstructions.ts'
 import {
-  blockToFeature,
   finalizeBlock,
   findCoordinateSeparator,
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
+  readTafBlock,
 } from './tafParsing.ts'
 
-import type { SourceResolver } from '../util/parseAssemblyName.ts'
-import type { TaiBlockFeature } from '../util/taiBlocks.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
+import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock } from './tafParsing.ts'
@@ -48,22 +48,26 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
     return this.getConf('tafGzLocation')
   }
 
-  protected parseBlocks(
+  protected readSlice(
     slice: Uint8Array,
     { runLengthEncodeBases }: SetupData,
-    resolve: SourceResolver,
+    reader: MafStanzaReader,
+    sink: MafBlockSink,
+    keep: KeepBlock,
   ) {
-    return this.parseTafBlocksStreaming(slice, runLengthEncodeBases, resolve)
+    this.readTafSlice(slice, runLengthEncodeBases, reader, sink, keep)
   }
 
-  *parseTafBlocksStreaming(
+  readTafSlice(
     buffer: Uint8Array,
     runLengthEncodeBases: boolean,
-    resolve: SourceResolver,
-  ): Generator<TaiBlockFeature> {
-    const buildFeature = (block: AlignmentBlock, cols: string[]) => {
+    reader: MafStanzaReader,
+    sink: MafBlockSink,
+    keep: KeepBlock,
+  ) {
+    const emit = (block: AlignmentBlock, cols: string[]) => {
       finalizeBlock(block, cols, this.decoder)
-      return blockToFeature(block, resolve)
+      readTafBlock(block, reader, sink, keep)
     }
     let pBlock: AlignmentBlock | undefined
     let currentBlock: AlignmentBlock | undefined
@@ -87,10 +91,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
       if (hasCoordinates) {
         if (currentBlock) {
           if (columns.length > 0) {
-            const feature = buildFeature(currentBlock, columns)
-            if (feature) {
-              yield feature
-            }
+            emit(currentBlock, columns)
           }
           // Advance the chain even for a block that emitted no feature. TAF
           // coordinates are deltas against the *immediately preceding* block
@@ -137,10 +138,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
     // block is complete exactly when the *next* coordinate line arrives — a cut
     // tail leaves the open one missing however many columns the cut removed.
     if (endsClean && currentBlock && columns.length > 0) {
-      const feature = buildFeature(currentBlock, columns)
-      if (feature) {
-        yield feature
-      }
+      emit(currentBlock, columns)
     }
   }
 

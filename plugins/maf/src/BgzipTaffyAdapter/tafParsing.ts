@@ -1,11 +1,7 @@
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
-import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
-import { freeRowId } from '../util/sampleCopies.ts'
-
-import type { AlignmentRecord } from '../types.ts'
-import type { SourceResolver } from '../util/parseAssemblyName.ts'
-import type { TaiBlockFeature } from '../util/taiBlocks.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
+import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
 import type { RowInstruction } from './rowInstructions.ts'
 
 // Represents a row in the alignment (like Alignment_Row in C)
@@ -201,60 +197,41 @@ export function finalizeBlock(
 }
 
 /**
- * Build a TaiBlockFeature from a finalized block, dropping rows the caller's
- * `makeSourceResolver` doesn't resolve. Reference row (`row0`) determines
- * the feature's genomic span; alignments are keyed by assembly name.
+ * A finalized block into `sink` through `reader`: the first row is the
+ * reference and fixes the span, every row resolves to its sample. Nothing for
+ * a block with no rows or no columns.
  */
-export function blockToFeature(
+export function readTafBlock(
   block: AlignmentBlock,
-  resolve: SourceResolver,
-): TaiBlockFeature | undefined {
+  reader: MafStanzaReader,
+  sink: MafBlockSink,
+  keep: KeepBlock,
+) {
   if (block.rows.length === 0 || block.columnNumber === 0) {
-    return undefined
+    return false
   }
-
+  reader.begin()
   const row0 = block.rows[0]!
-  const alignments: Record<string, AlignmentRecord> = {}
-
+  reader.reference(
+    row0.sequenceName,
+    row0.start,
+    row0.length,
+    row0.strand,
+    row0.sequenceLength,
+    row0.bases,
+  )
   for (const row of block.rows) {
-    const parsed = resolve(row.sequenceName)
+    const parsed = reader.resolve(row.sequenceName)
     if (parsed?.assemblyName) {
-      alignments[
-        freeRowId(parsed.assemblyName, id => Object.hasOwn(alignments, id))
-      ] = {
-        chr: parsed.chr,
-        srcStart: row.start,
-        seq: row.bases,
-        strand: row.strand,
-        srcSize: row.sequenceLength,
-      }
+      reader.addRow(
+        parsed.assemblyName,
+        parsed.chr,
+        row.start,
+        row.strand,
+        row.sequenceLength,
+        row.bases,
+      )
     }
   }
-
-  // A `-` reference row counts from the reverse complement of its source, so
-  // the block is turned over before anything reads its extent — the MAF path
-  // does the same, through the same helper. `strand` is 1 either way after it.
-  const placed =
-    row0.strand === -1
-      ? flipBlockToForwardStrand({
-          refStart: row0.start,
-          refSize: row0.length,
-          refSrcSize: row0.sequenceLength,
-          refSeq: row0.bases,
-          alignments,
-        })
-      : { start: row0.start, end: row0.start + row0.length, seq: row0.bases }
-
-  return {
-    // Qualified by the reference row's sequence name: `start`+`length` alone
-    // repeats across chromosomes, and a feature id has to survive being read
-    // outside the one region query that produced it.
-    uniqueId: `${row0.sequenceName}-${placed.start}-${row0.length}`,
-    refSrc: row0.sequenceName,
-    refSampleId: resolve(row0.sequenceName)?.assemblyName || undefined,
-    start: placed.start,
-    end: placed.end,
-    alignments,
-    seq: placed.seq,
-  }
+  return reader.emitPlaced(sink, keep)
 }

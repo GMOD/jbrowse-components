@@ -1,15 +1,3 @@
-import type { ParsedMafBlock } from './mafBlockSink.ts'
-
-/** What either `.tai` parser yields. `empties` is MAF's alone: TAF has no `e` line. */
-export interface TaiBlockFeature extends ParsedMafBlock {
-  /**
-   * The reference row's unresolved source name (`hg38.chr1`). Carried so the
-   * caller can drop a block belonging to another chromosome — the read reaches
-   * past the queried contig's end by design, see `makeRefChrFilter`.
-   */
-  refSrc: string
-}
-
 /**
  * The lines of a `.tai` slice that the byte range did not cut. A slice that
  * does not end on a newline had its last line truncated, and neither that line

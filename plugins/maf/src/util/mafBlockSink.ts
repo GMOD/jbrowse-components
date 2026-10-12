@@ -1,8 +1,4 @@
-import type {
-  AlignmentContext,
-  AlignmentRecord,
-  EmptyRecord,
-} from '../types.ts'
+import type { AlignmentContext, EmptyRecord } from '../types.ts'
 
 /**
  * Where a MAF adapter writes a region's blocks when the reader wants them
@@ -34,46 +30,4 @@ export interface MafBlockSink {
     context: AlignmentContext | undefined,
   ): void
   addEmpty(sampleId: string, empty: EmptyRecord): void
-}
-
-/** A block as a parser holds it, every sequence its own string. */
-export interface ParsedMafBlock {
-  uniqueId: string
-  start: number
-  end: number
-  seq: string
-  /** the row the reference sequence is, where the sample set gives it one */
-  refSampleId: string | undefined
-  alignments: Record<string, AlignmentRecord>
-  empties?: Record<string, EmptyRecord>
-}
-
-export function addParsedBlock(sink: MafBlockSink, block: ParsedMafBlock) {
-  const { alignments, empties, seq } = block
-  sink.startBlock(
-    block.uniqueId,
-    block.start,
-    block.end,
-    seq,
-    0,
-    seq.length,
-    block.refSampleId,
-  )
-  for (const sampleId in alignments) {
-    const a = alignments[sampleId]!
-    sink.addRow(
-      sampleId,
-      a.seq,
-      0,
-      a.seq.length,
-      a.chr,
-      a.srcStart,
-      a.strand ?? 1,
-      a.srcSize,
-      a.context,
-    )
-  }
-  for (const sampleId in empties) {
-    sink.addEmpty(sampleId, empties[sampleId]!)
-  }
 }

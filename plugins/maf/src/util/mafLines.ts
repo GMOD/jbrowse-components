@@ -1,18 +1,13 @@
 import { toMafStatus } from './mafStatus.ts'
 import { parseStrand } from './parseStrand.ts'
-import { freeRowId } from './sampleCopies.ts'
 
-import type {
-  AlignmentContext,
-  AlignmentRecord,
-  EmptyRecord,
-} from '../types.ts'
+import type { AlignmentContext, EmptyRecord } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
 
 /**
  * The line grammar of a MAF stanza, shared by the two readers of it: bigMaf
- * packs the lines `;`-joined into one bigBed field (`BigMafBlockReader`), a
- * bgzip MAF holds them newline-separated in the file itself (`parseMafBlocks`).
+ * packs the lines `;`-joined into one bigBed field, a bgzip MAF holds them
+ * newline-separated in the file itself (`readMafBlocks`).
  * Only the framing differs — `a` lines and blank-line terminators exist in the
  * file and not in the packed field — so the framing stays with each reader and
  * the per-line field parsing lives here.
@@ -49,39 +44,6 @@ export interface MafLineTarget {
   row(sampleId: string, chr: string, line: MafSourceLine): void
   context(sampleId: string, context: AlignmentContext): void
   empty(sampleId: string, empty: EmptyRecord): void
-}
-
-/** The rows a stanza accumulates as records, keyed by resolved sample id. */
-export class MafStanzaRows implements MafLineTarget {
-  alignments: Record<string, AlignmentRecord> = {}
-  empties: Record<string, EmptyRecord> = {}
-  private lastRowId = new Map<string, string>()
-
-  row(sampleId: string, chr: string, line: MafSourceLine) {
-    const { alignments } = this
-    const rowId = freeRowId(sampleId, id => Object.hasOwn(alignments, id))
-    this.lastRowId.set(sampleId, rowId)
-    alignments[rowId] = {
-      chr,
-      srcStart: line.start,
-      seq: line.seq,
-      strand: line.strand,
-      srcSize: line.srcSize,
-    }
-  }
-
-  context(sampleId: string, context: AlignmentContext) {
-    const rowId = this.lastRowId.get(sampleId)
-    const rec = rowId === undefined ? undefined : this.alignments[rowId]
-    if (rec) {
-      rec.context = context
-    }
-  }
-
-  empty(sampleId: string, empty: EmptyRecord) {
-    const { empties } = this
-    empties[freeRowId(sampleId, id => Object.hasOwn(empties, id))] = empty
-  }
 }
 
 /**

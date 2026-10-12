@@ -1,132 +1,45 @@
-import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
-import { MafStanzaRows, applyMafLine } from '../util/mafLines.ts'
 import { wholeLines } from '../util/taiBlocks.ts'
 
-import type { EmptyRecord } from '../types.ts'
-import type { SourceResolver } from '../util/parseAssemblyName.ts'
-import type { TaiBlockFeature } from '../util/taiBlocks.ts'
-
-/** A parsed MAF block: the shared `.tai` block shape, plus MAF's `e` lines. */
-export interface MafBlockFeature extends TaiBlockFeature {
-  empties: Record<string, EmptyRecord>
-}
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
+import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
 
 /**
- * Stream MAF alignment blocks out of a decompressed slice.
+ * The MAF blocks of a decompressed slice into `sink`: an `a` line, then
+ * `s`/`i`/`e`/`q` lines, terminated by a blank line. The lines are
+ * `applyMafLine`'s grammar through `reader`, shared with bigMaf.
  *
- * A MAF block is an `a` line followed by `s`/`i`/`e`/`q` lines and terminated by
- * a blank line. The per-line field parsing is `applyMafLine`, shared with the
- * bigMaf reader of the same grammar — so `e` lines become bridged rows and `i`
- * lines become their row's left/right context here exactly as they do there.
- * `s src start size strand srcSize text` — the first `s` line is the reference
- * row and fixes the block's genomic extent, taken before `resolve` so a
- * reference filtered out of the sample set still positions the block. A `-`
- * reference row is re-expressed forward first (`flipBlockToForwardStrand`).
- *
- * `trailingPartial` is the one thing this has to be careful about. The read is a
- * byte range, so its last block is very often cut mid-row; emitting it would put
- * a short sequence at real coordinates, which renders as a plausible alignment
- * that is simply wrong. A block is therefore only emitted once its terminator
- * has been seen, and the final block is emitted only when the buffer ended on a
- * clean line boundary.
+ * A block is emitted only once its terminator has been seen, and the final
+ * block only when the slice ended on a line boundary: a byte-range read very
+ * often cuts its last block mid-row, and a short sequence at real coordinates
+ * renders as a plausible alignment that is simply wrong.
  */
-export function* parseMafBlocks(
+export function readMafBlocks(
   text: string,
-  resolve: SourceResolver,
-): Generator<MafBlockFeature> {
+  reader: MafStanzaReader,
+  sink: MafBlockSink,
+  keep: KeepBlock,
+) {
   const { lines, endsClean } = wholeLines(text)
-
-  let rows = new MafStanzaRows()
-  let refSrc: string | undefined
-  let refStart = 0
-  let refSize = 0
-  let refStrand = 1
-  let refSrcSize = 0
-  let refSeq = ''
   let open = false
-
   const flush = () => {
-    let done: MafBlockFeature | undefined
-    if (open && refSrc !== undefined) {
-      // A `-` reference row counts from the reverse complement, so the block is
-      // turned over before anything reads its extent — see
-      // `flipBlockToForwardStrand`. `strand` is then 1 either way, because the
-      // block is now stated forward.
-      const placed =
-        refStrand === -1
-          ? flipBlockToForwardStrand({
-              refStart,
-              refSize,
-              refSrcSize,
-              refSeq,
-              alignments: rows.alignments,
-              empties: rows.empties,
-            })
-          : { start: refStart, end: refStart + refSize, seq: refSeq }
-      done = {
-        // Qualified by the reference row's own name for the reason the TAF
-        // path does it: start+size repeats across chromosomes, and a feature
-        // id has to survive being read outside the query that produced it.
-        uniqueId: `${refSrc}-${placed.start}-${refSize}`,
-        refSrc,
-        refSampleId: resolve(refSrc)?.assemblyName || undefined,
-        start: placed.start,
-        end: placed.end,
-        alignments: rows.alignments,
-        empties: rows.empties,
-        seq: placed.seq,
-      }
+    if (open) {
+      reader.emitPlaced(sink, keep)
     }
-    rows = new MafStanzaRows()
-    refSrc = undefined
-    refStart = 0
-    refSize = 0
-    refStrand = 1
-    refSrcSize = 0
-    refSeq = ''
     open = false
-    return done
   }
-
   for (const raw of lines) {
     const line = raw.trimEnd()
     if (line === '') {
-      const done = flush()
-      if (done) {
-        yield done
-      }
-      continue
-    }
-    const type = line[0]
-    if (type === 'a') {
-      const done = flush()
-      if (done) {
-        yield done
-      }
+      flush()
+    } else if (line.startsWith('a')) {
+      flush()
+      reader.begin()
       open = true
-      continue
-    }
-    // The `.tai` entry a slice begins at points at a block boundary, so the
-    // leading `a` is present; a stray row before one is not a block.
-    if (!open) {
-      continue
-    }
-    const s = applyMafLine(line, resolve, rows)
-    if (s !== undefined && refSrc === undefined) {
-      refSrc = s.src
-      refStart = s.start
-      refSize = s.size
-      refStrand = s.strand
-      refSrcSize = s.srcSize
-      refSeq = s.seq
+    } else if (open) {
+      reader.line(line)
     }
   }
-
-  // Only when the slice ended cleanly; otherwise the open block is truncated.
   if (endsClean) {
-    const done = flush()
-    if (done) {
-      yield done
-    }
+    flush()
   }
 }

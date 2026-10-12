@@ -1,5 +1,6 @@
 import { MafSubAdapterBase } from '../util/MafSubAdapterBase.ts'
-import { BigMafBlockReader } from './stanzaBlockReader.ts'
+import { MafStanzaReader } from '../util/mafStanzaReader.ts'
+import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 
 import type { BigMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -36,7 +37,7 @@ export default class BigMafAdapter extends MafSubAdapterBase<BigMafAdapterConfig
   }
 
   protected async blockReader(_query: Region, opts?: BaseOptions) {
-    return new BigMafBlockReader(await this.sampleIds(opts))
+    return new MafStanzaReader(makeSourceResolver(await this.sampleIds(opts)))
   }
 
   protected blockText(feature: Feature) {

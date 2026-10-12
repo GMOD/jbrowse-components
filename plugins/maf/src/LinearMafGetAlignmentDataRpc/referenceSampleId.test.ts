@@ -1,5 +1,5 @@
-import { parseMafBlocks } from '../BgzipMafAdapter/mafParsing.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
 import { MafRegionSink } from './mafRegionSink.ts'
 
 function referenceSampleId(...named: (string | undefined)[]) {
@@ -35,7 +35,7 @@ const STANZA = [
 
 function parsedReference(sampleIds?: string[]) {
   const { resolve } = makeSourceResolver(sampleIds && new Set(sampleIds))
-  return [...parseMafBlocks(STANZA, resolve)].map(b => b.refSampleId)
+  return mafBlocksOf(STANZA, resolve).map(b => b.refSampleId)
 }
 
 test('the MAF parse names the first s line’s row', () => {

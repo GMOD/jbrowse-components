@@ -1,12 +1,11 @@
 import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
 import { MafAdapterBase } from './MafAdapterBase.ts'
-import { addParsedBlock } from './mafBlockSink.ts'
+import { MafStanzaReader } from './mafStanzaReader.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { SourceResolver } from './parseAssemblyName.ts'
-import type { TaiBlockFeature } from './taiBlocks.ts'
+import type { KeepBlock } from './mafStanzaReader.ts'
 import type { TaiIndex } from './taiSlice.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -27,11 +26,14 @@ export abstract class MafTaiAdapterBase<
   /** The bgzip file the `.tai` indexes. */
   protected abstract dataLocation(): FileLocation
 
-  protected abstract parseBlocks(
+  /** The slice's blocks through `reader` into `sink`, those `keep` wants. */
+  protected abstract readSlice(
     slice: Uint8Array,
     setup: SETUP,
-    resolve: SourceResolver,
-  ): Iterable<TaiBlockFeature>
+    reader: MafStanzaReader,
+    sink: MafBlockSink,
+    keep: KeepBlock,
+  ): void
 
   protected decoder = new TextDecoder()
 
@@ -56,7 +58,9 @@ export abstract class MafTaiAdapterBase<
   ) {
     const { statusCallback, signal } = opts ?? {}
     const setup = await this.configure(opts)
-    const resolver = makeSourceResolver(await this.sampleIds(opts))
+    const reader = new MafStanzaReader(
+      makeSourceResolver(await this.sampleIds(opts)),
+    )
     const onQueriedChr = makeRefChrFilter(query.refName)
     const slice = await readTaiSlice({
       index: setup.index,
@@ -72,15 +76,14 @@ export abstract class MafTaiAdapterBase<
     if (!slice) {
       return
     }
-    for (const block of this.parseBlocks(slice, setup, resolver.resolve)) {
-      if (
-        block.end > query.start &&
-        block.start < query.end &&
-        onQueriedChr(block.refSrc)
-      ) {
-        addParsedBlock(sink, block)
-      }
-    }
-    resolver.reportUnmatched()
+    this.readSlice(
+      slice,
+      setup,
+      reader,
+      sink,
+      (refSrc, start, end) =>
+        end > query.start && start < query.end && onQueriedChr(refSrc),
+    )
+    reader.reportUnmatched()
   }
 }

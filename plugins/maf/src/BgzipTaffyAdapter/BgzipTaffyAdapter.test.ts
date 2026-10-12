@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { tafBlockOf, tafSliceBlocksOf } from '../util/parsedBlocks.fixture.ts'
 import { readTaiSlice } from '../util/taiSlice.ts'
 import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
 import configSchema from './configSchema.ts'
@@ -11,7 +12,6 @@ import {
   parseRowInstructions,
 } from './rowInstructions.ts'
 import {
-  blockToFeature,
   finalizeBlock,
   parseBases,
   parseCoordinatesAndEstablishBlock,
@@ -560,7 +560,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('mm10.chr2', 'ACGT')],
       columnNumber: 4,
     }
-    const feature = blockToFeature(block, splitResolve)
+    const feature = tafBlockOf(block, splitResolve)
     expect(feature).toBeDefined()
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('mm10')
@@ -577,7 +577,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'ACGT'), makeRow('HG002.1.chr1', 'ACGT')],
       columnNumber: 4,
     }
-    const aln = blockToFeature(block, splitResolve)!.alignments
+    const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(aln['HG002.1']).toBeDefined()
     expect(aln['HG002.1']!.chr).toBe('chr1')
   })
@@ -588,7 +588,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.CM000663.2', 'ACGT')],
       columnNumber: 4,
     }
-    const aln = blockToFeature(block, splitResolve)!.alignments
+    const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(aln.hg38!.chr).toBe('CM000663.2')
   })
 
@@ -602,7 +602,7 @@ describe('blockToFeature', () => {
       columnNumber: 4,
     }
     const filter = new Set(['hg38', 'panTro6'])
-    const feature = blockToFeature(block, makeSourceResolver(filter).resolve)
+    const feature = tafBlockOf(block, makeSourceResolver(filter).resolve)
     expect(feature!.alignments).toHaveProperty('hg38')
     expect(feature!.alignments).toHaveProperty('panTro6')
     expect(feature!.alignments).not.toHaveProperty('mm10')
@@ -618,7 +618,7 @@ describe('blockToFeature', () => {
       columnNumber: 4,
     }
     const filter = new Set(['Species1.1', 'Species1.2'])
-    const feature = blockToFeature(block, makeSourceResolver(filter).resolve)
+    const feature = tafBlockOf(block, makeSourceResolver(filter).resolve)
     const aln = feature!.alignments
     expect(aln['Species1.1']).toBeDefined()
     expect(aln['Species1.2']).toBeDefined()
@@ -641,7 +641,7 @@ describe('blockToFeature', () => {
       ],
       columnNumber: 4,
     }
-    const aln = blockToFeature(block, splitResolve)!.alignments
+    const aln = tafBlockOf(block, splitResolve)!.alignments
     expect(Object.keys(aln)).toEqual(['K12#1', 'HG002#1', 'HG002#2'])
     expect(aln['HG002#1']!.chr).toBe('chr1')
   })
@@ -651,7 +651,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('K12#1#chr', 'ACGT'), makeRow('O157#1#chr', 'TGCA')],
       columnNumber: 4,
     }
-    const aln = blockToFeature(
+    const aln = tafBlockOf(
       block,
       makeSourceResolver(new Set(['K12#1'])).resolve,
     )!.alignments
@@ -661,10 +661,10 @@ describe('blockToFeature', () => {
 
   test('returns undefined for empty block', () => {
     expect(
-      blockToFeature({ rows: [], columnNumber: 0 }, splitResolve),
+      tafBlockOf({ rows: [], columnNumber: 0 }, splitResolve),
     ).toBeUndefined()
     expect(
-      blockToFeature(
+      tafBlockOf(
         {
           rows: [makeRow('hg38.chr1', 'ACGT')],
           columnNumber: 0,
@@ -679,7 +679,7 @@ describe('blockToFeature', () => {
       rows: [makeRow('hg38.chr1', 'AC-GT')],
       columnNumber: 5,
     }
-    const feature = blockToFeature(block, splitResolve)!
+    const feature = tafBlockOf(block, splitResolve)!
     expect(feature.start).toBe(100)
     expect(feature.end).toBe(104) // 4 non-gap bases
   })
@@ -1116,16 +1116,16 @@ describe('BgzipTaffyAdapter RLE detection', () => {
   })
 })
 
-describe('parseTafBlocksStreaming guards a cut tail', () => {
-  // The generator reads no config, so a bare adapter is enough to reach it.
+describe('readTafSlice guards a cut tail', () => {
+  // The slice read needs no config, so a bare adapter is enough to reach it.
   const adapter = new BgzipTaffyAdapter(configSchema.create({}))
-  const stream = (taf: string) => [
-    ...adapter.parseTafBlocksStreaming(
+  const stream = (taf: string) =>
+    tafSliceBlocksOf(
+      adapter,
       new TextEncoder().encode(taf),
       false,
       makeSourceResolver().resolve,
-    ),
-  ]
+    )
 
   const twoBlocks = [
     'AC ; i 0 hg38.chr1 100 + 1000',
@@ -1183,13 +1183,12 @@ describe('parseTafBlocksStreaming guards a cut tail', () => {
       'T 1',
       '',
     ].join('\n')
-    const features = [
-      ...adapter.parseTafBlocksStreaming(
-        new TextEncoder().encode(rle),
-        true,
-        makeSourceResolver().resolve,
-      ),
-    ]
+    const features = tafSliceBlocksOf(
+      adapter,
+      new TextEncoder().encode(rle),
+      true,
+      makeSourceResolver().resolve,
+    )
     expect(features.map(f => [f.start, f.end])).toEqual([
       [100, 102],
       [102, 104],
@@ -1223,12 +1222,12 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
   }
 
   test('flips the span through the reference srcSize', () => {
-    const feature = blockToFeature(block, splitResolve)!
+    const feature = tafBlockOf(block, splitResolve)!
     expect([feature.start, feature.end]).toEqual([990, 1000])
   })
 
   test('turns the whole block over, not just the coordinate', () => {
-    const feature = blockToFeature(block, splitResolve)!
+    const feature = tafBlockOf(block, splitResolve)!
     expect(feature.seq).toBe('GTACGTACGT')
     expect(feature.alignments.hg38).toMatchObject({ srcStart: 990, strand: 1 })
     expect(feature.alignments.mm10).toMatchObject({
@@ -1239,7 +1238,7 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
   })
 
   test('carries the reference row source signal for the chromosome filter', () => {
-    expect(blockToFeature(block, splitResolve)!.refSrc).toBe('hg38.chr1')
+    expect(tafBlockOf(block, splitResolve)!.refSrc).toBe('hg38.chr1')
   })
 })
 
@@ -1286,13 +1285,12 @@ describe('a query near a short contig end does not take the next contig', () => 
       end: query.end,
       location: adapter.getConf('tafGzLocation'),
     }))!
-    const decoded = [
-      ...adapter.parseTafBlocksStreaming(
-        slice,
-        false,
-        makeSourceResolver().resolve,
-      ),
-    ]
+    const decoded = tafSliceBlocksOf(
+      adapter,
+      slice,
+      false,
+      makeSourceResolver().resolve,
+    )
     expect(decoded.map(f => f.refSrc)).toEqual(['sp.ctgA', 'sp.ctgB'])
     // and both overlap the query, which is what the numeric test alone saw
     expect(

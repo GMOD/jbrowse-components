@@ -35,7 +35,7 @@ block is a few columns and every cost is per row.
   second builds each row out of column lines.
 - **`MafTabixAdapter` and `BigMafAdapter` override it.** `MafTabixBlockReader`
   scans the alignment column as `scanMafTabixEntry` does and hands the sink
-  ranges of the column; `BigMafBlockReader` runs `applyMafLine`, whose rows
+  ranges of the column; `MafStanzaReader` runs `applyMafLine`, whose rows
   now go to a `MafLineTarget`, and hands over each `s` line's sequence.
 - **Both consumers are sinks.** `MafRegionSink` packs the visible rows,
   discovers every species and takes the reference row the reader names (a
@@ -45,7 +45,7 @@ block is a few columns and every cost is per row.
 - **`RecordSlots` keeps a record's order.** A species named twice in a block
   keeps its first place and its last entry, and an array-index name comes
   first, as the `alignments` record files them. `getFeatures` keeps its own
-  parse, and `tabixBlockReader.test.ts`, `stanzaBlockReader.test.ts` and
+  parse, and `tabixBlockReader.test.ts`, `BigMafAdapter.test.ts` and
   `speciesRows.test.ts` hold the two equal: the packed wire byte for byte, the
   reference row, the species order, and the table's ids and JSON.
 

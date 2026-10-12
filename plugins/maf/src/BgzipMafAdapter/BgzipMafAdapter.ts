@@ -2,9 +2,10 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import { MafTaiAdapterBase } from '../util/MafTaiAdapterBase.ts'
 import { readTaiIndex } from '../util/taiSlice.ts'
-import { parseMafBlocks } from './mafParsing.ts'
+import { readMafBlocks } from './mafParsing.ts'
 
-import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
+import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 
 /**
@@ -40,11 +41,13 @@ export default class BgzipMafAdapter extends MafTaiAdapterBase<BgzipMafAdapterCo
     return this.getConf('mafGzLocation')
   }
 
-  protected parseBlocks(
+  protected readSlice(
     slice: Uint8Array,
     _setup: unknown,
-    resolve: SourceResolver,
+    reader: MafStanzaReader,
+    sink: MafBlockSink,
+    keep: KeepBlock,
   ) {
-    return parseMafBlocks(this.decoder.decode(slice), resolve)
+    readMafBlocks(this.decoder.decode(slice), reader, sink, keep)
   }
 }

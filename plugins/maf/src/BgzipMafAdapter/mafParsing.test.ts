@@ -1,5 +1,5 @@
 import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
-import { parseMafBlocks } from './mafParsing.ts'
+import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
 
 import type { ParsedAssemblyName } from '../util/parseAssemblyName.ts'
 
@@ -11,7 +11,7 @@ const resolve = (token: string): ParsedAssemblyName | undefined => {
     : { assemblyName: token.slice(0, i), chr: token.slice(i + 1) }
 }
 
-const collect = (text: string) => [...parseMafBlocks(text, resolve)]
+const collect = (text: string) => mafBlocksOf(text, resolve)
 
 // Taffy and Cactus write tab-separated MAF; HPRC's 53 GB release-2 alignment is
 // tab-separated. UCSC's is space-aligned. Both have to parse — splitting on
@@ -159,7 +159,7 @@ test('ignores s lines before any a line', () => {
 test('rows the resolver rejects are dropped but still position the block', () => {
   const only = (token: string) => (t: string) =>
     t.startsWith(token) ? resolve(t) : undefined
-  const fs = [...parseMafBlocks(tabbed, only('HG002'))]
+  const fs = mafBlocksOf(tabbed, only('HG002'))
   // GRCh38 is filtered out of the sample set yet still fixes the extent
   expect([fs[0]!.start, fs[0]!.end]).toEqual([100, 110])
   expect(Object.keys(fs[0]!.alignments)).toEqual(['HG002'])

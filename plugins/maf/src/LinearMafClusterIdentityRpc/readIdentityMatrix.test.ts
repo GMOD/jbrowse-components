@@ -9,7 +9,6 @@ import { toArray } from 'rxjs/operators'
 import { generateMafBed } from '../../benches/mafTabixFixture.ts'
 import BgzipMafAdapter from '../BgzipMafAdapter/BgzipMafAdapter.ts'
 import BgzipMafConfigSchema from '../BgzipMafAdapter/configSchema.ts'
-import { parseMafBlocks } from '../BgzipMafAdapter/mafParsing.ts'
 import BigMafAdapter from '../BigMafAdapter/BigMafAdapter.ts'
 import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
 import MafFeature from '../MafFeature.ts'
@@ -22,6 +21,7 @@ import {
 } from '../util/legacyMafParse.fixture.ts'
 import { featureBlocks } from '../util/mafFeatureBlocks.fixture.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
 import { readIdentityMatrix } from './buildIdentityMatrix.ts'
 
 import type { MafAdapterBase } from '../util/MafAdapterBase.ts'
@@ -90,9 +90,7 @@ function adaptersOver(blocks: BedBlock[]): [MafAdapterBase, Read][] {
   const text = blocks
     .map(b => ['a score=0', ...sLines(b), ''].join('\n'))
     .join('\n')
-  const parsed = [
-    ...parseMafBlocks(`${text}\n`, makeSourceResolver().resolve),
-  ].map(
+  const parsed = mafBlocksOf(`${text}\n`, makeSourceResolver().resolve).map(
     (b, i) =>
       new MafFeature(
         b.uniqueId,

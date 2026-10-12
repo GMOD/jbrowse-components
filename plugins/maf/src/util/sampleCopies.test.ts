@@ -2,8 +2,6 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { firstValueFrom, of } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { parseMafBlocks } from '../BgzipMafAdapter/mafParsing.ts'
-import { blockToFeature } from '../BgzipTaffyAdapter/tafParsing.ts'
 import BigMafAdapter from '../BigMafAdapter/BigMafAdapter.ts'
 import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
 import { MafRegionSink } from '../LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
@@ -11,6 +9,7 @@ import MafTabixAdapter from '../MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../MafTabixAdapter/configSchema.ts'
 import { featureBlocks } from './mafFeatureBlocks.fixture.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
+import { mafBlocksOf, tafBlockOf } from './parsedBlocks.fixture.ts'
 import {
   copyParent,
   freeRowId,
@@ -102,7 +101,7 @@ test('freeRowId numbers copies from 2 and copyParent inverts it', () => {
 })
 
 test('bgzip MAF keeps every copy, each on the same row in both blocks', () => {
-  const blocks = [...parseMafBlocks(`${MAF}\n`, makeSourceResolver().resolve)]
+  const blocks = mafBlocksOf(`${MAF}\n`, makeSourceResolver().resolve)
   expect(blocks.map(b => copyStarts(b.alignments))).toEqual(
     BLOCKS.map(b => b.copies.map(([at]) => at)),
   )
@@ -170,7 +169,7 @@ test('TAF keeps every copy', () => {
     bases: ref[2],
     length: ref[2].length,
   })
-  const feature = blockToFeature(
+  const feature = tafBlockOf(
     {
       rows: [
         row(ref[0], ref[1], 1),
@@ -185,7 +184,7 @@ test('TAF keeps every copy', () => {
 
 test('a focus on a sample ships its copy rows', async () => {
   const sink = new MafRegionSink(new Set(['HG01175.1']))
-  const blocks = [...parseMafBlocks(`${MAF}\n`, makeSourceResolver().resolve)]
+  const blocks = mafBlocksOf(`${MAF}\n`, makeSourceResolver().resolve)
   await featureBlocks(
     of(
       ...blocks.map(
