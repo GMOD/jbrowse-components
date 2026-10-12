@@ -9,6 +9,8 @@ const HatchCircle = observer(function HatchCircle({
   radius,
   fill,
   hatchColor,
+  discOpacity = 1,
+  textLine = 0,
   text,
   textRotationDeg,
   children,
@@ -16,6 +18,8 @@ const HatchCircle = observer(function HatchCircle({
   radius: number
   fill: string
   hatchColor: string
+  discOpacity?: number
+  textLine?: number
   text: ReactNode
   // rotation that undoes the enclosing figure rotation, so the message reads
   // horizontally at any view rotation
@@ -44,11 +48,15 @@ const HatchCircle = observer(function HatchCircle({
           />
         </pattern>
       </defs>
-      <circle cx="0" cy="0" r={radius} fill={fill} />
-      <circle cx="0" cy="0" r={radius} fill={`url(#${patternId})`} />
+      {discOpacity > 0 ? (
+        <g opacity={discOpacity}>
+          <circle cx="0" cy="0" r={radius} fill={fill} />
+          <circle cx="0" cy="0" r={radius} fill={`url(#${patternId})`} />
+        </g>
+      ) : null}
       <text
         x="0"
-        y="0"
+        y={`${textLine * 3}em`}
         transform={`rotate(${textRotationDeg} 0 0)`}
         dominantBaseline="middle"
         textAnchor="middle"

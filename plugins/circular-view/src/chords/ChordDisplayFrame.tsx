@@ -39,6 +39,12 @@ const ChordDisplayFrame = observer(function ChordDisplayFrame({
       {phase === 'error' ? (
         <DisplayError
           model={display}
+          line={Math.max(
+            0,
+            display.view.chordDisplays
+              .filter(d => d.displayPhase === 'error')
+              .findIndex(d => d.id === display.id),
+          )}
           onClick={() => {
             display.openErrorDialog()
           }}

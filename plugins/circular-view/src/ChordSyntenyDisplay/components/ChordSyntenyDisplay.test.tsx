@@ -54,6 +54,7 @@ function ribbonModel(
     displayError: undefined,
     view: {
       offsetRadians: 0,
+      chordDisplays: [],
       chordPass: { drew: () => true, renderError: undefined },
     },
     ready: phase === 'ready',
@@ -131,6 +132,7 @@ test('a ready display is drawn once the canvas has painted its cell', () => {
         chordCell: cell,
         view: {
           offsetRadians: 0,
+          chordDisplays: [],
           chordPass: {
             drew: c => painted && c === cell,
             renderError: undefined,

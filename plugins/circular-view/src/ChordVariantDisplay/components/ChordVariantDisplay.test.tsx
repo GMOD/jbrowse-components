@@ -25,6 +25,7 @@ function chordModel(
     displayError: undefined,
     view: {
       offsetRadians: 0,
+      chordDisplays: [],
       chordPass: { drew: () => true, renderError: undefined },
     },
     ready: phase === 'ready',
@@ -104,6 +105,37 @@ test('the error terminal is finished rather than pending', () => {
     drawn: 'true',
     phase: 'error',
   })
+})
+
+test('a second failing track adds a line under the first, not another disc', () => {
+  const chordDisplays = [
+    { id: 'a', displayPhase: 'error' as const },
+    { id: 'b', displayPhase: 'ready' as const },
+    { id: 'c', displayPhase: 'error' as const },
+  ]
+  const failing = (id: string) =>
+    chordModel('error', {
+      id,
+      displayError: new Error(`${id} fell over`),
+      view: {
+        offsetRadians: 0,
+        chordDisplays,
+        chordPass: { drew: () => true, renderError: undefined },
+      },
+    })
+  const { container } = render(
+    <svg>
+      <ChordVariantDisplay display={failing('a')} />
+      <ChordVariantDisplay display={failing('c')} />
+    </svg>,
+  )
+  const [first, second] = container.querySelectorAll('[data-display-phase]')
+  expect(first!.querySelector('g[opacity]')?.getAttribute('opacity')).toBe(
+    '0.35',
+  )
+  expect(second!.querySelector('circle')).toBeNull()
+  expect(first!.querySelector('text')?.getAttribute('y')).toBe('0em')
+  expect(second!.querySelector('text')?.getAttribute('y')).toBe('3em')
 })
 
 function bnd(uniqueId: string, start: number, mate: number) {

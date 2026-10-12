@@ -11,10 +11,12 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 // into the circle can satisfy it, and so the SVG-export path and the tests can
 // hand these components a plain object
 export interface ChordDisplayFrameModel {
+  id: string
   error: unknown
   displayError: unknown
   view: {
     offsetRadians: number
+    chordDisplays: readonly { id: string; displayPhase: DisplayStatusPhase }[]
     chordPass: { drew: (cell: ChordCell) => boolean; renderError: unknown }
   }
   chordCell: ChordCell | undefined

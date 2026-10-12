@@ -10,6 +10,7 @@ function truncate(str: string, max: number) {
 
 const DisplayError = observer(function DisplayError({
   model,
+  line,
   onClick,
   onRetry,
 }: {
@@ -18,6 +19,7 @@ const DisplayError = observer(function DisplayError({
     radiusPx: number
     view: { offsetRadians: number }
   }
+  line: number
   onClick?: () => void
   onRetry?: () => void
 }) {
@@ -38,6 +40,8 @@ const DisplayError = observer(function DisplayError({
         radius={model.radiusPx}
         fill={palette.error.light}
         hatchColor={palette.error.main}
+        discOpacity={line === 0 ? 0.35 : 0}
+        textLine={line}
         textRotationDeg={-radToDeg(model.view.offsetRadians)}
         text={
           <>

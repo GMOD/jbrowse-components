@@ -1,6 +1,7 @@
 import type { ChordCell } from './chordMarks.ts'
 import type { ChordEnds, RibbonAngles } from './chordStage.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 export interface RibbonShape {
   kind: 'ribbon'
@@ -28,6 +29,7 @@ export type Shape = RibbonShape | ChordShape
 /** A chord display as the view's canvas and pointer reach it. */
 export interface ChordLayerDisplay {
   id: string
+  displayPhase: DisplayStatusPhase
   /** what the canvas draws for it, while it has anything to draw */
   chordCell: ChordCell | undefined
   /** the feature drawn under a point CSS px from the centre, screen frame */

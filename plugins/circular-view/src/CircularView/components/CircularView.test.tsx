@@ -226,6 +226,7 @@ test('a pointer off every ring reaches the chord under it', () => {
   })
   const display = {
     id: 'd',
+    displayPhase: 'ready' as const,
     chordCell: undefined,
     hitAt: () => undefined,
     clickFeature: (f: { id: () => string }) => {
