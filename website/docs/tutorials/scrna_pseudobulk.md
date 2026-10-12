@@ -27,8 +27,8 @@ the pooled rows.
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 - the zarr plugin, for
-  [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store), which that
-  section loads by URL
+  [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store); that section
+  gives its URL
 
 ## Where the data comes from
 
@@ -237,10 +237,10 @@ The `MultiWiggleZarrAdapter` from
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) reads
 the store, the same adapter [](/docs/tutorials/population_cnv) uses for the 1000
 Genomes panel. The build step writes the cell list, bin size and row colors as
-attributes of the store. The plugin is not in the plugin store yet, so load it
-from `config.json` first, or on Desktop add the same URL as a
+attributes of the store. The plugin is not in the plugin store yet. On Desktop,
+add the URL below as a
 [custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
-`Zarr`:
+`Zarr`; elsewhere, add this `plugins` entry to `config.json`:
 
 ```json
 {

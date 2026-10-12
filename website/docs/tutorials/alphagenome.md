@@ -22,9 +22,9 @@ model's output. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the AlphaGenome plugin, which contributes the adapters these tracks use, the
-  query panel, and the variant right-click item: the sessions below already load
-  it; for your own JBrowse, [load it by URL](#the-alphagenome-plugin)
+- the AlphaGenome plugin, for the adapters these tracks use, the query panel and
+  the variant right-click item. The sessions below already load it, and
+  [loading it by URL](#the-alphagenome-plugin) adds it to your own JBrowse
 
 ## Where the data comes from
 

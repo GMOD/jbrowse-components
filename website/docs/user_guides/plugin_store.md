@@ -8,8 +8,7 @@ guide_category: General usage
 
 Plugins add track types, view types, data adapters and menu items, and some
 bring their own data. How you install one, and how long it stays, depends on
-where you run JBrowse, so start with the question below and follow the link that
-matches.
+where you run JBrowse.
 
 The full catalog, each plugin with its config snippet, is on the
 [plugin store page](/plugin_store). To write your own plugin, see the
@@ -23,24 +22,23 @@ The full catalog, each plugin with its config snippet, is on the
   [the plugin store](#the-plugin-store).
 - **A JBrowse Web site you run**, for every visitor:
   [config.json](#in-configjson).
-- **JBrowse Desktop**: [JBrowse Desktop](#jbrowse-desktop).
+- **JBrowse Desktop**: [Global plugins or the plugin store](#jbrowse-desktop).
 - **A JBrowse component inside your own page**:
   [embedded components](#embedded-components).
 
 ## Is it already loaded?
 
-A hosted config often ships the plugins its tutorials need. **Tools → Plugin
-store** opens the store, and **Installed plugins** at its top lists what this
-session loaded.
+A hosted config often loads the plugins its tutorials need. Open **Tools →
+Plugin store**; **Installed plugins** at the top lists what this session loaded.
 
 <Figure caption="Tools then Plugin store opens the store. Installed plugins lists what is loaded now." src="/img/plugin_store.png" />
 
-If it is listed there, there is nothing to install; if not,
+If the plugin is listed there, there is nothing to install; if not,
 [install it](#the-plugin-store).
 
 ## The plugin store
 
-**Tools → Plugin store**, then type the plugin's name into **Filter plugins**
+Open **Tools → Plugin store**, type the plugin's name into **Filter plugins**
 and click **Install**. JBrowse reloads with the plugin and keeps your views.
 
 <Figure caption="The plugin store filtered to one plugin, with its Install button." src="/img/plugin_store_install.png" />
@@ -57,7 +55,7 @@ Not in the store? [Load it by URL](#a-plugin-not-in-the-store).
 
 ### Keeping a plugin for every visit
 
-The pin beside a plugin in **Installed plugins** keeps it, so JBrowse loads it
+Click the pin beside a plugin in **Installed plugins**, and JBrowse loads it
 every time you open this config in this browser.
 
 <Figure caption="A store plugin in the Installed plugins list, with the pin that keeps it for every visit." src="/img/plugin_store_keep.png" />
@@ -65,15 +63,15 @@ every time you open this config in this browser.
 - The list is per configuration, not per site. A plugin kept on
   `jbrowse.org/code/jb2/main/?config=demos/hg002/config.json` does not load on
   another demo, or on another version of the app.
-- It lives in this browser and nowhere else. A session you share contains none
-  of it, and neither does the same JBrowse opened on another machine.
+- JBrowse stores the list in this browser, so a session you share, or the same
+  JBrowse opened on another machine, starts without these plugins.
 - A kept plugin that did not load this visit (switched off, or skipped after a
   crash) is still a row in **Installed plugins**, with a switch beside it.
 - On the [admin server](/docs/quickstart_adminserver) the store writes to
   `config.json` for every visitor instead, so the pin does not appear there.
 
-A kept plugin loads before anything is on screen, so one that crashes on load
-would otherwise take the app down on every visit. Two things stop that:
+JBrowse loads kept plugins before it draws anything, so a plugin that crashes on
+load would crash the app on every visit. To recover:
 
 - The fatal error dialog offers **Reload without permanent plugins**.
 - If a load never finishes, JBrowse turns the stuck plugins off before the next
@@ -81,43 +79,42 @@ would otherwise take the app down on every visit. Two things stop that:
   plugin and a **Turn back on and reload** button once the culprit is switched
   off.
 
-Adding `?safeMode` to the URL turns off every kept plugin the same way, on
-purpose.
+Adding `?safeMode` to the URL skips every kept plugin for one load.
 
 ## JBrowse Desktop
 
 Desktop has two routes:
 
 - **Tools → Plugin store** inside a session works as in
-  [JBrowse Web](#the-plugin-store). **How long it lasts:** saved into that
-  session file. Other sessions don't load it.
-- **Global plugins...** in the start screen's menu. **How long it lasts:** every
+  [JBrowse Web](#the-plugin-store). **How long it lasts:** as long as that
+  session file; other sessions don't load it.
+- **Global plugins...**, in the start screen's menu, installs a plugin for every
   session on this machine, from the next session you open.
 
 <Figure caption="Global plugins from the start screen menu (1) opens the dialog, whose Add custom plugin (2) takes a UMD build's name and URL (3) or, under Advanced options, an ESM build's URL (4)." src="/img/desktop-global-plugins-steps.png" />
 
 The dialog lists the store's plugins under **Available plugins**, each with an
-**Install** button. A plugin that crashes on load can be switched off there and
-kept, or removed. **Reload without global plugins**, in the same start-screen
-menu, skips the whole list for one launch.
+**Install** button. If a plugin crashes on load, switch it off there to keep it
+installed, or remove it. **Reload without global plugins**, in the same
+start-screen menu, skips the whole list for one launch.
 
 Not in the store? [Load it by URL](#a-plugin-not-in-the-store).
 
 ## A plugin that isn't in the store {#a-plugin-not-in-the-store}
 
 Beta plugins often load by URL before they reach the store, and their tutorials
-give the URL. Where it goes depends on where you are:
+give the URL. Where you enter it depends on where you run JBrowse:
 
 - **JBrowse Desktop**: **Add custom plugin**, in the
   [Global plugins dialog](#jbrowse-desktop) for every session, or in a session's
   plugin store for that session.
 - **The admin server**: **Add custom plugin** in the plugin store, which writes
   it to `config.json`.
-- **JBrowse Web, as a visitor**: no button. Ask the site's admin to add it to
-  [`config.json`](#in-configjson), or open a session link whose
+- **JBrowse Web, as a visitor**: there is no button. Ask the site's admin to add
+  it to [`config.json`](#in-configjson), or open a session link whose
   [`sessionPlugins`](/docs/urlparams#loading-a-plugin-from-a-url) names it.
 
-The **Add custom plugin** form wants different fields for each build:
+The **Add custom plugin** form asks for different fields for each build:
 
 - **a UMD build** (a `.umd.js` file): **Plugin name** and **Plugin URL**
 - **an ESM build**: open **Advanced options**, paste the URL into **ESM build
@@ -144,7 +141,7 @@ An embedded component takes its plugins as a prop; see
 
 | Where you install it                                        | Lasts                                            |
 | ----------------------------------------------------------- | ------------------------------------------------ |
-| Web plugin store                                            | this session, and travels with its share link    |
+| Web plugin store                                            | this session, and is included in its share link  |
 | Web plugin store, [kept](#keeping-a-plugin-for-every-visit) | every visit to this config, in this browser only |
 | Web plugin store on the admin server                        | written to `config.json`, for every visitor      |
 | Desktop plugin store                                        | the open session file                            |

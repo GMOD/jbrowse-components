@@ -18,9 +18,9 @@ transcript, and Mol\* draws the structures.
 
 ## Prerequisites
 
-- the protein3d plugin: the hosted config the links open already loads it; for
-  your own JBrowse,
-  [install it from the plugin store](/docs/user_guides/plugin_store)
+- the protein3d plugin. The hosted config the links open already loads it, and
+  [installing it from the plugin store](/docs/user_guides/plugin_store) adds it
+  to your own JBrowse
 
 ## Where the data comes from
 

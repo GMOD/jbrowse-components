@@ -35,12 +35,14 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
 
 ## Prerequisites
 
-- the GraphGenomeView plugin: the HPRC page's launches and the hosted HPRC
-  config the sessions below open already load it; for your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
-- the TandemRepeat plugin, for [Which copy is which](#which-copy-is-which): the
-  hosted HPRC config already loads it; for your own JBrowse,
-  [install it from the plugin store](/docs/user_guides/plugin_store)
+- the GraphGenomeView plugin. The HPRC page's launches and the hosted HPRC
+  config the sessions below open already load it, and
+  [installing it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
+  adds it to your own JBrowse
+- the TandemRepeat plugin, for [Which copy is which](#which-copy-is-which). The
+  hosted HPRC config already loads it, and
+  [installing it from the plugin store](/docs/user_guides/plugin_store) adds it
+  to your own JBrowse
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
 - for your own array in [Which copy is which](#which-copy-is-which):

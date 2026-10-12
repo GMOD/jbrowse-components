@@ -19,9 +19,9 @@ the genome.
 
 ## Prerequisites
 
-- the protein3d and msaview plugins: genomes.jbrowse.org already loads both; for
-  your own JBrowse, see
+- the protein3d and msaview plugins. genomes.jbrowse.org already loads them, and
   [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
+  covers your own JBrowse
 
 ## Where the data comes from
 
@@ -200,7 +200,7 @@ in the linear view you launched from, then narrow it to one record:
 
 ## Adding the plugins to your own instance
 
-Both are in the plugin store as **Protein3d** and **MSAView**;
+The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
 [](/docs/user_guides/plugin_store) covers each way to install them.
 
 The protein3d and msaview plugins add view types launched from a gene's

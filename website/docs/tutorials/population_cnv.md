@@ -18,8 +18,8 @@ time, so the second half of the page packs the values into one Zarr store.
 - a JBrowse instance to paste a track into (see the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
-- the zarr plugin, for [the Zarr store](#a-zarr-store-for-the-whole-panel),
-  which that section loads by URL
+- the zarr plugin, for [the Zarr store](#a-zarr-store-for-the-whole-panel); that
+  section gives its URL
 - `node` 24 or newer, to
   [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs)
 - QuicK-mer2 and a 30x alignment, to add
@@ -248,10 +248,10 @@ samples by bins, read in two metadata requests and one chunk.
 hosting, and
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
 `MultiWiggleZarrAdapter` that reads them with the same display settings as the
-BigWig track. The plugin is in beta and not yet in the plugin store, so load its
-hosted bundle with a `plugins` entry, or on Desktop add the same URL as a
+BigWig track. The plugin is in beta and not yet in the plugin store. On Desktop,
+add the URL below as a
 [custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
-`Zarr`:
+`Zarr`; elsewhere, add this `plugins` entry to `config.json`:
 
 ```json
 {
