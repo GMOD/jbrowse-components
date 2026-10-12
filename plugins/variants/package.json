@@ -34,8 +34,8 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/tabix": "^3.10.1",
-    "@gmod/vcf": "^7.2.0",
+    "@gmod/tabix": "^3.10.2",
+    "@gmod/vcf": "^7.3.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",

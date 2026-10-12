@@ -92,7 +92,7 @@
     "@jbrowse/browser-test-utils": "workspace:*",
     "@jbrowse/cli": "workspace:*",
     "@jbrowse/display-test-utils": "workspace:^",
-    "generic-filehandle2": "^2.5.0",
+    "generic-filehandle2": "^2.5.1",
     "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0"
   }
