@@ -38,7 +38,11 @@ import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
 import { featureColorViews } from './shared/featureColorViews.ts'
 
-import type { FeatureDataResult } from './RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPositioning.ts'
+import type {
+  FeatureDataResult,
+  FlatbushItem,
+} from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -77,24 +81,24 @@ export interface FeatureTablesArgs {
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
 
-// A primitive's row in the output tables, where it belongs to a placed
-// feature: the packer leaves a feature past its row ceiling at `OFFSCREEN_Y`,
-// and a table row a million px up is no row.
-interface PlacedRows {
-  // Indices into the lane arrays whose owner the layout placed.
-  keep: (featureIndices: Uint32Array) => number[]
-  // A lane's feature index to its row in the `features` table.
-  feature: (laneFeatureIndex: number) => number
-}
-
-function placedRows(d: FeatureDataResult): PlacedRows {
+// The packer leaves a feature past its row ceiling at `OFFSCREEN_Y`, and a
+// table row a million px up is no row: those features and their primitives
+// leave every table. `row` maps a lane's feature index to its row in the
+// `features` table, -1 for one left out.
+function placedFeatures(d: FeatureDataResult) {
+  const items: FlatbushItem[] = []
   const row: number[] = []
-  let next = 0
   for (const item of d.flatbushItems) {
-    row.push(isPlacedRow(item.topPx) ? next++ : -1)
+    row.push(isPlacedRow(item.topPx) ? items.length : -1)
+    if (isPlacedRow(item.topPx)) {
+      items.push(item)
+    }
   }
   return {
-    keep: featureIndices => {
+    items,
+    truncated: d.flatbushItems.length - items.length,
+    featureIndex: new Map(items.map((item, i) => [item.featureId, i])),
+    keep: (featureIndices: Uint32Array) => {
       const keep: number[] = []
       for (let i = 0; i < featureIndices.length; i++) {
         if (row[featureIndices[i]!]! >= 0) {
@@ -103,9 +107,11 @@ function placedRows(d: FeatureDataResult): PlacedRows {
       }
       return keep
     },
-    feature: i => row[i]!,
+    feature: (laneFeatureIndex: number) => row[laneFeatureIndex]!,
   }
 }
+
+type PlacedFeatures = ReturnType<typeof placedFeatures>
 
 function take<T>(lane: ArrayLike<T>, keep: readonly number[]) {
   return keep.map(i => lane[i]!)
@@ -119,7 +125,7 @@ function take<T>(lane: ArrayLike<T>, keep: readonly number[]) {
 function chevrons(
   d: FeatureDataResult,
   lines: readonly number[],
-  rows: PlacedRows,
+  rows: PlacedFeatures,
   bpPerPx: number,
 ) {
   const out = {
@@ -151,7 +157,7 @@ function chevrons(
  * The strand arrows off feature ends where the display draws them: a feature
  * narrower on screen than `arrowDraws` allows gets none.
  */
-function arrows(d: FeatureDataResult, rows: PlacedRows, bpPerPx: number) {
+function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
   const out = {
     position: [] as number[],
     y: [] as number[],
@@ -189,7 +195,10 @@ function arrows(d: FeatureDataResult, rows: PlacedRows, bpPerPx: number) {
  * into `features`. The layout is the display's under its `heightMode` and
  * `height`: `fit` (the default) runs the display's fit ladder, so the labels,
  * isoforms and row heights the browser gives up to fit the track are given up
- * here too, and `grow` places every feature at full size.
+ * here too, and `grow` places every feature at full size. A feature the
+ * packer could not place within its 10000 px row ceiling is left out of every
+ * table and counted in `truncated`; the legend keys what the worker painted,
+ * such a feature included, as the browser's key does.
  */
 export async function featureTables(
   pluginManager: PluginManager,
@@ -296,6 +305,69 @@ export async function featureTables(
     rpcDataMap: new Map([[0, raw]]),
   })
   const d = resolveMapColors(laid, palette, colors.fieldPalette).get(0)!
+  const scales = featureColorKey(colors, [raw])
+  const key = scales.find(scale => scale.kind === 'categorical')
+  const entries = key?.entries.filter(e => e.color !== undefined) ?? []
+  return {
+    ...laidOutTables(d, {
+      region,
+      widthPx,
+      bpPerPx,
+      hideChevrons: !readConfObject(conf, 'displayDirectionalChevrons'),
+      labels: {
+        showLabels: stage.showLabels,
+        showDescriptions: stage.showDescriptions,
+        showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
+        fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
+        colors: labelColors(palette),
+      },
+    }),
+    legend: {
+      label: entries.map(e => e.label),
+      color: entries.map(e => cssColorToHex(e.color!)),
+    },
+    legendTitle: key?.title ?? '',
+    ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
+    /** The px sizes the display draws its fixed-size marks at. */
+    glyph: {
+      fontSize,
+      arrowLength: ARROW_LENGTH_PX,
+      arrowStemHalfHeight: STEM_HALF_H_PX,
+      chevronWidth: CHEVRON_W_PX,
+      chevronHeight: CHEVRON_H_PX,
+    },
+    bpPerPx,
+  }
+}
+
+/**
+ * One laid-out region as tables, every `feature` column an index into
+ * `features`: the features the packer placed, their boxes, lines, chevrons,
+ * arrows and transcripts, and the labels `labels` says render. Pure in `d`,
+ * so a test stands a region up without an adapter.
+ */
+export function laidOutTables(
+  d: FeatureDataResult,
+  {
+    region,
+    widthPx,
+    bpPerPx,
+    hideChevrons,
+    labels: labelContext,
+  }: {
+    region: { start: number; end: number }
+    widthPx: number
+    bpPerPx: number
+    hideChevrons: boolean
+    labels: LabelRenderContext
+  },
+) {
+  const rows = placedFeatures(d)
+  const { items, featureIndex } = rows
+  const subfeatures = d.subfeatureInfos.filter(s =>
+    featureIndex.has(s.parentFeatureId),
+  )
+  const subfeatureIndex = new Map(subfeatures.map((s, i) => [s.featureId, i]))
   const labels = {
     text: [] as string[],
     kind: [] as string[],
@@ -305,13 +377,6 @@ export async function featureTables(
     feature: [] as number[],
     subfeature: [] as number[],
   }
-  const rows = placedRows(d)
-  const items = d.flatbushItems.filter(item => isPlacedRow(item.topPx))
-  const featureIndex = new Map(items.map((item, i) => [item.featureId, i]))
-  const subfeatures = d.subfeatureInfos.filter(s =>
-    featureIndex.has(s.parentFeatureId),
-  )
-  const subfeatureIndex = new Map(subfeatures.map((s, i) => [s.featureId, i]))
   forEachDisplayLabel(
     [
       {
@@ -323,13 +388,7 @@ export async function featureTables(
       },
     ],
     new Map([[0, d]]),
-    {
-      showLabels: stage.showLabels,
-      showDescriptions: stage.showDescriptions,
-      showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
-      fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
-      colors: labelColors(palette),
-    },
+    labelContext,
     (featureId, placed) => {
       for (const p of placed) {
         if (p.kind !== 'more') {
@@ -343,7 +402,7 @@ export async function featureTables(
           labels.feature.push(
             featureIndex.get(
               sub === undefined ? featureId : subfeatures[sub]!.parentFeatureId,
-            ) ?? -1,
+            )!,
           )
         }
       }
@@ -352,10 +411,6 @@ export async function featureTables(
 
   const rects = rows.keep(d.rectFeatureIndices)
   const lines = rows.keep(d.lineFeatureIndices)
-  const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
-  const scales = featureColorKey(colors, [raw])
-  const key = scales.find(scale => scale.kind === 'categorical')
-  const entries = key?.entries.filter(e => e.color !== undefined) ?? []
   return {
     features: {
       id: items.map(item => item.featureId),
@@ -396,22 +451,9 @@ export async function featureTables(
     chevrons: chevrons(d, hideChevrons ? [] : lines, rows, bpPerPx),
     arrows: arrows(d, rows, bpPerPx),
     labels,
-    legend: {
-      label: entries.map(e => e.label),
-      color: entries.map(e => cssColorToHex(e.color!)),
-    },
-    legendTitle: key?.title ?? '',
-    ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
-    /** The px sizes the display draws its fixed-size marks at. */
-    glyph: {
-      fontSize,
-      arrowLength: ARROW_LENGTH_PX,
-      arrowStemHalfHeight: STEM_HALF_H_PX,
-      chevronWidth: CHEVRON_W_PX,
-      chevronHeight: CHEVRON_H_PX,
-    },
     height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
-    bpPerPx,
+    /** Features the packer could not place, which no table lists. */
+    truncated: rows.truncated,
   }
 }
 

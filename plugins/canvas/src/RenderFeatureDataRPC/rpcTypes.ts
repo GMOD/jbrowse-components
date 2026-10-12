@@ -1,3 +1,4 @@
+import type { FieldColorValues } from '../shared/fieldColorCandidates.ts'
 import type { GroupByCandidate } from './groupByCandidates.ts'
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
@@ -258,11 +259,7 @@ export interface HitItemBase {
  * each value a box carries with the section its record files under, up to
  * `MAX_LEGEND_CANDIDATES`: `rowIndex` indexes `rows`.
  */
-export interface ColorValues {
-  // The field the values are of, which a scale painting another field skips.
-  field: string
-  values: string[]
-  painted: { rowIndex: number; valueIndex: number }[]
+export interface ColorValues extends FieldColorValues {
   rows: SectionStamp[]
 }
 

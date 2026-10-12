@@ -96,10 +96,6 @@ function colorClassArray(items: { colorClass: number }[]) {
   return optionalLane(items, Uint8Array, i => i.colorClass, LITERAL)
 }
 
-function colorValueArray(items: { colorValue?: number }[]) {
-  return optionalLane(items, Uint32Array, i => i.colorValue ?? 0, 0)
-}
-
 // Filters a per-feature accumulator down to the visible bp window and packs the
 // parallel typed arrays the GPU/Canvas2D renderers consume.
 export function packRenderArrays(
@@ -129,7 +125,12 @@ export function packRenderArrays(
   // dense-pileup regime per FEATURE.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectColorClasses = colorClassArray(visibleRects)
-  const rectColorValues = colorValueArray(visibleRects)
+  const rectColorValues = optionalLane(
+    visibleRects,
+    Uint32Array,
+    r => r.colorValue ?? 0,
+    0,
+  )
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
   const rectLabelRows = labelRowArray(visibleRects)
   const rectChildOrdinals = childOrdinalArray(visibleRects)

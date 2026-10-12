@@ -23,7 +23,10 @@ display's px, down from the track's top, and `feature` is a 0-based index
 into `features`. The layout is the display's under its `heightMode` and
 `height`: `fit` (the default) runs the display's fit ladder, so the labels,
 isoforms and row heights the browser gives up to fit the track are given up
-here too, and `grow` places every feature at full size.
+here too, and `grow` places every feature at full size. A feature the
+packer could not place within its 10000 px row ceiling is left out of every
+table and counted in `truncated`; the legend keys what the worker painted,
+such a feature included, as the browser's key does.
 
 ```js
 // type signature

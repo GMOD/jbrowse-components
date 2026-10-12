@@ -6,10 +6,24 @@ import {
 } from '@jbrowse/core/util/legendCandidates'
 
 import { fieldColorCandidates } from '../../shared/fieldColorCandidates.ts'
-import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
+
+// Whether a region-local row's blocks wear their own colors: the row is drawn
+// and no row color paints over them.
+function rowPaintsOwnColors(
+  rowIndexByValue: ReadonlyMap<string, number>,
+  rowColorsByIndex: readonly (number | undefined)[],
+) {
+  return (
+    data: Pick<MultiRowRegionData, 'rowValues'>,
+    rowValueIndex: number,
+  ) => {
+    const row = rowIndexByValue.get(data.rowValues[rowValueIndex]!)
+    return row !== undefined && rowColorsByIndex[row] === undefined
+  }
+}
 
 const FEATURE_NAME = 'name'
 
@@ -64,21 +78,13 @@ export function buildColorLegend(
   if (everyRowOverridden(rowColorsByIndex)) {
     return []
   }
+  const rowPaints = rowPaintsOwnColors(rowIndexByValue, rowColorsByIndex)
   const [key] = derivedColorScale(
     regions,
-    data => {
-      const rowForLocal = resolveLocalRowIndices(
-        data.rowValues,
-        rowIndexByValue,
-      )
-      return {
-        candidates: data.legendCandidates,
-        rowPaintsCandidateColor: rowValueIndex => {
-          const row = rowForLocal[rowValueIndex]
-          return row !== undefined && rowColorsByIndex[row] === undefined
-        },
-      }
-    },
+    data => ({
+      candidates: data.legendCandidates,
+      rowPaintsCandidateColor: rowValueIndex => rowPaints(data, rowValueIndex),
+    }),
     {
       id: 'features',
       field: categoricalField(FEATURE_NAME, { domain }),
@@ -119,10 +125,10 @@ export function buildFieldColorLegend(
   }
   const [scale] = derivedColorScale(
     regions,
-    fieldColorCandidates(field, (data, rowValueIndex) => {
-      const row = rowIndexByValue.get(data.rowValues[rowValueIndex]!)
-      return row !== undefined && rowColorsByIndex[row] === undefined
-    }),
+    fieldColorCandidates<MultiRowRegionData>(
+      field,
+      rowPaintsOwnColors(rowIndexByValue, rowColorsByIndex),
+    ),
     { id: 'features', field, maxItems: MAX_LEGEND_ENTRIES },
   )
   return scale?.kind === 'categorical'

@@ -10,16 +10,6 @@ export function regionWithDeltas(data: MultiRowRegionData | undefined) {
     : undefined
 }
 
-// Region-local partition value to global display-row index (undefined = a row
-// not currently shown), so the per-feature lookup in the hot loop is an array
-// index rather than a string-keyed Map.get.
-export function resolveLocalRowIndices(
-  rowValues: string[],
-  rowIndexByValue: ReadonlyMap<string, number>,
-): (number | undefined)[] {
-  return rowValues.map(v => rowIndexByValue.get(v))
-}
-
 type OwnColorData = Pick<
   MultiRowRegionData,
   'featureColors' | 'rectColorValues' | 'colorValues'

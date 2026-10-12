@@ -53,8 +53,7 @@ function isFieldTint(colorClass: number) {
 /**
  * The two codon stripes over a box of `css`, packed: the light tint for even
  * residues, the mid tint for odd. The worker bakes them over a literal box,
- * and the main thread derives them for a themed or field-painted one, so this
- * is the one place the lightening is spelled.
+ * and the main thread derives them for a themed or field-painted one.
  */
 export function codonTints(css: string): readonly [light: number, mid: number] {
   const hex = formatHEX(parseCssColor(css))

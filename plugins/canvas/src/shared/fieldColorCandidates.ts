@@ -23,10 +23,7 @@ export interface FieldColorValues {
  */
 export function fieldColorCandidates<
   T extends { colorValues?: FieldColorValues },
->(
-  field: CategoricalField,
-  rowPaints: (data: T, rowIndex: number) => boolean = () => true,
-) {
+>(field: CategoricalField, rowPaints: (data: T, rowIndex: number) => boolean) {
   const packed = new Map<string, number>()
   const colorOf = (key: string) => {
     let color = packed.get(key)

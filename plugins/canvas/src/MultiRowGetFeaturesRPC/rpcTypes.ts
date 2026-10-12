@@ -1,5 +1,6 @@
 import type { WorkerColor } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FieldColorValues } from '../shared/fieldColorCandidates.ts'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 
@@ -26,11 +27,7 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
  * feature carries with the partition row it lands in (`rowIndex` indexes
  * `rowValues`), up to `MAX_LEGEND_CANDIDATES`.
  */
-export interface MultiRowColorValues {
-  field: string
-  values: string[]
-  painted: { rowIndex: number; valueIndex: number }[]
-}
+export type MultiRowColorValues = FieldColorValues
 
 export interface RowsFieldCandidateValues {
   field: string
