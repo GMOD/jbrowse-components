@@ -42,14 +42,19 @@ lifted split reads and SV-size deletions, and its consequence about
   function from the feature (`readCategoryBitsOf`).
 - **`filter.svSignal: 'only' | 'exclude'`, judged per chain.** A chain counts
   when any record counts, so a split read's concordant mate stays with it.
+  The chain is the region fetch's, as it was for `properPairs`: in a
+  multi-region view a mate in another region counts by what that region
+  holds.
   `properPairs` leaves the schema, the types, `READ_CATEGORIES` and the menus
   ("SV evidence", "Only SV evidence", "Hide SV evidence").
 - **The `svSignal` sort is tiered** (`svSignalTier`): split reads, then SV-size
-  indels, then discordant reads, then the rest. A read takes the highest tier
-  any region's copy of it has. `split` still lifts split reads alone.
-- **The breakpoint split view connects the reads the mask admits**
-  (`isEvidenceRead`), read by read: a curve to a split read's concordant mate
-  would show no rearrangement.
+  indels, then discordant reads, then the rest. `split` still lifts split
+  reads alone.
+- **The breakpoint split view takes the reads the mask admits as entries**
+  (`isEvidenceRead`), read by read, and keeps its link rule
+  (`isEvidenceLink`): a split junction always, a mate link only for a pair
+  that fails `isConcordantPairRead`. A curve between two mates of a proper
+  pair would show no rearrangement, whatever else the mates carry.
 - **jb2export takes `svSignal:only|exclude`**, and an old `properPairs:`
   modifier is an error naming `svSignal:only`. The unknown-modifier warning
   would scroll past and leave the script an unfiltered figure.
@@ -75,9 +80,21 @@ lifted split reads and SV-size deletions, and its consequence about
 - A v5-beta config's `filter.properPairs` loads with ADR-221's console line
   and filters nothing. No `retired` lift: `exclude` proper pairs and `only` SV
   evidence differ on the rows above.
-- The split view no longer connects a secondary record that lacks 0x2, and
-  draws the mate link of a concordant pair whose two reads are both evidence,
-  which it dropped before.
+- The split view admits two kinds of entry it skipped before:
+  - an unpaired 0x800 record with no SA tag, which now joins its primary's
+    junction where the source dropped the supplementary's SA (a new curve,
+    pinned in `readChains.test.ts`);
+  - a concordant mate carrying an SV-size indel, which enters the chain and
+    can take a hover box, but draws no curve, since the link rule drops its
+    mate link.
+
+  A secondary record lacking 0x2 now stays out as an entry. That changes only
+  hover boxing, since `partitionReadGroup` already dropped secondaries from
+  every connection.
+- jb2export's breakpoint images (`breakpointInit.ts`) and joined images
+  (`applyDisplayOpts`) default to `sort: 'svSignal'`, so on paired-end data
+  discordant reads now sit above the plain ones, under the split reads and
+  SV-size indels, and an exported figure's rows can move.
 - LGVSyntenyDisplay's `filter.svSignal` answers by SV-size indels; its menu
   still offers no read category.
 - The category filters still thin the coverage band; the proposal's Idea 2
