@@ -51,7 +51,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws `scales.y.rules`, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's color-mapped rows and a color ramp do not. |
 | <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | `scales.y.rules`, read off the live nodes: a snapshot strips a slot at its default, and a rule at 0 is one. |
 
-<span data-pagefind-ignore>From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-minscorebound">[`minScoreBound`](../scoreaxismixin#getter-minscorebound)</span>, <span id="getter-maxscorebound">[`maxScoreBound`](../scoreaxismixin#getter-maxscorebound)</span>, <span id="getter-hasmanualscorebounds">[`hasManualScoreBounds`](../scoreaxismixin#getter-hasmanualscorebounds)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>9 inherited getters from one model</summary>
+
+From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-defaultscoredomain">[`defaultScoreDomain`](../scoreaxismixin#getter-defaultscoredomain)</span>, <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscalerange">[`autoscaleRange`](../scoreaxismixin#getter-autoscalerange)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../scoreaxismixin#getter-axisreacheszero)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-minscorebound">[`minScoreBound`](../scoreaxismixin#getter-minscorebound)</span>, <span id="getter-maxscorebound">[`maxScoreBound`](../scoreaxismixin#getter-maxscorebound)</span>, <span id="getter-hasmanualscorebounds">[`hasManualScoreBounds`](../scoreaxismixin#getter-hasmanualscorebounds)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
+
+</details>
 
 ## Actions
 

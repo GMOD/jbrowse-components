@@ -35,7 +35,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-queueofdialogs">**queueOfDialogs**</span><br><code>[DialogComponentType, Record&lt;string, unknown&gt;][]</code> |  |
 | <span id="volatile-preferencesoverrides">**preferencesOverrides**</span><br><code>ObservableMap&lt;string, unknown&gt;</code> | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI.<br><br>An `observable.map` (not a plain object reassigned wholesale) so each preference is its own tracked key: writing one (`setScrollZoom`) can't invalidate a reader of another. A single spread-replaced object made every setter wake every reader, so toggling scroll-to-zoom re-fetched every track.<br><br>`deep: false` keeps an object-valued preference a plain object rather than a MobX Proxy, which V8's structured-clone serializer rejects. The map still notifies per key on `set`, so shallow values lose no reactivity — and nothing can mutate a preference in place, because `setPreferenceOverride` freezes what it stores. |
 
-<span data-pagefind-ignore>From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`snackbarMessages`](../snackbarmodel#volatile-snackbarmessages)</span>, <span id="volatile-errordialog">[`errorDialog`](../snackbarmodel#volatile-errordialog)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited volatiles from one model</summary>
+
+From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`snackbarMessages`](../snackbarmodel#volatile-snackbarmessages)</span>, <span id="volatile-errordialog">[`errorDialog`](../snackbarmodel#volatile-errordialog)</span>
+
+</details>
 
 ## Getters
 
@@ -55,7 +60,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value. |
 | <span id="getter-numbergrouping">**numberGrouping**</span><br><code>boolean</code> | resolved thousand-separator preference. Read for display in the Preferences dialog; the formatter itself reads a plain module variable set at startup in each realm (see `setNumberGrouping`), because worker- built strings can't see a main-thread observable. |
 
-<span data-pagefind-ignore>From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`snackbarMessageSet`](../snackbarmodel#getter-snackbarmessageset)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited getter from one model</summary>
+
+From [SnackbarModel](../snackbarmodel): <span id="getter-snackbarmessageset">[`snackbarMessageSet`](../snackbarmodel#getter-snackbarmessageset)</span>
+
+</details>
 
 ## Methods
 
@@ -90,4 +100,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-queuedialog">**queueDialog**</span><br><code>(doneCallback: DoneCallback) =&gt; void</code> |  |
 | <span id="action-removedialog">**removeDialog**</span><br><code>(entry: [DialogComponentType, Record&lt;string, unknown&gt;]) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [SnackbarModel](../snackbarmodel): <span id="action-notify">[`notify`](../snackbarmodel#action-notify)</span>, <span id="action-notifyerror">[`notifyError`](../snackbarmodel#action-notifyerror)</span>, <span id="action-seterrordialog">[`setErrorDialog`](../snackbarmodel#action-seterrordialog)</span>, <span id="action-pushsnackbarmessage">[`pushSnackbarMessage`](../snackbarmodel#action-pushsnackbarmessage)</span>, <span id="action-popsnackbarmessage">[`popSnackbarMessage`](../snackbarmodel#action-popsnackbarmessage)</span>, <span id="action-removesnackbarmessage">[`removeSnackbarMessage`](../snackbarmodel#action-removesnackbarmessage)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>6 inherited actions from one model</summary>
+
+From [SnackbarModel](../snackbarmodel): <span id="action-notify">[`notify`](../snackbarmodel#action-notify)</span>, <span id="action-notifyerror">[`notifyError`](../snackbarmodel#action-notifyerror)</span>, <span id="action-seterrordialog">[`setErrorDialog`](../snackbarmodel#action-seterrordialog)</span>, <span id="action-pushsnackbarmessage">[`pushSnackbarMessage`](../snackbarmodel#action-pushsnackbarmessage)</span>, <span id="action-popsnackbarmessage">[`popSnackbarMessage`](../snackbarmodel#action-popsnackbarmessage)</span>, <span id="action-removesnackbarmessage">[`removeSnackbarMessage`](../snackbarmodel#action-removesnackbarmessage)</span>
+
+</details>

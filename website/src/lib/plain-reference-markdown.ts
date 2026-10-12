@@ -25,8 +25,9 @@ export function plainReferenceMarkdown(markdown: string) {
         ? inlineDialogBody(body)
         : `${trigger}: ${inlineDialogBody(body)}`,
     )
+    .replaceAll(/<summary>(.*?)<\/summary>/g, '$1:')
+    .replaceAll(/<\/?details\b[^>]*>\n?/g, '')
     .replaceAll(/<span id="[^"]*">([\s\S]*?)<\/span>/g, '$1')
-    .replaceAll('<span data-pagefind-ignore>', '')
     .replaceAll('</span>', '')
     .replaceAll('<!-- prettier-ignore -->\n', '')
 }

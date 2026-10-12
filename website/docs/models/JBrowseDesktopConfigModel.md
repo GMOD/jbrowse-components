@@ -13,8 +13,18 @@ JBrowseDesktopConfigModel declares no members of its own — it composes the mod
 
 ## Getters
 
-<span data-pagefind-ignore>From [AppCoreJBrowseModel](../appcorejbrowsemodel): <span id="getter-assemblynames">[`assemblyNames`](../appcorejbrowsemodel#getter-assemblynames)</span>, <span id="getter-rpcmanager">[`rpcManager`](../appcorejbrowsemodel#getter-rpcmanager)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited getters from one model</summary>
+
+From [AppCoreJBrowseModel](../appcorejbrowsemodel): <span id="getter-assemblynames">[`assemblyNames`](../appcorejbrowsemodel#getter-assemblynames)</span>, <span id="getter-rpcmanager">[`rpcManager`](../appcorejbrowsemodel#getter-rpcmanager)</span>
+
+</details>
 
 ## Actions
 
-<span data-pagefind-ignore>From [AppCoreJBrowseModel](../appcorejbrowsemodel): <span id="action-addassemblyconf">[`addAssemblyConf`](../appcorejbrowsemodel#action-addassemblyconf)</span>, <span id="action-removeassemblyconf">[`removeAssemblyConf`](../appcorejbrowsemodel#action-removeassemblyconf)</span>, <span id="action-addtrackconf">[`addTrackConf`](../appcorejbrowsemodel#action-addtrackconf)</span>, <span id="action-addconnectionconf">[`addConnectionConf`](../appcorejbrowsemodel#action-addconnectionconf)</span>, <span id="action-deleteconnectionconf">[`deleteConnectionConf`](../appcorejbrowsemodel#action-deleteconnectionconf)</span>, <span id="action-deletetrackconf">[`deleteTrackConf`](../appcorejbrowsemodel#action-deletetrackconf)</span>, <span id="action-updatetrackconf">[`updateTrackConf`](../appcorejbrowsemodel#action-updatetrackconf)</span>, <span id="action-addplugin">[`addPlugin`](../appcorejbrowsemodel#action-addplugin)</span>, <span id="action-removeplugin">[`removePlugin`](../appcorejbrowsemodel#action-removeplugin)</span>, <span id="action-setdefaultsessionconf">[`setDefaultSessionConf`](../appcorejbrowsemodel#action-setdefaultsessionconf)</span>, <span id="action-addinternetaccountconf">[`addInternetAccountConf`](../appcorejbrowsemodel#action-addinternetaccountconf)</span>, <span id="action-deleteinternetaccountconf">[`deleteInternetAccountConf`](../appcorejbrowsemodel#action-deleteinternetaccountconf)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>12 inherited actions from one model</summary>
+
+From [AppCoreJBrowseModel](../appcorejbrowsemodel): <span id="action-addassemblyconf">[`addAssemblyConf`](../appcorejbrowsemodel#action-addassemblyconf)</span>, <span id="action-removeassemblyconf">[`removeAssemblyConf`](../appcorejbrowsemodel#action-removeassemblyconf)</span>, <span id="action-addtrackconf">[`addTrackConf`](../appcorejbrowsemodel#action-addtrackconf)</span>, <span id="action-addconnectionconf">[`addConnectionConf`](../appcorejbrowsemodel#action-addconnectionconf)</span>, <span id="action-deleteconnectionconf">[`deleteConnectionConf`](../appcorejbrowsemodel#action-deleteconnectionconf)</span>, <span id="action-deletetrackconf">[`deleteTrackConf`](../appcorejbrowsemodel#action-deletetrackconf)</span>, <span id="action-updatetrackconf">[`updateTrackConf`](../appcorejbrowsemodel#action-updatetrackconf)</span>, <span id="action-addplugin">[`addPlugin`](../appcorejbrowsemodel#action-addplugin)</span>, <span id="action-removeplugin">[`removePlugin`](../appcorejbrowsemodel#action-removeplugin)</span>, <span id="action-setdefaultsessionconf">[`setDefaultSessionConf`](../appcorejbrowsemodel#action-setdefaultsessionconf)</span>, <span id="action-addinternetaccountconf">[`addInternetAccountConf`](../appcorejbrowsemodel#action-addinternetaccountconf)</span>, <span id="action-deleteinternetaccountconf">[`deleteInternetAccountConf`](../appcorejbrowsemodel#action-deleteinternetaccountconf)</span>
+
+</details>

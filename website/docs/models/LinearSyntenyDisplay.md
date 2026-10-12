@@ -52,7 +52,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 | <span id="property-hiddenfeatureids">**hiddenFeatureIds**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hiddenFeatureIds: types.stripDefault(types.array(types.string),…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hiddenFeatureIds: types.stripDefault(types.array(types.string), [])</code></pre></dialog></span> |  |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited property from one model</summary>
+
+From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
+
+</details>
 
 ## Volatiles
 
@@ -66,15 +71,20 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-clickedfeatureuniqueid">**clickedFeatureUniqueId**</span><br><code>string &#124; undefined</code> | Clicked twin of `hoveredInstanceIdx`, held as the adapter's own feature id rather than an offset: the click opens the details drawer, which resizes the view and refetches, and an offset cannot survive that. |
 | <span id="volatile-contextmenuanchor">**contextMenuAnchor**</span><br><code>ClickCoord &#124; undefined</code> |  |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../basedisplay#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../basedisplay#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../basedisplay#volatile-statusprogress)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>12 inherited volatiles from 5 models</summary>
 
-<span data-pagefind-ignore>From [ComparativeFetchMixin](../comparativefetchmixin): <span id="volatile-assembliesswapped">[`assembliesSwapped`](../comparativefetchmixin#volatile-assembliesswapped)</span></span>
+From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../basedisplay#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../basedisplay#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../basedisplay#volatile-statusprogress)</span>
 
-<span data-pagefind-ignore>From [KeyedFetchMixin](../keyedfetchmixin): <span id="volatile-loadedfetchkey">[`loadedFetchKey`](../keyedfetchmixin#volatile-loadedfetchkey)</span></span>
+From [ComparativeFetchMixin](../comparativefetchmixin): <span id="volatile-assembliesswapped">[`assembliesSwapped`](../comparativefetchmixin#volatile-assembliesswapped)</span>
 
-<span data-pagefind-ignore>From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSignal`](../fetchmixin#volatile-activesignal)</span>, <span id="volatile-fetchgeneration">[`fetchGeneration`](../fetchmixin#volatile-fetchgeneration)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../fetchmixin#volatile-reloadcounter)</span>, <span id="volatile-statuswindow">[`statusWindow`](../fetchmixin#volatile-statuswindow)</span>, <span id="volatile-fetchcanceled">[`fetchCanceled`](../fetchmixin#volatile-fetchcanceled)</span>, <span id="volatile-fetchrotation">[`fetchRotation`](../fetchmixin#volatile-fetchrotation)</span></span>
+From [KeyedFetchMixin](../keyedfetchmixin): <span id="volatile-loadedfetchkey">[`loadedFetchKey`](../keyedfetchmixin#volatile-loadedfetchkey)</span>
 
-<span data-pagefind-ignore>From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderread">[`adapterHeaderRead`](../lodtierinfomixin#volatile-adapterheaderread)</span></span>
+From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSignal`](../fetchmixin#volatile-activesignal)</span>, <span id="volatile-fetchgeneration">[`fetchGeneration`](../fetchmixin#volatile-fetchgeneration)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../fetchmixin#volatile-reloadcounter)</span>, <span id="volatile-statuswindow">[`statusWindow`](../fetchmixin#volatile-statuswindow)</span>, <span id="volatile-fetchcanceled">[`fetchCanceled`](../fetchmixin#volatile-fetchcanceled)</span>, <span id="volatile-fetchrotation">[`fetchRotation`](../fetchmixin#volatile-fetchrotation)</span>
+
+From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderread">[`adapterHeaderRead`](../lodtierinfomixin#volatile-adapterheaderread)</span>
+
+</details>
 
 ## Getters
 
@@ -122,15 +132,20 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-ribboncell">**ribbonCell**</span><br><code>SyntenyCell &#124; undefined</code> | This display's ribbons as the band's backend holds them. Built here rather than in the level's map so the wrapper's identity is this display's: a sibling's refetch rebuilds that map, and a fresh wrapper per entry would re-upload every track on it. |
 | <span id="getter-outlinecell">**outlineCell**</span><br><code>SyntenyCell &#124; undefined</code> | The clicked ribbon's outline cell, or nothing while no ribbon is selected. Its identity changes on a selection, a refetch and a recolor, which is when the packed bytes it copies out stop describing it. A pan or a hover leaves it unchanged, because `clickedFeatureId` is a separate computed. |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>26 inherited getters from 5 models</summary>
 
-<span data-pagefind-ignore>From [ComparativeFetchMixin](../comparativefetchmixin): <span id="getter-hasdrawable">[`hasDrawable`](../comparativefetchmixin#getter-hasdrawable)</span>, <span id="getter-loading">[`loading`](../comparativefetchmixin#getter-loading)</span>, <span id="getter-refetching">[`refetching`](../comparativefetchmixin#getter-refetching)</span>, <span id="getter-svgready">[`svgReady`](../comparativefetchmixin#getter-svgready)</span></span>
+From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span>
 
-<span data-pagefind-ignore>From [KeyedFetchMixin](../keyedfetchmixin): <span id="getter-datasuperseded">[`dataSuperseded`](../keyedfetchmixin#getter-datasuperseded)</span>, <span id="getter-currentfetchkey">[`currentFetchKey`](../keyedfetchmixin#getter-currentfetchkey)</span>, <span id="getter-datacurrent">[`dataCurrent`](../keyedfetchmixin#getter-datacurrent)</span></span>
+From [ComparativeFetchMixin](../comparativefetchmixin): <span id="getter-hasdrawable">[`hasDrawable`](../comparativefetchmixin#getter-hasdrawable)</span>, <span id="getter-loading">[`loading`](../comparativefetchmixin#getter-loading)</span>, <span id="getter-refetching">[`refetching`](../comparativefetchmixin#getter-refetching)</span>, <span id="getter-svgready">[`svgReady`](../comparativefetchmixin#getter-svgready)</span>
 
-<span data-pagefind-ignore>From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span></span>
+From [KeyedFetchMixin](../keyedfetchmixin): <span id="getter-datasuperseded">[`dataSuperseded`](../keyedfetchmixin#getter-datasuperseded)</span>, <span id="getter-currentfetchkey">[`currentFetchKey`](../keyedfetchmixin#getter-currentfetchkey)</span>, <span id="getter-datacurrent">[`dataCurrent`](../keyedfetchmixin#getter-datacurrent)</span>
 
-<span data-pagefind-ignore>From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span></span>
+From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../fetchmixin#getter-isloading)</span>, <span id="getter-isloadingorcanceled">[`isLoadingOrCanceled`](../fetchmixin#getter-isloadingorcanceled)</span>, <span id="getter-awaitingprerequisite">[`awaitingPrerequisite`](../fetchmixin#getter-awaitingprerequisite)</span>, <span id="getter-awaitingdependentdata">[`awaitingDependentData`](../fetchmixin#getter-awaitingdependentdata)</span>, <span id="getter-settingsfetchinputs">[`settingsFetchInputs`](../fetchmixin#getter-settingsfetchinputs)</span>
+
+From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
+
+</details>
 
 ## Methods
 
@@ -139,7 +154,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="method-getfeature">**getFeature**</span><br><code>(index: number) =&gt; FeatPos &#124; undefined</code> | The parent feature under an INSTANCE index, what the pick engine and the hover and click state carry; `getFeatureAtIndex` takes a feature index |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>5 inherited methods from one model</summary>
+
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+
+</details>
 
 ## Actions
 
@@ -154,12 +174,17 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-opencontextmenu">**openContextMenu**</span><br><code>(anchor: ClickCoord) =&gt; void</code> |  |
 | <span id="action-closecontextmenu">**closeContextMenu**</span><br><code>() =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="action-setstatusmessage">[`setStatusMessage`](../basedisplay#action-setstatusmessage)</span>, <span id="action-seterror">[`setError`](../basedisplay#action-seterror)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../basedisplay#action-clearhoveredfeature)</span>, <span id="action-reload">[`reload`](../basedisplay#action-reload)</span>, <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>17 inherited actions from 5 models</summary>
 
-<span data-pagefind-ignore>From [ComparativeFetchMixin](../comparativefetchmixin): <span id="action-setassembliesswapped">[`setAssembliesSwapped`](../comparativefetchmixin#action-setassembliesswapped)</span></span>
+From [BaseDisplay](../basedisplay): <span id="action-setstatusmessage">[`setStatusMessage`](../basedisplay#action-setstatusmessage)</span>, <span id="action-seterror">[`setError`](../basedisplay#action-seterror)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../basedisplay#action-clearhoveredfeature)</span>, <span id="action-reload">[`reload`](../basedisplay#action-reload)</span>, <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span>
 
-<span data-pagefind-ignore>From [KeyedFetchMixin](../keyedfetchmixin): <span id="action-commitfetchresult">[`commitFetchResult`](../keyedfetchmixin#action-commitfetchresult)</span></span>
+From [ComparativeFetchMixin](../comparativefetchmixin): <span id="action-setassembliesswapped">[`setAssembliesSwapped`](../comparativefetchmixin#action-setassembliesswapped)</span>
 
-<span data-pagefind-ignore>From [FetchMixin](../fetchmixin): <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span></span>
+From [KeyedFetchMixin](../keyedfetchmixin): <span id="action-commitfetchresult">[`commitFetchResult`](../keyedfetchmixin#action-commitfetchresult)</span>
 
-<span data-pagefind-ignore>From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span></span>
+From [FetchMixin](../fetchmixin): <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span>
+
+From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
+
+</details>

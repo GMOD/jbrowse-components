@@ -25,7 +25,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-session">**session**</span><br><code>session: sessionModelType</code> |  |
 | <span id="property-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited property from one model</summary>
+
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span>
+
+</details>
 
 ## Volatiles
 
@@ -54,4 +59,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-restoresession">**restoreSession**</span><br><code>(sessionSnapshot: SessionSnapshot) =&gt; void</code> | Load a session whose shape is only known at runtime — decoded from a URL, read back from storage, handed over by a non-TypeScript host.<br><br>Separate from `setSession` because that one takes the compiler-checked snapshot type, which a value parsed out of JSON can never satisfy. The assertion below is the whole reason this exists: it is the single place the conversion happens, instead of every caller asserting at its own site. Nothing is unchecked at runtime — MST validates the snapshot as it applies it and throws on a mismatch, which is the check that actually matters for a value this app did not author. |
 | <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited actions from one model</summary>
+
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span>
+
+</details>

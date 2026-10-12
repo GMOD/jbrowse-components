@@ -20,11 +20,16 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="property-jobsmanager">**jobsManager**</span><br><code>jobsManager: types.optional(JobsManager, {})</code> |  |
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](../baserootmodel#property-jbrowse)</span>, <span id="property-session">[`session`](../baserootmodel#property-session)</span>, <span id="property-sessionpath">[`sessionPath`](../baserootmodel#property-sessionpath)</span>, <span id="property-assemblymanager">[`assemblyManager`](../baserootmodel#property-assemblymanager)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>6 inherited properties from 3 models</summary>
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](../baserootmodel#property-jbrowse)</span>, <span id="property-session">[`session`](../baserootmodel#property-session)</span>, <span id="property-sessionpath">[`sessionPath`](../baserootmodel#property-sessionpath)</span>, <span id="property-assemblymanager">[`assemblyManager`](../baserootmodel#property-assemblymanager)</span>
 
-<span data-pagefind-ignore>From [HistoryManagementMixin](../historymanagementmixin): <span id="property-history">[`history`](../historymanagementmixin#property-history)</span></span>
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span>
+
+From [HistoryManagementMixin](../historymanagementmixin): <span id="property-history">[`history`](../historymanagementmixin#property-history)</span>
+
+</details>
 
 ## Volatiles
 
@@ -38,9 +43,14 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-openlinkcallback">**openLinkCallback**</span><br><code>(_link: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="volatile-returntostartscreencallback">**returnToStartScreenCallback**</span><br><code>() =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>5 inherited volatiles from 2 models</summary>
 
-<span data-pagefind-ignore>From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>
+
+From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
+
+</details>
 
 ## Methods
 
@@ -64,8 +74,13 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path). |
 | <span id="action-flushsession">**flushSession**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Save now rather than waiting out the autosave's 1s debounce, so the last second of edits survives. Every path that tears the session down — quitting, returning to the start screen — has to call this first; Exit did not, and lost whatever was still inside the debounce window. |
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>14 inherited actions from 3 models</summary>
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
 
-<span data-pagefind-ignore>From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span></span>
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span>
+
+From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span>
+
+</details>

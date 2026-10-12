@@ -71,4 +71,15 @@
     color: var(--color-text-muted);
     font-weight: 400;
   }
+  /* A model page's inherited member names under one count per section
+     (scripts/api-docs/generateStateModelDocs.ts, kindSection). */
+  .inherited-members {
+    margin-top: 0.75rem;
+  }
+  .inherited-members > summary {
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
 }

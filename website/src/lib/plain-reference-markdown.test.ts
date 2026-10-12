@@ -21,12 +21,21 @@ test('an example keeps its label, prose and code', () => {
   )
 })
 
-test('an inherited line keeps its links and drops its spans', () => {
+test('an inherited fold keeps its links and drops its markup', () => {
   expect(
     plainReferenceMarkdown(
-      '<span data-pagefind-ignore>From [Base](../base): <span id="getter-a">[`a`](../base#getter-a)</span>, <span id="getter-b">[`b`](../base#getter-b)</span></span>',
+      [
+        '<details class="inherited-members" data-pagefind-ignore>',
+        '<summary>2 inherited getters from one model</summary>',
+        '',
+        'From [Base](../base): <span id="getter-a">[`a`](../base#getter-a)</span>, <span id="getter-b">[`b`](../base#getter-b)</span>',
+        '',
+        '</details>',
+      ].join('\n'),
     ),
-  ).toBe('From [Base](../base): [`a`](../base#getter-a), [`b`](../base#getter-b)')
+  ).toBe(
+    '2 inherited getters from one model:\n\nFrom [Base](../base): [`a`](../base#getter-a), [`b`](../base#getter-b)\n\n',
+  )
 })
 
 // The shapes above are the generator's, restated. Against the committed pages,
@@ -37,7 +46,7 @@ test.each(['models/LinearAlignmentsDisplay.md', 'config/BamAdapter.md'])(
     const raw = fs.readFileSync(path.join(docs, file), 'utf8')
     expect(raw).toMatch(/<span id=/)
     const plain = plainReferenceMarkdown(raw)
-    expect(plain).not.toMatch(/<\/?(span|dialog|button|form)\b/)
+    expect(plain).not.toMatch(/<\/?(span|dialog|button|form|details|summary)\b/)
     expect(plain.length).toBeLessThan(raw.length)
   },
 )

@@ -51,13 +51,23 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-type">**type**</span><br><code>type: types.literal('ChordSyntenyDisplay')</code> |  |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited property from one model</summary>
+
+From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay#property-id)</span>
+
+</details>
 
 ## Volatiles
 
-<span data-pagefind-ignore>From [BaseChordDisplay](../basechorddisplay): <span id="volatile-features">[`features`](../basechorddisplay#volatile-features)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../basechorddisplay#volatile-reloadcounter)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>5 inherited volatiles from 2 models</summary>
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../basedisplay#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../basedisplay#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../basedisplay#volatile-statusprogress)</span></span>
+From [BaseChordDisplay](../basechorddisplay): <span id="volatile-features">[`features`](../basechorddisplay#volatile-features)</span>, <span id="volatile-reloadcounter">[`reloadCounter`](../basechorddisplay#volatile-reloadcounter)</span>
+
+From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../basedisplay#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../basedisplay#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../basedisplay#volatile-statusprogress)</span>
+
+</details>
 
 ## Getters
 
@@ -86,9 +96,14 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | the panel the linear synteny displays open for the same record, so a ribbon clicked on the circle and a ribbon clicked in a synteny view share one drawer entry |
 | <span id="getter-chordcell">**chordCell**</span><br><code>ChordCell &#124; undefined</code> | what the view's canvas draws for this display: its lanes while it is ready, nothing while its loading or error ring covers the circle |
 
-<span data-pagefind-ignore>From [BaseChordDisplay](../basechorddisplay): <span id="getter-view">[`view`](../basechorddisplay#getter-view)</span>, <span id="getter-trackassemblynames">[`trackAssemblyNames`](../basechorddisplay#getter-trackassemblynames)</span>, <span id="getter-fetchinert">[`fetchInert`](../basechorddisplay#getter-fetchinert)</span>, <span id="getter-loaded">[`loaded`](../basechorddisplay#getter-loaded)</span>, <span id="getter-svgready">[`svgReady`](../basechorddisplay#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../basechorddisplay#getter-displayphase)</span>, <span id="getter-radiuspx">[`radiusPx`](../basechorddisplay#getter-radiuspx)</span>, <span id="getter-bezierradiusratio">[`bezierRadiusRatio`](../basechorddisplay#getter-bezierradiusratio)</span>, <span id="getter-bezierradius">[`bezierRadius`](../basechorddisplay#getter-bezierradius)</span>, <span id="getter-sliceindex">[`sliceIndex`](../basechorddisplay#getter-sliceindex)</span>, <span id="getter-selectedfeatureid">[`selectedFeatureId`](../basechorddisplay#getter-selectedfeatureid)</span>, <span id="getter-hoveredfeatureid">[`hoveredFeatureId`](../basechorddisplay#getter-hoveredfeatureid)</span>, <span id="getter-chordstage">[`chordStage`](../basechorddisplay#getter-chordstage)</span>, <span id="getter-figurestage">[`figureStage`](../basechorddisplay#getter-figurestage)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>24 inherited getters from 2 models</summary>
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span></span>
+From [BaseChordDisplay](../basechorddisplay): <span id="getter-view">[`view`](../basechorddisplay#getter-view)</span>, <span id="getter-trackassemblynames">[`trackAssemblyNames`](../basechorddisplay#getter-trackassemblynames)</span>, <span id="getter-fetchinert">[`fetchInert`](../basechorddisplay#getter-fetchinert)</span>, <span id="getter-loaded">[`loaded`](../basechorddisplay#getter-loaded)</span>, <span id="getter-svgready">[`svgReady`](../basechorddisplay#getter-svgready)</span>, <span id="getter-displayphase">[`displayPhase`](../basechorddisplay#getter-displayphase)</span>, <span id="getter-radiuspx">[`radiusPx`](../basechorddisplay#getter-radiuspx)</span>, <span id="getter-bezierradiusratio">[`bezierRadiusRatio`](../basechorddisplay#getter-bezierradiusratio)</span>, <span id="getter-bezierradius">[`bezierRadius`](../basechorddisplay#getter-bezierradius)</span>, <span id="getter-sliceindex">[`sliceIndex`](../basechorddisplay#getter-sliceindex)</span>, <span id="getter-selectedfeatureid">[`selectedFeatureId`](../basechorddisplay#getter-selectedfeatureid)</span>, <span id="getter-hoveredfeatureid">[`hoveredFeatureId`](../basechorddisplay#getter-hoveredfeatureid)</span>, <span id="getter-chordstage">[`chordStage`](../basechorddisplay#getter-chordstage)</span>, <span id="getter-figurestage">[`figureStage`](../basechorddisplay#getter-figurestage)</span>
+
+From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span>
+
+</details>
 
 ## Methods
 
@@ -105,9 +120,14 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="method-hitat">**hitAt**</span><br><code>(dx: number, dy: number) =&gt; Feature &#124; undefined</code> | the alignment whose ribbon covers a point CSS px from the circle's centre in the screen frame, the topmost where several do |
 | <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_opts: ViewExportSvgOptions &amp; { theme?: ThemeOptions &#124; undefin…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_opts: ViewExportSvgOptions &amp; { theme?: ThemeOptions &#124; undefined; }) =&gt; Promise&lt;Element &#124; null&gt;</code></pre></dialog></span> |  |
 
-<span data-pagefind-ignore>From [BaseChordDisplay](../basechorddisplay): <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-slicefor">[`sliceFor`](../basechorddisplay#method-slicefor)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>9 inherited methods from 2 models</summary>
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span></span>
+From [BaseChordDisplay](../basechorddisplay): <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-slicefor">[`sliceFor`](../basechorddisplay#method-slicefor)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
+
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+
+</details>
 
 ## Actions
 
@@ -117,6 +137,11 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-clickfeature">**clickFeature**</span><br><code>(feature: Feature) =&gt; void</code> | what a click on the canvas reaches: the alignment's details |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | refetch, and run a reorder this launch still owes, which is how the error ring's Retry reaches a reorder that failed |
 
-<span data-pagefind-ignore>From [BaseChordDisplay](../basechorddisplay): <span id="action-openerrordialog">[`openErrorDialog`](../basechorddisplay#action-openerrordialog)</span>, <span id="action-setfeatures">[`setFeatures`](../basechorddisplay#action-setfeatures)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>7 inherited actions from 2 models</summary>
 
-<span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="action-setstatusmessage">[`setStatusMessage`](../basedisplay#action-setstatusmessage)</span>, <span id="action-seterror">[`setError`](../basedisplay#action-seterror)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../basedisplay#action-clearhoveredfeature)</span>, <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span></span>
+From [BaseChordDisplay](../basechorddisplay): <span id="action-openerrordialog">[`openErrorDialog`](../basechorddisplay#action-openerrordialog)</span>, <span id="action-setfeatures">[`setFeatures`](../basechorddisplay#action-setfeatures)</span>
+
+From [BaseDisplay](../basedisplay): <span id="action-setstatusmessage">[`setStatusMessage`](../basedisplay#action-setstatusmessage)</span>, <span id="action-seterror">[`setError`](../basedisplay#action-seterror)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../basedisplay#action-clearhoveredfeature)</span>, <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span>
+
+</details>

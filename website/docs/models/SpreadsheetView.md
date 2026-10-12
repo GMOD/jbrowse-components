@@ -38,7 +38,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-spreadsheet">**spreadsheet**</span><br><code>spreadsheet: types.maybe(Spreadsheet())</code> |  |
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;SpreadsheetViewCommands&gt; &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;SpreadsheetViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch state: the settings written on the view object that need resolving before they can be view state — the file to load, the assembly its rows are read against, the filter to open it under. `preProcessSnapshot` moves them here off the snapshot, the afterAttach reaction applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../baseviewmodel#property-id)</span>, <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited properties from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../baseviewmodel#property-id)</span>, <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
+
+</details>
 
 ## Volatiles
 
@@ -47,7 +52,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>number</code> |  |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited volatile from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
+
+</details>
 
 ## Getters
 
@@ -58,7 +68,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-showloading">**showLoading**</span><br><code>boolean</code> | Named to match LGV/dotplot/synteny/circular/breakpoint-split, which is what `ViewContainer` reads to publish `data-view-phase`. Without it this view published `ready` for its whole load, so a capture or a browser test waiting on that attribute treated a spreadsheet still fetching and parsing its VCF as settled — and there is no display-level wait to fall back on here, since a spreadsheet mounts no displays at all.<br><br>The one view whose loading state renders *inside* its import form rather than replacing it: the wizard keeps the chosen file, type and assembly on screen and puts a spinner above them, which is more useful than a bare loading screen that throws that context away. The phase is about the model, not about which component is mounted. |
 | <span id="getter-drilldowntrackids">**drilldownTrackIds**</span><br><code>string[]</code> | every track a row's drill-down opens with, the loaded file's first. That one is derived, not recorded: after `registerImportedTrack` the session holds a track pointing at the file, so the location match that decides whether to build one also finds it afterwards |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-owntracks">[`ownTracks`](../baseviewmodel#getter-owntracks)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>4 inherited getters from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-owntracks">[`ownTracks`](../baseviewmodel#getter-owntracks)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span>
+
+</details>
 
 ## Methods
 
@@ -83,4 +98,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-returntoimportform">**returnToImportForm**</span><br><code>() =&gt; void</code> | drop the loaded sheet and the cached location together: leaving the cache behind makes afterAttach re-fetch the dismissed file on the next session load, putting the user back where they left |
 | <span id="action-applyinit">**applyInit**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(init: LaunchInput&lt;SpreadsheetViewCommands&gt;, superseded?: (() =…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(init: LaunchInput&lt;SpreadsheetViewCommands&gt;, superseded?: (() =&gt; boolean) &#124; undefined) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> | apply a declarative init (from addView / sv-inspector): point the import wizard at the file and load it. Without a uri there is nothing to load, so the wizard is only seeded — the import form then opens on the caller's assembly and file type instead of whichever assembly happens to sort first |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setwidth">[`setWidth`](../baseviewmodel#action-setwidth)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>4 inherited actions from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setwidth">[`setWidth`](../baseviewmodel#action-setwidth)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
+
+</details>

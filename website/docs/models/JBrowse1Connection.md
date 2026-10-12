@@ -22,15 +22,30 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('JBrowse1Connection')</code> |  |
 
-<span data-pagefind-ignore>From [BaseConnectionModel](../baseconnectionmodel): <span id="property-tracks">[`tracks`](../baseconnectionmodel#property-tracks)</span>, <span id="property-silent">[`silent`](../baseconnectionmodel#property-silent)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited properties from one model</summary>
+
+From [BaseConnectionModel](../baseconnectionmodel): <span id="property-tracks">[`tracks`](../baseconnectionmodel#property-tracks)</span>, <span id="property-silent">[`silent`](../baseconnectionmodel#property-silent)</span>
+
+</details>
 
 ## Volatiles
 
-<span data-pagefind-ignore>From [BaseConnectionModel](../baseconnectionmodel): <span id="volatile-loading">[`loading`](../baseconnectionmodel#volatile-loading)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited volatile from one model</summary>
+
+From [BaseConnectionModel](../baseconnectionmodel): <span id="volatile-loading">[`loading`](../baseconnectionmodel#volatile-loading)</span>
+
+</details>
 
 ## Getters
 
-<span data-pagefind-ignore>From [BaseConnectionModel](../baseconnectionmodel): <span id="getter-connectionid">[`connectionId`](../baseconnectionmodel#getter-connectionid)</span>, <span id="getter-name">[`name`](../baseconnectionmodel#getter-name)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited getters from one model</summary>
+
+From [BaseConnectionModel](../baseconnectionmodel): <span id="getter-connectionid">[`connectionId`](../baseconnectionmodel#getter-connectionid)</span>, <span id="getter-name">[`name`](../baseconnectionmodel#getter-name)</span>
+
+</details>
 
 ## Actions
 
@@ -39,4 +54,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="action-connect">**connect**</span><br><code>() =&gt; Promise&lt;void&gt;</code> |  |
 
-<span data-pagefind-ignore>From [BaseConnectionModel](../baseconnectionmodel): <span id="action-setloading">[`setLoading`](../baseconnectionmodel#action-setloading)</span>, <span id="action-addtrackconf">[`addTrackConf`](../baseconnectionmodel#action-addtrackconf)</span>, <span id="action-addtrackconfs">[`addTrackConfs`](../baseconnectionmodel#action-addtrackconfs)</span>, <span id="action-settrackconfs">[`setTrackConfs`](../baseconnectionmodel#action-settrackconfs)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>4 inherited actions from one model</summary>
+
+From [BaseConnectionModel](../baseconnectionmodel): <span id="action-setloading">[`setLoading`](../baseconnectionmodel#action-setloading)</span>, <span id="action-addtrackconf">[`addTrackConf`](../baseconnectionmodel#action-addtrackconf)</span>, <span id="action-addtrackconfs">[`addTrackConfs`](../baseconnectionmodel#action-addtrackconfs)</span>, <span id="action-settrackconfs">[`setTrackConfs`](../baseconnectionmodel#action-settrackconfs)</span>
+
+</details>

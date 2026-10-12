@@ -43,7 +43,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-views">**views**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView').stateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 | <span id="property-launch">**launch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>launch: types.frozen&lt; LaunchInput&lt;BreakpointSplitViewCommands&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>launch: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | transient launch state: the declarative panels written on the view object as `views`, which need a measured width before they can be built rows. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../baseviewmodel#property-id)</span>, <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited properties from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="property-id">[`id`](../baseviewmodel#property-id)</span>, <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
+
+</details>
 
 ## Volatiles
 
@@ -56,7 +61,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>StatusChannel</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. |
 | <span id="volatile-hoveredoverlay">**hoveredOverlay**</span><br><code>OverlayHover &#124; undefined</code> | Which overlay curve the pointer is on, and the reason it lives here rather than in each overlay's React state: a hover the viewport can invalidate needs one place to be cleared from, and `overlayTransformKey` and the `afterAttach` reaction clear it here. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited volatile from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
+
+</details>
 
 ## Getters
 
@@ -83,7 +93,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-readchainsbytrack">**readChainsByTrack**</span><br><code>Map&lt;string, ReadChain[]&gt;</code> | Each alignments track's split reads and discordant pairs, read off the displays in every row and resolved into connections, keyed by trackId. Reads no row, so a resize or a scroll leaves it alone. |
 | <span id="getter-overlaymatches">**overlayMatches**</span><br><code>Map&lt;string, OverlayMatch&gt;</code> | Every overlay track's connections with their layout rects, keyed by trackId. Cached, so scrolling within loaded data does not look a row up again. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-owntracks">[`ownTracks`](../baseviewmodel#getter-owntracks)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited getters from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rendersDisplays`](../baseviewmodel#getter-rendersdisplays)</span>, <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-owntracks">[`ownTracks`](../baseviewmodel#getter-owntracks)</span>
+
+</details>
 
 ## Methods
 
@@ -119,4 +134,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setlaunch">**setLaunch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(launch?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(launch?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setviews">**setViews**</span><br><code>(viewInits: BreakpointSplitViewInitView[]) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited actions from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
+
+</details>

@@ -70,7 +70,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-scalebaronly">**scalebarOnly**</span><br><code>scalebarOnly: types.stripDefault(types.boolean, false)</code> | when true, only the header and coordinate scalebar are rendered |
 | <span id="property-launch">**launch**</span><br><code>launch: types.frozen&lt;LaunchInput&lt;InitState&gt; &#124; undefined&gt;()</code> | transient launch state: the settings written on the view object that need resolving before they can be view state — an assembly, a location, track recipes, highlights. `preProcessSnapshot` moves them here off the snapshot, the afterAttach autorun applies them and clears this, so a saved session never retains it. Not written by hand: author every setting directly on the view. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited properties from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displayName`](../baseviewmodel#property-displayname)</span>, <span id="property-minimized">[`minimized`](../baseviewmodel#property-minimized)</span>
+
+</details>
 
 ## Volatiles
 
@@ -92,7 +97,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-isscalebarrefnamemenuopen">**isScalebarRefNameMenuOpen**</span><br><code>boolean</code> |  |
 | <span id="volatile-volatileguides">**volatileGuides**</span><br><code>VolatileGuide[]</code> | temporary vertical guides that can be set by displays (e.g., LD display hover) |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited volatiles from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
+
+</details>
 
 ## Getters
 
@@ -183,7 +193,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-effectivetotalbpdisplaystr">**effectiveTotalBpDisplayStr**</span><br><code>string</code> |  |
 | <span id="getter-centerlineinfo">**centerLineInfo**</span><br><code>PxToBpResult &#124; undefined</code> |  |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited getters from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="getter-effectivebodymounted">[`effectiveBodyMounted`](../baseviewmodel#getter-effectivebodymounted)</span>, <span id="getter-ownviews">[`ownViews`](../baseviewmodel#getter-ownviews)</span>
+
+</details>
 
 ## Methods
 
@@ -288,4 +303,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-flytocenter">**flyToCenter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(coord: number, refName: string, displayedRegionIndex?: number…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(coord: number, refName: string, displayedRegionIndex?: number &#124; undefined) =&gt; void</code></pre></dialog></span> | `centerAt`'s animated twin: the same destination, reached along the arc instead of jumped to, at the zoom the view is already on. |
 | <span id="action-flytofit">**flyToFit**</span><br><code>(centerBp: number, fitWidthBp: number) =&gt; void</code> | A flight to a linear bp centre at the zoom the view is on, or is already flying to, widened where that is narrower than `fitWidthBp`. The current width mid-flight is a point on the arc, so a second flight read from it would land pulled back. |
 
-<span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited actions from one model</summary>
+
+From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
+
+</details>

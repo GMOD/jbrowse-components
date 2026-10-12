@@ -30,7 +30,12 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Volatiles
 
-<span data-pagefind-ignore>From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>7 inherited volatiles from one model</summary>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="volatile-canvasdrawn">[`canvasDrawn`](../renderlifecyclemixin#volatile-canvasdrawn)</span>, <span id="volatile-paintcount">[`paintCount`](../renderlifecyclemixin#volatile-paintcount)</span>, <span id="volatile-currentrenderingbackend">[`currentRenderingBackend`](../renderlifecyclemixin#volatile-currentrenderingbackend)</span>, <span id="volatile-rendertick">[`renderTick`](../renderlifecyclemixin#volatile-rendertick)</span>, <span id="volatile-autorunsinstalled">[`autorunsInstalled`](../renderlifecyclemixin#volatile-autorunsinstalled)</span>, <span id="volatile-rendererror">[`renderError`](../renderlifecyclemixin#volatile-rendererror)</span>, <span id="volatile-offscreen">[`offScreen`](../renderlifecyclemixin#volatile-offscreen)</span>
+
+</details>
 
 ## Getters
 
@@ -58,7 +63,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | Render-lifecycle precondition, overriding `RenderLifecycleMixin`'s default-true hook: the render callback sizes the canvas off `parentView.width`, and a paint before both rows are up would mark the band drawn over ribbons that have not started to fetch. |
 | <span id="getter-paintinert">**paintInert**</span><br><code>boolean</code> | Overrides `RenderLifecycleMixin`'s hook: a band with no synteny track on it paints its ground this tick and nothing is coming, so it has finished rather than being pending. `renderBlocks` answers "did content reach the canvas" off the blocks it drew, which is the right answer for a track still fetching and the wrong one for a band with nothing to draw on it.<br><br>`connectedRows` is the other half: a band whose rows are not up has no tracks either and is *not* finished. This family carries a second guard one layer up — `ComparativeSurface.initPending`, for the level that exists from the moment its rows do while init adds its tracks several awaits later — but that one is about the init blob, not about the rows, so it does not stand in for this. |
 
-<span data-pagefind-ignore>From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-renderscanvas">[`rendersCanvas`](../renderlifecyclemixin#getter-renderscanvas)</span>, <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>3 inherited getters from one model</summary>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="getter-renderscanvas">[`rendersCanvas`](../renderlifecyclemixin#getter-renderscanvas)</span>, <span id="getter-paintsuperseded">[`paintSuperseded`](../renderlifecyclemixin#getter-paintsuperseded)</span>, <span id="getter-painted">[`painted`](../renderlifecyclemixin#getter-painted)</span>
+
+</details>
 
 ## Methods
 
@@ -86,4 +96,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-showoffscreenmatecontig">**showOffscreenMateContig**</span><br><code>(hit: OffscreenMateHit) =&gt; void</code> | What clicking a mark does: show where its alignments land on the facing row. The row scrolls to them, or gains the contig or a slice of it, and never loses a region it was showing. The click takes the follow anchor, and the Undo gives back the anchor and every row's viewport together. |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: SyntenyRenderingBackend) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>7 inherited actions from one model</summary>
+
+From [RenderLifecycleMixin](../renderlifecyclemixin): <span id="action-markcanvasdrawn">[`markCanvasDrawn`](../renderlifecyclemixin#action-markcanvasdrawn)</span>, <span id="action-resetcanvasdrawn">[`resetCanvasDrawn`](../renderlifecyclemixin#action-resetcanvasdrawn)</span>, <span id="action-stoprenderingbackend">[`stopRenderingBackend`](../renderlifecyclemixin#action-stoprenderingbackend)</span>, <span id="action-rendernow">[`renderNow`](../renderlifecyclemixin#action-rendernow)</span>, <span id="action-setoffscreen">[`setOffScreen`](../renderlifecyclemixin#action-setoffscreen)</span>, <span id="action-setrendererror">[`setRenderError`](../renderlifecyclemixin#action-setrendererror)</span>, <span id="action-attachrenderingbackend">[`attachRenderingBackend`](../renderlifecyclemixin#action-attachrenderingbackend)</span>
+
+</details>

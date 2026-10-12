@@ -18,7 +18,12 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<span data-pagefind-ignore>From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="property-type">[`type`](../tokenentryinternetaccount#property-type)</span>, <span id="property-configuration">[`configuration`](../tokenentryinternetaccount#property-configuration)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited properties from one model</summary>
+
+From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="property-type">[`type`](../tokenentryinternetaccount#property-type)</span>, <span id="property-configuration">[`configuration`](../tokenentryinternetaccount#property-configuration)</span>
+
+</details>
 
 ## Getters
 
@@ -27,8 +32,18 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="getter-showinfileselector">**showInFileSelector**</span><br><code>boolean</code> | There is nothing to pick: an HTTP Basic account matches by domain and prompts on its own. RpcManager also mints one of these per origin on a 401, so offering them would fill the picker with a toggle per server the session happened to touch. |
 
-<span data-pagefind-ignore>From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="getter-validatewithhead">[`validateWithHEAD`](../tokenentryinternetaccount#getter-validatewithhead)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited getter from one model</summary>
+
+From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="getter-validatewithhead">[`validateWithHEAD`](../tokenentryinternetaccount#getter-validatewithhead)</span>
+
+</details>
 
 ## Actions
 
-<span data-pagefind-ignore>From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="action-gettokenfromuser">[`getTokenFromUser`](../tokenentryinternetaccount#action-gettokenfromuser)</span>, <span id="action-validatetoken">[`validateToken`](../tokenentryinternetaccount#action-validatetoken)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited actions from one model</summary>
+
+From [TokenEntryInternetAccount](../tokenentryinternetaccount): <span id="action-gettokenfromuser">[`getTokenFromUser`](../tokenentryinternetaccount#action-gettokenfromuser)</span>, <span id="action-validatetoken">[`validateToken`](../tokenentryinternetaccount#action-validatetoken)</span>
+
+</details>

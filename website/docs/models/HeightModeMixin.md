@@ -39,7 +39,12 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Volatiles
 
-<span data-pagefind-ignore>From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`scrollTop`](../trackheightmixin#volatile-scrolltop)</span>, <span id="volatile-hostheight">[`hostHeight`](../trackheightmixin#volatile-hostheight)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>2 inherited volatiles from one model</summary>
+
+From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`scrollTop`](../trackheightmixin#volatile-scrolltop)</span>, <span id="volatile-hostheight">[`hostHeight`](../trackheightmixin#volatile-hostheight)</span>
+
+</details>
 
 ## Getters
 
@@ -55,7 +60,12 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-grownheight">**grownHeight**</span><br><code>number</code> | Target track height for `grow`: what the content wants, capped so a deep stack doesn't grow the track to thousands of px (the remainder scrolls). What `installGrowExitBake` bakes into the slot on exit. |
 | <span id="getter-height">**height**</span><br><code>number</code> | In grow mode the track height follows the laid-out content reactively — no autorun writes the height config slot, so a settled relayout never churns the persisted session nor bakes a momentary height. Fixed/fit read the slot (fit shrinks content to fill it).<br><br>Guarded on `view.initialized`: `growTargetHeight` transitively reads view-geometry getters that throw before the view is measured, and unlike an autorun (whose MobX error boundary would swallow the pre-init throw) a getter propagates it into render/hydration. Overrides `TrackHeightMixin.height`. |
 
-<span data-pagefind-ignore>From [TrackHeightMixin](../trackheightmixin): <span id="getter-configuredheight">[`configuredHeight`](../trackheightmixin#getter-configuredheight)</span>, <span id="getter-allottedheight">[`allottedHeight`](../trackheightmixin#getter-allottedheight)</span>, <span id="getter-resizing">[`resizing`](../trackheightmixin#getter-resizing)</span>, <span id="getter-scrollcontentheight">[`scrollContentHeight`](../trackheightmixin#getter-scrollcontentheight)</span>, <span id="getter-scrollviewportheight">[`scrollViewportHeight`](../trackheightmixin#getter-scrollviewportheight)</span>, <span id="getter-scrollableheight">[`scrollableHeight`](../trackheightmixin#getter-scrollableheight)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>6 inherited getters from one model</summary>
+
+From [TrackHeightMixin](../trackheightmixin): <span id="getter-configuredheight">[`configuredHeight`](../trackheightmixin#getter-configuredheight)</span>, <span id="getter-allottedheight">[`allottedHeight`](../trackheightmixin#getter-allottedheight)</span>, <span id="getter-resizing">[`resizing`](../trackheightmixin#getter-resizing)</span>, <span id="getter-scrollcontentheight">[`scrollContentHeight`](../trackheightmixin#getter-scrollcontentheight)</span>, <span id="getter-scrollviewportheight">[`scrollViewportHeight`](../trackheightmixin#getter-scrollviewportheight)</span>, <span id="getter-scrollableheight">[`scrollableHeight`](../trackheightmixin#getter-scrollableheight)</span>
+
+</details>
 
 ## Actions
 
@@ -65,4 +75,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fit" &#124; "fixed" &#124; "grow") =&gt; void</code> | Set the track-height strategy by writing the unified `heightMode` slot; the modes are mutually exclusive by construction. Leaving grow bakes the grown height into the `height` slot in the same action, so the switch is atomic: `installGrowExitBake` also covers this exit, but it is a reaction, and an observer scheduled ahead of it would catch the new mode against the stale slot — a track grown to 800px fitting one frame into the 100px the slot still held. The reaction sees the slot move with the mode and skips, the same guard that protects a drag-resize exit. Entering a non-`fixed` mode drops a leftover scroll offset that the reconfigured height contradicts — neither fit nor grow generally scrolls, and a sticky canvas left at an out-of-range offset paints clipped or blank with no DOM scroll event to resync it. Displays with more transient state to reset super-capture this. |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> | Drag-resize. A manual drag means the user wants a fixed height, so leave grow first — otherwise the reactive `height` getter re-derives `grownHeight` on the next relayout and the drag appears to do nothing. The displayed (grown) height is read *before* the flip and written as `displayed + distance`, which is also why `installGrowExitBake` skips when the slot moved during the exit: re-baking would clobber this delta. Overrides `TrackHeightMixin.resizeHeight`. |
 
-<span data-pagefind-ignore>From [TrackHeightMixin](../trackheightmixin): <span id="action-setscrolltop">[`setScrollTop`](../trackheightmixin#action-setscrolltop)</span>, <span id="action-sethostheight">[`setHostHeight`](../trackheightmixin#action-sethostheight)</span>, <span id="action-setheight">[`setHeight`](../trackheightmixin#action-setheight)</span>, <span id="action-expandtocontentheight">[`expandToContentHeight`](../trackheightmixin#action-expandtocontentheight)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>4 inherited actions from one model</summary>
+
+From [TrackHeightMixin](../trackheightmixin): <span id="action-setscrolltop">[`setScrollTop`](../trackheightmixin#action-setscrolltop)</span>, <span id="action-sethostheight">[`setHostHeight`](../trackheightmixin#action-sethostheight)</span>, <span id="action-setheight">[`setHeight`](../trackheightmixin#action-setheight)</span>, <span id="action-expandtocontentheight">[`expandToContentHeight`](../trackheightmixin#action-expandtocontentheight)</span>
+
+</details>

@@ -107,12 +107,13 @@ Then, in statemodels
 ```
 
 Each `#stateModel` page is five sections — Properties, Volatiles, Getters,
-Methods, Actions. A section is a table of the model's own members, then one line
-per composed model naming the members it contributes, each linked to its row on
-the page that documents it. A member redeclared by a more specific model appears
-once, at its most-specific definition. A full row per inherited member was two
-thirds of the rows in the directory, and put a copy of every `BaseDisplay`
-docstring on 21 pages.
+Methods, Actions. A section is a table of the model's own members, then a fold
+holding one line per composed model, naming the members it contributes, each
+linked to its row on the page that documents it. A member redeclared by a more
+specific model appears once, at its most-specific definition. A full row per
+inherited member was two thirds of the rows in the directory, and put a copy of
+every `BaseDisplay` docstring on 21 pages. The names left unfolded were still a
+third of the directory's bytes.
 
 A row is name-over-type in one cell and the full documentation in the next, so
 the prose gets the width. Long types and authored `#example` blocks open in a

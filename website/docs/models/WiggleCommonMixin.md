@@ -19,7 +19,12 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Volatiles
 
-<span data-pagefind-ignore>From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile">[`unclippedQuantile`](../scorescalemixin#volatile-unclippedquantile)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>1 inherited volatile from one model</summary>
+
+From [ScoreScaleMixin](../scorescalemixin): <span id="volatile-unclippedquantile">[`unclippedQuantile`](../scorescalemixin#volatile-unclippedquantile)</span>
+
+</details>
 
 ## Getters
 
@@ -44,13 +49,18 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  |
 | <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | The bounds the adapter declares its values lie in, where it declares any (`getValueDomain`): a GC content track's [0, 1], so its axis reads alike at every locus. Config bounds still win. |
 
-<span data-pagefind-ignore>From [ScoreFieldConfigMixin](../scorefieldconfigmixin): <span id="getter-scorefield">[`scoreField`](../scorefieldconfigmixin#getter-scorefield)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>23 inherited getters from 4 models</summary>
 
-<span data-pagefind-ignore>From [WiggleScoreConfigMixin](../wigglescoreconfigmixin): <span id="getter-isdensitymode">[`isDensityMode`](../wigglescoreconfigmixin#getter-isdensitymode)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../wigglescoreconfigmixin#getter-axisreacheszero)</span></span>
+From [ScoreFieldConfigMixin](../scorefieldconfigmixin): <span id="getter-scorefield">[`scoreField`](../scorefieldconfigmixin#getter-scorefield)</span>
 
-<span data-pagefind-ignore>From [ScoreScaleMixin](../scorescalemixin): <span id="getter-scaletype">[`scaleType`](../scorescalemixin#getter-scaletype)</span>, <span id="getter-scalezero">[`scaleZero`](../scorescalemixin#getter-scalezero)</span>, <span id="getter-domainquantile">[`domainQuantile`](../scorescalemixin#getter-domainquantile)</span>, <span id="getter-clipquantile">[`clipQuantile`](../scorescalemixin#getter-clipquantile)</span>, <span id="getter-symlogconstant">[`symlogConstant`](../scorescalemixin#getter-symlogconstant)</span>, <span id="getter-manualminscore">[`manualMinScore`](../scorescalemixin#getter-manualminscore)</span>, <span id="getter-manualmaxscore">[`manualMaxScore`](../scorescalemixin#getter-manualmaxscore)</span>, <span id="getter-valuescalenotices">[`valueScaleNotices`](../scorescalemixin#getter-valuescalenotices)</span>, <span id="getter-autoscalegroup">[`autoscaleGroup`](../scorescalemixin#getter-autoscalegroup)</span>, <span id="getter-scaletitle">[`scaleTitle`](../scorescalemixin#getter-scaletitle)</span>, <span id="getter-grid">[`grid`](../scorescalemixin#getter-grid)</span>, <span id="getter-minimalticks">[`minimalTicks`](../scorescalemixin#getter-minimalticks)</span>, <span id="getter-scorerulesdrawn">[`scoreRulesDrawn`](../scorescalemixin#getter-scorerulesdrawn)</span>, <span id="getter-scorerules">[`scoreRules`](../scorescalemixin#getter-scorerules)</span></span>
+From [WiggleScoreConfigMixin](../wigglescoreconfigmixin): <span id="getter-isdensitymode">[`isDensityMode`](../wigglescoreconfigmixin#getter-isdensitymode)</span>, <span id="getter-axisreacheszero">[`axisReachesZero`](../wigglescoreconfigmixin#getter-axisreacheszero)</span>
 
-<span data-pagefind-ignore>From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-minscorebound">[`minScoreBound`](../scoreaxismixin#getter-minscorebound)</span>, <span id="getter-maxscorebound">[`maxScoreBound`](../scoreaxismixin#getter-maxscorebound)</span>, <span id="getter-hasmanualscorebounds">[`hasManualScoreBounds`](../scoreaxismixin#getter-hasmanualscorebounds)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span></span>
+From [ScoreScaleMixin](../scorescalemixin): <span id="getter-scaletype">[`scaleType`](../scorescalemixin#getter-scaletype)</span>, <span id="getter-scalezero">[`scaleZero`](../scorescalemixin#getter-scalezero)</span>, <span id="getter-domainquantile">[`domainQuantile`](../scorescalemixin#getter-domainquantile)</span>, <span id="getter-clipquantile">[`clipQuantile`](../scorescalemixin#getter-clipquantile)</span>, <span id="getter-symlogconstant">[`symlogConstant`](../scorescalemixin#getter-symlogconstant)</span>, <span id="getter-manualminscore">[`manualMinScore`](../scorescalemixin#getter-manualminscore)</span>, <span id="getter-manualmaxscore">[`manualMaxScore`](../scorescalemixin#getter-manualmaxscore)</span>, <span id="getter-valuescalenotices">[`valueScaleNotices`](../scorescalemixin#getter-valuescalenotices)</span>, <span id="getter-autoscalegroup">[`autoscaleGroup`](../scorescalemixin#getter-autoscalegroup)</span>, <span id="getter-scaletitle">[`scaleTitle`](../scorescalemixin#getter-scaletitle)</span>, <span id="getter-grid">[`grid`](../scorescalemixin#getter-grid)</span>, <span id="getter-minimalticks">[`minimalTicks`](../scorescalemixin#getter-minimalticks)</span>, <span id="getter-scorerulesdrawn">[`scoreRulesDrawn`](../scorescalemixin#getter-scorerulesdrawn)</span>, <span id="getter-scorerules">[`scoreRules`](../scorescalemixin#getter-scorerules)</span>
+
+From [ScoreAxisMixin](../scoreaxismixin): <span id="getter-valuescales">[`valueScales`](../scoreaxismixin#getter-valuescales)</span>, <span id="getter-autoscaleddomain">[`autoscaledDomain`](../scoreaxismixin#getter-autoscaleddomain)</span>, <span id="getter-minscorebound">[`minScoreBound`](../scoreaxismixin#getter-minscorebound)</span>, <span id="getter-maxscorebound">[`maxScoreBound`](../scoreaxismixin#getter-maxscorebound)</span>, <span id="getter-hasmanualscorebounds">[`hasManualScoreBounds`](../scoreaxismixin#getter-hasmanualscorebounds)</span>, <span id="getter-axes">[`axes`](../scoreaxismixin#getter-axes)</span>
+
+</details>
 
 ## Actions
 
@@ -67,4 +77,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [ScoreScaleMixin](../scorescalemixin): <span id="action-setscaletype">[`setScaleType`](../scorescalemixin#action-setscaletype)</span>, <span id="action-setscalezero">[`setScaleZero`](../scorescalemixin#action-setscalezero)</span>, <span id="action-setdomainquantile">[`setDomainQuantile`](../scorescalemixin#action-setdomainquantile)</span>, <span id="action-setminscore">[`setMinScore`](../scorescalemixin#action-setminscore)</span>, <span id="action-setmaxscore">[`setMaxScore`](../scorescalemixin#action-setmaxscore)</span>, <span id="action-setautoscalegroup">[`setAutoscaleGroup`](../scorescalemixin#action-setautoscalegroup)</span>, <span id="action-setgrid">[`setGrid`](../scorescalemixin#action-setgrid)</span>, <span id="action-setscorerules">[`setScoreRules`](../scorescalemixin#action-setscorerules)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>8 inherited actions from one model</summary>
+
+From [ScoreScaleMixin](../scorescalemixin): <span id="action-setscaletype">[`setScaleType`](../scorescalemixin#action-setscaletype)</span>, <span id="action-setscalezero">[`setScaleZero`](../scorescalemixin#action-setscalezero)</span>, <span id="action-setdomainquantile">[`setDomainQuantile`](../scorescalemixin#action-setdomainquantile)</span>, <span id="action-setminscore">[`setMinScore`](../scorescalemixin#action-setminscore)</span>, <span id="action-setmaxscore">[`setMaxScore`](../scorescalemixin#action-setmaxscore)</span>, <span id="action-setautoscalegroup">[`setAutoscaleGroup`](../scorescalemixin#action-setautoscalegroup)</span>, <span id="action-setgrid">[`setGrid`](../scorescalemixin#action-setgrid)</span>, <span id="action-setscorerules">[`setScoreRules`](../scorescalemixin#action-setscorerules)</span>
+
+</details>

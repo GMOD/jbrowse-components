@@ -15,9 +15,14 @@ Each section ends with the members a composed model contributes, linked to the p
 
 ## Properties
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](../baserootmodel#property-jbrowse)</span>, <span id="property-session">[`session`](../baserootmodel#property-session)</span>, <span id="property-sessionpath">[`sessionPath`](../baserootmodel#property-sessionpath)</span>, <span id="property-assemblymanager">[`assemblyManager`](../baserootmodel#property-assemblymanager)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>5 inherited properties from 2 models</summary>
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](../baserootmodel#property-jbrowse)</span>, <span id="property-session">[`session`](../baserootmodel#property-session)</span>, <span id="property-sessionpath">[`sessionPath`](../baserootmodel#property-sessionpath)</span>, <span id="property-assemblymanager">[`assemblyManager`](../baserootmodel#property-assemblymanager)</span>
+
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-internetaccounts">[`internetAccounts`](../internetaccountsmixin#property-internetaccounts)</span>
+
+</details>
 
 ## Volatiles
 
@@ -28,9 +33,14 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>boolean</code> |  |
 | <span id="volatile-pluginsupdatedcallback">**pluginsUpdatedCallback**</span><br><code>((args: PluginsUpdate) =&gt; void) &#124; undefined</code> | host hook for PluginsUpdated, set from createViewState's `onPluginsUpdated`. Undefined means the host didn't ask to handle it. |
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-adminmode">[`adminMode`](../baserootmodel#volatile-adminmode)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>6 inherited volatiles from 2 models</summary>
 
-<span data-pagefind-ignore>From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-adminmode">[`adminMode`](../baserootmodel#volatile-adminmode)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>
+
+From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
+
+</details>
 
 ## Methods
 
@@ -47,8 +57,13 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setpluginsupdatedcallback">**setPluginsUpdatedCallback**</span><br><code>(callback: (args: PluginsUpdate) =&gt; void) =&gt; void</code> |  |
 
-<span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span></span>
+<details class="inherited-members" data-pagefind-ignore>
+<summary>14 inherited actions from 3 models</summary>
 
-<span data-pagefind-ignore>From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span></span>
+From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
 
-<span data-pagefind-ignore>From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span></span>
+From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span>
+
+From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span>
+
+</details>

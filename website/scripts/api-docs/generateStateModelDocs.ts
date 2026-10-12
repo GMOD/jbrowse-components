@@ -330,15 +330,17 @@ function inheritedLine(
     seen.add(anchor)
     return named
   })
-  return names.length
-    ? `<span data-pagefind-ignore>From [${model.header.name}](${page}): ${names.join(', ')}</span>`
-    : ''
+  return {
+    count: names.length,
+    line: `From [${model.header.name}](${page}): ${names.join(', ')}`,
+  }
 }
 
 // One kind's whole surface: this model's members as a table, then the (deduped)
-// names each ancestor contributes. A full row per inherited member put a copy
-// of every BaseDisplay docstring on 21 pages, and made two thirds of the rows
-// in this directory repeats.
+// names each ancestor contributes, folded under one count. A full row per
+// inherited member put a copy of every BaseDisplay docstring on 21 pages, and
+// the unfolded names were a third of this directory's bytes. The docs layout
+// opens the fold around a deep link that lands inside it.
 function kindSection(
   def: MemberKind,
   ownMembers: Member[],
@@ -346,12 +348,25 @@ function kindSection(
 ) {
   const seen = new Set<string>()
   const rows = ownMembers.map(m => memberRow(def, m, seen))
-  const lines = inherited.map(g => inheritedLine(def, g, seen)).filter(Boolean)
+  const lines = inherited
+    .map(g => inheritedLine(def, g, seen))
+    .filter(l => l.count > 0)
+  const count = lines.reduce((n, l) => n + l.count, 0)
+  const noun = count === 1 ? def.tag : def.label.toLowerCase()
+  const models = lines.length === 1 ? 'one model' : `${lines.length} models`
   return rows.length || lines.length
     ? section(
         `## ${def.label}`,
         rows.length > 0 && markdownTable(['Member', 'Description'], rows),
-        ...lines,
+        lines.length > 0 &&
+          [
+            '<details class="inherited-members" data-pagefind-ignore>',
+            `<summary>${count} inherited ${noun} from ${models}</summary>`,
+            '',
+            lines.map(l => l.line).join('\n\n'),
+            '',
+            '</details>',
+          ].join('\n'),
       )
     : ''
 }
