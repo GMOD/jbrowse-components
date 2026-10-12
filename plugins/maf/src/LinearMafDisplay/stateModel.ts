@@ -2502,8 +2502,8 @@ export default function stateModelFactory(
         const encoded = createEncodeMemo(
           () => self.rowsSources,
           () => self.rowsEncodeProps(),
-          (source, props, displayedRegionIndex): MafUploadPayload => ({
-            ...encodeMafRows(source, props, displayedRegionIndex),
+          (source, props): MafUploadPayload => ({
+            ...encodeMafRows(source, props),
             coverage: source.detail?.coverage ?? EMPTY_MAF_COVERAGE,
           }),
         )

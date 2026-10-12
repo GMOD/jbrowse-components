@@ -136,7 +136,6 @@ export function encodeMafRows(
     codons: codonProps,
     conservation,
   }: MafRowsEncodeProps,
-  _displayedRegionIndex?: number,
 ): MafRowsPayload {
   const runs =
     identity && detail ? buildIdentityRuns(detail.blocks, gpu.binBp) : undefined
