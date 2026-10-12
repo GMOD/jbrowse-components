@@ -1,7 +1,13 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
-import { DASH, LOWER_BIT, SPACE } from '@jbrowse/core/util/alignedBytes'
+import {
+  DASH,
+  LOWER_BIT,
+  SPACE,
+  sameBase,
+} from '@jbrowse/core/util/alignedBytes'
 
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
+import { paintsMatchColor } from '../../LinearMafRenderer/resolveCellColor.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafOverlayParams } from './visibleRegionGeometry.ts'
@@ -67,8 +73,7 @@ export function computeVisibleLabels(
 
         // Hot per-cell loop: work directly on bytes (skips a per-row
         // TextDecoder.decode() that would allocate a string only to be
-        // immediately reduced to char codes). ASCII bit math matches
-        // resolveCellColor's `(byte | 0x20)` match check.
+        // immediately reduced to char codes).
         for (let i = 0, genomicOffset = 0; i < len; i++) {
           const refCode = refSeqBytes[i]!
           if (refCode !== DASH) {
@@ -84,8 +89,7 @@ export function computeVisibleLabels(
             }
             const alnCode = alignmentBytes[i]!
             if (bp >= bpLo && alnCode !== DASH && alnCode !== SPACE) {
-              const isMatch = (refCode | LOWER_BIT) === (alnCode | LOWER_BIT)
-              if (showAllLetters || !isMatch) {
+              if (showAllLetters || !sameBase(refCode, alnCode)) {
                 const displayCode = showAsUpperCase
                   ? alnCode & ~LOWER_BIT
                   : alnCode
@@ -95,7 +99,7 @@ export function computeVisibleLabels(
                   y: yPos,
                   text: String.fromCharCode(displayCode),
                   lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
-                  onBase: colorMatches || !isMatch,
+                  onBase: !paintsMatchColor(refCode, alnCode, colorMatches),
                 })
               }
             }

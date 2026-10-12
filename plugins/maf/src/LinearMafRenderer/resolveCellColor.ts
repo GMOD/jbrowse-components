@@ -42,6 +42,15 @@ const CellCategory = {
 } as const
 type CellCategory = (typeof CellCategory)[keyof typeof CellCategory]
 
+/** Whether an aligned base paints the match color rather than its own. */
+export function paintsMatchColor(
+  refByte: number,
+  alnByte: number,
+  colorMatches: boolean,
+) {
+  return !colorMatches && sameBase(refByte, alnByte)
+}
+
 export function classifyCell(
   refByte: number,
   alnByte: number,
@@ -51,7 +60,7 @@ export function classifyCell(
     ? CellCategory.Skip
     : isGapByte(alnByte)
       ? CellCategory.Gap
-      : !colorMatches && sameBase(refByte, alnByte)
+      : paintsMatchColor(refByte, alnByte, colorMatches)
         ? CellCategory.Match
         : CellCategory.Base
 }
