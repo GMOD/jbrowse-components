@@ -607,11 +607,11 @@ function resolveArcs(
     //
     // TWO conditions, and the second is what keeps the setting honest.
     //
-    // `isConcordantPairRead` is the READ filter's rule, shared verbatim, so
-    // "Show proper pairs" and this hide the same pairs — one the reads, the
-    // other their arcs. But that rule reads the aligner's verdict, and the arc's
-    // COLOR can disagree with it: a pair flagged proper whose |TLEN| falls
-    // below the insert band paints short-insert. Hiding it would take a pink arc
+    // `isConcordantPairRead` is the READ filter's rule, shared verbatim: a pair
+    // it calls ordinary is one `svSignal` does not keep for its pairing. But
+    // that rule reads the aligner's verdict, and the arc's COLOR can disagree
+    // with it: a pair flagged proper whose |TLEN| falls below the insert band
+    // paints short-insert. Hiding it would take a pink arc
     // off the screen under a setting about ordinary pairs, which reads as a bug
     // — measured, it was 42 of the 48 short-insert arcs in that window.
     //

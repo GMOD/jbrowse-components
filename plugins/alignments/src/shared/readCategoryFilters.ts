@@ -3,24 +3,9 @@ import type { CategoryFilter, ReadFilter, ReadCategoryKey } from './types.ts'
 export type { ReadCategoryKey }
 
 /**
- * The read-category filters, declared once.
- *
- * Four questions of one kind — which reads do I want — that used to be answered
- * three different ways: `spliced` was a three-way radio in the filter dialog,
- * while proper pairs and singletons were "draw" booleans and split alignments a
- * "show only" boolean, all three sitting in the "Show..." menu among the
- * rendering-layer toggles. They filter: every one of them drops reads in the
- * worker before layout and thins the coverage histogram with them, and none was
- * counted by the "Filter by... (n)" badge that `filterMenuItems` documents as
- * the only affordance saying a track is hiding rows.
- *
- * One table so the dialog grid and the track menu cannot word the same filter
- * two ways — `check-menu-labels` gates the docs against these strings — and so
- * that a fifth category is a row here rather than an edit in four files.
- *
- * Folding them into `filterBy` also gave each its missing third state for free:
- * the booleans could hide proper pairs but not ask for only them, and could
- * isolate split reads but not exclude them.
+ * The read-category filters, declared once, so the dialog grid and the track
+ * menu cannot word the same filter two ways (`check-menu-labels` gates the docs
+ * against these strings) and a new category is a row here.
  */
 export interface ReadCategorySpec {
   key: ReadCategoryKey
@@ -35,18 +20,19 @@ export interface ReadCategorySpec {
 
 export const READ_CATEGORIES = [
   {
-    key: 'properPairs',
-    noun: 'Proper pairs',
-    only: 'Only proper pairs',
-    exclude: 'Hide proper pairs',
+    key: 'svSignal',
+    noun: 'SV evidence',
+    only: 'Only SV evidence',
+    exclude: 'Hide SV evidence',
     helpText:
-      'Concordant pairs — those the aligner flagged properly paired (SAM ' +
-      'flag 0x2) AND in normal forward/reverse (FR) orientation. Discordant ' +
-      'pairs (RR/LL/RL orientation, e.g. inversions or duplications) do not ' +
-      'count as proper even when the flag is set, and nor does a pair with ' +
-      'a split read (SA tag), so hiding proper pairs leaves the ' +
-      'structural-variant signal on screen, both halves of a split read ' +
-      'included when they lie in different regions.',
+      'Reads carrying structural-variant evidence, with the rest of their ' +
+      'pair: a split read (SA tag or supplementary flag), an insertion or ' +
+      'deletion of 50 bp or more, or a paired read the aligner did not call ' +
+      'concordant (no proper-pair flag 0x2, a mate unmapped or on another ' +
+      'chromosome, or a pair not facing forward/reverse). Works on long ' +
+      'reads through the first two. The minimum mapping quality judges each ' +
+      'read alone, so a read whose mate was placed at low quality still ' +
+      'counts by its flags.',
   },
   {
     key: 'singletons',

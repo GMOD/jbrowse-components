@@ -111,7 +111,7 @@ export function getReadConnectionsMenuItem(
           },
           {
             helpText:
-              'Draw the ordinary pairs alongside the ones that carry a category — abnormal insert size or orientation, and split junctions. For arcs, ordinary means concordant, as it does for the Proper pairs filter under Filter by...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That filter hides the reads and this hides their arcs, so you can keep the pileup whole and still read the band. For the read cloud, ordinary means an insert size inside the usual band, whatever the flags say. Arcs draw them unless you uncheck this and the cloud leaves them out unless you check it; on deep coverage, unchecking it for arcs is the difference between a readable band and a solid mass.',
+              'Draw the ordinary pairs alongside the ones that carry a category — abnormal insert size or orientation, and split junctions. For arcs, ordinary means concordant: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. A pair that fails this counts as SV evidence under Filter by..., which hides reads where this hides only arcs, so you can keep the pileup whole and still read the band. For the read cloud, ordinary means an insert size inside the usual band, whatever the flags say. Arcs draw them unless you uncheck this and the cloud leaves them out unless you check it; on deep coverage, unchecking it for arcs is the difference between a readable band and a solid mass.',
           },
         ),
         toggleItem(

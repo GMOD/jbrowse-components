@@ -11,16 +11,15 @@ import { defaultFilterFlags } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
-// "Proper pairs" hides the reads; "Show concordant-pair arcs" hides their
-// arcs. They are two settings in two menus computed on two sides of the worker
-// boundary — one over `Feature`s, one over `readFlags`/`readPairOrientations` —
-// and the only thing making them agree is that both call
-// `isConcordantPairRead`.
+// "SV evidence" keeps a pair the aligner did not call concordant; "Show
+// ordinary pairs" hides the arcs of the ones it did. They are two settings in
+// two menus computed on two sides of the worker boundary — one over
+// `Feature`s, one over `readFlags`/`readPairOrientations` — and the only thing
+// making them agree is that both call `isConcordantPairRead`.
 //
-// That is exactly the shape a "these must match" comment used to stand in for,
-// so this holds the READ filter's real answer against the predicate rather than
-// against a restatement of it. If someone re-implements either side, the pair a
-// user sees hidden as a read but drawn as an arc is the bug, and it is silent.
+// This holds the READ filter's real answer against the predicate rather than
+// against a restatement of it: a pair kept as evidence whose arc is hidden as
+// ordinary is the bug, and it is silent.
 function feature(
   id: string,
   flags: number,
@@ -94,16 +93,15 @@ const CASES = [
 ]
 
 describe.each(CASES)('$name', ({ flags, str, num }) => {
-  // What the READ filter does with a lone pair of this kind: `properPairs:
-  // 'exclude'` drops a chain only when the chain is the ordinary case, so an
-  // empty result means "the read filter calls this concordant".
-  const hiddenAsRead =
+  // What the READ filter does with a lone pair of this kind: an empty result
+  // under `svSignal: 'only'` means "the read filter calls this ordinary".
+  const ordinaryAsRead =
     filterChainFeatures([feature('r', flags, str), feature('r', flags, str)], {
       ...defaultFilterFlags,
-      properPairs: 'exclude',
+      svSignal: 'only',
     }).length === 0
 
   test('the arc predicate agrees with the read filter', () => {
-    expect(isConcordantPairRead(flags, num)).toBe(hiddenAsRead)
+    expect(isConcordantPairRead(flags, num)).toBe(ordinaryAsRead)
   })
 })

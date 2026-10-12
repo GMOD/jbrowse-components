@@ -60,10 +60,7 @@ function filterNarrowings(model: FiltersModel): Reversibles {
   }
 }
 
-// One submenu per category, three radios inside. Radios rather than the
-// checkboxes these were before folding into `filterBy`, because each carries a
-// third state now — "only proper pairs" and "hide split alignments" are moves
-// the booleans could not express.
+// One submenu per category, three radios inside: only, hide, or all reads.
 //
 // The choice shows on the parent row (`withHint`), so which categories are
 // filtering is readable without opening any of them, and the help text sits
@@ -131,15 +128,14 @@ function minMapqItem(model: FiltersModel): MenuItem {
  * The "Filter by..." family for an alignments display.
  *
  * `readCategories` adds the four whole-read filters. LGVSyntenyDisplay shares
- * this model chain, and so inherits the `filterBy` slot they now live in, but a
- * PAF block has no mate, no pair flag, no SA tag and no CIGAR skip — the same
- * reason `getSyntenyShowMenuItems` omits their old home rather than showing
- * dead checkboxes.
+ * this model chain and its `filter` slot, but a PAF block has no mate, no pair
+ * flag, no SA tag and no CIGAR skip, so of the four only `svSignal` answers
+ * there, by its SV-size indels, and its menu leaves them out.
  *
  * With them the group is always a submenu, which costs the dialog the extra hop
  * it used to save by being a lone top-level row. That is the right way round:
- * the categories are the everyday filters — an SV read toggles proper pairs off
- * and back several times a locus — and editing a bitmask is the rare one.
+ * the categories are the everyday filters — an SV review toggles SV evidence
+ * on and off several times a locus — and editing a bitmask is the rare one.
  */
 export function getFiltersMenuItems(
   model: FiltersModel,

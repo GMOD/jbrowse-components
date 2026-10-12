@@ -1,8 +1,9 @@
-import { CramRecord, RF_DELETION, RF_REF_SKIP } from '@gmod/cram'
+import { CramRecord, RF_DELETION, RF_INSERTION, RF_REF_SKIP } from '@gmod/cram'
 import {
   CIGAR_HAS_SKIP,
   CIGAR_HAS_SV_DELETION,
-  SV_DELETION_MIN_BP,
+  CIGAR_HAS_SV_INSERTION,
+  SV_INDEL_MIN_BP,
   numericCigarToString,
 } from '@jbrowse/cigar-utils'
 
@@ -212,22 +213,28 @@ export default class CramSlightlyLazyFeature
 
   // Off the slice's read-feature columns, which `forEachMismatch` walks too,
   // so neither `readFeatures` (an object per feature per access) nor
-  // `NUMERIC_CIGAR` is built to answer it.
+  // `NUMERIC_CIGAR` is built to answer it. An encoder writes a multi-base
+  // insertion as one `I`, so an SV-size one is one feature.
   get cigarCategoryBits() {
     const arena = this.readFeatureArena
     let skip = 0
     let svDeletion = 0
+    let svInsertion = 0
     if (arena) {
       const { codes, num } = arena
       const end = this.readFeatureStart + this.readFeatureCount
       for (let i = this.readFeatureStart; i < end; i++) {
         const code = codes[i]
+        const sv = +(num[i]! >= SV_INDEL_MIN_BP)
         skip |= +(code === RF_REF_SKIP)
-        svDeletion |= +(code === RF_DELETION) & +(num[i]! >= SV_DELETION_MIN_BP)
+        svDeletion |= +(code === RF_DELETION) & sv
+        svInsertion |= +(code === RF_INSERTION) & sv
       }
     }
     return (
-      (skip ? CIGAR_HAS_SKIP : 0) | (svDeletion ? CIGAR_HAS_SV_DELETION : 0)
+      (skip ? CIGAR_HAS_SKIP : 0) |
+      (svDeletion ? CIGAR_HAS_SV_DELETION : 0) |
+      (svInsertion ? CIGAR_HAS_SV_INSERTION : 0)
     )
   }
 

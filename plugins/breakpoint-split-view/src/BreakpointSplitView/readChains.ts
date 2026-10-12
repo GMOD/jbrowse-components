@@ -1,12 +1,9 @@
 import {
-  flagsOf,
-  isConcordantPairRead,
-  pairFieldEntry,
+  READ_SV_SIGNAL,
   readGroupConnections,
   readIdAt,
   readNameAt,
 } from '@jbrowse/alignments-core'
-import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 
 import type { LayoutRecord } from './types.ts'
 import type { RefNameCanonicalizer } from './util.ts'
@@ -18,7 +15,9 @@ import type {
 } from '@jbrowse/alignments-core'
 
 export interface OverlayReadArrays
-  extends ConnectionReadArrays, ReadIdentity, ReadNames {}
+  extends ConnectionReadArrays, ReadIdentity, ReadNames {
+  readCategoryBits: Uint8Array
+}
 
 /** What the split view reads off an alignments display in one of its rows. */
 export interface ReadSource {
@@ -48,22 +47,12 @@ export interface ReadChain {
   connections: ReadConnection<ReadEntry>[]
 }
 
-function orientationOf(e: ReadEntry) {
-  return e.data.readPairOrientations[e.readIdx]!
-}
-
-function mayConnect(data: OverlayReadArrays, i: number) {
-  const flags = data.readFlags[i]!
-  return (
-    !!data.readSuppAlignments?.[i] ||
-    (!!(flags & SAM_FLAG_PAIRED) &&
-      !isConcordantPairRead(flags, data.readPairOrientations[i]!))
-  )
-}
-
-function isEvidence(c: ReadConnection<ReadEntry>) {
-  const src = pairFieldEntry(c.e1, c.e2)
-  return c.isSplit || !isConcordantPairRead(flagsOf(src), orientationOf(src))
+// The `svSignal` definition the read filter and the sort use (ADR-229). Read
+// by read rather than by chain: the filter keeps a split read's concordant mate,
+// but a curve to it would show no rearrangement, so a pair's link joins two
+// evidence reads.
+export function isEvidenceRead(data: OverlayReadArrays, i: number) {
+  return (data.readCategoryBits[i]! & READ_SV_SIGNAL) !== 0
 }
 
 export function readIdOf(e: ReadEntry) {
@@ -82,9 +71,8 @@ export function readSpanOf(e: ReadEntry) {
 }
 
 /**
- * The split reads and discordant pairs across every row, grouped by read name
- * and resolved into split junctions and mate links. A concordant pair's link is
- * left out, being no evidence of a rearrangement.
+ * The SV evidence reads across every row, grouped by read name and resolved
+ * into split junctions and mate links.
  */
 export function buildReadChains(
   sources: (ReadSource | undefined)[],
@@ -97,7 +85,7 @@ export function buildReadChains(
         const refName = source!.loadedRegions.get(displayedRegionIndex)?.refName
         if (refName !== undefined) {
           for (let i = 0; i < data.readKeys.length; i++) {
-            const name = mayConnect(data, i) ? readNameAt(data, i) : ''
+            const name = isEvidenceRead(data, i) ? readNameAt(data, i) : ''
             if (name) {
               const entry = {
                 level,
@@ -125,7 +113,7 @@ export function buildReadChains(
       const assembly = assemblies[entries[0]!.level]
       const connections = readGroupConnections(entries, refName =>
         assembly ? assembly.getCanonicalRefName2(refName) : refName,
-      ).filter(isEvidence)
+      )
       if (connections.length > 0) {
         chains.push({ entries, connections })
       }

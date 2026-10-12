@@ -183,10 +183,9 @@ export interface ReadFilter {
   //
   // Spliced means the CIGAR carries a reference skip (`N`).
   spliced?: CategoryFilter
-  // Concordant: flagged properly paired (SAM flag 0x2) AND in normal FR
-  // orientation. A discordant pair — RR/LL/RL, the inversion and duplication
-  // signal — is not one even when the aligner set the flag.
-  properPairs?: CategoryFilter
+  // SV evidence, judged per chain: a split read, an indel of 50 bp or more, or
+  // a paired primary read the aligner did not call concordant (`READ_SV_SIGNAL`).
+  svSignal?: CategoryFilter
   // A read whose mate and supplementary segments are all absent from this
   // window, so it stands alone (samtools calls these "singletons").
   singletons?: CategoryFilter
@@ -197,7 +196,7 @@ export interface ReadFilter {
 }
 
 export const READ_CATEGORY_KEYS = [
-  'properPairs',
+  'svSignal',
   'singletons',
   'split',
   'spliced',

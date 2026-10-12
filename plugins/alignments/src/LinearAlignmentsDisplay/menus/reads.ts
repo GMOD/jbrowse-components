@@ -32,11 +32,9 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // Visibility of the rendering layers. Sashimi and read-connection controls live
 // in their own menus.
 //
-// **Layers only.** Which reads exist is "Filter by..." — the three read-category
-// toggles that used to end this menu (proper pairs, singletons, split
-// alignments) drop reads in the worker rather than hiding drawn ones, and now
-// live in `filter` with the rest of the filters. What is left is one kind of
-// thing: a switch on something already fetched.
+// **Layers only.** Which reads exist is "Filter by...": the read categories
+// drop reads in the worker rather than hiding drawn ones. What is left here is
+// one kind of thing: a switch on something already fetched.
 //
 // **Toggles only, and flat.** What makes a long menu hard to scan is rows that
 // aren't the same kind of thing, not the row count. Adding subHeaders to group

@@ -170,8 +170,8 @@ const concordant = Array.from({ length: 40 }, (_, i) =>
 const longInserts = [0, 1, 2].map(i =>
   pair(`long${i}`, 5000 + i, SAM_FLAG_PAIRED, 'F1R2'),
 )
-// Flagged 0x2 by the aligner but facing outward, so `properPairs: 'exclude'`
-// keeps them
+// Flagged 0x2 by the aligner but facing outward, so `svSignal: 'only'` keeps
+// them
 const outwardProper = [2500, 2600, 2700, 2800].map(tlen =>
   pair(`rf${tlen}`, tlen, PROPER, 'R1F2'),
 )
@@ -184,22 +184,22 @@ async function bandOf(featuresArray: Feature[], filterBy?: ReadFilter) {
   return result.value.groups[0]!.data.insertSizeStats
 }
 
-const EXCLUDE_PROPER: ReadFilter = {
+const ONLY_SV_SIGNAL: ReadFilter = {
   flagInclude: 0,
   flagExclude: 0,
-  properPairs: 'exclude',
+  svSignal: 'only',
 }
 
-test('excluding proper pairs keeps the band the unfiltered fetch gives', async () => {
+test('keeping only SV evidence keeps the band the unfiltered fetch gives', async () => {
   const reads = [...concordant, ...longInserts.flat()]
   const band = await bandOf(reads)
   expect(band).toBeDefined()
-  expect(await bandOf(reads, EXCLUDE_PROPER)).toEqual(band)
+  expect(await bandOf(reads, ONLY_SV_SIGNAL)).toEqual(band)
 })
 
-test('outward 0x2 pairs left by excluding proper pairs do not set the band', async () => {
+test('outward 0x2 pairs kept as SV evidence do not set the band', async () => {
   const reads = [...concordant, ...longInserts.flat(), ...outwardProper.flat()]
-  const band = await bandOf(reads, EXCLUDE_PROPER)
+  const band = await bandOf(reads, ONLY_SV_SIGNAL)
   expect(band).toEqual(await bandOf(reads))
   expect(classifyInsertSize(5000, band)).toBe('long')
 })

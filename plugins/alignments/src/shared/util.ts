@@ -1,3 +1,4 @@
+import { READ_SPLICED } from '@jbrowse/alignments-core'
 import {
   CIGAR_H,
   CIGAR_S,
@@ -7,8 +8,6 @@ import {
   SAM_FLAG_UNMAPPED,
 } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
-
-import { READ_SPLICED } from './readCategoryBits.ts'
 
 import type { ReadFilter } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'

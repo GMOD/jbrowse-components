@@ -1,4 +1,8 @@
-import { PAIR_DIRECTION_NUM, namesToBlock } from '@jbrowse/alignments-core'
+import {
+  PAIR_DIRECTION_NUM,
+  namesToBlock,
+  readCategoryBits,
+} from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -36,6 +40,14 @@ function arrays(reads: Read[]): OverlayReadArrays {
       reads.map(r => (r.orientation ? PAIR_DIRECTION_NUM[r.orientation] : 0)),
     ),
     readSuppAlignments: reads.map(r => r.sa ?? ''),
+    readCategoryBits: Uint8Array.from(reads, r =>
+      readCategoryBits(
+        r.flags ?? 0,
+        r.sa ?? '',
+        0,
+        r.orientation ? PAIR_DIRECTION_NUM[r.orientation] : 0,
+      ),
+    ),
     readClipAtStart: new Uint32Array(reads.map(r => r.clip ?? 0)),
   }
 }

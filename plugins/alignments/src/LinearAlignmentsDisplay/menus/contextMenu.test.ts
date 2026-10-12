@@ -574,7 +574,7 @@ test('clear leaves the read categories alone', () => {
       flagInclude: 0,
       flagExclude: 1540,
       readName: 'readABC',
-      properPairs: 'exclude',
+      svSignal: 'only',
       split: 'only',
     },
   })
@@ -582,7 +582,7 @@ test('clear leaves the read categories alone', () => {
     .find(i => i.label === 'Clear read/tag filters')!
     .onClick()
   expect(model.filterCalls[0]).toMatchObject({
-    properPairs: 'exclude',
+    svSignal: 'only',
     split: 'only',
     readName: undefined,
   })

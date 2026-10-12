@@ -60,7 +60,8 @@ export type { CigarCursor, ReadWindow } from './refWindowToRead.ts'
 export {
   CIGAR_HAS_SKIP,
   CIGAR_HAS_SV_DELETION,
-  SV_DELETION_MIN_BP,
+  CIGAR_HAS_SV_INSERTION,
+  SV_INDEL_MIN_BP,
   cigarStringCategoryBits,
   numericCigarCategoryBits,
 } from './cigarCategoryBits.ts'

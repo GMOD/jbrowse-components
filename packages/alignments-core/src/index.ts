@@ -52,6 +52,19 @@ export {
   splitInversion,
   splitJunctionKind,
 } from './orientation.ts'
+export {
+  READ_DISCORDANT,
+  READ_SPLICED,
+  READ_SPLIT,
+  READ_SV_DELETION,
+  READ_SV_INDEL,
+  READ_SV_INSERTION,
+  READ_SV_SIGNAL,
+  discordantBit,
+  readCategoryBits,
+  splitBit,
+  svSignalTier,
+} from './readCategoryBits.ts'
 export { readIdAt, readIdPrefixOf, readKeyOf } from './readIdentity.ts'
 export type { ReadIdentity, ReadKey, ReadKeys } from './readIdentity.ts'
 export {

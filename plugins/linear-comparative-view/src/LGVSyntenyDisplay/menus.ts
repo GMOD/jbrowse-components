@@ -98,8 +98,7 @@ interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // Visibility of the rendering layers, mirroring the alignments "Show..." menu
 // (reads.ts) but only the layers a synteny block can populate: SyntenyFeature
 // implements forEachMismatch off the cs tag / CIGAR, so mismatches and insertion
-// indicators are real, while the read-category toggles there (proper pairs,
-// singletons, split alignments, soft clipping, base-quality fade) have no
+// indicators are real, while soft clipping and the base-quality fade have no
 // meaning for PAF and are omitted rather than shown as dead checkboxes.
 //
 // Toggles only, like its twin — the row cap lives in the shared feature-height

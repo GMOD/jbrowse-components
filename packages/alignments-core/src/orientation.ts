@@ -81,9 +81,9 @@ export function pairDirectionOfNum(
 /**
  * The ordinary pair: the aligner flagged it properly paired, it is not a
  * chimeric segment, and its mates face each other. The one definition of
- * "concordant" behind "Show proper pairs", "Show concordant-pair arcs" and the
- * breakpoint split view's mate links, written over the per-read numbers since
- * none of them hold features.
+ * "concordant" behind the `svSignal` read category (`discordantBit`), "Show
+ * ordinary pairs" for arcs and the `pairing` facet, written over the per-read
+ * numbers since none of them hold features.
  *
  * Unknown orientation (0) counts as concordant: an aberrant orientation is
  * positive evidence, and its absence is not. A supplementary segment is never

@@ -1,13 +1,9 @@
-import {
-  isConcordantPairRead,
-  pairOrientationToNum,
-  readKeyOf,
-} from '@jbrowse/alignments-core'
+import { READ_SV_SIGNAL, readKeyOf } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { groupBy } from '@jbrowse/core/util'
 
 import { featureChainKey } from '../shared/chainGroupingKey.ts'
-import { chainIsSplit } from '../shared/splitAlignment.ts'
+import { chainIsSplit, readCategoryBitsOf } from '../shared/splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
   getFlags,
@@ -18,26 +14,12 @@ import type { CategoryFilter, ReadFilter } from '../shared/types.ts'
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
-// A chain counts as a proper pair only when EVERY read in it is the ordinary
-// concordant case, per `isConcordantPairRead` (shared with the arc filter behind
-// "Show concordant-pair arcs", which carries the reasons), and none of it is
-// split. The split test reads the SA tag, as the breakpoint split view's
-// `isEvidence` does: the filter runs per region, so in a view of chr1
-// beside chr4 the chr1 call never sees a split read's chr4 supplementary, and
-// without the tag it would hide the read's chr1 half as an ordinary pair.
-//
-// The filter keeps this chain question rather than the `pairing` field, which
-// answers by the primary read and would hide a concordant pair whose mate is
-// split at a breakpoint (ADR-226).
-function isProperPairChain(chain: Feature[]) {
-  return (
-    chain.every((f: Feature) =>
-      isConcordantPairRead(
-        getFlags(f),
-        pairOrientationToNum(f.get('pair_orientation') as string | undefined),
-      ),
-    ) && !chainIsSplit(chain)
-  )
+// A chain is SV evidence when any of its records is (`READ_SV_SIGNAL`, ADR-229),
+// so the concordant mate of a split read stays with it. The split test reads
+// the SA tag: the filter runs per region, so in a view of chr1 beside chr4 the
+// chr1 call never sees a split read's chr4 supplementary.
+function isSvSignalChain(chain: Feature[]) {
+  return chain.some(f => (readCategoryBitsOf(f) & READ_SV_SIGNAL) !== 0)
 }
 
 // Guard against the same physical record being emitted twice — a dup would
@@ -158,9 +140,9 @@ export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
 // moving the filter to the main thread, where the coverage histogram these also
 // thin is no longer being computed.
 export function selectChains(sample: Feature[], filterBy?: ReadFilter) {
-  const { properPairs, singletons, split } = filterBy ?? {}
+  const { svSignal, singletons, split } = filterBy ?? {}
   if (
-    properPairs === undefined &&
+    svSignal === undefined &&
     singletons === undefined &&
     split === undefined
   ) {
@@ -179,7 +161,7 @@ export function selectChains(sample: Feature[], filterBy?: ReadFilter) {
       isSingletonChain(mateCounts),
     )
   }
-  rawChains = keepCategory(rawChains, properPairs, isProperPairChain)
+  rawChains = keepCategory(rawChains, svSignal, isSvSignalChain)
   rawChains = keepCategory(rawChains, split, chainIsSplit)
   // same key as the dedupe above, for the same reason: this is identity within
   // one fetch, which is the thing `readKeyOf` is cheap at

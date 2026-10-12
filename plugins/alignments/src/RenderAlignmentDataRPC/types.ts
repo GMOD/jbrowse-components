@@ -316,9 +316,9 @@ export interface WorkerPileupData {
   // here and why the walk itself is unconditional.
   readSuppAlignments?: string[]
 
-  // Per-read `READ_SPLIT | READ_SPLICED | READ_SV_DELETION`
-  // (shared/readCategoryBits.ts), answered over the whole record rather than
-  // the gap arrays, which hold only the part of a read inside the region.
+  // Per-read category bits (`@jbrowse/alignments-core`'s readCategoryBits.ts),
+  // answered over the whole record rather than the gap arrays, which hold only
+  // the part of a read inside the region.
   readCategoryBits: Uint8Array
 
   // Per-read soft/hard-clip length at the 5' start of the read, in read

@@ -18,13 +18,13 @@ function mate(name: string, n: number, orientation: string, HP: string) {
     start: n * 300,
     end: n * 300 + 100,
     name,
-    flags: 0x2,
+    flags: 0x3,
     pair_orientation: orientation,
     tags: { HP },
   })
 }
 
-// The proper-pair filter needs whole chains, so the adapter cannot apply it;
+// The svSignal filter needs whole chains, so the adapter cannot apply it;
 // a value only hidden reads carry must not reach "Found values"
 test('a value carried only by hidden reads is not found', async () => {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
@@ -42,7 +42,7 @@ test('a value carried only by hidden reads is not found', async () => {
     adapterConfig: { type: 'BamAdapter' },
     regions: [region],
     tag: 'HP',
-    filterBy: { ...defaultFilterFlags, properPairs: 'exclude' },
+    filterBy: { ...defaultFilterFlags, svSignal: 'only' },
   })
   expect(values).toEqual(['2'])
 })

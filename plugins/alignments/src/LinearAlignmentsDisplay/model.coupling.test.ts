@@ -920,7 +920,7 @@ describe('read categories + filter submenu', () => {
     const items = display.trackMenuItems()
     const filters = menuSubItems(items, 'Filter by...')
     for (const noun of [
-      'Proper pairs',
+      'SV evidence',
       'Reads without a mate',
       'Split alignments',
       'Spliced reads',
@@ -929,7 +929,7 @@ describe('read categories + filter submenu', () => {
     }
 
     const show = menuSubItems(items, 'Show...')
-    expect(hasMenuItem(show, 'Show proper pairs')).toBe(false)
+    expect(hasMenuItem(show, 'SV evidence')).toBe(false)
     expect(hasMenuItem(show, 'Show only split alignments')).toBe(false)
   })
 
@@ -939,26 +939,26 @@ describe('read categories + filter submenu', () => {
     // label carries the active count, so it is renamed by the very click being
     // made here. `menuSubItems` recurses, so naming the row is enough.
     clickMenuItem(
-      menuSubItems(display.trackMenuItems(), 'Proper pairs'),
-      'Hide proper pairs',
+      menuSubItems(display.trackMenuItems(), 'SV evidence'),
+      'Hide SV evidence',
     )
-    expect(display.readFilter.properPairs).toBe('exclude')
+    expect(display.readFilter.svSignal).toBe('exclude')
 
     // and back to the absent state, not a stored 'all'
     clickMenuItem(
-      menuSubItems(display.trackMenuItems(), 'Proper pairs — hidden'),
+      menuSubItems(display.trackMenuItems(), 'SV evidence — hidden'),
       'All reads',
     )
-    expect(display.readFilter.properPairs).toBeUndefined()
+    expect(display.readFilter.svSignal).toBeUndefined()
   })
 
   // The category row says what it is doing without being opened, and the group
   // above it counts — so a filtered track reads as filtered at the top level.
   test('an active category shows on its own row and in the count', () => {
     const display = createDisplay()
-    display.setReadFilter({ ...display.readFilter, properPairs: 'exclude' })
+    display.setReadFilter({ ...display.readFilter, svSignal: 'exclude' })
     const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
-    expect(hasMenuItem(filters, 'Proper pairs — hidden')).toBe(true)
+    expect(hasMenuItem(filters, 'SV evidence — hidden')).toBe(true)
   })
 
   // The label is the only place the track chrome admits a filter is hiding
@@ -972,7 +972,7 @@ describe('read categories + filter submenu', () => {
       ...display.readFilter,
       readName: 'readA',
       tagFilters: [{ tag: 'HP', value: '1' }],
-      properPairs: 'exclude',
+      svSignal: 'exclude',
       split: 'only',
     })
     expect(

@@ -164,7 +164,7 @@ test('a whole-number bitmask is applied', () => {
 // flag change silently cleared four filters set from the menu.
 test('a submit preserves the read categories it does not show', () => {
   const { setReadFilter } = renderDialog({
-    properPairs: 'exclude',
+    svSignal: 'only',
     split: 'only',
   })
   fireEvent.change(screen.getByPlaceholderText('Enter read name'), {
@@ -174,7 +174,7 @@ test('a submit preserves the read categories it does not show', () => {
   expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
       readName: 'readA',
-      properPairs: 'exclude',
+      svSignal: 'only',
       split: 'only',
     }),
   )
@@ -187,7 +187,7 @@ test('resetting leaves the read categories alone', () => {
   const { setReadFilter } = renderDialog({
     readName: 'readA',
     spliced: 'only',
-    properPairs: 'exclude',
+    svSignal: 'only',
   })
   fireEvent.click(screen.getByText('Reset defaults'))
   submit()
@@ -195,7 +195,7 @@ test('resetting leaves the read categories alone', () => {
     expect.objectContaining({
       readName: undefined,
       spliced: 'only',
-      properPairs: 'exclude',
+      svSignal: 'only',
     }),
   )
 })

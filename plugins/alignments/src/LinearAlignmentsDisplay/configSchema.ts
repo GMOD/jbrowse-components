@@ -184,9 +184,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * read is PCR or optical duplicate (0x400)
        *
        * A read category takes `"only"` or `"exclude"`, and is absent when it
-       * isn't filtering — `{ "properPairs": "exclude" }` for the discordant
-       * pairs and the split reads. `spliced`, `properPairs`,
-       * `singletons` and `split`.
+       * isn't filtering — `{ "svSignal": "only" }` for the split reads, the
+       * SV-size indels and the discordant pairs. `svSignal`, `singletons`,
+       * `split` and `spliced`.
        */
       filter: readFilterConfigSchema,
       /**

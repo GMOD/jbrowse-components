@@ -1,4 +1,10 @@
 import {
+  READ_SPLIT,
+  pairOrientationToNum,
+  readCategoryBits,
+  splitBit,
+} from '@jbrowse/alignments-core'
+import {
   connectionEndpointBps,
   featurizeSAEntries,
   getClip,
@@ -6,8 +12,8 @@ import {
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { READ_SPLIT, splitBit } from './readCategoryBits.ts'
 import { getFlags, getStrand } from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
@@ -40,14 +46,30 @@ import type { PanelStop } from '@jbrowse/sv-core'
  */
 export function isSplitAlignment(feature: Feature) {
   const flags = getFlags(feature)
-  if (splitBit(flags, '') === READ_SPLIT) {
-    return true
-  }
-  const sa =
-    (feature as Partial<MismatchFeature>).hasEndClip === false
-      ? ''
-      : extractFeatureTagValue(feature, 'SA')
-  return splitBit(flags, sa) === READ_SPLIT
+  return (
+    splitBit(flags, '') === READ_SPLIT ||
+    splitBit(flags, saTagOf(feature)) === READ_SPLIT
+  )
+}
+
+function saTagOf(feature: Feature) {
+  return (feature as Partial<MismatchFeature>).hasEndClip === false
+    ? ''
+    : extractFeatureTagValue(feature, 'SA')
+}
+
+/**
+ * The record's `readCategoryBits`, as the extract stores them, for a reader
+ * holding the feature: the read filter, which judges a chain by them.
+ */
+export function readCategoryBitsOf(feature: Feature) {
+  const flags = getFlags(feature)
+  return readCategoryBits(
+    flags,
+    splitBit(flags, '') === READ_SPLIT ? '' : saTagOf(feature),
+    cigarCategoryBitsOf(feature),
+    pairOrientationToNum(feature.get('pair_orientation') as string | undefined),
+  )
 }
 
 /**

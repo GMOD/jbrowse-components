@@ -1,15 +1,17 @@
-import { namesToBlock } from '@jbrowse/alignments-core'
-import { SV_DELETION_MIN_BP } from '@jbrowse/cigar-utils'
+import {
+  READ_DISCORDANT,
+  READ_SPLICED,
+  READ_SPLIT,
+  READ_SV_DELETION,
+  READ_SV_INSERTION,
+  namesToBlock,
+} from '@jbrowse/alignments-core'
+import { SV_INDEL_MIN_BP } from '@jbrowse/cigar-utils'
 
 import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../shaders/slang/gap.consts.generated.ts'
-import {
-  READ_SPLICED,
-  READ_SPLIT,
-  READ_SV_DELETION,
-} from '../shared/readCategoryBits.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -45,6 +47,10 @@ interface Read {
   // Aligned in pieces, as the worker's `READ_SPLIT` says of a record carrying
   // an SA tag or the supplementary flag.
   split?: boolean
+  // Insertion lengths over the whole record.
+  insertions?: number[]
+  // A paired primary record the aligner did not call concordant.
+  discordant?: boolean
 }
 
 // The worker's whole-record answer for a fixture read; its gap arrays stay
@@ -53,9 +59,11 @@ function categoryBitsOf(r: Read) {
   return (
     (r.split ? READ_SPLIT : 0) |
     (r.skips?.length ? READ_SPLICED : 0) |
-    (r.deletions?.some(([s, e]) => e - s >= SV_DELETION_MIN_BP)
+    (r.deletions?.some(([s, e]) => e - s >= SV_INDEL_MIN_BP)
       ? READ_SV_DELETION
-      : 0)
+      : 0) |
+    (r.insertions?.some(n => n >= SV_INDEL_MIN_BP) ? READ_SV_INSERTION : 0) |
+    (r.discordant ? READ_DISCORDANT : 0)
   )
 }
 
@@ -500,6 +508,48 @@ describe("computeLayout layoutOrder 'svSignal'", () => {
     })
     expect([...computeLayout(d, false, undefined, 'svSignal').readYs]).toEqual([
       1, 0,
+    ])
+  })
+
+  // Every read overlaps every other, so each takes a row of its own and the
+  // rows read off the order: in start order the discordant read would be on
+  // top, so a single tier for all three buries the split read under it.
+  const stacked = makePileupData({
+    regionStart: 0,
+    reads: [
+      { start: 0, end: 300 }, // id0 plain
+      { start: 5, end: 300, discordant: true }, // id1
+      { start: 10, end: 300, insertions: [60] }, // id2
+      { start: 15, end: 300, split: true }, // id3
+    ],
+  })
+
+  test('lifts split reads, then SV-size indels, then discordant pairs', () => {
+    expect([
+      ...computeLayout(stacked, false, undefined, 'svSignal').readYs,
+    ]).toEqual([3, 2, 1, 0])
+  })
+
+  test('a 49 bp insertion lifts nothing', () => {
+    const d = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 50 },
+        { start: 10, end: 200, insertions: [49] },
+      ],
+    })
+    expect([...computeLayout(d, false, undefined, 'svSignal').readYs]).toEqual([
+      0, 1,
+    ])
+  })
+
+  test('the multi-region layout lifts by the same tiers', () => {
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [[0, stacked]],
+      layoutOrder: 'svSignal',
+    })
+    expect(['id0', 'id1', 'id2', 'id3'].map(id => rowMap.get(id))).toEqual([
+      3, 2, 1, 0,
     ])
   })
 })

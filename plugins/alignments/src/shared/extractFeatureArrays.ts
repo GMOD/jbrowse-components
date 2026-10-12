@@ -1,3 +1,4 @@
+import { readCategoryBits } from '@jbrowse/alignments-core'
 import { getClip } from '@jbrowse/cigar-utils'
 import { getTag } from '@jbrowse/modifications-utils'
 
@@ -17,9 +18,8 @@ import {
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldValueReader } from './groupFeatures.ts'
-import { splitBit } from './readCategoryBits.ts'
 import { isFillUnmarkedMode, paintsUnmodifiedCalls } from './types.ts'
-import { getFlags, getMateRefName, getStrand } from './util.ts'
+import { getMateRefName, getStrand } from './util.ts'
 
 import type { BaseLayer, ReadColorBy } from './types.ts'
 import type {
@@ -160,7 +160,8 @@ export function extractFeatureArrays<T extends FeatureData>(
     // below — so no per-feature pass can re-derive strand from a SAM flag.
     const strand = getStrand(feature)
 
-    features.push(buildFeatureData(feature))
+    const featureData = buildFeatureData(feature)
+    features.push(featureData)
 
     nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
     const isMismatch = isMismatchFeature(feature)
@@ -170,8 +171,12 @@ export function extractFeatureArrays<T extends FeatureData>(
         : ((getTag(feature, 'SA') as string | undefined) ?? '')
     hasSuppAlignment ||= sa !== ''
     suppAlignments.push(sa)
-    categoryBits[readIndex] =
-      splitBit(getFlags(feature), sa) | cigarCategoryBitsOf(feature)
+    categoryBits[readIndex] = readCategoryBits(
+      featureData.flags,
+      sa,
+      cigarCategoryBitsOf(feature),
+      featureData.pairOrientation,
+    )
     // Read once: it drives both the start clip and the indel walk below.
     const cigarString = isMismatch
       ? ''

@@ -1,14 +1,16 @@
-import { CIGAR_D, CIGAR_N } from './cigarConstants.ts'
+import { CIGAR_D, CIGAR_I, CIGAR_N } from './cigarConstants.ts'
 
 /** A CIGAR carries a reference skip, the `N` a spliced aligner writes across an intron. */
 export const CIGAR_HAS_SKIP = 2
-/** A CIGAR carries a deletion of {@link SV_DELETION_MIN_BP} or more. */
+/** A CIGAR carries a deletion of {@link SV_INDEL_MIN_BP} or more. */
 export const CIGAR_HAS_SV_DELETION = 4
+/** A CIGAR carries an insertion of {@link SV_INDEL_MIN_BP} or more. */
+export const CIGAR_HAS_SV_INSERTION = 8
 
-/** The deletion length from which callers file a deletion as a structural variant. */
-export const SV_DELETION_MIN_BP = 50
+/** The indel length from which callers file an indel as a structural variant. */
+export const SV_INDEL_MIN_BP = 50
 
-const SV_DELETION_MIN_PACKED = SV_DELETION_MIN_BP << 4
+const SV_INDEL_MIN_PACKED = SV_INDEL_MIN_BP << 4
 
 // The op count from which the branch-free scan wins. Interleaved in one
 // process (`plugins/alignments/benches/categoryBits.bench.ts`), the branching
@@ -19,8 +21,8 @@ const SV_DELETION_MIN_PACKED = SV_DELETION_MIN_BP << 4
 const BRANCH_FREE_MIN_OPS = 32
 
 /**
- * {@link CIGAR_HAS_SKIP} and {@link CIGAR_HAS_SV_DELETION} over a packed CIGAR
- * (`len << 4 | op`).
+ * {@link CIGAR_HAS_SKIP}, {@link CIGAR_HAS_SV_DELETION} and
+ * {@link CIGAR_HAS_SV_INSERTION} over a packed CIGAR (`len << 4 | op`).
  */
 export function numericCigarCategoryBits(cigar: ArrayLike<number>) {
   if (cigar.length < BRANCH_FREE_MIN_OPS) {
@@ -30,24 +32,36 @@ export function numericCigarCategoryBits(cigar: ArrayLike<number>) {
       const op = packed & 0xf
       if (op === CIGAR_N) {
         bits |= CIGAR_HAS_SKIP
-      } else if (op === CIGAR_D && packed >= SV_DELETION_MIN_PACKED) {
-        bits |= CIGAR_HAS_SV_DELETION
+      } else if (packed >= SV_INDEL_MIN_PACKED) {
+        if (op === CIGAR_D) {
+          bits |= CIGAR_HAS_SV_DELETION
+        } else if (op === CIGAR_I) {
+          bits |= CIGAR_HAS_SV_INSERTION
+        }
       }
     }
     return bits
   }
   let skip = 0
   let svDeletion = 0
+  let svInsertion = 0
   for (let i = 0; i < cigar.length; i++) {
     const packed = cigar[i]!
     const op = packed & 0xf
+    const sv = +(packed >= SV_INDEL_MIN_PACKED)
     skip |= +(op === CIGAR_N)
-    svDeletion |= +(op === CIGAR_D) & +(packed >= SV_DELETION_MIN_PACKED)
+    svDeletion |= +(op === CIGAR_D) & sv
+    svInsertion |= +(op === CIGAR_I) & sv
   }
-  return (skip ? CIGAR_HAS_SKIP : 0) | (svDeletion ? CIGAR_HAS_SV_DELETION : 0)
+  return (
+    (skip ? CIGAR_HAS_SKIP : 0) |
+    (svDeletion ? CIGAR_HAS_SV_DELETION : 0) |
+    (svInsertion ? CIGAR_HAS_SV_INSERTION : 0)
+  )
 }
 
 const CHAR_D = 68
+const CHAR_I = 73
 const CHAR_N = 78
 
 /**
@@ -65,8 +79,12 @@ export function cigarStringCategoryBits(cigar: string) {
     } else {
       if (code === CHAR_N) {
         bits |= CIGAR_HAS_SKIP
-      } else if (code === CHAR_D && len >= SV_DELETION_MIN_BP) {
-        bits |= CIGAR_HAS_SV_DELETION
+      } else if (len >= SV_INDEL_MIN_BP) {
+        if (code === CHAR_D) {
+          bits |= CIGAR_HAS_SV_DELETION
+        } else if (code === CHAR_I) {
+          bits |= CIGAR_HAS_SV_INSERTION
+        }
       }
       len = 0
     }

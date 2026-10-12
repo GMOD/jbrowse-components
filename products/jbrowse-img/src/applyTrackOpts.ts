@@ -485,7 +485,7 @@ interface Modifier {
 // here and names itself.
 const READ_CATEGORY_KEYS = [
   'spliced',
-  'properPairs',
+  'svSignal',
   'singletons',
   'split',
 ] as const
@@ -606,13 +606,12 @@ const modifiers: Record<string, Modifier> = {
   },
   // The four read-category filters, one flag each and one vocabulary between
   // them: `only` keeps that category, `exclude` drops it, `all` (the default)
-  // leaves it alone. `properPairs:exclude split:only` is the SV export.
+  // leaves it alone. `svSignal:only` is the SV export.
   //
   // They filter BEFORE the coverage pipeline, not just before layout, so
-  // `properPairs:exclude` on an ordinary sample removes almost every read and
-  // the coverage band goes with them. That is the right behaviour (the band
-  // should describe the reads that are drawn) and it is the thing to know
-  // before reaching for one of these to tidy up an arc band.
+  // `svSignal:only` on an ordinary sample removes almost every read and the
+  // coverage band goes with them: know that before reaching for one of these
+  // to tidy up an arc band.
   ...readCategoryModifiers(),
   // samtools' own vocabulary, because it is the one a reader of this flag
   // already has: `flags:include:exclude` is `-f` then `-F`. Each half is either
@@ -710,6 +709,14 @@ const modifiers: Record<string, Modifier> = {
   },
 }
 
+// A modifier an earlier release took and this one does not, with what to write
+// instead. An error rather than the unknown-name warning: the old name still
+// runs in scripts, and its figure would come out unfiltered.
+const removedModifiers: Record<string, string> = {
+  properPairs:
+    'Use svSignal:only for the SV evidence (split reads, indels of 50 bp or more, discordant pairs), or svSignal:exclude to hide it.',
+}
+
 // Fold one `prefix:val1:val2` modifier into the display snapshot, or say why it
 // did nothing. Modifier NAMES warn rather than throw — an unknown one for
 // forward compatibility, and a well-known one aimed at the wrong track type
@@ -724,6 +731,10 @@ function applyModifier(
   val1: string,
   val2: string | undefined,
 ) {
+  const replacement = lookup(removedModifiers, prefix)
+  if (replacement) {
+    throw new Error(`The ${prefix}: track option was removed. ${replacement}`)
+  }
   const modifier = lookup(modifiers, prefix)
   if (!modifier) {
     console.warn(`Warning: unknown track option "${prefix}"`)

@@ -258,14 +258,22 @@ describe('alignments settings a static export cannot reach any other way', () =>
     })
   })
 
-  // The SV export: the split reads of the pairs the aligner did not call
-  // concordant. Both halves land in one `filterBy`, so they compose with the
-  // flag masks and tag filters below rather than sitting beside them.
-  test('the read categories fold into filterBy', () => {
+  // Both land in one `filter`, so they compose with the flag masks and tag
+  // filters below rather than sitting beside them.
+  test('the read categories fold into filter', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['properPairs:exclude', 'split:only'])
+      buildDisplaySnapshot('alignments', ['svSignal:only', 'spliced:exclude'])
         .snap.filter,
-    ).toEqual({ properPairs: 'exclude', split: 'only' })
+    ).toEqual({ svSignal: 'only', spliced: 'exclude' })
+  })
+
+  test('properPairs: refuses, naming svSignal:only', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['properPairs:exclude']),
+    ).toThrow(/svSignal:only/)
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   test('mapq: writes the minimum mapping quality beside the other filters', () => {

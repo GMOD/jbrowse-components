@@ -1,3 +1,8 @@
+import {
+  READ_SPLICED,
+  READ_SPLIT,
+  svSignalTier,
+} from '@jbrowse/alignments-core'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
@@ -5,11 +10,6 @@ import { emptyConnectingLinesUploadData } from '../features/connectingLines/type
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
-import {
-  READ_SPLICED,
-  READ_SPLIT,
-  READ_SV_DELETION,
-} from '../shared/readCategoryBits.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -481,37 +481,38 @@ function buildSoftclipOrder(
   )
 }
 
-// Which category bits each lifting order lifts. `svSignal` takes a deletion of
-// structural-variant size with the split reads: an aligner writes the same
-// molecule either way, by the deletion's length.
-const LIFTED_BITS: Partial<Record<LayoutOrder, number>> = {
-  spliced: READ_SPLICED,
-  split: READ_SPLIT,
-  svSignal: READ_SPLIT | READ_SV_DELETION,
+// How high each lifting order lifts a read, from its category bits: 0 stays
+// put, and a higher tier sits above a lower one. `svSignal` is tiered
+// (`svSignalTier`); the others lift one class.
+const LIFT_TIER: Partial<Record<LayoutOrder, (bits: number) => number>> = {
+  spliced: bits => +((bits & READ_SPLICED) !== 0),
+  split: bits => +((bits & READ_SPLIT) !== 0),
+  svSignal: svSignalTier,
 }
 
-// 1 for each read the order lifts ahead of the rest, or undefined for an order
-// that lifts no class.
-function liftedFlags(
+// Each read's tier under the order, or undefined for an order that lifts no
+// class.
+function liftedTiers(
   layoutOrder: LayoutOrder,
   data: WorkerPileupData,
   numReads: number,
 ) {
-  const mask = LIFTED_BITS[layoutOrder]
-  if (mask === undefined) {
+  const tierOf = LIFT_TIER[layoutOrder]
+  if (tierOf === undefined) {
     return undefined
   }
   const lifted = new Uint8Array(numReads)
   for (let i = 0; i < numReads; i++) {
-    lifted[i] = data.readCategoryBits[i]! & mask ? 1 : 0
+    lifted[i] = tierOf(data.readCategoryBits[i]!)
   }
   return lifted
 }
 
-// The lifted reads take the lowest rows, each class in canonical order — so on
-// RNA-seq the junction-spanning reads sit together at the top instead of
-// interleaving with the unspliced majority, and at a breakpoint the reads that
-// cross it do. Not start-monotone, so the caller takes the row-scan path.
+// The lifted reads take the lowest rows, highest tier first and each tier in
+// canonical order — so on RNA-seq the junction-spanning reads sit together at
+// the top instead of interleaving with the unspliced majority, and at a
+// breakpoint the reads that cross it do. Not start-monotone, so the caller
+// takes the row-scan path.
 function buildLiftedFirstOrder(
   data: WorkerPileupData,
   numReads: number,
@@ -638,7 +639,7 @@ export function computeLayout(
   // is exactly the tie that made layout depend on arrival order, so it has to be
   // resolved by read identity rather than left to the emit order. Still
   // start-monotone, so the interval-partitioning fast path below applies.
-  const lifted = liftedFlags(layoutOrder, data, numReads)
+  const lifted = liftedTiers(layoutOrder, data, numReads)
   const order = lifted
     ? buildLiftedFirstOrder(data, numReads, lifted)
     : layoutOrder === 'length'
@@ -858,18 +859,19 @@ export function computeMultiRegionLayout({
   // order and is canonicalized below.
   const extents = new Map<ReadKey, ReadExtent>()
   const orderedIds: ReadKey[] = []
-  // A read is lifted if any region's copy of it is, by `readCategoryBits`.
-  const liftedIds = new Set<ReadKey>()
+  // A read takes the highest tier any region's copy of it has.
+  const liftedTierById = new Map<ReadKey, number>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
     const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
-    const lifted = liftedFlags(layoutOrder, data, numReads)
+    const lifted = liftedTiers(layoutOrder, data, numReads)
     for (let i = 0; i < numReads; i++) {
       const id = data.readKeys[i]!
-      if (lifted?.[i]) {
-        liftedIds.add(id)
+      const tier = lifted?.[i] ?? 0
+      if (tier > (liftedTierById.get(id) ?? 0)) {
+        liftedTierById.set(id, tier)
       }
       const start = ext.starts[i]!
       const end = ext.ends[i]!
@@ -946,7 +948,7 @@ export function computeMultiRegionLayout({
       return (
         (layoutOrder === 'length'
           ? compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)
-          : Number(liftedIds.has(b)) - Number(liftedIds.has(a))) ||
+          : (liftedTierById.get(b) ?? 0) - (liftedTierById.get(a) ?? 0)) ||
         compareIdsCanonically(a, b)
       )
     })

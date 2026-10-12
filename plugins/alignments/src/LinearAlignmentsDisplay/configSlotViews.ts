@@ -109,9 +109,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * Whether the band draws its ordinary pairs: the arcs' concordant ones
-     * (`isConcordantPairRead`, the rule `filter.properPairs` hides reads by)
-     * and the cloud's modal-insert ones. Unset, arcs keep them and the cloud
-     * drops them.
+     * (`isConcordantPairRead`, whose failure on a paired primary read is
+     * `filter.svSignal`'s discordant clause) and the cloud's modal-insert
+     * ones. Unset, arcs keep them and the cloud drops them.
      */
     get showOrdinaryPairs(): boolean {
       return ordinaryPairsShown(

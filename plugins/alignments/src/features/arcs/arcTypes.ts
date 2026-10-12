@@ -54,8 +54,9 @@ export interface ArcSettings {
   showInterchrom: boolean
   showLongRange: boolean
   // Whether the band draws its ordinary pairs, each mode by its own rule:
-  // concordant flags for arcs (`isConcordantPairRead`, shared with "Show proper
-  // pairs"), a modal |TLEN| for the cloud. Unset is `ordinaryPairsShown`'s.
+  // concordant flags for arcs (`isConcordantPairRead`, shared with the
+  // `svSignal` read filter), a modal |TLEN| for the cloud. Unset is
+  // `ordinaryPairsShown`'s.
   showOrdinaryPairs?: boolean
   // Reads a translocation breakpoint must gather before its marks are drawn —
   // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
@@ -268,7 +269,7 @@ export interface PairedPendingArc extends PendingArcEndpoints {
   tlen: number
   // SAM flags of the record the pair fields were sourced from, carried for
   // `isConcordantPairRead` alone — the aligner's own verdict on the pair, which
-  // is what "Show concordant-pair arcs" hides. On the split arm there is nothing
+  // is what "Show ordinary pairs" hides. On the split arm there is nothing
   // to carry: a junction between two segments of one read has no pair to call
   // proper, which is the same reason `tlen` and the orientation live here.
   flags: number

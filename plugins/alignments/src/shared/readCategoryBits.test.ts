@@ -1,3 +1,4 @@
+import { READ_SPLICED, READ_SV_INSERTION } from '@jbrowse/alignments-core'
 import { cigarStringCategoryBits } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { firstValueFrom } from 'rxjs'
@@ -11,8 +12,9 @@ import {
   volvoxReference,
 } from '../CramAdapter/CramTestAdapters.fixture.ts'
 import cramConfigSchema from '../CramAdapter/configSchema.ts'
-import { READ_SPLICED } from './readCategoryBits.ts'
+import { filterChainFeatures } from '../RenderAlignmentDataRPC/filterChainFeatures.ts'
 import { isSplitAlignment } from './splitAlignment.ts'
+import { defaultFilterFlags } from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
 
@@ -88,6 +90,37 @@ test.each(['volvox-samspec', 'volvox-simple-inv'])(
     expect([...fromBam.values()].some(bits => bits !== 0)).toBe(true)
   },
 )
+
+test('volvox-simple-inv carries SV-size insertions for the twin test to compare', async () => {
+  const bits = (await reads(bam('volvox-simple-inv.bam'))).map(
+    f => f.cigarCategoryBits,
+  )
+  expect(bits.filter(b => b & READ_SV_INSERTION).length).toBeGreaterThan(0)
+})
+
+// Unpaired long reads: the evidence is the split reads and the SV-size indels,
+// which the oracle here reads off the CIGAR string by its own regex.
+test('svSignal on long reads keeps the split reads and SV-size indels', async () => {
+  const features = await reads(bam('badread_long_reads.bam'))
+  const hasSvIndel = (f: MismatchFeature) =>
+    [...(f.get('CIGAR') as string).matchAll(/(\d+)[DI]/g)].some(
+      m => Number(m[1]) >= 50,
+    )
+  const evidenceNames = new Set(
+    features
+      .filter(f => hasSvIndel(f) || isSplitAlignment(f))
+      .map(f => f.get('name')!),
+  )
+  const kept = new Set(
+    filterChainFeatures(features, {
+      ...defaultFilterFlags,
+      svSignal: 'only',
+    }).map(f => f.get('name')!),
+  )
+  expect(kept).toEqual(evidenceNames)
+  expect(features.some(f => hasSvIndel(f) && !isSplitAlignment(f))).toBe(true)
+  expect(kept.size).toBeLessThan(new Set(features.map(f => f.get('name'))).size)
+})
 
 test('the packed-CIGAR scan and the CIGAR-string scan agree read for read', async () => {
   const features = await reads(bam('spliced.bam'))

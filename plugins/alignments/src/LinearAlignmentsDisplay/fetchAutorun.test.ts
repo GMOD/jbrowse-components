@@ -621,7 +621,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore2 = mockRpcCall.mock.calls.length
-    display.setReadFilter({ ...display.readFilter, properPairs: 'exclude' })
+    display.setReadFilter({ ...display.readFilter, svSignal: 'only' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
     await waitFor(() => {

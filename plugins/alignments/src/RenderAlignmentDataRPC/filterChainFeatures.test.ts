@@ -5,7 +5,10 @@ import { filterChainFeatures } from './filterChainFeatures.ts'
 
 import type { ReadFilter } from '../shared/types.ts'
 
+const PAIRED = 0x1
 const PROPER_PAIR = 0x2
+const MATE_UNMAPPED = 0x8
+const SECONDARY = 0x100
 const SUPPLEMENTARY = 0x800
 
 // The flag masks are required on ReadFilter and irrelevant here — the adapters
@@ -42,86 +45,117 @@ function names(features: { get: (k: string) => unknown }[]) {
   return [...new Set(features.map(f => f.get('name') as string))].sort()
 }
 
-describe('filterChainFeatures properPairs', () => {
-  test('"exclude" hides concordant FR proper pairs', () => {
-    const features = pair('proper', 'F1R2', PROPER_PAIR)
-    expect(
-      filterChainFeatures(features, filt({ properPairs: 'exclude' })),
-    ).toHaveLength(0)
-  })
-
-  test('"exclude" keeps discordant RR/LL/RL pairs even when flagged proper', () => {
-    const features = [
-      ...pair('rr', 'F1F2', PROPER_PAIR),
-      ...pair('ll', 'R1R2', PROPER_PAIR),
-      ...pair('rl', 'R1F2', PROPER_PAIR),
-      ...pair('proper', 'F1R2', PROPER_PAIR),
-    ]
-    expect(
-      names(filterChainFeatures(features, filt({ properPairs: 'exclude' }))),
-    ).toEqual(['ll', 'rl', 'rr'])
-  })
-
-  // The inverse of the test above, and the state the old `drawProperPairs`
-  // boolean could not express at all.
-  test('"only" keeps the concordant pairs and drops the discordant ones', () => {
-    const features = [
-      ...pair('rr', 'F1F2', PROPER_PAIR),
-      ...pair('proper', 'F1R2', PROPER_PAIR),
-    ]
-    expect(
-      names(filterChainFeatures(features, filt({ properPairs: 'only' }))),
-    ).toEqual(['proper'])
-  })
-
-  test('"exclude" keeps pairs missing the proper-pair flag', () => {
-    const features = pair('noflag', 'F1R2', 0)
-    expect(
-      names(filterChainFeatures(features, filt({ properPairs: 'exclude' }))),
-    ).toEqual(['noflag'])
-  })
-
-  test('"exclude" keeps proper pairs carrying a supplementary (chimeric) segment', () => {
-    // BWA-MEM propagates the 0x2 flag onto supplementary records, so a proper
-    // FR pair with a split segment is genuine SV evidence that must stay visible
-    const chain = [
-      ...pair('chimeric', 'F1R2', PROPER_PAIR),
-      new SimpleFeature({
-        uniqueId: 'chimeric-supp',
-        refName: 'ctgA',
-        start: 5000,
-        end: 5100,
-        name: 'chimeric',
-        flags: PROPER_PAIR | SUPPLEMENTARY,
-        pair_orientation: 'F1R2',
-      }),
-    ]
-    expect(
-      names(filterChainFeatures(chain, filt({ properPairs: 'exclude' }))),
-    ).toEqual(['chimeric'])
-  })
-
-  // In a view of chr1 beside chr4 the chr1 call holds the pair's two
-  // primaries and not the chr4 supplementary; the SA tag is what says split
-  test('"exclude" keeps a proper pair whose read is split outside the window', () => {
-    const [read1, read2] = pair('crosses', 'F1R2', PROPER_PAIR)
-    const split = new SimpleFeature({
-      ...read2!.toJSON(),
-      tags: { SA: 'chr4,5000,+,60S40M,60,0;' },
+describe('filterChainFeatures svSignal', () => {
+  const PAIRED_PROPER = PAIRED | PROPER_PAIR
+  const only = filt({ svSignal: 'only' })
+  const record = (name: string, id: string, fields: Record<string, unknown>) =>
+    new SimpleFeature({
+      uniqueId: `${name}-${id}`,
+      refName: 'ctgA',
+      start: 0,
+      end: 100,
+      name,
+      CIGAR: '100M',
+      ...fields,
     })
+
+  // A row per line of the spec's table (sv-signal-filter-and-coverage.md)
+  const chains = {
+    concordant: pair('concordant', 'F1R2', PAIRED_PROPER),
+    mateSplit: [
+      ...pair('mateSplit', 'F1R2', PAIRED_PROPER).slice(0, 1),
+      record('mateSplit', '2', {
+        flags: PAIRED_PROPER,
+        pair_orientation: 'F1R2',
+        CIGAR: '40S60M',
+        tags: { SA: 'chr4,5000,+,60S40M,60,0;' },
+      }),
+    ],
+    discordant: pair('discordant', 'R1F2', PAIRED_PROPER),
+    unflagged: pair('unflagged', 'F1R2', PAIRED),
+    interchrom: [record('interchrom', '1', { flags: PAIRED })],
+    mateUnmapped: [
+      record('mateUnmapped', '1', { flags: PAIRED | MATE_UNMAPPED }),
+    ],
+    deletion: [
+      record('deletion', '1', {
+        flags: PAIRED_PROPER,
+        pair_orientation: 'F1R2',
+        CIGAR: '50M60D50M',
+      }),
+      ...pair('deletion', 'F1R2', PAIRED_PROPER).slice(1),
+    ],
+    insertion: [
+      record('insertion', '1', {
+        flags: PAIRED_PROPER,
+        pair_orientation: 'F1R2',
+        CIGAR: '50M60I50M',
+      }),
+      ...pair('insertion', 'F1R2', PAIRED_PROPER).slice(1),
+    ],
+    smallIndels: [
+      record('smallIndels', '1', {
+        flags: PAIRED_PROPER,
+        pair_orientation: 'F1R2',
+        CIGAR: '50M49D20M49I50M',
+      }),
+      ...pair('smallIndels', 'F1R2', PAIRED_PROPER).slice(1),
+    ],
+    secondary: [record('secondary', '1', { flags: PAIRED | SECONDARY })],
+    longRead: [record('longRead', '1', { flags: 0, CIGAR: '5000M' })],
+    longReadSplit: [
+      record('longReadSplit', '1', {
+        flags: 0,
+        CIGAR: '1000S4000M',
+        tags: { SA: 'chr4,5000,+,4000S1000M,60,0;' },
+      }),
+    ],
+    longReadIndel: [
+      record('longReadIndel', '1', { flags: 0, CIGAR: '2000M80I3000M' }),
+    ],
+    syntenyBlock: [record('syntenyBlock', '1', { CIGAR: '100M' })],
+    syntenyBlockIndel: [
+      record('syntenyBlockIndel', '1', { CIGAR: '100M500D100M' }),
+    ],
+  }
+  const all = Object.values(chains).flat()
+  const evidence = [
+    'deletion',
+    'discordant',
+    'insertion',
+    'interchrom',
+    'longReadIndel',
+    'longReadSplit',
+    'mateSplit',
+    'mateUnmapped',
+    'syntenyBlockIndel',
+    'unflagged',
+  ]
+
+  test('"only" keeps every chain carrying SV evidence, and nothing else', () => {
+    expect(names(filterChainFeatures(all, only))).toEqual(evidence)
+  })
+
+  test('"exclude" keeps the rest', () => {
     expect(
-      names(
-        filterChainFeatures([read1!, split], filt({ properPairs: 'exclude' })),
-      ),
-    ).toEqual(['crosses'])
-    expect(
-      filterChainFeatures([read1!, split], filt({ properPairs: 'only' })),
-    ).toHaveLength(0)
+      names(filterChainFeatures(all, filt({ svSignal: 'exclude' }))),
+    ).toEqual(
+      Object.keys(chains)
+        .filter(n => !evidence.includes(n))
+        .sort(),
+    )
+  })
+
+  // The chain-wide judgement: the mate of a split read, or of a read carrying
+  // an SV-size deletion, comes with it whatever its own flags
+  test('"only" keeps the concordant mate of an evidence read', () => {
+    for (const chain of [chains.mateSplit, chains.deletion]) {
+      expect(filterChainFeatures(chain, only)).toHaveLength(2)
+    }
   })
 
   test('keeps everything when the category is absent', () => {
-    const features = pair('proper', 'F1R2', PROPER_PAIR)
-    expect(filterChainFeatures(features, filt())).toHaveLength(2)
+    expect(filterChainFeatures(all, filt())).toHaveLength(all.length)
   })
 })
 
@@ -249,27 +283,20 @@ describe('filterChainFeatures singletons', () => {
   })
 })
 
-// Every category is AND-ed: this is the SV export, the split reads of the pairs
-// the aligner did not call concordant.
-//
-// Both split chains are split via the SA tag rather than a supplementary
-// record, because a supplementary is never concordant (`isConcordantPairRead`)
-// and so a chain carrying one is not a proper-pair chain whatever its flags —
-// which would make `properPairs: 'exclude'` keep both and prove nothing about
-// the AND.
+// Every category is AND-ed.
 test('filterChainFeatures ANDs the categories', () => {
-  const [lone] = pair('loneDiscordant', 'F1F2', PROPER_PAIR)
+  const [lone] = pair('loneDiscordant', 'F1F2', PAIRED | PROPER_PAIR)
   const features = [
-    ...pair('plainProper', 'F1R2', PROPER_PAIR),
-    ...pair('plainDiscordant', 'F1F2', PROPER_PAIR),
+    ...pair('plainProper', 'F1R2', PAIRED | PROPER_PAIR),
+    ...pair('plainDiscordant', 'F1F2', PAIRED | PROPER_PAIR),
     lone!,
   ]
-  // properPairs:exclude drops plainProper; singletons:exclude drops the lone read
+  // svSignal:only drops plainProper; singletons:exclude drops the lone read
   expect(
     names(
       filterChainFeatures(
         features,
-        filt({ properPairs: 'exclude', singletons: 'exclude' }),
+        filt({ svSignal: 'only', singletons: 'exclude' }),
       ),
     ),
   ).toEqual(['plainDiscordant'])

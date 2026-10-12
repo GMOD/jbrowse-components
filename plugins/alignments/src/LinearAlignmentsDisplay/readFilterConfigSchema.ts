@@ -23,7 +23,7 @@ const CATEGORY_FILTERS = ['only', 'exclude'] as const
  *
  * #example
  * ```js
- * { type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude' } }
+ * { type: 'LinearAlignmentsDisplay', filter: { svSignal: 'only' } }
  * ```
  * ```js
  * { type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
@@ -85,9 +85,9 @@ export const readFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: pairs the aligner flagged proper, in normal orientation, with no split read.
+     * `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, with the rest of their pair. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `minMapq` judges each read alone, so a read whose mate was placed at low quality still counts by its flags.
      */
-    properPairs: {
+    svSignal: {
       type: 'maybeStringEnum',
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description: 'only, exclude, or unset for unfiltered',
@@ -131,7 +131,7 @@ export function readFilterOf(
     readName: readConfObject(filter, 'readName'),
     tagFilters: readConfObject(filter, 'tagFilters'),
     spliced: readConfObject(filter, 'spliced'),
-    properPairs: readConfObject(filter, 'properPairs'),
+    svSignal: readConfObject(filter, 'svSignal'),
     singletons: readConfObject(filter, 'singletons'),
     split: readConfObject(filter, 'split'),
   }
