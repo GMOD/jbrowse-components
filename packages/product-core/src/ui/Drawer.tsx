@@ -26,6 +26,9 @@ const useStyles = makeStyles()(theme => ({
     // rather than on the side matching `drawerPosition` (see
     // `drawerGridTemplateColumns`)
     gridColumn: 'drawer',
+    // the last row: a drawer with no row of its own auto-places after the
+    // main item and drops to a new row when it sits on the left
+    gridRow: '-2 / -1',
     display: 'flex',
     height: '100%',
     minWidth: 0,

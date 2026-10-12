@@ -62,6 +62,11 @@ test('the drawer places itself in the named grid column', () => {
   expect(window.getComputedStyle(root).gridColumn).toBe('drawer')
 })
 
+test('the drawer takes the last row, so a left drawer does not drop below the main item', () => {
+  const { root } = renderDrawer(stubSession({ drawerPosition: 'left' }))
+  expect(window.getComputedStyle(root).gridRow).toBe('-2/-1')
+})
+
 // `window.innerWidth` is the drawer's container only in a full-window app.
 test('a drag clamps against the grid the drawer is an item of', () => {
   const resizeDrawer = jest.fn(() => 0)

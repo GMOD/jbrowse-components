@@ -32,6 +32,7 @@ const useStyles = makeStyles()({
     width: '100%',
   },
   container: {
+    gridColumn: 'main',
     width: '100%',
     height: '100%',
     overflow: 'hidden',
