@@ -71,5 +71,8 @@ differing:
   scales only).
 - A multi-sample matrix leaves out the `rowColor` group colors; the engine's
   `rows` table carries none.
-- The exporter gives a multi-sample track 3 inches whatever its row count, so
-  86 row labels overprint; size it from the display's `height`.
+- A multi-sample matrix's row labels overprint past about 40 rows.
+
+Reads now draw at the display's `featureHeight` (ggjbrowse 0.3.0, engine
+d4744ce27e reporting the band pixel sizes), and the script saves at
+`jbrowse_height()`, so compact and super-compact pileups match the browser.
