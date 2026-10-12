@@ -8,7 +8,10 @@ summary: "The alignments roles that ask the same question of a read answer it on
 ## Status
 
 Accepted (2026-10-11), from the 2026-10-11 analysis of the alignments plugin
-against the grammar of graphics and its three reviews.
+against the grammar of graphics and its three reviews. Amended by
+[ADR-229](adr-229-sv-evidence-is-one-read-category.md): `svSignal` is a read
+filter as well as a sort, takes SV-size insertions and discordant pairs, and
+replaces `properPairs`.
 
 ## Context
 

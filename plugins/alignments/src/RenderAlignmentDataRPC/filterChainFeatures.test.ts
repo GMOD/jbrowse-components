@@ -59,7 +59,7 @@ describe('filterChainFeatures svSignal', () => {
       ...fields,
     })
 
-  // A row per line of the spec's table (sv-signal-filter-and-coverage.md)
+  // A row per line of ADR-229's table
   const chains = {
     concordant: pair('concordant', 'F1R2', PAIRED_PROPER),
     mateSplit: [
