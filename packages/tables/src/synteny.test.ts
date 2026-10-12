@@ -17,7 +17,7 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   columnsAgree(t.ribbons)
   expect(t.alignments.strand).toHaveLength(7)
   expect(t.alignments.strand.filter(s => s === -1)).toHaveLength(2)
-  expect(t.alignments.queryChrom).toEqual(Array(7).fill('ctgA'))
+  expect(t.alignments.queryChrom).toEqual(new Array(7).fill('ctgA'))
   expect(t.assemblyNames).toEqual(['volvox_random_inv', 'volvox'])
   expect(t.hasCigar).toBe(true)
   expect(t.alpha).toBe(0.25)
@@ -138,7 +138,7 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
     ...INV_INDELS_DOTPLOT,
     view: { drawCigar: false, color: { field: 'strand' } },
   })
-  expect(plain.segments.op).toEqual(Array(7).fill('match'))
+  expect(plain.segments.op).toEqual(new Array(7).fill('match'))
   expect(new Set(plain.segments.color).size).toBe(2)
   expect(plain.legend.label.slice(0, 2)).toEqual(['forward', 'reverse'])
   expect(t.skipped.count).toBe(0)
