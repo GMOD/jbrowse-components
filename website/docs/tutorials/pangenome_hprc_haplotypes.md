@@ -34,8 +34,8 @@ lane as a deletion.
 ## Prerequisites
 
 - the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin);
-  the HPRC page's launches and the hosted config already load it
+  [install it from the plugin store](/docs/user_guides/plugin_store); the HPRC
+  page's launches and the hosted config already load it
 - for
   [Whole-genome synteny from a GFA's walks](#whole-genome-synteny-from-a-gfas-walks):
   `python3` and the [JBrowse CLI](/docs/cli) for `make-pif`

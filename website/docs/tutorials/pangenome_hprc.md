@@ -44,8 +44,8 @@ empty or simple picture.
 ## Prerequisites
 
 - the GraphGenomeView plugin. In your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin);
-  every launch from the HPRC page already loads it
+  [install it from the plugin store](/docs/user_guides/plugin_store); every
+  launch from the HPRC page already loads it
 - for [the alignment](#the-same-alleles-as-aligned-bases) on your own data:
   [taffy](https://github.com/ComparativeGenomicsToolkit/taffy)
 

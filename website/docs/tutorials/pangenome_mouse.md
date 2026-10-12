@@ -35,9 +35,8 @@ leaves out which strains have them.
 ## Prerequisites
 
 - the GraphGenomeView plugin, for the `GraphTrack` below. In your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin);
-  the [portal page](https://genomes.jbrowse.org/pangenomes/mouse) already loads
-  it
+  [install it from the plugin store](/docs/user_guides/plugin_store); the
+  [portal page](https://genomes.jbrowse.org/pangenomes/mouse) already loads it
 - htslib (`tabix`), to query the hosted index
 - [`minigraph`](https://github.com/lh3/minigraph), to build a graph like this
   one

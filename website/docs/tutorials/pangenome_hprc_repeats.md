@@ -36,9 +36,9 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
 ## Prerequisites
 
 - the GraphGenomeView plugin. In your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin);
-  the HPRC page's launches and the hosted HPRC config the sessions below open
-  already load it
+  [install it from the plugin store](/docs/user_guides/plugin_store); the HPRC
+  page's launches and the hosted HPRC config the sessions below open already
+  load it
 - the TandemRepeat plugin, for [Which copy is which](#which-copy-is-which). In
   your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store); the hosted

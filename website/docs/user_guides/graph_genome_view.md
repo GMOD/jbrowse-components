@@ -255,11 +255,9 @@ several haplotypes share appears on only one of their rows.
 ## On JBrowse Desktop
 
 [JBrowse Desktop](/docs/quickstart_desktop) runs Route 2 with no server, config
-or index. Install the plugin once from the start screen menu, at **Global
-plugins... → Add custom plugin**. Expand **Advanced options** and put the
-`esmUrl` from the top of this page in **ESM build URL**. Leave the two fields
-above it empty: they are the UMD pair, and a value in either one takes
-precedence. Then **Add → Graph genome view** offers **Choose file**.
+or index. Install the plugin once by opening **Global plugins...** in the start
+screen menu and clicking **Install** beside GraphGenomeView under **Available
+plugins**. Then **Add → Graph genome view** offers **Choose file**.
 
 Desktop starts a session only by opening a genome, so pick a genome before
 looking for the **Add** menu. Any genome works, because the view lays out a GFA

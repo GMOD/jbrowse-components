@@ -32,7 +32,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view).
   In your own JBrowse,
-  [install it by URL](/docs/tutorials/pangenome_prepare_graph#the-graphgenomeview-plugin)
+  [install it from the plugin store](/docs/user_guides/plugin_store)
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later and
   [`gfatools`](https://github.com/lh3/gfatools), for
   [indexing the graph](#indexing-the-graph)

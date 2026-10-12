@@ -67,9 +67,11 @@ database.
 
 ## The GraphGenomeView plugin
 
-GraphGenomeView loads by URL, from a `plugins` array at the top of `config.json`
-([configuring plugins](/docs/config_guides/plugins)). The config the command
-writes holds this entry:
+Install GraphGenomeView from the plugin store, at **Tools → Plugin store** in
+JBrowse Web or **Global plugins...** on the JBrowse Desktop start screen
+([](/docs/user_guides/plugin_store)). It needs JBrowse 5. The config the command
+writes loads it by URL instead, with this entry in its `plugins` array
+([configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
 
@@ -85,10 +87,6 @@ writes holds this entry:
 ```
 
 <!-- GRAPH_PLUGIN_CONFIG END -->
-
-On [JBrowse Desktop](/docs/quickstart_desktop) v5.0.0-beta.1 or later, add that
-`esmUrl` as a
-[custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store).
 
 ## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 
