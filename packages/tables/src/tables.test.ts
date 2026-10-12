@@ -187,6 +187,30 @@ test('a ramp keys a color bar: a linear MAPQ, under the color title, and base qu
   expect(mapq.maxLabel).toMatch(/^≥?30$/)
   expect(mapq.color[0]).not.toBe(mapq.color.at(-1))
   expect(mapq.color).toContain(t.reads.color[0])
+  expect((await engine.alignments(BAM)).qualities.position).toHaveLength(0)
+})
+
+test('per-base quality paints each aligned base on its read through the ramp', async () => {
+  const t = await engine.alignments({
+    ...METHYLATED,
+    display: { baseColor: { field: 'baseQuality' } },
+  })
+  const q = t.qualities
+  expect(q.position.length).toBeGreaterThan(1000)
+  const outside = q.position.filter((position, i) => {
+    const read = q.read[i]!
+    return position < t.reads.start[read]! || position >= t.reads.end[read]!
+  })
+  expect(outside).toEqual([])
+  const colorsOf = new Map<number, Set<string>>()
+  q.score.forEach((score, i) => {
+    colorsOf.set(score, (colorsOf.get(score) ?? new Set()).add(q.color[i]!))
+  })
+  expect([...colorsOf.values()].every(colors => colors.size === 1)).toBe(true)
+  const scores = [...colorsOf.keys()].sort((a, b) => a - b)
+  expect(scores[0]).toBeLessThan(10)
+  expect(scores.at(-1)).toBeGreaterThan(30)
+  expect(colorsOf.get(scores[0]!)).not.toEqual(colorsOf.get(scores.at(-1)!))
 })
 
 test('the display\u2019s filter object keeps the reads it keeps', async () => {

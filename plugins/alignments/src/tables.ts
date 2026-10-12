@@ -59,6 +59,10 @@ import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
+import {
+  BASE_QUALITY_UNAVAILABLE,
+  qualityAbgr,
+} from './features/perBaseQuality/colors.ts'
 import { mergeJunctions } from './features/sashimi/junctions.ts'
 import { spliceMotifLabel } from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
@@ -658,6 +662,22 @@ function readConnectionTables(
 }
 
 /**
+ * Each aligned base's Phred score under the per-base quality layer, at its
+ * position on its read, in the ramp color the layer paints it; a base with no
+ * score paints the plain read fill.
+ */
+function qualities(d: WorkerPileupData, plainRead: string) {
+  return {
+    position: d.perBaseQualPositions,
+    read: d.perBaseQualReadIndices,
+    score: d.perBaseQualScores,
+    color: Array.from(d.perBaseQualScores, s =>
+      s === BASE_QUALITY_UNAVAILABLE ? plainRead : abgrToHex(qualityAbgr[s]!),
+    ),
+  }
+}
+
+/**
  * One section's reads as the alignments display draws them, as columns. Every
  * coordinate is 0-based genomic; `read` in the other tables is a 0-based index
  * into `reads`.
@@ -667,6 +687,7 @@ function sectionTables(
   readYs: ArrayLike<number>,
   colors: { color: string[]; category: string[] },
   refName: string,
+  plainRead: string,
 ) {
   const [readStart, readEnd] = pairs(d.readPositions)
   const [gapStart, gapEnd] = pairs(d.gapPositions)
@@ -717,6 +738,7 @@ function sectionTables(
     },
     ...interbase(d),
     modifications: modifications(d),
+    qualities: qualities(d, plainRead),
     ...coverageStacks(d),
     junctions: junctions(d, refName),
   }
@@ -726,7 +748,8 @@ function sectionTables(
  * #api
  * A region's reads as the alignments display fetches, filters, lays out and
  * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
- * clips, coverage and splice junctions, each read on the row the display's
+ * clips, modifications, per-base qualities, coverage and splice junctions,
+ * each read on the row the display's
  * pileup layout gives it and in the color the display's `color` object paints
  * it, with the key the display shows: `legend`, and `ramps`, its color bars
  * (`rampKeyOf`). Under a `facet` each section lays out
@@ -855,6 +878,7 @@ export async function alignmentTables(
             laidByGroup.get(key)!.readYs,
             colors.sections.get(key)!,
             region.refName,
+            normalizedRgbToHex(colors.palette.readCategoryColors.plain),
           ),
           ...connections.bySection.get(key)!,
         },

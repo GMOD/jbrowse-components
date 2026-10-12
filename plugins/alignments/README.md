@@ -12,13 +12,14 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 A region's reads as the alignments display fetches, filters, lays out and colors
 them, as tables: the worker's reads, mismatches, gaps, insertions, clips,
-coverage and splice junctions, each read on the row the display's pileup layout
-gives it and in the color the display's `color` object paints it, with the key
-the display shows: `legend`, and `ramps`, its color bars (`rampKeyOf`). Under a
-`facet` each section lays out on its own, every row names its `section`, and
-`sections` lists them in stacking order; ungrouped, there is one section,
-labelled `''`. For a host that draws them itself, such as R through V8. The
-adapters must be registered on `pluginManager` (`registerAlignmentsAdapters`).
+modifications, per-base qualities, coverage and splice junctions, each read on
+the row the display's pileup layout gives it and in the color the display's
+`color` object paints it, with the key the display shows: `legend`, and `ramps`,
+its color bars (`rampKeyOf`). Under a `facet` each section lays out on its own,
+every row names its `section`, and `sections` lists them in stacking order;
+ungrouped, there is one section, labelled `''`. For a host that draws them
+itself, such as R through V8. The adapters must be registered on `pluginManager`
+(`registerAlignmentsAdapters`).
 
 ```js
 // type signature

@@ -102,7 +102,10 @@ objects select its per-base layer the same way `color` does: under
 `modifications` (position, read, type code and name, probability, whether
 the call says the base is unmodified, and the color and opacity the display
 paints it at), the reads take the layer's pale strand tints, and the key
-gains the modification rows. `referenceSequence` reads a region's bases
+gains the modification rows. Under `{ field: 'baseQuality' }` each aligned
+base comes back in `qualities` (position, read, Phred score, and the ramp
+color the layer paints it), and `ramps` holds the quality bar.
+`referenceSequence` reads a region's bases
 through the assembly's sequence adapter, for a host drawing them under a
 pileup; the bundle serves it as `jbrowse.sequence`. The coverage band's
 stacks come back as the worker packs them for the display: `alleleCoverage`
