@@ -5470,6 +5470,7 @@
       "package": "@jbrowse/render-core",
       "names": [
         "BINDINGS",
+        "COVERAGE",
         "INSTANCE_OFFSET_F32",
         "INSTANCE_OFFSET_U32",
         "INSTANCE_STRIDE_BYTES",
