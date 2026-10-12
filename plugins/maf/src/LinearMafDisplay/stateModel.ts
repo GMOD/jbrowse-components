@@ -167,19 +167,17 @@ import type {
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
- * The row under the pointer, which the display publishes as its
- * `hoveredFeature` so another display in the view can tell which sample the
- * pointer is on
+ * The row under the pointer, published as `hoveredFeature` so another display
+ * in the view can tell which sample it is on
  */
 export interface MafRowHover {
   name: string
 }
 
 /**
- * One species row. `RowSource` is the shared vocabulary every display with a
- * dendrogram sidebar draws rows by; this adds the two navigation fields only
- * MAF has. The adapter's `samples[].color` is the row's own `color`, which
- * its label bar shows unless a `rowColor` entry sets another.
+ * One species row: `RowSource` plus the two navigation fields only MAF has. The
+ * adapter's `samples[].color` is the row's own `color`, which a `rowColor`
+ * entry overrides.
  */
 export interface MafSource extends RowSource {
   /** assembly this row's genome is loaded as, when it is navigable */
@@ -188,10 +186,8 @@ export interface MafSource extends RowSource {
   assemblyConfigLocation?: UriLocation
 }
 
-// What a right-click on the rows resolves to: the reference column the menu's
-// sort and copy act on, plus whatever the click landed on — the same hit the
-// tooltip shows, resolved once here so an item acting on it does not have to
-// re-run the hit test against an anchor the menu has since closed.
+// A right-click's reference column plus the hit under it, resolved once so menu
+// items need not re-run the hit test against a closed anchor.
 export interface MafContextMenuInfo extends ContextMenuAnchor {
   refName: string
   pos: number
@@ -199,10 +195,8 @@ export interface MafContextMenuInfo extends ContextMenuAnchor {
 }
 
 /**
- * Merge a newly discovered row set into the known one, keeping first-seen order
- * and letting the newer entry supply label/color. Used for sample-discovery
- * tracks, where each region names only the genomes its own blocks contain — see
- * `setSamples`.
+ * Merge a discovered row set into the known one, keeping first-seen order; the
+ * newer entry supplies label and color. See `setSamples`.
  */
 function unionSources(
   known: readonly MafSource[],
@@ -216,9 +210,8 @@ function unionSources(
 }
 
 /**
- * A listed sample set, plus the copy rows of its samples that earlier regions
- * found: a copy row exists only where the blocks hold the copy, so a canonical
- * set from a region without one must not drop it.
+ * A listed sample set plus the copy rows earlier regions found: a region
+ * without the copy must not drop it.
  */
 function withKnownCopies(
   known: readonly MafSource[],
@@ -233,8 +226,8 @@ function withKnownCopies(
 }
 
 /**
- * The rows a focus names, as the worker's `isRowVisible` reads it: a row is
- * kept by its own name or by the sample it copies.
+ * The rows a focus names, by their own name or the sample they copy, as the
+ * worker's `isRowVisible` reads it.
  */
 function rowsNamedOrCopied(
   rows: MafSource[],
@@ -326,15 +319,11 @@ export default function stateModelFactory(
       .volatile(() => ({
         /**
          * #volatile
-         * The last frames fetch declined to read the `annotationAdapter`
-         * because the `byteLimit` it carried refused the region. The overlay is
-         * auxiliary and fails soft, so the only thing that happens is that the
-         * strip stops drawing — this is what lets the menu say so rather than
-         * leaving the tick on over nothing.
+         * The last frames fetch was refused by its `byteLimit`, so the strip
+         * stops drawing; the menu reads this to say so.
          *
-         * Volatile and not a config slot: it describes a measurement of the
-         * current viewport, not a setting. **Never in `rpcProps()`** — it is
-         * written by the fetch, which is the loop trap ARCHITECTURE.md names.
+         * Never in `rpcProps()`: the fetch writes it, the loop trap
+         * ARCHITECTURE.md names.
          */
         framesGateBlocked: false,
         /**
@@ -358,23 +347,11 @@ export default function stateModelFactory(
         speciesListed: false,
         /**
          * #volatile
-         * Which sample row the worker resolved as the reference — off the block
-         * whose sequence the row carries — held here rather than read back out
-         * of the region store, which is where it arrives.
+         * The reference sample row the worker resolved, held here because the
+         * region store that delivers it empties on chromosome navigation.
          *
-         * Because that store is emptied under the display — `clearAllRpcData`
-         * on chromosome navigation — and holds nothing until the first detail
-         * region lands. Read from the store, the answer would revert to
-         * `view.assemblyNames[0]` each time, and that is a different string
-         * exactly when a MAF names its reference differently, which is the
-         * case `refAssemblyName` exists for. `sources` hides this row, so it
-         * would come back for the whole time the view sat on the summary tier.
-         *
-         * Last write wins rather than a latch. The reference is a property of
-         * the track, but the track can be re-pointed at another adapter or have
-         * its `refAssemblyName` edited in the config editor, and
-         * `invalidateSettings` keeps the display instance across that — a latch
-         * would hide the old row until reload.
+         * Last write wins, not a latch: a re-pointed adapter or edited
+         * `refAssemblyName` keeps the display instance.
          */
         refSampleIdVolatile: undefined as string | undefined,
       }))
@@ -387,27 +364,17 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Offset the track label above the plot rather than overlapping it.
-         * Always true here: a MAF display draws a left y-axis gutter for its
-         * conservation and coverage bands, and an overlapping label would sit on
-         * top of it.
-         *
-         * A getter, not a setterless volatile, because nothing sets it — the
-         * wiggle, variants, GWAS and alignments displays all answer this hook
-         * the same way, several of them conditionally.
+         * Offsets the track label above the plot, since the left y-axis gutter
+         * would sit under an overlapping label.
          */
         get prefersOffset() {
           return true
         },
         /**
          * #getter
-         * The legal range for a band height that is *stated* — by a config, a
-         * session snapshot or a menu — rather than dragged. Undefined when the
-         * track height is itself derived from the bands, where they cannot
-         * overflow a height they are a term of.
-         *
-         * `fitTargetHeight` is unavailable to this: it reads `rowsTopOffset`,
-         * which is the band fold.
+         * The legal range for a band height that is stated by a config, session
+         * snapshot or menu rather than dragged. Undefined when the track height
+         * derives from the bands.
          */
         get statedBandBounds(): BandBounds | undefined {
           const configuredHeight = getConf(self, 'height')
@@ -583,31 +550,15 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Receive the worker's `samples` + serialized Newick tree.
+         * Receive the worker's `samples` and serialized Newick tree.
          *
-         * `samplesCanonical` says whether that set is authoritative. Config- and
-         * tree-derived sets are: they're complete and identical on every region
-         * fetch, so they replace, and a species dropped from the config stops
-         * being a row. A sample-discovery set is not: it names only the genomes
-         * the fetched region's blocks contained, so it is unioned into the rows
-         * already known (`unionSources`). Replacing there dropped rows: a genome
-         * only one region aligns would stop having a row the moment another
-         * region reported its own set, and a region with no blocks at all (or
-         * the summary path, which never discovers) names none and so blanked
-         * every row.
+         * `samplesCanonical` marks the set authoritative (config- or
+         * tree-derived), so it replaces the rows. A discovery set names only
+         * the genomes its region's blocks hold, so it unions into the known
+         * rows (`unionSources`).
          *
-         * With either resolution the deepEqual guard makes this fire once and
-         * skips the redundant frozen-array reassignment (and downstream
-         * `sources`/instance-buffer recompute) on later scroll/zoom.
-         *
-         * The guard covers the sample set only: a tree can change while the set
-         * doesn't (an edited `.nh`), and folding it in left `treeNewickVolatile`
-         * pinned to the first tree the session ever saw.
-         *
-         * A set that *changes* after one was already established invalidates
-         * nothing: the fetched rows name their species rather than a row index,
-         * so the placement autorun re-places them against the widened order and
-         * they are correct again without a refetch.
+         * The deepEqual guard covers the sample set only; a tree can change
+         * while the set does not.
          */
         setSamples({
           samples,
@@ -699,26 +650,12 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Which sample row is the reference, as resolved by the worker
-         * (`MafRegionSink`, from the block whose sequence the row carries),
-         * with the view's assembly name as the fallback before any region has
-         * loaded.
+         * The reference sample row as the worker resolved it (`MafRegionSink`),
+         * falling back to the view's assembly name until a detail region loads.
+         * `refSampleIdVolatile` holds the resolved value.
          *
-         * The view's assembly name need not be the MAF's name for the
-         * reference: a MAF-tabix track sets `refAssemblyName` on the
-         * adapter when the two differ, and a bigMaf/TAF file names its
-         * reference by the db name it was built with. Every consumer reads this
-         * getter, so the codon conservation band and the per-base band
-         * (computed in the worker) exclude the same row.
-         *
-         * A track has one reference species, so any loaded region gives the
-         * same answer, and `refSampleIdVolatile` holds the most recent one; its
-         * docs explain why the value is kept instead of read back from the
-         * region store.
-         *
-         * The fallback applies until a detail region loads, because the summary
-         * tier's records carry no reference, so a track opened zoomed out has
-         * only the view's assembly name.
+         * Every consumer reads this getter, so the codon conservation band and
+         * the per-base band exclude the same row.
          */
         get referenceSampleId(): string | undefined {
           return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
@@ -727,19 +664,12 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`),
-         * or undefined when unset. Read from the MAF *adapter* config as a swappable
-         * sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot,
-         * so this is a plain snapshot the frames RPC hands straight to `getAdapter`.
+         * The CDS-frame annotation adapter snapshot (UCSC `mafFrames`) from the
+         * MAF adapter config, or undefined when unset.
          *
-         * Read with an array slot path off the **live** parent track, not as
-         * `readConfObject(self.adapterConfig, …)`. `adapterConfig` is itself a
-         * snapshot, and a slot read against a snapshot is the case
-         * `core/configuration/CLAUDE.md` warns about: `types.stripDefault` omits a
-         * slot sitting at its default, so the read reports a defaulted slot as
-         * absent. Harmless for these two — they default to null and are only
-         * tested for presence — but the array path costs nothing and doesn't
-         * depend on that staying true.
+         * Read by array slot path off the live parent track: a slot read
+         * against a snapshot misses defaulted slots
+         * (`core/configuration/CLAUDE.md`).
          */
         get annotationAdapterConfig(): Record<string, unknown> | undefined {
           return (
@@ -751,10 +681,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Whether the per-species CDS frame *strip* should draw: an annotation
-         * adapter is configured and the "Show CDS frames" toggle is on. The codon
-         * view consumes the same frames data but is gated separately (see
-         * `framesInUse`), so the strip can be off while codon view is on.
+         * Whether the per-species CDS frame strip draws: an annotation adapter
+         * is configured and "Show CDS frames" is on. Codon view gates
+         * separately on `framesInUse`.
          */
         get annotationsActive(): boolean {
           return self.showAnnotations && !!self.annotationAdapterConfig
@@ -815,13 +744,10 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: with a tree the rows follow its leaves,
-         * read off the `parsedTree` that `rows.domain` already rotated, so the
-         * row order and the leaf order cannot drift and `treeDescribesRows`
-         * holds by construction; the rows the tree does not name follow in
-         * `rows.domain`'s order. Without one the species `rows.domain` lists
-         * lead and the rest keep the order the adapter reported them in, so a
-         * species a later region reveals joins the end.
+         * `TreeSidebarMixin`'s hook: rows follow the leaves of the rotated
+         * `parsedTree` that `rows.domain` uses, then any rows the tree does not
+         * name. Without a tree, the species `rows.domain` lists lead and the
+         * rest keep adapter order.
          */
         get rowOrder(): readonly string[] {
           const { parsedTree, rowDomain } = self
@@ -835,11 +761,8 @@ export default function stateModelFactory(
          * #getter
          * `editableSources` narrowed to the focus as the worker's
          * `visibleSamples` narrows: on a track that lists its species, a focus
-         * naming none of them shows every row; on one that discovers them it
-         * applies as given, so a focus naming no species the blocks hold draws
-         * no rows. Not the mixin's `keptRows`, whose alias rule keeps a sample
-         * row for its copy: here both are rows, and the worker ships only the
-         * named one.
+         * naming none of them shows every row; on a discovering track the focus
+         * applies as given.
          */
         get clusterableSources(): MafSource[] {
           const { editableSources, rowFocus, rowAlias } = self
@@ -851,15 +774,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The display rows: `clusterableSources`, less the reference row when
-         * `showReferenceRow` is off.
-         *
-         * The reference row hides here rather than at the fetch, since the
-         * other rows' mismatches and the coverage and conservation bands are
-         * scored against it.
-         *
-         * An array, never `undefined`: an empty one means either no fetch yet
-         * or a focus that leaves no row to draw, and `sourcesKnown` tells them
-         * apart.
+         * `showReferenceRow` is off. An empty array means no fetch yet or a
+         * focus with no rows; `sourcesKnown` tells them apart.
          */
         get sources(): MafSource[] {
           const rows = self.clusterableSources
@@ -872,11 +788,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The species list has arrived from the adapter. The readiness half of
-         * what `sources` used to answer by being `undefined`: `rowsVisible` and
-         * the render callback's first-paint gate both need "a fetch has landed",
-         * and neither can get it from an empty `sources`, which a focus on a
-         * hidden reference row also produces.
+         * Whether the species list has arrived from the adapter. `rowsVisible`
+         * and the render callback's first-paint gate read this, since an empty
+         * `sources` cannot tell.
          */
         get sourcesKnown(): boolean {
           return self.sourcesVolatile.length > 0
@@ -884,23 +798,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The focus, `rows.kept`, as the worker sees it: a sorted plain array,
-         * read off config alone so the key cannot move when a fetch lands.
-         * Sorted because the worker consumes it as a set while the key is a
-         * JSON string: re-picking a clade after a re-cluster hands the same
-         * names in a new leaf order, and unsorted that refetched every region
-         * (reference/FETCH_KEYS.md §"Row order is not a fetch input").
+         * The focus `rows.kept` as the worker sees it: a sorted plain array
+         * read off config alone. Sorting keeps a re-cluster's new leaf order
+         * out of the fetch key (reference/FETCH_KEYS.md, "Row order is not a
+         * fetch input").
          */
         get rowFocusKey(): string[] | undefined {
           const filter = self.rowFocus
           return filter?.length ? [...filter].sort() : undefined
         },
       }))
-      // The summary tier, as `CoarseTierMixin`'s hooks. Declared this early in
-      // the chain because the band layout below reads the verdict:
-      // `coverageBandActive` is what zeroes the band's height, and
-      // `rowsTopOffset` (and the whole height cascade under it) is resolved
-      // long before here.
       .views(self => ({
         /**
          * #getter
@@ -910,13 +817,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Swap where the view is zoomed out past the force-load floor — the
-         * gate's own comparison (`RegionTooLargeMixin`), read rather than
-         * restated so the swap and the gate agree about where the floor is.
-         * The point is 20kb and stays there even though the byte gate has no
-         * floor of its own any more: where the summary tier starts being the
-         * better *picture* is a rendering question, and where the detail fetch
-         * gets too expensive is a bytes question.
+         * Whether the view is zoomed out past the force-load floor, read from
+         * `RegionTooLargeMixin`'s gate so the tier swap and the gate agree on
+         * the floor.
          */
         get coarseTierPastThreshold() {
           return self.aboveForceLoadFloor
@@ -937,45 +840,24 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The coverage band is on *and* has data to put in it.
+         * The coverage band is on and has data: `showCoverage` alone is not
+         * enough, since the summary tier carries no `coverage.coverageDepths`.
          *
-         * `showCoverage` is the user's setting — the menu ticks it, a config
-         * sets it — but the band's depths come from `coverage.coverageDepths` on
-         * the alignment blocks, and the summary tier carries none. Reading the
-         * setting as if it answered both questions left the
-         * band reserving `coverageHeight` px above the rows and painting nothing
-         * whatsoever into them: no bars, no axis, no label — ~45px of dead
-         * chrome on every track with a `summaryAdapter` zoomed out past the
-         * floor.
-         *
-         * Everything that lays the band out, paints it, hit-tests it or exports
-         * it reads this; only the track menu reads `showCoverage`, so the tick
-         * keeps reporting what the user chose rather than where they happen to
-         * be zoomed — and zooming back in restores the band without touching the
-         * config. Same split as `basesRenderingActive` vs `activeRowRendering`,
-         * for the same reason.
+         * Layout, paint, hit tests and export read this; only the track menu
+         * reads `showCoverage`, so the tick keeps the user's choice across
+         * zoom. Same split as `basesRenderingActive` vs `activeRowRendering`.
          */
         get coverageBandActive() {
           return self.showCoverage && !self.coarseTierActive
         },
         /**
          * #getter
-         * The conservation band is on *and* has data to put in it — the exact
-         * twin of `coverageBandActive`, and it exists because the band had the
-         * bug that getter was written to fix.
+         * The conservation band is on and has data: twin of
+         * `coverageBandActive`, since the identity scores come off alignment
+         * blocks the summary tier does not carry.
          *
-         * Percent identity is computed from the alignment: the per-base mode
-         * reads `coverage.identityScores` off the blocks and the codon mode
-         * translates them, so both come off the alignment blocks the summary
-         * tier does not carry. `showConservation` alone therefore left 40px of band, a
-         * fixed 0–100% axis and a resize handle drawn over nothing at every zoom
-         * past the floor. Unlike coverage it is off by default, which is the
-         * only reason it went unnoticed for longer.
-         *
-         * Same split as its twin: everything that lays the band out, paints it
-         * or exports it reads this, so the menu tick keeps reporting what the
-         * user chose and zooming back in restores the band without touching the
-         * config.
+         * Layout, paint and export read this; the menu tick reads
+         * `showConservation`.
          */
         get conservationBandActive() {
           return self.showConservation && !self.coarseTierActive
@@ -1009,18 +891,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The anchor species whose `mafFrames` reading frame is used to translate
-         * every row (UCSC `codonDefault`). Tied to the *reference assembly*, not
-         * the top display row: every species' codon is compared against the
-         * reference sequence (`block.refSeqBytes`), so the frame must be enumerated
-         * from the reference's own frames. A row reorder can move a
-         * non-reference species to row 0 — reading `sources[0]` there would
-         * enumerate codons in the wrong frame. Falls back to the worker's canonical
-         * first row (pre-reorder) when the reference isn't itself a listed sample.
-         *
-         * The reference is `referenceSampleId` — the row the worker saw carrying
-         * the reference sequence — not the view's assembly name, which is a
-         * different string whenever the MAF names its reference differently.
+         * The anchor species whose `mafFrames` reading frame translates every
+         * row (UCSC `codonDefault`). Tied to the reference assembly's
+         * `referenceSampleId`, not the top row, since codons compare against
+         * the reference sequence (`block.refSeqBytes`). Falls back to the
+         * worker's first row when the reference is not a listed sample.
          */
         get defaultCodonSpecies(): string | undefined {
           const refSrc = self.referenceSampleId
@@ -1031,10 +906,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The reference's display row, which the band's codon mode leaves out
-         * as the per-base band's worker-side `refSampleId` does; -1 where the
-         * reference is no drawn row. Not the codon anchor, which falls back to
-         * the first row when the reference is not a listed sample.
+         * The reference's display row for the band's codon mode, matching the
+         * per-base band's worker-side `refSampleId`; -1 where the reference is
+         * no drawn row.
          */
         get referenceRowIndex(): number {
           const refSrc = self.referenceSampleId
@@ -1046,10 +920,10 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The detail tier's store, `MultiRegionDisplayMixin`'s per-region
-         * payloads narrowed once: the worker's columnar rows, named by species
-         * with no screen position, beside the CDS frames that rode the same
-         * fetch. A reorder re-places from here instead of refetching.
+         * The detail tier's store: `MultiRegionDisplayMixin`'s per-region
+         * payloads narrowed to the worker's columnar rows plus the CDS frames
+         * from the same fetch. A reorder re-places from here without
+         * refetching.
          */
         get detailPayloads(): ReadonlyMap<
           number,
@@ -1072,14 +946,11 @@ export default function stateModelFactory(
           /**
            * #getter
            * `detailPayloads` with every row assigned its on-screen `rowIndex`
-           * (see `placeMafRegionData`). Everything that draws, hit-tests or
-           * measures rows reads this one. A region re-places when its payload
-           * lands and every region re-places when the row order moves — a
-           * relabel or a recolor included, which move no row; that costs one
-           * re-encode of the loaded regions for a rare manual edit, cheaper
-           * than carrying a comparison to suppress it. The memo lives in this
-           * closure so it outlives a context-loss recovery, and `afterAttach`
-           * installs the observer it needs to exist at all.
+           * (`placeMafRegionData`). Everything that draws, hit-tests or
+           * measures rows reads this.
+           *
+           * The memo lives in this closure to outlive a context-loss recovery;
+           * `afterAttach` installs the observer it needs.
            */
           get rpcDataMap(): ReadonlyMap<number, MafRegionData> {
             return placed()
@@ -1101,11 +972,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation
-         * overlay, from whichever tier's payload carries them. The tier on
-         * screen is checked first, since its frames were read over the span it
-         * is drawing, and the other tier's frames fill in where it has none.
-         * The overlay therefore stays visible across the summary↔detail swap
-         * while the incoming tier's read is in flight.
+         * overlay. The tier on screen is checked first and the other tier fills
+         * gaps, so the overlay stays visible across the summary-detail swap.
          */
         get framesDataMap(): ReadonlyMap<number, MafFrameRecord[]> {
           const detail = self.detailPayloads
@@ -1127,10 +995,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The display's band stack, coverage above conservation — the one place
-         * the order is stated. Every top, height and offset below reads this
-         * fold, so a band cannot be reserved at one height and painted at
-         * another, and a band that is off spends 0 px.
+         * The band stack, coverage above conservation, where the order is
+         * stated once. Every top, height and offset reads this fold; an off
+         * band spends 0 px.
          */
         get topBands() {
           const bounds = self.statedBandBounds
@@ -1159,19 +1026,13 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Height of the conservation (percent identity) band (0 when hidden, and
-         * on the summary path, where it has nothing to draw).
+         * Height of the conservation (percent identity) band: 0 when hidden or
+         * on the summary path.
          *
-         * Every painter, axis, handle and export reads this rather than the
+         * Painters, axis, handles and export read this, not the
          * `conservationHeight` slot, which `statedBandBounds` only bounds at
-         * read time: a band dragged tall on a tall track keeps its stated height
-         * when the track is then dragged short, and painting that height put the
-         * band over the rows and its resize handle outside the display.
-         *
-         * What the stack RESERVES, which is not a ceiling. `statedBandBounds`
-         * is undefined wherever the track height is derived from the bands, so
-         * in fit mode this is the slot verbatim — `conservationHeight: 5000`
-         * with no `height` reserves 5000px and the track grows to hold it.
+         * read time. It is what the stack reserves, not a ceiling: in fit mode
+         * with no `height` the slot passes through verbatim.
          */
         get conservationDisplayHeight() {
           return self.topBands.reserved.conservation
@@ -1196,14 +1057,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The per-sample rows area has something to draw: the view can place it,
-         * the rows are shown at all, and the row set is known.
-         *
-         * Every rows layer is a full per-cell scan of the visible blocks, and
-         * with `showAlignments` off the area is 0px tall — so the gate lives
-         * here rather than being re-spelled by each `visible*` getter, which is
-         * how the summary bars came to be the only rows layer that could run
-         * before the view was initialized.
+         * The per-sample rows area has something to draw: the view can place
+         * it, the rows are shown and the row set is known. The `visible*`
+         * getters share this gate instead of re-spelling it.
          */
         get rowsVisible() {
           return (
@@ -1223,18 +1079,13 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The track height that fit-to-height mode divides among rows. Once the
-         * user drags, the explicit `height` config slot wins; before any drag we
-         * size to show every row at the default px height, so a typical
-         * alignment looks exactly like fixed mode.
+         * The track height that fit-to-height mode divides among rows: the
+         * explicit `height` slot after a drag, else enough to show every row at
+         * the default px height.
          *
          * Bounded by `DEFAULTS.maxAutoFitHeight`, past which the rows shrink
-         * instead of the track growing. Sizing purely to content made the
-         * default height scale with the species count — 4141px for a 447-way,
-         * across a stack of full-height overlay canvases — and left
-         * `maxRowsHeight` (a crash guard, at the backing-store limit) as the
-         * only thing bounding it. This is the *policy* bound; that one stays as
-         * the hard floor under a deliberate drag.
+         * instead of the track growing. `maxRowsHeight` stays the hard floor
+         * under a deliberate drag.
          */
         get fitTargetHeight(): number {
           return (
@@ -1249,15 +1100,13 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Height of the per-sample rows *viewport* — the track height minus the
-         * stacked bands, which is exactly the rows canvas. Zero when alignments
-         * are hidden, collapsing the display to the coverage band.
+         * Height of the per-sample rows viewport: the track height minus the
+         * stacked bands, which is the rows canvas. Zero when alignments are
+         * hidden.
          *
-         * This is the viewport, not the content: with a fixed `rowHeight` the
-         * rows can add up to far more than this and the extra is reached by
-         * scrolling (`scrollContentHeight` / `scrollableHeight`), never by growing
-         * the canvas. Capped at `maxRowsHeight` so even a deliberate drag can't
-         * push the backing store past the browser/GPU canvas limit.
+         * A viewport, not the content: extra rows are reached by scrolling
+         * (`scrollContentHeight`, `scrollableHeight`). Capped at
+         * `maxRowsHeight` to stay under the canvas backing-store limit.
          */
         get rowsHeight() {
           return self.showAlignments
@@ -1269,16 +1118,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The legal range for the two drag-resizable bands stacked over the rows
+         * The legal range for the two drag-resizable bands over the rows
          * (coverage, conservation).
          *
-         * The ceiling keeps the drag reversible. `rowsHeight` above floors at 0,
-         * so without a ceiling a band dragged past the track height squashes the
-         * rows to nothing and moves its resize handle, drawn at the band's
-         * bottom edge, off the display, where it cannot be dragged back. Each
-         * band is bounded against `fitTargetHeight`, the same total `rowsHeight`
-         * divides, and separately from the other band: two bands dragged large
-         * can still crowd the rows, but each resize handle stays reachable.
+         * Each band is bounded against `fitTargetHeight`, separately from the
+         * other, so a drag cannot squash the rows to nothing or push its own
+         * resize handle off the display.
          */
         get resizableBandBounds() {
           return {
@@ -1293,25 +1138,15 @@ export default function stateModelFactory(
         /**
          * #getter
          * Per-row height in fit-to-height mode: the rows viewport split evenly
-         * across rows, so the content always fits exactly and the display never
-         * scrolls in this mode.
+         * across rows, so the display never scrolls.
          *
-         * Deliberately NOT floored at 1px. A sub-pixel row is the legitimate
-         * answer for more species than the track has pixels, and flooring it
-         * made the rows area taller than the height it was asked to fit inside
-         * — which defeated `fitTargetHeight`'s own ceiling past ~555 species
-         * (2000 species floored to 1px re-grew the track to 2045px) and would
-         * now make fit mode report a phantom scroll. The non-positive guard
-         * belongs in `effectiveRowHeight`, which is the resolved value consumers
-         * divide by. Same rule, and same regression, as the multi-sample variant
-         * display's `autoRowHeight`.
+         * Not floored at 1px: a sub-pixel row is the right answer for more
+         * species than pixels, and flooring would regrow the track past
+         * `fitTargetHeight`. The non-positive guard lives in
+         * `effectiveRowHeight`.
          *
-         * A **fixed** height goes the other way and is used as-is however many
-         * species there are: the rows canvas is the viewport (`rowsHeight`), so
-         * hundreds of tall rows cost scroll extent, not backing store. The
-         * canvas-size ceiling that `effectiveRowHeight` used to apply —
-         * shrinking every row so the whole stack could be one canvas — now
-         * lives on `rowsHeight` itself, where the canvas actually is.
+         * A fixed height is used as-is; the canvas-size ceiling lives on
+         * `rowsHeight`.
          */
         get autoRowHeight() {
           return self.rowsHeight / self.nrow
@@ -1384,13 +1219,10 @@ export default function stateModelFactory(
         /**
          * #action
          * Switch to fit-to-height mode: rows stretch to fill the track height.
-         * Seeds the `height` config slot from the current content height so toggling on
-         * doesn't jump, then `rowHeight = 0` makes `effectiveRowHeight` derive
-         * from it.
+         * Seeds the `height` slot from the current content height so toggling
+         * on does not jump.
          */
         setFitToHeight() {
-          // Seed from the current content height so toggling on never jumps,
-          // even if a prior fixed-mode drag left a stale explicit height.
           setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
           setConf(self, 'rowHeight', 0)
           self.scrollTop = 0
@@ -1398,10 +1230,8 @@ export default function stateModelFactory(
         /**
          * #action
          * Apply one drag delta to the coverage band. Reads the current height
-         * inside the action rather than taking an absolute target: `ResizeHandle`
-         * emits one delta per animation frame, so a component computing
-         * `renderHeight + delta` drops every tick that lands before React
-         * re-renders. Mirrors `resizeHeight`.
+         * inside the action because `ResizeHandle` emits one delta per
+         * animation frame. Mirrors `resizeHeight`.
          */
         resizeCoverageHeight(distance: number) {
           setConf(
@@ -1430,27 +1260,18 @@ export default function stateModelFactory(
             ),
           )
         },
-        // `setScrollTop` and the re-clamp autorun are TrackHeightMixin's, earned
-        // by overriding `scrollableHeight` above — nothing self-corrects a
-        // stranded offset here, since the rows are a fixed-size canvas painted
-        // at `-scrollTop`, not a DOM overflow container.
       }))
       .actions(self => ({
         /**
          * #action
          * Reorder the rows by the base each species carries in the reference
-         * column at (refName, pos) — the MAF analogue of the multi-row
-         * painting's "sort rows by color here". Reads the placed region data
-         * already in hand, no refetch, and writes the order to `rows.domain`,
-         * as clustering and the arrangement dialog do, so "Reset row order"
-         * undoes all three.
+         * column at (refName, pos), writing the order to `rows.domain` as
+         * clustering and the arrangement dialog do, so "Reset row order" undoes
+         * all three.
          *
-         * Declines with fewer than two rows, and at a column no loaded region
-         * covers, for the reasons the other two displays' twins state: the
-         * empty write is not a no-op (`setRowOrder` drops the tree — here the
-         * guide phylogeny — whenever the row set changes), and every row
-         * reading "no base" writes back the order it already had. Both gates
-         * and the returned "did it sort" are `sortRowsAtColumn`'s.
+         * Declines with fewer than two rows or at a column no loaded region
+         * covers; `sortRowsAtColumn` owns both gates and the returned "did it
+         * sort".
          */
         sortRowsByBaseAt(refName: string, pos: number) {
           return sortRowsAtColumn(
@@ -1458,9 +1279,6 @@ export default function stateModelFactory(
             refName,
             pos,
             index => self.detailOnScreen.get(index),
-            // `sources` is the drawn list, which is what the block's
-            // `rowIndex` names — `sortRowsAtColumn` hands over the editable
-            // one, the list being written back as the order
             (sources, region) =>
               orderMafRowsByBaseAt(sources, self.sources, region, pos),
           )
@@ -1470,15 +1288,11 @@ export default function stateModelFactory(
         /**
          * #method
          * Items for the right-click menu, built from the column the click
-         * landed on. The position is captured when the menu opens rather than
-         * read inside the onClick, because `closeContextMenu` runs first when
-         * an item is clicked.
+         * landed on. Captured when the menu opens, since `closeContextMenu`
+         * runs before an item's onClick.
          */
         contextMenuItems(): MenuItem[] {
           const info = self.contextMenuInfo
-          // The sort reads the alignment blocks, which the summary tier does
-          // not draw, so on that tier the row was enabled and did nothing. Same
-          // wording the two band toggles use for the same override.
           const zoomHint = self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
           const insertion =
             info?.hover?.kind === 'insertion' ? info.hover : undefined
@@ -1499,9 +1313,6 @@ export default function stateModelFactory(
                     )
                   },
                 },
-                // Reachable by left click too, and only there until now — a
-                // long insertion's sequence is dropped from the tooltip, so
-                // the widget is the only way to read it.
                 ...(insertion
                   ? [
                       {
@@ -1531,11 +1342,11 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Theme-derived color palette (per-base colors + match/gap/mismatch/
-         * unknown/insertion), read by `rowsEncodeProps()` and `renderState`. Derived
-         * from the session theme so it's always available — including headless
-         * SVG export and RPC, where no component mounts to seed it. Theme changes
-         * trigger a main-thread re-encode but never an RPC refetch.
+         * Theme-derived color palette (per-base colors plus match, gap,
+         * mismatch, unknown, insertion), read by `rowsEncodeProps()` and
+         * `renderState`. Derived from the session theme, so it exists in
+         * headless SVG export and RPC. A theme change re-encodes on the main
+         * thread without a refetch.
          */
         // #region colorPalette
         get colorPalette(): MafColorPalette {
@@ -1544,13 +1355,9 @@ export default function stateModelFactory(
         // #endregion
         /**
          * #getter
-         * Genomic bp the GPU encoder collapses into one cell — the
-         * foundation's `settledSubPixelBinBp`, which the encode autorun tracks.
-         * Zoomed in this is `1` (encode every base). Once a base falls below
-         * half a CSS pixel the per-base quads are individually invisible — a
-         * 500kb region across 10 species emits 1.7M of them into a 28MB buffer,
-         * all but ~15k of which lose the sub-pixel race for their pixel — so the
-         * encoder decimates to one sample per bin instead.
+         * Genomic bp the GPU encoder collapses into one cell: the foundation's
+         * `settledSubPixelBinBp`. Zoomed in this is `1`; once a base falls
+         * below half a CSS pixel the encoder samples one per bin.
          */
         get encodeBinBp() {
           return self.settledSubPixelBinBp
@@ -1559,12 +1366,10 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Where the rows sit on screen: the resolved row height, plus the scroll
-         * offset and viewport that every rows layer places and culls against.
-         * Every rows layer reads this one method. A layer computing its geometry
-         * separately could read the raw `rowHeight` sentinel, or omit the scroll
-         * offset and draw its markers a scroll-distance below the cells they
-         * annotate.
+         * Where the rows sit on screen: the resolved row height plus the scroll
+         * offset and viewport. Every rows layer reads this one method, so no
+         * layer draws from the raw `rowHeight` sentinel or omits the scroll
+         * offset.
          */
         rowGeometry(): MafRowGeometryParams {
           return {
@@ -1577,11 +1382,9 @@ export default function stateModelFactory(
         /**
          * #method
          * The fetch inputs both tiers send through `rpcArgs` and cache under.
-         * The focus is a row set, since the worker ships only those genomes;
-         * the row order is not, since the client places the rows
-         * (`placeMafRegionData`). Nothing fetch-derived goes here: a key that
-         * moves when a fetch lands throws that fetch away
-         * (`singleFetchPerRegion.test.ts`).
+         * The focus is a row set since the worker ships only those genomes; the
+         * row order is not, since the client places the rows. Nothing
+         * fetch-derived goes here (`singleFetchPerRegion.test.ts`).
          */
         rpcProps() {
           return { rowFocus: self.rowFocusKey }
@@ -1590,12 +1393,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * [min, max] coverage domain over the currently visible content blocks,
-         * derived from the worker-shipped `coverage.coverageDepths` arrays
-         * (which already reflect the active subtree — see `rpcProps`). Linear
-         * and unbounded: sample counts are already bounded and
-         * well-distributed, so this display composes no score axis to
-         * configure. Feeds `axes`.
+         * [min, max] coverage domain over the visible content blocks, from the
+         * worker-shipped `coverage.coverageDepths`. Linear and unbounded; feeds
+         * `axes`.
          */
         get coverageDomain() {
           return visibleStatsDomain({
@@ -1615,10 +1415,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The band axes the chrome places: the coverage band's, off its
-         * autoscaled domain through the coverage ladder, and the conservation
-         * band's fixed 0–100%. Both ladders are their own, so this display
-         * answers the resolved axes directly rather than composing
-         * `ScoreScaleMixin` for a score it has no config for.
+         * autoscaled domain, and the conservation band's fixed 0-100%. Answers
+         * the resolved axes directly rather than composing `ScoreScaleMixin`.
          */
         get axes(): YAxis[] {
           const { topBands } = self
@@ -1648,10 +1446,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The coverage band's palette slots, packed. Its own getter so the
-         * pack — which parses nine CSS colors — is memoized against the
-         * palette rather than re-run inside `renderState`, which every scroll
-         * frame invalidates.
+         * The coverage band's palette slots, packed. Separate from
+         * `renderState` so the nine-color CSS parse memoizes against the
+         * palette.
          */
         get coverageBandColors() {
           return mafCoverageBandColors(getPaletteHost(self).palette)
@@ -1661,10 +1458,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The coverage band as the shared marks and their hit test take it.
-         * Height 0 draws no band: the setting is off, or the summary tier owns
-         * the view. Linear and unbounded, with every mismatch column counted:
-         * sample counts are already bounded and well-distributed, and every
-         * column the alignment carries is a real observation in a real species.
+         * Height 0 draws no band: the setting is off or the summary tier owns
+         * the view. Linear and unbounded, counting every mismatch column.
          */
         get coverageBandState(): CoverageBandState {
           return {
@@ -1683,25 +1478,16 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Render state passed to GPU/Canvas2D backend each frame.
+         * Render state passed to the GPU/Canvas2D backend each frame.
          *
-         * `canvasHeight` is the WHOLE canvas — the stacked bands plus the rows
-         * viewport — because the coverage band draws on the same canvas as the
-         * rows, scissored out of it, the way the alignments display draws its
-         * coverage band above its pileup. A display gets one rendering backend,
-         * so a second GPU band cannot mean a second canvas. `rowsTop` /
-         * `rowsHeight` are the rows band inside it.
+         * `canvasHeight` is the whole canvas, stacked bands plus rows viewport,
+         * because the coverage band draws on the same canvas as the rows.
+         * `rowsTop` and `rowsHeight` are the rows band inside it.
          */
         get renderState(): MafGPURenderState {
-          // Resolved geometry, never undefined — every field is view/settings
-          // derived and safe with zero sources (nrow floors at 1). "No fetch has
-          // landed" is the render callback's first-paint gate (`hasFetched`), not
-          // a nullable state: a sample-discovery track — no configured `samples`,
-          // so rows come from whichever genomes appear in the region's blocks —
-          // yields zero sources over a region with no alignment blocks, and
-          // withholding a state there once the fetch completed kept the render
-          // callback returning false, so `canvasDrawn` never flipped and the
-          // loading overlay spun forever.
+          // Never undefined: zero sources over a region with no blocks is valid
+          // state, and withholding it leaves the loading overlay spinning. The
+          // first-paint gate is `hasFetched`.
           return {
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.rowsTopOffset + self.rowsHeight,
@@ -1725,16 +1511,13 @@ export default function stateModelFactory(
         /**
          * #method
          * Where the rows `[startRow, endRow)` sit in their own genomes across
-         * the reference bp range `[startBp, endBp)` — the loci an "open this
-         * species here" navigation targets. A row contributes nothing when it
-         * has no aligned base in the range, when no fetched block covers it, or
-         * when its genome isn't loaded as an assembly (`Sample.assemblyName`
-         * unset), since there is then nowhere to navigate to.
+         * the reference bp range `[startBp, endBp)`, the loci an "open this
+         * species here" navigation targets. A row contributes nothing with no
+         * aligned base in the range, no fetched block covering it, or a genome
+         * not loaded as an assembly (`Sample.assemblyName` unset).
          *
-         * The whole row range at once, because that is what the callers ask
-         * for: the track menu builds an entry per row on every open, and a
-         * per-row answer re-walked the buffered region — thousands of blocks,
-         * each scanned with `rows.find` — once per species.
+         * Takes the whole row range at once, since the menu builds an entry per
+         * row on every open.
          */
         rowNavigationTargets(
           displayedRegionIndex: number,
@@ -1752,13 +1535,8 @@ export default function stateModelFactory(
             row++
           ) {
             const source = sources[row]!
-            // The config's mapping first. Failing one, a sample whose id IS an
-            // assembly the session already holds — the pangenome MAFs are built
-            // from PanSN-named strains loaded under those same names. This is
-            // not the name resolution MAF_LARGE_BLOCKS.md rules out:
-            // nothing is looked up against a portal, and an assembly present
-            // under the exact id is the config author's own statement of which
-            // genome it is.
+            // Falls back to a sample id that names a loaded assembly; not the
+            // portal lookup MAF_LARGE_BLOCKS.md rules out.
             const assemblyName =
               source.assemblyName ??
               (assemblyManager.has(source.name) ? source.name : undefined)
@@ -1766,8 +1544,6 @@ export default function stateModelFactory(
               assemblyNames.set(row, assemblyName)
             }
           }
-          // A track whose samples name no genome — every multiz — never reaches
-          // the blocks at all.
           const region = assemblyNames.size
             ? self.detailOnScreen.get(displayedRegionIndex)
             : undefined
@@ -1802,17 +1578,12 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * The CDS frame record covering absolute genomic `bp` (uint32) on display
-         * `rowIndex`, or undefined when no frame overlaps there (or no frames data
-         * is loaded). Gated on `framesInUse` not the strip toggle, so the
-         * gene name still reads on hover in codon view with the strip off. The
-         * species is matched by the same `src`→row projection the overlay draws
-         * with, so the tooltip and the strip can't disagree about which row a gene
-         * is on.
+         * The CDS frame record covering absolute genomic `bp` (uint32) on
+         * display `rowIndex`, or undefined. Gated on `framesInUse`, so the gene
+         * name reads on hover in codon view with the strip off.
          *
-         * `bp` is a base index — the caller passes `MafPointer.baseBp`, not a
-         * floored `gposFrac`, so this names the same base the row hover and the
-         * coverage tooltip do on a reversed region.
+         * `bp` is a base index (`MafPointer.baseBp`), not a floored `gposFrac`,
+         * matching the row hover and coverage tooltip on a reversed region.
          */
         frameHoverInfo(
           displayedRegionIndex: number,
@@ -1847,10 +1618,9 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * The depth + SNP tooltip bin at the base painted under the cursor,
-         * snapped zoomed out to the pixel's dominant SNP the way the alignments
-         * band snaps, with the percent identity at that position beside it.
-         * Undefined when the region has no fetched data or depth is zero.
+         * The depth and SNP tooltip bin at the base under the cursor, with the
+         * percent identity at that position. Undefined when the region has no
+         * fetched data or depth is zero.
          */
         coverageTooltipBin(
           displayedRegionIndex: number,
@@ -1870,7 +1640,6 @@ export default function stateModelFactory(
           if (!bin) {
             return undefined
           }
-          // Percent identity at the reported position (NaN where unclassifiable).
           const idx = bin.position - coverage.coverageStartPos
           const identity =
             idx >= 0 && idx < coverage.identityScores.length
@@ -1906,12 +1675,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * The orientation each (row, source chromosome) is measured against for
-         * the inversion indicator (`consensusStrandByRowChr`). A memoized
-         * computed for the same reason as `sourceChromRanks`: it walks every
-         * block × row of every *loaded* region — deliberately, so the consensus
-         * stays put as the user scrolls within loaded data — while its only
-         * consumer runs on every pan and zoom. Empty when the indicator is off,
-         * so a track that never shows inversions pays nothing.
+         * the inversion indicator (`consensusStrandByRowChr`). Memoized because
+         * it walks every block and row of every loaded region while its
+         * consumer runs on every pan and zoom. Empty when the indicator is off.
          */
         get inversionConsensus(): StrandConsensus {
           return self.showInversions
@@ -1920,7 +1686,6 @@ export default function stateModelFactory(
         },
       }))
       .views(self => {
-        // The block-overlay helpers all take this same bundle.
         const overlayParams = () => ({
           view: self.host,
           rpcDataMap: self.detailOnScreen,
@@ -1954,10 +1719,10 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * At base level each reference base spans at least a pixel, so individual
-         * bases / SNP marks are legible (UCSC's `zoomedToBaseLevel`). Read off the
-         * debounced `coarseBpPerPx` so the rendering swap it gates doesn't thrash
-         * mid-zoom. False until the view is initialized.
+         * At base level each reference base spans at least a pixel (UCSC's
+         * `zoomedToBaseLevel`). Reads the debounced `coarseBpPerPx` so the
+         * rendering swap does not thrash mid-zoom. False until the view is
+         * initialized.
          */
         get zoomedToBaseLevel() {
           const view = self.view
@@ -1993,9 +1758,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The Row coloring radio's tick: the X-Y plot where `y` is identity,
-         * else the color field, codon falling back to the bases where no
-         * frames file can define a reading frame. Zoom-independent, so the
-         * tick never moves under the user as they zoom.
+         * else the color field, with codon falling back to the bases where no
+         * frames file defines a reading frame. Zoom-independent.
          */
         get selectedRowRendering(): RowRendering {
           return self.yField === 'identity'
@@ -2016,10 +1780,9 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * What colors the cells now: the color field, or the mismatches
-         * where it cannot draw. The summary tier carries no bases, codons only
-         * exist at base level with a frames file, and identity yields at base
-         * level (`identityYields`).
+         * What colors the cells now: the color field, or the mismatches where
+         * it cannot draw (summary tier, codons without base level or a frames
+         * file, identity at base level via `identityYields`).
          */
         get rowsColor(): MafColorField {
           const field = self.colorField
@@ -2085,9 +1848,9 @@ export default function stateModelFactory(
         /**
          * #method
          * The hover on `rowIndex` at the cursor's genomic position: an aligned
-         * base, an insertion where the markers draw, a deletion or a bridged
-         * region, tagged with the sample label. `bp` carries both readings of
-         * the cursor (`HoverBp`), which differ on a reversed region.
+         * base, an insertion, a deletion or a bridged region, tagged with the
+         * sample label. `bp` carries both readings of the cursor (`HoverBp`),
+         * which differ on a reversed region.
          */
         rowHoverInfo(
           displayedRegionIndex: number,
@@ -2188,21 +1951,11 @@ export default function stateModelFactory(
          * The summary records each region's rows draw as per-species presence
          * bars, keyed by displayedRegionIndex.
          *
-         * Drawn on the summary tier, **and as the coarse stand-in for a region
-         * the detail tier hasn't landed yet** — which is the swap back in, and
-         * used to be a blank track. Zooming in past the floor stays spatially
-         * inside the region the summary fetch loaded, so `viewportWithinLoadedData`
-         * is true and `canvasDrawn` is already set: the display reads as `ready`
-         * with nothing in it, for the 600ms fetch debounce plus the alignment
-         * RPC, which on a deep alignment is the slow one. Nothing was wrong
-         * except that the rows we could still draw had been switched off.
-         *
-         * Suppressed per region rather than in one decision, because the tiers
-         * arrive per region: the one under the cursor can be showing bases while
-         * its neighbour is still bars. `coarseTierActive` short-circuits it
-         * because the two maps hold a region side by side — the detail store
-         * keeps its rows under the tier — and the bars are what is on screen
-         * there.
+         * Drawn on the summary tier and as the stand-in for a region whose
+         * detail tier has not landed, so zooming in past the floor does not
+         * blank the track. Suppressed per region, since tiers arrive per
+         * region; `coarseTierActive` short-circuits it because both maps hold a
+         * region side by side.
          */
         get summaryDataMap(): ReadonlyMap<number, MafSummaryRecord[]> {
           const shown = new Map<number, MafSummaryRecord[]>()
@@ -2218,9 +1971,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * Positioned per-species CDS frame boxes for the annotation overlay.
-         * Empty unless an annotation adapter is configured and the overlay is on.
-         * Reuses the `src`→row mapping the summary bars established, so frame rows
-         * for species the track doesn't list drop out.
+         * Empty unless an annotation adapter is configured and the overlay is
+         * on. Reuses the `src`-to-row mapping of the summary bars.
          */
         get visibleFrames(): FrameMarker[] {
           return self.rowsVisible && self.annotationsActive
@@ -2252,8 +2004,6 @@ export default function stateModelFactory(
         get codonConservationActive() {
           return (
             self.host.initialized &&
-            // carries both "the user asked for the band" and "not the summary
-            // path", which this used to spell as two terms of its own
             self.conservationBandActive &&
             self.conservationMode === 'codon' &&
             !!self.annotationAdapterConfig &&
@@ -2277,22 +2027,12 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Titles for the stacked bands, with the y they sit at — empty unless
-         * both bands draw, which is the only case they are needed for: two
-         * stacked filled-histogram bands are otherwise told apart only by their
-         * Y-axis units (depth vs %).
+         * Titles for the stacked bands, with the y they sit at; empty unless
+         * both bands draw. The on-screen labels and the SVG export both read
+         * it.
          *
-         * A getter for the same reason as `colorScales` below: the on-screen
-         * labels and the SVG export both read it. The export had no titles at
-         * all, so the one figure that needs them most — both bands drawn, and
-         * an exported PNG where nothing can be hovered to disambiguate — was
-         * the one shipping without them.
-         *
-         * The conservation title names what the band is *drawing*
-         * (`codonConservationActive`), not the mode that was asked for: codon
-         * mode falls back to per-base wherever frames or per-base blocks are
-         * missing, and a band captioned "aa identity" while drawing nucleotide
-         * identity is worse than no caption.
+         * The conservation title names what the band draws
+         * (`codonConservationActive`), not the mode asked for.
          */
         get bandLabels(): { text: string; top: number }[] {
           return self.coverageBandActive && self.conservationBandActive
@@ -2309,18 +2049,10 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `LegendMixin`'s hook: the key for whatever `activeRowRendering` is
-         * painting, or none where the rendering needs no key (plain bases),
-         * then the CDS frame key while the strip is drawn, then the row color
-         * key.
-         *
-         * A dispatch, not a description: each key is built by the module that
-         * paints the rendering, out of the colors it paints with. Written out
-         * here instead, all three had drifted from the screen — the codon
-         * swatches skipped the alpha the cells are composited with, the X-Y plot
-         * got the heatmap's ramp when it paints one color and varies height, and
-         * the source-chromosome key kept adding rows past the point where its
-         * palette stops changing.
+         * `LegendMixin`'s hook: the key for whatever `activeRowRendering`
+         * paints, then the CDS frame key while the strip draws, then the row
+         * color key. Each key is built by the module that paints the rendering,
+         * so the swatches match the screen.
          */
         get colorScales(): ColorScale[] {
           return this.colorScalesIn(getPaletteHost(self).palette)
@@ -2374,9 +2106,6 @@ export default function stateModelFactory(
                   : rendering === 'xyplot'
                     ? [identityColorScale('xyplot', oneBaseCells)]
                     : []
-          // The CDS strip draws *over* whichever rendering won, so it is its
-          // own section rather than a branch of the dispatch, and last, in
-          // paint order.
           return [
             ...rendered,
             ...(self.visibleFrames.length > 0
@@ -2393,16 +2122,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether this display HAS a color key, as opposed to whether one is
-         * drawn right now — which is the question "Show legend" is offered on.
-         * The bases key nothing, since they paint the theme's base colors;
-         * every other rendering keys what it paints, the CDS strip keys
-         * itself over whichever won, and a row color keys itself.
+         * Whether this display has a color key, as opposed to whether one is
+         * drawn now: the question "Show legend" is offered on. Bases key
+         * nothing; every other rendering keys what it paints.
          *
-         * Overrides `LegendMixin`'s, which reads the scales: those decline on
-         * an uninitialized view and on a rank the data has not reported yet, so
-         * the row that turns a dismissed key back on would go missing exactly
-         * while a track was loading.
+         * Overrides `LegendMixin`'s, whose scale reads decline on an
+         * uninitialized view and would drop the row while a track loads.
          */
         get hasLegendKey(): boolean {
           return (
@@ -2438,9 +2163,9 @@ export default function stateModelFactory(
         /**
          * #method
          * What a region's rows encode reads beyond the region, in a given
-         * palette: the SVG export's theme need not be the session's. A mode flip is
-         * here rather than read inside the encode, since flipping modes has to
-         * re-encode every region and only a declared input does that.
+         * palette, since the SVG export's theme need not be the session's. A
+         * mode flip lives here so it re-encodes every region as a declared
+         * input.
          */
         rowsEncodePropsIn(colorPalette: MafColorPalette): MafRowsEncodeProps {
           return {
@@ -2510,12 +2235,11 @@ export default function stateModelFactory(
         return {
           /**
            * #getter
-           * Every loaded region's upload payload — the rows band's `span`
-           * channels beside the coverage band's buffers — keyed by
+           * Every loaded region's upload payload, the rows band's `span`
+           * channels beside the coverage band's buffers, keyed by
            * displayedRegionIndex. Held here rather than in the upload's setup
-           * thunk so a theme or color change
-           * re-encode without an RPC roundtrip and the memo outlives a
-           * context-loss recovery.
+           * thunk so a theme or color change re-encodes without an RPC
+           * roundtrip and the memo outlives a context-loss recovery.
            */
           get encodedUpload(): ReadonlyMap<number, MafUploadPayload> {
             return encoded()
@@ -2592,16 +2316,13 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * The verdict describes a read of the viewport that was just thrown
-         * away, so it goes with the data rather than outliving it — otherwise
-         * chromosome nav carries "too much data" onto a region nobody has
-         * measured yet.
+         * Clears the verdict with the data: it describes a read of the viewport
+         * just thrown away, and chromosome nav would otherwise carry "too much
+         * data" onto an unmeasured region.
          */
         clearDisplaySpecificData() {
           self.framesGateBlocked = false
         },
-        // reload() not overridden — MultiRegionDisplayMixin's base default
-        // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
         /**
          * #action
          */
@@ -2609,17 +2330,12 @@ export default function stateModelFactory(
           installUpload(self, backend, {
             cells: () => self.encodedUpload,
             render: (b, encoded) => {
-              // First-paint gate: no fetch has landed yet, so skip the tick
-              // rather than flipping canvasDrawn on an empty frame. Zero sources
-              // over a loaded region is NOT this state — see renderState.
               const hasFetched =
                 self.sourcesKnown ||
                 self.hasRegionData ||
                 self.coarseTierRead !== undefined
-              // One call whatever the rows are doing, because this canvas
-              // carries the coverage band too. In the codon view the overlay
-              // owns the rows and the row marks paint nothing, but the frame
-              // still counts as a paint for `canvasDrawn`.
+              // One call whatever the rows do: this canvas carries the coverage
+              // band too.
               return hasFetched
                 ? b.renderBlocks(
                     self.renderBlocks,
@@ -2653,22 +2369,14 @@ export default function stateModelFactory(
       .views(() => ({
         /**
          * #getter
-         * Enable byte-estimate gating: a MAF-aware byte estimate (per-species
-         * sequence × span) is checked against `fetchSizeLimit` inside the tier's
-         * own RPC, blocking the fetch with a force-load prompt rather than
-         * downloading hundreds of species' bases at genome scale.
+         * Enables byte-estimate gating: a MAF-aware estimate (per-species
+         * sequence x span) is checked against `fetchSizeLimit` inside the
+         * tier's own RPC, blocking the fetch with a force-load prompt.
          *
-         * On for **both** tiers: each RPC measures the file it actually reads —
-         * the alignment index on the detail path, the `summaryAdapter`
-         * sub-adapter on the summary one (`CoarseTierMixin`). The summary tier
-         * used to be exempt on the grounds that it is the cheap one. It is cheap
-         * *per base* — no sequence — but it is still a whole-feature download
-         * (`BigBedAdapter.getFeatures`) over every zoom from 20kb to the whole
-         * genome, so the one path that existed to escape the gate was also the
-         * one that could pull an unbounded number of per-species records with
-         * nothing quoting the size. A genuinely small summary read is nowhere
-         * near `fetchSizeLimit` and never sees a banner; that is the estimate's
-         * job to decide, not this getter's.
+         * On for both tiers: each RPC measures the file it reads, the alignment
+         * index on detail and the `summaryAdapter` sub-adapter on summary
+         * (`CoarseTierMixin`), since the summary read is a whole-feature
+         * download over every zoom from 20kb up.
          */
         get gateEnabled() {
           return true
@@ -2687,10 +2395,8 @@ export default function stateModelFactory(
         },
         // #endregion
         afterAttach() {
-          // What makes `rpcDataMap` a memo at all: its consumers include the
-          // pointer handlers, and MobX discards an unobserved computed's value
-          // as it hands it over. Safe to hold because it keys off the store
-          // and the row order, never live view geometry.
+          // A memo because pointer handlers consume `rpcDataMap`, and MobX
+          // discards an unobserved computed's value.
           namedAutorun(
             self,
             () => {
@@ -2700,12 +2406,7 @@ export default function stateModelFactory(
           )
           setupTreeSidebarAutoruns(self, {
             name: 'Maf',
-            // Forwarded, not swallowed: `false` is "no loaded region covers
-            // that column", and it holds `sortRowsBy` for the fetch that will.
             sortRows: (refName, pos) => self.sortRowsByBaseAt(refName, pos),
-            // "Cluster rows by identity": two rows minimum, matching the
-            // menu's gate — one row has no structure to find and hclust has
-            // nothing to merge
             clustering: {
               ready: () => self.sources.length > 1,
               run: async args => {
