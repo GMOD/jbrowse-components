@@ -170,20 +170,12 @@ The graph has four kinds of object:
   charcoal because it has no reference position
 - an **edge** that skips sequence is a deletion, drawn as a dashed arc
 
-## Highlighting the GRCh38 stretch an MHC class II allele replaces {#the-stretch-of-grch38-an-allele-replaces}
+## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
 
 Type `chr6:32,500,000-32,560,000`, a window in MHC class II, a cluster of
 immune-system HLA genes. Beside _HLA-DRB5_, a charcoal node is an allele much
-shorter than the backbone stretch it hangs across. Right-click it and take
-**Highlight in hg38**: a band marks the span of GRCh38 it replaces, which covers
-most of _HLA-DRB5_.
-
-<Figure caption="MHC class II with the graph track in the force-directed layout, colored by reference position. The ringed charcoal node is the allele beside HLA-DRB5, with its right-click menu open on Highlight in hg38." src="/img/pangenome/hprc_mhc_layout_force.png" />
-
-## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
-
-Left-click the charcoal allele beside _HLA-DRB5_. Its details give
-`contributingHaplotype`, `NA20809#2`: the graph's `SN` tag records which
+shorter than the backbone stretch it hangs across. Left-click it. Its details
+give `contributingHaplotype`, `NA20809#2`: the graph's `SN` tag records which
 assembly minigraph first took the allele from.
 
 **Open in** appears when the session has an assembly named or aliased
@@ -199,15 +191,15 @@ under a display name, with the graph's name as an alias:
 }
 ```
 
-Right-click the allele again and take **Open in NA20809.2**. A second linear
-view opens below the first, on that haplotype's chromosome 6, framed on the
-allele with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a
-few steps.
+Right-click the allele and take **Open in NA20809.2**. A second linear view
+opens below the first, on that haplotype's chromosome 6, framed on the allele
+with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a few
+steps.
 
 <Figure caption="First, MHC class II in the force-directed layout, the NA20809.2 allele ringed with its right-click menu open on Open in NA20809.2. Second, the view that entry opens, NA20809 haplotype 2's chromosome 6 with its CAT genes." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 The haplotype's CAT annotation has _HLA-DRB9_ and _HLA-DRB6_ either side of the
-allele and no _HLA-DRB5_, the gene its band covered on hg38.
+allele and no _HLA-DRB5_, the gene it hangs across on hg38.
 
 ## Listing every haplotype with the HLA-DRB5 allele {#every-haplotype-with-the-allele}
 
@@ -257,7 +249,8 @@ together, with a dendrogram beside them.
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 462-haplotype VCF at MHC class II clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 
 Right-click the charcoal allele beside _HLA-DRB5_ in the force-directed graph
-and take **Highlight in hg38** again.
+and take **Highlight in hg38**: a band marks the span of GRCh38 it replaces,
+which covers most of _HLA-DRB5_.
 
 <Figure caption="The VCF and the graph in one window. The band is the span the HLA-DRB5 allele replaces, over every haplotype clustered by genotype: blue where a haplotype has an allele of 50 bp or more. Below, the force-directed graph, where an arrow runs from the band to the same allele as the graph draws it, alleles in charcoal." src="/img/pangenome/hprc_graph_vs_callset.png" />
 

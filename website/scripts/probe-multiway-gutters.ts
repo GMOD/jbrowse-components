@@ -2,7 +2,7 @@
 /**
  * probe-multiway-gutters.ts — what each gutter of a multi-way lane stack draws.
  *
- *   node scripts/probe-multiway-gutters.ts multiway_synteny/hprc_amylase_lanes
+ *   node scripts/probe-multiway-gutters.ts multiway_synteny/hprc_gstt1_lanes
  *   node scripts/probe-multiway-gutters.ts <spec> --shot=/tmp/stack.png
  *   node scripts/probe-multiway-gutters.ts --url='?config=...&session=spec-...'
  *

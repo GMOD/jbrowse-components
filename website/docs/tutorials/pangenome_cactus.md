@@ -76,17 +76,14 @@ so there is nothing to download by hand.
 
 </details>
 
-## The Minigraph-Cactus pipeline
+## Building the graph with cactus-pangenome
 
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
 (`cactus-pangenome`) builds a pangenome graph reference-first.
 [minigraph](https://github.com/lh3/minigraph) lays down a backbone from the
 reference you pick, and Cactus aligns every other sample onto it and normalizes
-the result into a graph.
-
-## Building the graph with cactus-pangenome
-
-Cactus takes a **seqFile**: one `name<TAB>path` line per sample.
+the result into a graph. It takes a **seqFile**: one `name<TAB>path` line per
+sample.
 
 ```bash
 cat > seqfile.txt <<'EOF'

@@ -1948,18 +1948,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // The amylase locus from the HPRC page's haplotypes launch with five lanes
-  // chosen, one of each span class, in copy-number order: each lane's length
-  // across the array carries its count.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hprc_amylase_lanes',
-    url: portalHaplotypeLanes(PORTAL_LOCI.amylase),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 620,
-  },
-
   // One haplotype of each common amylase structure, H1a to H7 in the naming of
   // Yilmaz et al. 2024, with GRCh38 and a second three-copy haplotype as the
   // straight-through control, each aligned to the row under it by minimap2

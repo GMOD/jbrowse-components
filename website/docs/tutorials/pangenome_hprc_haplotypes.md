@@ -155,10 +155,8 @@ measured on HPRC release 2.1 in October 2026;
 [part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
 and the VCF behind them.
 
-- **A haplotype the graph does not align has no lane.** The page says how many:
-  116 at FLNA / EMD, the haplotypes without an X chromosome. At other loci the
-  assembly has the sequence and the graph leaves it out, so a missing lane is
-  not a deletion.
+- **A haplotype the graph does not align has no lane.** Part 1 lists where, and
+  how many the page counts.
 - **A lane can be empty and correct.** Where a haplotype's deletion is longer
   than the window, the graph has no walk for it there and the launch opens no
   row. Around SMN1 / SMN2 four of eight lanes are 190 to 250 kb deletions that
@@ -170,9 +168,8 @@ and the VCF behind them.
   structural form, and a form groups haplotypes by their structural variants of
   50 bp or more. Two haplotypes in one form can still differ in everything
   smaller.
-- **Near-identical gene copies are not told apart.** The graph puts the copies
-  at RHD / RHCE and CYP2D6 on one path, so a lane there cannot show how many
-  copies a haplotype has.
+- **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
+  CYP2D6 cannot show how many copies a haplotype has.
 
 ## Whole-genome synteny from a GFA's walks
 

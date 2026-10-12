@@ -159,8 +159,6 @@ intron at `chr11:34,516,045-34,560,497`. To open it:
 have an allele. The allele inventory's `firstSeenIn` lists the first assembly to
 contribute it.
 
-## Looking up the Dock2 bubble in the hosted bubbles BED
-
 The _Dock2_ bubble is one row of the hosted bubbles BED, with the same segment
 count and span the figure labels:
 

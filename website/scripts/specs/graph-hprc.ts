@@ -22,7 +22,6 @@ import {
 } from './graph-fixtures.ts'
 
 import type {
-  Annotation,
   ScreenshotAction,
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
@@ -33,8 +32,9 @@ import type {
 const HPRC_CONFIG = local('test_data/graphgenomeview/hprc.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 
-// The off-reference allele pangenome/hprc_mhc_layout_force right-clicks, named rather than measured — see HOVERED_ALLELE. `node
-// scripts/probe-graph-nodes.ts pangenome/hprc_mhc_layout_force` prints the
+// The off-reference allele pangenome/hprc_haplotype_launch and
+// pangenome/hprc_graph_vs_callset right-click. `node
+// scripts/probe-graph-nodes.ts pangenome/hprc_haplotype_launch` prints the
 // cut's ids with their lengths and ranks.
 //
 // It is 1,780 bp of NA20809 hap 2 (`CM094351.1:32,495,296-32,497,076` in the
@@ -184,73 +184,6 @@ const HG38_UNIPROT_DOMAINS_TRACK = {
 // HLA-DRB1 and all of C4.
 const ALLELE_FILTER = ['jexl:alleleLength(feature)>=50']
 const PGBI_TRACK = 'hprc2_pgbi_grch38'
-
-// The one node the MHC figures ring: the allele itself, black under the
-// reference-position ramp because it has no reference position. Release 2.1
-// cuts the 12 kb it attaches across into eleven segments, none a landmark.
-const MHC_LANDMARK_NODES = [HPRC_ALLELE]
-
-// The MHC class II cut, force-directed, with the right-click route to
-// Highlight in hg38: the menu, the ring and the band the menu leaves behind.
-const mhcLayoutForceSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/hprc_mhc_layout_force',
-  clicksChange: "highlight the node's span in hg38",
-  clicksOpen: "the node's context menu",
-  // `Highlight in hg38` writes the node's reference interval into the linear
-  // view's own highlight list, where it stays, so one frame carries both the
-  // menu and its result: click the item, then right-click the same node again.
-  actions: [
-    // the auto-fit has to have finished before the anchor means anything
-    { type: 'delay', ms: 2000 },
-    { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
-    { type: 'waitForText', text: 'Highlight in hg38' },
-    { type: 'click', text: 'Highlight in hg38' },
-    { type: 'delay', ms: 1500 },
-    { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
-    { type: 'waitForText', text: 'Node details' },
-    { type: 'delay', ms: 500 },
-  ],
-  url: sessionSpec(HPRC_CONFIG, {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: 'chr6:32,500,000-32,560,000',
-        // No bubbles lane: at this window the class II bubble runs the whole
-        // width and the five small ones pack against the right edge, where
-        // their label lines are cut off.
-        tracks: [
-          hg38GeneLane(70),
-          graphTrack(SEGMENTS_TRACK, {
-            layoutMode: 'force',
-            color: { field: 'position' },
-            maxRegionBp: cutNear(60_000),
-            // The force drawing here is a tall narrow chain ending in a 9.4 kb
-            // loop, so it would take the whole 600 px ceiling; lower, it fits
-            // smaller and the fixed-size node labels stay the size they were.
-            paneHeight: 420,
-          }),
-        ],
-      },
-    ],
-  }),
-  readySelector: GRAPH_DRAWN,
-  readyTimeout: 90000,
-  viewportWidth: 820,
-  viewportHeight: 750,
-  hideTooltip: true,
-  annotations: [
-    ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
-      type: 'circle',
-      anchor: { graphNode },
-      radius: 24,
-      strokeWidth: 3,
-    })),
-    // the item that produced the band
-    { type: 'box', anchor: { text: 'Highlight in hg38' } },
-  ],
-}
 
 // ---------------------------------------------------------------------------
 // What website/scripts/video-specs.ts films on this dataset
@@ -690,7 +623,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  mhcLayoutForceSpec,
   // The C4 cut with its parts named, above the page's end-to-end clip. Both
   // anchors come from `node scripts/probe-graph-nodes.ts
   // pangenome/hprc_graph_anatomy`: s352179+ is NA18948's 21 kb allele, the
@@ -1140,59 +1072,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The KIV-2 record over every haplotype: the view squeezes 464 rows into the
-  // height of 30, most KIV-2B first, then longest
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_kiv2_copies_all_by_unit',
-    url: sessionSpec(HOSTED_HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:160,596,000-160,666,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
-              displayMode: 'compact',
-              height: 40,
-            },
-            {
-              trackId: 'hprc_kiv2_copies_all',
-              type: 'LinearVariantDisplay',
-              height: 40,
-            },
-          ],
-        },
-      ],
-    }),
-    viewportWidth: 1400,
-    viewportHeight: 1120,
-    hideTooltip: true,
-    clicksChange: "open the record's repeat copies view",
-    actions: [
-      { type: 'waitForAppSettled', timeout: 120000 },
-      {
-        type: 'rightclick',
-        anchor: {
-          loc: 'chr6:160,631,000',
-          trackId: 'hprc_kiv2_copies_all',
-          fracY: 0.2,
-        },
-      },
-      { type: 'waitForText', text: 'Show repeat copies' },
-      { type: 'click', text: 'Show repeat copies' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="tandem-repeat-view"]',
-      },
-      { type: 'delay', ms: 500 },
-    ],
-  },
-  // The cohort record grouped by the samples table's superpopulation, picked
-  // from the repeat view's own menu
+  // The KIV-2 record over every haplotype, grouped by the samples table's
+  // superpopulation from the repeat view's own menu; within each group most
+  // KIV-2B first, then longest
   {
     mode: 'url',
     name: 'pangenome/hprc_kiv2_copies_by_superpopulation',
@@ -1406,10 +1288,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // grown to its rows, and the fixed 110 px lane takes 50 more
     viewportHeight: 454,
   },
-  // The five amylase lanes pangenome_hprc_haplotypes chooses, cut from the haplotypes
-  // track for those lanes and drawn in walk rows, in the lanes' place: each
-  // bar's length is the haplotype's span across the cut, and the readout its
-  // excess over GRCh38.
+  // Five amylase haplotypes, one per structure, cut from the haplotypes track
+  // and drawn in walk rows: each bar's length is the haplotype's span across
+  // the cut, and the readout its excess over GRCh38.
   {
     mode: 'url',
     name: 'pangenome/hprc_amylase_walk_rows',
@@ -1423,7 +1304,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               layoutMode: 'walkrows',
               color: 'uniform',
               subgraphHaplotypes: PORTAL_LOCI.amylase.lanes,
-              paneHeight: 380,
+              // six bars and the key; 380 left a third of the pane blank
+              // above the bars
+              paneHeight: 220,
               // a bar spans the cut, so the cut stays the array's window
               maxRegionBp: cutNear(150_000),
             }),
@@ -1434,7 +1317,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 240000,
     viewportWidth: 1400,
-    viewportHeight: 630,
+    viewportHeight: 470,
     hideTooltip: true,
     actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
   },

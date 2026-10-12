@@ -7,8 +7,11 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-We build a pangenome graph of five _E. coli_ strains with pggb and turn its
-outputs into JBrowse tracks on the K12 genome:
+A pangenome graph stores the sequence several genomes share once, as a path
+every genome follows, and branches where they differ. We build one of five _E.
+coli_ strains with pggb and turn its outputs into JBrowse tracks on the K12
+genome. Most are **linear projections**, which flatten the graph onto K12's
+coordinates so it loads as an ordinary track:
 
 - synteny between the strains
 - the variants the graph calls against K12
@@ -59,12 +62,6 @@ one file to download by hand, with the `curl` under
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
 - nanopore reads from an unrelated isolate, _E. coli_ E146:
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz
-
-## Linear projections: flattening the graph onto one genome
-
-A pangenome graph stores sequence the genomes share once, as a path every genome
-follows, and branches where they differ. A **linear projection** flattens the
-graph onto one genome's coordinates, so it loads as an ordinary track.
 
 ## Building the graph
 

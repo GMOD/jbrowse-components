@@ -149,15 +149,12 @@ Click the KIV-2 bubble boxed in the bubbles track. Its details give
 routes the rGFA holds there, and the bars run from about the one to about the
 other.
 
-Three controls change which bars show:
+Two controls change which bars show:
 
 - Right-click a bar and pick **Show only** with its name to read one sample at
   full size.
 - **Samples → Choose samples...** under the **Layout** row picks names, and
   **Samples → Every sample** brings the cohort back.
-- **Group by... → superpopulation** under the **Layout** row adds a `facet`: the
-  bars split into one stacked section per superpopulation in the samples table
-  the track names, every section on one ruler and row height.
 
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
@@ -192,12 +189,10 @@ TandemRepeat plugin, which the hosted config loads beside the graph plugin,
 opens a view with one bar per haplotype, each with a bp axis and each copy
 colored by its type. Hover a copy for its haplotype.
 
-<Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy colored by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
-
 **Group by… → superpopulation** in the view's menu splits the bars by that
-column of the samples table:
+column of the samples table.
 
-<Figure caption="The same record grouped by superpopulation. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
+<Figure caption="The KIV-2 record over every HPRC haplotype grouped by superpopulation, within each group those with the most KIV-2B copies first, then longest, each copy colored by its type. KIV-2B leads every array that holds it. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
 
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.
@@ -246,13 +241,39 @@ node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
 A repeat finder's output draws as these bars too once it is written as a
 `<CNV:TR>` record with each allele's runs and copy lengths.
 
-## Measuring the ABCA7 VNTR in every haplotype
+## Measuring the ABCA7 VNTR against TRGT's read-based genotypes
 
 An intron of _ABCA7_ holds a VNTR (variable-number tandem repeat) tied to
 Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
-comes from its assembly, and PacBio measured the same repeat from HiFi reads in
-94 HPRC samples. The session below lays the walks out as bars beside the genes,
-the catalogue's VNTR row and the TRGT genotypes:
+comes from its assembly, and PacBio's
+[TRGT](https://github.com/PacificBiosciences/trgt), a tandem repeat genotyper
+for HiFi reads, measured the same repeat in 94 HPRC samples. We host its _ABCA7_
+call as this track:
+
+```json addtrack loc=chr19:1,049,000-1,050,500
+{
+  "trackId": "hprc_abca7_trgt",
+  "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
+  "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz",
+  "assemblyNames": ["hg38"]
+}
+```
+
+TRGT writes the same fields for your own samples, one VCF each, joined by
+`trgt merge`:
+
+```bash
+# one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
+trgt genotype --genome GRCh38.fa --reads sample.bam \
+  --repeats adotto_repeats.hg38.bed --output-prefix sample
+# genotype writes its VCF unsorted, and merge reads sorted, indexed input
+bcftools sort -Oz -o sample.sorted.vcf.gz sample.vcf.gz
+bcftools index -t sample.sorted.vcf.gz
+trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
+```
+
+The session below lays the walks out as bars beside the genes, the catalogue's
+VNTR row and the TRGT genotypes:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -319,33 +340,6 @@ the catalogue's VNTR row and the TRGT genotypes:
 
 Each row is one haplotype's walk between the flanking reference nodes. Hover a
 row for its haplotype and length.
-
-## Overlaying TRGT's read-based genotypes on the ABCA7 bars
-
-[TRGT](https://github.com/PacificBiosciences/trgt) is PacBio's tandem repeat
-genotyper for HiFi reads. We host its _ABCA7_ call as this track:
-
-```json addtrack loc=chr19:1,049,000-1,050,500
-{
-  "trackId": "hprc_abca7_trgt",
-  "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
-  "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz",
-  "assemblyNames": ["hg38"]
-}
-```
-
-TRGT writes the same fields for your own samples, one VCF each, joined by
-`trgt merge`:
-
-```bash
-# one run per sample: HiFi reads aligned to GRCh38, and the repeat catalogue
-trgt genotype --genome GRCh38.fa --reads sample.bam \
-  --repeats adotto_repeats.hg38.bed --output-prefix sample
-# genotype writes its VCF unsorted, and merge reads sorted, indexed input
-bcftools sort -Oz -o sample.sorted.vcf.gz sample.vcf.gz
-bcftools index -t sample.sorted.vcf.gz
-trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
-```
 
 The session names the TRGT track as its `repeatTrackId`, so the **Layout** row
 of the track menu gains a **Repeat** entry. Pick the _ABCA7_ record: each walk
@@ -416,8 +410,6 @@ Click a bar: the other bars fade and the **Samples** card narrows to the samples
 with that allele. **By haplotype** swaps in one bar per called allele, and
 hovering a copy names its sample.
 
-## Checking HG00099's allele lengths against TRGT's AL field
-
 HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. In the
 card, hovering ALT 1's bar gives 387 bp and ALT 2's 3.2 kb, matching what TRGT
 measured.
@@ -425,23 +417,14 @@ measured.
 ## Amylase: counting AMY1 copies per haplotype {#amylase}
 
 A gene array varies the same way a tandem repeat does, in whole gene copies. We
-draw the salivary amylase array as the haplotype lanes of
-[part 2](/docs/tutorials/pangenome_hprc_haplotypes):
+draw five haplotypes' routes through the salivary amylase array as walk rows,
+one per structure:
 
 - On the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
   **AMY1** example and press **Haplotypes**.
-- Choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`
-  under **Lanes → Choose lanes...**.
-
-A lane with more copies spans more of its contig in the same width, and its
-label gives that span as a multiple of the window.
-
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
-
-To read the lengths, switch the track to walk rows:
-
 - **Display types → Graph** in the track menu.
-- Enter the five names in **Settings → Haplotypes**.
+- Enter `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1` in
+  **Settings → Haplotypes**.
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   draw each haplotype's route as a bar.
 

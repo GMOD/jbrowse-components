@@ -305,7 +305,7 @@ Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
 only layout available, and it draws the classic Bandage picture with alternate
 alleles as bubbles. The
-[MHC figure](/docs/tutorials/pangenome_hprc#the-stretch-of-grch38-an-allele-replaces)
+[MHC figure](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 shows it under the lanes of the same window.
 
 **Rank** is minigraph's `SR` tag, and it counts build order. Rank 0 is the first

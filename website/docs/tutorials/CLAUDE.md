@@ -32,6 +32,11 @@ where the first **raised the question it answers**, so the reader arrives at it
 rather than being taken there. What the rule excludes is the page that visits
 three datasets because each demonstrates the capability once.
 
+`pangenome_ecoli` and `pangenome_cactus` take the same five strains through the
+same sections on purpose, one graph builder per page, so a reader can compare
+them section by section. Trimming the Cactus page to what only it shows was
+proposed and declined (2026-10-12).
+
 The spine can be a task rather than a finding. `display_settings` changes a
 setting, reads the name back out of the session, puts that name in a config and
 then makes the two disagree; `cli_desktop` builds one folder and opens it twice.
