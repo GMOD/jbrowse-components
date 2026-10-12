@@ -1,3 +1,4 @@
+import { asTable } from './featureTable.ts'
 import {
   facetLayers as facetTables,
   layerTables,
@@ -569,6 +570,27 @@ test('a faceted layer hands on its features as its steps left them', () => {
   const [first, second] = layers[0]!.features
   expect(first).toBe(features[1])
   expect(second).toBe(features[0])
+})
+
+// A multi-source adapter's rows arrive grouped in section order, and the
+// encoder reads such a table directly rather than through a row view.
+test('rows already in section order reach the layers as the table they came in', () => {
+  const grouped = asTable([
+    feature(0, 20, { sample: 'a' }),
+    feature(20, 40, { sample: 'a' }),
+    feature(0, 20, { sample: 'b' }),
+  ])
+  const { layers } = facetTables(grouped, { field: 'sample' }, [{}])
+  expect(layers[0]!.table).toBe(grouped)
+  expect([...layers[0]!.rows]).toEqual([0, 0, 1])
+
+  const shuffled = asTable([
+    feature(0, 20, { sample: 'b' }),
+    feature(0, 20, { sample: 'a' }),
+  ])
+  expect(
+    facetTables(shuffled, { field: 'sample' }, [{}]).layers[0]!.table,
+  ).not.toBe(shuffled)
 })
 
 // The rowless layer's features carry a `row` field a display-level pileup

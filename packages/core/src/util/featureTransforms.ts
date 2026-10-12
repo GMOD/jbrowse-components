@@ -1289,6 +1289,32 @@ export interface FacetedLayer {
   rows: Uint32Array
 }
 
+// Whether the rows already arrive grouped in section order, as a
+// multi-source adapter's rows do, so the split reorders nothing and the steps
+// read the table directly rather than through a row view.
+function inSectionOrder(keyOfRow: Uint32Array, sectionOf: Uint32Array) {
+  for (let i = 1; i < keyOfRow.length; i++) {
+    if (sectionOf[keyOfRow[i]!]! < sectionOf[keyOfRow[i - 1]!]!) {
+      return false
+    }
+  }
+  return true
+}
+
+// The counting sort's row order: each section's rows in arrival order.
+function sectionOrder(
+  keyOfRow: Uint32Array,
+  sectionOf: Uint32Array,
+  bounds: Uint32Array,
+) {
+  const next = bounds.slice(0, sectionOf.length)
+  const order = new Uint32Array(keyOfRow.length)
+  for (let i = 0; i < keyOfRow.length; i++) {
+    order[next[sectionOf[keyOfRow[i]!]!]!++] = i
+  }
+  return order
+}
+
 /**
  * #api
  * A faceted request's layers: the rows split on the facet's field, the
@@ -1365,15 +1391,14 @@ export function facetLayers(
   for (let s = 0; s < keys.length; s++) {
     bounds[s + 1] = bounds[s + 1]! + bounds[s]!
   }
-  const next = bounds.slice(0, keys.length)
-  const order = new Uint32Array(n)
-  for (let i = 0; i < n; i++) {
-    order[next[sectionOf[keyOfRow[i]!]!]!++] = i
-  }
-
   const labels = ordered.map(k => keys[k]!)
   const layered = runLayers(
-    { table: selectRows(table, order), bounds },
+    {
+      table: inSectionOrder(keyOfRow, sectionOf)
+        ? table
+        : selectRows(table, sectionOrder(keyOfRow, sectionOf, bounds)),
+      bounds,
+    },
     sectionSteps,
     layers.map(({ transform }) => transform),
     jexl,
