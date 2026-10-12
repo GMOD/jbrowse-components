@@ -56,9 +56,7 @@ export function doSubmit({
         ? { displayedRegionNames }
         : {}),
       ...(tracks.length ? { tracks } : {}),
-      ...(autoDiagonalize && tracks.length && assembly.length === 2
-        ? { autoDiagonalize }
-        : {}),
+      ...(tracks.length && assembly.length === 2 ? { autoDiagonalize } : {}),
     })
     model.clearImportFormSyntenyTracks()
   })

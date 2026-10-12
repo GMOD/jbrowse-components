@@ -145,6 +145,7 @@ test('Manual restricts each genome by its own chromosome box', async () => {
     assembly: ['hg38', 'rn7'],
     displayedRegionNames: { rn7: ['ctgA'] },
     tracks: ['hg38_rn7'],
+    autoDiagonalize: false,
   })
 })
 
