@@ -505,6 +505,13 @@ export function defineMark<
         hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
       }
       if (staged?.writer !== shape.writeUniforms || staged.params !== params) {
+        // A generated packer drops whatever lands past the end of a short
+        // buffer, which draws the pass from zeros with nothing said.
+        if (scratch.byteLength < shape.pass.uniformByteSize) {
+          throw new Error(
+            `${shape.pass.id} writes ${shape.pass.uniformByteSize} bytes of uniforms into a ${scratch.byteLength}-byte scratch`,
+          )
+        }
         shape.writeUniforms(scratch, clip, block, state, p)
         hal.writeUniforms(scratch)
         if (staged) {

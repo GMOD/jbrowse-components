@@ -192,13 +192,13 @@ export interface WorkerPileupData {
   coverageGpuBinCount: number
   coveragePackedBuffer: ArrayBuffer
 
-  // The coverage band's four segment layers, each as its packed instance
-  // buffer and nothing else. Worker-built, uploaded verbatim by the GPU
-  // renderer, and read in place by the Canvas2D draw, the SVG export and the
-  // interbase hit test — so a mark is hit-tested against the record that was
-  // painted rather than a second copy of it. `readInterbaseSegments` /
-  // `readIndicators` (alignments-core) are the decode side; the field offsets
-  // are Slang codegen, so nothing here restates a record shape.
+  // The coverage band's segment layers, each as its packed instance buffer
+  // and nothing else. Worker-built, uploaded verbatim by the GPU renderer, and
+  // read in place by the Canvas2D draw, the SVG export and the interbase hit
+  // test — so a mark is hit-tested against the record that was painted rather
+  // than a second copy of it. `readInterbaseSegments` (alignments-core) is the
+  // decode side; the field offsets are Slang codegen, so nothing here restates
+  // a record shape.
 
   // The SNP pass. yOffset/segHeight are fractions of THIS position's
   // coverage bar; relDepth = totalDepthAtPos / regionMaxDepth scales it at draw
@@ -217,9 +217,12 @@ export interface WorkerPileupData {
   // interbase bars readable against the coverage bars beside them.
   interbaseMaxCount: number
 
-  // The indicator pass: triangles at the positions where interbase events are a
-  // significant fraction of local depth.
-  indicatorPackedBuffer: ArrayBuffer
+  // The indicator triangles, at the positions where interbase events are a
+  // significant fraction of local depth, each with its most common event's
+  // type code (1 insertion, 2 softclip, 3 hardclip): the x and color lanes of
+  // render-core's point mark.
+  indicatorPositions: Uint32Array
+  indicatorTypes: Float32Array
 
   // Per-position modification aggregates for the coverage tooltip, as flat
   // transferable arrays (shared/modTooltipIndex.ts, which owns the layout and

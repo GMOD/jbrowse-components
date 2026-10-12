@@ -4,11 +4,9 @@ import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
 
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
-import { INDICATOR_TRIANGLE_HW } from './labelConstants.ts'
 import {
   drawCoverageBins,
   drawCoverageClipStrips,
-  drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
@@ -672,79 +670,6 @@ describe('drawModCovSegments', () => {
       logCalls.find(c => c.method === 'fillRect')!.args as number[]
     )[3]!
     expect(logH).toBeGreaterThan(linH)
-  })
-})
-
-describe('drawIndicators', () => {
-  const interbaseColors = {
-    insertion: 'purple',
-    softclip: 'cyan',
-    hardclip: 'orange',
-  }
-
-  it('draws triangles at positions with correct colors', () => {
-    const buf = new ArrayBuffer(16)
-    const f32 = new Float32Array(buf)
-    const u32 = new Uint32Array(buf)
-    u32[0] = 50
-    f32[1] = 1 // insertion
-    u32[2] = 150
-    f32[3] = 2 // softclip
-
-    const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, interbaseColors, (bp: number) => bp, 200)
-
-    const styleCalls = calls.filter(c => c.method === 'fillStyle')
-    expect(styleCalls.some(c => c.args[0] === 'purple')).toBe(true)
-    expect(styleCalls.some(c => c.args[0] === 'cyan')).toBe(true)
-  })
-
-  // The position is a uint32 in the position slot — writing it through the f32
-  // view stored the BIT PATTERN of 300.0 (1133248512), which this culled for
-  // being a billion px off screen rather than for being at 300.
-  it('skips indicators outside viewport', () => {
-    const buf = new ArrayBuffer(8)
-    const f32 = new Float32Array(buf)
-    const u32 = new Uint32Array(buf)
-    u32[0] = 300
-    f32[1] = 1
-
-    const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, interbaseColors, (bp: number) => bp, 200)
-
-    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(0)
-  })
-
-  // The mark is a 7px-wide triangle CENTERED on its bp, so one whose center sits
-  // just past an edge still shows several pixels inside it. coverageIndicator.slang does
-  // no x-cull at all — it emits the triangle and lets the scissor clip it — so
-  // culling on the center alone dropped, in Canvas2D and therefore in the SVG
-  // export, a sliver the GPU draws. Every block boundary in a multi-region view
-  // is such an edge, not just the two ends of the canvas.
-  it.each([
-    ['just inside the left edge', -INDICATOR_TRIANGLE_HW + 1],
-    ['just inside the right edge', 200 + INDICATOR_TRIANGLE_HW - 1],
-  ])('draws a triangle overlapping the viewport: %s', (_name, pos) => {
-    const buf = new ArrayBuffer(8)
-    const f32 = new Float32Array(buf)
-    f32[1] = 1
-    const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, interbaseColors, () => pos, 200)
-
-    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(1)
-  })
-
-  it.each([
-    ['fully past the left edge', -INDICATOR_TRIANGLE_HW - 1],
-    ['fully past the right edge', 200 + INDICATOR_TRIANGLE_HW + 1],
-  ])('still culls one that cannot show: %s', (_name, pos) => {
-    const buf = new ArrayBuffer(8)
-    const f32 = new Float32Array(buf)
-    f32[1] = 1
-    const { ctx, calls } = makeCtx()
-    drawIndicators(ctx, buf, interbaseColors, () => pos, 200)
-
-    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(0)
   })
 })
 

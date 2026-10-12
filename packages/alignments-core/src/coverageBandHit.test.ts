@@ -1,6 +1,5 @@
 import { hitCoverageBand } from './coverageBandMarks.ts'
 import { coverageBinAt } from './coverageDownsampling.ts'
-import { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
 import { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
 
 import type { CoverageBandRegion } from './coverageBandMarks.ts'
@@ -37,10 +36,10 @@ function segments(
 }
 
 function indicators(s: { position: number; colorType: number }[]) {
-  return packIndicatorInstances(
-    { position: s.map(x => x.position), colorType: s.map(x => x.colorType) },
-    s.length,
-  )
+  return {
+    indicatorPositions: Uint32Array.from(s, x => x.position),
+    indicatorTypes: Float32Array.from(s, x => x.colorType),
+  }
 }
 
 function region(over: Partial<CoverageBandRegion> = {}): CoverageBandRegion {
@@ -48,7 +47,7 @@ function region(over: Partial<CoverageBandRegion> = {}): CoverageBandRegion {
     coveragePackedBuffer: new ArrayBuffer(0),
     snpPackedBuffer: new ArrayBuffer(0),
     interbasePackedBuffer: segments([]),
-    indicatorPackedBuffer: indicators([]),
+    ...indicators([]),
     coverageMaxDepth: 0,
     coverageBinSize: 1,
     interbaseMaxCount: 0,
@@ -182,7 +181,7 @@ describe('the interbase histogram bars', () => {
 
 describe('the indicator triangles', () => {
   const triangleAt1005 = region({
-    indicatorPackedBuffer: indicators([{ position: 1005, colorType: 3 }]),
+    ...indicators([{ position: 1005, colorType: 3 }]),
   })
 
   it('hits a triangle in the top strip', () => {

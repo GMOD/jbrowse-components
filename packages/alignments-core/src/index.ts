@@ -15,7 +15,6 @@ export {
   MISMATCH_COLOR,
   SERIF_H_PX,
   SERIF_HALF_W_PX,
-  drawIndicatorTriangle,
   drawInsertionSerifs,
   insertionSerifsWidthPx,
   formatInsertionLabel,
@@ -122,7 +121,6 @@ export {
 export { interbaseEdgePx } from './interbaseEdge.generated.ts'
 export {
   drawCoverageBins,
-  drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
@@ -138,7 +136,6 @@ export {
 export {
   coverageBandMarks,
   coverageBarShape,
-  coverageIndicatorShape,
   coverageInterbaseShape,
   coverageModShape,
   coverageSnpShape,
@@ -166,25 +163,17 @@ export {
   emptyInterbaseCoverage,
 } from './interbaseCoverage.ts'
 export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
-export {
-  readIndicators,
-  readInterbaseSegments,
-  recordsWithin,
-} from './interbaseSegments.ts'
-export type {
-  IndicatorReader,
-  InterbaseSegmentReader,
-} from './interbaseSegments.ts'
+export { readInterbaseSegments, recordsWithin } from './interbaseSegments.ts'
+export type { InterbaseSegmentReader } from './interbaseSegments.ts'
 export { computeSNPCoverage, emptySnpCoverage } from './snpCoverage.ts'
 export { readSnpSegments } from './snpSegments.ts'
 export type { SnpSegment } from './snpSegments.ts'
 export { readModCovSegments } from './modCovSegments.ts'
 export type { ModCovSegment } from './modCovSegments.ts'
-// The three coverage-band buffers the computes own, re-exported as their
+// The two coverage-band buffers the computes own, re-exported as their
 // shaders' own generated packers. Production has no caller — each compute
 // writes its buffer incrementally — but a fixture stating a segment directly
 // should still encode it the way the shader decodes it, rather than by hand.
-export { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
 export { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
 export { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 export { computeCoverage } from './coverageCompute.ts'

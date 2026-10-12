@@ -89,7 +89,8 @@ export interface CoverageUploadData {
   // derivable from the buffer, so it travels beside it.
   interbaseMaxCount: number
   interbasePackedBuffer: ArrayBuffer
-  indicatorPackedBuffer: ArrayBuffer
+  indicatorPositions: Uint32Array
+  indicatorTypes: Float32Array
 }
 
 export interface ModCoverageUploadData {

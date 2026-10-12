@@ -1,16 +1,11 @@
-// Reading the interbase-histogram and indicator instance buffers back on the
-// main thread — the hit test's half of what `computeInterbaseCoverage` writes.
+// Reading the interbase-histogram instance buffer back on the main thread —
+// the hit test's half of what `computeInterbaseCoverage` writes.
 //
-// The buffers are the only shipped form of these marks, so this is where a
-// non-drawing reader gets at them. Every field access is the `.slang`'s own
+// The buffer is the histogram's only shipped form, so this is where a
+// non-drawing reader gets at it. Every field access is the `.slang`'s own
 // generated getter, which binds the field to its view; nothing here restates
 // a stride or an offset.
 
-import {
-  INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES,
-  getInstanceColorType as getIndicatorColorType,
-  getInstancePosition as getIndicatorPosition,
-} from './indicatorLayout.generated.ts'
 import {
   INSTANCE_STRIDE_BYTES as SEGMENT_STRIDE_BYTES,
   getInstanceColorType as getSegmentColorType,
@@ -41,23 +36,6 @@ export function readInterbaseSegments(
     stackStart: i => getSegmentYOffset(f32, i),
     stackEnd: i => getSegmentYOffset(f32, i) + getSegmentHeight(f32, i),
     colorType: i => getSegmentColorType(f32, i),
-  }
-}
-
-export interface IndicatorReader {
-  count: number
-  position: (i: number) => number
-  /** Dominant type: 1=insertion 2=softclip 3=hardclip. */
-  colorType: (i: number) => number
-}
-
-export function readIndicators(buffer: ArrayBuffer): IndicatorReader {
-  const u32 = new Uint32Array(buffer)
-  const f32 = new Float32Array(buffer)
-  return {
-    count: buffer.byteLength / INDICATOR_STRIDE_BYTES,
-    position: i => getIndicatorPosition(u32, i),
-    colorType: i => getIndicatorColorType(f32, i),
   }
 }
 

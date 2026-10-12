@@ -1,8 +1,4 @@
-import {
-  packIndicatorInstances,
-  packInterbaseInstances,
-  namesToBlock,
-} from '@jbrowse/alignments-core'
+import { packInterbaseInstances, namesToBlock } from '@jbrowse/alignments-core'
 
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { withoutLayout } from './sortLayout.ts'
@@ -135,7 +131,8 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     snpPackedBuffer: new ArrayBuffer(0),
     interbaseMaxCount: 0,
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
+    indicatorPositions: new Uint32Array(0),
+    indicatorTypes: new Float32Array(0),
     modificationPositions: new Uint32Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
@@ -194,15 +191,12 @@ export function packedInterbaseSegments(
   )
 }
 
-/** The indicator-triangle instance buffer; see `packedInterbaseSegments`. */
-export function packedIndicators(
+/** The indicator triangles' two fields, to spread into a region. */
+export function indicatorFields(
   indicators: { position: number; colorType: number }[],
 ) {
-  return packIndicatorInstances(
-    {
-      position: indicators.map(i => i.position),
-      colorType: indicators.map(i => i.colorType),
-    },
-    indicators.length,
-  )
+  return {
+    indicatorPositions: Uint32Array.from(indicators, i => i.position),
+    indicatorTypes: Float32Array.from(indicators, i => i.colorType),
+  }
 }

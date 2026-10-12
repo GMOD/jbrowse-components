@@ -2,7 +2,6 @@ import {
   INDICATOR_TRIANGLE_H,
   INDICATOR_TRIANGLE_HW,
   pairDirectionOfNum,
-  readIndicators,
   readInterbaseSegments,
   readModCovSegments,
   readSnpSegments,
@@ -470,10 +469,8 @@ function coverageStacks(d: WorkerPileupData) {
  */
 function interbaseStacks(d: WorkerPileupData) {
   const segments = readInterbaseSegments(d.interbasePackedBuffer)
-  const indicators = readIndicators(d.indicatorPackedBuffer)
   const reads = (fraction: number) => Math.round(fraction * d.interbaseMaxCount)
   const n = segments.count
-  const k = indicators.count
   return {
     interbaseCoverage: {
       position: Array.from({ length: n }, (_, i) => segments.position(i)),
@@ -484,10 +481,8 @@ function interbaseStacks(d: WorkerPileupData) {
       to: Array.from({ length: n }, (_, i) => reads(segments.stackEnd(i))),
     },
     indicators: {
-      position: Array.from({ length: k }, (_, i) => indicators.position(i)),
-      type: Array.from({ length: k }, (_, i) =>
-        interbaseTypeName(indicators.colorType(i)),
-      ),
+      position: d.indicatorPositions,
+      type: Array.from(d.indicatorTypes, interbaseTypeName),
     },
   }
 }

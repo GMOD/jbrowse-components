@@ -15,7 +15,7 @@ import {
 } from './linkMark.ts'
 import { inkHitNearest } from './markHit.ts'
 import { instanceColor } from './markRamp.ts'
-import { pointMark } from './pointMark.ts'
+import { pointInstance, pointMark } from './pointMark.ts'
 import { HIDDEN_ROW, NO_ROW_COLOR, buildRowTable } from './rowTable.ts'
 import { ruleMark } from './ruleMark.ts'
 import { spanMark } from './spanMark.ts'
@@ -254,21 +254,13 @@ const glyphs: PointChannels = {
   count: 5,
 }
 
-const slicePoint = (c: PointChannels, i: number): PointChannels => ({
-  x: c.x.subarray(i, i + 1),
-  x2: c.x2.subarray(i, i + 1),
-  y: c.y.subarray(i, i + 1),
-  color: instanceColor(c.color, i),
-  glyph: c.glyph.subarray(i, i + 1),
-  count: 1,
-})
-
 describe('point: a glyph hit lands on the glyph the painter drew', () => {
   test.each<[number, Partial<PointParams>]>([
     [2, {}],
     [6, {}],
     [6, SYMLOG],
     [6, { reverse: true, rowOffsetPx: 12, rowHeight: 40 }],
+    [7, { triangleHeightPx: 4.5 }],
   ])('diameter %i, scale %j', (diameterPx, scale) => {
     for (const reversed of [false, true]) {
       expect(
@@ -283,7 +275,7 @@ describe('point: a glyph hit lands on the glyph the painter drew', () => {
           { canvasWidth: 60, canvasHeight: 100 },
           // Wide enough that every swept point gets an answer, so the claims are
           // made everywhere rather than only on top of a glyph.
-          { maxDistSq: 400, sliceOne: slicePoint },
+          { maxDistSq: 400, sliceOne: pointInstance },
         ),
       ).toEqual([])
     }

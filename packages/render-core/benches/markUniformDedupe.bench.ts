@@ -14,9 +14,10 @@
 //
 // THE QUESTION. `defineMark`'s `drawRegion` calls `shape.writeUniforms` then
 // `hal.writeUniforms` for every mark of every block of every frame. Two mark
-// lists in tree declare five marks over ONE uniform writer and ONE `params`
-// lens, so four of the five writes per block restate the same 27 (coverage) or
-// 12 (glyph) stores into the same scratch and stage the same bytes again:
+// lists in tree declare four or five marks over ONE uniform writer and ONE
+// `params` lens, so every write per block after the first restates the same 27
+// (coverage) or 12 (glyph) stores into the same scratch and stages the same
+// bytes again:
 //   - alignments-core `coverageBandMarks` — `writeBandUniforms`, 112-byte UBO
 //   - canvas `featureGlyphMarks` — `writeFeatureGlyphUniforms`, 48-byte UBO
 //
@@ -48,7 +49,6 @@ import {
 } from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import {
   coverageBarShape,
-  coverageIndicatorShape,
   coverageInterbaseShape,
   coverageModShape,
   coverageSnpShape,
@@ -266,7 +266,8 @@ const COV_REGION: CovRegion = {
   snpPackedBuffer: new ArrayBuffer(16 * 400),
   modCovPackedBuffer: new ArrayBuffer(16 * 200),
   interbasePackedBuffer: new ArrayBuffer(16 * 300),
-  indicatorPackedBuffer: new ArrayBuffer(8 * 120),
+  indicatorPositions: new Uint32Array(120),
+  indicatorTypes: new Float32Array(120),
   coverageMaxDepth: 87,
   coverageBinSize: 1,
   interbaseMaxCount: 34,
@@ -390,7 +391,6 @@ function covList(
     make({ shape: coverageSnpShape, channels, params, band }),
     make({ shape: coverageModShape, channels, params, band }),
     make({ shape: coverageInterbaseShape, channels, params, band }),
-    make({ shape: coverageIndicatorShape, channels, params, band }),
   ]
 }
 

@@ -12,8 +12,6 @@ import { GLSL_VERTEX as barMarkGlsl } from './barMark.glsl.generated.ts'
 import { WGSL_SOURCE as barMarkWgsl } from './barMark.wgsl.generated.ts'
 import { GLSL_VERTEX as coverageBarGlsl } from './coverageBar.glsl.generated.ts'
 import { WGSL_SOURCE as coverageBarWgsl } from './coverageBar.wgsl.generated.ts'
-import { GLSL_VERTEX as coverageIndicatorGlsl } from './coverageIndicator.glsl.generated.ts'
-import { WGSL_SOURCE as coverageIndicatorWgsl } from './coverageIndicator.wgsl.generated.ts'
 import { GLSL_VERTEX as coverageInterbaseGlsl } from './coverageInterbase.glsl.generated.ts'
 import { WGSL_SOURCE as coverageInterbaseWgsl } from './coverageInterbase.wgsl.generated.ts'
 import { GLSL_VERTEX as coverageModGlsl } from './coverageMod.glsl.generated.ts'
@@ -30,8 +28,6 @@ const SOURCES = {
   'barMark glsl': barMarkGlsl,
   'coverageBar wgsl': coverageBarWgsl,
   'coverageBar glsl': coverageBarGlsl,
-  'coverageIndicator wgsl': coverageIndicatorWgsl,
-  'coverageIndicator glsl': coverageIndicatorGlsl,
   'coverageInterbase wgsl': coverageInterbaseWgsl,
   'coverageInterbase glsl': coverageInterbaseGlsl,
   'coverageMod wgsl': coverageModWgsl,

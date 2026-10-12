@@ -95,16 +95,14 @@ public struct CoverageBandUniforms {
 };
 
 // Coverage-band clip indicator triangle, in CSS px: half-width and height.
-// Four consumers depend on this one number: coverageIndicator.slang draws the
-// triangle, coverageInterbase.slang hangs its bars directly below one, and the
-// Canvas2D painter + hit test read it from `@jbrowse/alignments-core` — which
-// the `consts-out` directive above generates from these declarations, so the
-// cross-package copy can't drift either.
+// coverageInterbase.slang hangs its bars directly below one, and the point
+// mark that draws it reads the size from `@jbrowse/alignments-core`, which the
+// `consts-out` directive above generates from these declarations, so the
+// cross-package copy can't drift.
 public static const float TRIANGLE_HW = 3.5;
 public static const float TRIANGLE_H  = 4.5;
 
-// Shared vertex output for the band's four solid-fill passes. The indicator
-// pass carries a barycentric varying as well and declares its own.
+// Shared vertex output for the band's solid-fill passes.
 public struct CoverageVsOut {
   public float4 position : SV_Position;
   public float4 color    : COLOR0;
@@ -295,11 +293,11 @@ public float3 covSnpColor(float ct, CoverageBandUniforms u) {
   }
 }
 
-// Interbase mark fill, for both the histogram bars and the indicator triangles:
-// 1=insertion 2=softclip 3=hardclip, with anything else taking the insertion
-// color — the same fallback `drawIndicators`' lut takes for an out-of-range
-// kind. Nothing reaches that arm today (the interbase compute only ever emits
-// 1..3), which is exactly why the two spellings disagreeing would be invisible.
+// The interbase histogram's fill: 1=insertion 2=softclip 3=hardclip, with
+// anything else taking the insertion color — the same fallback
+// `clipKindColor` takes for an out-of-range kind. Nothing reaches that arm
+// today (the interbase compute only ever emits 1..3), which is exactly why the
+// two spellings disagreeing would be invisible.
 public float3 covClipKindColor(float ct, CoverageBandUniforms u) {
   int ci = int(ct);
   if (ci == 2) { return unpackRGBA(u.colorSoftclipIndicator).xyz; }

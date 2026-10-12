@@ -1,12 +1,12 @@
 import { computeInterbaseCoverage } from './interbaseCoverage.ts'
-import { readIndicators, readInterbaseSegments } from './interbaseSegments.ts'
+import { readInterbaseSegments } from './interbaseSegments.ts'
 
 function cov(depths: Float32Array, maxDepth: number, startPos = 100) {
   return { depths, maxDepth, startPos }
 }
 
-// The compute writes the packed instance buffers directly, so the assertions
-// read them back through the same decoder the hit test uses.
+// The compute writes the histogram's packed instance buffer directly, so the
+// assertions read it back through the same decoder the hit test uses.
 function segments(result: ReturnType<typeof computeInterbaseCoverage>) {
   const r = readInterbaseSegments(result.interbasePackedBuffer)
   return Array.from({ length: r.count }, (_, i) => ({
@@ -17,10 +17,9 @@ function segments(result: ReturnType<typeof computeInterbaseCoverage>) {
 }
 
 function indicators(result: ReturnType<typeof computeInterbaseCoverage>) {
-  const r = readIndicators(result.indicatorPackedBuffer)
-  return Array.from({ length: r.count }, (_, i) => ({
-    position: r.position(i),
-    colorType: r.colorType(i),
+  return Array.from(result.indicatorPositions, (position, i) => ({
+    position,
+    colorType: result.indicatorTypes[i],
   }))
 }
 

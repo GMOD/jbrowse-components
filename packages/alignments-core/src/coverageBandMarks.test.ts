@@ -10,11 +10,10 @@ import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 import { interbaseBarHeightPx } from './coverageBandBox.ts'
 import {
   coverageBandMarks,
-  coverageIndicatorShape,
   coverageInterbaseShape,
+  hitCoverageBand,
 } from './coverageBandMarks.ts'
 import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
-import { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
 import { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
 import { packInstances as packModCovInstances } from './modCoverageLayout.generated.ts'
 import { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
@@ -87,10 +86,8 @@ function region(): Region {
       },
       1,
     ),
-    indicatorPackedBuffer: packIndicatorInstances(
-      { position: [START + 3], colorType: [1] },
-      1,
-    ),
+    indicatorPositions: Uint32Array.of(START + 3),
+    indicatorTypes: Float32Array.of(1),
   }
 }
 
@@ -203,12 +200,14 @@ test('the six layers are the band order, and the second list leaves out the modi
   )
 })
 
-test('the band stages one uniform write per block, not one per layer', () => {
+test('the band\u2019s own layers share one uniform write per block', () => {
   const hal = render(FIVE)
-  // The six layers read `writeBandUniforms` through one `params` lens, so the
-  // five after the first draw off the slot the first staged.
-  expect(hal.getUniformWritesF32()).toHaveLength(1)
-  expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0, 0, 0, 0, 0])
+  // The five band layers read `writeBandUniforms` through one `params` lens
+  // and draw off the slot the first staged; the triangles are a point mark,
+  // with the point shader's struct, and the clip strip after them restages
+  // the band's.
+  expect(hal.getUniformWritesF32()).toHaveLength(3)
+  expect(hal.draws().map(d => d.uniformWrite)).toEqual([0, 0, 0, 0, 1, 2])
 })
 
 // The domain max under the one bin's depth, so the clip strip has a bar to mark.
@@ -409,29 +408,11 @@ test('a bar taller than the band stops at the band bottom, and the band top move
   expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 44, distSq: 44 ** 2 })
 })
 
-function indicatorChannels(
-  indicators: { position: number; colorType: number }[],
-) {
-  return {
-    indicatorPackedBuffer: packIndicatorInstances(
-      {
-        position: indicators.map(i => i.position),
-        colorType: indicators.map(i => i.colorType),
-      },
-      indicators.length,
-    ),
-    count: indicators.length,
-  }
-}
-
-// The triangles are traced as a PATH, so what the sweep records per instance is
-// the path's bounding box — which is exactly what the hit answers, so this arm
-// keeps the containment claim a `fillRect` layer gets rather than needing
-// `sliceOne`: every point of a triangle's 7x4.5 box has to answer that triangle,
-// and the last-painted one where two overlap. The first two are 2bp apart, which
-// at this zoom is 4px, so their boxes do overlap; all four are far enough inside
-// the block that `drawIndicators`' extent cull keeps every one of them, which is
-// what makes the rects attributable positionally.
+// The triangles paint through render-core's point mark, which batches a
+// color's glyphs into one path, so the sweep slices each one out. Every point
+// of a triangle's 7x4.5 box has to answer that triangle, and the last-painted
+// one where two overlap: the first two are 2bp apart, which at this zoom is
+// 4px, so their boxes do overlap.
 const SWEEP_INDICATORS = [
   { position: START + 2, colorType: 1 },
   { position: START + 4, colorType: 2 },
@@ -439,50 +420,89 @@ const SWEEP_INDICATORS = [
   { position: START + 77, colorType: 1 },
 ]
 
-// Both band tops, for the same reason the interbase arm sweeps both: `top`
-// reaches the painter as a `ctx.translate` and the hit test as an addend.
+function indicatorRegion(
+  indicators: { position: number; colorType: number }[],
+): Region & { count: number } {
+  return {
+    ...region(),
+    indicatorPositions: Uint32Array.from(indicators, i => i.position),
+    indicatorTypes: Float32Array.from(indicators, i => i.colorType),
+    count: indicators.length,
+  }
+}
+
+function sliceIndicator(r: Region & { count: number }, i: number) {
+  return {
+    ...r,
+    indicatorPositions: r.indicatorPositions.subarray(i, i + 1),
+    indicatorTypes: r.indicatorTypes.subarray(i, i + 1),
+    count: 1,
+  }
+}
+
+const INDICATOR = FIVE.find(m => m.pass.id === 'indicator')!
+
+// Both band tops: `top` reaches the point mark as its row offset, on the
+// painter and the hit test alike.
 describe.each([0, 40])('indicators at band top %i', top => {
   test.each([false, true])(
     'every drawn triangle answers its own hit, reversed=%s',
     reversed => {
-      const channels = indicatorChannels(SWEEP_INDICATORS)
       expect(
         sweepMarkAgainstHit(
-          defineMark({
-            shape: coverageIndicatorShape,
-            channels: (c: typeof channels) => c,
-            params: () => sweepParams({ top }),
-          }),
-          channels,
+          INDICATOR,
+          indicatorRegion(SWEEP_INDICATORS),
           { ...block, reversed },
-          SWEEP_FRAME,
-          { maxDistSq: Number.MIN_VALUE },
+          state({ top }),
+          { maxDistSq: Number.MIN_VALUE, sliceOne: sliceIndicator },
         ),
       ).toEqual([])
     },
   )
 })
 
-// The other half of the interbase clip test, and outside the sweep for the same
-// reason: the painter draws the whole 4.5px triangle and leaves the band clip to
-// the backend, so on a band shorter than the triangle the hit claims only the
-// part inside the band. A band that short is a config-declared one —
-// `MIN_BAND_HEIGHT` is 20 — and at every height above the triangle the clamp is
-// the triangle's own height and the two boxes are one box.
-test('a band shorter than the triangle claims only the part of it inside the band', () => {
-  const channels = indicatorChannels([{ position: START + 2, colorType: 1 }])
-  const p = sweepParams({ top: 40, height: 3 })
-  const hitAt = (yPx: number) =>
-    coverageIndicatorShape.hitNearest!(
-      channels,
-      block,
-      SWEEP_FRAME,
-      p,
-      4,
-      yPx,
-      [0],
-      1e6,
-    )
-  expect(hitAt(50)).toEqual({ index: 0, x: 4, y: 43, distSq: 49 })
-  expect(hitAt(0)).toEqual({ index: 0, x: 4, y: 40, distSq: 1600 })
+test('a triangle is 7 px wide and 4.5 tall, hanging from the band top in its type\u2019s color', () => {
+  const { ctx, ink } = recordingCtx()
+  const fills: unknown[] = []
+  const recording = {
+    ...ctx,
+    set fillStyle(v: string) {
+      fills.push(v)
+    },
+    get fillStyle() {
+      return ''
+    },
+  }
+  INDICATOR.paintBlock(
+    recording,
+    indicatorRegion([{ position: START + 20, colorType: 3 }]),
+    block,
+    state({ top: 40 }),
+  )
+  // START + 20 is x 40 at 0.5 bp/px
+  expect(ink.filter(c => c.startsWith('m') || c.startsWith('l'))).toEqual([
+    'm 36.5 40',
+    'l 43.5 40',
+    'l 40 44.5',
+  ])
+  expect(fills).toEqual(['rgba(9,0,0,0)'])
+})
+
+test('the band hit test answers a triangle by its box and its type', () => {
+  const r = indicatorRegion([{ position: START + 20, colorType: 2 }])
+  const band = {
+    height: HEIGHT,
+    top: 40,
+    domainMax: DOMAIN_MAX,
+    showInterbase: true,
+  }
+  expect(hitCoverageBand(r, band, block, 40, 42)).toEqual({
+    layer: 'indicator',
+    position: START + 20,
+    type: 2,
+  })
+  expect(hitCoverageBand(r, band, block, 43, 41)).toMatchObject({
+    layer: 'indicator',
+  })
+  expect(hitCoverageBand(r, band, block, 45, 41)).toBeUndefined()
 })

@@ -247,22 +247,7 @@ interface DrawCtx {
 }
 
 // Generated from `alignmentsUniforms.slang`'s TRIANGLE_HW / TRIANGLE_H by
-// `pnpm gen:shaders` (its `//! consts-out` directive), so the Canvas2D triangle
-// below, the hit test, and the two GPU passes that draw and hang off it are all
-// one number.
+// `pnpm gen:shaders` (its `//! consts-out` directive), so the indicator
+// triangle the point mark draws, its hit test, and the histogram hanging off
+// its tip are all one number.
 export { INDICATOR_TRIANGLE_HW, INDICATOR_TRIANGLE_H }
-
-/**
- * Draw a single downward-pointing indicator triangle on a Canvas2D context.
- */
-export function drawIndicatorTriangle(
-  ctx: Pick<DrawCtx, 'beginPath' | 'moveTo' | 'lineTo' | 'closePath' | 'fill'>,
-  cx: number,
-) {
-  ctx.beginPath()
-  ctx.moveTo(cx - INDICATOR_TRIANGLE_HW, 0)
-  ctx.lineTo(cx + INDICATOR_TRIANGLE_HW, 0)
-  ctx.lineTo(cx, INDICATOR_TRIANGLE_H)
-  ctx.closePath()
-  ctx.fill()
-}

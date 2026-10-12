@@ -18,12 +18,6 @@ import {
   INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
 import {
-  INSTANCE_OFFSET_F32 as INDICATOR_F32,
-  INSTANCE_OFFSET_U32 as INDICATOR_U32,
-  INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS as INDICATOR_STRIDE,
-} from './indicatorLayout.generated.ts'
-import {
   interbaseBarLeftPx,
   interbaseEdgePx,
 } from './interbaseEdge.generated.ts'
@@ -33,10 +27,6 @@ import {
   INSTANCE_STRIDE_BYTES as SEGMENT_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as SEGMENT_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
-import {
-  INDICATOR_TRIANGLE_HW,
-  drawIndicatorTriangle,
-} from './labelConstants.ts'
 import {
   INSTANCE_OFFSET_F32 as MOD_COV_F32,
   INSTANCE_OFFSET_U32 as MOD_COV_U32,
@@ -145,10 +135,8 @@ export function spanRectWidthPx(
 }
 
 // colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the
-// insertion color. Mirrors covClipKindColor() in coverageBand.slang, which both
-// the indicator triangles and the interbase histogram read — they had a copy of
-// the lut and its fallback each, and nothing emits an out-of-range kind today,
-// so the two spellings disagreeing would have been invisible.
+// insertion color. Mirrors covClipKindColor() in coverageBand.slang, which the
+// interbase histogram reads.
 export function clipKindColor(colorType: number, colors: InterbaseDrawColors) {
   return colorType === 2
     ? colors.softclip
@@ -389,41 +377,6 @@ export function drawSnpSegments(
     // stretch). Both backends already agree on the min-width rule that does
     // apply: `fillSpanRect` mirrors `covSegQuad`'s `expandMinWidthX`.
     fillSpanRect(ctx, px, px2, segTop, segBottom - segTop)
-  }
-}
-
-export function drawIndicators(
-  ctx: Ctx,
-  buffer: ArrayBuffer,
-  colors: InterbaseDrawColors,
-  bpToX: (bp: number) => number,
-  viewWidth: number,
-) {
-  const u32 = new Uint32Array(buffer)
-  const f32 = new Float32Array(buffer)
-  const indicatorCount = buffer.byteLength / INDICATOR_STRIDE_BYTES
-  for (let i = 0; i < indicatorCount; i++) {
-    const off = i * INDICATOR_STRIDE
-    const px = bpToX(u32[off + INDICATOR_U32.position]!)
-    // The mark is a 7px triangle CENTERED on `px`, so the cull is its EXTENT,
-    // not its center — a center just past an edge still shows several pixels
-    // inside it. `coverageIndicator.slang` does no x-cull at all: it emits the triangle
-    // and lets the scissor clip it, so testing the center alone dropped, here
-    // and therefore in the SVG export, a sliver the GPU draws. Not just the two
-    // ends of the canvas — every block boundary in a multi-region view is such
-    // an edge, and the block clip rect already keeps the overhang honest.
-    //
-    // Unlike the bar layers above there is no reversed-block subtlety: a
-    // triangle is symmetric about `px`, and `bpToX(pos)` is that bp boundary in
-    // either orientation (same reason drawInterbaseSegments keeps `px` as its
-    // anchor).
-    if (
-      px + INDICATOR_TRIANGLE_HW >= 0 &&
-      px - INDICATOR_TRIANGLE_HW <= viewWidth
-    ) {
-      ctx.fillStyle = clipKindColor(f32[off + INDICATOR_F32.colorType]!, colors)
-      drawIndicatorTriangle(ctx, px)
-    }
   }
 }
 

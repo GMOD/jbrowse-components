@@ -533,7 +533,6 @@ export default [
   '@jbrowse/render-core/shaders/connectorMark',
   '@jbrowse/render-core/shaders/connectorMarkConsts',
   '@jbrowse/render-core/shaders/coverageBar',
-  '@jbrowse/render-core/shaders/coverageIndicator',
   '@jbrowse/render-core/shaders/coverageInterbase',
   '@jbrowse/render-core/shaders/coverageMod',
   '@jbrowse/render-core/shaders/coverageSnp',

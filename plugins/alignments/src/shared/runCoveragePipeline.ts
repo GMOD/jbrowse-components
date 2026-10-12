@@ -247,7 +247,8 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
       coveragePackedBuffer: new ArrayBuffer(0),
       snpPackedBuffer: new ArrayBuffer(0),
       interbasePackedBuffer: new ArrayBuffer(0),
-      indicatorPackedBuffer: new ArrayBuffer(0),
+      indicatorPositions: new Uint32Array(0),
+      indicatorTypes: new Float32Array(0),
       modCovPackedBuffer: new ArrayBuffer(0),
     },
   }

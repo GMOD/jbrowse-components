@@ -1,6 +1,5 @@
 import {
   COVERAGE_BAR_PASS,
-  COVERAGE_INDICATOR_PASS,
   COVERAGE_INTERBASE_PASS,
   COVERAGE_MOD_PASS,
   COVERAGE_SNP_PASS,
@@ -109,7 +108,8 @@ function fullyPopulated() {
     coveragePackedBuffer: oneInstance(COVERAGE_BAR_PASS),
     snpPackedBuffer: oneInstance(COVERAGE_SNP_PASS),
     interbasePackedBuffer: oneInstance(COVERAGE_INTERBASE_PASS),
-    indicatorPackedBuffer: oneInstance(COVERAGE_INDICATOR_PASS),
+    indicatorPositions: new Uint32Array([START + 50]),
+    indicatorTypes: new Float32Array([1]),
     modCovPackedBuffer: oneInstance(COVERAGE_MOD_PASS),
   })
 }

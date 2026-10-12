@@ -33,23 +33,27 @@ import type { MarkValueScale } from './valueScale.ts'
 
 /**
  * The `point` shape's channels: a glyph per instance at the centre of
- * `x`..`x2`, on the `y` scale.
+ * `x`..`x2`, on the `y` scale, at 0 where `y` is absent. `glyph` is one per
+ * instance or one for all of them, as `color` is.
  */
 export interface PointChannels extends ColorChannel, RowChannel {
   x: Uint32Array
   x2: Uint32Array
-  y: Float32Array
-  glyph: Uint8Array
+  y?: Float32Array
+  glyph: Uint8Array | number
   count: number
 }
 
+const NO_VALUES = new Float32Array(0)
+
 /** The channels cut down to instance `i`, for its own painter to trace alone. */
 export function pointInstance(c: PointChannels, i: number): PointChannels {
+  const { glyph } = c
   return {
     x: c.x.subarray(i, i + 1),
     x2: c.x2.subarray(i, i + 1),
-    y: c.y.subarray(i, i + 1),
-    glyph: c.glyph.subarray(i, i + 1),
+    y: c.y?.subarray(i, i + 1),
+    glyph: typeof glyph === 'number' ? glyph : glyph.subarray(i, i + 1),
     row: c.row?.subarray(i, i + 1),
     color: instanceColor(c.color, i),
     count: 1,
@@ -123,7 +127,17 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     ...slangPass({ id: 'point', mod: shader }),
     pack: c =>
       shader.packInstances(
-        { ...c, color: colorBits(c, c.count), row: rowLane(c.row, c.count) },
+        {
+          x: c.x,
+          x2: c.x2,
+          y: c.y ?? (c.count === 0 ? NO_VALUES : new Float32Array(c.count)),
+          glyph:
+            typeof c.glyph === 'number'
+              ? new Uint8Array(c.count).fill(c.glyph)
+              : c.glyph,
+          color: colorBits(c, c.count),
+          row: rowLane(c.row, c.count),
+        },
         c.count,
       ),
   },
@@ -180,11 +194,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         rowBandTopPx(top, band, slot),
         band,
         reverse,
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
+        pointYPx(y ? y[i]! : 0, domainMin, domainMax, band, st, insetPx, c),
       )
       appendGlyph(
         ctx,
-        glyph[i]!,
+        typeof glyph === 'number' ? glyph : glyph[i]!,
         (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
         yPx,
         diameterPx,
@@ -210,10 +224,10 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       rowBandTopPx(params.rowOffsetPx ?? 0, band, slot),
       band,
       params.reverse ? 1 : 0,
-      pointYPx(y[i]!, domain[0], domain[1], band, st, insetPx, c),
+      pointYPx(y ? y[i]! : 0, domain[0], domain[1], band, st, insetPx, c),
     )
     return glyphBox(
-      glyph[i]!,
+      typeof glyph === 'number' ? glyph : glyph[i]!,
       (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
       cy,
       diameterPx,
@@ -248,7 +262,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         rowBandTopPx(top, band, slot),
         band,
         reverse,
-        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx, c),
+        pointYPx(y ? y[i]! : 0, domainMin, domainMax, band, st, insetPx, c),
       )
       return inkAtPoint(xPx, yPx, (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2, cy)
     })

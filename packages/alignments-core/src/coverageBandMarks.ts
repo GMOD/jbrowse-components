@@ -6,16 +6,20 @@ import {
 import {
   COVERAGE_BAR_PASS,
   COVERAGE_CLIP_PASS,
-  COVERAGE_INDICATOR_PASS,
   COVERAGE_INTERBASE_PASS,
   COVERAGE_MOD_PASS,
   COVERAGE_SNP_PASS,
   orderCoverageBandLayers,
   writeCoverageBandUniforms,
 } from '@jbrowse/render-core/coverageBand'
-import { defineMark } from '@jbrowse/render-core/marks'
+import { defineMark, pointMark, withPassId } from '@jbrowse/render-core/marks'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
-import { inkOnRect, nearestInk } from '@jbrowse/render-core/marks/hit'
+import {
+  inkOnRect,
+  nearestInk,
+  shapeHitNearest,
+} from '@jbrowse/render-core/marks/hit'
+import { GLYPH_TRIANGLE } from '@jbrowse/render-core/shaders/pointMarkConsts'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import {
   SCALE_TYPE_LINEAR,
@@ -27,11 +31,7 @@ import {
   interbaseBarLeftPx,
   interbaseEdgePx,
 } from './interbaseEdge.generated.ts'
-import {
-  readIndicators,
-  readInterbaseSegments,
-  recordsWithin,
-} from './interbaseSegments.ts'
+import { readInterbaseSegments, recordsWithin } from './interbaseSegments.ts'
 import {
   INDICATOR_TRIANGLE_H,
   INDICATOR_TRIANGLE_HW,
@@ -39,7 +39,6 @@ import {
 import {
   drawCoverageBins,
   drawCoverageClipStrips,
-  drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
@@ -58,6 +57,9 @@ import type {
   MarkFrame,
   MarkHit,
   MarkShape,
+  MarkThreshold,
+  PointChannels,
+  PointParams,
 } from '@jbrowse/render-core/marks'
 import type {
   BpRegionBounds,
@@ -165,8 +167,7 @@ type Placed = CoverageBandParams & { domainMax: number }
  * Whether the display's autoscale has settled, as the narrowing every
  * depth-scaled layer needs: `domainMax` is the divisor its normalizer is built
  * from, so a layer that draws before it resolves would draw bars of arbitrary
- * height. A predicate rather than a boolean and a cast — the indicator triangles
- * are fixed-size and draw without one, so a shape's params say which it is.
+ * height.
  */
 const hasDomain = (p: CoverageBandParams): p is Placed =>
   p.domainMax !== undefined
@@ -174,16 +175,15 @@ const hasDomain = (p: CoverageBandParams): p is Placed =>
 const onDepthAxis = (p: CoverageBandParams) => (hasDomain(p) ? p : undefined)
 
 /**
- * One band layer: render-core's pass, the shared uniform write, and an
- * alignments-core painter placed the way the shader places it — anchored at
- * the band's top, translated down to it on a stacked canvas. `hit` measures the
- * layer's records against a cursor under the same gate the painter draws under.
+ * One band layer on the depth axis: render-core's pass, the shared uniform
+ * write, and an alignments-core painter placed the way the shader places it —
+ * anchored at the band's top, translated down to it on a stacked canvas. `hit`
+ * measures the layer's records against a cursor under the same gate the
+ * painter draws under.
  *
  * `placed` is that gate, and it hands back the params the layer draws from
- * rather than a boolean: a layer on the depth axis is drawn from `Placed` and
- * one that is not (the fixed-size indicator triangles) from the params as they
- * came, so neither the painter nor the hit test asserts a field the gate did not
- * establish.
+ * rather than a boolean, so neither the painter nor the hit test asserts a
+ * field the gate did not establish.
  */
 function layerShape<TChannels, TDraw extends CoverageBandParams>(
   pass: MarkShape<TChannels, CoverageBandParams>['pass'],
@@ -385,39 +385,76 @@ export const coverageInterbaseShape = layerShape(
   },
 )
 
-// Fixed-size triangles, so they draw before the domain resolves: gating them on
-// data would blank them for the whole fetch.
-export const coverageIndicatorShape = layerShape(
-  COVERAGE_INDICATOR_PASS,
-  p => (p.showInterbase ? p : undefined),
-  (ctx, c, bpToX, viewWidth, p) => {
-    drawIndicators(
-      ctx,
-      c.indicatorPackedBuffer,
-      interbaseColors(p.colors),
-      bpToX,
-      viewWidth,
-    )
-  },
-  // A triangle answers as its BOUNDING BOX, which is twice the ink it draws:
-  // 7x4.5 px is a small enough hover target already, and that box is what
-  // `hitCoverageBand` searches candidates at, its bp tolerance being this
-  // half-width.
-  (c, bpToX, p, xPx, yPx, candidates, maxDistSq) => {
-    const indicators = readIndicators(c.indicatorPackedBuffer)
-    const height = Math.min(p.height, INDICATOR_TRIANGLE_H)
-    return nearestInk(candidates, maxDistSq, i =>
-      inkOnRect(
-        xPx,
-        yPx,
-        bpToX(indicators.position(i)) - INDICATOR_TRIANGLE_HW,
-        p.top,
-        INDICATOR_TRIANGLE_HW * 2,
-        height,
+const indicatorFeeds = new WeakMap<Uint32Array, PointChannels>()
+
+/**
+ * The indicator triangles as render-core's point mark reads them: a triangle at
+ * each position's bp boundary, colored by its type code. One object per
+ * region's arrays, since the Canvas2D painter memoizes its color bake on it.
+ */
+function indicatorChannels(region: CoverageBandRegion): PointChannels {
+  const { indicatorPositions: x, indicatorTypes } = region
+  let feed = indicatorFeeds.get(x)
+  if (feed?.colorValue !== indicatorTypes) {
+    feed = {
+      x,
+      x2: x,
+      glyph: GLYPH_TRIANGLE,
+      colorValue: indicatorTypes,
+      count: x.length,
+    }
+    indicatorFeeds.set(x, feed)
+  }
+  return feed
+}
+
+const indicatorColorScales = new WeakMap<CoverageBandColors, MarkThreshold>()
+
+// The type codes 1, 2 and 3 cut into the three interbase colors.
+function indicatorColorScale(colors: CoverageBandColors) {
+  let scale = indicatorColorScales.get(colors)
+  if (!scale) {
+    scale = {
+      cuts: [1.5, 2.5],
+      colors: Uint32Array.of(
+        colors.insertionIndicator,
+        colors.softclipIndicator,
+        colors.hardclipIndicator,
       ),
-    )
-  },
-)
+    }
+    indicatorColorScales.set(colors, scale)
+  }
+  return scale
+}
+
+/**
+ * A 7x4.5 px triangle hanging from the band's top edge: a value of 0 on a
+ * reversed scale sits at the top, inset by half the triangle. Fixed-size, so
+ * it draws before the depth domain resolves.
+ */
+function indicatorParams(
+  band: Pick<CoverageBandState, 'height' | 'top' | 'colors'>,
+): PointParams {
+  return {
+    domain: [0, 1],
+    reverse: true,
+    rowHeight: band.height,
+    rowOffsetPx: band.top,
+    insetPx: INDICATOR_TRIANGLE_H / 2,
+    diameterPx: 2 * INDICATOR_TRIANGLE_HW,
+    triangleHeightPx: INDICATOR_TRIANGLE_H,
+    colorScale: indicatorColorScale(band.colors),
+  }
+}
+
+// A triangle answers as its box, the ink `glyphBox` measures, rather than by
+// the nearest centre the point shape's own hit test picks out of a scatter.
+const INDICATOR_SHAPE = {
+  ...withPassId(pointMark, 'indicator'),
+  hitNearest: undefined,
+}
+
+const hitIndicator = shapeHitNearest(INDICATOR_SHAPE)!
 
 /** A hovered interbase bar or indicator triangle. `type` is 1 insertion, 2 softclip, 3 hardclip. */
 export interface CoverageBandHit {
@@ -501,22 +538,30 @@ export function hitCoverageBand(
     (block.end - block.start) / (block.screenEndPx - block.screenStartPx)
   const gpos = bpAtPxExact(xPx, block)
 
-  const indicators = readIndicators(region.indicatorPackedBuffer)
-  const triangle = coverageIndicatorShape.hitNearest!(
-    region,
+  const { indicatorPositions, indicatorTypes } = region
+  const near = recordsWithin(
+    {
+      count: indicatorPositions.length,
+      position: i => indicatorPositions[i]!,
+    },
+    gpos,
+    bpPerPx * INDICATOR_TRIANGLE_HW,
+  )
+  const triangle = hitIndicator(
+    indicatorChannels(region),
     block,
     NO_FRAME,
-    p,
+    indicatorParams(p),
     xPx,
     yPx,
-    range(...recordsWithin(indicators, gpos, bpPerPx * INDICATOR_TRIANGLE_HW)),
+    range(...near),
     Number.MIN_VALUE,
   )
   if (triangle) {
     return {
       layer: 'indicator',
-      position: indicators.position(triangle.index),
-      type: indicators.colorType(triangle.index) || 1,
+      position: indicatorPositions[triangle.index]!,
+      type: indicatorTypes[triangle.index] || 1,
     }
   }
 
@@ -603,10 +648,11 @@ export function coverageBandMarks<TRegion, TState extends MarkFrame>(
       band,
     }),
     indicator: defineMark({
-      shape: coverageIndicatorShape,
-      channels,
-      params,
+      shape: INDICATOR_SHAPE,
+      channels: r => indicatorChannels(channels(r)),
+      params: s => indicatorParams(state(s)),
       band,
+      enabled: s => state(s).showInterbase,
     }),
     clipStrip: defineMark({
       shape: coverageClipShape,

@@ -54,7 +54,8 @@ export const EMPTY_MAF_COVERAGE: MafCoverageRegion = {
   snpPackedBuffer: new ArrayBuffer(0),
   interbasePackedBuffer: new ArrayBuffer(0),
   interbaseMaxCount: 0,
-  indicatorPackedBuffer: new ArrayBuffer(0),
+  indicatorPositions: new Uint32Array(0),
+  indicatorTypes: new Float32Array(0),
 }
 
 const WIDEST_MARKER_PX = textWidthForNumber(Number.MAX_SAFE_INTEGER)

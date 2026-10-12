@@ -1,6 +1,5 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { devicePxBand } from '@jbrowse/render-core/canvas2dUtils'
-import { COVERAGE_BAND_UNIFORMS_SIZE_BYTES } from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { planMarks } from '@jbrowse/render-core/marks'
 import {
@@ -122,12 +121,10 @@ export class GpuAlignmentsRenderer
   private uData: ArrayBuffer
   private uViews: PileupUniformViews
   private uBand: ArrayBuffer
-  // The coverage band's UBO, its own struct: its five passes are
-  // render-core's, shared with the MAF display, and they read
-  // `CoverageBandUniforms`. Sized from that struct, so the write covers exactly
-  // it — the HAL's ring slot is aligned to the largest struct any pass here
-  // declares, which is still this plugin's `Uniforms`.
-  private uCoverage = new ArrayBuffer(COVERAGE_BAND_UNIFORMS_SIZE_BYTES)
+  // The coverage band's scratch: its layers are render-core's, shared with
+  // the MAF display, and write `CoverageBandUniforms` or, for the indicator
+  // triangles, the point shader's larger struct, so it is sized as `uBand` is.
+  private uCoverage: ArrayBuffer
   private regions = new Map<number, AlignmentsCoverageRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
@@ -147,6 +144,7 @@ export class GpuAlignmentsRenderer
     this.uData = new ArrayBuffer(PILEUP_UNIFORMS_SIZE_BYTES)
     this.uViews = pileupUniformViews(this.uData)
     this.uBand = new ArrayBuffer(hal.uniformByteSize)
+    this.uCoverage = new ArrayBuffer(hal.uniformByteSize)
     this.textures = new MarkTextureBinder(hal)
   }
 
@@ -418,6 +416,7 @@ export class GpuAlignmentsRenderer
         region,
         sectionState,
         regionKey,
+        this.textures,
       )
     }
 

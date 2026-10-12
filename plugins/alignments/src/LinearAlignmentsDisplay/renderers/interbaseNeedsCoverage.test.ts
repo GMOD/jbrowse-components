@@ -2,7 +2,7 @@ import { packCoverageBinsForGpu } from '@jbrowse/alignments-core'
 
 import {
   makePileupDataResult,
-  packedIndicators,
+  indicatorFields,
   packedInterbaseSegments,
 } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { makeTestRenderState } from '../testUtils.ts'
@@ -119,7 +119,7 @@ function sources(): AlignmentsSources {
                 },
               ]),
               interbaseMaxCount: 4,
-              indicatorPackedBuffer: packedIndicators([
+              ...indicatorFields([
                 { position: REGION_START + 4, colorType: 1 },
               ]),
             }),

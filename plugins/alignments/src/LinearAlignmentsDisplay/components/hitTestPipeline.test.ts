@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { packedIndicators } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { indicatorFields } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   GAP_DELETION,
   GAP_SKIP,
@@ -69,7 +69,8 @@ function makeRpcData(
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
+    indicatorPositions: new Uint32Array(0),
+    indicatorTypes: new Float32Array(0),
     interbaseMaxCount: 0,
     ...overrides,
   } as PileupDataResult
@@ -174,9 +175,7 @@ describe('coverage hit — fires at all zoom levels', () => {
 describe('indicator hit — fires at all zoom levels', () => {
   it('returns indicator hit in top-5px strip when bpPerPx > threshold', () => {
     const resolved = makeResolved({
-      indicatorPackedBuffer: packedIndicators([
-        { position: 10000, colorType: 1 },
-      ]),
+      ...indicatorFields([{ position: 10000, colorType: 1 }]),
     })
     // canvasY=3 ≤ 5 — indicator strip; genomicPos=10000 matches indicator
     const result = performHitTest(100, 3, resolved, ZOOMED_OUT_OPTS)
@@ -185,9 +184,7 @@ describe('indicator hit — fires at all zoom levels', () => {
 
   it('does not return indicator when showInterbaseIndicators is false', () => {
     const resolved = makeResolved({
-      indicatorPackedBuffer: packedIndicators([
-        { position: 10000, colorType: 1 },
-      ]),
+      ...indicatorFields([{ position: 10000, colorType: 1 }]),
     })
     const result = performHitTest(
       100,

@@ -31,7 +31,8 @@ export function emptyCoverageRegion(): AlignmentsCoverageRegion {
     modCovPackedBuffer: EMPTY_BUFFER,
     interbasePackedBuffer: EMPTY_BUFFER,
     interbaseMaxCount: 0,
-    indicatorPackedBuffer: EMPTY_BUFFER,
+    indicatorPositions: new Uint32Array(0),
+    indicatorTypes: new Float32Array(0),
   }
 }
 
@@ -51,7 +52,8 @@ export function coverageRegionOf(
     modCovPackedBuffer: data.modCovPackedBuffer,
     interbasePackedBuffer: data.interbasePackedBuffer,
     interbaseMaxCount: data.interbaseMaxCount,
-    indicatorPackedBuffer: data.indicatorPackedBuffer,
+    indicatorPositions: data.indicatorPositions,
+    indicatorTypes: data.indicatorTypes,
   }
 }
 

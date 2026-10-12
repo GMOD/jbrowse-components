@@ -9,7 +9,7 @@ import { MockHal } from '@jbrowse/render-core/hal'
 
 import {
   makePileupDataResult,
-  packedIndicators,
+  indicatorFields,
   packedInterbaseSegments,
 } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
@@ -65,9 +65,7 @@ function makeCoverageData(): CoverageUploadData {
     snpPackedBuffer: SNP_BUFFER,
     interbaseMaxCount: 0,
     interbasePackedBuffer: packedInterbaseSegments([]),
-    indicatorPackedBuffer: packedIndicators([
-      { position: REGION_START + 2, colorType: 1 },
-    ]),
+    ...indicatorFields([{ position: REGION_START + 2, colorType: 1 }]),
   }
 }
 
@@ -695,7 +693,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
         },
         0,
       ),
-      indicatorPackedBuffer: packedIndicators([]),
+      ...indicatorFields([]),
     }
   }
 

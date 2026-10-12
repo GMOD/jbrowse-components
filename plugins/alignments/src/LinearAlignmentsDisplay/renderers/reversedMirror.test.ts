@@ -214,7 +214,8 @@ function pileupData(): PileupDataResult {
     snpPackedBuffer: new ArrayBuffer(0),
     interbasePackedBuffer: new ArrayBuffer(0),
     interbaseMaxCount: 0,
-    indicatorPackedBuffer: new ArrayBuffer(0),
+    indicatorPositions: new Uint32Array(0),
+    indicatorTypes: new Float32Array(0),
     // Five covered bases, asymmetric depths so the band can't mirror by
     // accident. The coverage layers had their own reversed bug (bars clamped to
     // 1px slivers, anchored a bin off); an earlier version of this fixture left

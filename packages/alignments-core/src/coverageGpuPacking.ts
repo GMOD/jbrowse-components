@@ -113,14 +113,10 @@ export function packModCovSegmentsForGpu(
   )
 }
 
-// The SNP + interbase-histogram + indicator GPU segment buffers are the coverage
-// area's position-aggregate passes, shipped identically for every backend (the
-// pileup worker and the MAF worker both feed the same three shaders). Grouping
-// them here keeps the field naming in one place so the two callers can't drift.
-//
-// Nothing is packed here any more: all three computes write their own instance
-// buffer, so there is no intermediate array form to pack from and no separable
-// count to pair with the wrong array. This is a rename of three fields.
+// The SNP, interbase-histogram and indicator fields are the coverage area's
+// position-aggregate layers, shipped identically for every backend (the pileup
+// worker and the MAF worker both feed the same marks). Grouping them here keeps
+// the field naming in one place so the two callers can't drift.
 export function coverageSegmentBuffers(
   snp: ReturnType<typeof computeSNPCoverage>,
   interbase: ReturnType<typeof computeInterbaseCoverage>,
@@ -128,6 +124,7 @@ export function coverageSegmentBuffers(
   return {
     snpPackedBuffer: snp.snpPackedBuffer,
     interbasePackedBuffer: interbase.interbasePackedBuffer,
-    indicatorPackedBuffer: interbase.indicatorPackedBuffer,
+    indicatorPositions: interbase.indicatorPositions,
+    indicatorTypes: interbase.indicatorTypes,
   }
 }

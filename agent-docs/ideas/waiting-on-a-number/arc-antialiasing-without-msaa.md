@@ -203,11 +203,6 @@ would cost:
   alignments read-connection band draws with it and changes no sample count,
   since it shares its display with the pileup's passes, and the read cloud's
   endpoint squares sit over a bar's two ends.
-- **`indicator` (`coverageIndicator.slang`), except at its top edge.** Its two
-  diagonals fade from the barycentric zero outward, so `smoothstep(0, 1, 0)` is
-  alpha 0 exactly on both — correctly classified, for the right reason. The
-  third edge is the horizontal top at `covAreaTop`, which no term measures: a
-  7px-wide unsnapped row of full ink per indicator.
 - **`wiggle.slang`'s xyplot bar and `barMark.slang`, except on their vertical
   cuts** — which is the trade option 4's first bullet already describes, stated
   here as the row it is. The horizontal cuts pad a full `aaPx` and substitute to

@@ -1,6 +1,5 @@
 import * as coverageBarShader from './shaders/coverageBar.generated.ts'
 import * as coverageClipShader from './shaders/coverageClip.generated.ts'
-import * as coverageIndicatorShader from './shaders/coverageIndicator.generated.ts'
 import * as coverageInterbaseShader from './shaders/coverageInterbase.generated.ts'
 import * as coverageModShader from './shaders/coverageMod.generated.ts'
 import * as coverageSnpShader from './shaders/coverageSnp.generated.ts'
@@ -121,13 +120,6 @@ export const COVERAGE_INTERBASE_PASS: InstancePass<
 > = {
   ...slangPass({ id: 'interbase', mod: coverageInterbaseShader }),
   pack: data => data.interbasePackedBuffer,
-}
-
-export const COVERAGE_INDICATOR_PASS: InstancePass<
-  Pick<CoverageBandBuffers, 'indicatorPackedBuffer'>
-> = {
-  ...slangPass({ id: 'indicator', mod: coverageIndicatorShader }),
-  pack: data => data.indicatorPackedBuffer,
 }
 
 /** Palette slots the band paints by name, each a packed ABGR u32. */

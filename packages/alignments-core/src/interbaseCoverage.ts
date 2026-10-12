@@ -1,7 +1,8 @@
 /**
  * Compute the interbase histogram's stacked segments and the indicator
- * triangles in a single per-position bucket sweep, emitting both as the packed
- * instance buffers the shaders and the Canvas2D draw read.
+ * triangles in a single per-position bucket sweep: the segments as the packed
+ * instance buffer `coverageInterbase.slang` and the Canvas2D draw read, the
+ * triangles as the positions and type codes render-core's point mark reads.
  *
  * The buffers ARE the representation: there is no parallel-typed-array form of
  * these segments any more. They used to be built as four arrays, copied into
@@ -11,12 +12,6 @@
  * used by the hit test and by tests.
  */
 import { interbaseDepthAt } from './coverageDownsampling.ts'
-import {
-  INSTANCE_OFFSET_F32 as INDICATOR_F32,
-  INSTANCE_OFFSET_U32 as INDICATOR_U32,
-  INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS as INDICATOR_STRIDE,
-} from './indicatorLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as SEGMENT_F32,
   INSTANCE_OFFSET_U32 as SEGMENT_U32,
@@ -101,7 +96,8 @@ function indicatorTypeFor(
 function emptyResult() {
   return {
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
+    indicatorPositions: new Uint32Array(0),
+    indicatorTypes: new Float32Array(0),
     maxCount: 0,
     segmentCount: 0,
     indicatorCount: 0,
@@ -173,11 +169,8 @@ export function computeInterbaseCoverage(
   )
   const segU32 = new Uint32Array(interbasePackedBuffer)
   const segF32 = new Float32Array(interbasePackedBuffer)
-  const indicatorPackedBuffer = new ArrayBuffer(
-    indicatorCount * INDICATOR_STRIDE_BYTES,
-  )
-  const indU32 = new Uint32Array(indicatorPackedBuffer)
-  const indF32 = new Float32Array(indicatorPackedBuffer)
+  const indicatorPositions = new Uint32Array(indicatorCount)
+  const indicatorTypes = new Float32Array(indicatorCount)
 
   let s = 0
   let ind = 0
@@ -223,15 +216,15 @@ export function computeInterbaseCoverage(
       segF32[o + SEGMENT_F32.colorType] = 3
     }
     if (entry.indicatorType !== 0) {
-      const o = ind++ * INDICATOR_STRIDE
-      indU32[o + INDICATOR_U32.position] = position
-      indF32[o + INDICATOR_F32.colorType] = entry.indicatorType
+      indicatorPositions[ind] = position
+      indicatorTypes[ind++] = entry.indicatorType
     }
   }
 
   return {
     interbasePackedBuffer,
-    indicatorPackedBuffer,
+    indicatorPositions,
+    indicatorTypes,
     maxCount: scale,
     segmentCount,
     indicatorCount,

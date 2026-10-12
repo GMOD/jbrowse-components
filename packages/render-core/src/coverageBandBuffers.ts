@@ -1,9 +1,10 @@
 /**
- * The four coverage-band buffers a producer packs per region, in the layouts
- * `coverageBand.slang`'s passes read. Every field is filled by
+ * The coverage-band buffers a producer packs per region: three in the layouts
+ * `coverageBand.slang`'s passes read, and the indicator triangles' positions
+ * and type codes, which the point mark reads. Every field is filled by
  * `@jbrowse/alignments-core` — `packCoverageBinsForGpu`, `computeSNPCoverage`
- * and `computeInterbaseCoverage` (which emits the last two) — so a display gets
- * these by running that pipeline, not by shaping them itself.
+ * and `computeInterbaseCoverage` (which emits the last three) — so a display
+ * gets these by running that pipeline, not by shaping them itself.
  *
  * Structural rather than nominal, and named after the layout rather than after
  * either display: the alignments worker's `CoverageUploadData` and the MAF
@@ -19,5 +20,7 @@ export interface CoverageBandBuffers {
   coveragePackedBuffer: ArrayBuffer
   snpPackedBuffer: ArrayBuffer
   interbasePackedBuffer: ArrayBuffer
-  indicatorPackedBuffer: ArrayBuffer
+  indicatorPositions: Uint32Array
+  /** 1 insertion, 2 softclip, 3 hardclip: the most common event there. */
+  indicatorTypes: Float32Array
 }

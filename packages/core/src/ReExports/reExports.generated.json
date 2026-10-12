@@ -5019,7 +5019,6 @@
         "COVERAGE_BAND_UNIFORMS_SIZE_BYTES",
         "COVERAGE_BAR_PASS",
         "COVERAGE_CLIP_PASS",
-        "COVERAGE_INDICATOR_PASS",
         "COVERAGE_INTERBASE_PASS",
         "COVERAGE_MOD_PASS",
         "COVERAGE_SNP_PASS",
@@ -5463,31 +5462,6 @@
         "packInstances",
         "setInstancePosition",
         "setInstanceRelDepth",
-        "writeUniforms"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/render-core/shaders/coverageIndicator": {
-      "package": "@jbrowse/render-core",
-      "names": [
-        "BINDINGS",
-        "COVERAGE",
-        "INSTANCE_OFFSET_F32",
-        "INSTANCE_OFFSET_U32",
-        "INSTANCE_STRIDE_BYTES",
-        "INSTANCE_STRIDE_WORDS",
-        "SOURCE",
-        "UNIFORMS_SIZE_BYTES",
-        "UNIFORM_OFFSET_F32",
-        "UNIFORM_OFFSET_I32",
-        "UNIFORM_OFFSET_U32",
-        "VERTEX_ATTRIBUTES",
-        "VERTS_PER_INSTANCE",
-        "getInstanceColorType",
-        "getInstancePosition",
-        "packInstances",
-        "setInstanceColorType",
-        "setInstancePosition",
         "writeUniforms"
       ],
       "worker": "real"
