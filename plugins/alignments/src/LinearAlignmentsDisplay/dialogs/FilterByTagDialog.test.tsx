@@ -45,6 +45,22 @@ test('a tag with no value filters for reads carrying it, not for an empty value'
   expect(filterTagValue('1', '')).toBe(true)
 })
 
+test('a minimum mapping quality is stored as a number, and an empty box clears it', () => {
+  const { setReadFilter } = renderDialog({ minMapq: 5 })
+  const box = screen.getByPlaceholderText('Any')
+  expect((box as HTMLInputElement).value).toBe('5')
+  fireEvent.change(box, { target: { value: '20' } })
+  submit()
+  expect(setReadFilter).toHaveBeenLastCalledWith(
+    expect.objectContaining({ minMapq: 20 }),
+  )
+  fireEvent.change(box, { target: { value: '' } })
+  submit()
+  expect(setReadFilter).toHaveBeenLastCalledWith(
+    expect.objectContaining({ minMapq: undefined }),
+  )
+})
+
 test('an explicit value is stored as typed', () => {
   const { setReadFilter } = renderDialog()
   fireEvent.change(screen.getByLabelText('Tag name'), {

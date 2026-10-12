@@ -297,7 +297,33 @@ const ReadNameFilterSection = observer(function ReadNameFilterSection(props: {
   )
 })
 
-// The filters a user TYPES: a read name, a tag and its value, and the flag
+const MapqFilterSection = observer(function MapqFilterSection(props: {
+  minMapq: string
+  setMinMapq: (arg: string) => void
+}) {
+  const { classes } = useStyles()
+  const { minMapq, setMinMapq } = props
+
+  return (
+    <Paper className={classes.paper} variant="outlined">
+      <Typography>Minimum mapping quality</Typography>
+      <TextField
+        className={classes.field}
+        variant="outlined"
+        size="small"
+        type="number"
+        value={minMapq}
+        placeholder="Any"
+        slotProps={{ htmlInput: { min: 0, max: 254 } }}
+        onChange={event => {
+          setMinMapq(event.target.value)
+        }}
+      />
+    </Paper>
+  )
+})
+
+// The filters a user TYPES: a read name, a minimum mapping quality, a tag and its value, and the flag
 // masks. The four read categories are picked off a list instead, so they are
 // rows in the "Filter by..." submenu and are deliberately not repeated here —
 // one control, one home, and one commitment model. Offering them in both places
@@ -323,6 +349,9 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const [flagExclude, setFlagExclude] = useState(readFilter.flagExclude)
   const [tagRows, setTagRows] = useState(() => tagRowsOf(readFilter.tagFilters))
   const [readName, setReadName] = useState(readFilter.readName ?? '')
+  const [minMapq, setMinMapq] = useState(
+    readFilter.minMapq === undefined ? '' : `${readFilter.minMapq}`,
+  )
 
   const handleReset = () => {
     setFlagInclude(defaultFilterFlags.flagInclude)
@@ -331,6 +360,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       { id: Math.max(...tagRows.map(r => r.id)) + 1, tag: '', value: '' },
     ])
     setReadName('')
+    setMinMapq('')
   }
 
   const handleSubmit = () => {
@@ -351,6 +381,10 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       // filter is active (the context menu's "Clear read/tag filters"), and ''
       // would also change `readFilter` identity and trigger a pointless refetch.
       readName: readName === '' ? undefined : readName,
+      minMapq:
+        minMapq === '' || !Number.isFinite(Number(minMapq))
+          ? undefined
+          : Number(minMapq),
       tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
     })
     handleClose()
@@ -377,6 +411,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             readName={readName}
             setReadName={setReadName}
           />
+          <MapqFilterSection minMapq={minMapq} setMinMapq={setMinMapq} />
           <TagFilterSection rows={tagRows} setRows={setTagRows} />
           <FlagFilterSection
             flagInclude={flagInclude}

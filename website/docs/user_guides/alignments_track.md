@@ -300,7 +300,8 @@ The track menu's **Filter by...** hides reads by SAM flag (drop duplicates and
 secondaries, or keep only properly-paired reads), by read name, or by tag value
 (`HP:1` for one haplotype, `HP:*` for any read with the tag). The splicing
 radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
-unspliced ones. The coverage histogram follows the filter.
+unspliced ones, and **Mapping quality** hides reads under a minimum MAPQ, as
+`samtools view -q` does. The coverage histogram follows the filter.
 
 <Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read with the tag; the SAM flag masks sit in a separate section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
 

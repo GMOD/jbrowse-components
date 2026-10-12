@@ -279,3 +279,46 @@ describe('filterChainFeatures dedup guard', () => {
     expect(filterChainFeatures(features, filt())).toBe(features)
   })
 })
+
+describe('filterChainFeatures minMapq', () => {
+  const read = (name: string, fields: Record<string, unknown>) =>
+    new SimpleFeature({
+      uniqueId: name,
+      refName: 'ctgA',
+      start: 0,
+      end: 100,
+      name,
+      ...fields,
+    })
+
+  test('keeps a read at or over the minimum, record by record', () => {
+    const features = [
+      read('high', { score: 60 }),
+      read('edge', { score: 20 }),
+      read('low', { score: 3 }),
+      read('zero', { score: 0 }),
+    ]
+    expect(names(filterChainFeatures(features, filt({ minMapq: 20 })))).toEqual(
+      ['edge', 'high'],
+    )
+    expect(names(filterChainFeatures(features, filt()))).toHaveLength(4)
+  })
+
+  // BAM leaves `score` unset for MAPQ 255, which `getMappingQuality` reads as
+  // unavailable; a synteny block spells it `mappingQual`, with no adapter
+  // filter of its own, so this is where its threshold applies.
+  test('an unavailable mapping quality fails any minimum, and a synteny block is read by mappingQual', () => {
+    const features = [
+      read('unavailable', {}),
+      read('block', { mappingQual: 40 }),
+      read('weakBlock', { mappingQual: 5 }),
+    ]
+    expect(names(filterChainFeatures(features, filt({ minMapq: 1 })))).toEqual([
+      'block',
+      'weakBlock',
+    ])
+    expect(names(filterChainFeatures(features, filt({ minMapq: 10 })))).toEqual(
+      ['block'],
+    )
+  })
+})

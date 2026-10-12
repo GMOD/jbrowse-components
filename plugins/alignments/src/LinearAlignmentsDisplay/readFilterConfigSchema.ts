@@ -16,14 +16,17 @@ const CATEGORY_FILTERS = ['only', 'exclude'] as const
  * #config ReadFilter
  * #category display
  * Every read filter of the alignments display in one object, its `filter`
- * slot: the SAM flag masks, a read name, the tag filters a read has to pass
- * every one of, and the four read categories, each `only`, `exclude` or
- * unset for unfiltered. The default excludes unmapped, QC-failed and duplicate
- * reads (flag 1540).
+ * slot: the SAM flag masks, a minimum mapping quality, a read name, the tag
+ * filters a read has to pass every one of, and the four read categories, each
+ * `only`, `exclude` or unset for unfiltered. The default excludes unmapped,
+ * QC-failed and duplicate reads (flag 1540).
  *
  * #example
  * ```js
  * { type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude', split: 'only' } }
+ * ```
+ * ```js
+ * { type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
  * ```
  * ```js
  * { type: 'LinearAlignmentsDisplay', filter: { tagFilters: [{ tag: 'HP', value: '1' }] } }
@@ -49,6 +52,14 @@ export const readFilterConfigSchema = ConfigurationSchema(
       defaultValue: defaultFilterFlags.flagExclude,
       description:
         'a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads',
+    },
+    /**
+     * #slot
+     */
+    minMapq: {
+      type: 'maybeNumber',
+      description:
+        'a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read',
     },
     /**
      * #slot
@@ -116,6 +127,7 @@ export function readFilterOf(
   return {
     flagInclude: readConfObject(filter, 'flagInclude'),
     flagExclude: readConfObject(filter, 'flagExclude'),
+    minMapq: readConfObject(filter, 'minMapq'),
     readName: readConfObject(filter, 'readName'),
     tagFilters: readConfObject(filter, 'tagFilters'),
     spliced: readConfObject(filter, 'spliced'),

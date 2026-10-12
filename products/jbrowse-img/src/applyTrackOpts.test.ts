@@ -268,6 +268,13 @@ describe('alignments settings a static export cannot reach any other way', () =>
     ).toEqual({ properPairs: 'exclude', split: 'only' })
   })
 
+  test('mapq: writes the minimum mapping quality beside the other filters', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['mapq:20', 'split:only']).snap.filter,
+    ).toEqual({ minMapq: 20, split: 'only' })
+    expect(() => buildDisplaySnapshot('alignments', ['mapq:high'])).toThrow()
+  })
+
   // `all` is the absent filter, so it stores nothing — which is what lets a
   // script pass a category through from a variable that may be empty.
   test('a category set to all stores nothing', () => {

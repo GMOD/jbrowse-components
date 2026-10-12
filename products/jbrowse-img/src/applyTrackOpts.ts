@@ -41,6 +41,7 @@ import type {
 export type ReadFilterSnapshot = {
   flagInclude?: number
   flagExclude?: number
+  minMapq?: number
   tagFilters?: { tag: string; value: string }[]
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
 
@@ -627,6 +628,14 @@ const modifiers: Record<string, Modifier> = {
         ...(include ? { flagInclude: parseFlagMask('flags', include) } : {}),
         ...(exclude ? { flagExclude: parseFlagMask('flags', exclude) } : {}),
       }
+    },
+  },
+  // samtools' `-q`: a read passes with a mapping quality of at least this, and
+  // one whose mapping quality is unavailable (255) fails.
+  mapq: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.filter = { ...readFilterSnapOf(r), minMapq: parseNum('mapq', v) }
     },
   },
   // AND-ed with any other tag filter and with the flag masks above, which is

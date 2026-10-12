@@ -165,6 +165,9 @@ export type CategoryFilter = 'only' | 'exclude'
 export interface ReadFilter {
   flagExclude: number
   flagInclude: number
+  // A read passes with a mapping quality of at least this, through
+  // `getMappingQuality`, so MAPQ 255 (unavailable) fails it.
+  minMapq?: number
   readName?: string
   // Multiple tag filters are AND-ed (a read must pass every one). Kept plural so
   // independent quick-filters like HP (haplotype) and RG (read group) coexist

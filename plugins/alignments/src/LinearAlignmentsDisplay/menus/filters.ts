@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
+import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 
 import {
   READ_CATEGORIES,
@@ -32,12 +33,13 @@ interface FiltersModel {
 // default, hence the compare against it rather than against 0), plus one per tag
 // filter, one for a read name and one per read category in effect.
 function activeFilterCount(filterBy: ReadFilter) {
-  const { flagInclude, flagExclude, readName, tagFilters } = filterBy
+  const { flagInclude, flagExclude, minMapq, readName, tagFilters } = filterBy
   return (
     (flagInclude === defaultFilterFlags.flagInclude &&
     flagExclude === defaultFilterFlags.flagExclude
       ? 0
       : 1) +
+    (minMapq === undefined ? 0 : 1) +
     (readName === undefined || readName === '' ? 0 : 1) +
     (tagFilters?.length ?? 0) +
     activeReadCategoryCount(filterBy)
@@ -91,6 +93,40 @@ function readCategoryItem(
   })
 }
 
+// The thresholds are the mapping-quality facet's bin edges, so "MAPQ 10+"
+// keeps exactly the sections a facet over `mapq` draws above it. A value the
+// dialog wrote that is none of them gets a radio of its own.
+const MAPQ_THRESHOLDS: number[] = MAPQ_BINS.map(b => b.min)
+  .filter(min => min > 0)
+  .toReversed()
+
+function minMapqItem(model: FiltersModel): MenuItem {
+  const current = model.readFilter.minMapq
+  const thresholds =
+    current === undefined || MAPQ_THRESHOLDS.includes(current)
+      ? MAPQ_THRESHOLDS
+      : [...MAPQ_THRESHOLDS, current].toSorted((a, b) => a - b)
+  return makeRadioSubMenu({
+    label: withHint(
+      'Mapping quality',
+      current === undefined ? undefined : `${current}+`,
+    ),
+    helpText:
+      'Hide reads mapped with low confidence. A read whose mapping quality is unavailable (255) is hidden under any threshold.',
+    value: current === undefined ? 'all' : `${current}`,
+    options: [
+      ['all', 'All reads'],
+      ...thresholds.map((min): [string, string] => [`${min}`, `MAPQ ${min}+`]),
+    ],
+    onChange: choice => {
+      model.setReadFilter({
+        ...model.readFilter,
+        minMapq: choice === 'all' ? undefined : Number(choice),
+      })
+    },
+  })
+}
+
 /**
  * The "Filter by..." family for an alignments display.
  *
@@ -111,9 +147,12 @@ export function getFiltersMenuItems(
 ) {
   return filterMenuItems({
     narrowings: filterNarrowings(model),
-    subItems: readCategories
-      ? READ_CATEGORIES.map(c => readCategoryItem(model, c))
-      : [],
+    subItems: [
+      minMapqItem(model),
+      ...(readCategories
+        ? READ_CATEGORIES.map(c => readCategoryItem(model, c))
+        : []),
+    ],
     onEdit: () => {
       getDialogHost(model).queueDialog(handleClose => [
         FilterByTagDialog,
