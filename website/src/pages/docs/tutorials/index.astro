@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content'
+import { slug } from 'github-slugger'
 
 import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { baseUrl } from '../../../lib/base-url.ts'
@@ -138,10 +139,33 @@ const HAS_THUMB = new Set(
   </p>
   {grouped.map(group => (
     <section class="tut-section">
-      <h2 class="tut-heading">{group.category}</h2>
+      <h2 class="tut-heading" id={slug(group.category)}>
+        {group.category}
+        <a
+          class="tut-anchor"
+          href={`#${slug(group.category)}`}
+          aria-label={`Link to ${group.category}`}
+        >
+          #
+        </a>
+      </h2>
       {group.subsections.map(sub => (
         <>
-          {sub.subcategory && <h3 class="tut-subheading">{sub.subcategory}</h3>}
+          {sub.subcategory && (
+            <h3
+              class="tut-subheading"
+              id={slug(`${group.category} ${sub.subcategory}`)}
+            >
+              {sub.subcategory}
+              <a
+                class="tut-anchor"
+                href={`#${slug(`${group.category} ${sub.subcategory}`)}`}
+                aria-label={`Link to ${sub.subcategory}`}
+              >
+                #
+              </a>
+            </h3>
+          )}
           <div class="tut-grid">
             {sub.items.map(tutorial => (
               <div class="tut-card">
@@ -205,6 +229,22 @@ const HAS_THUMB = new Set(
     font-weight: 600;
     color: var(--color-text-muted);
     margin: 1.25rem 0 0.6rem;
+  }
+  .tut-heading,
+  .tut-subheading {
+    scroll-margin-top: 5rem;
+  }
+  .tut-anchor {
+    margin-left: 0.4rem;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    opacity: 0;
+  }
+  .tut-heading:hover .tut-anchor,
+  .tut-subheading:hover .tut-anchor,
+  .tut-anchor:focus {
+    opacity: 1;
   }
   .tut-grid {
     display: grid;
