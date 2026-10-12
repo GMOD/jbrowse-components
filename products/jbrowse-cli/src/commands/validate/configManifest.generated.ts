@@ -3787,7 +3787,7 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "properPairs",
+              "name": "svSignal",
               "type": "(CategoryFilter | undefined)"
             },
             {
@@ -4520,7 +4520,7 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "properPairs",
+              "name": "svSignal",
               "type": "(CategoryFilter | undefined)"
             },
             {

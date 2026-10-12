@@ -6343,7 +6343,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "properPairs": {
+        "svSignal": {
           "description": "only, exclude, or unset for unfiltered.",
           "if": {
             "type": "null"
