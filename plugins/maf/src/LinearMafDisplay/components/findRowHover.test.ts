@@ -157,6 +157,26 @@ test('passes i-line context through on the cell hit', () => {
   })
 })
 
+test('names the nearest of two insertion markers whose boxes overlap', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 107,
+      refSeqBytes: enc.encode('AAA-A-AAA'),
+      rows: [{ rowIndex: 0, alignmentBytes: enc.encode('aaaxaYaaa') }],
+      empties: [],
+    },
+  ])
+  expect(findRowHoverAtBp(r, at(104), 0, false, 1, 1, 20)).toMatchObject({
+    kind: 'insertion',
+    sequence: 'Y',
+  })
+  expect(findRowHoverAtBp(r, at(103), 0, false, 1, 1, 20)).toMatchObject({
+    kind: 'insertion',
+    sequence: 'x',
+  })
+})
+
 test('returns empty hit when the row is bridged (e line) at this block', () => {
   const r = region([
     {

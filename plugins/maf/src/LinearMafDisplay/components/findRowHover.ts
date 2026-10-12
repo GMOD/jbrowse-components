@@ -200,8 +200,9 @@ function cellHitInRow(
 // draws, each row's insertions merged per `binBp` bin, so a merged marker
 // hovers as the insertion it shows. Insertions are interbase, so the hit test
 // measures genomic distance to the marker anchor, mirroring plugin-alignments
-// (same insertionBarWidth+4px box). `gposFrac` is the absolute fractional
-// cursor coordinate; distance is orientation-independent.
+// (same insertionBarWidth+4px box), and the nearest marker whose box holds the
+// cursor wins. `gposFrac` is the absolute fractional cursor coordinate;
+// distance is orientation-independent.
 function insertionHitInRow(
   region: MafRegionData,
   rowIndex: number,
@@ -212,16 +213,28 @@ function insertionHitInRow(
   showAsUpperCase: boolean,
 ): InsertionHit | undefined {
   const { x, row, length, count } = mergedInsertions(region, binBp)
+  let nearest = -1
+  let nearestDist = Infinity
   for (let i = 0; i < count; i++) {
     if (row[i] === rowIndex) {
-      const len = length[i]!
-      const rectWidthPx = insertionBarWidth(len, 1 / bpPerPx, rowBandPx) + 4
-      if (Math.abs(gposFrac - x[i]!) < (rectWidthPx / 2) * bpPerPx) {
-        return describeInsertion(region, rowIndex, x[i]!, len, showAsUpperCase)
+      const dist = Math.abs(gposFrac - x[i]!)
+      const rectWidthPx =
+        insertionBarWidth(length[i]!, 1 / bpPerPx, rowBandPx) + 4
+      if (dist < (rectWidthPx / 2) * bpPerPx && dist < nearestDist) {
+        nearest = i
+        nearestDist = dist
       }
     }
   }
-  return undefined
+  return nearest === -1
+    ? undefined
+    : describeInsertion(
+        region,
+        rowIndex,
+        x[nearest]!,
+        length[nearest]!,
+        showAsUpperCase,
+      )
 }
 
 function describeInsertion(
