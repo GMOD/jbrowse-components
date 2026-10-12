@@ -1,12 +1,12 @@
 ---
 name: wiggle-onto-bar-and-point
-description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and a min-max extent becomes three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot and wiggle's all-sources tooltip. Sized at 7-10 days.
+description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and a min-max extent becomes three translucent bar marks, shown as captures first. Re-sized on 2026-10-12 at 8.5-12.5 days. The display keeps its model, fetch, hit test and tooltip, so `resolution`, GC content's domain and the tooltip need no work; the critical path is per-source color, which render-core's row table cannot paint on one side of a cut. Bars and points alone take 3.5-4.5 days and pay off by themselves.
 ---
 
 # Wiggle's plots onto render-core's marks
 
-A review sized this on 2026-09-27, and nobody has re-measured the sizes. Colin
-answered "not now" on 2026-09-30.
+A review sized this on 2026-09-27 and Colin answered "not now" on
+2026-09-30. It was re-sized on 2026-10-12 (below).
 
 ## What is already out of the way
 
@@ -51,22 +51,50 @@ wiggle's 12 payload bytes a feature.
   on 2026-09-23 for the range bar and on 2026-09-30 with the stack), so min and
   max lines stand in.
 
-## What is still real
+## Re-sized 2026-10-12
 
-- `markColor.slang` has no symlog.
-- `resolution`, the fetch tier multiplier, has no counterpart on the mark
-  display.
-- GC content's adapter declares the domain its values lie in
-  ([ADR-176](../../architecture-decision-records/adr-176-gc-content-is-a-track-the-wiggle-display-draws.md)),
-  which the mark display's unpinned ends do not read.
-- Per-source color paints the plot through the row table's color plane,
-  where the mark display's row color tints only the label.
-- Wiggle's tooltip lists every source's min, mean and max at the cursor; the
-  mark display hovers one instance. A `tooltip` channel would be the general
-  form ([GRAMMAR_OF_GRAPHICS.md](../../reference/GRAMMAR_OF_GRAPHICS.md)
-  §"Gaps against the grammar").
+Wiggle already draws through render-core's `defineMark` list
+(`plugins/wiggle/src/shared/wiggleMarks.ts`), and SVG export paints the same
+list, so the port swaps shapes inside the display and the display keeps its
+fetch, hit test, all-sources tooltip, `resolution` and GC content's domain,
+and the port leaves those as they are.
+
+| Step | Days |
+| --- | --- |
+| Un-interleave the positions (39 files name `featurePositions`) | 1.5-2 |
+| Bars and points onto `barMark` and `pointMark` | 1.5-2 |
+| A symlog ramp in `markColor.slang` and the shapes' uniform blocks | 0.5 |
+| A second row-table color plane | 1-1.5 |
+| Density onto `span`, with the white fade | 1-1.5 |
+| Lines onto `lineStepMark` and `lineCenterMark`, per-source `gapBp`, Canvas2D paint at 1.00x | 2-3.5 |
+| Tests and docs | 1.5-2 |
+
+- **Per-source color is the critical path.** On a multi-source plot the
+  display paints each source in its own color above the cut and in the shared
+  negative color below it (`buildSourceRenderData.ts`, "Do NOT fix this"). render-core's row
+  table replaces a row's whole color (`rowTable.slang`, `p.color`) and turns
+  off a line's along-y threshold for an overridden row (`lineColorAlongY` in
+  `lineCommon.slang`), and density fades to each row's own color, which one
+  shared LUT cannot hold. A second color plane changes how every mark display
+  reads a row color, so Colin decides it separately.
+- **The min-max extent may not need three translucent bars.**
+  `packFillInstances` already writes every layer, back to front, into one
+  buffer with packed per-instance colors, so one `bar` mark fed the same
+  layers draws today's tinted nesting with no translucency and no captures
+  gate. This departs from the 2026-09-30 plan, so it waits on Colin.
+- **The line-mode band stays wiggle's** (`wiggleBand.slang`) as a shape in
+  the same mark list, since a filled area waits on the declined `y2`.
+- **Speed to judge:** `pointMark`'s record is 24 bytes against wiggle's 20,
+  about 17% off scatter's zoom ceiling at 1000 sources; ADR-127 measured the
+  line's Canvas2D paint at 1.08-1.12x; `colorBits` and `rowLane` allocate a
+  count-sized lane for a constant on every pack. Benches:
+  `plugins/wiggle/benches/runInstanceBufferScenarios.sh` and
+  `multiWiggleFacet.bench.ts`.
 
 ## First step
 
-Un-interleave the positions: 1-1.5 days, about 25 files, no pixels moved, held
-by `wiggleInstanceBuffer.test.ts` and the pack benches at 1.00x or better.
+Un-interleave the positions, then bars and points onto `barMark` and
+`pointMark`, then the symlog ramp: 3.5-4.5 days, no pixels moved, deleting
+`wiggle.slang`, `packFillInstances`, `drawXYPlot` and `drawScatter`. Scatter's
+four extra bytes need a bench verdict first, or points stay on the fill
+shader.
