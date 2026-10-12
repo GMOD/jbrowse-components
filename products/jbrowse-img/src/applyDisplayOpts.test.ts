@@ -68,7 +68,7 @@ test('filterBy is kept out of the snapshot showTrack replaces slots from', async
 })
 
 describe("batch's one-row junction", () => {
-  it('draws an alignments track’s read arcs, split reads first, unless the track says otherwise', async () => {
+  it('draws an alignments track’s read arcs, the SV evidence first, unless the track says otherwise', async () => {
     const snapOf = async (modifiers: string[], category = 'alignments') => {
       const { view, calls } = fakeView()
       await applyDisplayOpts(
@@ -83,7 +83,7 @@ describe("batch's one-row junction", () => {
     }
     expect(await snapOf([])).toEqual({
       readConnections: 'arc',
-      sort: 'split',
+      sort: 'svSignal',
     })
     expect(await snapOf(['arcs:off', 'sort=position'])).toEqual({
       readConnections: 'off',

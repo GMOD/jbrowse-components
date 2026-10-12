@@ -41,6 +41,7 @@ const LABELS = [
   'Longest reads first',
   'Spliced reads first',
   'Split reads first',
+  'Split reads and 50+ bp deletions first',
   'Read strand',
   'Base pair',
   'Tag...',
@@ -62,6 +63,7 @@ describe('sort menu radio selection', () => {
     ['length', 'Longest reads first'],
     ['spliced', 'Spliced reads first'],
     ['split', 'Split reads first'],
+    ['svSignal', 'Split reads and 50+ bp deletions first'],
   ] as const)('layoutOrder %s selects "%s"', (layoutOrder, label) => {
     expect(checkedLabel(makeModel({ layoutOrder }))).toEqual([label])
   })
@@ -157,6 +159,7 @@ describe('sort menu writes', () => {
     ['Longest reads first', 'length'],
     ['Spliced reads first', 'spliced'],
     ['Split reads first', 'split'],
+    ['Split reads and 50+ bp deletions first', 'svSignal'],
   ])('%s is one setSort(%s) write', (label, order) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()

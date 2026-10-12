@@ -240,9 +240,15 @@ export interface WorkerFacet {
 const INTERBASE_TYPE_NAMES = ['insertion', 'softclip', 'hardclip'] as const
 
 // The pileup's row orders over the whole window: by start, widest first,
-// spliced reads first, or reads aligned in pieces or across a large deletion
-// first.
-export const LAYOUT_ORDERS = ['position', 'length', 'spliced', 'split'] as const
+// spliced reads first, split reads first, or the structural-variant evidence
+// first, split reads and reads across a deletion of 50 bp or more.
+export const LAYOUT_ORDERS = [
+  'position',
+  'length',
+  'spliced',
+  'split',
+  'svSignal',
+] as const
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
 // The orders that rank the reads over one column, `pos` on `refName`: by

@@ -94,10 +94,11 @@ export function breakpointTracks(
     }
     return {
       trackId,
-      // The reads the connectors are drawn for take the top rows, so a pileup
-      // deeper than its track cuts off the ones that cross nothing. Ahead of
-      // the snapshot, so a `sort=position` of the track's own wins.
-      ...(category === 'alignments' ? { sort: 'split' } : {}),
+      // The reads crossing the breakpoint, split or across a deletion of
+      // structural-variant size, take the top rows, so a pileup deeper than
+      // its track cuts off the ones that cross nothing. Ahead of the
+      // snapshot, so a `sort=position` of the track's own wins.
+      ...(category === 'alignments' ? { sort: 'svSignal' } : {}),
       ...snap,
       ...(displayType ? { type: displayType } : {}),
     }

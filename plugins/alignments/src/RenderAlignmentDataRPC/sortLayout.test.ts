@@ -459,9 +459,12 @@ describe("computeLayout layoutOrder 'split'", () => {
       ...computeLayout(data(false), false, undefined, 'split').readYs,
     ]).toEqual([0, 1, 0])
   })
+})
 
+describe("computeLayout layoutOrder 'svSignal'", () => {
   // An aligner writes a deletion as a gap up to a size and as two pieces past
-  // it, so a read carrying one of structural-variant size is lifted too.
+  // it, so the SV order lifts a read carrying one of structural-variant size
+  // with the split reads. `split` lifts the split reads alone.
   const gapped = (deletion: [number, number]) =>
     makePileupData({
       regionStart: 0,
@@ -474,14 +477,30 @@ describe("computeLayout layoutOrder 'split'", () => {
 
   test('a read carrying a 50 bp deletion takes the lowest row', () => {
     expect([
-      ...computeLayout(gapped([60, 110]), false, undefined, 'split').readYs,
+      ...computeLayout(gapped([60, 110]), false, undefined, 'svSignal').readYs,
     ]).toEqual([1, 0, 0])
+    expect([
+      ...computeLayout(gapped([60, 110]), false, undefined, 'split').readYs,
+    ]).toEqual([0, 1, 0])
   })
 
   test('a shorter deletion lifts nothing', () => {
     expect([
-      ...computeLayout(gapped([60, 109]), false, undefined, 'split').readYs,
+      ...computeLayout(gapped([60, 109]), false, undefined, 'svSignal').readYs,
     ]).toEqual([0, 1, 0])
+  })
+
+  test('a split read lifts too', () => {
+    const d = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 50 },
+        { start: 10, end: 200, split: true },
+      ],
+    })
+    expect([...computeLayout(d, false, undefined, 'svSignal').readYs]).toEqual([
+      1, 0,
+    ])
   })
 })
 

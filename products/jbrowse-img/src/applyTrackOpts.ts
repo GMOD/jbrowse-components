@@ -799,10 +799,11 @@ export async function applyDisplayOpts(
 ) {
   const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
   // A junction's two ends in one row: the arc over them is the call, and the
-  // reads it is drawn for take the top rows. A track saying otherwise keeps it.
+  // reads crossing it, split or across a long deletion, take the top rows. A
+  // track saying otherwise keeps it.
   if (joined && category === 'alignments') {
     snap.readConnections ??= 'arc'
-    snap.sort ??= 'split'
+    snap.sort ??= 'svSignal'
   }
 
   // Resolve the center-line sort against the view (the pivot is the genomic

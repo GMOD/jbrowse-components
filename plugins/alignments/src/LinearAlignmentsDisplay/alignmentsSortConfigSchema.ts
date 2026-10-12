@@ -15,8 +15,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * The alignments displays' `sort` setting: the pileup's row order. A
  * whole-window order is a string — `"position"` (by start, the default),
  * `"length"` (widest first), `"spliced"` (reads whose CIGAR carries a skip
- * first) or `"split"` (reads aligned in pieces, or carrying a deletion of 50 bp
- * or more, first). A column sort ranks the reads over one base, `pos` (0-based)
+ * first), `"split"` (reads aligned in pieces first) or `"svSignal"` (split
+ * reads and reads carrying a deletion of 50 bp or more first, the evidence for
+ * a structural variant). A column sort ranks the reads over one base, `pos` (0-based)
  * on `refName`, by `strand`, `basePair`, `tag` (naming `tag`), or the
  * `insertion`, `softclip` or `hardclip` there; the reads not over it lay out by
  * position. On another chromosome a column sort orders by position.
@@ -43,7 +44,7 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
       model: types.enumeration('AlignmentsSortType', [...SORT_TYPES]),
       defaultValue: 'position',
       description:
-        'position, length, spliced or split order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos',
+        'position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos',
     },
     /**
      * #slot pos

@@ -462,12 +462,13 @@ function buildSoftclipOrder(
   )
 }
 
-// Which category bits each lifting order lifts. `split` takes a deletion of
+// Which category bits each lifting order lifts. `svSignal` takes a deletion of
 // structural-variant size with the split reads: an aligner writes the same
 // molecule either way, by the deletion's length.
 const LIFTED_BITS: Partial<Record<LayoutOrder, number>> = {
   spliced: READ_SPLICED,
-  split: READ_SPLIT | READ_SV_DELETION,
+  split: READ_SPLIT,
+  svSignal: READ_SPLIT | READ_SV_DELETION,
 }
 
 // 1 for each read the order lifts ahead of the rest, or undefined for an order
