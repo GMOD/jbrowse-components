@@ -154,7 +154,7 @@ function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
   return data.mateRefNameDict[data.mateRefNameIds[i]!]!
 }
 
-export function offscreenMateMarkHeight(height: number) {
+function offscreenMateMarkHeight(height: number) {
   return Math.max(
     1,
     Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),

@@ -20,7 +20,8 @@ tick), with its color and the alpha it composites at, and whether it draws
 as a centerline; `offscreen`, the blocks whose mate lies on a contig the
 other row is not showing, in the color the strip along that row's edge
 paints them, `offscreenContigs`, the count and aligned bp of each such
-contig and the line its hover prints, and `offscreenStrip`, the strip's pixel height and narrowest mark;
+contig and the line its hover prints, and `offscreenStrip`, the marks and
+labels the strips along the band's edges paint, in px;
 and `legend` and `ramps`, the key. For a host that draws
 them itself, such as R through V8. Positions are genomic, on the axis's
 region named by `queryRegion` and `targetRegion`.

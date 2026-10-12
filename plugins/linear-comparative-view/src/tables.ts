@@ -1,4 +1,5 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
   FADE_AUTO_MIN_FEATURES,
@@ -18,9 +19,8 @@ import {
 
 import {
   MIN_CONTIG_MARK_PX,
-  MIN_OFFSCREEN_MATE_WIDTH_PX,
+  drawOffscreenMates,
   offscreenMateColors,
-  offscreenMateMarkHeight,
 } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { thinWidthFade } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import { computeSyntenyColors } from './LinearSyntenyDisplay/syntenyColors.ts'
@@ -42,8 +42,10 @@ import { DEFAULT_ALPHA } from './LinearSyntenyView/consts.ts'
 import { offscreenMateMarkColorFor } from './LinearSyntenyViewHelper/offscreenMateMarkColors.ts'
 import { offscreenMateSummary } from './LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
+import type { OffscreenMateLane } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from './LinearSyntenyRPC/collectOffscreenMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   AxisArgs,
   ColorArg,
@@ -94,14 +96,15 @@ interface OffscreenLane {
   data: OffscreenMateData
   axis: 'query' | 'target'
   on: ComparativeAxis
-  // the contig color the strip paints a mark in, or the band's grey
+  // the contig color the strip paints a mark in, absent for the band's grey
+  markColorFor?: (refName: string) => string
   colorOf: (refName: string) => { color: string; alpha: number }
   minAlignmentLength: number
 }
 
-// The lane the display hangs off a row's edge: its marks and their color are
-// `offscreenMateMarkColorFor`'s, which names a contig in its ribbons' color
-// only when the ribbons are keyed by the axis the mate is on
+// The lane the display hangs off a row's edge, its marks in the colors
+// `offscreenMateMarkColorFor` gives them: a contig's ribbon color where the
+// ribbons are keyed by the axis the mate is on, the band's grey otherwise
 function offscreenLane(
   data: OffscreenMateData,
   axis: 'query' | 'target',
@@ -116,7 +119,7 @@ function offscreenLane(
     minAlignmentLength: number
   },
 ): OffscreenLane {
-  const keyed = offscreenMateMarkColorFor(
+  const markColorFor = offscreenMateMarkColorFor(
     [{ paintedField: field, paintedRefNamePosition: namePosition }],
     axis === 'query' ? 'top' : 'bottom',
   )
@@ -125,8 +128,110 @@ function offscreenLane(
     data,
     axis,
     on,
-    colorOf: refName => unpack(cssColorToABGR(keyed?.(refName) ?? grey)),
+    markColorFor,
+    colorOf: refName => unpack(cssColorToABGR(markColorFor?.(refName) ?? grey)),
     minAlignmentLength,
+  }
+}
+
+const LABEL_FONT_PX = 10
+
+// A context that keeps what `drawOffscreenMates` paints: each rect of a filled
+// path in that fill's color, and each label at its baseline in its ink, the
+// halo stroked under it in the band's ground
+function recordingContext() {
+  let path: [number, number, number, number][] = []
+  const marks = {
+    x: [] as number[],
+    y: [] as number[],
+    width: [] as number[],
+    height: [] as number[],
+    color: [] as string[],
+    alpha: [] as number[],
+  }
+  const labels = {
+    label: [] as string[],
+    x: [] as number[],
+    y: [] as number[],
+    color: [] as string[],
+    alpha: [] as number[],
+    halo: [] as string[],
+  }
+  let halo = ''
+  const ctx = {
+    fillStyle: '',
+    strokeStyle: '',
+    font: '',
+    textBaseline: '',
+    lineWidth: 0,
+    lineJoin: '',
+    beginPath() {
+      path = []
+    },
+    rect(x: number, y: number, w: number, h: number) {
+      path.push([x, y, w, h])
+    },
+    fill() {
+      const { color, alpha } = unpack(cssColorToABGR(ctx.fillStyle))
+      for (const [x, y, w, h] of path) {
+        marks.x.push(x)
+        marks.y.push(y)
+        marks.width.push(w)
+        marks.height.push(h)
+        marks.color.push(color)
+        marks.alpha.push(alpha)
+      }
+      path = []
+    },
+    strokeText() {
+      halo = unpack(cssColorToABGR(ctx.strokeStyle)).color
+    },
+    fillText(text: string, x: number, y: number) {
+      const { color, alpha } = unpack(cssColorToABGR(ctx.fillStyle))
+      labels.label.push(text)
+      labels.x.push(x)
+      labels.y.push(y)
+      labels.color.push(color)
+      labels.alpha.push(alpha)
+      labels.halo.push(halo)
+    },
+  }
+  return { ctx: ctx as unknown as Ctx2D, marks, labels }
+}
+
+// The strip as the band paints it over its `height` px: every mark, in px
+// from the band's top left, and every label the strips have room for, in the
+// display's 10px sans-serif
+function offscreenStrip(
+  lanes: readonly OffscreenLane[],
+  { width, height }: { width: number; height: number },
+) {
+  const strips: OffscreenMateLane[] = lanes
+    .filter(lane => lane.data.starts.length > 0)
+    .map(lane => ({
+      datasets: [lane.data],
+      mateBand: { lo: -Infinity, hi: Infinity },
+      bpPerPx: lane.on.bpPerPx,
+      offsetPx: 0,
+      side: lane.axis === 'query' ? 'top' : 'bottom',
+      minAlignmentLength: lane.minAlignmentLength,
+      markColorFor: lane.markColorFor,
+      width,
+      height,
+    }))
+  const { ctx, marks, labels } = recordingContext()
+  drawOffscreenMates(ctx, strips, {
+    ...offscreenMateColors(bandGroundColor()),
+    measure: text => measureText(text, LABEL_FONT_PX),
+  })
+  const axisAt = (y: number) => (y < height / 2 ? 'query' : 'target')
+  return {
+    marks: {
+      axis: marks.y.map((y, i) => axisAt(y + marks.height[i]! / 2)),
+      ...marks,
+    },
+    labels: { axis: labels.y.map(axisAt), ...labels },
+    fontPx: LABEL_FONT_PX,
   }
 }
 
@@ -212,7 +317,8 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * as a centerline; `offscreen`, the blocks whose mate lies on a contig the
  * other row is not showing, in the color the strip along that row's edge
  * paints them, `offscreenContigs`, the count and aligned bp of each such
- * contig and the line its hover prints, and `offscreenStrip`, the strip's pixel height and narrowest mark;
+ * contig and the line its hover prints, and `offscreenStrip`, the marks and
+ * labels the strips along the band's edges paint, in px;
  * and `legend` and `ramps`, the key. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`.
@@ -414,10 +520,7 @@ export async function syntenyTables(
     ribbons,
     offscreen,
     offscreenContigs,
-    offscreenStrip: {
-      height: offscreenMateMarkHeight(height),
-      minWidth: MIN_OFFSCREEN_MATE_WIDTH_PX,
-    },
+    offscreenStrip: offscreenStrip(lanes, { width: query.width, height }),
     ...comparativeLegend(settings, { cigarOps }),
     field: settings.field,
     alpha: level,

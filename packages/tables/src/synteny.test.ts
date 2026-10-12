@@ -122,7 +122,16 @@ test('a block whose mate the other row does not show is listed off screen', asyn
     color: narrow.offscreen.color,
   })
   expect(narrow.offscreen.alpha[0]).toBeCloseTo(0.35, 2)
-  expect(narrow.offscreenStrip).toEqual({ height: 6, minWidth: 1.5 })
+  const { marks, labels } = narrow.offscreenStrip
+  expect(marks).toMatchObject({
+    axis: ['query'],
+    x: [0],
+    y: [0],
+    height: [6],
+    color: narrow.offscreen.color,
+  })
+  expect(marks.width[0]).toBeCloseTo((6079 / 50001) * 800)
+  expect(labels).toMatchObject({ axis: ['query'], label: ['ctgB'], y: [16] })
 
   const below = await engine.synteny({
     ...CONTIG_SWAP,
@@ -134,6 +143,9 @@ test('a block whose mate the other row does not show is listed off screen', asyn
   expect(below.offscreen.mateChrom).toEqual(['ctgA'])
   expect(below.offscreen.color).not.toEqual(['#000000'])
   expect(below.offscreenContigs.axis).toEqual(['target'])
+  expect(below.offscreenStrip.marks.y).toEqual([94])
+  expect(below.offscreenStrip.marks.color).toEqual(below.offscreen.color)
+  expect(below.offscreenStrip.labels.y).toEqual([90])
 })
 
 test('the strip names a mate contig in its ribbon color only where the ribbons key that axis', async () => {
