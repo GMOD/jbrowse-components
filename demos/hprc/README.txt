@@ -204,59 +204,59 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38.GRCh38.walks.bed.gz{,.tbi}   4,540,891,187 bytes
-  hprc-v2.1-mc-grch38.GRCh38.nodes.bed.gz{,.tbi}   1,667,457,455
-  hprc-v2.1-mc-grch38.GRCh38.links.bed.gz{,.tbi}   2,775,295,444
-  hprc-v2.1-mc-grch38.CHM13.walks.bed.gz{,.tbi}    4,915,182,818
-  hprc-v2.1-mc-grch38.CHM13.nodes.bed.gz{,.tbi}    1,644,500,104
-  hprc-v2.1-mc-grch38.CHM13.links.bed.gz{,.tbi}    2,721,190,131
+  hprc-v2.1-mc-grch38-f2.GRCh38.walks.bed.gz       1,224,347,426 bytes
+  hprc-v2.1-mc-grch38-f2.GRCh38.walks.bed.gz.tbi       667,959
+  hprc-v2.1-mc-grch38-f2.CHM13.walks.bed.gz        1,629,258,360
+  hprc-v2.1-mc-grch38-f2.CHM13.walks.bed.gz.tbi        625,289
 
-  Every haplotype's path through the base-level v2.1 graph, cut into pieces
-  filed under 64 kb chunks of a reference, beside the nodes and links those
-  pieces visit, filed under the same chunks. Each reference has its own three
-  files, 8.98 GB for GRCh38 and 9.28 GB for CHM13, so a reader on GRCh38
-  downloads indexes covering GRCh38 alone, about 0.7 MB each. A graph track
-  reads one range of each file per window and decodes only the haplotypes it
-  is asked for.
+  Every haplotype's path through the base-level v2.1 graph, in walk format 2
+  (gfa-to-tabix docs/walks-format.md): one file per reference, filed under
+  64 kb chunks of it. A chunk holds the reference's path through it once, each
+  distinct route a haplotype takes off that path once, the lengths of the
+  nodes those routes visit, and each haplotype's piece as the list of routes
+  it takes. A graph track reads one range of one file per window and decodes
+  only the haplotypes it is asked for.
 
-  The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 set's
-  walk and node files: it aligns each haplotype's walk to the reference's, and
-  each lane to the next, on the nodes both visit, with no base compared. It
-  reads no gbz.db and no haplotype index.
+  The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
+  it aligns each haplotype's walk to the reference's, and each lane to the
+  next, on the nodes both visit, with no base compared. It reads no gbz.db
+  and no haplotype index. Its walksUri names the file by its prefix,
+  hprc-v2.1-mc-grch38-f2.GRCh38, and defaultHaplotypes names the lanes it
+  draws unless the haplotype menu says otherwise.
 
-  Each file's first header line gives chunk:i:65536, the chunk size;
-  maxnode:i:1024, the longest node, which sets how far before a window a
-  reader queries; and cap:i:8192, the most steps in one row. The walk file
-  then names its reference on one #reference line and the 463 other
-  haplotypes, the other reference included, on #haplotype lines.
+  Each file's first header line gives format:i:2; chunk:i:65536, the chunk
+  size; and maxnode:i:1024, the longest node, which sets how far before a
+  window a reader queries. The file then names its reference on one
+  #reference line and the 463 other haplotypes, the other reference included,
+  on #haplotype lines.
 
-  GRCh38: 20,026,734 walk rows from 51,452 paths, 141,399,666 node rows,
-  195,341,620 link rows; 1,698 paths visit no GRCh38 node and have no row.
-  CHM13: 56,789,151 walk rows from 49,414 paths, 139,657,552 node rows,
-  192,362,348 link rows; 3,736 paths have no row.
+  GRCh38: 49,333,469 route rows and 19,886,162 walk rows from 19,933,602
+  pieces; 1,698 paths visit no GRCh38 node and have no row.
+  CHM13: 49,089,579 route rows and 56,686,843 walk rows from 56,730,334
+  pieces; 3,736 paths have no row.
 
-  Built 2026-10-08 (0.5.0 files, prefix hprc-v2.1-mc-grch38) and rebuilt 2026-10-09
-  with 0.6.0 (prefix hprc-v2.1-mc-grch38-w6, 44:13, same flags) from HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes,
-  the release directory above), so node ids match the GBZ and the gbz.db:
+  Built 2026-10-12 on ada with gfa-to-tabix 1.0.0's writer, from HPRC's
+  hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes, the release directory above),
+  so node ids match the GBZ and the gbz.db:
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      -o hprc-v2.1-mc-grch38                         # gfa-to-tabix 0.5.0, ada,
-                                                     # 43:32, 16.1 GB RSS
+      -o hprc-v2.1-mc-grch38-f2                      # 28:35, 12.9 GB RSS
 
-  The defaults apply: --chunk 65536, --cap 8192, --settle 0. The tool files a
-  reference's own steps at their own offset, so each pass over a satellite
-  array lies where it is. The track's walksUri names the GRCh38 set by its
-  prefix, hprc-v2.1-mc-grch38-w6.GRCh38, and defaultHaplotypes names the lanes it
-  draws unless the haplotype menu says otherwise.
+  The default --chunk 65536 applies. Six chunks of every chromosome on both
+  references, 176 M steps, decode to the same pieces as the format 1 files
+  below.
 
-  Two earlier builds, the 0.4.0 single set with both references in one index
-  and the chr22-only files, were removed on 2026-10-08 once this set replaced
-  them; the jb2bench traces that measured them keep their numbers. The single
-  set's links file had taken the name of the contig-layout
-  hprc-v2.1-mc-grch38.links.bed.gz above for a day; that file is back as it
-  was, from a verbatim copy.
+  Format 1 sets, kept for configs that name them: hprc-v2.1-mc-grch38.{GRCh38,
+  CHM13}.{walks,nodes,links}.bed.gz from gfa-to-tabix 0.5.0 (2026-10-08, 18.3 GB)
+  and hprc-v2.1-mc-grch38-w6.* from 0.6.0 (2026-10-09, 18.4 GB). Graph genome
+  viewer 6.27.0 reads them; readers built on @jbrowse/graph-walks refuse them.
+  The 0.4.0 single set with both references in one index and the chr22-only
+  files were removed on 2026-10-08; the jb2bench traces that measured them keep
+  their numbers. The contig-layout hprc-v2.1-mc-grch38.links.bed.gz above lost
+  its name to the single set's links file for a day and is back, from a
+  verbatim copy.
 
 
 repeat_density/ - per-class RepeatMasker density
