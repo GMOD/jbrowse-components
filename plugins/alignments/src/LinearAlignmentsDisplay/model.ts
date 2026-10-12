@@ -75,7 +75,6 @@ import {
   writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
-  keySectionOrder,
 } from '../shared/alignmentsColor.ts'
 import {
   paintsEveryBase,
@@ -88,6 +87,7 @@ import {
   sectionOrder,
   workerFacet,
 } from '../shared/groupFeatures.ts'
+import { keySectionOrder } from '../shared/keySectionOrder.ts'
 import {
   LEGEND_MAX_WIDTH,
   colorRampScales,

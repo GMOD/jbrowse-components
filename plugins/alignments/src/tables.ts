@@ -67,13 +67,13 @@ import {
   colorFieldOf,
   declaredReadLabels,
   isBakedScheme,
-  keySectionOrder,
   pinnedInsertSizeBand,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
+import { keySectionOrder } from './shared/keySectionOrder.ts'
 import {
   arcLegendTitle,
   getArcLegendItems,
