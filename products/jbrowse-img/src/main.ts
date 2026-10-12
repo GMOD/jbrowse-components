@@ -208,7 +208,24 @@ async function main() {
   }
 }
 
-main().catch((e: unknown) => {
-  console.error(e)
-  process.exit(1)
+let finished = false
+
+// beforeExit fires only when the event loop empties, so an unfinished run here
+// is a promise that never settles; Node would otherwise exit 0 silently
+process.on('beforeExit', () => {
+  if (!finished) {
+    console.error(
+      `${scriptName}: the run did not finish; exiting without output`,
+    )
+    process.exitCode = 1
+  }
 })
+
+main()
+  .then(() => {
+    finished = true
+  })
+  .catch((e: unknown) => {
+    console.error(e)
+    process.exit(1)
+  })
