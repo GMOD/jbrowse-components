@@ -48,7 +48,13 @@ interface SortMenuModel {
 // ("Longest reads first", "Spliced reads first", "Split reads first"); rows that lead with it capitalize through
 // `capitalizeFirst`.
 
-export type SortMode = LayoutOrder | 'strand' | 'basePair' | 'tag'
+export type SortMode =
+  | LayoutOrder
+  | 'strand'
+  | 'basePair'
+  | 'mapq'
+  | 'pairOrientation'
+  | 'tag'
 
 const ALL_SORT_MODES: SortMode[] = [
   'position',
@@ -58,6 +64,8 @@ const ALL_SORT_MODES: SortMode[] = [
   'svSignal',
   'strand',
   'basePair',
+  'mapq',
+  'pairOrientation',
   'tag',
 ]
 
@@ -65,7 +73,10 @@ function getSortMode(model: SortMenuModel): SortMode {
   const type = model.sortColumn?.type
   return type === undefined
     ? model.layoutOrder
-    : type === 'strand' || type === 'tag'
+    : type === 'strand' ||
+        type === 'tag' ||
+        type === 'mapq' ||
+        type === 'pairOrientation'
       ? type
       : 'basePair'
 }
@@ -135,6 +146,12 @@ export function getSortMenuItem(
     }),
     basePair: radio('basePair', 'Base pair', () => {
       model.sortAtCenterLine('basePair')
+    }),
+    mapq: radio('mapq', 'Mapping quality', () => {
+      model.sortAtCenterLine('mapq')
+    }),
+    pairOrientation: radio('pairOrientation', 'Pair orientation', () => {
+      model.sortAtCenterLine('pairOrientation')
     }),
     tag: radio(
       'tag',

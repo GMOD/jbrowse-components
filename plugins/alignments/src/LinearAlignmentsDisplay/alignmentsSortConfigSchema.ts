@@ -17,10 +17,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * `"length"` (widest first), `"spliced"` (reads whose CIGAR carries a skip
  * first), `"split"` (reads aligned in pieces first) or `"svSignal"` (split
  * reads and reads carrying a deletion of 50 bp or more first, the evidence for
- * a structural variant). A column sort ranks the reads over one base, `pos` (0-based)
- * on `refName`, by `strand`, `basePair`, `tag` (naming `tag`), or the
- * `insertion`, `softclip` or `hardclip` there; the reads not over it lay out by
- * position. On another chromosome a column sort orders by position.
+ * a structural variant). A column sort ranks the reads over one base, `pos`
+ * (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
+ * `pairOrientation` (the abnormal orientations over LR), `tag` (naming `tag`),
+ * or the `insertion`, `softclip` or `hardclip` there; the reads not over it
+ * lay out by position. On another chromosome a column sort orders by position.
  *
  * #example
  * ```js
@@ -44,7 +45,7 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
       model: types.enumeration('AlignmentsSortType', [...SORT_TYPES]),
       defaultValue: 'position',
       description:
-        'position, length, spliced, split or svSignal order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos',
+        'position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos',
     },
     /**
      * #slot pos

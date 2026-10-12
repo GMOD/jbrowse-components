@@ -15,6 +15,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
+import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 import { UNCAPPED } from './types.ts'
 
 import type { LayoutOrder, SortColumn } from '../shared/types.ts'
@@ -237,6 +238,11 @@ function buildSortKeyMap(
   return result
 }
 
+// A pair-orientation column sort's rank by `pairOrientationToNum` (0 none, 1
+// LR, 2 RL, 3 RR, 4 LL): the abnormal orientations lift above the normal LR,
+// in the field's own level order, and a read with none sinks last.
+const PAIR_ORIENTATION_RANK = [4, 3, 0, 1, 2]
+
 function sortOverlappingByIndex(
   overlapping: number[],
   data: WorkerPileupData,
@@ -253,6 +259,20 @@ function sortOverlappingByIndex(
     const { readStrands } = data
     overlapping.sort(
       (a, b) => readStrands[b]! - readStrands[a]! || canonical(a, b),
+    )
+  } else if (type === 'mapq') {
+    const { readMapqs } = data
+    const valueOf = (i: number) => {
+      const mapq = readMapqs[i]!
+      return mapq === MAPQ_UNAVAILABLE ? -1 : mapq
+    }
+    overlapping.sort((a, b) => valueOf(b) - valueOf(a) || canonical(a, b))
+  } else if (type === 'pairOrientation') {
+    const { readPairOrientations } = data
+    overlapping.sort(
+      (a, b) =>
+        PAIR_ORIENTATION_RANK[readPairOrientations[a]!]! -
+          PAIR_ORIENTATION_RANK[readPairOrientations[b]!]! || canonical(a, b),
     )
   } else if (type === 'tag' && sortTagValues) {
     // Numeric sort only when every present value parses as a number. A single

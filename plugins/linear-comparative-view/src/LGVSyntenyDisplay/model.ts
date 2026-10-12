@@ -300,7 +300,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // column by, and no SAM tags.
             getSortMenuItem(self, {
               noun: self.featureNoun,
-              modes: ['position', 'length', 'strand'],
+              modes: ['position', 'length', 'strand', 'mapq'],
             }),
             ...getFiltersMenuItems(self),
             getSyntenyGroupByMenuItem(self),

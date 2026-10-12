@@ -255,11 +255,14 @@ export const LAYOUT_ORDERS = [
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
 // The orders that rank the reads over one column, `pos` on `refName`: by
-// strand, by the base there, by a tag's value, or by the interbase mark there.
+// strand, by the base there, by a tag's value, by mapping quality, by pair
+// orientation, or by the interbase mark there.
 export const COLUMN_SORT_TYPES = [
   'strand',
   'basePair',
   'tag',
+  'mapq',
+  'pairOrientation',
   ...INTERBASE_TYPE_NAMES,
 ] as const
 export type ColumnSortType = (typeof COLUMN_SORT_TYPES)[number]

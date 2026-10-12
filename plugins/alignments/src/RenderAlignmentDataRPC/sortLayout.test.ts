@@ -658,6 +658,37 @@ describe('computeLayout fast path (interval partitioning)', () => {
 })
 
 describe('computeSortedLayout', () => {
+  const stacked = (fields: Partial<WorkerPileupData>) => ({
+    ...makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 400, end: 700 },
+        { start: 300, end: 800 },
+        { start: 450, end: 600 },
+        { start: 420, end: 650 },
+      ],
+    }),
+    ...fields,
+  })
+
+  test('a mapping-quality column puts the highest MAPQ on top, unavailable last', () => {
+    const data = stacked({ readMapqs: Uint8Array.from([20, 255, 60, 0]) })
+    const { readYs } = computeSortedLayout(data, makeSortColumn(500, 'mapq'))
+    expect([...readYs]).toEqual([1, 3, 0, 2])
+  })
+
+  // pairOrientationToNum: 1 LR, 2 RL, 3 RR, 4 LL, 0 none
+  test('a pair-orientation column lifts the abnormal orientations over LR, a read with none last', () => {
+    const data = stacked({
+      readPairOrientations: Uint8Array.from([1, 0, 4, 2]),
+    })
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortColumn(500, 'pairOrientation'),
+    )
+    expect([...readYs]).toEqual([2, 3, 1, 0])
+  })
+
   test('overlapping reads get distinct rows in base-sort order', () => {
     // All three reads straddle pos 500. Base codes: A=65, C=67, G=71.
     // Sorted-by-base ascending → row order A (read 2), C (read 0), G (read 1).

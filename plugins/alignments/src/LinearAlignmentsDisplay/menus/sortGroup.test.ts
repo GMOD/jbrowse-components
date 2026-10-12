@@ -44,6 +44,8 @@ const LABELS = [
   'Split reads and 50+ bp deletions first',
   'Read strand',
   'Base pair',
+  'Mapping quality',
+  'Pair orientation',
   'Tag...',
 ]
 
@@ -71,6 +73,8 @@ describe('sort menu radio selection', () => {
   test.each([
     ['strand', 'Read strand'],
     ['basePair', 'Base pair'],
+    ['mapq', 'Mapping quality'],
+    ['pairOrientation', 'Pair orientation'],
     ['tag', 'Tag...'],
   ] as const)('a %s sort selects "%s"', (type, label) => {
     expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
