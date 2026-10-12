@@ -303,6 +303,7 @@ export const PROCEDURES: Record<string, Procedure> = {
           n: 1,
           anchor: { text: 'Global plugins...' },
           label: 'Plugins for every session',
+          labelSide: 'left',
         }),
       },
       {
@@ -318,14 +319,14 @@ export const PROCEDURES: Record<string, Procedure> = {
         annotations: [
           ...step({
             n: 3,
-            anchor: { text: 'Plugin URL' },
+            anchor: { selector: '[data-testid="custom-plugin-url"]' },
             label: 'A UMD build: its name and URL',
             labelSide: 'left',
             maxWidth: 220,
           }),
           ...step({
             n: 4,
-            anchor: { text: 'ESM build URL' },
+            anchor: { selector: '[data-testid="custom-plugin-esm-url"]' },
             label: 'An ESM build: its URL alone',
             labelSide: 'left',
             maxWidth: 220,

@@ -88,6 +88,7 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
         />
         <TextField
           label="Plugin URL"
+          data-testid="custom-plugin-url"
           variant="outlined"
           fullWidth
           margin="dense"
@@ -121,6 +122,7 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
             </DialogContentText>
             <TextField
               label="ESM build URL"
+              data-testid="custom-plugin-esm-url"
               variant="outlined"
               fullWidth
               margin="dense"
