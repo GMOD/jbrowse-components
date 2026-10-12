@@ -448,24 +448,6 @@ function projectionSource(node: ts.Expression): Projection | undefined {
     : undefined
 }
 
-function record(name: string, values: string[]) {
-  const prior = index.get(name)
-  if (prior === undefined) {
-    index.set(name, values)
-  } else if (prior === null || prior.join('\0') !== values.join('\0')) {
-    index.set(name, null)
-  }
-}
-
-function recordScalar(name: string, value: string) {
-  const prior = scalarIndex.get(name)
-  if (prior === undefined) {
-    scalarIndex.set(name, value)
-  } else if (prior !== value) {
-    scalarIndex.set(name, null)
-  }
-}
-
 // Author's own source, not the parsed value, so a separated literal keeps the
 // separators a reader put there (`1_000_000`, never `1000000`).
 function numericLiteralText(node: ts.Expression, sf: ts.SourceFile) {
@@ -480,86 +462,26 @@ function numericLiteralText(node: ts.Expression, sf: ts.SourceFile) {
     : undefined
 }
 
-function recordNumeric(name: string, value: string) {
-  const prior = numericIndex.get(name)
+// Every index here keeps the first sighting of a name and drops it to null on
+// a conflicting one, so an ambiguous name documents nothing rather than
+// whichever file the program happened to parse last. A redefinition that
+// agrees keeps the name: dropping on any second sighting lost a table declared
+// identically twice, and with it every slot it contributes. Maps compare by
+// sorted entries, since a source's insertion order is not part of its value.
+function recordUnique<T>(map: Map<string, T | null>, name: string, value: T) {
+  const prior = map.get(name)
   if (prior === undefined) {
-    numericIndex.set(name, value)
-  } else if (prior !== value) {
-    numericIndex.set(name, null)
+    map.set(name, value)
+  } else if (prior === null || canonical(prior) !== canonical(value)) {
+    map.set(name, null)
   }
 }
 
-// Same "drop rather than guess" conflict rule as everything else here: two
-// factories of one name, agreeing on neither shape nor parameters, document
-// nothing rather than whichever was seen first.
-function recordSlotFieldFactory(name: string, value: SlotFieldFactory) {
-  const prior = slotFieldFactoryIndex.get(name)
-  if (prior === undefined) {
-    slotFieldFactoryIndex.set(name, value)
-  } else if (
-    prior === null ||
-    !sameParts(prior.parts, value.parts) ||
-    prior.params.size !== value.params.size ||
-    [...value.params].some(([binding, p]) => {
-      const other = prior.params.get(binding)
-      return !other || other.prop !== p.prop || other.fallback !== p.fallback
-    })
-  ) {
-    slotFieldFactoryIndex.set(name, null)
-  }
-}
-
-function recordSlotFields(name: string, pairs: [string, string][]) {
-  const prior = slotFieldsIndex.get(name)
-  if (prior === undefined) {
-    slotFieldsIndex.set(name, pairs)
-  } else if (prior === null || !samePairs(prior, pairs)) {
-    slotFieldsIndex.set(name, null)
-  }
-}
-
-// Same conflict rule one stage earlier, on the unresolved parts, so two files
-// declaring the same table agree before either is flattened.
-function recordSlotParts(
-  parts: Map<string, SlotPart[] | null>,
-  name: string,
-  value: SlotPart[],
-) {
-  const prior = parts.get(name)
-  if (prior === undefined) {
-    parts.set(name, value)
-  } else if (prior === null || !sameParts(prior, value)) {
-    parts.set(name, null)
-  }
-}
-
-function sameParts(a: SlotPart[], b: SlotPart[]) {
-  return a.length === b.length && a.every((part, i) => samePart(part, b[i]!))
-}
-
-function samePart(a: SlotPart, b: SlotPart) {
-  if ('pair' in a) {
-    return 'pair' in b && a.pair[0] === b.pair[0] && a.pair[1] === b.pair[1]
-  }
-  if ('spread' in a) {
-    return 'spread' in b && a.spread === b.spread
-  }
-  return (
-    'call' in b &&
-    a.call === b.call &&
-    a.args.size === b.args.size &&
-    [...a.args].every(([k, v]) => b.args.get(k) === v)
-  )
-}
-
-// Only a *conflicting* redefinition drops a name, matching record/recordScalar.
-// Dropping on any second sighting also lost a table declared identically twice,
-// which silently deletes every slot it contributes from every schema that
-// spreads it.
-function samePairs(a: [string, string][], b: [string, string][]) {
-  return (
-    a.length === b.length &&
-    a.every(([name, value], i) => b[i]![0] === name && b[i]![1] === value)
+function canonical(value: unknown) {
+  return JSON.stringify(value, (_key, v: unknown) =>
+    v instanceof Map
+      ? [...v].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      : v,
   )
 }
 
@@ -572,50 +494,11 @@ interface TableProjections {
   valueProps: string[] | undefined
 }
 
-// The table map feeding derived resolution needs the same conflict rule as the
-// three indexes above, or an ambiguous table still resolves its derived
-// constant — off whichever file the program happened to parse last, which is
-// exactly the guessing the module exists to avoid. `record` flags the table
-// itself as ambiguous, but that says nothing about the projection of it.
-function recordTable(
-  tables: Map<string, TableProjections | null>,
-  name: string,
-  value: ts.Expression,
-) {
-  const projections = {
+function tableProjections(value: ts.Expression): TableProjections {
+  return {
     heads: tupleHeads(value),
     groupedHeads: groupedTupleHeads(value),
     valueProps: objectValueHeads(value),
-  }
-  const prior = tables.get(name)
-  if (prior === undefined) {
-    tables.set(name, projections)
-  } else if (
-    prior === null ||
-    prior.heads?.join('\0') !== projections.heads?.join('\0') ||
-    prior.groupedHeads?.join('\0') !== projections.groupedHeads?.join('\0') ||
-    prior.valueProps?.join('\0') !== projections.valueProps?.join('\0')
-  ) {
-    tables.set(name, null)
-  }
-}
-
-// And the derived constants themselves: `const B = A.map(...)` declared twice
-// against different tables is ambiguous even when both tables resolve cleanly.
-function recordDerived(
-  derived: Map<string, Projection | null>,
-  name: string,
-  projection: Projection,
-) {
-  const prior = derived.get(name)
-  if (prior === undefined) {
-    derived.set(name, projection)
-  } else if (
-    prior === null ||
-    prior.name !== projection.name ||
-    prior.grouped !== projection.grouped
-  ) {
-    derived.set(name, null)
   }
 }
 
@@ -643,7 +526,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
       if (ts.isFunctionDeclaration(stmt) && stmt.name) {
         const factory = slotFieldFactory(stmt, sf)
         if (factory) {
-          recordSlotFieldFactory(stmt.name.text, factory)
+          recordUnique(slotFieldFactoryIndex, stmt.name.text, factory)
         }
       }
       if (ts.isVariableStatement(stmt)) {
@@ -654,27 +537,28 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
             // `as const` wraps the literal in an assertion expression
             const value = ts.isAsExpression(init) ? init.expression : init
             const direct = stringsOf(value)
+            const numeric = numericLiteralText(value, sf)
             const parts = slotFieldParts(value, sf)
             if (parts) {
-              recordSlotParts(slotParts, name, parts)
+              recordUnique(slotParts, name, parts)
             }
             if (ts.isStringLiteralLike(value)) {
-              recordScalar(name, value.text)
-            } else if (numericLiteralText(value, sf) !== undefined) {
-              recordNumeric(name, numericLiteralText(value, sf)!)
+              recordUnique(scalarIndex, name, value.text)
+            } else if (numeric !== undefined) {
+              recordUnique(numericIndex, name, numeric)
             } else if (direct) {
-              record(name, direct)
-              recordTable(tables, name, value)
+              recordUnique(index, name, direct)
+              recordUnique(tables, name, tableProjections(value))
             } else if (
               tupleHeads(value) ??
               groupedTupleHeads(value) ??
               objectValueHeads(value)
             ) {
-              recordTable(tables, name, value)
+              recordUnique(tables, name, tableProjections(value))
             } else {
               const projection = projectionSource(value)
               if (projection) {
-                recordDerived(derived, name, projection)
+                recordUnique(derived, name, projection)
               }
             }
           }
@@ -695,7 +579,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
       if (parts && !slotFieldsIndex.has(name)) {
         const pairs = resolveSlotParts(parts)
         if (pairs) {
-          recordSlotFields(name, pairs)
+          recordUnique(slotFieldsIndex, name, pairs)
         }
       }
     }
@@ -712,7 +596,7 @@ export function buildEnumConstantIndex(sourceFiles: ts.SourceFile[]) {
           : (table.heads ?? table.valueProps)
         : undefined
       if (values) {
-        record(name, values)
+        recordUnique(index, name, values)
       }
     }
   }
