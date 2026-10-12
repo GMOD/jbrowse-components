@@ -19,24 +19,24 @@ import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 // A chain counts as a proper pair only when EVERY read in it is the ordinary
-// concordant case. The per-read rule is `isConcordantPairRead` — shared with the
-// arc filter behind "Show concordant-pair arcs", so hiding the boring pairs and
-// hiding their arcs cannot come to mean different things. It carries the reasons
-// (why unknown orientation counts, why a supplementary never does).
-//
-// What is local here is only the quantifier and the conversion: this side holds
-// `Feature`s, so the orientation string goes through `pairOrientationToNum` to
-// reach the numeric form both callers share.
+// concordant case, per `isConcordantPairRead` (shared with the arc filter behind
+// "Show concordant-pair arcs", which carries the reasons), and none of it is
+// split. The split test reads the SA tag, as the breakpoint split view's
+// `isEvidence` does: the filter runs per region, so in a view of chr1
+// beside chr4 the chr1 call never sees a split read's chr4 supplementary, and
+// without the tag it would hide the read's chr1 half as an ordinary pair.
 //
 // The filter keeps this chain question rather than the `pairing` field, which
 // answers by the primary read and would hide a concordant pair whose mate is
 // split at a breakpoint (ADR-226).
 function isProperPairChain(chain: Feature[]) {
-  return chain.every((f: Feature) =>
-    isConcordantPairRead(
-      getFlags(f),
-      pairOrientationToNum(f.get('pair_orientation') as string | undefined),
-    ),
+  return (
+    chain.every((f: Feature) =>
+      isConcordantPairRead(
+        getFlags(f),
+        pairOrientationToNum(f.get('pair_orientation') as string | undefined),
+      ),
+    ) && !chainIsSplit(chain)
   )
 }
 

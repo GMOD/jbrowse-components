@@ -101,6 +101,24 @@ describe('filterChainFeatures properPairs', () => {
     ).toEqual(['chimeric'])
   })
 
+  // In a view of chr1 beside chr4 the chr1 call holds the pair's two
+  // primaries and not the chr4 supplementary; the SA tag is what says split
+  test('"exclude" keeps a proper pair whose read is split outside the window', () => {
+    const [read1, read2] = pair('crosses', 'F1R2', PROPER_PAIR)
+    const split = new SimpleFeature({
+      ...read2!.toJSON(),
+      tags: { SA: 'chr4,5000,+,60S40M,60,0;' },
+    })
+    expect(
+      names(
+        filterChainFeatures([read1!, split], filt({ properPairs: 'exclude' })),
+      ),
+    ).toEqual(['crosses'])
+    expect(
+      filterChainFeatures([read1!, split], filt({ properPairs: 'only' })),
+    ).toHaveLength(0)
+  })
+
   test('keeps everything when the category is absent', () => {
     const features = pair('proper', 'F1R2', PROPER_PAIR)
     expect(filterChainFeatures(features, filt())).toHaveLength(2)
@@ -240,28 +258,21 @@ describe('filterChainFeatures singletons', () => {
 // which would make `properPairs: 'exclude'` keep both and prove nothing about
 // the AND.
 test('filterChainFeatures ANDs the categories', () => {
-  const splitVia = (name: string, orientation: string) =>
-    pair(name, orientation, PROPER_PAIR).map(
-      f =>
-        new SimpleFeature({
-          ...f.toJSON(),
-          tags: { SA: 'ctgB,5000,+,50S50M,60,0;' },
-        }),
-    )
+  const [lone] = pair('loneDiscordant', 'F1F2', PROPER_PAIR)
   const features = [
-    ...splitVia('splitProper', 'F1R2'),
-    ...splitVia('splitDiscordant', 'F1F2'),
+    ...pair('plainProper', 'F1R2', PROPER_PAIR),
     ...pair('plainDiscordant', 'F1F2', PROPER_PAIR),
+    lone!,
   ]
-  // split:only drops plainDiscordant; properPairs:exclude drops splitProper
+  // properPairs:exclude drops plainProper; singletons:exclude drops the lone read
   expect(
     names(
       filterChainFeatures(
         features,
-        filt({ split: 'only', properPairs: 'exclude' }),
+        filt({ properPairs: 'exclude', singletons: 'exclude' }),
       ),
     ),
-  ).toEqual(['splitDiscordant'])
+  ).toEqual(['plainDiscordant'])
 })
 
 describe('filterChainFeatures dedup guard', () => {

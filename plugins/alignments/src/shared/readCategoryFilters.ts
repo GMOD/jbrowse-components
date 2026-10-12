@@ -43,8 +43,10 @@ export const READ_CATEGORIES = [
       'Concordant pairs — those the aligner flagged properly paired (SAM ' +
       'flag 0x2) AND in normal forward/reverse (FR) orientation. Discordant ' +
       'pairs (RR/LL/RL orientation, e.g. inversions or duplications) do not ' +
-      'count as proper even when the flag is set, so hiding proper pairs ' +
-      'leaves the structural-variant signal on screen.',
+      'count as proper even when the flag is set, and nor does a pair with ' +
+      'a split read (SA tag), so hiding proper pairs leaves the ' +
+      'structural-variant signal on screen, both halves of a split read ' +
+      'included when they lie in different regions.',
   },
   {
     key: 'singletons',

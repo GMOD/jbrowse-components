@@ -23,7 +23,7 @@ const CATEGORY_FILTERS = ['only', 'exclude'] as const
  *
  * #example
  * ```js
- * { type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude', split: 'only' } }
+ * { type: 'LinearAlignmentsDisplay', filter: { flagExclude: 1540, properPairs: 'exclude' } }
  * ```
  * ```js
  * { type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
@@ -85,7 +85,7 @@ export const readFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: pairs the aligner flagged proper, in normal orientation.
+     * `only`, `exclude`, or unset for unfiltered: pairs the aligner flagged proper, in normal orientation, with no split read.
      */
     properPairs: {
       type: 'maybeStringEnum',

@@ -56,6 +56,12 @@ mapping-quality filter.
   says. No migration, per ADR-221.
 - The color key's "Unsplit read" is "No orientation" (`noOrientation`), the
   facet's word for the same reads.
+- A pair with a split read is not a proper pair (`isProperPairChain`). The
+  filter runs per region, so in a view of chr1 beside chr4 "Hide proper
+  pairs" used to hide a split read's chr1 half, whose chr4 supplementary that
+  call never saw. `properPairs: 'exclude'` with `split: 'only'` therefore
+  keeps every split read; grouping by `pairing` separates the ones whose pair
+  is discordant.
 
 ## Rejected alternatives
 
