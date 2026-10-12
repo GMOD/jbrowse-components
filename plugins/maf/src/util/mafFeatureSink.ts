@@ -1,5 +1,3 @@
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-
 import MafFeature from '../MafFeature.ts'
 
 import type {
@@ -8,7 +6,6 @@ import type {
   EmptyRecord,
 } from '../types.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
-import type { Feature } from '@jbrowse/core/util'
 
 /**
  * A {@link MafBlockSink} that files each block as a `MafFeature`, slicing
@@ -79,20 +76,4 @@ export class MafFeatureSink implements MafBlockSink {
       this.pending = undefined
     }
   }
-}
-
-/** `getFeatures` for an adapter whose `readBlocks` is its parse. */
-export function mafBlockFeatures(
-  refName: string,
-  readBlocks: (sink: MafBlockSink) => Promise<void>,
-  signal?: AbortSignal,
-) {
-  return ObservableCreate<Feature>(async observer => {
-    const sink = new MafFeatureSink(refName, feature => {
-      observer.next(feature)
-    })
-    await readBlocks(sink)
-    sink.finish()
-    observer.complete()
-  }, signal)
 }

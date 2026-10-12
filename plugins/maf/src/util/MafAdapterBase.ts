@@ -2,12 +2,14 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { getSamplesFromAdapter } from './getSamples.ts'
 import {
   loadMafSummaryAdapter,
   mafSummaryFeatures,
 } from './loadMafSummaryAdapter.ts'
+import { MafFeatureSink } from './mafFeatureSink.ts'
 import { MafTableSink } from './mafFeatureTable.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
@@ -17,7 +19,7 @@ import type {
   RowSourceLister,
   RowSourceListing,
 } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 /**
  * What every MAF adapter is beyond its own file format: a sample set, a
@@ -73,6 +75,17 @@ export abstract class MafAdapterBase<
     sink: MafBlockSink,
     opts?: BaseOptions,
   ): Promise<void>
+
+  getFeatures(query: Region, opts?: BaseOptions) {
+    return ObservableCreate<Feature>(async observer => {
+      const sink = new MafFeatureSink(query.refName, feature => {
+        observer.next(feature)
+      })
+      await this.readBlocks(query, sink, opts)
+      sink.finish()
+      observer.complete()
+    }, opts?.signal)
+  }
 
   override async getFeatureTable(query: Region, opts?: BaseOptions) {
     const sink = new MafTableSink(query.refName)

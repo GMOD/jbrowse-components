@@ -1,13 +1,6 @@
-import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
-
-import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
+import { MafSubAdapterBase } from '../util/MafSubAdapterBase.ts'
 import { BigMafBlockReader } from './stanzaBlockReader.ts'
 
-import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
-import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { BigMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -34,61 +27,19 @@ function mafBlockField(feature: Feature) {
   return block
 }
 
-export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
-  private configure: SubAdapterLoader = cachedSetup({
-    label: 'Downloading index',
-    setup: () =>
-      loadSubAdapter(this, {
-        type: 'BigBedAdapter',
-        bigBedLocation: this.getConf('bigBedLocation'),
-      }),
-  })
-
-  async getRefNames(opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getRefNames()
+export default class BigMafAdapter extends MafSubAdapterBase<BigMafAdapterConfig> {
+  protected subAdapterConfig() {
+    return {
+      type: 'BigBedAdapter',
+      bigBedLocation: this.getConf('bigBedLocation'),
+    }
   }
 
-  async getHeader(opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getHeader()
+  protected async blockReader(_query: Region, opts?: BaseOptions) {
+    return new BigMafBlockReader(await this.sampleIds(opts))
   }
 
-  getFeatures(query: Region, opts?: BaseOptions) {
-    return mafBlockFeatures(
-      query.refName,
-      sink => this.readBlocks(query, sink, opts),
-      opts?.signal,
-    )
-  }
-
-  override async readBlocks(
-    query: Region,
-    sink: MafBlockSink,
-    opts?: BaseOptions,
-  ) {
-    const { adapter } = await this.configure(opts)
-    const reader = new BigMafBlockReader(await this.sampleIds(opts))
-    await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-      reader.read(
-        sink,
-        feature.id(),
-        feature.get('start'),
-        feature.get('end'),
-        mafBlockField(feature),
-      )
-    })
-    reader.reportUnmatched()
-  }
-
-  // Compressed download-size estimate from the bigMaf.bb R-tree index, delegated
-  // to the BigBed sub-adapter (the actual file). bigMaf is a full-feature
-  // download — a whole-chromosome view can pull enough packed MAF stanzas to
-  // hang the tab — so it must be byte-gated like any indexed track. NOT
-  // exempt like the screen-reduced adapters (BigWig, HiC), which report no
-  // estimate at all.
-  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getRegionByteSize(regions, opts)
+  protected blockText(feature: Feature) {
+    return mafBlockField(feature)
   }
 }

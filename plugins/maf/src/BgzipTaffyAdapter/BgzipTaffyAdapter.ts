@@ -2,10 +2,9 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
-import { readTaiBlocks, wholeLines } from '../util/taiBlocks.ts'
-import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
+import { MafTaiAdapterBase } from '../util/MafTaiAdapterBase.ts'
+import { wholeLines } from '../util/taiBlocks.ts'
+import { readTaiIndex } from '../util/taiSlice.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
@@ -18,14 +17,11 @@ import {
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
 
-import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { TaiBlockFeature } from '../util/taiBlocks.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock } from './tafParsing.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
 
 interface SetupData extends TaiIndex {
   runLengthEncodeBases: boolean
@@ -37,7 +33,10 @@ interface SetupData extends TaiIndex {
  *
  * TAF Format: https://github.com/ComparativeGenomicsToolkit/taffy
  */
-export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterConfig> {
+export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
+  BgzipTaffyAdapterConfig,
+  SetupData
+> {
   // Not private: `BgzipTaffyAdapter.test.ts` asserts the header read resolves
   // the whole setup, and no public method reports `runLengthEncodeBases`.
   configure = cachedSetup({
@@ -45,12 +44,16 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     setup: opts => this.doSetup(opts.signal),
   })
 
-  // utf-8 (default) tends to be faster than 'ascii' in modern engines.
-  private decoder = new TextDecoder()
+  protected dataLocation() {
+    return this.getConf('tafGzLocation')
+  }
 
-  async getRefNames(opts?: BaseOptions) {
-    const { index } = await this.configure(opts)
-    return [...index.keys()]
+  protected parseBlocks(
+    slice: Uint8Array,
+    { runLengthEncodeBases }: SetupData,
+    resolve: SourceResolver,
+  ) {
+    return this.parseTafBlocksStreaming(slice, runLengthEncodeBases, resolve)
   }
 
   *parseTafBlocksStreaming(
@@ -179,31 +182,5 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
       firstLine.startsWith('#taf') &&
       firstLine.includes('run_length_encode_bases:1')
     )
-  }
-
-  getFeatures(query: Region, opts?: BaseOptions) {
-    return mafBlockFeatures(
-      query.refName,
-      sink => this.readBlocks(query, sink, opts),
-      opts?.signal,
-    )
-  }
-
-  override readBlocks(query: Region, sink: MafBlockSink, opts?: BaseOptions) {
-    return readTaiBlocks({
-      configure: this.configure,
-      sampleIds: o => this.sampleIds(o),
-      location: this.getConf('tafGzLocation'),
-      pluginManager: this.pluginManager,
-      query,
-      sink,
-      opts,
-      parse: (slice, { runLengthEncodeBases }, resolve) =>
-        this.parseTafBlocksStreaming(slice, runLengthEncodeBases, resolve),
-    })
-  }
-
-  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    return taiRegionByteSize(await this.configure(opts), regions)
   }
 }

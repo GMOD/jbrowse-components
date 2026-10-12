@@ -30,7 +30,7 @@ block is a few columns and every cost is per row.
   into a `MafBlockSink` (`plugins/maf/src/util/mafBlockSink.ts`): a block, its
   rows, its empties, each sequence as `text[from..to)`. `BgzipMafAdapter` and
   `BgzipTaffyAdapter` hand it each parsed block's records through
-  `readTaiBlocks`, a whole string per row and no `MafFeature`: the first turns
+  `MafTaiAdapterBase`, a whole string per row and no `MafFeature`: the first turns
   a `-` reference block over by reverse-complementing its strings, and the
   second builds each row out of column lines.
 - **`MafTabixAdapter` and `BigMafAdapter` override it.** `MafTabixBlockReader`

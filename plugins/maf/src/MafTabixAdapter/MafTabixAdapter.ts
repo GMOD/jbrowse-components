@@ -1,13 +1,6 @@
-import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
-
-import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { loadSubAdapter } from '../util/loadSubAdapter.ts'
-import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
+import { MafSubAdapterBase } from '../util/MafSubAdapterBase.ts'
 import { MafTabixBlockReader } from './tabixBlockReader.ts'
 
-import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
-import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -38,63 +31,24 @@ function alignmentColumn(feature: Feature) {
   return encoded
 }
 
-export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfig> {
-  private configure: SubAdapterLoader = cachedSetup({
-    label: 'Downloading index',
-    setup: () =>
-      loadSubAdapter(this, {
-        type: 'BedTabixAdapter',
-        bedGzLocation: this.getConf('bedGzLocation'),
-        index: this.getConf('index'),
-      }),
-  })
-
-  async getRefNames(opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getRefNames()
+export default class MafTabixAdapter extends MafSubAdapterBase<MafTabixAdapterConfig> {
+  protected subAdapterConfig() {
+    return {
+      type: 'BedTabixAdapter',
+      bedGzLocation: this.getConf('bedGzLocation'),
+      index: this.getConf('index'),
+    }
   }
 
-  async getHeader(opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getHeader()
-  }
-
-  getFeatures(query: Region, opts?: BaseOptions) {
-    return mafBlockFeatures(
-      query.refName,
-      sink => this.readBlocks(query, sink, opts),
-      opts?.signal,
-    )
-  }
-
-  override async readBlocks(
-    query: Region,
-    sink: MafBlockSink,
-    opts?: BaseOptions,
-  ) {
-    const { adapter } = await this.configure(opts)
-    const reader = new MafTabixBlockReader(
+  protected async blockReader(query: Region, opts?: BaseOptions) {
+    return new MafTabixBlockReader(
       await this.sampleIds(opts),
       this.getConf('refAssemblyName'),
       query.assemblyName,
     )
-    await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
-      reader.read(
-        sink,
-        feature.id(),
-        feature.get('start'),
-        feature.get('end'),
-        alignmentColumn(feature),
-      )
-    })
-    reader.reportUnmatched()
   }
 
-  // Byte budget for the fetch gate comes straight from the tabix index (the
-  // .bed.gz already contains every species' sequence, so the compressed block
-  // size is a faithful download estimate). No feature download.
-  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    const { adapter } = await this.configure(opts)
-    return adapter.getRegionByteSize(regions, opts)
+  protected blockText(feature: Feature) {
+    return alignmentColumn(feature)
   }
 }
