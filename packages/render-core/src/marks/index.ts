@@ -7,7 +7,12 @@ export { barMark } from './barMark.ts'
 export { pointInstance, pointMark } from './pointMark.ts'
 export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
-export { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
+export {
+  BandPen,
+  lineCenterMark,
+  lineMarkOf,
+  lineStepMark,
+} from './lineMark.ts'
 export {
   linkApex,
   linkLabelAnchor,

@@ -3,14 +3,13 @@
 // splits into solid-color layers or stays whole with per-instance colors.
 // Consumed by buildSourceRenderData, which places the layers in rows.
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
+import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   getEffectiveScores,
 } from '@jbrowse/wiggle-core'
-
-import { cutBand } from './wiggleComponentUtils.ts'
 
 import type {
   FeatureArrays,
@@ -61,7 +60,7 @@ function bandColorsAbgr(
   }
   const out = new Uint32Array(numFeatures)
   for (let i = 0; i < numFeatures; i++) {
-    out[i] = packed[cutBand(bandScores[i]!, bands.cuts)]!
+    out[i] = packed[thresholdBandOf(bandScores[i]!, bands.cuts)]!
   }
   return out
 }
@@ -122,21 +121,22 @@ function summaryBands(
     : [value]
 }
 
-// One band split into its above-pivot and below-pivot solid-color layers,
-// `undefined` for an empty side. Both sides come out of one counting pass plus
-// one fill pass, and a single-sided band (all-positive coverage, the common
-// case) aliases the band arrays instead of copying them.
-function whiskerBandSides(
+// One band split into solid-color layers at or above `value` and below it,
+// `undefined` for an empty side. A single-sided band (all-positive coverage,
+// the common case) aliases the band arrays instead of copying them. The
+// comparison is in float32, as the scores and the shader's cuts are.
+function splitAtValue(
   featurePositions: Uint32Array,
   bandScores: Float32Array,
   numFeatures: number,
-  pivot: number,
+  value: number,
   posColor: [number, number, number],
   negColor: [number, number, number],
 ): { pos: WiggleLayer | undefined; neg: WiggleLayer | undefined } {
+  const at = Math.fround(value)
   let posCount = 0
   for (let i = 0; i < numFeatures; i++) {
-    if (bandScores[i]! >= pivot) {
+    if (bandScores[i]! >= at) {
       posCount++
     }
   }
@@ -167,7 +167,7 @@ function whiskerBandSides(
     const score = bandScores[i]!
     const start = featurePositions[i * 2]!
     const end = featurePositions[i * 2 + 1]!
-    if (score >= pivot) {
+    if (score >= at) {
       posPositions[p * 2] = start
       posPositions[p * 2 + 1] = end
       posScores[p] = score
@@ -258,7 +258,7 @@ export function makeSummaryLayers({
   // neg bars grow away from the origin in opposite directions and never overlap.
   if (isDensityMode) {
     const sides = bands.map(b =>
-      whiskerBandSides(
+      splitAtValue(
         featurePositions,
         b.scores,
         numFeatures,
@@ -274,7 +274,7 @@ export function makeSummaryLayers({
       isFilled && bands.length > 1
         ? stackSides(
             bands.map(b =>
-              whiskerBandSides(
+              splitAtValue(
                 featurePositions,
                 b.scores,
                 numFeatures,
@@ -297,7 +297,7 @@ export function makeSummaryLayers({
     // painting order; each bar still takes its color from its side of the
     // pivot, which is the same side unless a threshold cuts elsewhere.
     const sides = bands.map(b => {
-      const { pos, neg } = whiskerBandSides(
+      const { pos, neg } = splitAtValue(
         featurePositions,
         b.scores,
         numFeatures,

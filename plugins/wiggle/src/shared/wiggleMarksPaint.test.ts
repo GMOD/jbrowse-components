@@ -690,6 +690,24 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
   })
 })
 
+// A file stores 0.7 as float32 0.69999998, and the shader compares it with a
+// float32 cut, so a bin on the cut is at it.
+test('a line on a cut takes the color above it, as the shader does', () => {
+  const mock = createMockCanvas()
+  const source = {
+    ...makeSource([0.7, 0.7], [0, 100], [100, 200], RENDERING_TYPE_LINE_CENTER),
+    negColor: [1, 0, 0] as [number, number, number],
+  }
+  paintWiggle(mock.ctx, new Map([[0, [source]]]), [lineBlock], {
+    ...lineState,
+    renderingType: RENDERING_TYPE_LINE_CENTER,
+    domainY: [0, 1],
+    pivot: 0.7,
+    cuts: [0.7],
+  })
+  expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
+})
+
 // The interpolated line bridges non-adjacent bins on purpose (sporadic gaps in
 // reduced BigWig data must not dash it), so only a hole past the layer's
 // gapLimitBp breaks the run. The threshold is computed once in

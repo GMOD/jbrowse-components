@@ -11,6 +11,7 @@ import {
   spanLeft,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { BandPen, thresholdBandOf } from '@jbrowse/render-core/marks'
 import { clipSide } from '@jbrowse/render-core/shaders/clipStrip'
 import {
   CLIP_STRIP_COLOR,
@@ -29,7 +30,7 @@ import {
   makeDensityRgbStringFn,
 } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
-import { centerLinksToPrevious, cutBand } from './wiggleComponentUtils.ts'
+import { centerLinksToPrevious } from './wiggleComponentUtils.ts'
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -241,74 +242,6 @@ export function drawDensity(
   }
 }
 
-// The part of the segment from y0 to y1, as a fraction of it, inside the band
-// top < y <= bottom; undefined where it misses. A band owns its lower edge,
-// so a line lying on a cut takes the color above it, as the shader does.
-function bandSpan(y0: number, y1: number, top: number, bottom: number) {
-  if (y0 === y1) {
-    return top < y0 && y0 <= bottom ? ([0, 1] as const) : undefined
-  }
-  const tTop = (top - y0) / (y1 - y0)
-  const tBottom = (bottom - y0) / (y1 - y0)
-  const t0 = Math.max(0, Math.min(tTop, tBottom))
-  const t1 = Math.min(1, Math.max(tTop, tBottom))
-  return t0 < t1 || (t0 === t1 && y0 + (y1 - y0) * t0 !== top)
-    ? ([t0, t1] as const)
-    : undefined
-}
-
-// Keeps the part of each segment inside one band, cut where it crosses the
-// band's edges, so a line stroked once per band changes color where the
-// shader's does. A point's color y is where the band test reads it and its y
-// where it draws, which part where the drawn y is clamped to the row.
-class BandPen {
-  private x = 0
-  private y = 0
-  private colorY = 0
-  private drawing = false
-
-  constructor(
-    private ctx: MarkContext2D,
-    private path: CappedPath,
-    private top: number,
-    private bottom: number,
-  ) {}
-
-  moveTo(x: number, y: number, colorY = y) {
-    this.x = x
-    this.y = y
-    this.colorY = colorY
-    this.drawing = false
-  }
-
-  /** Reads the next segment from `colorY` without moving the pen. */
-  recolor(colorY: number) {
-    this.colorY = colorY
-  }
-
-  lineTo(x: number, y: number, colorY = y) {
-    const span = bandSpan(this.colorY, colorY, this.top, this.bottom)
-    if (span) {
-      const [t0, t1] = span
-      if (this.path.add()) {
-        this.drawing = false
-      }
-      if (!this.drawing || t0 > 0) {
-        this.ctx.moveTo(this.x + (x - this.x) * t0, this.y + (y - this.y) * t0)
-      }
-      if (t0 < t1 || (t0 === 0 && t1 === 1)) {
-        this.ctx.lineTo(this.x + (x - this.x) * t1, this.y + (y - this.y) * t1)
-      }
-      this.drawing = t1 === 1
-    } else {
-      this.drawing = false
-    }
-    this.x = x
-    this.y = y
-    this.colorY = colorY
-  }
-}
-
 // Each band's screen edges, lowest band first (painted highest first, as the
 // positive side always was): band k lies between cut k and
 // cut k-1, and the lowest and highest run to the row's ends.
@@ -347,9 +280,9 @@ function strokeByBands(
         .reverse()
   for (const { top, bottom, style } of passes) {
     ctx.strokeStyle = style
-    const path = new CappedPath(ctx, 'stroke')
-    trace(new BandPen(ctx, path, top, bottom))
-    path.flush()
+    const pen = new BandPen(ctx, top, bottom)
+    trace(pen)
+    pen.end()
   }
 }
 
@@ -381,7 +314,7 @@ export function drawLine({
   const toX = makeBpMapper(block)
   strokeByBands(
     ctx,
-    cuts.map(cut => colorToY(cut) + rowTop),
+    cuts.map(cut => colorToY(Math.fround(cut)) + rowTop),
     bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       let inRun = false
@@ -450,7 +383,7 @@ export function drawLineCenter({
   const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
   strokeByBands(
     ctx,
-    cuts.map(cut => colorToY(cut) + rowTop),
+    cuts.map(cut => colorToY(Math.fround(cut)) + rowTop),
     bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
     pen => {
       for (let i = 0; i < n; i++) {
@@ -555,8 +488,8 @@ export function drawMinMaxBand({
       high = maxScores[i]!
     }
   }
-  const lowest = cutBand(low, cuts)
-  const highest = cutBand(high, cuts)
+  const lowest = thresholdBandOf(low, cuts)
+  const highest = thresholdBandOf(high, cuts)
   const fills = bandStyles(
     normalizedRgbToCssRgba(
       source.negColor ?? source.color,
@@ -575,7 +508,7 @@ export function drawMinMaxBand({
     const rowBottom = rowTop + rowHeight
     const cutToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
     const snapped = cuts.map(
-      cut => Math.round((cutToY(cut) + rowTop) * dpr) / dpr,
+      cut => Math.round((cutToY(Math.fround(cut)) + rowTop) * dpr) / dpr,
     )
     for (const [k, { top, bottom }] of [
       ...bandEdges(snapped).entries(),

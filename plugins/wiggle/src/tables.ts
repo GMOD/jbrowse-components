@@ -8,6 +8,7 @@ import {
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
+import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
 import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
@@ -48,7 +49,6 @@ import {
 } from './shared/wiggleColor.ts'
 import {
   centerLinksToPrevious,
-  cutBand,
   isLineMode,
 } from './shared/wiggleComponentUtils.ts'
 
@@ -351,7 +351,7 @@ export async function wiggleTables(
           : layer.colorsAbgr
             ? abgrToHex(layer.colorsAbgr[i]!)
             : bandColors
-              ? bandColors[cutBand(score, cuts)]!
+              ? bandColors[thresholdBandOf(score, cuts)]!
               : own
       const push = (i: number, low: number, score: number, color: string) => {
         marks.region.push(regionIndex)
@@ -381,7 +381,7 @@ export async function wiggleTables(
               i,
               edges[k - 1]!,
               edges[k]!,
-              bandColors[cutBand(edges[k - 1]!, cuts)]!,
+              bandColors[thresholdBandOf(edges[k - 1]!, cuts)]!,
             )
           }
         } else {

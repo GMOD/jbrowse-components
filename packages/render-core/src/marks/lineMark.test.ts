@@ -239,6 +239,25 @@ test('under a threshold a step is stroked once per band, a rise across the cut c
   ])
 })
 
+test('a line on a cut takes the color above it, the cut compared in float32 as the shader does', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 0.7 },
+    { x: 20, x2: 30, y: 0.7 },
+  ])
+  c.colorValue = c.y
+  const { ctx, calls } = mockCtx()
+  lineCenterMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    domain: [0, 1],
+    colorScale: { cuts: [0.7], colors: Uint32Array.of(RED, BLUE) },
+    colorFromY: true,
+  })
+  expect(calls.length).toBeGreaterThan(0)
+  expect(new Set(calls.map(r => r.fillStyle))).toEqual(
+    new Set([abgrToCssRgba(BLUE)]),
+  )
+})
+
 test('a threshold over another field colors each instance by its own value', () => {
   const c = channels([
     { x: 10, x2: 20, y: 9 },

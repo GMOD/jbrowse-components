@@ -195,6 +195,33 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
+  test('a float32 score on a cut is at the cut, as the shader compares', () => {
+    const atCut = new Float32Array([0.7, 0.5])
+    const data = {
+      ...noSummaryData,
+      featureScores: atCut,
+      featureMinScores: atCut,
+      featureMaxScores: atCut,
+    }
+    const opts = { data, ...base, extent: 'none', pivot: 0.7, cuts: [0.7] }
+    const [bars] = makeSummaryLayers({
+      ...opts,
+      renderingType: RENDERING_TYPE_XYPLOT,
+    })
+    expect([...bars!.colorsAbgr!]).toEqual([
+      normalizedRgbToABGR(...posColor),
+      normalizedRgbToABGR(...negColor),
+    ])
+    const density = makeSummaryLayers({
+      ...opts,
+      renderingType: RENDERING_TYPE_DENSITY,
+    })
+    expect(density.map(l => [l.color, [...l.featureScores]])).toEqual([
+      [posColor, [atCut[0]]],
+      [negColor, [0.5]],
+    ])
+  })
+
   test('density splits a lone band into solid sides', () => {
     const result = makeSummaryLayers({
       data: summaryData,

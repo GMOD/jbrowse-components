@@ -229,7 +229,7 @@ function colorYPx(g: LineFrame, value: number, slot: number) {
  * color is read at where that differs from the y it is drawn at, and the
  * instance the next points belong to.
  */
-interface LinePen {
+export interface LinePen {
   instance(i: number): void
   moveTo(x: number, y: number, colorY?: number): void
   lineTo(x: number, y: number, colorY?: number): void
@@ -313,7 +313,7 @@ function bandSpan(y0: number, y1: number, top: number, bottom: number) {
 // crosses the band's edges, so a line stroked once per band changes color
 // where the shader's fragments do. A point's color y is where the band test
 // reads it and its y where it draws, which part where the drawn y is clamped.
-class BandPen implements LinePen {
+export class BandPen implements LinePen {
   private x = 0
   private y = 0
   private colorY = 0
@@ -484,7 +484,7 @@ function paintLine(
   if (scale && isThreshold(scale)) {
     const { cuts, colors } = scale
     for (const [slot, indices] of bySlot) {
-      const cutYs = cuts.map(cut => colorYPx(g, cut, slot))
+      const cutYs = cuts.map(cut => colorYPx(g, Math.fround(cut), slot))
       for (let k = 0; k <= cuts.length; k++) {
         ctx.strokeStyle = abgrToCssRgba(colors[k] ?? 0)
         const pen = new BandPen(
