@@ -112,6 +112,97 @@ test('a block whose mate the other row does not show is listed off screen', asyn
   expect(narrow.offscreen.axis).toEqual(['query'])
   expect(narrow.offscreen.mateChrom).toEqual(['ctgB'])
   expect(narrow.offscreen.end).toEqual([6079])
+  expect(narrow.offscreen.drawn).toEqual([true])
+  expect(narrow.offscreenContigs).toMatchObject({
+    axis: ['query'],
+    mateChrom: ['ctgB'],
+    count: [1],
+    alignedBp: [6079],
+    color: narrow.offscreen.color,
+  })
+  expect(narrow.offscreen.alpha[0]).toBeCloseTo(0.35, 2)
+  expect(narrow.offscreenStrip).toEqual({ height: 6, minWidth: 1.5 })
+})
+
+test('the strip names a mate contig in its ribbon color only where the ribbons key that axis', async () => {
+  const narrow = {
+    ...CONTIG_SWAP,
+    target: {
+      regions: [{ refName: 'ctgC', start: 0, end: 1000 }],
+      width: 800,
+    },
+  }
+  const grey = await engine.synteny(narrow)
+  expect(grey.offscreen.color).toEqual(['#000000'])
+  const byQuery = await engine.synteny({
+    ...narrow,
+    view: { color: { field: 'query' } },
+  })
+  expect(byQuery.offscreen.color).toEqual(['#000000'])
+  const byTarget = await engine.synteny({
+    ...narrow,
+    view: { color: { field: 'target' } },
+  })
+  const hashed = byTarget.offscreen.color[0]
+  expect(hashed).not.toBe('#000000')
+  const ordered = await engine.synteny({
+    ...narrow,
+    view: { color: { field: 'target' } },
+    target: { ...narrow.target, refNames: ['ctgC', 'ctgB'] },
+  })
+  const both = await engine.synteny({
+    ...CONTIG_SWAP,
+    view: { color: { field: 'target' } },
+    target: {
+      regions: [
+        { refName: 'ctgC', start: 0, end: 1000 },
+        { refName: 'ctgB', start: 0, end: 6079 },
+      ],
+      width: 800,
+    },
+  })
+  expect(ordered.offscreen.color).toEqual([both.alignments.color[0]])
+  expect(ordered.offscreen.color).not.toEqual([hashed])
+  const short = await engine.synteny({
+    ...narrow,
+    view: { minAlignmentLength: 10000 },
+  })
+  expect(short.offscreen.drawn).toEqual([false])
+})
+
+test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {
+  const t = await engine.synteny({
+    ...INV_INDELS,
+    view: { color: { field: 'identity' } },
+  })
+  expect(t.legend.label).toEqual([])
+  expect(t.ramps).toHaveLength(1)
+  const [ramp] = t.ramps
+  expect(ramp).toMatchObject({
+    id: 'identity',
+    title: 'Identity',
+    minLabel: '0%',
+    maxLabel: '100%',
+  })
+  expect(ramp!.offset[0]).toBe(0)
+  expect(ramp!.offset.at(-1)).toBe(1)
+  expect(ramp!.color).toHaveLength(ramp!.offset.length)
+  expect(ramp!.opacity).toEqual(ramp!.offset.map(() => 1))
+
+  const mapq = await engine.synteny({
+    ...INV_INDELS,
+    view: { color: { field: 'mapq' } },
+  })
+  expect(mapq.ramps).toEqual([])
+  expect(mapq.legend.label.length).toBeGreaterThan(1)
+  expect(t.ramps).toEqual(
+    (
+      await engine.dotplot({
+        ...INV_INDELS_DOTPLOT,
+        view: { color: { field: 'identity' } },
+      })
+    ).ramps,
+  )
 })
 
 test('a PAF comes back as the dotplot lays out and colors it', async () => {

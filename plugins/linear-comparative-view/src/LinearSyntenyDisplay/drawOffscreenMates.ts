@@ -23,7 +23,7 @@ export const MIN_OFFSCREEN_MATE_WIDTH_PX = 1.5
 // on: the floor lifts as the window widens and falls as it narrows, so the
 // scattered contigs a wide view cannot use appear on the way in, which is where
 // there is room for them.
-const MIN_CONTIG_MARK_PX = 4
+export const MIN_CONTIG_MARK_PX = 4
 
 const MAX_BAND_FRACTION = 1 / 3
 
@@ -154,7 +154,7 @@ function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
   return data.mateRefNameDict[data.mateRefNameIds[i]!]!
 }
 
-function offscreenMateMarkHeight(height: number) {
+export function offscreenMateMarkHeight(height: number) {
   return Math.max(
     1,
     Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),

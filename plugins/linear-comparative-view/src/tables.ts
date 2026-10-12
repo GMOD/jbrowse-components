@@ -16,6 +16,12 @@ import {
   viewColorSettings,
 } from '@jbrowse/synteny-core'
 
+import {
+  MIN_CONTIG_MARK_PX,
+  MIN_OFFSCREEN_MATE_WIDTH_PX,
+  offscreenMateColors,
+  offscreenMateMarkHeight,
+} from './LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { thinWidthFade } from './LinearSyntenyDisplay/shaders/syntenyTypes.js.generated.ts'
 import { computeSyntenyColors } from './LinearSyntenyDisplay/syntenyColors.ts'
 import {
@@ -33,6 +39,7 @@ import {
   KIND_MARKER,
 } from './LinearSyntenyRPC/syntenyKinds.ts'
 import { DEFAULT_ALPHA } from './LinearSyntenyView/consts.ts'
+import { offscreenMateMarkColorFor } from './LinearSyntenyViewHelper/offscreenMateMarkColors.ts'
 
 import type { OffscreenMateData } from './LinearSyntenyRPC/collectOffscreenMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,6 +48,7 @@ import type {
   ColorArg,
   ComparativeAxis,
   OpacityArg,
+  RefNamePosition,
 } from '@jbrowse/synteny-core'
 
 export { registerComparativeAdapters }
@@ -81,27 +89,105 @@ const KIND_NAMES: Record<number, string> = {
 
 const DEFAULT_LEVEL_HEIGHT = 100
 
-// The blocks placed on one axis whose mate the other row does not show, each
-// back on the region of that axis its clamped span lies in
-function offscreenRows(
+interface OffscreenLane {
+  data: OffscreenMateData
+  axis: 'query' | 'target'
+  on: ComparativeAxis
+  // the contig color the strip paints a mark in, or the band's grey
+  colorOf: (refName: string) => { color: string; alpha: number }
+  minAlignmentLength: number
+}
+
+// The lane the display hangs off a row's edge: its marks and their color are
+// `offscreenMateMarkColorFor`'s, which names a contig in its ribbons' color
+// only when the ribbons are keyed by the axis the mate is on
+function offscreenLane(
   data: OffscreenMateData,
   axis: 'query' | 'target',
   on: ComparativeAxis,
-) {
+  {
+    field,
+    namePosition,
+    minAlignmentLength,
+  }: {
+    field: string
+    namePosition?: RefNamePosition
+    minAlignmentLength: number
+  },
+): OffscreenLane {
+  const keyed = offscreenMateMarkColorFor(
+    [{ paintedField: field, paintedRefNamePosition: namePosition }],
+    axis === 'query' ? 'top' : 'bottom',
+  )
+  const grey = offscreenMateColors(bandGroundColor()).markColor
+  return {
+    data,
+    axis,
+    on,
+    colorOf: refName => unpack(cssColorToABGR(keyed?.(refName) ?? grey)),
+    minAlignmentLength,
+  }
+}
+
+// The blocks placed on one axis whose mate the other row does not show, each
+// back on the region of that axis its clamped span lies in, in the color the
+// strip paints it and whether it clears the strip's floors
+function offscreenRows({
+  data,
+  axis,
+  on,
+  colorOf,
+  minAlignmentLength,
+}: OffscreenLane) {
   const n = data.starts.length
   const from = Array.from(data.starts, (s, i) => locateCum(on, s, data.ends[i]))
   const to = Array.from(data.ends, (e, i) => locateCum(on, e, data.starts[i]))
+  const mateChrom = Array.from(
+    data.mateRefNameIds,
+    id => data.mateRefNameDict[id]!,
+  )
+  const paint = mateChrom.map(colorOf)
+  const contigFloor = MIN_CONTIG_MARK_PX * on.bpPerPx
   return {
     axis: Array.from({ length: n }, () => axis),
     region: from.map(p => p.region),
     chrom: from.map(p => on.regions[p.region]!.refName),
     start: from.map((p, i) => Math.min(p.coord, to[i]!.coord)),
     end: from.map((p, i) => Math.max(p.coord, to[i]!.coord)),
-    mateChrom: Array.from(data.mateRefNameIds, id => data.mateRefNameDict[id]!),
+    mateChrom,
     mateStart: Array.from(data.mateStarts),
     mateEnd: Array.from(data.mateEnds),
     length: Array.from(data.lengths),
+    color: paint.map(p => p.color),
+    alpha: paint.map(p => p.alpha),
+    drawn: Array.from(
+      data.mateRefNameIds,
+      (id, i) =>
+        data.lengths[i]! >= minAlignmentLength &&
+        (data.alignedBp[id] ?? Infinity) >= contigFloor,
+    ),
   }
+}
+
+// Each contig a lane's mates lie on, with what the strip's hover reports of
+// it: the alignments to it and the sequence they cover
+function offscreenContigRows({ data, axis, colorOf }: OffscreenLane) {
+  const paint = data.mateRefNameDict.map(colorOf)
+  return {
+    axis: data.mateRefNameDict.map(() => axis),
+    mateChrom: [...data.mateRefNameDict],
+    count: Array.from(data.counts),
+    alignedBp: Array.from(data.alignedBp),
+    color: paint.map(p => p.color),
+    alpha: paint.map(p => p.alpha),
+  }
+}
+
+function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
+  for (const key of Object.keys(a)) {
+    a[key]!.push(...b[key]!)
+  }
+  return a
 }
 
 /**
@@ -115,7 +201,10 @@ function offscreenRows(
  * and `skip` for the CIGAR ops wide enough to draw, `marker` for a location
  * tick), with its color and the alpha it composites at, and whether it draws
  * as a centerline; `offscreen`, the blocks whose mate lies on a contig the
- * other row is not showing; and `legend`, the key. For a host that draws
+ * other row is not showing, in the color the strip along that row's edge
+ * paints them, `offscreenContigs`, the count and aligned bp of each such
+ * contig, and `offscreenStrip`, the strip's pixel height and narrowest mark;
+ * and `legend` and `ramps`, the key. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`.
  */
@@ -289,17 +378,37 @@ export async function syntenyTables(
     ribbons.thin.push(thin)
   }
 
-  const offscreen = offscreenRows(featureData.offscreenMates, 'query', q)
-  const onTarget = offscreenRows(featureData.targetOffscreenMates, 'target', t)
-  for (const key of Object.keys(offscreen) as (keyof typeof offscreen)[]) {
-    ;(offscreen[key] as unknown[]).push(...onTarget[key])
-  }
+  const lanes = [
+    offscreenLane(featureData.offscreenMates, 'query', q, {
+      field: settings.field,
+      namePosition: axisNamePosition(t),
+      minAlignmentLength: minLength,
+    }),
+    offscreenLane(featureData.targetOffscreenMates, 'target', t, {
+      field: settings.field,
+      namePosition: axisNamePosition(q),
+      minAlignmentLength: minLength,
+    }),
+  ] as const
+  const offscreen = concatColumns(
+    offscreenRows(lanes[0]),
+    offscreenRows(lanes[1]),
+  )
+  const offscreenContigs = concatColumns(
+    offscreenContigRows(lanes[0]),
+    offscreenContigRows(lanes[1]),
+  )
 
   const cigarOps = computePresentCigarKinds(kinds, instanceData.instanceCount)
   return {
     alignments,
     ribbons,
     offscreen,
+    offscreenContigs,
+    offscreenStrip: {
+      height: offscreenMateMarkHeight(height),
+      minWidth: MIN_OFFSCREEN_MATE_WIDTH_PX,
+    },
     ...comparativeLegend(settings, { cigarOps }),
     field: settings.field,
     alpha: level,

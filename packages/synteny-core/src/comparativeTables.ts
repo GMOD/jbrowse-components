@@ -1,4 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import {
   abgrAlpha,
   abgrToHex,
@@ -7,7 +9,11 @@ import {
 import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { orderAttributeLabels } from './TrackColorsMixin.ts'
-import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
+import {
+  colorByScales,
+  colorByShortLabel,
+  getColorBySwatch,
+} from './colorLegend.ts'
 import { colorPaintOf, isAttributeLabels } from './colorRamps.ts'
 import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
@@ -33,16 +39,20 @@ export interface AxisRegionArgs {
 /**
  * One axis of a comparative view as a host writes it: the regions it shows,
  * end to end, the assembly they are on (unset, the adapter's own name for
- * that side) and the pixels it draws them across, which sets the zoom.
+ * that side), the pixels it draws them across, which sets the zoom, and the
+ * assembly's contigs in order, which hand out the palette a color by contig
+ * name paints (unset, the regions' own order).
  */
 export interface AxisArgs {
   regions: AxisRegionArgs[]
   assemblyName?: string
   width: number
+  refNames?: string[]
 }
 
 export interface ComparativeAxis {
   regions: Region[]
+  refNames: string[]
   bpPerPx: number
   assemblyName: string
   /** cumulative bp before each region, no padding, as the views lay them out */
@@ -66,6 +76,7 @@ export function comparativeAxis(
   }
   return {
     regions,
+    refNames: axis.refNames ?? [...new Set(regions.map(r => r.refName))],
     assemblyName,
     before,
     bpPerPx: total / Math.max(1, axis.width),
@@ -93,13 +104,10 @@ export function locateCum(axis: ComparativeAxis, cum: number, hint = cum) {
   return { region: i, coord: r.reversed ? r.end - off : r.start + off }
 }
 
-/** The order `query` and `target` painting hand the palette out in: the axis's own. */
+/** The order `query` and `target` painting hand the palette out in: the axis's contigs'. */
 export function axisNamePosition(axis: ComparativeAxis) {
-  const order = [...new Set(axis.regions.map(r => r.refName))]
-  return (refName: string) => {
-    const i = order.indexOf(refName)
-    return i === -1 ? undefined : i
-  }
+  const position = new Map(axis.refNames.map((name, i) => [name, i]))
+  return (refName: string) => position.get(refName)
 }
 
 export type ColorArg = string | Record<string, unknown> | undefined
@@ -194,8 +202,9 @@ export function unpack(abgr: number) {
 
 /**
  * The key the view shows for its color field: the chips the legend lists,
- * each in the color its alignments paint before the band's opacity, or a
- * ramp's stops. A host composites the chips as it composites the ribbons.
+ * each in the color its alignments paint before the band's opacity, and a
+ * ramp's bar as `ramps` (`rampKeyOf`), its no-value row a chip. A host
+ * composites the chips as it composites the ribbons.
  */
 export function comparativeLegend(
   settings: ViewColorSettings,
@@ -204,14 +213,15 @@ export function comparativeLegend(
     cigarOps,
   }: { pointBased?: boolean; cigarOps?: number } = {},
 ) {
-  const swatch = getColorBySwatch(settings.field, {
+  const opts = {
     pointBased,
     cigarOps,
     attributeRanges: settings.attributeRanges,
     paint: settings.paint,
     labels: settings.labels,
     descending: settings.descending,
-  })
+  }
+  const swatch = getColorBySwatch(settings.field, opts)
   const title = settings.title ?? colorByShortLabel(settings.field)
   const chips =
     swatch?.kind === 'chips'
@@ -220,23 +230,17 @@ export function comparativeLegend(
             ? []
             : [{ label: c.label, color: cssColorToHex(c.color) }],
         )
-      : []
+      : swatch?.missingColor === undefined
+        ? []
+        : [{ label: NO_VALUE_LABEL, color: cssColorToHex(swatch.missingColor) }]
   return {
     legend: {
       label: chips.map(c => c.label),
       color: chips.map(c => c.color),
     },
     legendTitle: title,
-    ramp:
-      swatch?.kind === 'ramp'
-        ? {
-            title,
-            domain: swatch.domain,
-            offset: swatch.stops.map(s => s.offset),
-            color: swatch.stops.map(s => cssColorToHex(s.color)),
-            minLabel: swatch.minLabel,
-            maxLabel: swatch.maxLabel,
-          }
-        : undefined,
+    ramps: colorByScales(settings.field, { ...opts, title })
+      .filter(scale => scale.kind === 'ramp')
+      .map(rampKeyOf),
   }
 }
