@@ -116,7 +116,8 @@ segment readers, so a host stacks what the display stacks. The interbase
 histogram comes back the same way, as `interbaseCoverage` (each position's
 insertions, soft clips and hard clips stacked in that order, `from` and `to`
 in reads), with `indicators` (the positions whose events pass the display's
-share of the local depth, and the most common `type` there). The display
+share of the local depth, and the most common `type` there), and `glyph`
+gives the indicator triangle's size in px. The display
 hangs the histogram from the band's top at half a depth unit per read, and
 `settings.showInterbaseIndicators` says whether it draws either. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the

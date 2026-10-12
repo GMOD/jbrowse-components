@@ -1,4 +1,6 @@
 import {
+  INDICATOR_TRIANGLE_H,
+  INDICATOR_TRIANGLE_HW,
   pairDirectionOfNum,
   readIndicators,
   readInterbaseSegments,
@@ -934,6 +936,10 @@ export async function alignmentTables(
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
+    glyph: {
+      indicatorWidth: 2 * INDICATOR_TRIANGLE_HW,
+      indicatorHeight: INDICATOR_TRIANGLE_H,
+    },
     settings: Object.fromEntries(
       COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),
     ) as Record<(typeof COMPOSING_SLOTS)[number], unknown>,
