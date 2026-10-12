@@ -2273,12 +2273,24 @@ ${body}
 }
 
 // A page's meta description: the opening of its docstring as plain text, or
-// `fallback` for a type whose docstring says nothing.
+// `fallback` for a type whose docstring says nothing. A long opening ends at
+// the last whole sentence that fits, and is cut mid-sentence only when its
+// first sentence alone is too long.
+const DESCRIPTION_CHARS = 200
+
 export function pageDescription(docs: string, fallback: string) {
-  const text = firstParagraph(docs, 200)
+  const text = firstParagraph(docs, Infinity)
     .replaceAll(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replaceAll(/[`*_]/g, '')
-  return text || fallback
+  const sentenceEnds = [
+    ...text.slice(0, DESCRIPTION_CHARS + 1).matchAll(/[.!?](?=\s+[A-Z"(])/g),
+  ]
+  const lastEnd = sentenceEnds.at(-1)?.index
+  return text.length <= DESCRIPTION_CHARS
+    ? text || fallback
+    : lastEnd !== undefined
+      ? text.slice(0, lastEnd + 1)
+      : firstParagraph(text, DESCRIPTION_CHARS)
 }
 
 // Where a documented element comes from, derived from its source path: which

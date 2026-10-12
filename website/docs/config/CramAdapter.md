@@ -1,7 +1,7 @@
 ---
 id: cramadapter
 title: CramAdapter
-description: "Reads CRAM alignments, fetching only the containers overlapping the visible region through the .crai index. Decoding happens against the enclosing assembly's sequence, so it has to be the reference…"
+description: "Reads CRAM alignments, fetching only the containers overlapping the visible region through the .crai index."
 sidebar_label: Adapter -> CramAdapter
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: trackheightmixin
 title: TrackHeightMixin
-description: "Internal vertical scroll. scrollContentHeight and scrollViewportHeight (both default 0 = doesn't scroll). Brings the derived scrollableHeight, the clamped setScrollTop and the autorun that…"
+description: "Internal vertical scroll. scrollContentHeight and scrollViewportHeight (both default 0 = doesn't scroll)."
 sidebar_label: Mixin -> TrackHeightMixin
 ---
 

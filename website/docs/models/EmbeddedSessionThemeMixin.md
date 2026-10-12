@@ -1,7 +1,7 @@
 ---
 id: embeddedsessionthememixin
 title: EmbeddedSessionThemeMixin
-description: "Theme getters shared by the single-view embedded sessions (react-linear-genome-view, react-circular-genome-view). Embedded products have no theme picker, so the palette is always default and the…"
+description: "Theme getters shared by the single-view embedded sessions (react-linear-genome-view, react-circular-genome-view)."
 sidebar_label: Mixin -> EmbeddedSessionThemeMixin
 ---
 

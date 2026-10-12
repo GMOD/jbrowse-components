@@ -1,7 +1,7 @@
 ---
 id: gccontentadapter
 title: GCContentAdapter
-description: "Computes GC content (or GC skew) from an assembly's sequence at render time, so there is no data file to prepare: the sequence comes from the assembly the track is displayed against. The window, the…"
+description: "Computes GC content (or GC skew) from an assembly's sequence at render time, so there is no data file to prepare: the sequence comes from the assembly the track is displayed against."
 sidebar_label: Adapter -> GCContentAdapter
 ---
 

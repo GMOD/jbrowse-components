@@ -1,7 +1,7 @@
 ---
 id: trackmenuitemssessionmixin
 title: TrackMenuItemsSessionMixin
-description: "The two track-menu wrappers (getTrackListMenuItems for the hierarchical selector, getTrackActionMenuItems for the in-view label menu) shared by the full web and desktop sessions. Both are pure…"
+description: "The two track-menu wrappers (getTrackListMenuItems for the hierarchical selector, getTrackActionMenuItems for the in-view label menu) shared by the full web and desktop sessions."
 sidebar_label: Mixin -> TrackMenuItemsSessionMixin
 ---
 

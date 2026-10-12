@@ -1,7 +1,7 @@
 ---
 id: wigglecommonmixin
 title: WiggleCommonMixin
-description: "Extends ScoreFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings.…"
+description: "Extends ScoreFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings."
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: facet
 title: Facet
-description: "The facet setting of the feature, multi-sample variant, multi-row and alignments displays: one labelled section of the track per value of a field. A string is the field; the object adds the order.…"
+description: "The facet setting of the feature, multi-sample variant, multi-row and alignments displays: one labelled section of the track per value of a field. A string is the field; the object adds the order."
 sidebar_label: Display -> Facet
 ---
 

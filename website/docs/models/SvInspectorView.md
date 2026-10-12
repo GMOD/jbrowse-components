@@ -1,7 +1,7 @@
 ---
 id: svinspectorview
 title: SvInspectorView
-description: "Shows a file of structural variants as a table beside a circular view that draws them as chords. The model holds a SpreadsheetView and a CircularView side by…"
+description: "Shows a file of structural variants as a table beside a circular view that draws them as chords. The model holds a SpreadsheetView and a CircularView side by side, without extending either."
 sidebar_label: View -> SvInspectorView
 ---
 

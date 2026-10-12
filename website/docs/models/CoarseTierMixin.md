@@ -1,7 +1,7 @@
 ---
 id: coarsetiermixin
 title: CoarseTierMixin
-description: "The zoomed-out tier a display draws in place of its detail past its own threshold: MAF's summary bars. This mixin adds the swap decision, the per-region payloads and the read that fills them, through…"
+description: "The zoomed-out tier a display draws in place of its detail past its own threshold: MAF's summary bars."
 sidebar_label: Mixin -> CoarseTierMixin
 ---
 

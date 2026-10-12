@@ -1,7 +1,7 @@
 ---
 id: heightmodemixin
 title: HeightModeMixin
-description: "Track-height strategy over TrackHeightMixin(), which it composes and whose height and resizeHeight it overrides. growTargetHeight (default = the allotted height). Brings…"
+description: "Track-height strategy over TrackHeightMixin(), which it composes and whose height and resizeHeight it overrides. growTargetHeight (default = the allotted height)."
 sidebar_label: Mixin -> HeightModeMixin
 ---
 

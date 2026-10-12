@@ -1,7 +1,7 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
-description: "Draws the genes and other features of a FeatureTrack, from a BED, GFF or similar file. The display adds the gene-glyph slots (isoforms, subparts, UTRs, chevrons) to the shared canvas base. The…"
+description: "Draws the genes and other features of a FeatureTrack, from a BED, GFF or similar file. The display adds the gene-glyph slots (isoforms, subparts, UTRs, chevrons) to the shared canvas base."
 sidebar_label: Display -> LinearBasicDisplay
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: ribboncolor
 title: RibbonColor
-description: "The multi-way synteny display's ribbonColor setting: one color for every ribbon, or a field each ribbon carries: the record's strand, a measurement through its preset (identity, mapq, dnds),…"
+description: "The multi-way synteny display's ribbonColor setting: one color for every ribbon, or a field each ribbon carries: the record's strand, a measurement through its preset (identity, mapq, dnds), or a…"
 sidebar_label: Display -> RibbonColor
 ---
 

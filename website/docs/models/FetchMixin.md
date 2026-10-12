@@ -1,7 +1,7 @@
 ---
 id: fetchmixin
 title: FetchMixin
-description: "Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns the entire fetch state machine (abort rotation, staleness tracking, error capture, status reporting); consumers see only…"
+description: "Cancel-safe fetch lifecycle for any display that loads data over RPC."
 sidebar_label: Mixin -> FetchMixin
 ---
 

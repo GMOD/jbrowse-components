@@ -1,7 +1,7 @@
 ---
 id: mcscanblocksadapter
 title: MCScanBlocksAdapter
-description: "Loads a multi-genome MCScan (jcvi) .blocks file: a reference-anchored, tab-delimited table where column 0 is a reference gene and each further column is that gene's ortholog in another genome (.…"
+description: "Loads a multi-genome MCScan (jcvi) .blocks file: a reference-anchored, tab-delimited table where column 0 is a reference gene and each further column is that gene's ortholog in another genome (. = no…"
 sidebar_label: Adapter -> MCScanBlocksAdapter
 ---
 

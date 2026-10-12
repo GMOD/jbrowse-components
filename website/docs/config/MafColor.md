@@ -1,7 +1,7 @@
 ---
 id: mafcolor
 title: MafColor
-description: "The MAF display's color setting colors each species row's aligned cells by one field. mismatch paints a base only where it differs from the reference, base every base, identity the mean…"
+description: "The MAF display's color setting colors each species row's aligned cells by one field. mismatch paints a base only where it differs from the reference, base every base, identity the mean identity to…"
 sidebar_label: Display -> MafColor
 ---
 

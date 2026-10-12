@@ -1,7 +1,7 @@
 ---
 id: multigenomeindexedpafadapter
 title: MultiGenomeIndexedPAFAdapter
-description: "The tabix-indexed (PIF) form of the MultiGenomePAFAdapter. Run jbrowse make-pif allvsall.paf on a multi-genome PAF whose sequence names are PanSN-prefixed (sample#haplotype#contig) and point…"
+description: "The tabix-indexed (PIF) form of the MultiGenomePAFAdapter."
 sidebar_label: Adapter -> MultiGenomeIndexedPAFAdapter
 ---
 

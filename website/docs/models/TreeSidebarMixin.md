@@ -1,7 +1,7 @@
 ---
 id: treesidebarmixin
 title: TreeSidebarMixin
-description: "Row set with a dendrogram sidebar, its arrangement the display's rows config object and its row colors the rowColor object, each written as a session edit to the track's config so undo, reset and…"
+description: "Row set with a dendrogram sidebar, its arrangement the display's rows config object and its row colors the rowColor object, each written as a session edit to the track's config so undo, reset and a…"
 sidebar_label: Mixin -> TreeSidebarMixin
 ---
 

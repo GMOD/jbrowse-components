@@ -1,7 +1,7 @@
 ---
 id: jbrowsereactlineargenomeviewsessionmodel
 title: JBrowseReactLinearGenomeViewSessionModel
-description: "The shared EmbeddedSessionMixin plus this product's tracks mixin, its single LinearGenomeView, and disableAddTracks, which is a root prop rather than a session one. The mixin and the view are…"
+description: "The shared EmbeddedSessionMixin plus this product's tracks mixin, its single LinearGenomeView, and disableAddTracks, which is a root prop rather than a session one."
 sidebar_label: Session -> JBrowseReactLinearGenomeViewSessionModel
 ---
 

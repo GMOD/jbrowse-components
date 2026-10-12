@@ -1,7 +1,7 @@
 ---
 id: trackmenusessionmixin
 title: TrackMenuSessionMixin
-description: "The minimal track menus used by the embedded react views, which have no track-editing actions to offer: just \"About track\" plus any plugin-contributed items (Core-extraTrackMenuItems). Mirrors the…"
+description: "The minimal track menus used by the embedded react views, which have no track-editing actions to offer: just \"About track\" plus any plugin-contributed items (Core-extraTrackMenuItems)."
 sidebar_label: Mixin -> TrackMenuSessionMixin
 ---
 

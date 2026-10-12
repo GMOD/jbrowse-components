@@ -1,7 +1,7 @@
 ---
 id: embeddedrootmodel
 title: EmbeddedRootModel
-description: "Root model shared by the single-view embedded products (react-linear-genome-view, react-circular-genome-view). Each product supplies its own model name, version, and session model, and may .props()…"
+description: "Root model shared by the single-view embedded products (react-linear-genome-view, react-circular-genome-view)."
 sidebar_label: Root -> EmbeddedRootModel
 ---
 

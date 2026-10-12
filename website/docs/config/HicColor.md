@@ -1,7 +1,7 @@
 ---
 id: hiccolor
 title: HicColor
-description: "The Hi-C display's color: a bin's contact count through a linear or log scale onto a named scheme. An unset domainMax follows the loaded counts, saturating at their domainQuantile, the…"
+description: "The Hi-C display's color: a bin's contact count through a linear or log scale onto a named scheme."
 sidebar_label: Display -> HicColor
 ---
 

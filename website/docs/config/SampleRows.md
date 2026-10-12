@@ -1,7 +1,7 @@
 ---
 id: samplerows
 title: SampleRows
-description: "The rows of a display whose rows are the file's samples, one each, with nothing else a row could be: the multi-sample variant display and the multiple alignment display. sample is the one field,…"
+description: "The rows of a display whose rows are the file's samples, one each, with nothing else a row could be: the multi-sample variant display and the multiple alignment display. sample is the one field, so…"
 sidebar_label: Display -> SampleRows
 ---
 

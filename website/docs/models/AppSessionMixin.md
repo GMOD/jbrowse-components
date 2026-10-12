@@ -1,7 +1,7 @@
 ---
 id: appsessionmixin
 title: AppSessionMixin
-description: "Session getters shared by the \"app\" products (desktop + web) that simply delegate to the root model — version, history, menus, assemblyManager — plus renameCurrentSession. Centralized here…"
+description: "Session getters shared by the \"app\" products (desktop + web) that simply delegate to the root model — version, history, menus, assemblyManager — plus renameCurrentSession."
 sidebar_label: Mixin -> AppSessionMixin
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: multigenomepafadapter
 title: MultiGenomePAFAdapter
-description: "Loads a single PAF holding alignments among several genomes, where every sequence name is PanSN-prefixed with its assembly (sample#haplotype#contig). The file may state any set of pairs: a complete…"
+description: "Loads a single PAF holding alignments among several genomes, where every sequence name is PanSN-prefixed with its assembly (sample#haplotype#contig)."
 sidebar_label: Adapter -> MultiGenomePAFAdapter
 ---
 

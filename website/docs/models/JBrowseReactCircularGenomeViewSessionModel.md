@@ -1,7 +1,7 @@
 ---
 id: jbrowsereactcirculargenomeviewsessionmodel
 title: JBrowseReactCircularGenomeViewSessionModel
-description: "The shared EmbeddedSessionMixin plus this product's tracks mixin and its single CircularView. Both are spelled out here rather than passed to a shared factory because types.compose cannot infer…"
+description: "The shared EmbeddedSessionMixin plus this product's tracks mixin and its single CircularView."
 sidebar_label: Session -> JBrowseReactCircularGenomeViewSessionModel
 ---
 

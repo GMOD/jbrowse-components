@@ -1,7 +1,7 @@
 ---
 id: basewebsessionmodel
 title: BaseWebSessionModel
-description: "Composable web session shared by jbrowse-web and react-app, before finalizeSession (the snapshotProcessor can't be composed). jbrowse-web composes WebSessionManagementMixin onto this; react-app…"
+description: "Composable web session shared by jbrowse-web and react-app, before finalizeSession (the snapshotProcessor can't be composed). jbrowse-web composes WebSessionManagementMixin onto this; react-app uses…"
 sidebar_label: Session -> BaseWebSessionModel
 ---
 

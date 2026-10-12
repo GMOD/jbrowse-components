@@ -1,7 +1,7 @@
 ---
 id: bamindex
 title: BamIndex
-description: "Where a BAM's index is and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi and leaves it unset, so the usual config states neither…"
+description: "Where a BAM's index is and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi and leaves it unset, so the usual config states neither —…"
 sidebar_label: Adapter -> BamIndex
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: websessionmanagementmixin
 title: WebSessionManagementMixin
-description: "Saved-session-database actions (favorites, recent sessions, activate/delete) delegating to the root's AbstractWebSessionDbRootModel. Composed only by the full-app jbrowse-web session; react-app omits…"
+description: "Saved-session-database actions (favorites, recent sessions, activate/delete) delegating to the root's AbstractWebSessionDbRootModel."
 sidebar_label: Mixin -> WebSessionManagementMixin
 ---
 

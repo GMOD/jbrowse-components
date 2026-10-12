@@ -1,7 +1,7 @@
 ---
 id: formatabout
 title: FormatAbout
-description: "Holds jexl callbacks that add, rewrite or hide fields in a track's About dialog. Every track has this schema, and so does the root config as configuration.formatAbout, which applies to every track…"
+description: "Holds jexl callbacks that add, rewrite or hide fields in a track's About dialog."
 sidebar_label: Root -> FormatAbout
 ---
 

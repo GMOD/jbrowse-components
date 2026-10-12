@@ -1,7 +1,7 @@
 ---
 id: linearsyntenydisplay
 title: LinearSyntenyDisplay
-description: "Pure-data model. The containing LinearSyntenyView owns the shared GPU backend, the upload autorun (which watches every display's instanceData and keys it by displayKey), and the render autorun.…"
+description: "Pure-data model. The containing LinearSyntenyView owns the shared GPU backend, the upload autorun (which watches every display's instanceData and keys it by displayKey), and the render autorun."
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 

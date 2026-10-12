@@ -1,7 +1,7 @@
 ---
 id: gwasadapter
 title: GWASAdapter
-description: "Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like file. The adapter is a BedTabixAdapter whose scoreColumn defaults to neglogpvalue, so a file loads with a Manhattan plot…"
+description: "Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like file."
 sidebar_label: Adapter -> GWASAdapter
 ---
 

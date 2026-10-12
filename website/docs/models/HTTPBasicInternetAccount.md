@@ -1,7 +1,7 @@
 ---
 id: httpbasicinternetaccount
 title: HTTPBasicInternetAccount
-description: "Internet account that authenticates requests with an HTTP Basic username/password the user enters through a dialog, optionally validated with a HEAD request. See…"
+description: "Internet account that authenticates requests with an HTTP Basic username/password the user enters through a dialog, optionally validated with a HEAD request."
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 

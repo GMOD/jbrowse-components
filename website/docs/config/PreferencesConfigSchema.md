@@ -1,7 +1,7 @@
 ---
 id: preferencesconfigschema
 title: PreferencesConfigSchema
-description: "Sets an admin's or embedder's defaults for user-facing preferences, found on the root config as configuration.preferences. Each user's runtime overrides, kept in localStorage, sit over these…"
+description: "Sets an admin's or embedder's defaults for user-facing preferences, found on the root config as configuration.preferences."
 sidebar_label: Root -> PreferencesConfigSchema
 ---
 

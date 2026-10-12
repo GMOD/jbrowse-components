@@ -1,7 +1,7 @@
 ---
 id: bigbedtextsearchadapter
 title: BigBedTextSearchAdapter
-description: "Finds features by the names a BigBed was built to look up, its bedToBigBed -extraIndex columns, which a UCSC hub declares with searchIndex. The hub's searchTrix index, when given, adds prefix…"
+description: "Finds features by the names a BigBed was built to look up, its bedToBigBed -extraIndex columns, which a UCSC hub declares with searchIndex."
 sidebar_label: Adapter -> BigBedTextSearchAdapter
 ---
 

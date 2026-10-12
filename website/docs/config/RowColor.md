@@ -1,7 +1,7 @@
 ---
 id: rowcolor
 title: RowColor
-description: "The rowColor setting of the row displays: one categorical color channel on the row axis. field names the row attribute whose values take the colors, name (the row itself) by default, and…"
+description: "The rowColor setting of the row displays: one categorical color channel on the row axis. field names the row attribute whose values take the colors, name (the row itself) by default, and domain/range…"
 sidebar_label: Display -> RowColor
 ---
 

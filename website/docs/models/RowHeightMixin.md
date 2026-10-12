@@ -1,7 +1,7 @@
 ---
 id: rowheightmixin
 title: RowHeightMixin
-description: "The two-valued row height every multi-row display has. A rowHeightConfigSchemaFields slot whose 0 means fit-to-display-height, and an autoRowHeight getter saying what that fit divides. Brings…"
+description: "The two-valued row height every multi-row display has. A rowHeightConfigSchemaFields slot whose 0 means fit-to-display-height, and an autoRowHeight getter saying what that fit divides."
 sidebar_label: Mixin -> RowHeightMixin
 ---
 

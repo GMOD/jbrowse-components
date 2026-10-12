@@ -1,7 +1,7 @@
 ---
 id: preferencessessionmixin
 title: PreferencesSessionMixin
-description: "Loads and saves a user's preference overrides (the BaseSession preferencesOverrides volatile) in localStorage. Products that let users edit preferences (web, desktop) compose it; embedded sessions…"
+description: "Loads and saves a user's preference overrides (the BaseSession preferencesOverrides volatile) in localStorage."
 sidebar_label: Mixin -> PreferencesSessionMixin
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: markfacet
 title: MarkFacet
-description: "The mark display's facet: the Facet the feature and alignments displays take, one labelled section of the track per value of a field, plus the steps the facet runs over each section's…"
+description: "The mark display's facet: the Facet the feature and alignments displays take, one labelled section of the track per value of a field, plus the steps the facet runs over each section's features alone,…"
 sidebar_label: Display -> MarkFacet
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: embeddedsessionmixin
 title: EmbeddedSessionMixin
-description: "Everything the two single-view embedded products' sessions (react-linear-genome-view, react-circular-genome-view) share: the mixin set they compose and the three getters that read the root model. The…"
+description: "Everything the two single-view embedded products' sessions (react-linear-genome-view, react-circular-genome-view) share: the mixin set they compose and the three getters that read the root model."
 sidebar_label: Mixin -> EmbeddedSessionMixin
 ---
 

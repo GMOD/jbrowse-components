@@ -1,7 +1,7 @@
 ---
 id: variantcellcolor
 title: VariantCellColor
-description: "The multi-sample variant display's color setting: the hue of every alt-carrying genotype cell, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors. A…"
+description: "The multi-sample variant display's color setting: the hue of every alt-carrying genotype cell, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors."
 sidebar_label: Display -> VariantCellColor
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: tabixindex
 title: TabixIndex
-description: "The index every tabix-indexed adapter hangs off itself: where the index is, and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi…"
+description: "The index every tabix-indexed adapter hangs off itself: where the index is, and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi and…"
 sidebar_label: Adapter -> TabixIndex
 ---
 

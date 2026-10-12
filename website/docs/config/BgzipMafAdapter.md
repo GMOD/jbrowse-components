@@ -1,7 +1,7 @@
 ---
 id: bgzipmafadapter
 title: BgzipMafAdapter
-description: "A bgzip-compressed MAF with a Taffy .tai index — the form whole-genome multiple alignments are actually distributed in. HPRC release 2 publishes hprc-v2.1-mc-grch38.full.maf.gz (53 GB, 464…"
+description: "A bgzip-compressed MAF with a Taffy .tai index — the form whole-genome multiple alignments are actually distributed in."
 sidebar_label: Adapter -> BgzipMafAdapter
 ---
 

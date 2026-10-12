@@ -1,7 +1,7 @@
 ---
 id: featurecolor
 title: FeatureColor
-description: "The canvas feature displays' color setting: a CSS color or jexl: callback in value, or a field whose values each take a range color, whose numbers each take the color of the interval between…"
+description: "The canvas feature displays' color setting: a CSS color or jexl: callback in value, or a field whose values each take a range color, whose numbers each take the color of the interval between cut…"
 sidebar_label: Display -> FeatureColor
 ---
 

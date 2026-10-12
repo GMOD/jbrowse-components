@@ -1,7 +1,7 @@
 ---
 id: wigglecolor
 title: WiggleColor
-description: "The quantitative display's color: one CSS color for every bar, or score through a scale. Through a threshold scale it is the bicolor plot — a color each side of one cut, the origin where the…"
+description: "The quantitative display's color: one CSS color for every bar, or score through a scale."
 sidebar_label: Display -> WiggleColor
 ---
 

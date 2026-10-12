@@ -15,4 +15,4 @@ how configuration fits together, start with the
 [config guide](/docs/config_guide). For the file formats each adapter reads, see
 [supported file types](/docs/config_guides/file_types).
 
-<!-- doclist:config grouped nodesc -->
+<!-- doclist:config grouped -->

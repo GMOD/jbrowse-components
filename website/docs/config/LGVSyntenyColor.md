@@ -1,7 +1,7 @@
 ---
 id: lgvsyntenycolor
 title: LGVSyntenyColor
-description: "The LGVSyntenyDisplay's color setting: the AlignmentsColor object with field defaulting to strand, where the alignments display paints one fill. A string is the constant,…"
+description: "The LGVSyntenyDisplay's color setting: the AlignmentsColor object with field defaulting to strand, where the alignments display paints one fill."
 sidebar_label: Display -> LGVSyntenyColor
 ---
 

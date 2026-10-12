@@ -1,7 +1,7 @@
 ---
 id: syntenyopacity
 title: SyntenyOpacity
-description: "The synteny views' opacity setting, as color is their color: one opacity for every alignment, or a field each alignment carries read into opacities. A number is the constant and lands in value;…"
+description: "The synteny views' opacity setting, as color is their color: one opacity for every alignment, or a field each alignment carries read into opacities."
 sidebar_label: View -> SyntenyOpacity
 ---
 

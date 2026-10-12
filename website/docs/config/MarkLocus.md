@@ -1,7 +1,7 @@
 ---
 id: marklocus
 title: MarkLocus
-description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and chrom, the field holding its refName, as a paired record states its mate.…"
+description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and chrom, the field holding its refName, as a paired record states its mate."
 sidebar_label: Display -> MarkLocus
 ---
 

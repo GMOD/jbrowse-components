@@ -1,7 +1,7 @@
 ---
 id: lgvsyntenysort
 title: LGVSyntenySort
-description: "The LGVSyntenyDisplay's sort setting: the AlignmentsSort object with type defaulting to length, so big syntenic blocks cluster at the top instead of interleaving with small…"
+description: "The LGVSyntenyDisplay's sort setting: the AlignmentsSort object with type defaulting to length, so big syntenic blocks cluster at the top instead of interleaving with small ones."
 sidebar_label: Display -> LGVSyntenySort
 ---
 

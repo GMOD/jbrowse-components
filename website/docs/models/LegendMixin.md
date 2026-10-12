@@ -1,7 +1,7 @@
 ---
 id: legendmixin
 title: LegendMixin
-description: "The legend, whole. A display declares the color scales it paints with (colorScales, a getter hook, and colorScalesIn where they follow the theme) and the mixin derives the key from them…"
+description: "The legend, whole."
 sidebar_label: Mixin -> LegendMixin
 ---
 

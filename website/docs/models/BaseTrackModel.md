@@ -1,7 +1,7 @@
 ---
 id: basetrackmodel
 title: BaseTrackModel
-description: "Holds the UI state of a track that is shown in a view, with a reference to its track configuration and the displays drawing it. Only shown tracks have this model, and several shown tracks can use…"
+description: "Holds the UI state of a track that is shown in a view, with a reference to its track configuration and the displays drawing it."
 sidebar_label: Track -> BaseTrackModel
 ---
 

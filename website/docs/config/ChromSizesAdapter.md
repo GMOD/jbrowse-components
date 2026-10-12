@@ -1,7 +1,7 @@
 ---
 id: chromsizesadapter
 title: ChromSizesAdapter
-description: "Reads the chromosome names and lengths in a UCSC-style .chrom.sizes file (tab-separated name<TAB>length), for an assembly with no sequence. Use it for karyotype, whole-genome or synteny views…"
+description: "Reads the chromosome names and lengths in a UCSC-style .chrom.sizes file (tab-separated name<TAB>length), for an assembly with no sequence."
 sidebar_label: Adapter -> ChromSizesAdapter
 ---
 

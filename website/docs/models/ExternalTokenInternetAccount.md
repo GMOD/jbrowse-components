@@ -1,7 +1,7 @@
 ---
 id: externaltokeninternetaccount
 title: ExternalTokenInternetAccount
-description: "Internet account that authenticates requests with a user-supplied external token, prompting for the token via a dialog and optionally validating it with a HEAD request. See…"
+description: "Internet account that authenticates requests with a user-supplied external token, prompting for the token via a dialog and optionally validating it with a HEAD request."
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 

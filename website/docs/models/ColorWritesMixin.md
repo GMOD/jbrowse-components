@@ -1,7 +1,7 @@
 ---
 id: colorwritesmixin
 title: ColorWritesMixin
-description: "The writes a display's color object takes from a menu row or a picker: the field it paints by (colorByField) and the constant every feature paints (setColorValue). Each rewrites the object as…"
+description: "The writes a display's color object takes from a menu row or a picker: the field it paints by (colorByField) and the constant every feature paints (setColorValue)."
 sidebar_label: Mixin -> ColorWritesMixin
 ---
 

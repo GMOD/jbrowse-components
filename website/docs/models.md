@@ -14,4 +14,4 @@ release.
 For how these fit together and how to extend them, see the
 [developer guide](/docs/developer_guide).
 
-<!-- doclist:models grouped nodesc -->
+<!-- doclist:models grouped -->

@@ -1,7 +1,7 @@
 ---
 id: regiontoolargemixin
 title: RegionTooLargeMixin
-description: "The region-too-large gate: a display opts in by overriding gateEnabled and passing byteLimit: self.resolvedByteLimit() to its fetch RPC. The RPC measures the index before it downloads and answers…"
+description: "The region-too-large gate: a display opts in by overriding gateEnabled and passing byteLimit: self.resolvedByteLimit() to its fetch RPC."
 sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 

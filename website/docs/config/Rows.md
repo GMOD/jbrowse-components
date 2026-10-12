@@ -1,7 +1,7 @@
 ---
 id: rows
 title: Rows
-description: "The rows setting of the displays that draw one row per value of a field, with the dendrogram sidebar beside them: the field, and the arrangement a reader gives the rows. A string is the field; the…"
+description: "The rows setting of the displays that draw one row per value of a field, with the dendrogram sidebar beside them: the field, and the arrangement a reader gives the rows."
 sidebar_label: Display -> Rows
 ---
 

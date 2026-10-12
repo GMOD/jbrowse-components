@@ -1,7 +1,7 @@
 ---
 id: alignmentsmodifications
 title: AlignmentsModifications
-description: "The alignments displays' modifications setting configures the modifications and bisulfite fields of AlignmentsBaseColor. The by-type view paints each MM/ML call its…"
+description: "The alignments displays' modifications setting configures the modifications and bisulfite fields of AlignmentsBaseColor."
 sidebar_label: Display -> AlignmentsModifications
 ---
 

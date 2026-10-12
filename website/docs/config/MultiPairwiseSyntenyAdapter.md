@@ -1,7 +1,7 @@
 ---
 id: multipairwisesyntenyadapter
 title: MultiPairwiseSyntenyAdapter
-description: "Composes pairwise synteny adapters that all name one assembly — the anchor — into the star an N-genome view draws from one track: hg38 against each UCSC genome's liftOver PIF, say. A query on the…"
+description: "Composes pairwise synteny adapters that all name one assembly — the anchor — into the star an N-genome view draws from one track: hg38 against each UCSC genome's liftOver PIF, say."
 sidebar_label: Adapter -> MultiPairwiseSyntenyAdapter
 ---
 

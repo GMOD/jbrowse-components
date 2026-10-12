@@ -1,7 +1,7 @@
 ---
 id: valuescale
 title: ValueScale
-description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each carry one, with the axis…"
+description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each carry one, with the axis guides…"
 sidebar_label: Display -> ValueScale
 ---
 

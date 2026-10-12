@@ -1,7 +1,7 @@
 ---
 id: ldcolor
 title: LDColor
-description: "The LD display's color setting paints the statistic the cells show, r2 or dprime, through a linear scale onto a named scheme. An unset scheme is the metric's own, reds for r² and blues for…"
+description: "The LD display's color setting paints the statistic the cells show, r2 or dprime, through a linear scale onto a named scheme. An unset scheme is the metric's own, reds for r² and blues for D'."
 sidebar_label: Display -> LDColor
 ---
 

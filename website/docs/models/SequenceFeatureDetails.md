@@ -1,7 +1,7 @@
 ---
 id: sequencefeaturedetails
 title: SequenceFeatureDetails
-description: "User preferences for the sequence readout under a feature's details, seeded from and written straight back to localStorage. Nothing here is snapshotted or reads the tree, so an instance is cheap and…"
+description: "User preferences for the sequence readout under a feature's details, seeded from and written straight back to localStorage."
 sidebar_label: Widget -> SequenceFeatureDetails
 ---
 

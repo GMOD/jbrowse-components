@@ -1,7 +1,7 @@
 ---
 id: marktransform
 title: MarkTransform
-description: "One step of a transform list, which runs over the region's features in order, each step reading what the one before it answered. A step names its type and takes that step's own settings; a key…"
+description: "One step of a transform list, which runs over the region's features in order, each step reading what the one before it answered."
 sidebar_label: Display -> MarkTransform
 ---
 

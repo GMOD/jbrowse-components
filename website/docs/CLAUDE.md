@@ -23,13 +23,14 @@ site and a missing one is **fatal**, not a blank cell: a blank cell reads as
 "this does nothing", a failed build reads as "write one line here". Four things
 fail the `SPEC_KEYS` run for that reason.
 
-**An `#example`'s keys are checked against the type's slots** (fatal), because
-JBrowse ignores an undeclared key rather than rejecting it — a mistyped one
-loads, does nothing, and reads as the documented way. **Write the example in the
-shape a reader pastes**: an alias or cytoband adapter inside the whole assembly,
-a sequence adapter inside its `ReferenceSequenceTrack`, a track as itself.
-Internet accounts, root schemas and text-search adapters are skipped; widen the
-check by fixing the manifest, not by removing a skip.
+**Every js/json fence in an `#example` is validated against the config schema**
+(fatal), keys and values, because JBrowse ignores an undeclared key rather than
+rejecting it — a mistyped one loads, does nothing, and reads as the documented
+way. **Write the example in the shape a reader pastes**: an alias or cytoband
+adapter inside the whole assembly, a sequence adapter inside its
+`ReferenceSequenceTrack`, a track as itself. The key check skips internet
+accounts, root schemas and text-search adapters; widen it by fixing the
+manifest, not by removing a skip.
 
 ## Avoiding drift in hand-written docs
 

@@ -1,7 +1,7 @@
 ---
 id: linearmanhattandisplay
 title: LinearManhattanDisplay
-description: "The Manhattan plot: the default display of a GWAS track, and one a FeatureTrack can switch to. It is the mark display with a point per feature at its score as its default plot, so every mark,…"
+description: "The Manhattan plot: the default display of a GWAS track, and one a FeatureTrack can switch to."
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 

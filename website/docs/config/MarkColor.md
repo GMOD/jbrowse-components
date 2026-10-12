@@ -1,7 +1,7 @@
 ---
 id: markcolor
 title: MarkColor
-description: "A mark's encoding.color: one CSS color or jexl: callback for every instance, or a field through a categorical scale (a range color per value), a linear or log scale (a ramp between…"
+description: "A mark's encoding.color: one CSS color or jexl: callback for every instance, or a field through a categorical scale (a range color per value), a linear or log scale (a ramp between domainMin and…"
 sidebar_label: Display -> MarkColor
 ---
 

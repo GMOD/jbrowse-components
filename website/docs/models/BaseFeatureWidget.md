@@ -1,7 +1,7 @@
 ---
 id: basefeaturewidget
 title: BaseFeatureWidget
-description: "The feature-details panel. featureData is the clicked feature with the track's and the session's formatDetails callbacks applied, derived on read from the raw feature the widget was opened with,…"
+description: "The feature-details panel. featureData is the clicked feature with the track's and the session's formatDetails callbacks applied, derived on read from the raw feature the widget was opened with, so…"
 sidebar_label: Widget -> BaseFeatureWidget
 ---
 

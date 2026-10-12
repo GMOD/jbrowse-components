@@ -1,7 +1,7 @@
 ---
 id: sectionfacet
 title: SectionFacet
-description: "The facet of a display that stacks labelled sections, each of which a reader can hide from its chip: Facet's field and domain, and the sections hidden. A hide-set rather than a show-set, so a…"
+description: "The facet of a display that stacks labelled sections, each of which a reader can hide from its chip: Facet's field and domain, and the sections hidden."
 sidebar_label: Display -> SectionFacet
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: appcorejbrowsemodel
 title: AppCoreJBrowseModel
-description: "Holds the loaded config file, usually at rootModel.jbrowse, with actions that add and remove its assemblies and tracks. The model builds on the JBrowseRootConfig…"
+description: "Holds the loaded config file, usually at rootModel.jbrowse, with actions that add and remove its assemblies and tracks."
 sidebar_label: Root -> AppCoreJBrowseModel
 ---
 

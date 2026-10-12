@@ -1,7 +1,7 @@
 ---
 id: comparativefetchmixin
 title: ComparativeFetchMixin
-description: "The fetch foundation of the two comparative displays (LinearSyntenyDisplay, DotplotDisplay): KeyedFetchMixin — FetchMixin's rotation, loading flag, error, status, durable cancel and retry, plus…"
+description: "The fetch foundation of the two comparative displays (LinearSyntenyDisplay, DotplotDisplay): KeyedFetchMixin — FetchMixin's rotation, loading flag, error, status, durable cancel and retry, plus the…"
 sidebar_label: Mixin -> ComparativeFetchMixin
 ---
 

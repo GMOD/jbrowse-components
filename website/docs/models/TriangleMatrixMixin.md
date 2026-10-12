@@ -1,7 +1,7 @@
 ---
 id: trianglematrixmixin
 title: TriangleMatrixMixin
-description: "A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (rpcData), the canvas box (canvasWidth, matrixHeight under the matrixTop hook), the rotate-and-squash…"
+description: "A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (rpcData), the canvas box (canvasWidth, matrixHeight under the matrixTop hook), the rotate-and-squash transform and…"
 sidebar_label: Mixin -> TriangleMatrixMixin
 ---
 

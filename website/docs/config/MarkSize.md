@@ -1,7 +1,7 @@
 ---
 id: marksize
 title: MarkSize
-description: "A mark's size in px, as color is its color: a point's diameter, a rule's thickness or a link's stroke. A number is the constant every instance takes, and lands in value; a string is a feature…"
+description: "A mark's size in px, as color is its color: a point's diameter, a rule's thickness or a link's stroke."
 sidebar_label: Display -> MarkSize
 ---
 

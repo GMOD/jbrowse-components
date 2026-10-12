@@ -1,7 +1,7 @@
 ---
 id: scorescalemixin
 title: ScoreScaleMixin
-description: "Value scale, written in scales.y. valueScaleSchema / scalesSchema. Brings ScoreAxisMixin plus scaleType / scaleZero / domainQuantile / clipQuantile / symlogConstant / manual and…"
+description: "Value scale, written in scales.y. valueScaleSchema / scalesSchema."
 sidebar_label: Mixin -> ScoreScaleMixin
 ---
 

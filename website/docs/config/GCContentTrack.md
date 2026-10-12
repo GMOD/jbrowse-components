@@ -1,7 +1,7 @@
 ---
 id: gccontenttrack
 title: GCContentTrack
-description: "GC content, or GC skew, of the assembly's sequence, computed as the view moves by a GCContentAdapter and drawn by the wiggle display. The adapter holds the window, the step and the mode; the track…"
+description: "GC content, or GC skew, of the assembly's sequence, computed as the view moves by a GCContentAdapter and drawn by the wiggle display."
 sidebar_label: Track -> GCContentTrack
 ---
 

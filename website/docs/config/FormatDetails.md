@@ -1,7 +1,7 @@
 ---
 id: formatdetails
 title: FormatDetails
-description: "Holds jexl callbacks that add, rewrite or hide fields in the feature-details panel. Every track has this schema, and so does the root config as configuration.formatDetails, which applies to every…"
+description: "Holds jexl callbacks that add, rewrite or hide fields in the feature-details panel."
 sidebar_label: Root -> FormatDetails
 ---
 

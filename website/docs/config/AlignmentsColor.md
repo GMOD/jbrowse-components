@@ -1,7 +1,7 @@
 ---
 id: alignmentscolor
 title: AlignmentsColor
-description: "The alignments displays' color setting: one color for every read, or a field each read carries. A read dimension paints its own vocabulary (strand, firstOfPairStrand, pairOrientation,…"
+description: "The alignments displays' color setting: one color for every read, or a field each read carries."
 sidebar_label: Display -> AlignmentsColor
 ---
 

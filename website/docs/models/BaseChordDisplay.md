@@ -1,7 +1,7 @@
 ---
 id: basechorddisplay
 title: BaseChordDisplay
-description: "What the circular view's chord and ribbon displays share: the features, the slice index a feature end is looked up in, and the lifecycle getters ChordDisplayFrame publishes. A track draws on the…"
+description: "What the circular view's chord and ribbon displays share: the features, the slice index a feature end is looked up in, and the lifecycle getters ChordDisplayFrame publishes."
 sidebar_label: Display -> BaseChordDisplay
 ---
 

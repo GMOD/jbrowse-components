@@ -1,7 +1,7 @@
 ---
 id: ldtrackdisplay
 title: LDTrackDisplay
-description: "Linkage disequilibrium heatmap read from an LDTrack's pre-computed file — PLINK --r2 output and the formats that follow it. JBrowse does not compute LD from genotypes; run plink (or an…"
+description: "Linkage disequilibrium heatmap read from an LDTrack's pre-computed file — PLINK --r2 output and the formats that follow it."
 sidebar_label: Display -> LDTrackDisplay
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: scorefieldconfigmixin
 title: ScoreFieldConfigMixin
-description: "WiggleScoreConfigMixin plus the y slot, for a display that plots one configured feature field and so declares yFieldConfigSchemaFields: the wiggle display. LinearMarkDisplay names a field per…"
+description: "WiggleScoreConfigMixin plus the y slot, for a display that plots one configured feature field and so declares yFieldConfigSchemaFields: the wiggle display."
 sidebar_label: Mixin -> ScoreFieldConfigMixin
 ---
 

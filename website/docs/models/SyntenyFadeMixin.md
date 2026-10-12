@@ -1,7 +1,7 @@
 ---
 id: syntenyfademixin
 title: SyntenyFadeMixin
-description: "The fade a view drawing synteny ribbons offers whatever the color mode: a sub-pixel alignment by its on-screen width, so a dense whole-genome picture keeps its density instead of saturating. A fade…"
+description: "The fade a view drawing synteny ribbons offers whatever the color mode: a sub-pixel alignment by its on-screen width, so a dense whole-genome picture keeps its density instead of saturating."
 sidebar_label: Mixin -> SyntenyFadeMixin
 ---
 

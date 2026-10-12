@@ -1,7 +1,7 @@
 ---
 id: storedhovermixin
 title: StoredHoverMixin
-description: "A stored hover. The hit type, as the type parameter. Brings the hoveredFeature getter BaseDisplay declares as a hook, setHoveredFeature, and the clearHoveredFeature the foundations'…"
+description: "A stored hover. The hit type, as the type parameter."
 sidebar_label: Mixin -> StoredHoverMixin
 ---
 

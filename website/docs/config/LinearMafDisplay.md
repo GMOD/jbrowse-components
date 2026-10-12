@@ -1,7 +1,7 @@
 ---
 id: linearmafdisplay
 title: LinearMafDisplay
-description: "The display for a MafTrack: one row per aligned species, with a conservation summary above them. The slots are show/hide defaults and band sizes; the bands and overlays derive from the alignment…"
+description: "The display for a MafTrack: one row per aligned species, with a conservation summary above them."
 sidebar_label: Display -> LinearMafDisplay
 ---
 

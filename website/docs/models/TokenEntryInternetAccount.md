@@ -1,7 +1,7 @@
 ---
 id: tokenentryinternetaccount
 title: TokenEntryInternetAccount
-description: "Shared base for internet accounts whose token is supplied by the user through a dialog (HTTP Basic, external token). Such accounts differ only in their discriminating type and the dialog form used…"
+description: "Shared base for internet accounts whose token is supplied by the user through a dialog (HTTP Basic, external token)."
 sidebar_label: Internet Account -> TokenEntryInternetAccount
 ---
 

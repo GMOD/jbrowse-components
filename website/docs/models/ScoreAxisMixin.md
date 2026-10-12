@@ -1,7 +1,7 @@
 ---
 id: scoreaxismixin
 title: ScoreAxisMixin
-description: "Not a cross-cutting mixin any more: ScoreScaleMixin is its one composer, and a display takes the axis by taking that. The two stay apart because the halves answer different questions — this one…"
+description: "Not a cross-cutting mixin any more: ScoreScaleMixin is its one composer, and a display takes the axis by taking that."
 sidebar_label: Mixin -> ScoreAxisMixin
 ---
 

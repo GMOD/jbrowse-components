@@ -1,7 +1,7 @@
 ---
 id: multiwaygenecolor
 title: MultiWayGeneColor
-description: "The multi-way synteny display's gene color: a CSS color or jexl: callback in value, or a field whose values each take a range color, or whose numbers each take the color of the interval between…"
+description: "The multi-way synteny display's gene color: a CSS color or jexl: callback in value, or a field whose values each take a range color, or whose numbers each take the color of the interval between cut…"
 sidebar_label: Display -> MultiWayGeneColor
 ---
 

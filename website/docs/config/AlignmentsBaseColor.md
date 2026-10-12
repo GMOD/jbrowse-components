@@ -1,7 +1,7 @@
 ---
 id: alignmentsbasecolor
 title: AlignmentsBaseColor
-description: "The alignments displays' baseColor setting: the per-base variable painted as a cell per base over the reads, whatever color fills them with. modifications paints the MM/ML calls and bisulfite…"
+description: "The alignments displays' baseColor setting: the per-base variable painted as a cell per base over the reads, whatever color fills them with. modifications paints the MM/ML calls and bisulfite the…"
 sidebar_label: Display -> AlignmentsBaseColor
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: multiregiondisplaymixin
 title: MultiRegionDisplayMixin
-description: "Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch autoruns in afterAttach and exposes overridable hooks (fetchNeeded, rpcProps, zoomFetchArgs, regionHasData,…"
+description: "Per-region fetch lifecycle for LGV-based GPU displays."
 sidebar_label: Mixin -> MultiRegionDisplayMixin
 ---
 

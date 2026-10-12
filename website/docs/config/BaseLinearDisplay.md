@@ -1,7 +1,7 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
-description: "Shared base config for linear displays — its slots (height, fetchSizeLimit) are common to all of them. The GPU stack's LinearCanvasBaseDisplay config extends it, and third-party plugins extend…"
+description: "Shared base config for linear displays — its slots (height, fetchSizeLimit) are common to all of them."
 sidebar_label: Display -> BaseLinearDisplay
 ---
 
