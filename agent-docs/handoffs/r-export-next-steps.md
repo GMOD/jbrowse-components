@@ -69,8 +69,6 @@ differing:
 
 - A density or other ramp draws no key in R (`legendOf` keys categorical
   scales only).
-- A multi-sample matrix leaves out the `rowColor` group colors; the engine's
-  `rows` table carries none.
 
 Reads now draw at the display's `featureHeight` (ggjbrowse 0.3.0, engine
 d4744ce27e reporting the band pixel sizes), and the script saves at
@@ -88,3 +86,20 @@ super-compact pileups match the browser. Matrix row labels fit their rows
   `rows`/`finish`, at the cost of a drawing detail in the data.
 - Keep `on_axis()` at the top of the `autoplot` methods: `arc_top()` reads
   `x$arcs` directly, and dropping it there changed the arc band.
+
+## Gallery feedback round (2026-10-11)
+
+Done in ggjbrowse 0.5.0 and 0.5.1, with the engine reporting each variant
+row's `rowColor` and the wiggle display's `height` (58f0b9c842, 0a713fa097):
+comma-written axes, bands close together, each facet section's coverage over
+its own reads, modification calls on the reads, no unasked-for sequence band,
+arcs at the view's scale and flattened to their band, split reads arcing
+across two regions, matrix rows marked by their samples-file group, and a
+multi-wiggle packing 1,000 rows into its height without gaps.
+
+Still open:
+
+- At 1 px a row the browser blends a bar into a tint; R draws its height
+  within the row, which reads as fine stripes.
+- The strand facet could also stack every section's coverage above every
+  section's reads, the old R layout, as an option for both apps.
