@@ -71,8 +71,20 @@ differing:
   scales only).
 - A multi-sample matrix leaves out the `rowColor` group colors; the engine's
   `rows` table carries none.
-- A multi-sample matrix's row labels overprint past about 40 rows.
 
 Reads now draw at the display's `featureHeight` (ggjbrowse 0.3.0, engine
 d4744ce27e reporting the band pixel sizes), and the script saves at
-`jbrowse_height()`, so compact and super-compact pileups match the browser.
+`jbrowse_height(fig)` (0.4.0, which measures the figure), so compact and
+super-compact pileups match the browser. Matrix row labels fit their rows
+(0.3.2).
+
+## Simplicity review (2026-10-11), not taken
+
+- Move `settingNotes` into ggjbrowse as reader warnings, so direct R users
+  hear about a ramp with no key too.
+- One adapter-guessing table on each side: R repeats the index-beside-file
+  block three times, and `READERS` lacks `GtfTabixAdapter`.
+- The reader could write `inset` into its tables and drop `jbrowse_layer`'s
+  `rows`/`finish`, at the cost of a drawing detail in the data.
+- Keep `on_axis()` at the top of the `autoplot` methods: `arc_top()` reads
+  `x$arcs` directly, and dropping it there changed the arc band.
