@@ -42,7 +42,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1351)
+# model members with no description (1350)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -587,7 +587,6 @@ LinearAlignmentsDisplay.sashimiArcsMode
 LinearAlignmentsDisplay.selectFeature
 LinearAlignmentsDisplay.selectFeatureById
 LinearAlignmentsDisplay.selectedFeatureId
-LinearAlignmentsDisplay.setArcColorField
 LinearAlignmentsDisplay.setContextMenuFeature
 LinearAlignmentsDisplay.setCoverageHeight
 LinearAlignmentsDisplay.setCoverageSnpMinFrequency
