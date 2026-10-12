@@ -187,6 +187,55 @@ test('returns empty hit when the row is bridged (e line) at this block', () => {
   })
 })
 
+test('a minus-strand bridged span reports forward coordinates beside its aligned neighbour', () => {
+  const srcSize = 1_000_000
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 103,
+      refSeqBytes: enc.encode('AAA'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('acg'),
+          chr: 'mm.chr1',
+          srcStart: 1000,
+          srcSize,
+          strand: -1,
+        },
+      ],
+      empties: [],
+    },
+    {
+      startBp: 103,
+      endBp: 106,
+      refSeqBytes: enc.encode('AAA'),
+      rows: [],
+      empties: [
+        {
+          rowIndex: 0,
+          status: 'I',
+          chr: 'mm.chr1',
+          srcStart: 1003,
+          size: 50,
+          strand: -1,
+          srcSize,
+        },
+      ],
+    },
+  ])
+  const cellPos = 998_997
+  expect(findRowHoverAtBp(r, at(102), 0, false, 1, 1, 20)).toMatchObject({
+    kind: 'cell',
+    pos: cellPos,
+  })
+  expect(findRowHoverAtBp(r, at(104), 0, false, 1, 1, 20)).toMatchObject({
+    kind: 'empty',
+    srcStart: cellPos - 50,
+    size: 50,
+  })
+})
+
 test('resolves a deletion run on a gap cell', () => {
   const r = region([
     {

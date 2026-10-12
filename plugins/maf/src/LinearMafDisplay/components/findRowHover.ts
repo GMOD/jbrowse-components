@@ -56,6 +56,7 @@ export interface EmptyHit {
   kind: 'empty'
   status: MafStatus
   chr: string
+  /** 0-based forward-strand start of the bridged span */
   srcStart: number
   size: number
   strand: number
@@ -302,7 +303,7 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
     kind: 'empty',
     status: e.status,
     chr: e.chr,
-    srcStart: e.srcStart,
+    srcStart: e.strand === -1 ? e.srcSize - e.srcStart - e.size : e.srcStart,
     size: e.size,
     strand: e.strand,
   }
