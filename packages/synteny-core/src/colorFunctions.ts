@@ -218,18 +218,23 @@ export function makeContinuousColorFunction(
   }
 }
 
-/** A threshold's bins in one function: each value's bin is an index into its colors. */
+/**
+ * A threshold's bins in one function: each value's bin is an index into its
+ * colors. The values are float32, so each cut compares as one: 0.7 in the
+ * file is at a cut of 0.7.
+ */
 export function makeThresholdColorFunction(
   mode: ThresholdMode,
   attributes: Record<string, Float32Array>,
 ) {
   const values = attributes[mode.attribute]
   const lut = Uint32Array.from(mode.colors, cssColorToABGR)
+  const cuts = mode.cuts.map(Math.fround)
   return (index: number) => {
     const value = values?.[index]
     return value === undefined || !Number.isFinite(value)
       ? MISSING_VALUE_COLOR
-      : lut[thresholdIndex(value, mode.cuts)]!
+      : lut[thresholdIndex(value, cuts)]!
   }
 }
 

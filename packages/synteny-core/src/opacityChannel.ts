@@ -142,7 +142,7 @@ export function createOpacityFunction({
   const values = attributes[attributeOf(field)]
 
   if (setting.scale === 'threshold') {
-    const cuts = thresholdCuts(setting.domain ?? [])
+    const cuts = thresholdCuts(setting.domain ?? []).map(Math.fround)
     const range = rangeOf(setting, false)
     return index => {
       const bin = thresholdIndex(values?.[index], cuts)

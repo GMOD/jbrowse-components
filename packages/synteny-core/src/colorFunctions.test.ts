@@ -8,6 +8,7 @@ import {
   categoricalColor as labelColor,
   createComparativeColorFunction,
   makeNameColorFunction,
+  makeThresholdColorFunction,
   paletteColorAt,
   refNamePositionFor,
 } from './colorFunctions.ts'
@@ -374,6 +375,22 @@ test('mapq paints the bins its key lists, and no value grey', () => {
     bins[1],
     bins[0],
     MISSING_VALUE_COLOR,
+  ])
+})
+
+test('a float32 value on a cut that float32 rounds down takes the color above it', () => {
+  const paint = makeThresholdColorFunction(
+    {
+      scale: 'threshold',
+      attribute: 'identity',
+      cuts: [0.7],
+      colors: ['red', 'blue'],
+    },
+    { identity: new Float32Array([0.7, 0.69]) },
+  )
+  expect([paint(0), paint(1)]).toEqual([
+    cssColorToABGR('blue'),
+    cssColorToABGR('red'),
   ])
 })
 

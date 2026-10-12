@@ -127,6 +127,20 @@ test('a threshold takes one opacity per interval, a value on a cut the one above
   expect(fade(3)).toBe(1)
 })
 
+test('a float32 value on a cut that float32 rounds down is still at the cut', () => {
+  const fade = fadeOf(
+    {
+      field: 'identity',
+      scale: 'threshold',
+      domain: ['0.7'],
+      range: ['0.2', '1'],
+    },
+    { identity: new Float32Array([0.7, 0.69]) },
+  )
+  expect(fade(0)).toBe(1)
+  expect(fade(1)).toBeCloseTo(0.2)
+})
+
 test('a text column takes the opacity its label is listed with, opaque unlisted', () => {
   const labels = { labels: ['yes', 'no', 'maybe'], colors: {} }
   const fade = fadeOf(
