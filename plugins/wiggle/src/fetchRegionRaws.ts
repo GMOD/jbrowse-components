@@ -34,6 +34,11 @@ function hasFeatureArrays(
   return 'getFeatureArrays' in adapter
 }
 
+/** Whether the adapter answers in typed arrays rather than features. */
+export function servesArrays(adapter: BaseFeatureDataAdapter) {
+  return hasFeatureArraysMulti(adapter) || hasFeatureArrays(adapter)
+}
+
 // One RawFeatureArrays per region, aligned to input order. Adapters that
 // coalesce (BigWig) serve every region in a single pass; the others fall back
 // to a per-region loop, and non-array adapters to plain features, whose

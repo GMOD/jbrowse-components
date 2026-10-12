@@ -1,6 +1,6 @@
 ---
 name: wiggle-onto-bar-and-point
-description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and a min-max extent becomes three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot, wiggle's all-sources tooltip and a typed table for MultiWiggleAdapter. Sized at 7-10 days.
+description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and a min-max extent becomes three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot and wiggle's all-sources tooltip. Sized at 7-10 days.
 ---
 
 # Wiggle's plots onto render-core's marks
@@ -9,6 +9,10 @@ A review sized this on 2026-09-27, and nobody has re-measured the sizes. Colin
 answered "not now" on 2026-09-30.
 
 ## What is already out of the way
+
+`MultiWiggleAdapter.getFeatureTable` landed on 2026-10-12: one `ColumnTable`
+over every member's arrays, `source` a category column, 2.8-7x faster than
+the `Feature` route on 12 volvox BigWigs at the raw tier.
 
 Of the four blockers sized on 2026-09-26, the bin-midpoint one is gone (ADR-181
 centres a point), the interleaved positions live only in the payload
@@ -61,10 +65,6 @@ wiggle's 12 payload bytes a feature.
   mark display hovers one instance. A `tooltip` channel would be the general
   form ([GRAMMAR_OF_GRAPHICS.md](../../reference/GRAMMAR_OF_GRAPHICS.md)
   §"Gaps against the grammar").
-- `MultiWiggleAdapter` has no `getFeatureTable`, so multi-source rows arrive
-  as `Feature`s, which
-  [ADR-193](../../architecture-decision-records/adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
-  measured at 1.80x wiggle on one BigWig.
 
 ## First step
 

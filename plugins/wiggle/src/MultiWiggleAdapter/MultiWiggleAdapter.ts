@@ -10,7 +10,7 @@ import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 import { firstValueFrom, merge } from 'rxjs'
 import { map, toArray } from 'rxjs/operators'
 
-import { fetchRegionRaws } from '../fetchRegionRaws.ts'
+import { fetchRegionRaws, servesArrays } from '../fetchRegionRaws.ts'
 import { mapWithConcurrency } from './mapWithConcurrency.ts'
 import {
   getFilenameFromAdapterConfig,
@@ -109,10 +109,6 @@ interface BuiltMember {
 }
 
 interface AdapterEntry extends LabelledMember, BuiltMember {}
-
-function servesArrays(adapter: BaseFeatureDataAdapter) {
-  return 'getFeatureArraysMulti' in adapter || 'getFeatureArrays' in adapter
-}
 
 function restamp(feature: Feature, source: string) {
   return new SimpleFeature({
