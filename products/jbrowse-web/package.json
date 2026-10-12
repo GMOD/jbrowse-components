@@ -63,6 +63,7 @@
     "@jbrowse/plugin-spreadsheet-view": "workspace:^",
     "@jbrowse/plugin-sv-inspector": "workspace:^",
     "@jbrowse/plugin-trix": "workspace:^",
+    "@jbrowse/plugin-variant-review": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
