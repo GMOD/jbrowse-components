@@ -116,10 +116,18 @@ segment readers, so a host stacks what the display stacks. The interbase
 histogram comes back the same way, as `interbaseCoverage` (each position's
 insertions, soft clips and hard clips stacked in that order, `from` and `to`
 in reads), with `indicators` (the positions whose events pass the display's
-share of the local depth, and the most common `type` there), and `glyph`
-gives the indicator triangle's size in px. The display
-hangs the histogram from the band's top at half a depth unit per read, and
-draws neither while `settings.showInterbaseIndicators` is false. The display's
+share of the local depth, and the most common `type` there). The display
+draws neither while `settings.showInterbaseIndicators` is false.
+
+`coverageScale` is the band's depth axis as the display autoscales it:
+`domain` over every shown section's visible depths under `scales.y` (quantile,
+rules, bounds, nice rounding, a log scale floored at one read), its `type`, and
+the `ticks` the display labels at `coverageHeight`. Every section shares it.
+`glyph` gives the px the band draws in: the triangle's width and height,
+`coverageInset` (the label room the band keeps at both ends, inside which the
+depth axis runs) and `interbaseTop` (where the histogram starts below the
+band's top, at the triangle's tip). A stack of N reads hangs N / `domain[1]` of
+half the depth area, in px, whatever the axis type. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does, through the display's own `sortOf`; a column
 sort may leave out `refName`, which then means the region's, and may name the

@@ -1,6 +1,11 @@
 import {
   INDICATOR_TRIANGLE_H,
   INDICATOR_TRIANGLE_HW,
+  computeCoverageTicks,
+  computeVisibleCoverageDomain,
+  computeVisibleCoverageStats,
+  coverageDepthDomain,
+  interbaseEdgePx,
   pairDirectionOfNum,
   readInterbaseSegments,
   readModCovSegments,
@@ -26,6 +31,8 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { SCALE_TYPE_LOG } from '@jbrowse/render-core/scoreScale'
 import { linkStrokeWidthPx } from '@jbrowse/render-core/shaders/linkMark'
 import { LINK_SIZE_SCALED } from '@jbrowse/render-core/shaders/linkMarkConsts'
+import { getNiceDomain, widenRangeToRules } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
@@ -781,6 +788,67 @@ function sectionTables(
 }
 
 /**
+ * The coverage band's depth axis as the display autoscales it: every shown
+ * section's visible depths under `scales.y`'s quantile, rules and bounds,
+ * nice-rounded, with a log scale floored at one read, and the ticks the
+ * display labels it with at its height.
+ */
+function coverageScale(
+  conf: DisplayConf,
+  sections: WorkerPileupData[],
+  region: { start: number; end: number },
+) {
+  const scale = conf.scales.y
+  const type: string = readConfObject(scale, 'type')
+  const zero: boolean = readConfObject(scale, 'zero')
+  const entries = sections.map(data => ({
+    visStart: Math.floor(region.start),
+    visEnd: Math.ceil(region.end),
+    data,
+  }))
+  const stats = computeVisibleCoverageStats(entries)
+  const range =
+    stats &&
+    widenRangeToRules(
+      computeVisibleCoverageDomain({
+        stats,
+        quantile: readConfObject(scale, 'domainQuantile'),
+        entries,
+      }),
+      (scale.rules as Parameters<typeof readConfObject>[0][]).map(
+        rule => readConfObject(rule, 'value') as number,
+      ),
+    )
+  const domain = coverageDepthDomain(
+    range
+      ? getNiceDomain({
+          domain: range,
+          bounds: [
+            readConfObject(scale, 'domainMin') ?? (zero ? 0 : undefined),
+            readConfObject(scale, 'domainMax'),
+          ],
+          scaleType: type,
+          zero,
+        })
+      : [0, 0],
+    type,
+  )
+  const symlogConstant: number = readConfObject(scale, 'symlogConstant')
+  return {
+    domain,
+    type,
+    symlogConstant,
+    ticks: computeCoverageTicks(
+      domain,
+      readConfObject(conf, 'coverageHeight'),
+      type,
+      symlogConstant,
+      readConfObject(scale, 'minimalTicks'),
+    ).items.map(tick => tick.value),
+  }
+}
+
+/**
  * #api
  * A region's reads as the alignments display fetches, filters, lays out and
  * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
@@ -931,9 +999,16 @@ export async function alignmentTables(
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,
+    coverageScale: coverageScale(
+      conf,
+      order.map(({ key }) => dataOf.get(key)!),
+      region,
+    ),
     glyph: {
       indicatorWidth: 2 * INDICATOR_TRIANGLE_HW,
       indicatorHeight: INDICATOR_TRIANGLE_H,
+      coverageInset: YSCALEBAR_LABEL_OFFSET,
+      interbaseTop: interbaseEdgePx(0, 0),
     },
     settings: Object.fromEntries(
       COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),

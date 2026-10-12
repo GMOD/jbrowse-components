@@ -411,6 +411,39 @@ test('the interbase histogram counts the reads\u2019 insertions and clips, and t
   expect(indicated).toBeGreaterThan(0)
 })
 
+test('the coverage band\u2019s depth axis is the display\u2019s: nice-rounded over every section, under scales.y', async () => {
+  const plain = await engine.alignments(BAM)
+  const peak = Math.max(...plain.coverage.depth)
+  const [min, max] = plain.coverageScale.domain
+  expect(min).toBe(0)
+  // a 32-read peak rounds up to 35, and a 45 px band labels its two ends
+  expect(peak).toBe(32)
+  expect(max).toBe(35)
+  expect(plain.coverageScale.ticks).toEqual([0, 35])
+
+  const pinned = await engine.alignments({
+    ...BAM,
+    display: { scales: { y: { domainMax: 15 } } },
+  })
+  expect(pinned.coverageScale.domain).toEqual([0, 15])
+
+  const log = await engine.alignments({
+    ...BAM,
+    display: { scales: { y: { type: 'log' } } },
+  })
+  expect(log.coverageScale.type).toBe('log')
+  expect(log.coverageScale.domain[0]).toBe(1)
+
+  const faceted = await engine.alignments({
+    ...BAM,
+    display: { facet: 'strand' },
+  })
+  expect(faceted.sections.key.length).toBeGreaterThan(1)
+  expect(faceted.coverageScale.domain[1]).toBeGreaterThanOrEqual(
+    Math.max(...faceted.coverage.depth),
+  )
+})
+
 test('the display\u2019s sort object orders the rows', async () => {
   const plain = await engine.alignments(BAM)
   const site = plain.mismatches.position[0]!
