@@ -8,6 +8,7 @@ import {
   callEachRegion,
   fetchRegionsBatched,
 } from '@jbrowse/display-kit/fetchEachRegion'
+import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 
 import type {
   MafFrameRecord,
@@ -24,17 +25,10 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
 interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
-  // The sorted-set form of `rows.kept`, never the raw config node: this is
-  // also what `rpcProps()` returns, so the payload and the cache key it is
-  // stored under are one expression. See the getter for why the sort is
-  // load-bearing.
-  rowFocusKey: string[] | undefined
+  rpcProps: () => { rowFocus: string[] | undefined }
   // what the summary tier reads the frames for; the detail tier always does
   annotationsActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  // read rather than restated, so all three tiers are bounded by the same
-  // number — and undefined is how `gateActive` reaches the worker, which then
-  // measures nothing
   resolvedByteLimit: () => number | undefined
   setFramesGateBlocked: (blocked: boolean) => void
   setSamples: (arg: SampleSet) => void
@@ -287,9 +281,6 @@ async function fetchAnnotationData(
           regionCtx.callRpc('LinearMafGetAnnotationData', {
             adapterConfig,
             regions: [region],
-            // undefined is the gate declining to act at all — force-load
-            // exempts the track on every axis, so one click covers this read
-            // too rather than leaving the overlay mysteriously off
             byteLimit: self.resolvedByteLimit(),
           }),
         ),
@@ -324,13 +315,8 @@ export function fetchMafAlignmentData(
     call: (regions, ctx) =>
       callMafRegions(self, regions, ctx, true, (region, regionCtx) =>
         regionCtx.callRpc('LinearMafGetAlignmentData', {
-          adapterConfig: self.adapterConfig,
+          ...rpcArgs(self),
           regions: [region],
-          byteLimit: self.resolvedByteLimit(),
-          // Row set, not row order: the worker ships only these genomes and
-          // scores coverage over them. Placement is the client's (see
-          // `placeMafRegionData`), so nothing order-dependent is sent.
-          rowFocus: self.rowFocusKey,
         }),
       ),
     commit: batch => {
@@ -383,15 +369,8 @@ export async function fetchMafSummaryData(
     self.annotationsActive,
     (region, regionCtx) =>
       regionCtx.callRpc('LinearMafGetSummaryData', {
-        adapterConfig: self.adapterConfig,
+        ...rpcArgs(self),
         regions: [region],
-        byteLimit: self.resolvedByteLimit(),
-        // Same row set as the detail path. It has to be sent even though the
-        // records are small: the focus is in the read key, so narrowing the
-        // clade already re-reads — a summary fetch that ignored the focus
-        // would re-download byte-identical rows and then drop the same ones
-        // client-side.
-        rowFocus: self.rowFocusKey,
       }),
   )
   if (isRegionRefused(batch)) {

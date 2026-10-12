@@ -57,9 +57,8 @@ export default function configSchemaF() {
       /**
        * #slot
        * No MAF adapter declares a `fetchSizeLimit`, so this display's value is
-       * the whole budget the byte gate measures against — and MAF has no second
-       * axis behind it, since `densityTooLarge` is canvas's override and false
-       * here. It inherited the base 1 Mb until 2026-08-14, which nobody chose:
+       * the whole budget the byte gate measures against. It inherited the base
+       * 1 Mb until 2026-08-14, which nobody chose:
        * `MAF_LARGE_BLOCKS.md` § "Fetch dominates at 470-way" measures a 40 kb
        * buffered window (a 20 kb view) at 5.3 MB uncompressed for 100 rows, and
        * real MAF-BED compresses 2.9–4.0x, so an hg38 100-way — an ordinary

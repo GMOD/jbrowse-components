@@ -724,10 +724,6 @@ export default function stateModelFactory(
           return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
         },
       }))
-      // The derived, self-releasing too-large banner is opt-in via
-      // `gateEnabled` below: the tier's own RPC then measures the file it is
-      // about to read before it downloads, and afterAttach clears the estimate
-      // on chromosome nav. Byte-only — no density axis.
       .views(self => ({
         /**
          * #getter
@@ -888,25 +884,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The focus, `rows.kept`, as the worker sees it: a **set**, sorted, and
-         * a plain array. The one expression both the RPC payload
-         * (`fetchMafData`) and the cache key (`rpcProps`) read, so the bytes
-         * sent and the key they are cached under cannot drift apart.
-         *
-         * Config alone, never the samples a fetch reports, so the key cannot
-         * move when a fetch lands. The worker narrows by it the way `sources`
-         * does (`visibleSamples`).
-         *
-         * Sorted because the key is a JSON string while the worker consumes the
-         * value as `new Set(...)` and places rows by species name — so order is
-         * unobservable to the fetch but would still move the key. Re-picking the
-         * same clade after a re-cluster hands `setRowFocus` the same names
-         * in the tree's new leaf order, which refetched every loaded region for
-         * identical data. reference/FETCH_KEYS.md §"Row order is not a fetch input".
-         *
-         * Copied out of the MST node for the same reason: the key is a JSON
-         * string and an MST node's serialization is not this module's to depend
-         * on.
+         * The focus, `rows.kept`, as the worker sees it: a sorted plain array,
+         * read off config alone so the key cannot move when a fetch lands.
+         * Sorted because the worker consumes it as a set while the key is a
+         * JSON string: re-picking a clade after a re-cluster hands the same
+         * names in a new leaf order, and unsorted that refetched every region
+         * (reference/FETCH_KEYS.md §"Row order is not a fetch input").
          */
         get rowFocusKey(): string[] | undefined {
           const filter = self.rowFocus
@@ -1593,9 +1576,9 @@ export default function stateModelFactory(
         },
         /**
          * #method
-         * The detail fetch's inputs, which refetch every loaded region when
-         * they move. The focus is a row SET, since the worker ships only those
-         * genomes; the row order is not, since the client places the rows
+         * The fetch inputs both tiers send through `rpcArgs` and cache under.
+         * The focus is a row set, since the worker ships only those genomes;
+         * the row order is not, since the client places the rows
          * (`placeMafRegionData`). Nothing fetch-derived goes here: a key that
          * moves when a fetch lands throws that fetch away
          * (`singleFetchPerRegion.test.ts`).
