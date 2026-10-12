@@ -269,3 +269,85 @@ test('an interpolated line breaks into runs where the display breaks it', async 
   expect(Math.min(...gaps)).toBeGreaterThan(Math.max(...links))
   expect(new Set((await line(0)).marks.run).size).toBe(1)
 })
+
+describe('several regions share the one domain the display autoscales to', () => {
+  const low = { refName: 'ctgA', start: 0, end: 10000 }
+  const high = { refName: 'ctgA', start: 20000, end: 30000 }
+  const read = (
+    regions: { refName: string; start: number; end: number }[],
+    display: Record<string, unknown> = {},
+  ) =>
+    engine.wiggle({
+      adapterConfig: SIGNED_BIGWIG.adapterConfig,
+      regions,
+      bpPerPx: 25,
+      display,
+    })
+
+  it('colors a score alike in every region, against one ramp', async () => {
+    const density = { mark: 'span' }
+    const [alone, both] = await Promise.all([
+      Promise.all([read([low], density), read([high], density)]),
+      read([low, high], density),
+    ])
+    expect(alone[0].domain).not.toEqual(alone[1].domain)
+    const scores = [...alone[0].bins.score, ...alone[1].bins.score]
+    expect(both.domain[0]).toBeLessThanOrEqual(Math.min(...scores))
+    expect(both.domain[1]).toBeGreaterThanOrEqual(Math.max(...scores))
+    const colorOf = new Map<number, Set<string>>()
+    both.marks.score.forEach((score, i) => {
+      colorOf.set(
+        score,
+        (colorOf.get(score) ?? new Set()).add(both.marks.color[i]!),
+      )
+    })
+    const shared = both.marks.score.filter(
+      (score, i) =>
+        both.marks.region[i] === 0 &&
+        both.marks.score.some(
+          (s, j) => s === score && both.marks.region[j] === 1,
+        ),
+    )
+    expect(shared.length).toBeGreaterThan(0)
+    for (const score of shared) {
+      expect(colorOf.get(score)!.size).toBe(1)
+    }
+    expect(both.ramps).toHaveLength(1)
+  })
+
+  it('names each mark and bin by its region, and breaks a line between them', async () => {
+    const t = await read([low, high], { mark: 'line' })
+    for (const table of [t.marks, t.bins]) {
+      expect(new Set(table.region)).toEqual(new Set([0, 1]))
+      table.start.forEach((start, i) => {
+        const r = [low, high][table.region[i]!]!
+        expect(start).toBeLessThan(r.end)
+        expect(table.end[i]).toBeGreaterThan(r.start)
+      })
+    }
+    const regionsOfRun = new Map<number, Set<number>>()
+    t.marks.run.forEach((run, i) => {
+      regionsOfRun.set(
+        run,
+        (regionsOfRun.get(run) ?? new Set()).add(t.marks.region[i]!),
+      )
+    })
+    for (const regions of regionsOfRun.values()) {
+      expect(regions.size).toBe(1)
+    }
+  })
+
+  it('reads one region alike as region or regions', async () => {
+    const { region, ...rest } = SIGNED_BIGWIG
+    expect(await engine.wiggle({ ...rest, regions: [region] })).toEqual(
+      await engine.wiggle(SIGNED_BIGWIG),
+    )
+  })
+
+  it('names the missing contig of each region', async () => {
+    const t = await read([low, { ...high, refName: 'chrNope' }])
+    expect(t.missingContigs[0]).toBe('')
+    expect(t.missingContigs[1]).toMatch(/^chrNope is not a contig/)
+    expect(t.missingContig).toBe(t.missingContigs[1])
+  })
+})

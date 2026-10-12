@@ -74,20 +74,21 @@ export type { HostRange, ReadRange } from './bareHost.ts'
 
 interface RegionArgs {
   adapterConfig: Record<string, unknown>
-  region: { refName: string }
+  region?: { refName: string }
+  regions?: { refName: string }[]
 }
 
 const LISTED_CONTIGS = 20
 
 /**
- * Where the region's contig is not one the file has, what to tell the reader,
- * naming the file's contigs: its tables come back empty, as the browser draws
- * a track with no such contig, and a host can say why. Empty where the contig
- * is there, or the adapter cannot list its contigs.
+ * For each region whose contig is not one the file has, what to tell the
+ * reader, naming the file's contigs: its tables come back empty, as the
+ * browser draws a track with no such contig, and a host can say why. Empty
+ * where the contig is there, or the adapter cannot list its contigs.
  */
-async function missingContig(
+async function missingContigs(
   pluginManager: PluginManager,
-  { adapterConfig, region }: RegionArgs,
+  { adapterConfig, region, regions = region ? [region] : [] }: RegionArgs,
 ) {
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -100,15 +101,16 @@ async function missingContig(
           dataAdapter as { getRefNames: () => Promise<string[]> }
         ).getRefNames()
       : []
-  if (names.length === 0 || names.includes(region.refName)) {
-    return ''
-  }
   const listed = names.slice(0, LISTED_CONTIGS).join(', ')
   const more =
     names.length > LISTED_CONTIGS
       ? `, and ${names.length - LISTED_CONTIGS} more`
       : ''
-  return `${region.refName} is not a contig of this file, whose contigs are ${listed}${more}`
+  return regions.map(({ refName }) =>
+    names.length === 0 || names.includes(refName)
+      ? ''
+      : `${refName} is not a contig of this file, whose contigs are ${listed}${more}`,
+  )
 }
 
 class TablesPlugin extends Plugin {
@@ -139,10 +141,14 @@ export function createTablesEngine() {
   const onContig = async <A extends RegionArgs, T>(
     args: A,
     table: (pm: PluginManager, args: A) => Promise<T>,
-  ) => ({
-    ...(await table(pluginManager, args)),
-    missingContig: await missingContig(pluginManager, args),
-  })
+  ) => {
+    const missing = await missingContigs(pluginManager, args)
+    return {
+      ...(await table(pluginManager, args)),
+      missingContig: missing.find(m => m !== '') ?? '',
+      missingContigs: missing,
+    }
+  }
   return {
     alignments: (args: AlignmentTablesArgs) => onContig(args, alignmentTables),
     features: (args: FeatureTablesArgs) => onContig(args, featureTables),

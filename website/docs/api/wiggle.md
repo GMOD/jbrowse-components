@@ -9,7 +9,7 @@ import these from a plugin.
 
 ## wiggleTables
 
-A region of a quantitative track as the wiggle display fetches, scales and
+A region, or several, of a quantitative track as the wiggle display fetches, scales and
 colors it, as tables: `bins`, each source's scores as the worker ships them
 at this zoom (the bin's score, and its min and max where the file
 summarizes); `marks`, the layers the display's encoder builds from them in
@@ -23,7 +23,7 @@ adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, region, regions, display, bpPerPx, trackType, }: WiggleTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/tables.ts)

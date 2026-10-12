@@ -125,14 +125,14 @@ export const BIGBED: FeatureTablesArgs = {
 }
 
 /** A signed microarray track over the whole contig, at 50 bp/px. */
-export const SIGNED_BIGWIG: WiggleTablesArgs = {
+export const SIGNED_BIGWIG = {
   adapterConfig: {
     type: 'BigWigAdapter',
     bigWigLocation: uri('volvox_microarray_posneg.bw'),
   },
   region: { refName: 'ctgA', start: 0, end: 50000 },
   bpPerPx: 50,
-}
+} satisfies WiggleTablesArgs
 
 /** The coverage of `BAM`'s reads as a BigWig. */
 export const COVERAGE_BIGWIG: WiggleTablesArgs = {

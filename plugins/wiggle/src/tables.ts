@@ -62,9 +62,21 @@ export function registerWiggleAdapters(pluginManager: PluginManager) {
   MultiWiggleAdapterF(pluginManager)
 }
 
+interface TablesRegion {
+  refName: string
+  start: number
+  end: number
+}
+
 export interface WiggleTablesArgs {
   adapterConfig: Record<string, unknown>
-  region: { refName: string; start: number; end: number }
+  region?: TablesRegion
+  /**
+   * Several regions read as a view lays them end to end: one score domain and
+   * one color ramp across all of them, as the display autoscales to every
+   * region it shows. Each mark and bin names its region's index.
+   */
+  regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearWiggleDisplay`: `mark`, `interpolate`, `aggregate`, `extent`,
@@ -87,7 +99,7 @@ export interface WiggleTablesArgs {
 
 /**
  * #api
- * A region of a quantitative track as the wiggle display fetches, scales and
+ * A region, or several, of a quantitative track as the wiggle display fetches, scales and
  * colors it, as tables: `bins`, each source's scores as the worker ships them
  * at this zoom (the bin's score, and its min and max where the file
  * summarizes); `marks`, the layers the display's encoder builds from them in
@@ -104,6 +116,7 @@ export async function wiggleTables(
   {
     adapterConfig,
     region,
+    regions = region ? [region] : [],
     display = {},
     bpPerPx,
     trackType = adapterConfig.type === 'MultiWiggleAdapter'
@@ -123,7 +136,7 @@ export async function wiggleTables(
   const args: RpcExecuteArgs<'RenderMultiWiggleData'> = {
     sessionId: 'tables',
     adapterConfig,
-    regions: [{ assemblyName: '', ...region }],
+    regions: regions.map(r => ({ assemblyName: '', ...r })),
     bpPerPx,
     resolution: Math.min(
       RESOLUTION_MAX,
@@ -132,8 +145,9 @@ export async function wiggleTables(
     scoreField: readConfObject(conf, 'y'),
     statusCallback: () => {},
   }
-  const data = (await executeRenderMultiWiggleData({ pluginManager, args }))
-    .value[0]!
+  const results = (await executeRenderMultiWiggleData({ pluginManager, args }))
+    .value
+  const data = results[0]!
 
   const renderingType = renderingOf(
     readConfObject(conf, 'mark'),
@@ -172,11 +186,13 @@ export async function wiggleTables(
   const range = computeAutoscaleDomain(
     readConfObject(scale, 'domainQuantile'),
     aggregate,
-    data.sources.map(source => ({
-      data: source,
-      visStart: region.start,
-      visEnd: region.end,
-    })),
+    results.flatMap((result, i) =>
+      result.sources.map(source => ({
+        data: source,
+        visStart: regions[i]!.start,
+        visEnd: regions[i]!.end,
+      })),
+    ),
     zero,
     extent,
   )
@@ -249,21 +265,23 @@ export async function wiggleTables(
         rowColorPaintsMarks || !rowLayout,
       ) ?? uncolored,
   }))
-  const layers = buildSourceRenderData(data, {
-    sources: markSources,
-    rowLayout: true,
-    perSource: paletteDeals,
-    wiggleColor,
-    origin,
-    aggregate,
-    effectiveExtent: extent,
-    renderingType,
-    maxGapMultiple,
-  }).map(layer => ({
-    layer,
-    source: sources[layer.rowIndex]!.name,
-    row: rowLayout ? layer.rowIndex : 0,
-  }))
+  const regionLayers = results.map(result =>
+    buildSourceRenderData(result, {
+      sources: markSources,
+      rowLayout: true,
+      perSource: paletteDeals,
+      wiggleColor,
+      origin,
+      aggregate,
+      effectiveExtent: extent,
+      renderingType,
+      maxGapMultiple,
+    }).map(layer => ({
+      layer,
+      source: sources[layer.rowIndex]!.name,
+      row: rowLayout ? layer.rowIndex : 0,
+    })),
+  )
   const scaleCode = scaleTypeCode(scaleType)
   const gradient =
     wiggleColor.rampLut !== null && !isLineMode(renderingType) && !density
@@ -304,6 +322,7 @@ export async function wiggleTables(
   }
 
   const marks = {
+    region: [] as number[],
     source: [] as string[],
     row: [] as number[],
     layer: [] as number[],
@@ -319,62 +338,66 @@ export async function wiggleTables(
   let run = -1
   const { cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(cssColorToHex)
-  layers.forEach(({ layer, source, row }, index) => {
-    const fill = colorOf(layer)
-    const own = normalizedRgbToHex(layer.color)
-    const bandColors = layer.negColor
-      ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
-      : undefined
-    const colorAt = (score: number, i: number) =>
-      fill
-        ? cssColorToHex(fill(score))
-        : layer.colorsAbgr
-          ? abgrToHex(layer.colorsAbgr[i]!)
-          : bandColors
-            ? bandColors[cutBand(score, cuts)]!
-            : own
-    const push = (i: number, low: number, score: number, color: string) => {
-      marks.source.push(source)
-      marks.row.push(row)
-      marks.layer.push(index)
-      marks.start.push(layer.featurePositions[i * 2]!)
-      marks.end.push(layer.featurePositions[i * 2 + 1]!)
-      marks.score.push(score)
-      marks.low.push(low)
-      marks.band.push(!!layer.band)
-      marks.opacity.push(layer.band ? WHISKER_BAND_OPACITY : 1)
-      marks.color.push(color)
-      marks.run.push(run)
-    }
-    const gapLimitBp = layer.gapLimitBp ?? Number.POSITIVE_INFINITY
-    for (let i = 0; i < layer.numFeatures; i++) {
-      const score = layer.featureScores[i]!
-      if (!centerLinksToPrevious(layer.featurePositions, i, gapLimitBp)) {
-        run++
+  regionLayers.forEach((layers, regionIndex) => {
+    layers.forEach(({ layer, source, row }, index) => {
+      const fill = colorOf(layer)
+      const own = normalizedRgbToHex(layer.color)
+      const bandColors = layer.negColor
+        ? [normalizedRgbToHex(layer.negColor), ...innerColors, own]
+        : undefined
+      const colorAt = (score: number, i: number) =>
+        fill
+          ? cssColorToHex(fill(score))
+          : layer.colorsAbgr
+            ? abgrToHex(layer.colorsAbgr[i]!)
+            : bandColors
+              ? bandColors[cutBand(score, cuts)]!
+              : own
+      const push = (i: number, low: number, score: number, color: string) => {
+        marks.region.push(regionIndex)
+        marks.source.push(source)
+        marks.row.push(row)
+        marks.layer.push(index)
+        marks.start.push(layer.featurePositions[i * 2]!)
+        marks.end.push(layer.featurePositions[i * 2 + 1]!)
+        marks.score.push(score)
+        marks.low.push(low)
+        marks.band.push(!!layer.band)
+        marks.opacity.push(layer.band ? WHISKER_BAND_OPACITY : 1)
+        marks.color.push(color)
+        marks.run.push(run)
       }
-      if (layer.band && bandColors) {
-        const min = layer.band.minScores[i]!
-        const edges = [min, ...cuts.filter(c => c > min && c < score), score]
-        for (let k = 1; k < edges.length; k++) {
+      const gapLimitBp = layer.gapLimitBp ?? Number.POSITIVE_INFINITY
+      for (let i = 0; i < layer.numFeatures; i++) {
+        const score = layer.featureScores[i]!
+        if (!centerLinksToPrevious(layer.featurePositions, i, gapLimitBp)) {
+          run++
+        }
+        if (layer.band && bandColors) {
+          const min = layer.band.minScores[i]!
+          const edges = [min, ...cuts.filter(c => c > min && c < score), score]
+          for (let k = 1; k < edges.length; k++) {
+            push(
+              i,
+              edges[k - 1]!,
+              edges[k]!,
+              bandColors[cutBand(edges[k - 1]!, cuts)]!,
+            )
+          }
+        } else {
           push(
             i,
-            edges[k - 1]!,
-            edges[k]!,
-            bandColors[cutBand(edges[k - 1]!, cuts)]!,
+            layer.band ? layer.band.minScores[i]! : origin,
+            score,
+            colorAt(score, i),
           )
         }
-      } else {
-        push(
-          i,
-          layer.band ? layer.band.minScores[i]! : origin,
-          score,
-          colorAt(score, i),
-        )
       }
-    }
+    })
   })
 
   const bins = {
+    region: [] as number[],
     source: [] as string[],
     start: [] as number[],
     end: [] as number[],
@@ -382,16 +405,22 @@ export async function wiggleTables(
     min: [] as number[],
     max: [] as number[],
   }
-  for (const source of sources) {
-    for (let i = 0; i < source.numFeatures; i++) {
-      bins.source.push(source.name)
-      bins.start.push(source.featurePositions[i * 2]!)
-      bins.end.push(source.featurePositions[i * 2 + 1]!)
-      bins.score.push(source.featureScores[i]!)
-      bins.min.push(source.featureMinScores[i]!)
-      bins.max.push(source.featureMaxScores[i]!)
+  results.forEach((result, regionIndex) => {
+    for (const source of orderRowsByDomain(
+      result.sources,
+      readConfObject(conf.rows, 'domain'),
+    )) {
+      for (let i = 0; i < source.numFeatures; i++) {
+        bins.region.push(regionIndex)
+        bins.source.push(source.name)
+        bins.start.push(source.featurePositions[i * 2]!)
+        bins.end.push(source.featurePositions[i * 2 + 1]!)
+        bins.score.push(source.featureScores[i]!)
+        bins.min.push(source.featureMinScores[i]!)
+        bins.max.push(source.featureMaxScores[i]!)
+      }
     }
-  }
+  })
 
   return {
     bins,
