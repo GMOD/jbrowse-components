@@ -38,8 +38,8 @@ from the view menu (`menuItems.ts`):
 | `LinearAlignmentsDisplay`         | `jbrowse_alignments` | BAM, CRAM                                        |
 
 Any other display, a file opened from disk in jbrowse-web (a `blob:` URL R
-cannot reach), and a setting ggjbrowse cannot draw (a linear ramp's key,
-facets on a feature track) land in the script header.
+cannot reach), and a setting ggjbrowse cannot draw (facets on a feature
+track) land in the script header.
 
 ## Settled decisions
 

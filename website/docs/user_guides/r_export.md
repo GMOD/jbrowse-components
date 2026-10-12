@@ -54,9 +54,8 @@ out.
 ## What it leaves out
 
 A track ggjbrowse cannot read yet, such as an arc or GWAS track, and a setting
-it cannot draw, such as a key for a linear color ramp, land in a comment block
-at the top of the script, which tells you where its figure differs from the
-view.
+it cannot draw, such as facets on a feature track, land in a comment block at
+the top of the script, which tells you where its figure differs from the view.
 
 ## Where the data lives
 

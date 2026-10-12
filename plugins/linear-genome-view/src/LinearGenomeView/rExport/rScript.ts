@@ -77,7 +77,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.5.0'
+export const GGJBROWSE_VERSION = '0.6.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
@@ -310,13 +310,8 @@ function trackNames(tracks: readonly RExportTrack[]) {
 
 /** What the figure cannot show of a track whose settings ggjbrowse reads. */
 function settingNotes(track: RExportTrack) {
-  const color = track.display.color as
-    | { field?: string; scale?: string }
-    | undefined
+  const color = track.display.color as { field?: string } | undefined
   return [
-    ...(color?.field && color.scale === 'linear'
-      ? [`color: a linear ramp over ${color.field} keys no legend`]
-      : []),
     ...(color?.field === 'mateRefName'
       ? [
           'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',

@@ -64,11 +64,15 @@ Still open, smaller:
 
 Thirteen live exports beside their views (https://claude.ai/artifact/6h9xxrCvFpkf1J1T2q6cgw)
 led to ggjbrowse 0.2.1: sub-pixel features draw a pixel wide, the genotype
-matrix paints its grey reference rows, section labels read across. Still
-differing:
+matrix paints its grey reference rows, section labels read across. A ramp
+keys as a bar since ggjbrowse 0.6.0 (the tables' `ramps`, `rampKeyOf`), and
+`baseColor: baseQuality` paints each base (`qualities`).
 
-- A density or other ramp draws no key in R (`legendOf` keys categorical
-  scales only).
+Unchecked: ggjbrowse reads each region of a multi-region wiggle on its own,
+so each region autoscales, and paints density, over its own scores, while
+`bind_regions` reports the union domain and the first region's ramp. If the
+browser autoscales over every region together, a two-region density figure
+differs from the view.
 
 Reads now draw at the display's `featureHeight` (ggjbrowse 0.3.0, engine
 d4744ce27e reporting the band pixel sizes), and the script saves at
@@ -79,7 +83,7 @@ super-compact pileups match the browser. Matrix row labels fit their rows
 ## Simplicity review (2026-10-11), not taken
 
 - Move `settingNotes` into ggjbrowse as reader warnings, so direct R users
-  hear about a ramp with no key too.
+  hear about a `mateRefName` color or a feature-track facet too.
 - One adapter-guessing table on each side: R repeats the index-beside-file
   block three times, and `READERS` lacks `GtfTabixAdapter`.
 - The reader could write `inset` into its tables and drop `jbrowse_layer`'s
