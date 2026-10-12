@@ -27,10 +27,10 @@ not wanted.
    built on `CoreGetEncodedLayers` / `markLayerRequest`, and one
    `geom_jbrowse_marks()`, would bring back every arc/link track (BEDPE,
    Hi-C loops, junctions) and the GWAS display without a hand translator.
-2. **ggjbrowse for its first users:** a vignette built from
-   `scripts/figures.R`, a tagged release once `@jbrowse/tables` publishes, an
-   r-universe build so V8 installs as a binary, then two or three R users with
-   their own tracks.
+2. **ggjbrowse for its first users:** a vignette built from ggjbrowse's
+   figures script and its README gallery, a tagged release once
+   `@jbrowse/tables` publishes, an r-universe build so V8 installs as a
+   binary, then two or three R users with their own tracks.
 3. **Real data:** an hg38 BAM at a deep locus, a CRAM, a ten-track session.
 
 ## ggjbrowse API review (2026-10-11)

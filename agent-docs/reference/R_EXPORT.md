@@ -97,7 +97,7 @@ track) land in the script header.
   ggjbrowse, except under `REQUIRE_R=1` (the `R export` workflow, on a push
   touching `rExport/` and nightly against ggjbrowse's main).
 - Drive the real app too: the dev server
-  (`NODE_ENV=development node scripts/start.ts` in `products/jbrowse-web`),
-  a volvox view, the menu item, `Rscript` on the download, the figure beside
+  (`products/jbrowse-web/scripts/start.ts` under `NODE_ENV=development`,
+  run from `products/jbrowse-web`), a volvox view, the menu item, `Rscript` on the download, the figure beside
   a screenshot. The live path is where the normalized adapter config,
   aliases and `blob:` files differ from a fixture.
