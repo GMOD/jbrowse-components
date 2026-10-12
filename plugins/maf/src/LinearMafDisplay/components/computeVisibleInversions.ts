@@ -1,6 +1,7 @@
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { regionInvertedRows } from './mafRowEvents.ts'
+import { rowChromBp } from './rowChromBp.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -17,15 +18,9 @@ export interface InversionMarker {
 }
 
 /**
- * The orientation each (display row, source chromosome) is measured against.
- * Nested `rowIndex -> chr -> ±1` rather than one map under a `${row}\t${chr}`
- * key, which is what this used to be, because both halves of the pair are
- * per-cell: the consensus walk visits every block × row the display holds and
- * the marker walk visits every block × row on screen, so a joined key built one
- * throwaway string per cell — over a million per pass on the UCSC ce11 26-way,
- * and on the marker side once per frame. The nested form is two integer/string
- * hashes and allocates nothing. Same shape, for the same reason, as
- * `perRowChromRanks`'s ranks.
+ * The orientation each (display row, source chromosome) is measured against,
+ * nested `rowIndex -> chr -> ±1` so the per-frame marker walk builds no joined
+ * string key per cell.
  */
 export type StrandConsensus = ReadonlyMap<number, ReadonlyMap<string, number>>
 
@@ -55,33 +50,8 @@ interface ComputeVisibleInversionsParams extends MafOverlayParams {
 export function consensusStrandByRowChr(
   rpcDataMap: ReadonlyMap<number, MafRegionData>,
 ): Map<number, Map<string, number>> {
-  const totals = new Map<number, Map<string, { fwd: number; rev: number }>>()
-  for (const region of rpcDataMap.values()) {
-    for (const block of region.blocks) {
-      const len = block.endBp - block.startBp
-      for (const row of block.rows) {
-        if (row.strand !== undefined && row.chr !== undefined) {
-          let byChr = totals.get(row.rowIndex)
-          if (byChr === undefined) {
-            byChr = new Map()
-            totals.set(row.rowIndex, byChr)
-          }
-          let t = byChr.get(row.chr)
-          if (t === undefined) {
-            t = { fwd: 0, rev: 0 }
-            byChr.set(row.chr, t)
-          }
-          if (row.strand === -1) {
-            t.rev += len
-          } else {
-            t.fwd += len
-          }
-        }
-      }
-    }
-  }
   const consensus = new Map<number, Map<string, number>>()
-  for (const [rowIndex, byChr] of totals) {
+  for (const [rowIndex, byChr] of rowChromBp(rpcDataMap.values())) {
     consensus.set(
       rowIndex,
       new Map([...byChr].map(([chr, t]) => [chr, t.fwd >= t.rev ? 1 : -1])),

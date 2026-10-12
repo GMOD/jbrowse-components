@@ -1,6 +1,8 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { rowChromBp } from './rowChromBp.ts'
+
 import type {
   MafBlock,
   MafRegionData,
@@ -87,32 +89,21 @@ export function perRowChromRanks(regions: Iterable<MafRegionData>): {
   ranks: Map<number, Map<string, number>>
   maxRank: number
 } {
-  const bpByRowChr = new Map<number, Map<string, number>>()
-  for (const region of regions) {
-    for (const mafBlock of region.blocks) {
-      const len = mafBlock.endBp - mafBlock.startBp
-      for (const row of mafBlock.rows) {
-        if (row.chr) {
-          let byChr = bpByRowChr.get(row.rowIndex)
-          if (!byChr) {
-            byChr = new Map()
-            bpByRowChr.set(row.rowIndex, byChr)
-          }
-          byChr.set(row.chr, (byChr.get(row.chr) ?? 0) + len)
-        }
-      }
-    }
-  }
   const ranks = new Map<number, Map<string, number>>()
   let maxRank = 0
-  for (const [rowIndex, byChr] of bpByRowChr) {
-    const ordered = [...byChr].sort((a, b) => b[1] - a[1])
-    const rankMap = new Map<string, number>()
-    for (const [i, [chr]] of ordered.entries()) {
-      rankMap.set(chr, i)
+  for (const [rowIndex, byChr] of rowChromBp(regions)) {
+    const ordered = [...byChr]
+      .filter(([chr]) => chr)
+      .map(([chr, { fwd, rev }]) => [chr, fwd + rev] as const)
+      .sort((a, b) => b[1] - a[1])
+    if (ordered.length > 0) {
+      const rankMap = new Map<string, number>()
+      for (const [i, [chr]] of ordered.entries()) {
+        rankMap.set(chr, i)
+      }
+      ranks.set(rowIndex, rankMap)
+      maxRank = Math.max(maxRank, ordered.length - 1)
     }
-    ranks.set(rowIndex, rankMap)
-    maxRank = Math.max(maxRank, ordered.length - 1)
   }
   return { ranks, maxRank }
 }
