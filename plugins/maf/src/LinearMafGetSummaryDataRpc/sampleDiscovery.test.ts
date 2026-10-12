@@ -42,12 +42,14 @@ function payload<T>(result: T | RegionTooLargeResult) {
 async function run({
   samples,
   rowFocus,
+  records = RECORDS,
 }: {
   samples: Sample[]
   rowFocus?: string[]
+  records?: MafSummaryRecord[]
 }) {
   mockLoadMafSamplesAdapter.mockResolvedValue({
-    adapter: { getSummaryFeatures: () => of(...RECORDS) },
+    adapter: { getSummaryFeatures: () => of(...records) },
     samples,
     treeNewick: undefined,
   })
@@ -109,5 +111,29 @@ describe('the summary RPC names the species its own records carry', () => {
     const out = await run({ samples: configured })
     expect(out.samples).toEqual(configured)
     expect(out.samplesCanonical).toBe(true)
+  })
+})
+
+// The detail tier's `isRowVisible`: a row is kept by its own name or by the
+// sample it copies.
+describe('the summary RPC filters rows as the detail tier does', () => {
+  const records = [...RECORDS, record('simvolvox~2', 0)]
+  const samples = [
+    { id: 'volvox', label: 'volvox' },
+    { id: 'simvolvox', label: 'simvolvox' },
+  ]
+
+  it('a focus on a sample keeps its copy rows', async () => {
+    const out = await run({ samples, records, rowFocus: ['simvolvox'] })
+    expect(out.records.map(r => r.src)).toEqual([
+      'simvolvox',
+      'simvolvox',
+      'simvolvox~2',
+    ])
+  })
+
+  it('a focus on a copy row keeps only that row', async () => {
+    const out = await run({ samples, records, rowFocus: ['simvolvox~2'] })
+    expect(out.records.map(r => r.src)).toEqual(['simvolvox~2'])
   })
 })

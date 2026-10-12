@@ -2,6 +2,7 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
+import { isRowVisible } from '../util/sampleCopies.ts'
 import { visibleSamples } from '../util/visibleSamples.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
@@ -111,7 +112,7 @@ export async function executeMafSummaryData({
       if (!hasConfiguredSamples) {
         discovered.add(record.src)
       }
-      if (!visible || visible.has(record.src)) {
+      if (isRowVisible(record.src, visible)) {
         records.push(record)
       }
     },
