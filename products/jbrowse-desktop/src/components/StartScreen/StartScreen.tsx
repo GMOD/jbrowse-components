@@ -231,6 +231,7 @@ const StartScreen = observer(function StartScreen({
           <Logo />
         </div>
         <CascadingMenuButton
+          data-testid="start-screen-menu"
           menuItems={() => [
             {
               label: 'Global plugins...',

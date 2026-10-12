@@ -294,6 +294,46 @@ export const PROCEDURES: Record<string, Procedure> = {
     ],
     direction: 'horizontal',
   },
+
+  'desktop-global-plugins-steps.png': {
+    steps: [
+      {
+        title: 'start screen menu',
+        annotations: step({
+          n: 1,
+          anchor: { text: 'Global plugins...' },
+          label: 'Plugins for every session',
+        }),
+      },
+      {
+        title: 'Global plugins dialog',
+        annotations: step({
+          n: 2,
+          anchor: { text: 'Add custom plugin' },
+          label: 'A plugin that is not in the store',
+        }),
+      },
+      {
+        title: 'Add custom plugin form, advanced options open',
+        annotations: [
+          ...step({
+            n: 3,
+            anchor: { text: 'Plugin URL' },
+            label: 'A UMD build: its name and URL',
+            labelSide: 'left',
+            maxWidth: 220,
+          }),
+          ...step({
+            n: 4,
+            anchor: { text: 'ESM build URL' },
+            label: 'An ESM build: its URL alone',
+            labelSide: 'left',
+            maxWidth: 220,
+          }),
+        ],
+      },
+    ],
+  },
 }
 
 // ImageMagick 7 calls its CLI `magick`; 6 only ships the individual tools, and

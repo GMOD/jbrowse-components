@@ -66,6 +66,7 @@ const ONLY =
 const FIGURES = [
   'desktop-cli-config.png',
   'desktop-landing.png',
+  'desktop-global-plugins-steps.png',
   'desktop-open-genome-steps.png',
   'desktop-add-track-steps.png',
   'desktop-available-genomes.png',
@@ -448,6 +449,32 @@ async function launchHg19(driver: WebDriver): Promise<void> {
   await findByText(driver, 'Tools')
   await waitForAppReady(driver)
   await freezeAnimations(driver)
+}
+
+// Opens the forms and installs nothing, so the global list the rest of the flow
+// boots with stays empty.
+async function captureGlobalPluginsSteps(driver: WebDriver): Promise<void> {
+  const figure = 'desktop-global-plugins-steps.png'
+  console.log('Capturing global plugins dialogs...')
+  const menuButton = await driver.findElement(
+    By.css('[data-testid="start-screen-menu"]'),
+  )
+  await driver.executeScript('arguments[0].click();', menuButton)
+  await findByText(driver, 'Global plugins...')
+  await delay(500)
+  await procedureFrame(driver, figure, 0)
+  await clickMenuItem(driver, 'Global plugins...')
+  await findByText(driver, 'Installed global plugins')
+  await findByText(driver, 'MsaView')
+  await delay(500)
+  await procedureFrame(driver, figure, 1)
+  await clickButton(driver, 'Add custom plugin')
+  await clickMenuItem(driver, 'Advanced options')
+  await findByText(driver, 'ESM build URL')
+  await delay(500)
+  await blurActiveElement(driver)
+  await procedureFrame(driver, figure, 2)
+  await cleanupUI(driver)
 }
 
 async function returnToStartScreen(driver: WebDriver): Promise<void> {
@@ -838,6 +865,7 @@ async function main(): Promise<void> {
   await capture(driver, 'desktop-landing.png')
   await procedureFrame(driver, 'desktop-open-genome-steps.png', 0)
   await procedureFrame(driver, 'desktop-available-genomes-steps.png', 0)
+  await captureGlobalPluginsSteps(driver)
 
   // "Open genome(s)" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')

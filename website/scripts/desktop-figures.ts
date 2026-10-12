@@ -15,6 +15,7 @@
 // generator lists the same figures with their `.png`. The test normalizes.
 export const desktopAutogenNames = new Set([
   'desktop-landing',
+  'desktop-global-plugins-steps',
   'desktop-available-genomes',
   'desktop-open-genome-steps',
   'desktop-available-genomes-steps',
