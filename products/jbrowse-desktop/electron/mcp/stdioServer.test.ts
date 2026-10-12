@@ -389,6 +389,57 @@ test('an unknown tool is a JSON-RPC error', async () => {
   bridge.close()
 })
 
+test.each([
+  [
+    'run_javascript',
+    { code: 'return 1', timeout: 60000 },
+    'unknown argument arguments.timeout; arguments takes code, maxBytes, timeoutMs',
+  ],
+  [
+    'run_javascript',
+    { code: 'return 1', timeoutMs: '60000' },
+    'arguments.timeoutMs must be a number, got string',
+  ],
+  ['run_javascript', {}, 'missing required argument arguments.code'],
+  [
+    'screenshot',
+    { rect: { x: 0, y: 0, width: 10 } },
+    'missing required argument arguments.rect.height',
+  ],
+  ['docs', 'live-model', 'arguments must be an object, got string'],
+])(
+  '%s with %j fails naming the argument, and nothing reaches the app',
+  async (name, args, message) => {
+    const reached: string[] = []
+    const bridge = await startFakeBridge(request => {
+      reached.push(request.tool)
+      return { result: {} }
+    })
+    const server = startServer(bridge.socketPath)
+    server.send({
+      id: 1,
+      method: 'tools/call',
+      params: { name, arguments: args },
+    })
+    const call = await server.next()
+    expect(call.result?.isError).toBe(true)
+    expect(call.result?.content?.[0]?.text).toBe(
+      `${name}: ${message}. Nothing ran.`,
+    )
+    expect(reached).toEqual([])
+    bridge.close()
+  },
+)
+
+test('a call that omits arguments takes the schema defaults', async () => {
+  const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+  const server = startServer(bridge.socketPath)
+  server.send({ id: 1, method: 'tools/call', params: { name: 'screenshot' } })
+  const call = await server.next()
+  expect(call.result?.isError).toBeUndefined()
+  bridge.close()
+})
+
 test('unparseable and non-object requests are answered, not dropped', async () => {
   const bridge = await startFakeBridge(() => ({ result: {} }))
   const server = startServer(bridge.socketPath)

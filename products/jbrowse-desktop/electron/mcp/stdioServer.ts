@@ -7,6 +7,7 @@ import {
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
   SESSION_GAP_MS,
+  argumentError,
   clientShowsInstructions,
 } from './toolDefinitions.ts'
 
@@ -359,11 +360,21 @@ export function runMcpStdioServer({
       }
       case 'tools/call': {
         const name = typeof params.name === 'string' ? params.name : ''
-        const args =
-          typeof params.arguments === 'object' && params.arguments !== null
-            ? (params.arguments as Record<string, unknown>)
-            : {}
+        const tool = MCP_TOOLS.find(t => t.name === name)
+        if (tool === undefined) {
+          respond(id, {
+            error: { code: -32602, message: `Unknown tool: ${name}` },
+          })
+          break
+        }
         startSessionIfIdle()
+        // a tool error rather than -32602, so the model reads it and retries
+        const invalid = argumentError(tool, params.arguments ?? {})
+        if (invalid) {
+          respond(id, { result: toolCallContent({ error: invalid }) })
+          break
+        }
+        const args = (params.arguments ?? {}) as Record<string, unknown>
         if (name === 'docs') {
           // answered here rather than in the app, so documentation reads work
           // while JBrowse Desktop is closed; lazy so jest never resolves the
@@ -381,7 +392,7 @@ export function runMcpStdioServer({
                 : outcome,
             ),
           })
-        } else if (MCP_TOOLS.some(t => t.name === name)) {
+        } else {
           const needsBrief =
             name === 'run_javascript' && !briefed && !instructionsAlreadyShown
           briefed ||= needsBrief
@@ -392,10 +403,6 @@ export function runMcpStdioServer({
           }))
           const result = toolCallContent(outcome)
           respond(id, { result: needsBrief ? brief(result) : result })
-        } else {
-          respond(id, {
-            error: { code: -32602, message: `Unknown tool: ${name}` },
-          })
         }
         break
       }

@@ -229,3 +229,57 @@ type Tool = (typeof MCP_TOOLS)[number]
  */
 export type MainToolName = Extract<Tool, { handledBy: 'main' }>['name']
 export type RendererToolName = Extract<Tool, { handledBy: 'renderer' }>['name']
+
+interface ArgSchema {
+  type?: string
+  properties?: Record<string, ArgSchema>
+  required?: readonly string[]
+}
+
+function typeOf(value: unknown) {
+  return value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
+}
+
+function schemaError(
+  schema: ArgSchema,
+  value: unknown,
+  where: string,
+): string | undefined {
+  if (schema.type !== undefined && typeOf(value) !== schema.type) {
+    return `${where} must be ${schema.type === 'object' ? 'an' : 'a'} ${schema.type}, got ${typeOf(value)}`
+  }
+  const { properties, required = [] } = schema
+  if (properties === undefined) {
+    return undefined
+  }
+  const obj = value as Record<string, unknown>
+  const accepted = Object.keys(properties)
+  const unknownKey = Object.keys(obj).find(key => !accepted.includes(key))
+  if (unknownKey !== undefined) {
+    return `unknown argument ${where}.${unknownKey}; ${where} takes ${accepted.join(', ')}`
+  }
+  const missing = required.find(key => obj[key] === undefined)
+  if (missing !== undefined) {
+    return `missing required argument ${where}.${missing}`
+  }
+  for (const [key, propSchema] of Object.entries(properties)) {
+    const error =
+      obj[key] === undefined
+        ? undefined
+        : schemaError(propSchema, obj[key], `${where}.${key}`)
+    if (error) {
+      return error
+    }
+  }
+  return undefined
+}
+
+/**
+ * A tools/call's arguments checked against the tool's inputSchema, so a
+ * misspelled or mistyped argument fails naming the key rather than being
+ * dropped for its default.
+ */
+export function argumentError(tool: McpToolDefinition, args: unknown) {
+  const error = schemaError(tool.inputSchema, args, 'arguments')
+  return error && `${tool.name}: ${error}. Nothing ran.`
+}
