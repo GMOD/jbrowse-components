@@ -119,7 +119,7 @@ in reads), with `indicators` (the positions whose events pass the display's
 share of the local depth, and the most common `type` there), and `glyph`
 gives the indicator triangle's size in px. The display
 hangs the histogram from the band's top at half a depth unit per read, and
-`settings.showInterbaseIndicators` says whether it draws either. The display's
+draws neither while `settings.showInterbaseIndicators` is false. The display's
 `sort` object (a whole-window order, or a column sort over `pos`) lays the
 rows out as the display does, through the display's own `sortOf`; a column
 sort may leave out `refName`, which then means the region's, and may name the
