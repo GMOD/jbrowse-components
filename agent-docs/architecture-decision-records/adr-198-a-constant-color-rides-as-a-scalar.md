@@ -9,9 +9,8 @@ summary: "EncodedChannels.color and render-core's ColorChannel.color are Uint32A
 
 Accepted (2026-09-28). Meets the second of
 [ADR-152](adr-152-wiggle-stays-off-the-column-encoder-until-two-lanes-go.md)'s
-conditions and answers, for color, the call
-[wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)
-waits on.
+conditions and answers, for color, the call the wiggle port waited on
+([ADR-227](adr-227-the-wiggle-display-keeps-its-shapes-and-shares-render-cores-kernels.md) later declines the port).
 
 ## Context
 

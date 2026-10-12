@@ -11,6 +11,10 @@ of what they differ in on screen — one row per source, average scores, 200px, 
 the slot defaults of the wiggle schema the multi track's `displays` union holds.
 ADR-143, ADR-172.
 
+The plots stay on these shaders and painters: moving them onto render-core's
+marks was declined, with the conditions to reconsider, in ADR-227. Share a
+render-core kernel wherever the two compute the same thing.
+
 ## Rules
 
 Each is a section of

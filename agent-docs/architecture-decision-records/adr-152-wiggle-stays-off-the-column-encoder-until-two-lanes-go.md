@@ -225,5 +225,5 @@ arm runs at 1.09x<!--m:scalar-color-bigwig.raw.headVsWiggle--> wiggle there,
 and a quieter A/B read it level with the lane's 1.12x; what remains is the
 encode's copy of the positions and its admit pass over `y`. Two conditions remain: a multi-wiggle's `row` as a
 per-layer constant, the question ADR-198 answered for color
-([wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)),
+([ADR-227](adr-227-the-wiggle-display-keeps-its-shapes-and-shares-render-cores-kernels.md) declines the port that asked it),
 and a `pileup` kernel that sorts without a comparator.

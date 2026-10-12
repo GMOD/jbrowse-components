@@ -76,8 +76,8 @@ agent's `plot`, though the Plot type menu wrote it.
 
 ## Rejected alternatives
 
-- **Moving the wiggle display onto `marks[]`** is the parked
-  `ideas/ready/wiggle-onto-bar-and-point.md`, and "not now" on 2026-09-30.
+- **Moving the wiggle display onto `marks[]`**: "not now" on 2026-09-30,
+  declined in [ADR-227](adr-227-the-wiggle-display-keeps-its-shapes-and-shares-render-cores-kernels.md).
   This ADR converges the spelling, not the renderer.
 - **A separate `lineWidth` beside `size`.** Two sizes for one mark, where
   the mark display reads one.

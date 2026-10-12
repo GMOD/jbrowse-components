@@ -84,8 +84,8 @@ it plots.
 - `drawnScales` treats a threshold with raw values as it treats a ramp: the
   keyless rows follow the values met, not the colors packed.
 - `markColor.slang` still has no symlog ramp, and wiggle's per-source color
-  and row are still the open call in
-  [wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md).
+  and row stay wiggle's own; [ADR-227](adr-227-the-wiggle-display-keeps-its-shapes-and-shares-render-cores-kernels.md)
+  declines the port.
 
 ## Rejected alternatives
 
