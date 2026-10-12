@@ -9,16 +9,14 @@
 // A take module is the shape recordDemoMac.mjs consumes — STEPS, and optionally
 // SYSTEM(cwd) and SHELL. Without one the BRCA1 steps below are the take.
 //
-// The side-by-side layout is automated: the take runs on a fresh empty
-// workspace, and ydotool presses the same Super+Left / Super+Right a person
-// would, so GNOME's own tiling does the arranging. Nothing here positions a
-// window itself — Wayland forbids that.
+// The take runs in its own headless GNOME Shell on a private session bus, so
+// nothing on the desk can steal focus or a keystroke. remoteInput.py presses the
+// same Super+Left / Super+Right a person would, so GNOME's own tiling does the
+// arranging. Nothing here positions a window itself — Wayland forbids that.
 //
-// Needs: a GNOME/Wayland session that is CURRENTLY ACTIVE (a locked screen or a
-// switched-away VT swallows every injected key silently), `ydotoold` running,
-// `pnpm --filter @jbrowse/desktop build` (fresh, or hg38 renders the stale-build
-// protein3d error), `claude`/`tmux`/`ffmpeg`/`python3`, no other JBrowse Desktop
-// running.
+// Needs: GNOME Shell with `--headless` (45+), `pnpm --filter @jbrowse/desktop
+// build` (fresh, or hg38 renders the stale-build protein3d error),
+// `claude`/`tmux`/`ffmpeg`/`python3`, no other JBrowse Desktop running.
 import { spawn, spawnSync, execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
@@ -96,41 +94,72 @@ function fail(msg) {
 }
 
 // ------------------------------------------------------------ GNOME layout
-// evdev codes; ydotool speaks them, not keysyms
-const KEY = { super: 125, left: 105, right: 106, ctrl: 29, alt: 56, down: 108 }
+// evdev codes, which RemoteDesktop's NotifyKeyboardKeycode takes
+const KEY = { super: 125, left: 105, right: 106 }
 const TILING_ASSISTANT = 'org.gnome.shell.extensions.tiling-assistant'
-const ydotoolSocket = process.env.YDOTOOL_SOCKET ?? '/tmp/.ydotool_socket'
+const remoteInput = path.join(repoRoot, 'scripts/agent-demos/remoteInput.py')
 
-// press a chord and release it in reverse, the way a hand does
-function press(...codes) {
-  execFileSync(
-    'ydotool',
-    [
-      'key',
-      ...codes.map(c => `${c}:1`),
-      ...codes.toReversed().map(c => `${c}:0`),
-    ],
-    { env: { ...process.env, YDOTOOL_SOCKET: ydotoolSocket } },
-  )
-}
+const press = (...codes) =>
+  execFileSync('python3', [remoteInput, 'key', ...codes.map(String)])
+const movePointer = (dx, dy) =>
+  execFileSync('python3', [remoteInput, 'move', String(dx), String(dy)])
 
 const gsettings = (...args) =>
   execFileSync('gsettings', args, { encoding: 'utf8' }).trim()
 
-// GNOME retires an emptied workspace on its own, so the take needs no undo: it
-// walks to the last one, which dynamic workspaces keep empty, and the windows
-// it launches there are the only ones in frame and the only ones focus can land
-// on
-function emptyWorkspace() {
-  for (let i = 0; i < 6; i++) {
-    press(KEY.ctrl, KEY.alt, KEY.down)
+// A headless shell draws the same desktop to a virtual monitor, with the GPU a
+// GPU-less Xvfb lacks, and Screencast records it. Every child the take starts
+// inherits its display and bus from process.env.
+const WIDTH = 1920
+const HEIGHT = 1080
+const SHELL_DISPLAY = `wl-jbdemo-${process.pid}`
+async function startHeadlessShell() {
+  const busFile = path.join(outDir, 'shell-bus.txt')
+  fs.rmSync(busFile, { force: true })
+  const env = { ...process.env }
+  delete env.DISPLAY
+  delete env.WAYLAND_DISPLAY
+  delete env.DBUS_SESSION_BUS_ADDRESS
+  const shell = spawn(
+    'dbus-run-session',
+    [
+      '--',
+      'sh',
+      '-c',
+      'echo "$DBUS_SESSION_BUS_ADDRESS" > "$0" && exec gnome-shell --headless --wayland --wayland-display="$1" --virtual-monitor "$2"',
+      busFile,
+      SHELL_DISPLAY,
+      `${WIDTH}x${HEIGHT}`,
+    ],
+    {
+      env,
+      detached: true,
+      stdio: [
+        'ignore',
+        'ignore',
+        fs.openSync(path.join(outDir, 'shell.log'), 'w'),
+      ],
+    },
+  )
+  const socket = path.join(process.env.XDG_RUNTIME_DIR, SHELL_DISPLAY)
+  const deadline = Date.now() + 30000
+  const busAddress = () =>
+    fs.existsSync(busFile) ? fs.readFileSync(busFile, 'utf8').trim() : ''
+  while (!(fs.existsSync(socket) && busAddress())) {
+    if (Date.now() > deadline || shell.exitCode !== null) {
+      fail(`the headless GNOME Shell never came up — see ${outDir}/shell.log`)
+    }
+    await delay(500)
   }
+  process.env.WAYLAND_DISPLAY = SHELL_DISPLAY
+  process.env.DBUS_SESSION_BUS_ADDRESS = busAddress()
+  delete process.env.DISPLAY
+  // let the shell finish loading its extensions, Tiling Assistant among them
+  await delay(3000)
+  return shell
 }
 
 // ------------------------------------------------------------ preconditions
-if (process.env.XDG_SESSION_TYPE !== 'wayland') {
-  console.error(`warning: session type is ${process.env.XDG_SESSION_TYPE}`)
-}
 if (!fs.existsSync(path.join(desktopRoot, 'build/index.html'))) {
   fail('no desktop build — run `pnpm --filter @jbrowse/desktop build`')
 }
@@ -140,40 +169,12 @@ for (const bin of [
   'ffmpeg',
   'python3',
   'gnome-terminal',
-  'ydotool',
+  'gnome-shell',
+  'dbus-run-session',
   'gsettings',
-  'loginctl',
 ]) {
   if (spawnSync('which', [bin], { stdio: 'ignore' }).status !== 0) {
     fail(`${bin} is not on PATH`)
-  }
-}
-if (!fs.existsSync(ydotoolSocket)) {
-  fail(
-    `no ydotoold socket at ${ydotoolSocket} — start it with\n` +
-      `  sudo ydotoold --socket-path=${ydotoolSocket} --socket-own=$(id -u):$(id -g)`,
-  )
-}
-// an inactive session — a locked screen, or another VT in front — takes every
-// injected key and drops it without an error anywhere, and the take then films
-// two untiled windows
-{
-  const loginctl = (...args) =>
-    spawnSync('loginctl', args, { encoding: 'utf8' }).stdout.trim()
-  const active = loginctl(
-    'show-seat',
-    'seat0',
-    '-p',
-    'ActiveSession',
-    '--value',
-  )
-  const owner = loginctl('show-session', active, '-p', 'Name', '--value')
-  if (owner !== os.userInfo().username) {
-    fail(
-      `seat0's active session belongs to "${owner || 'nobody'}", not you — ` +
-        'unlock the screen and switch back to it, or every injected keystroke ' +
-        'is silently dropped',
-    )
   }
 }
 // Ubuntu hands Super+Left/Right to the Tiling Assistant extension and leaves
@@ -384,6 +385,7 @@ let app
 let sessionTerm
 let recorder
 let tilingPopup
+let headlessShell
 function cleanup() {
   try {
     fs.writeFileSync(path.join(outDir, 'stop.flag'), '')
@@ -401,6 +403,19 @@ function cleanup() {
   recorder?.kill()
   renderer?.close()
   app?.kill()
+  if (headlessShell) {
+    try {
+      process.kill(-headlessShell.pid, 'SIGTERM')
+    } catch {}
+    headlessShell = undefined
+    // a terminated shell leaves its wayland socket behind
+    for (const suffix of ['', '.lock']) {
+      fs.rmSync(
+        path.join(process.env.XDG_RUNTIME_DIR, `${SHELL_DISPLAY}${suffix}`),
+        { force: true },
+      )
+    }
+  }
 }
 process.on('SIGINT', () => {
   cleanup()
@@ -427,6 +442,9 @@ try {
     path.join(desktopRoot, 'package.json'),
   )
 
+  console.log('starting a headless GNOME Shell…')
+  headlessShell = await startHeadlessShell()
+
   // Tiling Assistant offers the other half to a second window the moment the
   // first one tiles, and that chooser covers the screen and swallows the next
   // keystroke
@@ -436,10 +454,6 @@ try {
   } catch {
     tilingPopup = undefined
   }
-  console.log('moving to an empty workspace…')
-  emptyWorkspace()
-  await delay(1500)
-
   console.log('launching JBrowse Desktop…')
   app = spawn(
     require('electron'),
@@ -450,13 +464,13 @@ try {
       env: {
         ...process.env,
         DEV_SERVER_URL: `http://localhost:${renderer.port}`,
+        ELECTRON_OZONE_PLATFORM_HINT: 'wayland',
       },
     },
   )
   await waitForApp(90000)
   await delay(4000)
-  // the only window on the workspace, so it holds focus and the tiling key
-  // reaches it
+  // the shell's only window, so it holds focus and the tiling key reaches it
   press(KEY.super, KEY.right)
   await delay(1500)
 
@@ -564,10 +578,10 @@ try {
     )
   }
   console.log(`tiled: the terminal is ${tiled} columns wide`)
-  // GNOME records the cursor, and it would otherwise sit wherever it was left
-  execFileSync('ydotool', ['mousemove', '-a', '-x', '1500', '-y', '4'], {
-    env: { ...process.env, YDOTOOL_SOCKET: ydotoolSocket },
-  })
+  // GNOME records the cursor; park it in the top bar, clear of both windows.
+  // The move is relative, so the first one pins it to the corner.
+  movePointer(-WIDTH, -HEIGHT)
+  movePointer(1500, 4)
 
   const stopFlag = path.join(outDir, 'stop.flag')
   fs.rmSync(stopFlag, { force: true })

@@ -31,9 +31,9 @@ than scrubbing the video. Take modules are the shared `TURNS`/`SHELL`/`SYSTEM`
 shape; `STEPS` (a prompt with the sentence that narrates it) is this harness's
 own variant.
 
-Placement is deterministic here, so none of the Linux harness's workspace,
-tiling-extension and seat0 apparatus is needed: System Events sets both window
-frames outright. What does bite:
+Placement is deterministic here, so none of the Linux harness's headless-shell
+and tiling apparatus is needed: System Events sets both window frames outright.
+What does bite:
 
 - **Terminal's font size must be set BEFORE its bounds.** Terminal answers a
   font change by resizing the WINDOW to preserve its column count, so bounds set
@@ -117,25 +117,25 @@ so a `SHELL` take's files stay out of the mp4, and `JBROWSE_DESKTOP_ROOT` points
 the client at another checkout's `build/`, so a worktree can film against the
 primary's.
 
-- **Side-by-side is automated, and every part of it can fail silently.** The
-  take walks to the last workspace, which dynamic workspaces keep empty, so the
-  windows it opens are the only ones in frame and the only ones focus can land
-  on; then `ydotool` presses Super+Right for JBrowse and Super+Left for the
-  terminal, and GNOME's own tiling does the arranging.
-- **An inactive session eats every injected key and says nothing.** A locked
-  screen, or another VT in front — the GDM greeter counts — and `ydotool` still
-  exits 0, the events still reach `/dev/input`, and the compositor never
-  processes them. The harness refuses to start unless seat0's active session is
-  yours; that check is the difference between a clear error and an hour of
-  chasing the input stack. **Never inject Ctrl+Alt+F<n>**: it is the VT-switch
-  chord, so it drops the session to the greeter, which is one way to arrive at
-  the trap above.
+- **The take runs in its own headless GNOME Shell**
+  (`gnome-shell --headless --virtual-monitor 1920x1080`) on a private session
+  bus. It loads the desktop's extensions and wallpaper, so the frame looks like
+  the desktop, but nothing on the desk can take focus or a keystroke from it,
+  and the real screen may be locked or in use. `<outdir>/shell.log` is its
+  stderr.
+- **Side-by-side is automated.** `remoteInput.py` presses Super+Right for
+  JBrowse and Super+Left for the terminal through mutter's
+  `org.gnome.Mutter.RemoteDesktop`, and GNOME's own tiling does the arranging.
+  ydotool cannot do this: it writes to the real seat's `/dev/input`, which a
+  headless shell does not read.
 - **Ubuntu binds the tiling keys through its Tiling Assistant extension**
   (`org.gnome.shell.extensions.tiling-assistant tile-left-half`), and leaves
   mutter's own `toggle-tiled-left`/`-right` explicitly empty. Empty mutter keys
   are not the missing binding they look like. The harness turns that extension's
   tiling popup off for the take and puts it back afterwards — it would otherwise
-  cover the other half and swallow the next keystroke.
+  cover the other half and swallow the next keystroke. The setting lives in
+  dconf, which the headless shell shares with the desktop, so the desktop loses
+  the popup for the length of a take too.
 - **The layout is checked, not assumed.** `tmux display -p '#{client_width}'`
   follows the attached client, so a pane width that does not move says the
   tiling key went somewhere else, and the take stops before it films anything.
@@ -147,13 +147,6 @@ primary's.
   is not declared there.
 - It opens the built-in hg38, which renders on a fresh build; a stale one shows
   a protein3d/tss-react worker error, so **always rebuild first**.
-- `ydotoold` has to be running and its socket readable by you:
-  `sudo ydotoold --socket-path=/tmp/.ydotool_socket --socket-own=$(id -u):$(id -g)`.
-  Where it runs as the systemd user service instead, the socket is
-  `/run/user/$(id -u)/.ydotool_socket`, so pass that as `YDOTOOL_SOCKET`.
-- **Nobody may touch the keyboard or mouse for the first ~15 s**, while the
-  harness presses the tiling keys: input from the desk sends the keystroke
-  elsewhere, and the take stops with "the terminal did not tile".
 - Stop a take with
   `kill -INT $(pgrep -xf "node scripts/agent-demos/recordDemoTui.mjs")`; a bare
   `pkill -f recordDemoTui.mjs` also matches the shell running it and kills that
@@ -167,8 +160,8 @@ primary's.
   open for the whole take.
 - **Under GPU-less Xvfb the electron GPU process fatals**
   (`GPU process isn't usable. Goodbye`) even with `--disable-gpu` and
-  swiftshader flags, which is why this films on the real `:0` display. The
-  terminal half works fine under Xvfb; JBrowse does not.
+  swiftshader flags. The headless shell renders through the machine's GPU
+  instead, and Electron's WebGL2 there reports hardware ANGLE.
 - Isolated `--user-data-dir` under `<outdir>`, so a take never touches a real
   session, the recent list or an autosave.
 

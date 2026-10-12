@@ -1,6 +1,6 @@
 ---
 name: reshoot-agent-client-clips
-description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app. None of the three is shot — E. coli Take 1's video is gone, so it is a reshoot, with the fixes its notes record. Blocked only on a quiet desktop, since the tiling keystroke needs focus. Read before filming any agent-client clip.
+description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app. None of the three is shot — E. coli Take 1's video is gone, so it is a reshoot, with the fixes its notes record. The harness now films in a headless GNOME Shell, so nothing blocks a take but running it. Read before filming any agent-client clip.
 ---
 
 # Reshoot the agent client clips
@@ -10,6 +10,10 @@ app) and two clips from the older `agentDemo.mjs` (the JBrowse window alone):
 `agent_synteny_take1` and `agent_derivative_take1`. The goal is three clips
 shot with `recordDemoTui.mjs`, so every one shows the real Claude Code TUI
 beside JBrowse. **Delete this file when the new clips are embedded.**
+
+The harness films in its own headless GNOME Shell. A smoke take on 2026-10-11
+tiled both windows and typed its prompt, and then stopped at the account's
+weekly Opus limit (resets 2026-10-16), so shoot `takes/smoke.mjs` again first.
 
 The harness, its traps and how to run a take are `scripts/agent-demos/CLAUDE.md`;
 each take's plan, and its staging under "Before filming", is
