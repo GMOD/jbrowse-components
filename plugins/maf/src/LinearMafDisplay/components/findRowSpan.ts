@@ -15,10 +15,9 @@ export interface RowSpan {
   end: number
 }
 
-// Widen `spans[row.rowIndex]` by the row's own coordinates over the reference
-// range. A row whose block names a different chromosome than the one already
-// recorded contributes nothing, which is what keeps the answer one navigable
-// locus across a rearrangement in the aligned genome.
+// Widen `spans[row.rowIndex]` by the row's coordinates over the reference
+// range. A block on a different chromosome than the one recorded contributes
+// nothing, keeping one navigable locus across a rearrangement.
 function widenRowSpan(
   spans: Map<number, RowSpan>,
   block: MafBlock,
@@ -76,26 +75,16 @@ function widenRowSpan(
 }
 
 /**
- * Each requested row's own locus under a reference bp range: the extent of that
- * row's non-gap bases between `startBp` and `endBp`. This is the span form of
- * the single-base coordinate `findRowHoverAtBp` reports, and shares
- * `forwardPos` with it so a `−`-strand row's mirror through `srcSize` can't
- * disagree between the tooltip and a navigation target.
+ * Each requested row's own locus under a reference bp range: the extent of its
+ * non-gap bases between `startBp` and `endBp`. The span form of
+ * `findRowHoverAtBp`'s coordinate, sharing `forwardPos` with it.
  *
- * A row can change chromosome between blocks (a rearrangement in the aligned
- * genome). The first block contributing a base fixes the chromosome and later
- * blocks on a different one are skipped, so each result is one navigable locus
- * rather than a span across a join that doesn't exist in that genome.
+ * A row that changes chromosome keeps the first chromosome that contributes a
+ * base. A row with no aligned base in the range, or whose blocks carry no
+ * per-row coordinates, is absent.
  *
- * A row with no aligned base in the range is absent from the result, as is one
- * whose blocks carry no per-row coordinates (they're optional tooltip
- * metadata).
- *
- * **Every requested row in one walk**, because the track menu asks for all of
- * them at once (`visibleRowTargets`). Answering one row at a time meant a pass
- * over the whole buffered region per row, each block of it scanned with
- * `rows.find` — a cohort MAF's row count squared, times the block count, on
- * every track-menu open.
+ * Walks every requested row at once, because the track menu asks for all of
+ * them (`visibleRowTargets`).
  */
 export function findRowSpans(
   region: MafRegionData,

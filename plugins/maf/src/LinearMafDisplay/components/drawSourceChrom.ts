@@ -10,13 +10,11 @@ import type {
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { SpanChannels } from '@jbrowse/render-core/marks'
 
-// Per-rank palette for the color-by-source-chromosome mode. Coloring is by a
-// source chromosome's RANK within its own species row (see perRowChromRanks) —
-// not by the chromosome name — so every row's main chromosome shares rank 0's
-// calm primary color and the whole track reads as one color except where a row
-// switches to a minority source chromosome (the rearrangement signal), which
-// picks up a saturated accent. This is what keeps the view from becoming a
-// rainbow when hundreds of species each use their own scaffold-naming scheme.
+// Per-rank palette for color-by-source-chromosome. Coloring is by a
+// chromosome's rank within its own species row (`perRowChromRanks`), not its
+// name, so every row's main chromosome shares rank 0's calm color and a
+// minority source chromosome (the rearrangement signal) picks up a saturated
+// accent.
 export const SOURCE_CHROM_PALETTE = [
   'hsl(210, 55%, 55%)', // rank 0 — primary (main chromosome), calm blue
   'hsl(28, 85%, 55%)', // rank 1 — orange
@@ -25,8 +23,8 @@ export const SOURCE_CHROM_PALETTE = [
   'hsl(150, 45%, 42%)', // rank 4+ — green
 ]
 
-// Descriptive legend labels paired with the palette (index = rank). Tail ranks
-// reuse the last "other" label, matching the clamped color.
+// Legend labels paired with the palette (index = rank); tail ranks reuse the
+// last "other" label, matching the clamped color.
 export const SOURCE_CHROM_RANK_LABELS = [
   'Main chromosome',
   '2nd source',
@@ -43,20 +41,10 @@ export function sourceChromRankLabel(rank: number): string {
 
 /**
  * The color key for the source-chromosome rendering: one row per rank present
- * in view, capped at the palette's last entry.
- *
- * The cap is the point, and it belongs here with the two clamps it follows from
- * rather than in the model, which only knew the max rank. Both the color and
- * the label saturate at the last slot ("Other source"), so ranking a row across
- * more source chromosomes than the palette has — routine for a scaffold-level
- * assembly in a many-way alignment, where one row can draw from dozens —
- * emitted an identical "Other source" row per extra rank. The key then grew
- * with the fragmentation of the worst genome on screen while saying nothing new
- * past the fifth entry, and on a tall alignment it grew over the rows.
- *
- * A lone "Main chromosome" entry is the meaningful minimum: it says nothing in
+ * in view, capped at the palette's last entry, where color and label both
+ * saturate ("Other source"). A lone "Main chromosome" entry means nothing in
  * view is rearranged. A rank `color.labels` names takes that name, and a
- * written `color.range` its colors, the key stopping at its last.
+ * written `color.range` its colors.
  */
 export function sourceChromLegendItems(
   maxRank: number,

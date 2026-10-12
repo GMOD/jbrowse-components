@@ -42,9 +42,8 @@ function rowUnder(model: LinearMafDisplayModel, x: number, y: number) {
   return row ? { name: row.name } : undefined
 }
 
-// Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
-// ref to the chrome container (so it can't live in the body). The drag object
-// flows to the body as a single prop.
+// Thin outer: owns the DisplayChrome and the drag-selection hook, which needs a
+// ref to the chrome container.
 const LinearMafDisplay = observer(function LinearMafDisplay(props: {
   model: LinearMafDisplayModel
 }) {
@@ -56,13 +55,10 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       openInsertionWidgetOnClick(model, x, y)
     },
   })
-  // the bands, the sidebar (which owns its own node menu) and the inter-region
-  // gutter resolve to nothing, so the browser's menu falls through there
   function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
     const { x, y } = eventPoint(e)
-    // The hit is resolved here rather than inside an item's onClick, because
-    // `closeContextMenu` runs first when an item is clicked — the same reason
-    // the column is captured here.
+    // The hit resolves here because `closeContextMenu` runs before an item's
+    // onClick.
     const { pos, baseBp, inBands, hover } = resolveMafPointerHit({
       model,
       mouseX: x,
@@ -131,32 +127,21 @@ const MafBody = observer(function MafBody({
 }) {
   const { rowsHeight, rowsTopOffset } = model
   const [resizeActive, setResizeActive] = useState(false)
-  // the canvas box, not the viewport: must equal renderState.canvasWidth, and
-  // every overlay below is positioned in the same space — see canvasWidthPx
+  // The canvas box, not the viewport: must equal renderState.canvasWidth (see
+  // canvasWidthPx).
   const width = model.canvasWidthPx
 
   const { isDragging, selectionRect, contextCoord, setContextCoord } = drag
-  // Read here rather than in the component above, which is the one that renders
-  // `DisplayChrome`: this display used to hold the position in `useDragSelection`'s
-  // state, so every hover re-rendered the whole chrome. Read in the body it
-  // re-renders the body, whose children are all observers taking stable model
-  // getters and so memo-skip (ADR-028 measured exactly this).
-  //
-  // Measured against the chrome container, which is the same element
-  // `useDragSelection`'s own `relativeXY` measures against — maf passes that
-  // container as its `ref` — so `x`/`y` here and the drag rect's corners are in
-  // one coordinate space, as they were when both came off the same state.
+  // Read here, not in the outer component, so a hover re-renders the body only
+  // (ADR-028). Measured against the chrome container, as `useDragSelection`'s
+  // `relativeXY` is, so `x`/`y` and the drag rect share a coordinate space.
   const mouse = useMouseState(mouseTracker)
 
-  // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
   const dataLeft = treeSidebarRightEdge(model)
 
-  // One projection + hit-test per mousemove, shared by the cursor style below
-  // and by the tooltip, which used to resolve the same hover from the same
-  // coordinates a second time. Row resolution is off mid-drag so the tooltip
-  // keeps showing the selection's range readout. The cursor and its hit are one
-  // object so the crosshairs and the tooltip can't be handed one without the
-  // other.
+  // One projection and hit test per mousemove, shared by the cursor style and
+  // the tooltip. Row resolution is off mid-drag so the tooltip keeps the
+  // selection's range readout.
   const pointer =
     mouse && mouse.x > dataLeft
       ? {

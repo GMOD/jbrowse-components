@@ -32,21 +32,13 @@ import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 
-// Compact row for the plain show/hide toggles, which are otherwise a dozen
-// near-identical four-line literals. Reads the current value and hands the
-// negation to the setter explicitly, so no event argument can reach it.
-// A checkbox row keeps the menu open by its type — users flip several of these
-// in one visit, and the menu is an observer, so the ticks move live.
-// Both bands are computed from the per-base alignment, which the zoom-out
-// summary tier does not read — so past the floor they collapse and the tick
-// keeps reporting what the user chose. Said out loud, because otherwise the
-// only feedback for ticking either one there is nothing happening.
+// Both bands need the per-base alignment, which the summary tier does not read.
+// The tick keeps the user's choice and this hint says why nothing draws.
 export const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
 
 /**
- * The same override applied to a row whose ACTION the summary tier has taken
- * away rather than its setting: the row keeps its place and says why it cannot
- * act, instead of being enabled and silently doing nothing.
+ * A row whose action the summary tier took away keeps its place and says why it
+ * cannot act.
  */
 export function zoomGatedItem(item: MenuItem, hint: string | undefined) {
   return hint ? { ...item, disabled: true, disabledHelpText: hint } : item
@@ -54,8 +46,6 @@ export function zoomGatedItem(item: MenuItem, hint: string | undefined) {
 
 interface MafMenuSelf
   extends IStateTreeNode, MafClusterSelf, TreeLayoutModel<MafSource> {
-  // The shared "Show legend" row: LegendMixin's members, plus whether this
-  // display has a key for them to be about.
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
@@ -70,10 +60,9 @@ interface MafMenuSelf
   showAlignments: boolean
   showConservation: boolean
   showReferenceRow: boolean
-  // Not settings and not settable — the three states in which a tick above is
-  // correct and inert anyway. Read only to say so: the summary tier (both band
-  // toggles), base-level zoom (the codon row coloring), and a frames read the
-  // byte pre-flight declined (the CDS strip).
+  // Not settings: states in which a tick is correct yet inert (summary tier,
+  // base-level zoom, a frames read the byte pre-flight declined). Read only to
+  // say so.
   coarseTierActive: boolean
   zoomedToBaseLevel: boolean
   framesGateBlocked: boolean
@@ -81,14 +70,11 @@ interface MafMenuSelf
   showAnnotations: boolean
   showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  // what the Row coloring radio ticks, and the pick it writes (color and y)
   selectedRowRendering: RowRendering
   setRowRendering: (m: RowRendering) => void
   rowIdentityAutoZoom: boolean
-  // Both halves of maf's row-height axis, declared so the shared
-  // `rowHeightMenuItem` contract is checked here rather than only satisfied at
-  // runtime: maf is the one display with a proportion, and it is what makes the
-  // shared "Custom..." dialog grow its second field.
+  // Declared so the shared `rowHeightMenuItem` contract is checked here; maf is
+  // the one display with a proportion.
   rowHeight: number
   rowProportion: number
   editableSources: MafSource[]
@@ -116,14 +102,10 @@ interface MafMenuSelf
   resetRowArrangement: () => void
 }
 
-// The CDS-frame overlays only mean anything with a reading frame, so they
-// appear only when an `annotationAdapter` (mafFrames) is configured.
-//
-// The strip is the one thing here that can be on, and correctly on, and still
-// draw nothing — the frames file is one record per CDS exon *per species*, so
-// the RPC's own byte gate declines the read at wide spans on a deep alignment
-// (`executeMafAnnotationData`). That failure is deliberately soft, which is
-// exactly why it has to be said here: nothing else on screen changes.
+// The CDS-frame overlays need a reading frame, so they appear only with an
+// `annotationAdapter` (mafFrames). The strip can be on and draw nothing when
+// the RPC's byte gate declines the read (`executeMafAnnotationData`), so the
+// menu says so.
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
     ? [
@@ -142,10 +124,9 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 }
 
 /**
- * What the rows are colored by, as one radio over `color` and `y`. The
- * codon and identity options can tick a rendering that yields at the current
- * zoom; the tick stays on the setting, and the hint and the toggle below say
- * why the rows show bases instead.
+ * What the rows are colored by, as one radio over `color` and `y`. The codon
+ * and identity options can tick a rendering that yields at the current zoom;
+ * the hint and toggle say why the rows show bases.
  */
 function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
   const [codonValue, codonLabel] = CODON_ROW_RENDERING
@@ -158,8 +139,6 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
     },
     options: [
       ...ROW_RENDERINGS,
-      // Codons need a reading frame, so the option appears only where a
-      // mafFrames adapter can define one — same gate as the CDS-frame row.
       ...(self.annotationAdapterConfig
         ? [
             [
@@ -173,16 +152,10 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
         : []),
     ],
     extraItems: [
-      // Named for what it does, not for the mechanism. "Auto-switch by zoom"
-      // said neither which two things swap nor which way round — so the only
-      // thing the label had to carry (that zooming in gives you the letters
-      // back) was the part it left out.
       toggleItem(
         'Show bases when zoomed in',
         self.rowIdentityAutoZoom,
         self.setRowIdentityAutoZoom,
-        // The dependency stated rather than gated on: it qualifies the two
-        // identity options above and is inert under the others.
         { helpText: 'for the identity plots above' },
       ),
       toggleItem(
@@ -203,9 +176,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
-    // Only where a key exists to show: `bases` mode paints the reference's own
-    // base colors, which nothing decodes, so the row would toggle a legend that
-    // never draws.
+    // Only where a key exists: `bases` mode has nothing to key.
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
     toggleItem(
       withHint(
@@ -216,9 +187,6 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.setShowCoverage,
     ),
     toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
-    // Under the default mismatch coloring every cell in the reference's own row
-    // matches by definition, so it is a solid match-colored bar carrying no
-    // information. UCSC omits it.
     toggleItem(
       'Show reference row',
       self.showReferenceRow,
@@ -232,8 +200,6 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showConservation,
       self.setShowConservation,
     ),
-    // Per-codon (amino-acid) conservation needs a reading frame, so the
-    // resolution radio only appears alongside the other frame-gated items.
     ...(self.annotationAdapterConfig
       ? [
           makeRadioSubMenu({
@@ -246,8 +212,6 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
           }),
         ]
       : []),
-    // An overlay drawn on top of whatever the rows are colored by, not one of
-    // the alternatives in "Row coloring" — so it stays a plain toggle here.
     toggleItem(
       'Show inversions (strand flips)',
       self.showInversions,
@@ -260,25 +224,16 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     rowHeightMenuItem(self, HEIGHT_PRESETS),
-    // Top level rather than inside "Show...": it is the one choice that decides
-    // what the rows look like, and the neighbouring wiggle displays surface
-    // their equivalent ("Plot type") at the top level too.
+    // Top level, like the wiggle displays' "Plot type".
     rowRenderingMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
     rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
-    // maf used to have no "Clustering" submenu, on the grounds that its tree is
-    // the adapter's guide phylogeny rather than a run, and it took the shared
-    // subtree-filter item flat instead. There is a run now — per-bin identity to
-    // the reference over the drawn rows — so the submenu is where it and the
-    // "Clustered on <locus>" provenance belong, and the filter item moves inside
-    // with them.
     clusteringMenuItem(
       self,
       {
         label: 'Cluster rows by identity...',
-        // the count below is `sources`, the post-filter list, so one row there
-        // is as often a clade focused down to a single species as a track still
-        // loading — which is this display's own reason and is stated here
+        // `sources` is the post-filter list, so one row is as often a clade
+        // focused to one species as a track still loading.
         disabled: !self.sourcesKnown,
         disabledHelpText: 'Loading rows...',
         onClick: () => {
@@ -290,8 +245,6 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       },
       self.sources.length,
     ),
-    // The way back from a drag-reorder in the arrangement dialog and from a
-    // clustering run alike.
     ...resetRowOrderMenuItems(self),
   ]
 }

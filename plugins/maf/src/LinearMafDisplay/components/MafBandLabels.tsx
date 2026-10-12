@@ -10,10 +10,8 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 // Just clear of the Y-axis gutter the two bands share.
 const LABEL_X = AXIS_GUTTER_WIDTH_PX + 2
 const FONT_SIZE = 9
-// The on-screen label is a block with 1px of padding above it, so its text sits
-// about a font-size below the band's top edge. SVG `<text>` is placed by that
-// baseline directly, so the offset the CSS box implies has to be spelled out —
-// otherwise the exported caption rides up out of its band.
+// SVG `<text>` is placed by baseline, so spell out the offset the on-screen
+// label's CSS box implies (1px padding plus a font-size).
 const BASELINE_OFFSET = FONT_SIZE + 1
 
 const useStyles = makeStyles()(theme => ({
@@ -31,12 +29,8 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The band titles for the SVG export, beside their on-screen half so the x
- * and the font can't be spelled two ways.
- *
- * What is titled, and when, is `model.bandLabels` — the export used to draw no
- * titles at all, which lost them from the one figure that needs them most (both
- * histograms rendered into a PNG where nothing can be hovered to disambiguate).
+ * The band titles for the SVG export, beside their on-screen half so the x and
+ * the font are spelled once. `model.bandLabels` decides what is titled.
  */
 export function SvgMafBandLabels({
   labels,
@@ -61,7 +55,6 @@ export function SvgMafBandLabels({
   )
 }
 
-// The on-screen half.
 const MafBandLabels = observer(function MafBandLabels({
   model,
 }: {

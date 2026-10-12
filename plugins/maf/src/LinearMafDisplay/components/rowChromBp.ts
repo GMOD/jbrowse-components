@@ -13,9 +13,8 @@ export interface StrandBp {
 export type RowChromBp = Map<number, Map<string, StrandBp>>
 
 /**
- * Per region, so a region landing walks only itself, and keyed on the region
- * object: `placeMafRegionData` builds a fresh one per fetch and per row
- * reorder, which is when its baked `rowIndex` stops being true.
+ * Per region, keyed on the region object, since `placeMafRegionData` builds a
+ * fresh one per fetch and reorder, when its baked `rowIndex` stops being true.
  */
 const regionCache = new WeakMap<MafRegionData, RowChromBp>()
 

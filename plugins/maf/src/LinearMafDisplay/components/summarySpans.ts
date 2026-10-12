@@ -10,12 +10,9 @@ import type {
 import type { MafSummaryRecord } from '../../types.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// `score` here is the UCSC `bigMafSummary` score: a normalized HOXD70 log-odds
-// *alignment* score (per-reference-base, squashed into 0..1 by
-// hgLoadMafSummary's scorePairwise), NOT a percent identity — high scores read
-// as "more conserved/aligned", but the mapping to true identity is nonlinear.
-// For an actual percent-identity profile see the conservation band. Low-score blocks still need to read as "present", so
-// map 0..1 onto a floor..1 alpha rather than fading fully transparent.
+// `score` is the UCSC `bigMafSummary` score: a normalized HOXD70 log-odds
+// alignment score, not a percent identity (the conservation band shows that).
+// Low-score blocks still read as present, so map 0..1 onto a floor..1 alpha.
 const MIN_ALPHA = 0.25
 
 export function summaryBarAlpha(score: number) {
@@ -26,15 +23,13 @@ export function summaryBarAlpha(score: number) {
 /**
  * The zoom-out per-species presence bars as `span` channels: one instance per
  * summary block per species, across the block's reference extent on the
- * species' row, in the alignment `matchColor` at a score-proportional alpha,
- * so a higher-scoring (more conserved) block reads darker than a divergent one.
- * A record whose `src` names no display row draws nothing — the summary file
- * can carry species the track does not list.
+ * species' row, in the alignment `matchColor` at a score-proportional alpha. A
+ * record whose `src` names no display row draws nothing.
  *
  * `records[i]` is the record instance `i` draws. The painter reads none of it,
- * but the hover does: `leftStatus`/`rightStatus` are the one part of a
- * `bigMafSummary` row that says what sits between two runs, and a
- * `maf2bed --summary` BED omits them, so every reader tolerates their absence.
+ * but the hover does: `leftStatus`/`rightStatus` say what sits between two
+ * runs, and a `maf2bed --summary` BED omits them, so every reader tolerates
+ * their absence.
  */
 export function encodeSummarySpans(
   records: readonly MafSummaryRecord[],
@@ -74,14 +69,9 @@ export function encodeSummarySpans(
 
 /**
  * The summary record drawn under canvas x `x` on display row `rowIndex`, or
- * undefined. The zoom-out tier's only hover: the alignment blocks the ordinary
- * hover resolves against are not what this tier draws.
- *
- * Hit-tested against the mark's own ink rather than the record's bp span,
- * because a block narrower than a pixel is widened to one and at these zooms
- * most of them are — a bp test would find nothing under a bar the user is
- * plainly pointing at. Half-open at the right edge, so adjacent bars do not
- * both match.
+ * undefined: the zoom-out tier's only hover. Hit-tested against the mark's own
+ * ink, since a block narrower than a pixel is widened to one. Half-open at the
+ * right edge, so adjacent bars do not both match.
  */
 export function summaryAt(
   payloads: ReadonlyMap<number, MafRowsPayload>,

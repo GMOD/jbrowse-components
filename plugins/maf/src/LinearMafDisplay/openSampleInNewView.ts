@@ -48,16 +48,10 @@ export function findAssemblyConf(configJson: unknown, assemblyName: string) {
 }
 
 /**
- * Load the target assembly as a session assembly when the session doesn't
- * already have it.
- *
- * A portal hosting many genomes keeps one config per genome — an alignment's
- * species are not, and cannot be, all present in the config the user opened
- * (genomes.jbrowse.org has ~50k). Fetching just the one assembly at click time
- * is what makes the row navigable without inlining hundreds of assemblies into
- * every alignment's config. `addRelativeUris` is required for the same reason
- * `JB2TrackHubConnection` runs it: the fetched config's relative sequence URIs
- * must resolve against the config, not the page.
+ * Load the target assembly as a session assembly when the session lacks it.
+ * Fetching the one config at click time keeps hundreds of assemblies out of
+ * every alignment's config; `addRelativeUris` makes its relative sequence URIs
+ * resolve against the config, not the page.
  */
 export async function ensureAssembly(
   session: AbstractViewContainer & AssemblyHost,
@@ -65,11 +59,9 @@ export async function ensureAssembly(
 ) {
   const { assemblyConfigLocation, assemblyName } = target
   if (assemblyConfigLocation && !session.assemblyManager.has(assemblyName)) {
-    // resolveUriLocation applies baseUri, which addRelativeUris stamped on when
-    // the declaring config was itself fetched from a url. A config handed over
-    // as an object has none, and its uri is then whatever the author wrote —
-    // which fetch resolves against the page, so resolve the same way here
-    // rather than letting `new URL` throw on a relative one.
+    // A config handed over as an object has no `baseUri`; resolve its uri
+    // against the page as fetch would, so `new URL` does not throw on a
+    // relative one.
     const { uri } = resolveUriLocation(assemblyConfigLocation)
     const configUrl = new URL(uri, globalThis.location.href)
     const configJson: unknown = JSON.parse(
@@ -91,10 +83,8 @@ export async function ensureAssembly(
 
 /**
  * Open the aligned sample's own genome at the locus its MAF row covers, with
- * the session's annotation for it — the same view the synteny track's "Open
- * ... at the matching region" gives a mate. The view id is keyed on the
- * display and the sample, so repeatedly following the same species' rows
- * re-navigates one view instead of stacking new ones.
+ * the session's annotation for it. The view id keys on the display and sample,
+ * so following the same species again re-navigates one view.
  */
 export async function openSampleInNewView(
   session: AbstractViewContainer & AssemblyHost & TrackCatalog,

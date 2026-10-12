@@ -56,26 +56,19 @@ class CigarRuns {
 }
 
 /**
- * A MAF row over a reference range, as synteny features — one per block the
- * row aligns in — with no adapter and no preprocessing: the gapped columns
- * already state the per-base correspondence a PAF states as a CIGAR.
- *
- * Column by column: both bases is `M`, a reference gap is `I` (the row has a
- * base the reference lacks), a row gap is `D`. Only columns whose reference
- * base lies inside `[startBp, endBp)` count, plus the insertions between two
- * such bases — an insertion after the last included base falls outside, the
- * half-open way. The row's own coordinates come through `forwardPos`, the same
- * mirror through `srcSize` the hover and the navigation target use, so a
- * `-`-strand row's mate span cannot disagree with either.
+ * A MAF row over a reference range as synteny features, one per block the row
+ * aligns in, with the CIGAR read off the gapped columns: both bases `M`, a
+ * reference gap `I`, a row gap `D`. Only columns whose reference base lies
+ * inside `[startBp, endBp)` count, plus insertions between two such bases. The
+ * row's coordinates come through `forwardPos`, the same mirror through
+ * `srcSize` the hover and navigation target use.
  *
  * A `-` row is emitted on the minus strand with the mate in forward
- * coordinates: walking the columns forward walks the row from its mate END
- * backwards, which is exactly the orientation a synteny CIGAR is read in.
+ * coordinates, the orientation a synteny CIGAR is read in.
  *
- * A block in which the row has no base inside the range yields no feature — a
- * deletion-only block is not an alignment of anything. A row that changes
- * chromosome between blocks keeps the first chromosome, as `findRowSpan` does,
- * so the result is one navigable locus. `undefined` when nothing aligns.
+ * A block where the row has no base inside the range yields no feature. A row
+ * that changes chromosome between blocks keeps the first, as `findRowSpan`
+ * does. `undefined` when nothing aligns.
  */
 export function buildMafRowSynteny({
   region,

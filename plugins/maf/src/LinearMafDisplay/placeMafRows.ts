@@ -9,28 +9,16 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 /**
- * Rehydrate the columnar wire into per-block row objects, assigning each row its
- * on-screen row index.
+ * Rehydrate the columnar wire into per-block row objects, assigning each row
+ * its on-screen row index from `rowIndexBySrc`, the `sources`-to-row projection
+ * that labels, overlays and hit tests share. A reorder re-places cached data
+ * without refetching.
  *
- * The worker names rows by species and knows nothing about display order, so
- * this is where a fetched row becomes a *placed* row. Placement runs against
- * `rowIndexBySrc` — the same `sources`→row projection every label, overlay and
- * hit test uses — so the payload and the labels can't disagree about which row
- * is which. It is also what lets a reorder re-place cached data instead of
- * refetching it (see the placement autorun in the state model).
+ * Rows the display isn't drawing are dropped, not placed at a sentinel:
+ * downstream code keys on `rowIndex`, and a shared sentinel would collide.
  *
- * Rows the display isn't drawing are dropped rather than placed at a sentinel:
- * a species can be in the file but absent from `sources` (a stale saved layout,
- * or a discovery track mid-union), and everything downstream — the instance
- * buffer, `rowFlank`, the identity plot — keys on `rowIndex` and would collide
- * on a shared sentinel.
- *
- * Rehydrating here rather than in the worker is what lets the wire be columnar
- * for free: this function already had to rebuild every row object to stamp
- * `rowIndex` on it, so materializing them from typed arrays instead of from
- * other objects costs almost nothing (measured 30ms → 47ms at 83k rows) against
- * the seconds it saves in `postMessage`. Every sequence field is an
- * `arena.subarray` view, so no bases are copied here or on any later reorder.
+ * Every sequence field is an `arena.subarray` view, so no bases are copied here
+ * or on any later reorder.
  */
 export function placeMafRegionData(
   data: MafWireRegionData,
@@ -67,9 +55,8 @@ export function placeMafRegionData(
     chrNames,
   } = data
 
-  // The species→screen-row projection resolved once per region instead of once
-  // per row: rows carry a sample *index*, and there are tens of thousands of
-  // rows over a couple dozen species. -1 is "not drawn", i.e. dropped below.
+  // The species-to-screen-row projection, resolved once per region; -1 means
+  // not drawn.
   const rowIndexBySample = sampleIds.map(id => rowIndexBySrc.get(id) ?? -1)
 
   const blocks: MafBlock[] = []
@@ -86,13 +73,11 @@ export function placeMafRegionData(
           chr: chrNames[rowChr[i]!],
           srcStart: rowStart[i]!,
           strand: rowStrand[i]!,
-          // 0 is the wire's "the adapter supplied none" — a source sequence of
-          // length 0 is not a thing, so the sentinel can't collide with a real
-          // srcSize.
+          // 0 is the wire's "the adapter supplied none"; a real srcSize is
+          // never 0.
           srcSize: rowSrcSize[i] === 0 ? undefined : rowSrcSize[i],
-          // `rowHasContext` and not a truthy status: a row can carry an `i`
-          // line whose statuses are both unrecognized, which still means the
-          // tooltip has context to show.
+          // `rowHasContext`, not a truthy status: an `i` line with two
+          // unrecognized statuses still has tooltip context.
           context: rowHasContext?.[i]
             ? {
                 leftStatus: decodeMafStatus(rowLeftStatus?.[i] ?? 0),
@@ -113,9 +98,8 @@ export function placeMafRegionData(
     ) {
       const rowIndex = rowIndexBySample[emptySample[i]!]!
       const status = decodeMafStatus(emptyStatus[i]!)
-      // An `e` line with no recognized status has nothing to draw — the status
-      // is what picks the line style — and the adapters already drop those, so
-      // this only guards a wire that somehow carried one.
+      // An `e` line with no recognized status has nothing to draw; the adapters
+      // already drop those.
       if (rowIndex >= 0 && status !== undefined) {
         empties.push({
           rowIndex,

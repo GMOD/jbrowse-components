@@ -14,9 +14,6 @@ import {
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 
-// The two lists the selection's rows lead to, built from one pass over them
-// rather than one each: the same pair the track menu offers over the visible
-// region.
 function rowTargetItems(
   model: LinearMafDisplayModel,
   contextCoord: ContextCoord,
@@ -30,12 +27,10 @@ function rowTargetItems(
 }
 
 /**
- * Right-click menu shown after the user finishes a drag-selection on the MAF
- * canvas: three submenus, so each destination is one row however many species
- * the drag covers. "All rows" opens the subsequence widget for every visible
- * sample; "Selected rows" narrows it to the rows the drag rectangle vertically
- * covers (via the shared `rowSpanAtY`, so the selection lands on the same rows
- * the hover hit-test would report).
+ * Right-click menu after a drag-selection on the MAF canvas: submenus so each
+ * destination is one row however many species the drag covers. "Selected rows"
+ * narrows to the rows the rectangle vertically covers, via `rowSpanAtY`,
+ * matching the hover hit test.
  */
 const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   model,
@@ -47,9 +42,8 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   setContextCoord: (c: ContextCoord | undefined) => void
 }) {
   const { samples, coarseTierActive } = model
-  // Both entries reach the per-base alignment the summary tier exists not to
-  // download, so both are off past its floor — the same override the track
-  // menu's own subsequence entry and the two band toggles carry.
+  // Both entries need the per-base alignment, so both are off past the summary
+  // tier's floor, like the track menu's subsequence entry.
   const zoomHint = coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
   const { startRow, endRow } = contextCoord
     ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)

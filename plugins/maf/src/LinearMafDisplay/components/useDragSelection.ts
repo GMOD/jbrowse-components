@@ -44,11 +44,8 @@ export function useDragSelection(
   }: {
     /**
      * Left edge of the data area: a press at or left of this (the tree sidebar
-     * and its resize handle) neither clicks nor starts a selection, because the
-     * genomic coordinate under it is the one the sidebar is covering. Without
-     * it, clicking a tree node also opened a feature widget for the row beneath
-     * it, and a drag begun over the sidebar produced a subsequence menu for
-     * coordinates the user can't see.
+     * and its resize handle) neither clicks nor starts a selection, since the
+     * sidebar covers the coordinate under it.
      */
     dataLeft: number
     onClick: (x: number, y: number) => void
@@ -65,10 +62,8 @@ export function useDragSelection(
   }
 
   // Don't start a selection when the press lands on a control that claimed it
-  // (a resize handle, say): the container owns this invariant, so controls
-  // dropped into the chrome are non-selectable without each one needing to
-  // stopPropagation. Nor on a right button, whose release opens the context
-  // menu rather than clicking whatever is under it.
+  // (a resize handle, say), or on a right button, whose release opens the
+  // context menu.
   function leavesPressToView(e: React.MouseEvent) {
     return (
       e.button > 0 ||
@@ -78,11 +73,9 @@ export function useDragSelection(
     )
   }
 
-  // The LGV pans on pointerdown (useSideScroll), and DisplayChrome spreads these
-  // handlers onto a div inside its TracksContainer, so a press the display keeps
-  // is stopped here, wherever it lands, including over the sidebar. A touch is
-  // left to the view: it raises no mouse events until it lifts, so it could
-  // never select, and a finger drag over the rows should still pan.
+  // The LGV pans on pointerdown (useSideScroll), so a press the display keeps
+  // is stopped here, including over the sidebar. A touch is left to the view so
+  // a finger drag over the rows still pans.
   function handlePointerDown(e: React.PointerEvent) {
     if (e.pointerType !== 'touch' && !leavesPressToView(e)) {
       e.stopPropagation()
@@ -105,20 +98,13 @@ export function useDragSelection(
     }
   }
 
-  // Only a live drag writes state here. The plain hover position used to be
-  // written on every move too, which re-rendered the component that renders
-  // `DisplayChrome` — so moving the cursor over a maf track re-ran
-  // `useRenderingBackend`, rebuilt the status container's inline style and every
-  // overlay, to move a crosshair. That position now comes from the chrome's
-  // `mouseTracker` (see `useMouseTracking`), which publishes rather than holds;
-  // this hook keeps only what is genuinely state, the rubberband's two corners.
+  // Only a live drag writes state here. The hover position comes from the
+  // chrome's `mouseTracker` (see `useMouseTracking`), so a plain move does not
+  // re-render the component that renders `DisplayChrome`.
   function handleMouseMove(e: React.MouseEvent) {
-    // The early return is what keeps a plain hover free: no `setState`, and no
-    // `getBoundingClientRect` either, since `relativeXY` reads layout. It tests
-    // the render-time `state`, so the updater re-tests its own — and returns `s`
-    // unchanged when there is no drag, which React bails out of rather than
-    // re-rendering. The final rect doesn't depend on either: `handleMouseUp`
-    // re-measures from its own event.
+    // The early return keeps a plain hover free of `setState` and
+    // `getBoundingClientRect`. The updater re-tests its own state and returns
+    // `s` unchanged without a drag, which React bails out of.
     if (!state.isDragging) {
       return
     }
@@ -131,8 +117,8 @@ export function useDragSelection(
   }
 
   function handleMouseUp(e: React.MouseEvent) {
-    // Decide outside the setState updater so the updater stays pure
-    // (React strict mode double-invokes updaters).
+    // Decide outside the setState updater so it stays pure (React strict mode
+    // double-invokes updaters).
     const { drag, isDragging } = state
     const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
@@ -146,10 +132,8 @@ export function useDragSelection(
       })
       setState(s => ({ ...s, isDragging: false, showSelectionBox: true }))
     } else if (isDragging) {
-      // Only a release that this display also saw the press for is a click.
-      // `handleMouseDown` bails on resize handles and on the tree sidebar, so
-      // without the `isDragging` test, releasing a band/sidebar resize drag over
-      // an insertion marker opened its feature widget.
+      // Only a release that this display saw the press for is a click:
+      // `handleMouseDown` bails on resize handles and the tree sidebar.
       const { x, y } = relativeXY(ref, e)
       onClick(x, y)
       setState(s => ({
@@ -188,17 +172,13 @@ export function useDragSelection(
   }, [ref, state.showSelectionBox])
 
   const { drag, isDragging, showSelectionBox } = state
-  // A press that hasn't travelled is a click, not a selection.
   const dragging = isDragging && drag !== undefined && movedFarEnough(drag)
 
   return {
     isDragging: dragging,
     /**
-     * The rubberband rect to draw, or undefined when there is nothing to show.
-     * Resolved here rather than by the consumer re-testing `isDragging`,
-     * `showSelectionBox` and each of the rect's four corners for undefined —
-     * this hook owns when a selection is live, and the corners are only ever
-     * present or absent together.
+     * The rubberband rect to draw, or undefined. This hook owns when a
+     * selection is live, and the corners are present or absent together.
      */
     selectionRect: dragging || showSelectionBox ? drag : undefined,
     showSelectionBox,

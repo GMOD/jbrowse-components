@@ -30,10 +30,9 @@ export interface RowTargetHost {
 }
 
 /**
- * The display slice these items read — the hit-test geometry plus the row
- * lookup and the id the launched view is keyed on. Structural for the same
- * reason `MafHitTestModel` is: it keeps this a plain function, testable with a
- * literal instead of a live MST tree.
+ * The display slice these items read: the hit-test geometry plus the row lookup
+ * and the id the launched view is keyed on. Structural, as `MafHitTestModel`
+ * is.
  */
 export type SampleNavigationModel = MafHitTestModel & {
   id: string
@@ -76,9 +75,8 @@ export function selectedRowTargets(
 export type RowTargets = ReturnType<typeof selectedRowTargets>
 
 /**
- * The same list over the whole window and every row, which is what the track
- * menu offers: a reader who has not drawn a selection has still chosen a locus,
- * by navigating to it.
+ * The same list over the whole window and every row, which the track menu
+ * offers: navigating to a locus has chosen it.
  */
 export function visibleRowTargets(
   session: RowTargetHost,
@@ -117,21 +115,17 @@ function rowTargetsBetween(
 ) {
   const left = mafPointerAt(model, leftPx, leftY)
   const right = mafPointerAt(model, rightPx, rightY)
-  // Literally `selectionRegion`, not a second span computed the same way: it
-  // orders the two edges on a reversed region and clips the right one into the
-  // left's region, and this had only the first half — so on a multi-region view
-  // every Launch entry named a span whose end was another chromosome's
-  // coordinate. `visibleRowTargets` takes px 0 and width-1, which is that case
-  // on every multi-region view.
+  // Literally `selectionRegion`, not a second span computed alike: it orders
+  // the two edges on a reversed region and clips the right one into the left's
+  // region. `visibleRowTargets` takes px 0 and width-1.
   const {
     refName,
     start: startBp,
     end: endBp,
   } = selectionRegion(left.pos, right.pos)
-  // The reference's own row leads nowhere this view is not already: a pangenome
-  // MAF carries the reference as a sample, and with its assembly loaded under
-  // that name the row resolves like any other. Compared through the assembly
-  // manager, since the view and the sample can spell one assembly two ways.
+  // The reference's own row leads nowhere new: a pangenome MAF carries the
+  // reference as a sample. Compared through the assembly manager, since the
+  // view and the sample can spell one assembly two ways.
   const targets = model
     .rowNavigationTargets(left.pos.index, startBp, endBp, startRow, endRow)
     .filter(

@@ -65,32 +65,21 @@ export interface EmptyHit {
 export type RowHit = CellHit | InsertionHit | DeletionHit | EmptyHit
 
 /**
- * The cursor's genomic position in the two forms a row hover needs, which are
- * genuinely different questions and used to be answered by one number.
- *
- * `gposFrac` is continuous, and the insertion hit-test wants exactly that: an
- * insertion is *interbase*, so what decides the hit is the px distance from the
- * cursor to a cell boundary.
- *
- * `baseBp` names a cell, so it has to be the base the painters actually put
- * under that pixel — `basePaintedAt` / render-core's `bpAtPx`, which pivot one
- * base on a reversed region. `Math.floor(gposFrac)` is not that: reversed, bp
- * runs leftward, so a base covers `(b, b+1]` and the floor names the base to
- * its right — `region.end` itself, outside the region entirely, on the region's
- * first pixel column. Every reader of this in the plugin (`openSubsequenceWidget`,
- * the coverage tooltip) already asked `basePaintedAt`; the row hover, the CDS
- * frame lookup and the codon tooltip were the three that still floored, so on a
- * flipped region they named a different base than the coverage band did for the
- * same pixel.
+ * The cursor's genomic position in the two forms a row hover needs. `gposFrac`
+ * is continuous, for the insertion hit test: an insertion is interbase, so the
+ * px distance to a cell boundary decides the hit. `baseBp` names a cell, so it
+ * is the base the painters put under that pixel (`basePaintedAt`, render-core's
+ * `bpAtPx`); on a reversed region `Math.floor(gposFrac)` names the base to its
+ * right.
  */
 export interface HoverBp {
   gposFrac: number
   baseBp: number
 }
 
-// Forward-strand coordinate of the base `baseOffset` non-gap bases into the row.
-// For '-' rows `srcStart` is relative to the reverse complement, so we mirror
-// through srcSize (the standard MAF coordinate transform).
+// Forward-strand coordinate of the base `baseOffset` non-gap bases into the
+// row; for '-' rows `srcStart` is relative to the reverse complement, so mirror
+// through srcSize.
 export function forwardPos(row: MafAlignedRow, baseOffset: number) {
   if (row.srcStart === undefined) {
     return undefined
@@ -168,12 +157,10 @@ function cellHitInRow(
 }
 
 // Resolve an insertion marker under the cursor from the channel the painter
-// draws, each row's insertions merged per `binBp` bin, so a merged marker
-// hovers as the insertion it shows. Insertions are interbase, so the hit test
-// measures genomic distance to the marker anchor, mirroring plugin-alignments
-// (same insertionBarWidth+4px box), and the nearest marker whose box holds the
-// cursor wins. `gposFrac` is the absolute fractional cursor coordinate;
-// distance is orientation-independent.
+// draws (each row's insertions merged per `binBp` bin). The hit test measures
+// genomic distance to the marker anchor, mirroring plugin-alignments
+// (insertionBarWidth+4px box); the nearest marker whose box holds the cursor
+// wins.
 function insertionHitInRow(
   region: MafRegionData,
   rowIndex: number,
@@ -257,10 +244,8 @@ function describeInsertion(
   return hit
 }
 
-// Resolve a deletion under the cursor: a run of reference bases where this
-// sample carries an alignment gap. Shares the `forEachDeletion` walk with the
-// bp-count overlay + Canvas2D export so hover and draw can't disagree on where
-// deletions are or how long they are.
+// Resolve a deletion under the cursor. Shares the `forEachDeletion` walk with
+// the bp-count overlay and Canvas2D export, so hover and draw agree.
 function deletionHitInRow(
   block: MafBlock,
   row: MafAlignedRow,
@@ -296,16 +281,11 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
 /**
  * Resolve what `rowIndex` shows at absolute genomic `bp`: an aligned base
  * (`cell`), an interbase `insertion` marker, a `deletion` run, or a
- * bridged/empty region (`empty`). Where the insertion markers are drawn,
- * merged per `insertionBinBp` bin, one under the cursor wins over the base it
- * abuts (within its narrow marker box), matching plugin-alignments; a gap cell
- * falls through to the deletion run that covers it. Returns undefined
- * when no block covers the bp or the row is absent. Blocks are genomically
- * disjoint and sorted, so `blockIndexAtBp` binary-searches the one covering
- * block — this runs on every mousemove against the *buffered* region, which is
- * tens of thousands of blocks on a fine-grained multiz. See `HoverBp` for why
- * the cell and the interbase marker are selected by two different readings of
- * the same cursor.
+ * bridged/empty region (`empty`). An insertion marker under the cursor wins
+ * over the base it abuts; a gap cell falls through to the covering deletion
+ * run. Returns undefined when no block covers the bp or the row is absent.
+ * `blockIndexAtBp` binary-searches because this runs on every mousemove against
+ * the buffered region. See `HoverBp`.
  */
 export function findRowHoverAtBp(
   region: MafRegionData,

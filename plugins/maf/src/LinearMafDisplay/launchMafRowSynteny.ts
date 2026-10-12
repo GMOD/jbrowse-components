@@ -29,20 +29,15 @@ export interface MafSyntenyLaunchModel {
 }
 
 /**
- * Open a two-row synteny view of the reference against one aligned sample
- * over the selection, the ribbons cut from the MAF columns themselves.
+ * Open a two-row synteny view of the reference against one aligned sample over
+ * the selection, the ribbons cut from the MAF columns themselves.
+ * `buildMafRowSynteny` turns the fetched blocks into features for a
+ * `SyntenyTrack` over an inline `FromConfigAdapter`, so the band closes with
+ * the view's own track node. The reference row carries the launching view's
+ * tracks, the sample row the session's annotation for that genome.
  *
- * No adapter and no preprocessing: `buildMafRowSynteny` turns the fetched
- * blocks into synteny features with a CIGAR, and those go into a `SyntenyTrack`
- * over a `FromConfigAdapter` written inline on the launch, so the band lives on
- * the view's own track node and closes with it. Only the reference-anchored
- * side is stored; the band's fetch queries the top row's axis, and the
- * reference is what opens on top. The reference row carries what the launching
- * view has open (the MAF included), the sample row the session's annotation for
- * that genome.
- *
- * The sample's assembly is loaded first where the sample names a config to
- * load it from, the same way its "Open ... at the matching region" item does.
+ * The sample's assembly loads first where the sample names a config, as its
+ * "Open ... at the matching region" item does.
  */
 export async function launchMafRowSynteny({
   host,

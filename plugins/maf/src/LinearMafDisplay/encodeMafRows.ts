@@ -115,13 +115,11 @@ function codonFills(fill: Record<string, string | undefined>): CodonFills {
 
 /**
  * One region's rows as the row marks' channels. Only the rendering on screen
- * encodes: the others' channels are empty or absent, which packs nothing and
- * releases the pass's GPU buffer.
+ * encodes: the others' channels are empty, which packs nothing and releases the
+ * pass's GPU buffer.
  *
- * Main thread on purpose: an edit to color or row order re-encodes without a
- * refetch. A fetch costs about 5 ms over 26 species and 62-94 ms over 470
- * (`plugins/maf/benches/mafEncodeRows.bench.ts`), a one-off
- * pause at fetch landing judged not worth a worker split.
+ * Main thread on purpose, so a color or row-order edit re-encodes without a
+ * refetch (cost: `plugins/maf/benches/mafEncodeRows.bench.ts`).
  */
 export function encodeMafRows(
   { detail, summary, frames }: MafRowsSource,
@@ -219,10 +217,9 @@ function pickInsertions(
 
 /**
  * `payload` less the instances no block of its region can show: rows scrolled
- * out of `rows`, and spans outside every block's painted bp range. The
- * conservation band sits above the rows, so only the bp range culls it. What the
- * SVG export paints, since a vector layer emits a `<rect>` for every fill
- * whether or not a clip then hides it.
+ * out of `rows` and spans outside every block's painted bp range. The
+ * conservation band sits above the rows, so only the bp range culls it. The SVG
+ * export paints this.
  */
 export function cullMafRows(
   payload: MafRowsPayload,

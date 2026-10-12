@@ -54,8 +54,8 @@ function MafSvgBody({
   } = model
   const theme = getMafOverlayTheme(palette)
   const colorPalette = theme.colors
-  // Each band paints into its own layer translated to that band's origin, so
-  // the rows painter sees its band at offset 0, not the display's stack.
+  // Each band paints into its own layer translated to its origin, so the rows
+  // painter sees offset 0.
   const svgState = {
     ...model.renderState,
     rowsTop: 0,

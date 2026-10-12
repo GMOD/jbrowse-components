@@ -25,12 +25,9 @@ const MAFTooltip = observer(function MAFTooltip({
   /** the cursor already projected + hit-tested by the display body */
   hit: MafPointerHit
   /**
-   * The chrome's measured pointer, **required**: an omitted `clientPoint` puts
+   * The chrome's measured pointer, required: an omitted `clientPoint` puts
    * floating-ui into pointer-tracking mode, which allocates a virtual reference
-   * on every window mousemove (ADR-028). This used to arrive as optional
-   * `clientX`/`clientY`, so the expensive mode was one missing prop away and
-   * nothing said so at the call site. The body only renders this with a
-   * pointer, so there is no absent case to model.
+   * on every window mousemove (ADR-028).
    */
   mouseState: MouseState
   model: LinearMafDisplayModel
@@ -48,17 +45,15 @@ const MAFTooltip = observer(function MAFTooltip({
           view.pxToBp(Math.max(origMouseX, mouseState.x)),
         )
 
-  // Over the band area above the rows (coverage and/or conservation). Both show
-  // the depth + SNP + identity breakdown via the shared alignments-core tooltip
-  // bin (which carries identity). `index` from pxToBp is the displayedRegion
-  // index and matches the rpcDataMap key.
+  // Over the bands above the rows: the shared alignments-core tooltip bin
+  // carries depth, SNP and identity. `index` from pxToBp matches the rpcDataMap
+  // key.
   if (inBands) {
     if (p2.oob) {
       return null
     }
-    // The band's own hit test first — an insertion bar or its triangle gets
-    // the interbase table, kept apart from the depth table so insertion data
-    // never mixes into it, the way the alignments band does.
+    // The band's own hit test first: an insertion bar or triangle gets the
+    // interbase table, kept apart from the depth table.
     const bandHit = model.coverageBandHit(p2.index, mouseState.x, mouseState.y)
     const interbase = bandHit
       ? model.interbaseTooltipBin(p2.index, bandHit.position)
@@ -75,8 +70,8 @@ const MAFTooltip = observer(function MAFTooltip({
         </BaseTooltip>
       )
     }
-    // the bin is per-base, so it needs the base drawn under the cursor, which
-    // coord0 is not on a reversed region (see basePaintedAt)
+    // The bin is per-base, so it needs the base drawn under the cursor, which
+    // `coord0` is not on a reversed region (see basePaintedAt).
     const bin = model.coverageTooltipBin(
       p2.index,
       basePaintedAt(p2, p2.offset),
@@ -92,7 +87,7 @@ const MAFTooltip = observer(function MAFTooltip({
         >
           {Number.isFinite(bin.identity) ? (
             // Percent identity excludes the reference row; a sample N/IUPAC
-            // code counts as a mismatch (same policy as the SNP coloring).
+            // code counts as a mismatch, as in SNP coloring.
             <div className={classes.td}>
               Identity: {(bin.identity * 100).toFixed(1)}%
             </div>
@@ -102,27 +97,17 @@ const MAFTooltip = observer(function MAFTooltip({
     ) : null
   }
 
-  // `hover` (the cell) came resolved with the pointer; `onRow` is false during a
-  // selection drag, so the drag's range readout stays. `frame` is the CDS gene at
-  // this row, so gene structure is identifiable by hovering any species rather
-  // than only the colored strip; `codon` is the actual codon/amino-acid change in
-  // codon view, so a specific change reads directly instead of being inferred
-  // from color.
-  // `baseBp`, not a floored `gposFrac`: both index per-base data, so they want
-  // the base painted under the pixel — the same one the coverage tooltip above
-  // reads through `basePaintedAt`, which on a reversed region is a different
-  // base. See `HoverBp`.
+  // `onRow` is false during a selection drag, so the drag's range readout
+  // stays. `baseBp`, not a floored `gposFrac`: both index per-base data, so
+  // they want the base painted under the pixel (see `HoverBp`).
   const frame = onRow
     ? model.frameHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
   const codon = onRow
     ? model.codonHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
-  // The zoom-out tier resolves nothing above: `hover` and `codon` read the
-  // detail on screen, and the tier has none. Hit-test the drawn bars
-  // instead, so a summary row is identifiable by pointing at it — which is the
-  // only way to identify one, since the sidebar labels are the first thing to
-  // go as the row height falls.
+  // The zoom-out tier has no detail to hover, so hit-test the drawn bars: the
+  // only way to identify a summary row once the sidebar labels go.
   const summary = onRow
     ? model.summaryHoverInfo(rowIndex, mouseState.x)
     : undefined

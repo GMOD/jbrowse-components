@@ -42,26 +42,18 @@ interface SampleSet {
 }
 
 /**
- * Resolve the sample set this batch of per-region results reports, as the union
- * of their samples in first-seen (region) order.
+ * Resolve the sample set a batch of per-region results reports: the union of
+ * their samples in first-seen order. A discovery track derives rows per region,
+ * so regions can name different sets; the union keeps every row and settles in
+ * one round.
  *
- * A sample-discovery track (no configured `samples`) derives its rows from the
- * genomes present in each region's blocks, so two regions can name different
- * sets and a region with no alignment blocks names none. Picking one region's
- * set to stand for the batch dropped the others' rows: a genome only region B
- * aligns has no row to be placed at, so it rendered nothing. Unioning keeps
- * every discovered row, and being order-stable and additive it settles in one
- * round instead of flip-flopping the set as regions land in different batches.
- *
- * `treeNewick` and `samplesCanonical` are config-derived, hence identical across
- * a batch — read from the first result. Configured-samples tracks return that
- * same complete set for every region, so the union is that set.
+ * `treeNewick` and `samplesCanonical` are config-derived, so the first result
+ * supplies them.
  */
 export function unionSampleSets(
   results: readonly { result: SampleSet }[],
 ): SampleSet | undefined {
   const first = results[0]?.result
-  // Map preserves first-insertion order while later fields (label/color) win.
   const byId = new Map<string, Sample>()
   for (const { result } of results) {
     for (const sample of result.samples) {
@@ -78,13 +70,10 @@ export function unionSampleSets(
 }
 
 /**
- * A signal for one fan-out under `ctx`, aborted by the parent's or by the
- * first refusal it sees. `fetchRegionsBatched` holds the whole payload until
- * every region lands, so without this a refusal at chr1 would let every sibling
- * download in full and then be discarded; with it the siblings abort at the
- * socket. `guard` wraps each region's call: a refusal aborts the scope, and an
- * abort the scope itself caused reads as "did not land" rather than an error.
- * A parent cancel still rejects.
+ * A signal for one fan-out under `ctx`, aborted by the parent's or by the first
+ * refusal it sees, so siblings abort at the socket instead of downloading
+ * payloads the batch will discard. `guard` wraps each region's call: an abort
+ * the scope caused reads as "did not land"; a parent cancel still rejects.
  */
 function refusalScope(ctx: FetchContext) {
   const controller = new AbortController()
@@ -136,23 +125,17 @@ interface MafBatch<R> {
 
 /**
  * The per-region call shared by both tiers: one RPC per buffered region, the
- * CDS-frame overlay beside it, and one answer for the batch. **One refused
- * region refuses the batch**, because the sample union is a decision over all
- * of them: a set derived from the regions that happened to fit is not the set
- * this viewport has. The first refusal also aborts the siblings still in flight
- * (`refusalScope`), since their payloads would only be discarded. The largest
- * measurement among the regions that landed still goes back to the gate, which
- * is what puts a size in the banner and releases it once the user zooms —
- * flagged `partial` when the abort cut the set short, so the gate reads it as
- * a size and not as evidence about zoom.
+ * CDS-frame overlay beside it, and one answer for the batch. One refused region
+ * refuses the batch, because the sample union decides over all of them; the
+ * first refusal aborts the siblings (`refusalScope`). The largest measurement
+ * among the landed regions still goes to the gate, flagged `partial` when the
+ * abort cut the set short.
  *
- * The RPC payload carries no color/style settings — worker output is purely
- * data-dependent and the main thread encodes from it plus `gpuProps()`, so
- * toggling colors/theme never refetches.
+ * The RPC payload carries no color or style settings, so toggling colors or
+ * theme never refetches.
  *
- * `call` receives that region's own `ctx`, whose `statusCallback` is its slot in
- * the fetch's fan-out, so the parallel per-region calls aggregate into one
- * progress bar instead of clobbering each other.
+ * `call` receives that region's own `ctx`, whose `statusCallback` is its slot
+ * in the fan-out, so parallel calls aggregate into one progress bar.
  */
 async function callMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
@@ -190,12 +173,8 @@ async function callMafRegions<R extends SampleSet>(
         })
       : NO_FRAMES,
   ])
-  // The batch's own byte number, whichever way it goes: the budget is what
-  // one region may cost, so the largest is what was judged and what the
-  // banner quotes.
-  //
-  // `partial` travels with it: the first refusal aborts the siblings, so a
-  // refused batch's largest is the largest among the regions that reported.
+  // The batch's byte number whichever way it goes: the largest region is what
+  // was judged and what the banner quotes. `partial` travels with it.
   const perRegionBytes = results.map(r => measuredBytes(r.result))
   const bytes = largestRegionBytes(perRegionBytes)
   const partial = results.length < regions.length
@@ -238,30 +217,18 @@ const NO_FRAMES = Promise.resolve({
 
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
- * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
- * main alignment/summary fetch and under its signal. The detail tier reads
- * them whenever an adapter is configured, so turning on the strip, the codon
- * view or the codon band refetches nothing; the summary tier, where the strip
- * is their only reader and the span is wide, reads them while the strip is on.
- * The frames ride the tier's own payload, so they land under the same commit
- * and the same staleness guard as the rows.
+ * from the MAF adapter's `annotationAdapter`, in parallel with the main fetch
+ * and under its signal. The detail tier always reads them; the summary tier
+ * reads them while the strip is on. They land under the tier's own commit and
+ * staleness guard.
  *
- * Gated like both main tiers, by the `byteLimit` the RPC carries: the display's
- * own gate measures exactly one file — the alignment or the summary depending
- * on the tier — and `mafFrames` is a third, fetched concurrently with whichever
- * of those won. `executeMafAnnotationData` measures it before it downloads,
- * which is the same one-round-trip shape the other two use.
+ * Gated by the `byteLimit` the RPC carries: `executeMafAnnotationData` measures
+ * the frames file before it downloads.
  *
- * Fails soft: the overlay is auxiliary, so a frames-file error is logged but
- * swallowed rather than rejecting the combined fetch and blanking the alignment.
- * A refusal takes that same soft path — the overlay is the only thing that goes
- * missing — but it is *reported*, as `refused`, which the commit writes to
- * `framesGateBlocked` so the menu can say why the strip stopped drawing instead
- * of leaving it silently off.
- *
- * **One refused region refuses the overlay**, as it does for the main batch:
- * the frame strip spans the viewport, so drawing it over the regions that
- * happened to fit reads as "these exons are all there are".
+ * Fails soft: a frames-file error is logged, not thrown. A refusal is reported
+ * as `refused`, which the commit writes to `framesGateBlocked`. One refused
+ * region refuses the overlay, since a strip drawn over the regions that fit
+ * reads as the full exon set.
  */
 async function fetchAnnotationData(
   self: MafFetchSelf,
@@ -303,9 +270,8 @@ async function fetchAnnotationData(
 
 /**
  * The detail tier, through `fetchRegionsBatched` because `setSamples` is a
- * cross-region decision over the whole result set, so the batch is what the
- * staleness guard has to wrap: a partial commit would publish a sample set
- * derived from a superseded viewport. Every region is marked loaded together.
+ * cross-region decision, so the staleness guard wraps the whole batch. Every
+ * region is marked loaded together.
  */
 export function fetchMafAlignmentData(
   self: MafFetchSelf,
@@ -350,12 +316,9 @@ function payloadOf<R, T>(
 }
 
 /**
- * The summary tier, as `CoarseTierMixin`'s read: cheap per-species
- * `bigMafSummary` rows instead of full alignment sequence, one payload per
- * region for the tier's own store. The sample set is the same cross-region
- * decision the detail path makes, published under the same staleness guard —
- * the skeleton's `isStale`, read here because the skeleton commits only the
- * payloads.
+ * The summary tier, as `CoarseTierMixin`'s read: `bigMafSummary` rows, one
+ * payload per region. It publishes the sample set under the same staleness
+ * guard, via the skeleton's `isStale`.
  */
 export async function fetchMafSummaryData(
   self: MafFetchSelf,

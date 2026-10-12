@@ -14,10 +14,9 @@ import type { MafRowOverlays as Overlays } from '../../LinearMafRenderer/renderi
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
- * The rows' Canvas2D overlays on one canvas over the rows canvas, positioned
- * in the rows container so the band's origin is its top. The model's arrays
- * are read here, in render, since `OverlayCanvas` draws in an effect that
- * tracks nothing.
+ * The rows' Canvas2D overlays on one canvas over the rows canvas. The model's
+ * arrays are read here, in render, since `OverlayCanvas` draws in an effect
+ * that tracks nothing.
  */
 const MafRowOverlays = observer(function MafRowOverlays({
   model,

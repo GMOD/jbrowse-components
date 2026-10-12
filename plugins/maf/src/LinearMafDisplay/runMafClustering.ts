@@ -12,10 +12,10 @@ export type ClusterIdentityMatrixCaller =
   RpcMethodCaller<'LinearMafClusterIdentityMatrix'>
 
 /**
- * What clustering needs off the display, duck-typed: the dialog reaches this
- * through a `lazy()` boundary, where importing the model's own instance type is
- * a circular-reference trap (ADR-055). `IStateTreeNode` rather than
- * `IAnyStateTreeNode`, which is `any` and would check nothing.
+ * What clustering needs off the display, duck-typed: the dialog reaches it
+ * through a `lazy()` boundary, where importing the model's instance type is a
+ * circular-reference trap (ADR-055). `IStateTreeNode` rather than
+ * `IAnyStateTreeNode`, which is `any`.
  */
 export interface MafClusterSelf
   extends IStateTreeNode, ClusterRunModel<MafSource> {
@@ -27,9 +27,8 @@ export interface MafClusterSelf
 
 /**
  * The real "Cluster rows by identity" run, over the per-bin identity matrix.
- * One home, so the dialog's button and the declarative session-triggered run
- * (`setupRunClusteringAutorun`, installed in the display's afterAttach) call the
- * same code rather than two copies drifting apart.
+ * The dialog's button and the session-triggered run
+ * (`setupRunClusteringAutorun`) share it.
  */
 export async function runMafClustering({
   model,
@@ -51,10 +50,8 @@ export async function runMafClustering({
   await applyClusterRun({
     model,
     rows: sources,
-    // The locus is the whole provenance here. Nothing else changes which
-    // columns entered the matrix -- the bin count is fixed and every row of the
-    // window is scored -- where the genotype path has filters and a rendering
-    // mode that do.
+    // The locus is the whole provenance: the bin count is fixed and every row
+    // of the window is scored.
     provenance: clusterProvenanceFromRegions(regions),
     matrix: () =>
       rpcManager.call(sessionId, 'LinearMafClusterIdentityMatrix', {

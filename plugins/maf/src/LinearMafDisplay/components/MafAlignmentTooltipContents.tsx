@@ -55,8 +55,7 @@ const TableShell = observer(function TableShell({
 })
 
 // An i-line context side: the status phrasing plus its bp count when the file
-// gave one. Paren-free descriptions (see `describeMafStatus`) so the count
-// appends without nesting parentheses.
+// gave one.
 function contextStr(status: MafStatus, count?: number) {
   const bp = count === undefined ? '' : ` (${toLocale(count)} bp)`
   return `${describeMafStatus(status)}${bp}`
@@ -123,9 +122,8 @@ const HoverContents = observer(function HoverContents({
   }
 
   if (hover.kind === 'insertion') {
-    // The lowest forward coordinate of the run, which is what the widget the
-    // click opens spans from — `hover.pos` is the first base in alignment
-    // order, and on a '-' row that is the run's far end.
+    // The lowest forward coordinate of the run, which the widget spans from;
+    // `hover.pos` is the run's far end on a '-' row.
     const loc = locationStr(
       hover.chr,
       hover.pos === undefined
@@ -170,17 +168,10 @@ const HoverContents = observer(function HoverContents({
 })
 
 /**
- * The zoom-out tier's answer to `HoverContents`. Without it a summary bar is
- * unhoverable in practice: the alignment blocks the row hover resolves against
- * were cleared to get here, so the tooltip fell through to the bare "Ref:
- * position" readout — over a display whose rows *are* per-species, one bar per
- * aligned run, with no other way to find out which species a row is.
- *
- * `score` is the summary file's own, and the two producers mean different
- * things by it (UCSC a normalized HOXD70 alignment score, `maf2bed --summary`
- * percent identity to the reference), so it is labelled as what it is rather
- * than as either. It is what shades the bar, and shading is otherwise the one
- * thing here with no decoder at all.
+ * The zoom-out tier's answer to `HoverContents`: which species a summary bar
+ * belongs to. `score` is the summary file's own, and the two producers mean
+ * different things by it (UCSC a normalized HOXD70 score, `maf2bed --summary`
+ * percent identity), so it is labelled as a score.
  */
 const SummaryContents = observer(function SummaryContents({
   bar,
@@ -209,14 +200,12 @@ const SummaryContents = observer(function SummaryContents({
   )
 })
 
-// Just the gene name; the raw reading-frame number isn't useful to read.
 export interface FrameHover {
   name: string
 }
 
-// The CDS gene projected onto this species' row (UCSC mafFrames), so the gene is
-// identifiable by hovering any species. Shown only in the base view — codon view
-// folds the gene into the consolidated codon table.
+// The CDS gene projected onto this species' row (UCSC mafFrames), shown only in
+// the base view; codon view folds it into the codon table.
 const FrameContents = observer(function FrameContents({
   frame,
 }: {
@@ -264,7 +253,6 @@ const CodonContents = observer(function CodonContents({
   )
 })
 
-// The window the identity plot paints under the cursor, read as a number.
 const IdentityContents = observer(function IdentityContents({
   identity,
 }: {
@@ -308,9 +296,8 @@ const MafAlignmentTooltipContents = observer(
     if (selection) {
       return <RangeContents selection={selection} />
     }
-    // The zoom-out tier: `hover` is always absent here (no alignment blocks), so
-    // this is the whole readout rather than a section stacked under one. The CDS
-    // strip can still draw on this tier, so its table still rides along.
+    // The zoom-out tier: `hover` is always absent, so this is the whole
+    // readout. The CDS strip can still draw here, so its table rides along.
     if (summary) {
       return (
         <>
@@ -323,8 +310,6 @@ const MafAlignmentTooltipContents = observer(
         </>
       )
     }
-    // Codon view: one consolidated table (species + gene + codon change) instead
-    // of stacking the per-base alignment, CDS, and codon tables.
     if (codon) {
       return (
         <CodonContents

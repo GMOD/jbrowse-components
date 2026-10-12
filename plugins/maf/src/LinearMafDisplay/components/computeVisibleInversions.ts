@@ -26,26 +26,21 @@ export type StrandConsensus = ReadonlyMap<number, ReadonlyMap<string, number>>
 
 interface ComputeVisibleInversionsParams extends MafOverlayParams {
   /**
-   * From `consensusStrandByRowChr` over *all* loaded regions. Passed in rather
-   * than derived here: that walk covers every block × row the display holds —
-   * the buffered region, so far more than is on screen — while this runs on
-   * every pan and zoom. The model memoizes it (`inversionConsensus`), the same
-   * move `sourceChromRanks` made for color-by-source-chromosome.
+   * From `consensusStrandByRowChr` over all loaded regions. Passed in, not
+   * derived here, because that walk covers the whole buffered region while this
+   * runs on every pan and zoom; the model memoizes it (`inversionConsensus`).
    */
   consensus: StrandConsensus
 }
 
 /**
  * Length-weighted consensus strand for each (row, source chromosome) across all
- * loaded blocks, so the consensus is stable as the user scrolls within loaded
- * data — hence a real map of every loaded region rather than the structural
- * `RegionDataMap` the visible-region walks take. `+1` when forward bases are at
- * least as many as reverse, else `−1`.
+ * loaded blocks, so it stays stable as the user scrolls within loaded data.
+ * `+1` when forward bases are at least as many as reverse, else `-1`.
  *
- * Scored per (row, source chromosome) because a scaffold's overall alignment
- * orientation is arbitrary: an inversion is a block whose strand differs from
- * the consensus of its *own* scaffold's alignment, not simply any `−`-strand
- * block.
+ * Scored per (row, source chromosome) because a scaffold's overall orientation
+ * is arbitrary: an inversion differs from the consensus of its own scaffold,
+ * not any `-`-strand block.
  */
 export function consensusStrandByRowChr(
   rpcDataMap: ReadonlyMap<number, MafRegionData>,
@@ -62,16 +57,11 @@ export function consensusStrandByRowChr(
 
 /**
  * Positioned markers for blocks that align inverted relative to their own
- * scaffold's consensus orientation — the strand-flip SV indicator. Drawn as an
- * overlay on top of whatever the rows show (bases/codon/identity), so an
- * inversion is visible without switching rendering mode.
+ * scaffold's consensus orientation: the strand-flip SV indicator, drawn over
+ * whatever the rows show.
  *
- * A projection over `regionInvertedRows`, which decides *which* (block, row)
- * pairs are inverted once per (region, consensus) rather than on every frame.
- * The test it replaces was two map hits per block × row of every visible region
- * — over a million per frame on the ce11 26-way shape — to reach a verdict that
- * only two map hits per *pan* could ever change, and by construction almost all
- * of them say "not inverted".
+ * A projection over `regionInvertedRows`, which decides which (block, row)
+ * pairs are inverted once per (region, consensus) instead of every frame.
  */
 export function computeVisibleInversions(
   params: ComputeVisibleInversionsParams,

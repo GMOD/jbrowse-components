@@ -8,9 +8,8 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * The feature-details widget for one insertion marker. Taken as a resolved hit
- * rather than mouse coordinates, because the right-click menu holds the hit and
- * the anchor it was resolved at is long gone by the time an item is clicked.
+ * The feature-details widget for one insertion marker, taken as a resolved hit
+ * because the right-click anchor is gone by the time an item is clicked.
  */
 export function openInsertionWidget(
   node: IStateTreeNode,
@@ -29,9 +28,7 @@ export function openInsertionWidget(
     length,
     sequence,
     // The MAF column order is the reference's, so a '-' row's bases read
-    // against its own forward strand backwards. Said out loud rather than
-    // silently reverse-complementing them: what the file holds is what the
-    // display drew.
+    // backwards against its own strand; the widget shows what the file holds.
     sequenceOrientation:
       strand === -1
         ? 'alignment order (reverse complement of the sample forward strand)'

@@ -1,8 +1,7 @@
 /**
- * Geometry shared by the `computeVisible*` overlay helpers. Each one walks the
- * visible regions, maps absolute genomic bp to screen px (orientation-aware),
- * and centers a band within each row — this captures that boilerplate so the
- * helpers only express what's unique to their marker type.
+ * Geometry shared by the `computeVisible*` overlay helpers: walk the visible
+ * regions, map absolute bp to screen px (orientation-aware), and center a band
+ * within each row.
  */
 
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
@@ -37,25 +36,21 @@ export interface RegionDataMap<T> {
 }
 
 /**
- * Where the rows sit on screen. Its own interface because three overlay helpers
- * take a bespoke data map rather than `rpcDataMap` and so can't extend
- * `MafOverlayParams` — but every one of them places rows the same way, and a
- * helper that grew its own copy of these four fields could quietly be handed
- * the raw `rowHeight` sentinel or no scroll offset and mis-place every marker.
+ * Where the rows sit on screen, shared by every overlay helper (some take a
+ * bespoke data map, so they cannot extend `MafOverlayParams`) so none is handed
+ * the raw `rowHeight` sentinel or no scroll offset.
  */
 export interface MafRowGeometryParams {
   /** always the *resolved* per-row height, never the `rowHeight` sentinel */
   rowHeight: number
   rowProportion: number
   /**
-   * Rows-area scroll offset. Markers come back in *screen* coordinates, so a
-   * helper that ignored it would place every marker a scroll-distance below the
-   * cell it annotates.
+   * Rows-area scroll offset. Markers come back in screen coordinates, so a
+   * helper ignoring it would misplace every marker by the scroll distance.
    */
   scrollTop: number
   /**
-   * Height of the rows viewport, for culling rows scrolled off it. A deep
-   * alignment then costs what it shows rather than what it holds.
+   * Height of the rows viewport, for culling rows scrolled off it.
    */
   viewportHeight: number
 }
@@ -70,18 +65,13 @@ export interface MafOverlayParams extends MafRowGeometryParams {
 }
 
 /**
- * Per-row vertical band geometry: `h` is the drawn band height
- * (rowHeight × proportion, floored at the shader's `MIN_DRAWN_ROW_PX`),
- * `offset` places the band of row 0 on screen — centered within its row, then
- * shifted up by the scroll offset. Every caller spells its row top
- * `offset + rowHeight * rowIndex`, so applying the scroll here is what keeps
- * every overlay locked to the cells the canvas paints.
+ * Per-row vertical band geometry: `h` is the drawn band height (rowHeight x
+ * proportion, floored at the shader's `MIN_DRAWN_ROW_PX`); `offset` places row
+ * 0's band, centered in its row and shifted up by the scroll offset. Callers
+ * spell a row top `offset + rowHeight * rowIndex`.
  *
- * Delegates to `rowRect.slang`'s generated twins so the floor and the
- * centering match the GPU pass by construction: a sub-pixel row (a legitimate
- * `rowHeight` here — see `autoRowHeight`) paints at a floored 1px band that
- * overhangs its row evenly, exactly as the shader draws it, rather than
- * thinner than the cells beneath.
+ * Delegates to `rowRect.slang`'s generated twins so the floor and centering
+ * match the GPU pass by construction.
  */
 export function rowBandGeometry(
   rowHeight: number,
@@ -95,22 +85,12 @@ export function rowBandGeometry(
 }
 
 /**
- * Half-open `[firstRow, endRow)` range of row indices the viewport shows. The
- * per-row overlay walks skip anything outside it: with a pinned row height the
- * rows can add up to many screens, and only the ones on screen are worth
- * positioning.
+ * Half-open `[firstRow, endRow)` range of row indices the viewport shows,
+ * widened by one row at each edge so a partially scrolled row still draws.
  *
- * Widened by one row at each edge (via floor/ceil on the band, which is inset
- * within its row) so a partially-scrolled row still draws.
- *
- * **A filter bound, not an array bound.** `endRow` is where the viewport ends,
- * which can be past the last row that exists — deliberately, since it takes no
- * row count and most of its callers have none to give: they test a `rowIndex`
- * the data handed them, and a bound past the end excludes nothing that exists.
- * A caller sizing a buffer or indexing rows by it needs its own
- * `Math.min(endRow, nRows)`. Contrast
- * `@jbrowse/core/util/virtualRange`, which clamps to a `total` because its
- * consumers size canvases from `(end - start) * cellSize`.
+ * A filter bound, not an array bound: `endRow` can be past the last row that
+ * exists. A caller sizing a buffer or indexing rows needs its own
+ * `Math.min(endRow, nRows)`. `@jbrowse/core/util/virtualRange` clamps instead.
  */
 export function visibleRowRange(
   rowHeight: number,
@@ -124,13 +104,10 @@ export function visibleRowRange(
 }
 
 /**
- * The row geometry every per-row overlay opens with, which eight
- * `computeVisible*` helpers spelled out identically. Taking the params object
- * removes the positional argument: the two functions below take `(rowHeight,
- * rowProportion, scrollTop)` and `(rowHeight, scrollTop, viewportHeight)`, so a
- * swap type-checks and mis-places every marker by a scroll distance. One call
- * per overlay per frame — see this file's closing NOTE for why sharing the
- * per-row *walk* is a different question.
+ * The row geometry every per-row overlay opens with. Taking the params object
+ * removes the positional arguments, whose swap would type-check and misplace
+ * every marker. See this file's closing NOTE for why sharing the per-row walk
+ * is a different question.
  */
 export function rowViewport(params: MafRowGeometryParams) {
   const { rowHeight, rowProportion, scrollTop, viewportHeight } = params
@@ -147,22 +124,17 @@ export function rowViewport(params: MafRowGeometryParams) {
 export type BpToPx = (bp: number) => number
 
 /**
- * Screen-px slack added to each side of a region's genomic span before blocks
- * are culled against it. A marker is anchored inside its block but *drawn*
- * around that anchor — an insertion bar and its `(N)` label extend past the
- * cell boundary, an inversion outline is 2px wide — so a block just off-screen
- * can still paint onto the edge pixel. Wide enough to cover the widest of
- * those; the bound only has to be conservative, since anything it lets through
- * is clipped by the canvas as before.
+ * Screen-px slack added to each side of a region's genomic span before culling
+ * blocks: markers (an insertion bar and its label, a 2px inversion outline)
+ * draw past their anchor cell, so a block just off-screen can still paint on
+ * the edge pixel.
  */
 const CULL_SLACK_PX = 16
 
 /**
  * A `[bpLo, bpHi)` culling range and the single test against it. Every MAF walk
- * sees the **buffered** region — half a screen of extra data each side — so it
- * skips a block before walking its columns, roughly halving the per-frame work.
- * Shared because ten walks spelled the test between them in two De Morgan
- * spellings, and a cull kept in two spellings is one edit from dropping marks.
+ * sees the buffered region, so it skips a block before walking its columns.
+ * Shared so the test has one spelling.
  */
 export function bpCull(bpLo: number, bpHi: number) {
   return {
@@ -175,12 +147,9 @@ export function bpCull(bpLo: number, bpHi: number) {
 
 /**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
- * data alongside its `bpToPx` mapper, `displayedRegionIndex` (which lets a
- * caller correlate a second per-region map — e.g. codon translation reads both
- * the alignment and the frames map), its visible span, and its `bpCull` over
- * that span padded by `CULL_SLACK_PX`. This is the marker-side twin of
- * `paintedBpRange`, which culls the Canvas2D painters against a render block's
- * clip rather than a visible region.
+ * data with its `bpToPx` mapper, `displayedRegionIndex` (for correlating a
+ * second per-region map), visible span, and its `bpCull` over that span padded
+ * by `CULL_SLACK_PX`. The marker-side twin of `paintedBpRange`.
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
@@ -206,12 +175,7 @@ export function* eachVisibleRegion<T>(
   }
 }
 
-// NOTE: an `eachVisibleRow(params)` generator yielding one `{block, row, rowTop,
-// h, bpToPx}` per aligned row reads much better than the region -> block -> row
-// loop the four per-row overlays each spell out, and was tried. It is 4.7x
-// slower on the walk alone (48k blocks x 26 rows, the UCSC ce11 26-way shape:
-// 26ms inlined vs 120ms), because that is ~1.2M generator steps and ~1.2M
-// short-lived objects per overlay per frame. `eachVisibleRegion` above is fine
-// at the same job because it yields once per *region*, a handful per frame.
-// Keep the loops inline; share the arithmetic (`rowBandGeometry`, `spanRect`)
-// instead, which costs one call per emitted marker rather than per row.
+// NOTE: an `eachVisibleRow` generator was tried and is 4.7x slower on the walk
+// (48k blocks x 26 rows: 26ms inlined vs 120ms), from ~1.2M generator steps and
+// short-lived objects per overlay per frame. Keep the loops inline and share
+// the arithmetic (`rowBandGeometry`, `spanRect`).

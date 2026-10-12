@@ -1,30 +1,14 @@
-// Default values for LinearMafDisplay settings. Kept in its own module so both
-// the state model (stripDefault seeds) and the track menu presets can reference
-// them without a circular import between stateModel and trackMenuItems.
+// Defaults shared by the state model and the track menu presets, in a module of
+// their own to avoid a stateModel/trackMenuItems import cycle.
 export const DEFAULTS = {
-  // Px height used by the "Normal" preset / custom row-height dialog. The
-  // `rowHeight` property itself defaults to 0 (fit-to-display-height) so a
-  // freshly loaded track bounds itself to the track height regardless of how
-  // many species it has; the "Normal" preset switches to this px value.
+  // Px height of the "Normal" preset; the `rowHeight` property itself defaults
+  // to 0 (fit to display height).
   rowHeight: 15,
   /**
-   * Ceiling on the height a freshly loaded track sizes itself to, before any
-   * drag. Past it, fit-to-display-height keeps shrinking the rows rather than
-   * growing the track — a deep alignment lands as a dense, whole-on-screen
-   * band instead of a canvas several screens tall.
-   *
-   * Sizing purely to content (`nrow * rowHeight`) put a 100-way multiz at
-   * 1545px and a 447-way cactus at 4141px by default. The rows area is not one
-   * canvas but a stack of them — the GPU cells plus every mounted Canvas2D
-   * overlay (labels, insertions, deletions, codons, frames, inversions,
-   * e-lines) — so at dpr 2 that 447-way costs ~98MB *per
-   * mounted overlay*, and `maxRowsHeight` only stops it at the point the
-   * backing store would throw.
-   *
-   * 600 keeps every common multiz (hg38 30-way, ce11 26-way — anything up to
-   * 40 species) at exactly the height it has today, since those never reach
-   * the ceiling. A drag past it is still honored: this bounds the default, not
-   * the user.
+   * Ceiling on the height a fresh track sizes itself to before any drag; past
+   * it fit mode shrinks the rows instead of growing the track. 600 leaves every
+   * common multiz (up to 40 species) at its natural height. A drag past it is
+   * still honored.
    */
   maxAutoFitHeight: 600,
   rowProportion: 0.8,
@@ -38,23 +22,16 @@ export const DEFAULTS = {
   coverageHeight: 45,
   showConservation: false,
   conservationHeight: 40,
-  // Conservation band resolution: per-base percent identity ('base') or
-  // per-codon amino-acid identity ('codon', needs an annotationAdapter).
   conservationMode: 'base',
   rowIdentityAutoZoom: true,
   showAnnotations: false,
   showInversions: false,
-  // On, because that is what the track has always drawn. Under the default
-  // mismatch coloring the row is a solid match-colored bar and UCSC omits it,
-  // so this is the toggle's more useful position — but a row silently
-  // disappearing from every existing MAF track is not what a version bump
-  // should do.
+  // On, so existing tracks keep drawing the row.
   showReferenceRow: true,
 } as const
 
-// Row-height presets for the shared "Row height" menu. Each pairs a height with
-// the glyph proportion that reads best at it — maf is the one display that has
-// a second axis here, and the shared builder writes both.
+// Each preset pairs a row height with the glyph proportion that reads best at
+// it; maf is the one display with this second axis.
 export const HEIGHT_PRESETS = [
   { label: 'Normal', rowHeight: DEFAULTS.rowHeight, rowProportion: 0.8 },
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },

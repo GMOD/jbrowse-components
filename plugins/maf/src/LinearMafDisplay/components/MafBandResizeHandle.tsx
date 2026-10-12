@@ -20,15 +20,12 @@ const useStyles = makeStyles()({
 
 /**
  * Thin row-resize strip at the bottom of a MAF band (coverage or conservation).
- * Drives `setHeight` via the shared `ResizeHandle` from `@jbrowse/core/ui` and
- * reports "active" (hovered or mid-drag) so the parent can suppress
- * crosshairs/tooltips — the drag continues after the cursor leaves the thin
- * strip, so hover alone isn't enough.
+ * Drives `setHeight` via the shared `ResizeHandle` and reports "active"
+ * (hovered or mid-drag) so the parent can suppress crosshairs and tooltips.
  *
- * In fit mode (`rowHeight === 0`) the band eats into the rows area, so a
- * drag restretches every row each frame — suppress the dense letter overlay for
- * the drag's duration (matches the track-height handle). In fixed mode rowHeight
- * is unchanged, so there's nothing to suppress.
+ * In fit mode (`rowHeight === 0`) the band eats into the rows area, so a drag
+ * restretches every row each frame; the drag suppresses the dense letter
+ * overlay, as the track-height handle does.
  */
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
@@ -47,12 +44,11 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [dragging, setDragging] = useState(false)
-  // A band drag never touches `rowHeight`, so the mode is the same at both ends
-  // of the drag: clear `resizing` only if this handle set it, or a drag here
-  // cancels the suppression a concurrent track-height drag owns.
+  // Clear `resizing` only if this handle set it, or a drag here cancels the
+  // suppression a concurrent track-height drag owns.
   const suppressesLetters = model.rowHeight === 0
-  // The same flag the track's own resize handle brackets — it lives on the
-  // track, which is what lets two handles share one gesture state.
+  // Same flag as the track's resize handle; it lives on the track so two
+  // handles share one gesture state.
   const track = getContainingTrack(model)
 
   return show ? (

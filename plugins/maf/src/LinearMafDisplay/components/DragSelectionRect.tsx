@@ -5,12 +5,10 @@ import { observer } from 'mobx-react'
 import type { DragRect } from './useDragSelection.ts'
 
 /**
- * The rubberband rectangle for a subsequence selection. Its coordinates are the
- * raw display-relative mouse positions and need no scroll correction: the rows
- * area doesn't scroll, it is *drawn* translated by `-scrollTop` (see
- * `treeDrawingAutorun` / `SvgRowLabels`), so a container-relative px is already
- * where the cursor is. Adding `scrollTop` here pushed the rect that far below the
- * cursor on any scrolled track.
+ * The rubberband rectangle for a subsequence selection. Coordinates are raw
+ * display-relative mouse positions with no scroll correction: the rows are
+ * drawn translated by `-scrollTop`, so a container-relative px is already where
+ * the cursor is.
  */
 const DragSelectionRect = observer(function DragSelectionRect({
   rect,

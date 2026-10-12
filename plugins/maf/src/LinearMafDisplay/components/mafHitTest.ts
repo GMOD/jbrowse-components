@@ -14,11 +14,8 @@ import type { HoverBp } from './findRowHover.ts'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 
 /**
- * The display slice the px hit-tests read. Structural rather than the full
- * model so these stay plain functions unit-testable with a literal — the whole
- * reason they live here instead of as MST views (mouse coordinates are a
- * view-layer input the model never produces, and argument-taking views get no
- * caching or reactivity from MST anyway).
+ * The display slice the px hit tests read. Structural, so these stay plain
+ * functions unit-testable with a literal.
  */
 export interface MafHitTestModel {
   view: {
@@ -48,12 +45,10 @@ export interface MafPointer extends HoverBp {
 }
 
 /**
- * Project display-relative px onto the region, the genomic coordinate, and the
- * display row. Every pointer consumer — tooltip, cursor feedback, insertion
- * click, drag-selection context menu — goes through this, so none of them can
- * disagree about which cell or row the cursor is over. Each used to spell the
- * conversion itself, and the tooltip's copy had already drifted away from the
- * helper the others shared.
+ * Project display-relative px onto the region, the genomic coordinate and the
+ * display row. Every pointer consumer (tooltip, cursor feedback, insertion
+ * click, drag-selection menu) goes through this, so none disagree about the
+ * cell or row under the cursor.
  */
 export function mafPointerAt(
   model: MafHitTestModel,
@@ -97,16 +92,11 @@ function rowStackOf(model: RowGeometry) {
 }
 
 /**
- * The row whose color the pixel carries, which is not always the row whose
- * slot the pixel centre falls in.
- *
- * Both painters put a row's band at `rowBandOffsetPx` inside its slot and floor
- * its height at `MIN_DRAWN_ROW_PX` (`rowRect.slang`). Below a pixel per row the floor makes
- * neighbouring bands overlap, several rows paint the same pixel, and the last
- * one drawn — the highest index — is the one on screen; `rowIndexAt` answered
- * with the slot instead, so the tooltip named a neighbour of the cell under the
- * cursor. Above the floor the bands cannot overlap and a pixel can fall in the
- * gutter between two, where the slot is still the answer to give.
+ * The row whose color the pixel carries, which is not always the row whose slot
+ * the pixel centre falls in. Both painters floor a row's height at
+ * `MIN_DRAWN_ROW_PX` (`rowRect.slang`), so below a pixel per row bands overlap
+ * and the highest index paints last; above the floor a pixel in the gutter
+ * between bands answers with its slot.
  */
 function rowIndexUnder(model: RowGeometry, mouseY: number) {
   const { effectiveRowHeight: rowHeight, rowProportion } = model
@@ -158,13 +148,10 @@ export interface MafPointerHit extends MafPointer {
 }
 
 /**
- * Project the cursor and resolve its row hover in one pass. The cursor style and
- * the tooltip both need the same answer for the same coordinates on every
- * mousemove, and resolving it here rather than in each of them halves the
- * per-move block scan (and means the pointer they show can't disagree).
- *
- * `resolveRowHover` false keeps the projection but skips the hover — the
- * drag-selection readout wants the coordinate, not the cell under it.
+ * Project the cursor and resolve its row hover in one pass, so the cursor style
+ * and the tooltip share one block scan per mousemove. `resolveRowHover` false
+ * keeps the projection but skips the hover; the drag-selection readout wants
+ * the coordinate, not the cell.
  */
 export function resolveMafPointerHit({
   model,

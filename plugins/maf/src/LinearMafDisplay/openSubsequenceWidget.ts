@@ -7,32 +7,18 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * The genomic span a drag selection covers, always ordered and always inside
- * the region its left edge landed in.
+ * The genomic span a drag selection covers, always ordered and inside the
+ * region its left edge landed in. A reversed region runs bp leftward, and a
+ * drag across a region boundary reads the right edge in another region's
+ * coordinates; either inverts the span, and `processFeaturesToFasta` throws a
+ * `RangeError` on a negative length.
  *
- * Both halves are load-bearing, and both used to be missing — the span was
- * `{ start: left.coord0, end: right.coord }`, which is only ordered on a
- * forward single-region view:
- *
- * - A **reversed** region runs bp leftward, so the left pixel is the *higher*
- *   coordinate and that span came out inverted.
- * - A drag **across a region boundary** reads the right edge in the next
- *   region's coordinates — another chromosome's, and typically much smaller.
- *
- * Either way the widget was handed `end < start`, and the worker's
- * `processFeaturesToFasta` sizes its per-sample row buffers from
- * `region.end - region.start`, so a negative length threw `RangeError: Invalid
- * typed array length` out of the RPC and the widget opened on an error.
- *
- * `basePaintedAt`, not `coord0`: `coord0` is the point-convention inverse of
- * `bpToPx` and on a reversed region names the base to the *right* of the pixel
- * (`r.end` itself on the region's first column). This indexes per-base data, so
- * it wants the base actually under the cursor.
+ * Uses `basePaintedAt`, not `coord0`: `coord0` names the base to the right of
+ * the pixel on a reversed region, and this indexes per-base data.
  */
 export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
   // Clamped into the left edge's region, which also covers an out-of-bounds
-  // pixel (a drag begun past the last region reports that region with an offset
-  // outside it).
+  // pixel.
   const clamp = (bp: number) =>
     Math.min(Math.max(bp, left.start), Math.max(left.start, left.end - 1))
   const a = clamp(basePaintedAt(left, left.offset))
@@ -53,25 +39,20 @@ export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
   }
 }
 
-/**
- * What the widget takes off the display it was launched from.
- */
 export interface SubsequenceHost {
   adapterConfig: Record<string, unknown>
   resolvedByteLimit: () => number | undefined
 }
 
 /**
- * Open the MAF sequence widget for the genomic range under a drag selection.
- * Resolves refName/assemblyName from `view.pxToBp` at the selection's left
- * pixel, so it picks the right region under the cursor on multi-region views
- * (drag selections crossing region boundaries clip to that region — see
- * `selectionRegion`).
+ * Open the MAF sequence widget for the genomic range under a drag selection,
+ * resolved from `view.pxToBp` at the selection's left pixel. A drag across
+ * regions clips to that region (`selectionRegion`).
  */
 export function openSubsequenceWidget(
   session: IStateTreeNode,
-  // the two things the widget takes off the display, so the track menu's
-  // visible-region entry can pass its own model without naming this one
+  // The two things the widget takes off the display, so the track menu's
+  // visible-region entry can pass its own model.
   model: SubsequenceHost,
   view: LinearGenomeViewModel,
   startPx: number,
@@ -83,11 +64,9 @@ export function openSubsequenceWidget(
   }
   session.openWidget('MafSequenceWidget', 'mafSequence', {
     adapterConfig: model.adapterConfig,
-    // The display's own budget, captured here because the widget has no
-    // display to ask. Its read is the same file over the same span as the
-    // detail tier's, so it is bounded by the same number — and undefined,
-    // which is the gate declining to act, reaches the worker as "measure
-    // nothing", so a force-loaded track's widget loads too.
+    // The display's own budget, captured because the widget has no display to
+    // ask. Undefined means "measure nothing" to the worker, so a force-loaded
+    // track's widget loads too.
     byteLimit: model.resolvedByteLimit(),
     samples,
     regions: [

@@ -42,9 +42,8 @@ export function computeVisibleLabels(
 
   const labels: VisibleLabel[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
-  // Gate base/SNP letters on the same zoom + row height as the insertion and
-  // deletion count labels, so all row text reveals together (rather than letters
-  // showing on rows too short for the insertion/deletion counts to draw).
+  // Gated on the same zoom and row height as the insertion and deletion count
+  // labels, so all row text reveals together.
   if (1 / view.bpPerPx < CHAR_SIZE_WIDTH || h < MIN_HEIGHT_FOR_TEXT) {
     return labels
   }
@@ -71,19 +70,14 @@ export function computeVisibleLabels(
         // Defensive min() guards malformed files (worker output should match).
         const len = Math.min(alignmentBytes.length, refSeqBytes.length)
 
-        // Hot per-cell loop: work directly on bytes (skips a per-row
-        // TextDecoder.decode() that would allocate a string only to be
-        // immediately reduced to char codes).
+        // Hot loop: work on bytes to skip a per-row TextDecoder.decode().
         for (let i = 0, genomicOffset = 0; i < len; i++) {
           const refCode = refSeqBytes[i]!
           if (refCode !== DASH) {
             const bp = block.startBp + genomicOffset
-            // The block cull applied per column, because a block is not a
-            // screenful: one TAF/bigMaf stanza can span the whole buffered
-            // region, three times the canvas, so most of its columns emit a
-            // label the overlay then draws off the edge. `bp` only ever
-            // increases, so the right edge ends the row's walk rather than
-            // filtering the rest of it.
+            // The block cull applied per column, since one TAF/bigMaf stanza
+            // can span the whole buffered region. `bp` only increases, so the
+            // right edge ends the row's walk.
             if (bp >= bpHi) {
               break
             }

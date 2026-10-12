@@ -19,10 +19,7 @@ export interface FrameMarker {
   h: number
   /**
    * Plain index into `getFrameColors`, resolved once by `frameColorIndex` so
-   * the painter is a lookup and the legend can key itself from the same
-   * function. Was the frame number with a sign for strand, decoded by the
-   * painter through `Array.at`'s negative wrap — correct, and impossible to
-   * check without the palette table in front of you.
+   * the painter is a lookup and the legend keys itself from the same function.
    */
   colorIndex: number
 }
@@ -39,11 +36,9 @@ interface ComputeVisibleAnnotationsParams extends MafRowGeometryParams {
 }
 
 /**
- * The CDS frame record covering reference position `pos` (0-based, half-open
- * `[start, end)`) on display `rowIndex`, matched to its species via
- * `rowIndexBySrc` — the same projection the overlay draws with. Returns the
- * first match (per-species CDS frames for one gene don't overlap). Powers the
- * tooltip's gene/reading-frame readout.
+ * The CDS frame record covering reference position `pos` (0-based, half-open)
+ * on display `rowIndex`, matched to its species via `rowIndexBySrc`. Returns
+ * the first match; powers the tooltip's gene readout.
  */
 export function findFrameAt(
   records: MafFrameRecord[] | undefined,
@@ -58,11 +53,9 @@ export function findFrameAt(
 
 /**
  * Positioned per-species CDS frame markers for the annotation overlay: one
- * frame-colored strip per `mafFrames` row, on the row of its `src` species,
- * spanning the row's reference extent. The strip is a thin band at the bottom
- * of each row rather than the full band, so it annotates the CDS structure
- * without hiding the base/SNP coloring drawn underneath at base level. Mirrors
- * the summary bars' `src`→row mapping.
+ * frame-colored strip per `mafFrames` row, on its `src` species' row. The strip
+ * is a thin band at the bottom of the row so it does not hide the base coloring
+ * beneath.
  */
 export function computeVisibleAnnotations(
   params: ComputeVisibleAnnotationsParams,
@@ -70,12 +63,8 @@ export function computeVisibleAnnotations(
   const { view, framesDataMap, rowIndexBySrc, rowHeight } = params
   const markers: FrameMarker[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
-  // A quarter of the drawn band, floored at 2px but never more than half of it:
-  // `h` itself floors at the shader's MIN_DRAWN_ROW_PX, so on a deep alignment
-  // the 2px minimum alone was taller than the band and spanned the rows either
-  // side, and capping at `h` merely replaced the row's own coloring with the
-  // frame color. Half is what keeps this a band ON the row rather than instead
-  // of it.
+  // A quarter of the drawn band, floored at 2px and capped at half of it, so
+  // the strip stays a band on the row instead of replacing its coloring.
   const stripH = Math.min(h / 2, Math.max(2, Math.round(h * 0.25)))
   const stripOffset = offset + h - stripH
 
@@ -84,9 +73,8 @@ export function computeVisibleAnnotations(
     framesDataMap,
   )) {
     for (const r of records) {
-      // One record per CDS exon per species over the *buffered* region, so a
-      // gene-dense window across a deep alignment is a lot of them and about
-      // half are off screen. Culled before the `src` lookup it skips.
+      // Culled before the `src` lookup: the buffered region holds a record per
+      // CDS exon per species, about half off screen.
       if (!overlaps(r.start, r.end)) {
         continue
       }
