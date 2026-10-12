@@ -2,10 +2,14 @@
 
 ## Bundle size
 
-Measure **JS bytes over the wire on the initial load**, not total bundle size —
-`splitChunks: { chunks: 'all' }` cut total bytes ~7% while leaving the initial
-payload unchanged, so it was reverted. `browser-tests/measure-load.ts` and
+Measure **JS bytes over the wire on the initial load**, page and workers
+together, not total bundle size. `browser-tests/measure-load.ts` and
 `worker-smoke.ts` are the harnesses (run after a build).
+
+`splitChunks: { chunks: 'all' }` was reverted on a measurement that counted the
+page's requests alone. Counting the worker's too, the 2026-10-08 audit
+([handoffs/jbrowse-web-bundle-audit](../../agent-docs/handoffs/jbrowse-web-bundle-audit.md))
+found it saves 39-41 KB gz on every page.
 
 Bytes are not what a cold load waits on: a warm-cache reload of the hg38 hub
 took as long as a cold one. `browser-tests/measure-load-latency.ts` emulates a

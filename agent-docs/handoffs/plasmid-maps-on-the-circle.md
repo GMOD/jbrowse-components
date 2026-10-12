@@ -1,6 +1,6 @@
 ---
 name: plasmid-maps-on-the-circle
-description: Plasmid and organelle maps on the circular view, 2026-10-09. Landed base-pair ticks, the one-contig circle, GFF3 features cut at a circular origin and drawn as one labelled arc in one row, and ring labels (canvas labels and text marks, culled across lines) and highlights. A ring lays its display out in its band, and tutorials/organelle_map.md walks the mitochondrion. A sequence closes into a ring only where the assembly's circularRefNames lists it. Open are overlay labels overrunning on inner lines, radial labels, overlay canvases, the linear view's scroll through the origin, and other formats. Read before touching ring labels or circular GFF3.
+description: Plasmid and organelle maps on the circular view (2026-10-09). Open are overlay labels overrunning on inner lines, radial labels, overlay canvases (waiting on Colin), the linear view's scroll through the origin, and cutting formats other than GFF3 at the origin. Read before touching ring labels or circular GFF3.
 ---
 
 # Plasmid and organelle maps on the circular view
