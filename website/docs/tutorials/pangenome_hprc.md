@@ -142,7 +142,7 @@ the whole chromosome fits. A curve of segments per bubble (how many pieces of
 sequence each bubble holds) shows how much the haplotypes disagree at each
 locus.
 
-<Figure caption="GRCh38 chr1 with the cytogenetic bands, three loci the HPRC pages open, and two tracks from one file. The blue curve is segments per bubble; the second track draws the bubbles as gold blocks. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="GRCh38 chr1 with the cytogenetic bands, three loci the HPRC pages open, and two tracks built from the graph's bubbles. The blue curve is segments per bubble; the second track draws one node per bubble as gold blocks. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds this
 overview and writes the `coarse` slot.

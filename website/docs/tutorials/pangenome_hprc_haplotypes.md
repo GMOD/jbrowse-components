@@ -143,10 +143,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
   jexl:feature.inversion
   ```
 
-- **HPRC v2.1 graph (rGFA segments)** in the track selector draws the window's
-  graph in the force-directed layout.
-
-<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both have EMD ahead of FLNA. The graph draws the block on the backbone, and the inverted haplotypes read it in reverse." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions and four lanes, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both have EMD ahead of FLNA." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 

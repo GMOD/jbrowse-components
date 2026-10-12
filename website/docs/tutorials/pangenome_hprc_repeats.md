@@ -98,7 +98,7 @@ open it from the HPRC page:
 The strip along the top of the track draws each reference segment at its
 position on the ruler, in the color of its node below.
 
-<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track, the KIV-2 array's bubble boxed. In the graph the array is the knot of loops on the right, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.

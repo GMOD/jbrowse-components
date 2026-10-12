@@ -447,7 +447,7 @@ column is a stretch that strain lacks:
 Open `chr:450,000-590,000` with the K12 genes on. The figure shades
 `chr:501,500-539,000`.
 
-<Figure caption="K12 genes, the aggregate depth curve, and odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span only the IAI39 row goes white and the curve drops by one; where the curve falls to K12 alone at the right, every row goes white." src="/img/pangenome/pav.png" />
+<Figure caption="K12 genes, the aggregate depth curve, and odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span the IAI39 row goes white and the curve drops by one, and in its middle CFT073's row goes white too and the curve drops again; where the curve falls to K12 alone at the right, every row goes white." src="/img/pangenome/pav.png" />
 
 ### Testing the CPZ-55 depth trough with nanopore reads
 

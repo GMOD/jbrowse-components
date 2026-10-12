@@ -265,7 +265,10 @@ gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
 ```
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
-segment as an `SM:Z:` tag while it reads the paths.
+segment as an `SM:Z:` tag while it reads the paths. The track below is written
+for a build like the
+[pggb graph of five _E. coli_ strains](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track),
+indexed against K12.
 
 - The node panel lists them as `samples`; a track reads them as
   `feature.samples` and their count as `feature.sampleCount`.

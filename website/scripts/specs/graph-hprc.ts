@@ -640,7 +640,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             hg38GeneLane(70),
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
-              paneHeight: 600,
+              // a wide chain the width sets the size of; 600 left 200 px
+              // blank between the legend and the drawing
+              paneHeight: 440,
               color: { field: 'position' },
               maxRegionBp: cutNear(70_000),
               // Halos and route chips are introduced on the KIV-2 figure
@@ -704,13 +706,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     allowUnsettled: true,
     viewportWidth: 1000,
-    viewportHeight: 940,
+    viewportHeight: 780,
     hideTooltip: true,
   },
-  // The inversion in one linear view: the bubble lane states the flag, the
+  // The inversion in one linear view: the bubble lane states the flag, and the
   // lanes cross between HG00099's two haplotypes with FLNA and EMD in opposite
-  // order on the carriers, and the graph draws the block on the backbone, read
-  // in reverse by the carriers (s586922+ -> s586923- -> s586924+).
+  // order on the carriers.
+  //
+  // No graph pane. The carriers read the block in reverse (s586922+ ->
+  // s586923- -> s586924+), and the force drawing showed that as a straight
+  // backbone, since nothing draws a node's orientation yet
+  // (ideas/ready/pangenome-figures-unshot.md, "Draw orientation"). It cost
+  // 400 px of a frame whose claim the lanes already carry.
   {
     mode: 'url',
     name: 'pangenome/hprc_inversion',
@@ -728,20 +735,14 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               height: 60,
             },
             INV_LANES_VIEW.tracks[1],
-            graphTrack(SEGMENTS_TRACK, {
-              layoutMode: 'force',
-              color: { field: 'position' },
-              maxRegionBp: cutNear(INV_REGION),
-              paneHeight: 380,
-            }),
           ],
         },
       ],
     }),
-    readySelector: `body:has(${GRAPH_DRAWN}) ${displaySettled('multiway-synteny-display')}`,
+    readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1000,
-    viewportHeight: 1080,
+    viewportHeight: 680,
     hideTooltip: true,
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
@@ -857,6 +858,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       // WHERE it is: the widest bar in the bubbles lane, whose record is
       // `chr6:160,616,002-160,646,753` in release 2.1. The UniProt lane above
       // confirms it independently, tiling that span with kringle domains.
+      // No pill naming it: every spot beside the box covered another bubble's
+      // label, and the caption names the box.
       {
         type: 'box',
         anchor: {
@@ -864,25 +867,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           loc: 'chr6:160,616,002-160,646,753',
         },
         pad: 3,
-      },
-      {
-        // KIV-2 is kringle IV type 2, and "kringle repeat" is what the array is
-        // called outside the Lp(a) literature -- the label carries both so a
-        // reader who knows one name recognises the other
-        type: 'text',
-        text: 'the KIV-2 array, aka the kringle repeat',
-        fontSize: 18,
-        // right-aligned so the offset places the pill's own right edge against
-        // the box's left one; its width is only known once the text is measured
-        textAlign: 'end',
-        anchor: {
-          trackId: 'hprc_minigraph_bubbles',
-          loc: 'chr6:160,616,002-160,646,753',
-          alignX: 'left',
-          fracY: 0,
-          dx: -16,
-          dy: 12,
-        },
       },
     ],
   },
@@ -982,13 +966,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // no length in the words: the graph labels its longer nodes itself,
         // so a length in a callout would read as one of those
         text: 'the same allele, in the graph',
+        // under the legend, which fills the pane's top right to about 120 px,
+        // and above the drawing, which starts near 210
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
           alignX: 'right',
           alignY: 'top',
         },
         dx: -20,
-        dy: 40,
+        dy: 150,
         textAlign: 'end',
         maxWidth: 340,
         fontSize: 20,
@@ -1178,7 +1164,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 1010,
     // the card alone: the clicked record's view held one 40px row over 70% of
     // the frame, all blank under it
-    crop: { x: 1022, y: 48, width: 378, height: 862 },
+    crop: { x: 1012, y: 48, width: 388, height: 862 },
     hideTooltip: true,
     clicksChange: "open the record's repeat copies view",
     actions: [

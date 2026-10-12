@@ -180,7 +180,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             { trackId: MC_MAF_TRACK, type: 'LinearMafDisplay', height: 130 },
             graphTrack(MC_SEGMENTS_TRACK, {
               layoutMode: 'force',
-              paneHeight: 600,
+              // the drawing is one backbone and one arc, a flat chain the
+              // width sets the size of; 600 left 330 px blank above it
+              paneHeight: 320,
               color: { field: 'position' },
               // a SNP halo on every backbone joint, and a second deletion label
               // over the arc's own
@@ -195,7 +197,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readySelector: GRAPH_DRAWN,
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 1270,
+    viewportHeight: 990,
     hideTooltip: true,
     // The dashed edge is one link with no bases; its bow is the force layout's
     // spring, so it reads as the biggest thing in the frame unless named.
