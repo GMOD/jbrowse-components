@@ -26,9 +26,10 @@ The graph track comes from a separate plugin,
 not bundled in JBrowse Web, because its force-directed layout uses the
 GPL-licensed [Bandage](https://github.com/rrwick/Bandage) engine (its
 [OGDF](https://ogdf.github.io/) FMMM layout). The plugin is in **beta**. The
-[plugin store](/docs/user_guides/plugin_store) lists it as GraphGenomeView, and
-as a native ES module it also loads from any config (see
-[configuring plugins](/docs/config_guides/plugins)):
+[plugin store](/docs/user_guides/plugin_store) lists it as GraphGenomeView. A
+config names it with the entry below, where `storePlugin` picks the build for
+the JBrowse reading the config and `esmUrl` is the fallback when the store
+cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
 
@@ -37,6 +38,7 @@ as a native ES module it also loads from any config (see
   "plugins": [
     {
       "name": "GraphGenomeView",
+      "storePlugin": "GraphGenomeView",
       "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
     }
   ]

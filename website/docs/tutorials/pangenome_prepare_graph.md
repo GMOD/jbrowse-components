@@ -70,8 +70,9 @@ database.
 Install GraphGenomeView from the plugin store, at **Tools → Plugin store** in
 JBrowse Web or **Global plugins...** on the JBrowse Desktop start screen
 ([](/docs/user_guides/plugin_store)). It needs JBrowse 5. The config the command
-writes loads it by URL instead, with this entry in its `plugins` array
-([configuring plugins](/docs/config_guides/plugins)):
+writes names it with the `plugins` entry below, in which `storePlugin` picks the
+build for the JBrowse reading the config, and `esmUrl` is the fallback when the
+store cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
 
@@ -80,6 +81,7 @@ writes loads it by URL instead, with this entry in its `plugins` array
   "plugins": [
     {
       "name": "GraphGenomeView",
+      "storePlugin": "GraphGenomeView",
       "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
     }
   ]

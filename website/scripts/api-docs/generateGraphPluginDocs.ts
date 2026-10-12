@@ -16,6 +16,7 @@ const CONFIGS = ['demos/ecoli_pangenome/config.json', 'demos/hprc/config.json']
 
 interface PluginEntry {
   name: string
+  storePlugin?: string
   esmUrl: string
 }
 
