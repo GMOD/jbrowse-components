@@ -39,23 +39,20 @@ function renderDrawer(session: DrawerChromeSession) {
   return { root, handle }
 }
 
-// The handle used to be `position: fixed`, which measures against the window
-// rather than the drawer: in an embedded view -- a box the host sized, sitting
-// anywhere on a page -- that was a page-tall col-resize strip, and a left-hand
-// drawer's `left: drawerWidth` was measured from the page's edge instead of the
-// embed's.
-test('the resize handle is positioned against the drawer, not the window', () => {
-  const { handle } = renderDrawer(stubSession())
-  const style = window.getComputedStyle(handle!)
-  expect(style.position).toBe('absolute')
-  expect(style.left).toBe('0px')
+test('the handle sits beside the paper, not over it', () => {
+  const { root, handle } = renderDrawer(stubSession())
+  expect(window.getComputedStyle(root).display).toBe('flex')
+  expect(window.getComputedStyle(handle!).position).not.toBe('absolute')
 })
 
-test('the handle takes the edge facing the main content', () => {
+test('a right drawer puts the handle first', () => {
+  const { handle } = renderDrawer(stubSession())
+  expect(window.getComputedStyle(handle!).order).toBe('-1')
+})
+
+test('a left drawer puts the handle last', () => {
   const { handle } = renderDrawer(stubSession({ drawerPosition: 'left' }))
-  const style = window.getComputedStyle(handle!)
-  expect(style.right).toBe('0px')
-  expect(style.left).toBe('')
+  expect(window.getComputedStyle(handle!).order).toBe('1')
 })
 
 // The drawer takes its grid column by name, so a host renders it once rather

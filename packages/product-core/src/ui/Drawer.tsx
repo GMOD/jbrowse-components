@@ -19,38 +19,31 @@ export interface DrawerChromeSession {
 }
 
 const useStyles = makeStyles()(theme => ({
-  // The grid item, and the handle's containing block. Its own box rather than
-  // the Paper's because the Paper is the thing that SCROLLS: a handle
-  // positioned against it starts at the top of the scrolled content and rides
-  // away with it, and one taken out of flow with `position: fixed` is measured
-  // against the window instead — which is the same box only in a full-window
-  // app, and put a page-tall col-resize strip down an embedded view's page.
+  // The grid item. The handle is a flex sibling of the Paper, so it takes its
+  // own 4px instead of covering the widget's edge text.
   root: {
     // the drawer places itself, so a host renders it once wherever it likes
     // rather than on the side matching `drawerPosition` (see
     // `drawerGridTemplateColumns`)
     gridColumn: 'drawer',
-    position: 'relative',
+    display: 'flex',
     height: '100%',
     minWidth: 0,
   },
   paper: {
     overflowY: 'auto',
     height: '100%',
+    flex: 1,
+    minWidth: 0,
     // widgets position their own overlays against this
     position: 'relative',
     zIndex: DRAWER_Z_INDEX,
     outline: 'none',
     background: theme.palette.background.default,
   },
-  resizeHandle: {
-    position: 'absolute',
-    top: 0,
-    zIndex: DRAWER_Z_INDEX + 1,
-  },
-  // whichever edge faces the main content
-  handleForLeftDrawer: { right: 0 },
-  handleForRightDrawer: { left: 0 },
+  resizeHandle: { flexShrink: 0 },
+  handleForLeftDrawer: { order: 1 },
+  handleForRightDrawer: { order: -1 },
 }))
 
 /**
