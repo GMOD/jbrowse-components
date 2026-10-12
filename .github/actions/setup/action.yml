@@ -1,5 +1,6 @@
 name: Setup
-description: Install pnpm + Node and (optionally) project dependencies
+description:
+  Install pnpm + Node, apt packages and (optionally) project dependencies
 
 # Shared preamble for every pnpm-based job. Checkout must run in the job before
 # this (a local composite action needs the repo already on disk), so this owns
@@ -11,6 +12,11 @@ inputs:
     default: '24'
   registry-url:
     description: npm registry to configure (for publish/provenance jobs)
+    default: ''
+  apt-packages:
+    description:
+      Space-separated apt packages, installed before `pnpm install` so native
+      modules build against them
     default: ''
   install:
     description: Run `pnpm install --frozen-lockfile` (set 'false' to skip)
@@ -29,6 +35,17 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         registry-url: ${{ inputs.registry-url }}
+    # The timeout and retries are for a package archive that hangs rather than
+    # refuses: a stalled `apt-get update` once held a main run until its job
+    # timeout.
+    - if: inputs.apt-packages != ''
+      shell: bash
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
+      run: |
+        apt=(sudo timeout 300 apt-get -o Acquire::Retries=3)
+        "${apt[@]}" update
+        "${apt[@]}" install -y $APT_PACKAGES
     - if: inputs.install == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}

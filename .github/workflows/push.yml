@@ -43,40 +43,28 @@ env:
 # superseded run is not cancelled, every later push queues behind it: an
 # `apt-get update` waiting on the package archive did exactly that.
 jobs:
+  # No jest transform cache: one restored and re-saved every run only grows,
+  # since jest never evicts an entry. It saved ~20s of a 7.5-minute step when
+  # added in July and by October was 4.3 GiB, costing 6-12 minutes a run to
+  # restore and save and evicting every other entry from the 10 GB repo cache.
   test:
-    name: Test
+    name: Test (${{ matrix.shard }}/2)
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
-      - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # Babel has to transpile the whole plugin graph before the first test body
-      # runs, all of it before any assertion — measured at ~19-26s cold vs ~5-7s
-      # warm for a single trivial suite locally. CI had no jest cache at all, so
-      # it paid that cold every run. Jest keys each entry on file content +
-      # transformer config, so restoring a previous run's cache is safe — changed
-      # files simply miss and are re-transpiled. Keyed on the sha so every run
-      # saves a fresh entry, with restore-keys falling back to the nearest earlier
-      # one; the babel/jest config files are in the key because changing either
-      # invalidates every entry anyway.
-      - name: Restore jest transform cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: node_modules/.cache/jest
-          key:
-            jest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml',
-            'babel.config.cjs', 'jest.config.js') }}-${{ github.sha }}
-          restore-keys: |
-            jest-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'babel.config.cjs', 'jest.config.js') }}-
-            jest-${{ runner.os }}-
+          apt-packages: tabix
       - name: Test codebase
-        run: pnpm test-ci
-      # `if: failure()` rather than the old continue-on-error + `exit 1` pair:
-      # the job fails on the test step itself, and these still run.
+        run: pnpm test-ci --shard=${{ matrix.shard }}/2
       - name: Configure AWS credentials
         if: failure()
         uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
@@ -106,8 +94,6 @@ jobs:
           else
             echo "No jest snapshot diff files found"
           fi
-      - name: Upload coverage
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
   # The Test job above compiles everything with babel-plugin-react-compiler, and
   # so does every app bundle. The packages we *publish* do not: `build:esm` is
@@ -130,25 +116,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      # Its own cache path and key prefix, not the Test job's. Jest keys entries
-      # on file content + transformer config, and `NO_RC` is neither, so a shared
-      # directory would serve compiled output to this job and silently make it a
-      # second copy of Test.
-      - name: Restore jest transform cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: node_modules/.cache/jest-no-rc
-          key:
-            jest-no-rc-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml',
-            'babel.config.cjs', 'jest.config.js') }}-${{ github.sha }}
-          restore-keys: |
-            jest-no-rc-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'babel.config.cjs', 'jest.config.js') }}-
-            jest-no-rc-${{ runner.os }}-
+          apt-packages: tabix
       - name: Test the uncompiled build
         run: pnpm test-ci-no-react-compiler
 
@@ -373,15 +346,13 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup
       # check-build-scripts runs sv_multihop's pipeline against an allele it
       # builds itself, and skips that check when these are absent. A check that
       # only ever skips here is not a check, and this is the only coverage that
       # pipeline's glue has.
-      - name: Install the aligner and samtools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends samtools minimap2 tabix
+      - uses: ./.github/actions/setup
+        with:
+          apt-packages: samtools minimap2 tabix
       - name: Validate docs
         run: pnpm check-docs
 
@@ -404,8 +375,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Install glslang
-        run: sudo apt-get update && sudo apt-get -y install glslang-tools
+        with:
+          apt-packages: glslang-tools
       # Was `cargo install naga-cli` unconditionally: a from-source build on
       # every run of every branch, ~53s, for a binary that only changes when the
       # pin above does.
@@ -537,14 +508,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+        with:
+          apt-packages:
+            tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev
+            librsvg2-dev
       - name: Pack artifacts for component tests
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
@@ -758,11 +729,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+        with:
+          apt-packages: tabix
       # Needs no build: it bundles the painters itself.
       - name: Check batched Canvas2D paths stay under Chrome's path size limit
         run: pnpm check-canvas-path-limits
@@ -995,13 +967,13 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup
       # The runner image ships Chromium's own dependencies, so the packaged
       # Electron tree needs nothing extra — but it has no X server, and the app
       # is a real window even in --headless. xvfb-run is what test:e2e:headless
       # wraps the run in.
-      - name: Install xvfb
-        run: sudo apt-get update && sudo apt-get -y install xvfb
+      - uses: ./.github/actions/setup
+        with:
+          apt-packages: xvfb
       - name: Package and test Electron on Linux
         run: pnpm test:e2e:ci
         working-directory: products/jbrowse-desktop
@@ -1034,10 +1006,10 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: ./.github/actions/setup
       # The same native makensis the release job compiles the installer with.
-      - name: Install NSIS
-        run: sudo apt-get update && sudo apt-get -y install nsis
+      - uses: ./.github/actions/setup
+        with:
+          apt-packages: nsis
       - name: Compile the installer script
         run: pnpm check:nsis
         working-directory: products/jbrowse-desktop

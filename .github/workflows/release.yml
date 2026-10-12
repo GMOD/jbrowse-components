@@ -211,17 +211,11 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      # install: false — pnpm install must run after the native build deps below
-      # so native modules rebuild against them.
       - uses: ./.github/actions/setup
         with:
-          install: 'false'
-      - name: Install build dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          apt-packages:
+            python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev
+            libgif-dev librsvg2-dev
       - name: Build Linux app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
