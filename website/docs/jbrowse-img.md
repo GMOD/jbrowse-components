@@ -689,7 +689,7 @@ script pass a category through from a variable that may be empty. The
 | `flags:include:exclude`    | `flags::SECONDARY,DUP` | SAM flag masks, `samtools -f` then `-F`. Each half is a number or samtools' flag names, comma-separated (`PAIRED`, `PROPER_PAIR`, `UNMAP`, `MUNMAP`, `REVERSE`, `MREVERSE`, `READ1`, `READ2`, `SECONDARY`, `QCFAIL`, `DUP`, `SUPPLEMENTARY`). Either half may be empty to leave that mask as the track's config set it |
 | `mapq:N`                   | `mapq:20`              | Keep only reads with a mapping quality of at least N, `samtools -q`. A read whose mapping quality is unavailable (255) is dropped                                                                                                                                                                                      |
 | `filterTag:TAG:value`      | `filterTag:HP:1`       | Keep only reads whose tag has this value. Repeatable, and every one must pass                                                                                                                                                                                                                                          |
-| `svSignal:only\|exclude`   | `svSignal:only`        | SV evidence, with the rest of the read's pair: a split read, an insertion or deletion of 50 bp or more, or a paired read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `mapq:` judges each read alone                                               |
+| `svSignal:only\|exclude`   | `svSignal:only`        | SV evidence, and the rest of the read's pair in the same window: a split read, an insertion or deletion of 50 bp or more, or a paired read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `mapq:` judges each read alone                             |
 | `split:only\|exclude`      | `split:only`           | Reads the aligner gave a supplementary segment (SAM flag 0x800), read off the SA tag                                                                                                                                                                                                                                   |
 | `singletons:only\|exclude` | `singletons:exclude`   | Reads whose mate and supplementary segments are all outside the window                                                                                                                                                                                                                                                 |
 | `spliced:only\|exclude`    | `spliced:only`         | Reads whose CIGAR has a reference skip (N) — an intron, in RNA-seq                                                                                                                                                                                                                                                     |
@@ -1636,9 +1636,9 @@ more wraps.
 
 The reads joining an image's windows are drawn between them, as arcs in
 a linear view and as curves in a breakpoint view, and the manifest counts
-them. Each alignments track lays out its split reads first, beside the
-reads carrying a deletion of 50 bases or more, unless the track sets
-arcs: or sort= itself.
+them. Each alignments track lays out its SV evidence first: split reads,
+then reads carrying an insertion or deletion of 50 bases or more, then
+discordant pairs, unless the track sets arcs: or sort= itself.
 
 Where a record on one contig spells out its alleles, or is a symbolic
 <DEL> or <INS>, the manifest also counts the reads with the ALT at its

@@ -1626,9 +1626,9 @@ more wraps.
 
 The reads joining an image's windows are drawn between them, as arcs in
 a linear view and as curves in a breakpoint view, and the manifest counts
-them. Each alignments track lays out its split reads first, beside the
-reads carrying a deletion of 50 bases or more, unless the track sets
-arcs: or sort= itself.
+them. Each alignments track lays out its SV evidence first: split reads,
+then reads carrying an insertion or deletion of 50 bases or more, then
+discordant pairs, unless the track sets arcs: or sort= itself.
 
 Where a record on one contig spells out its alleles, or is a symbolic
 <DEL> or <INS>, the manifest also counts the reads with the ALT at its
