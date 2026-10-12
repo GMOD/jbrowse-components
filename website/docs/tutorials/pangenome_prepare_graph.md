@@ -307,11 +307,13 @@ from `domainMin` onto the two colors of `range`. The count is per haplotype
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
-(0.5.0 or later) writes every walk to tabix-indexed files, which the browser
-reads for the graph track and for the haplotype lanes. It cuts each walk into
-pieces, one for each stretch the walk spends in a 64 kb chunk of a reference,
-and files each piece under its chunk, so the browser reads one range of each
-file per window.
+(1.0.0 or later) writes every walk to one tabix-indexed file per reference,
+which the browser reads for the graph track and for the haplotype lanes. It cuts
+each walk into pieces, one for each stretch the walk spends in a 64 kb chunk of
+a reference, and files each piece under its chunk, so the browser reads one
+range of the file per window. A chunk holds the reference's path through it
+once, each distinct route a haplotype takes off that path once, and every other
+walk's piece as the list of routes it takes.
 
 `vg convert` writes the GBZ as a GFA whose W lines are the walks. Index that GFA
 against both of HPRC's references:[^walks-cost]
@@ -322,34 +324,36 @@ gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
   -o hprc-v2.1-mc-grch38
 ```
 
-The tool writes three files and their `.tbi` indexes for each sample in
-`--refs`, named `<prefix>.<sample>.<kind>.bed.gz`, so a track on GRCh38 reads an
-index that covers GRCh38 alone:
+The tool writes one file and its `.tbi` index for each sample in `--refs`, named
+`<prefix>.<sample>.walks.bed.gz`, so a track on GRCh38 reads an index that
+covers GRCh38 alone:
 
-| file                   | what it holds                                              |
-| ---------------------- | ---------------------------------------------------------- |
-| `.GRCh38.walks.bed.gz` | each walk's steps through each 64 kb chunk of GRCh38       |
-| `.GRCh38.nodes.bed.gz` | the nodes those steps visit, filed under the same chunks   |
-| `.GRCh38.links.bed.gz` | the links between those steps, filed under the same chunks |
-| `.CHM13.*.bed.gz`      | the same three files, filed under the chunks of T2T-CHM13  |
+| file                   | what it holds                                    |
+| ---------------------- | ------------------------------------------------ |
+| `.GRCh38.walks.bed.gz` | every walk through each 64 kb chunk of GRCh38    |
+| `.CHM13.walks.bed.gz`  | every walk through each 64 kb chunk of T2T-CHM13 |
 
-Each file opens with header lines, which `tabix -H` prints:
+gfa-to-tabix 0.5.0 to 0.12 wrote three files per reference instead, the walks
+with every step beside the nodes and links they visit. The graph genome viewer
+plugin reads both kinds; it reads the one-file sets from 6.27.0.
+
+The file opens with header lines, which `tabix -H` prints:
 
 ```bash
 tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 ```
 
 ```text
-#walks	chunk:i:65536	maxnode:i:1024	cap:i:8192
+#walks	format:i:2	chunk:i:65536	maxnode:i:1024
 #reference	CHM13
 #haplotype	GRCh38#0
 #haplotype	HG00097#1
 ```
 
-The first line gives the chunk size, the longest node in bp, which sets how far
-before a window the browser starts reading, and the most steps in one row. The
-walk file then lists its reference sample and every other haplotype with rows in
-it, the other reference included, once each.
+The first line gives the file's format, the chunk size, and the longest node in
+bp, which sets how far before a window the browser starts reading. The file then
+lists its reference sample and every other haplotype with rows in it, the other
+reference included, once each.
 
 A track's `walksUri` names one reference's set by its prefix,
 `<prefix>.<sample>`. The track below draws the graph and, as a second display,
@@ -378,7 +382,7 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
 ```
 
 The lanes align each walk to the reference's on the nodes both visit, so the
-track needs no sequence beyond the three files.
+track needs no sequence beyond the walk file.
 
 A graph track with no lanes names the same set through `RgfaTabixAdapter`, here
 T2T-CHM13's:
@@ -554,8 +558,8 @@ The walk files come from the two commands under
   bubble calls.
 - [gbz-base](https://github.com/jltsiren/gbz-base): a GBZ as a SQLite database,
   range-requested per window.
-- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): the walk, node and
-  link row formats `--walks` writes.
+- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): `--walks`, and the
+  [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
 
 ## Citations
 
@@ -563,8 +567,8 @@ The walk files come from the two commands under
   example here.
 
 [^walks-cost]:
-    On a 24-core machine `gfa-to-tabix` took 44 minutes and 16 GB of memory, and
-    wrote 18 GB for the two references.
+    On a 24-core machine `gfa-to-tabix` took 29 minutes and 13 GB of memory, and
+    wrote 2.9 GB for the two references.
 
 [^gbz-cost]:
     Over HPRC's 464 haplotypes the companion is 5.1 GB, built in 35 minutes on
