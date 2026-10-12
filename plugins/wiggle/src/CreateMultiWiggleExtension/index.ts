@@ -6,13 +6,11 @@ import {
   getSession,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
-import {
-  getConfAssemblyNamesOrNone,
-  toTrackConfigEntry,
-} from '@jbrowse/core/util/tracks'
+import { toTrackConfigEntry } from '@jbrowse/core/util/tracks'
 
 import {
   addMultiRowTrack,
+  stackAssemblies,
   stackKindOf,
 } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
@@ -55,9 +53,8 @@ function makeTrack({
       // #region trackConfigEntry
       // `tracks` are the selection's track configs, mostly frozen entries
       // that omit a slot at its default, so each read supplies the default
-      assemblyNames: [
-        ...new Set(tracks.flatMap(c => getConfAssemblyNamesOrNone(c))),
-      ],
+      assemblyNames: stackAssemblies(tracks, session.assemblyManager)
+        .assemblyNames,
       adapter: {
         subadapters: tracks.map(toTrackConfigEntry).map(c => ({
           ...(c.adapter as Record<string, unknown>),
@@ -85,6 +82,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
               {
                 tracks,
                 leftOut,
+                assemblyManager: session.assemblyManager,
                 onClose: (result?: MakeTrackArg) => {
                   if (result) {
                     makeTrack({ model, arg: result })

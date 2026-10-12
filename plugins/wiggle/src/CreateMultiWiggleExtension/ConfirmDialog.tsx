@@ -9,12 +9,14 @@ import { observer } from 'mobx-react'
 
 import {
   MIXED_MESSAGE,
+  stackAssemblies,
   stackKind,
   stackKindOf,
 } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 function nameOf(track: AnyTrackConfig) {
   return (track.name as string | undefined) || track.trackId
@@ -23,10 +25,12 @@ function nameOf(track: AnyTrackConfig) {
 const ConfirmDialog = observer(function ConfirmDialog({
   tracks: initialTracks,
   leftOut,
+  assemblyManager,
   onClose,
 }: {
   tracks: AnyTrackConfig[]
   leftOut: AnyTrackConfig[]
+  assemblyManager: AssemblyNameResolver
   onClose: (result?: {
     name: string
     tracks: AnyTrackConfig[]
@@ -36,11 +40,12 @@ const ConfirmDialog = observer(function ConfirmDialog({
   const [val, setVal] = useState('Multi-row track')
   const [tracks, setTracks] = useState(initialTracks)
   const kind = stackKind(tracks.flatMap(t => stackKindOf(t.type) ?? []))
+  const { assemblyNames, shared } = stackAssemblies(tracks, assemblyManager)
   return (
     <SubmitDialog
       open
       title="Create multi-row track"
-      submitDisabled={!kind || kind === 'mixed' || !val.trim()}
+      submitDisabled={!kind || kind === 'mixed' || !shared || !val.trim()}
       onCancel={() => {
         onClose()
       }}
@@ -59,6 +64,12 @@ const ConfirmDialog = observer(function ConfirmDialog({
       {kind === 'mixed' ? (
         <Alert severity="error">{MIXED_MESSAGE}</Alert>
       ) : null}
+      {shared ? null : (
+        <Alert severity="error">
+          Tracks on different assemblies do not stack (
+          {assemblyNames.join(', ')}); remove all but one
+        </Alert>
+      )}
       <DataGrid
         autoHeight
         rows={tracks}

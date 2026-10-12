@@ -13,6 +13,7 @@ import {
   itemToName,
   parseItems,
   sessionGuessers,
+  stackAssemblies,
   stackKind,
 } from './util.ts'
 
@@ -143,6 +144,17 @@ describe('classifyItem', () => {
     })
   })
 
+  it('guesses the adapter of a pasted uri shorthand, keeping its other keys', () => {
+    const m = asMember(
+      classifyItem({ uri: 'https://host/a.bw', source: 'tumor' }, guessers()),
+    )
+    expect(m).toMatchObject({
+      name: 'tumor',
+      kind: 'quantitative',
+      conf: { type: 'BigWigAdapter', source: 'tumor' },
+    })
+  })
+
   it('refuses a pasted config whose type no plugin registers', () => {
     expect(classifyItem({ type: 'NopeAdapter' }, guessers())).toMatchObject({
       reason: 'unknown adapter type "NopeAdapter"',
@@ -183,6 +195,30 @@ describe('stackKind', () => {
 
   it('is undefined with no members', () => {
     expect(stackKind([])).toBeUndefined()
+  })
+})
+
+describe('stackAssemblies', () => {
+  const aliases: Record<string, string> = { GRCh38: 'hg38', hg38: 'hg38' }
+  const assemblyManager = {
+    getCanonicalAssemblyName: (name: string) => aliases[name],
+  }
+  const track = (assemblyNames: string[]) => ({
+    trackId: assemblyNames.join(),
+    type: 'QuantitativeTrack',
+    assemblyNames,
+  })
+
+  test('an alias stacks with its assembly under the canonical name', () => {
+    expect(
+      stackAssemblies([track(['hg38']), track(['GRCh38'])], assemblyManager),
+    ).toEqual({ assemblyNames: ['hg38'], shared: true })
+  })
+
+  test('two builds do not stack', () => {
+    expect(
+      stackAssemblies([track(['hg38']), track(['hg19'])], assemblyManager),
+    ).toEqual({ assemblyNames: ['hg38', 'hg19'], shared: false })
   })
 })
 

@@ -4,7 +4,12 @@ import {
   getEnv,
   makeTrackId,
 } from '@jbrowse/core/util'
-import { guessAdapter, guessTrackType } from '@jbrowse/core/util/tracks'
+import {
+  canonicalAssemblyNames,
+  getConfAssemblyNamesOrNone,
+  guessAdapter,
+  guessTrackType,
+} from '@jbrowse/core/util/tracks'
 
 import {
   adapterSpec,
@@ -13,7 +18,9 @@ import {
 import { getFilename } from '../util.ts'
 
 import type { MemberConfig } from '../MultiWiggleAdapter/memberLocation.ts'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { SessionWithAddSessionTrack } from '@jbrowse/core/util'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -140,7 +147,15 @@ export function classifyItem(item: TrackItem, guessers: Guessers) {
       guessers,
     )
   }
-  const { type } = item
+  const { type, uri, ...rest } = item
+  if (type === undefined && typeof uri === 'string') {
+    return classifyLocation(
+      { uri, locationType: 'UriLocation' },
+      name,
+      guessers,
+      rest,
+    )
+  }
   return typeof type === 'string' && guessers.hasAdapterType(type)
     ? member(name, { ...item, type }, guessers.guessTrackType(type))
     : { name, reason: `unknown adapter type "${type}"` }
@@ -175,6 +190,29 @@ export function stackKind(kinds: StackKind[]) {
 
 export const MIXED_MESSAGE =
   'Quantitative and feature data do not stack together; remove one kind'
+
+/**
+ * The canonical assemblies the tracks are on, and whether they share one, so
+ * an hg38 track and a GRCh38 one stack and an hg19 one does not.
+ */
+export function stackAssemblies(
+  tracks: AnyTrackConfig[],
+  assemblyManager: AssemblyNameResolver,
+) {
+  const keys = new Set(
+    tracks.map(t =>
+      canonicalAssemblyNames(getConfAssemblyNamesOrNone(t), assemblyManager)
+        .toSorted()
+        .join('\t'),
+    ),
+  )
+  return {
+    assemblyNames: [...new Set([...keys].flatMap(k => k.split('\t')))].filter(
+      Boolean,
+    ),
+    shared: keys.size <= 1,
+  }
+}
 
 export function applyName({ name, conf }: Member, newName: string) {
   return newName === name ? conf : { ...conf, source: newName }
