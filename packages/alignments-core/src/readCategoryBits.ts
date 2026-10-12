@@ -27,14 +27,7 @@ export const READ_DISCORDANT = 16
 /** An indel of `SV_INDEL_MIN_BP` or more. */
 export const READ_SV_INDEL = READ_SV_DELETION | READ_SV_INSERTION
 
-/**
- * The SV evidence a read carries, ADR-229: a split read, an SV-size indel, or
- * a pair the aligner did not call concordant. The `svSignal` filter keeps a
- * chain when any of its records has one of these bits, the `svSignal` sort
- * lifts them in that order, and the breakpoint split view connects the reads
- * that have one.
- */
-export const READ_SV_SIGNAL = READ_SPLIT | READ_SV_INDEL | READ_DISCORDANT
+const SV_TIER_SHIFT = 5
 
 /**
  * Whether a record is a piece of a chimeric alignment: it carries an SA tag,
@@ -74,17 +67,62 @@ export function readCategoryBits(
   )
 }
 
+// MAPQ 0 says the aligner placed the record as well somewhere else. 255 is SAM's
+// "unavailable", which a synteny block and some aligners write, and counts as
+// placed: the rule cannot tell.
+function isPlaced(mapq: number) {
+  return mapq !== 0
+}
+
 /**
- * How far the `svSignal` sort lifts a read: 3 for a split read, 2 for an
- * SV-size indel, 1 for a discordant pair, 0 for the rest, so discordant short
- * reads do not bury the split reads.
+ * Whether some other piece of a split read is placed, read off the MAPQ field
+ * of each SA record. A supplementary whose SA the source dropped counts as
+ * placed: nothing says otherwise.
  */
+export function saIsPlaced(sa: string) {
+  if (sa === '') {
+    return true
+  }
+  for (const entry of sa.split(';')) {
+    if (entry !== '' && isPlaced(Number(entry.split(',')[4]))) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * How far the `svSignal` sort lifts a read, and whether the filter and the
+ * breakpoint split view count it as evidence (ADR-229): 3 for a split read, 2
+ * for an SV-size indel, 1 for a discordant pair, 0 for the rest, so discordant
+ * short reads do not bury the split reads.
+ *
+ * Evidence needs both ends placed. A record at MAPQ 0 carries none; a split
+ * read counts only when some other piece is placed, and a discordant read only
+ * when its mate is, where the MQ tag says (`mateMapq`, undefined when the file
+ * has no MQ). Without that, an Alu's poly-A tail, whose clipped reads land on
+ * Alus genome-wide at MAPQ 0, fills an ordinary window with split reads.
+ */
+export function withSvTier(
+  bits: number,
+  mapq: number,
+  sa: string,
+  mateMapq: number | undefined,
+) {
+  const tier = !isPlaced(mapq)
+    ? 0
+    : bits & READ_SPLIT && saIsPlaced(sa)
+      ? 3
+      : bits & READ_SV_INDEL
+        ? 2
+        : bits & READ_DISCORDANT &&
+            (mateMapq === undefined || isPlaced(mateMapq))
+          ? 1
+          : 0
+  return bits | (tier << SV_TIER_SHIFT)
+}
+
+/** The tier {@link withSvTier} stored; above 0 is SV evidence. */
 export function svSignalTier(bits: number) {
-  return bits & READ_SPLIT
-    ? 3
-    : bits & READ_SV_INDEL
-      ? 2
-      : bits & READ_DISCORDANT
-        ? 1
-        : 0
+  return (bits >> SV_TIER_SHIFT) & 3
 }

@@ -3,6 +3,7 @@ import {
   READ_SV_DELETION,
   namesToBlock,
   readCategoryBits,
+  withSvTier,
 } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
@@ -27,6 +28,7 @@ interface Read {
   sa?: string
   clip?: number
   cigarBits?: number
+  mapq?: number
 }
 
 function arrays(reads: Read[]): OverlayReadArrays {
@@ -43,11 +45,16 @@ function arrays(reads: Read[]): OverlayReadArrays {
     ),
     readSuppAlignments: reads.map(r => r.sa ?? ''),
     readCategoryBits: Uint8Array.from(reads, r =>
-      readCategoryBits(
-        r.flags ?? 0,
+      withSvTier(
+        readCategoryBits(
+          r.flags ?? 0,
+          r.sa ?? '',
+          r.cigarBits ?? 0,
+          r.orientation ? PAIR_DIRECTION_NUM[r.orientation] : 0,
+        ),
+        r.mapq ?? 60,
         r.sa ?? '',
-        r.cigarBits ?? 0,
-        r.orientation ? PAIR_DIRECTION_NUM[r.orientation] : 0,
+        undefined,
       ),
     ),
     readClipAtStart: new Uint32Array(reads.map(r => r.clip ?? 0)),

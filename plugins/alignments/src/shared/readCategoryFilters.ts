@@ -30,11 +30,13 @@ export const READ_CATEGORIES = [
       'flag), an insertion or deletion of 50 bp or more, or a paired read ' +
       'the aligner did not call concordant (no proper-pair flag 0x2, a mate ' +
       'unmapped or on another chromosome, or a pair not facing ' +
-      'forward/reverse). Works on long reads through the first two. Each ' +
-      'window is judged on its own, so in a multi-region view a mate in ' +
-      'another window counts only by what that window holds. The minimum ' +
-      'mapping quality judges each read alone, so a read whose mate was ' +
-      'placed at low quality still counts by its flags.',
+      'forward/reverse). Works on long reads through the first two. Both ' +
+      'ends must be placed: a read at mapping quality 0 carries none, a ' +
+      'split read counts only when some other piece of it is above 0, and ' +
+      'a discordant read only when its mate is, where the file records the ' +
+      'mate in an MQ tag. Each window is judged on its own, so in a ' +
+      'multi-region view a mate in another window counts only by what that ' +
+      'window holds.',
   },
   {
     key: 'singletons',

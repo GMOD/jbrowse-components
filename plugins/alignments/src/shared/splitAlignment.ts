@@ -1,8 +1,10 @@
 import {
+  READ_DISCORDANT,
   READ_SPLIT,
   pairOrientationToNum,
   readCategoryBits,
   splitBit,
+  withSvTier,
 } from '@jbrowse/alignments-core'
 import {
   connectionEndpointBps,
@@ -14,7 +16,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { cigarCategoryBitsOf } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { getFlags, getStrand } from './util.ts'
+import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
 import type { MismatchFeature } from './extractCigarFeatures.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -63,13 +65,28 @@ function saTagOf(feature: Feature) {
  * holding the feature: the read filter, which judges a chain by them.
  */
 export function readCategoryBitsOf(feature: Feature) {
-  const flags = getFlags(feature)
-  return readCategoryBits(
-    flags,
-    splitBit(flags, '') === READ_SPLIT ? '' : saTagOf(feature),
+  const sa = saTagOf(feature)
+  const bits = readCategoryBits(
+    getFlags(feature),
+    sa,
     cigarCategoryBitsOf(feature),
     pairOrientationToNum(feature.get('pair_orientation') as string | undefined),
   )
+  return withSvTier(
+    bits,
+    getMappingQuality(feature),
+    sa,
+    bits & READ_DISCORDANT ? mateMapqOf(feature) : undefined,
+  )
+}
+
+/**
+ * The mate's MAPQ from the MQ tag, which Picard and GATK pipelines write;
+ * undefined in a file without it.
+ */
+export function mateMapqOf(feature: Feature) {
+  const mq = extractFeatureTagValue(feature, 'MQ')
+  return mq === '' ? undefined : Number(mq)
 }
 
 /**

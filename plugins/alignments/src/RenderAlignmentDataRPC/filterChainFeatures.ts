@@ -1,4 +1,4 @@
-import { READ_SV_SIGNAL, readKeyOf } from '@jbrowse/alignments-core'
+import { readKeyOf, svSignalTier } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { groupBy } from '@jbrowse/core/util'
 
@@ -14,12 +14,12 @@ import type { CategoryFilter, ReadFilter } from '../shared/types.ts'
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
-// A chain is SV evidence when any of its records is (`READ_SV_SIGNAL`, ADR-229),
-// so the concordant mate of a split read stays with it. The split test reads
+// A chain is SV evidence when any of its records has an `svSignalTier`
+// (ADR-229), so the concordant mate of a split read stays with it. The split test reads
 // the SA tag: the filter runs per region, so in a view of chr1 beside chr4 the
 // chr1 call never sees a split read's chr4 supplementary.
 function isSvSignalChain(chain: Feature[]) {
-  return chain.some(f => (readCategoryBitsOf(f) & READ_SV_SIGNAL) !== 0)
+  return chain.some(f => svSignalTier(readCategoryBitsOf(f)) > 0)
 }
 
 // Guard against the same physical record being emitted twice — a dup would

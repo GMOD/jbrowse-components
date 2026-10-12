@@ -98,18 +98,30 @@ test('volvox-simple-inv carries SV-size insertions for the twin test to compare'
   expect(bits.filter(b => b & READ_SV_INSERTION).length).toBeGreaterThan(0)
 })
 
-// Unpaired long reads: the evidence is the split reads and the SV-size indels,
-// which the oracle here reads off the CIGAR string by its own regex.
-test('svSignal on long reads keeps the split reads and SV-size indels', async () => {
+// Unpaired long reads: the evidence is the split reads and the SV-size indels
+// of placed records, which the oracle reads off the CIGAR string, the SA tag
+// and the MAPQ by its own regexes. The fixture's chimeras mostly land their
+// other piece on ctgB at MAPQ 0, so it holds both kinds of split read.
+test('svSignal on long reads keeps the placed split reads and SV-size indels', async () => {
   const features = await reads(bam('badread_long_reads.bam'))
   const hasSvIndel = (f: MismatchFeature) =>
     [...(f.get('CIGAR') as string).matchAll(/(\d+)[DI]/g)].some(
       m => Number(m[1]) >= 50,
     )
+  const otherPiecePlaced = (f: MismatchFeature) => {
+    const sa = (f.get('tags') as Record<string, string | undefined>).SA
+    return !sa || /,[1-9]\d*,\d+;/.test(sa)
+  }
+  const placed = features.filter(f => f.get('score') !== 0)
   const evidenceNames = new Set(
-    features
-      .filter(f => hasSvIndel(f) || isSplitAlignment(f))
+    placed
+      .filter(
+        f => hasSvIndel(f) || (isSplitAlignment(f) && otherPiecePlaced(f)),
+      )
       .map(f => f.get('name')!),
+  )
+  expect(features.some(f => isSplitAlignment(f) && !otherPiecePlaced(f))).toBe(
+    true,
   )
   const kept = new Set(
     filterChainFeatures(features, {
@@ -118,6 +130,7 @@ test('svSignal on long reads keeps the split reads and SV-size indels', async ()
     }).map(f => f.get('name')!),
   )
   expect(kept).toEqual(evidenceNames)
+  expect(kept.size).toBeGreaterThan(0)
   expect(features.some(f => hasSvIndel(f) && !isSplitAlignment(f))).toBe(true)
   expect(kept.size).toBeLessThan(new Set(features.map(f => f.get('name'))).size)
 })

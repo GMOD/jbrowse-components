@@ -36,7 +36,9 @@ mapping quality, or any BAM tag. Four more order the whole layout instead:
   ones with an `SA` tag.
 - **Sort by... → SV evidence first** puts the split reads on top, then the reads
   carrying an insertion or deletion of 50 bp or more, then the pairs the aligner
-  did not call concordant: at a breakpoint those are the reads crossing it.
+  did not call concordant: at a breakpoint those are the reads crossing it. A
+  read counts only when both ends are placed: a split read whose other pieces
+  all sit at mapping quality 0, such as the clipped tail of an Alu, stays put.
 
 ## Color by
 

@@ -59,11 +59,12 @@ export {
   READ_SV_DELETION,
   READ_SV_INDEL,
   READ_SV_INSERTION,
-  READ_SV_SIGNAL,
   discordantBit,
   readCategoryBits,
+  saIsPlaced,
   splitBit,
   svSignalTier,
+  withSvTier,
 } from './readCategoryBits.ts'
 export { readIdAt, readIdPrefixOf, readKeyOf } from './readIdentity.ts'
 export type { ReadIdentity, ReadKey, ReadKeys } from './readIdentity.ts'

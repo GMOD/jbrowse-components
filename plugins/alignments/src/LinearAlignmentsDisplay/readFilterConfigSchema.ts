@@ -85,7 +85,7 @@ export const readFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). `minMapq` judges each read alone, so a read whose mate was placed at low quality still counts by its flags.
+     * `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). Both ends must be placed: a read at MAPQ 0 carries no evidence, a split read counts only when some other piece in its SA tag has MAPQ above 0, and a discordant read only when its mate does, where the MQ tag records it.
      */
     svSignal: {
       type: 'maybeStringEnum',

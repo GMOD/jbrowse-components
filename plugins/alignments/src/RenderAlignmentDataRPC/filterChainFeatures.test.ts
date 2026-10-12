@@ -113,6 +113,34 @@ describe('filterChainFeatures svSignal', () => {
     longReadIndel: [
       record('longReadIndel', '1', { flags: 0, CIGAR: '2000M80I3000M' }),
     ],
+    // An Alu's poly-A tail: the clipped piece lands on Alus genome-wide at
+    // MAPQ 0, so neither end of the split is placed twice
+    aluTail: [
+      record('aluTail', '1', {
+        flags: PAIRED_PROPER,
+        pair_orientation: 'F1R2',
+        score: 48,
+        CIGAR: '65S48M38S',
+        tags: {
+          SA: 'chr2,32916294,+,48S103M,0,4;chr12,66057590,-,103M48S,0,6;',
+        },
+      }),
+      ...pair('aluTail', 'F1R2', PAIRED_PROPER).slice(1),
+    ],
+    ambiguousDeletion: [
+      record('ambiguousDeletion', '1', {
+        flags: 0,
+        score: 0,
+        CIGAR: '50M60D50M',
+      }),
+    ],
+    ambiguousMate: [
+      record('ambiguousMate', '1', {
+        flags: PAIRED,
+        score: 60,
+        tags: { MQ: 0 },
+      }),
+    ],
     syntenyBlock: [record('syntenyBlock', '1', { CIGAR: '100M' })],
     syntenyBlockIndel: [
       record('syntenyBlockIndel', '1', { CIGAR: '100M500D100M' }),

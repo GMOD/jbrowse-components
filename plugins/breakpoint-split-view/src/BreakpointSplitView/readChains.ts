@@ -1,5 +1,5 @@
 import {
-  READ_SV_SIGNAL,
+  svSignalTier,
   flagsOf,
   isConcordantPairRead,
   pairFieldEntry,
@@ -54,7 +54,7 @@ export interface ReadChain {
 // by read rather than by chain: the filter keeps a split read's concordant
 // mate, but a curve to it would show no rearrangement.
 export function isEvidenceRead(data: OverlayReadArrays, i: number) {
-  return (data.readCategoryBits[i]! & READ_SV_SIGNAL) !== 0
+  return svSignalTier(data.readCategoryBits[i]!) > 0
 }
 
 // A junction is always evidence; a mate link only for a pair the aligner did

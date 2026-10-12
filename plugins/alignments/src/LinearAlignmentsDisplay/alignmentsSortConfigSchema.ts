@@ -18,8 +18,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * first), `"split"` (reads aligned in pieces first) or `"svSignal"` (the
  * structural-variant evidence first, in tiers: split reads, then reads carrying
  * an insertion or deletion of 50 bp or more, then paired reads the aligner did
- * not call concordant). A column sort ranks the reads over one base, `pos`
- * (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
+ * not call concordant, each with both ends placed above MAPQ 0, as the
+ * `svSignal` filter counts it). A column sort ranks the reads over one base,
+ * `pos` (0-based) on `refName`, by `strand`, `basePair`, `mapq` (highest first),
  * `pairOrientation` (the abnormal orientations over LR), `tag` (naming `tag`),
  * or the `insertion`, `softclip` or `hardclip` there, or up to `within` bases
  * either side; the reads not over it lay out by position. On another

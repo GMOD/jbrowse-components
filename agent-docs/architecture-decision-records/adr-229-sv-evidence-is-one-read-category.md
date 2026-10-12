@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category. A record is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read that fails `isConcordantPairRead`; the extract stores `READ_SV_INSERTION` and `READ_DISCORDANT` beside the split and SV-deletion bits, and `READ_SV_SIGNAL` is the mask the filter, the sort and the breakpoint split view read. The filter keeps a chain when any record is evidence, the sort lifts split reads, then SV-size indels, then discordant reads, and jb2export refuses `properPairs:`. Amends ADR-226's `svSignal` and supersedes its `properPairs` consequence"
+summary: "`svSignal` replaces `properPairs` as the one SV-evidence read category. A record is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read that fails `isConcordantPairRead`, and both ends are placed: the record above MAPQ 0, some other SA piece above 0 for a split read, the mate above 0 where an MQ tag says for a discordant one. The extract stores `READ_SV_INSERTION` and `READ_DISCORDANT` beside the split and SV-deletion bits, and `withSvTier` stores the tier the filter, the sort and the breakpoint split view read. The filter keeps a chain when any record is evidence, the sort lifts split reads, then SV-size indels, then discordant reads, and jb2export refuses `properPairs:`. Amends ADR-226's `svSignal` and supersedes its `properPairs` consequence"
 ---
 
 # ADR-229: SV evidence is one read category
@@ -36,10 +36,17 @@ lifted split reads and SV-size deletions, and its consequence about
     SAM, CRAM and synteny CIGAR strings);
   - it is paired and primary and fails `isConcordantPairRead` (`discordantBit`):
     no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR.
-- **One mask.** `packages/alignments-core/src/readCategoryBits.ts` holds the
-  bits and `READ_SV_SIGNAL`. The extract stores `readCategoryBits(flags, sa,
-  cigarBits, pairOrientationNum)` per read; the filter computes the same
-  function from the feature (`readCategoryBitsOf`).
+- **Both ends must be placed** (`withSvTier`). A record at MAPQ 0 carries no
+  evidence. A split read counts only when some other piece in its SA tag has
+  MAPQ above 0, and a discordant read only when its mate does, where the file
+  writes an MQ tag; without MQ the mate counts as placed. 255, SAM's
+  "unavailable", counts as placed. The rule reads tags only, so every window
+  gives the same answer.
+- **One stored tier.** `packages/alignments-core/src/readCategoryBits.ts`
+  holds the bits, and `withSvTier` stores the tier in bits 5-6 of the same
+  byte. The extract stores it per read; the filter computes it from the
+  feature (`readCategoryBitsOf`); `svSignalTier` reads it back for all three
+  consumers.
 - **`filter.svSignal: 'only' | 'exclude'`, judged per chain.** A chain counts
   when any record counts, so a split read's concordant mate stays with it.
   The chain is the region fetch's, as it was for `properPairs`: in a
@@ -58,8 +65,8 @@ lifted split reads and SV-size deletions, and its consequence about
 - **jb2export takes `svSignal:only|exclude`**, and an old `properPairs:`
   modifier is an error naming `svSignal:only`. The unknown-modifier warning
   would scroll past and leave the script an unfiltered figure.
-- **`minMapq` stays per record.** A MAPQ-60 read whose mate was placed at MAPQ
-  0 still counts by its flags, and the menu's help text names that limit.
+- **`minMapq` stays per record**, ahead of the chain test. The placement rule
+  answers the mismapped-mate case `minMapq` cannot.
 - **The arcs keep `isConcordantPairRead`** for "Show ordinary pairs", the
   predicate `discordantBit` negates.
 
@@ -102,6 +109,23 @@ lifted split reads and SV-size deletions, and its consequence about
 - The scans keep main's cost: 9.6 ms against 9.4-9.9 over 335 long BAM reads
   and 3.2 against 3.4-3.9 on CRAM (`categoryBits.bench.ts`).
 
+- The placement rule comes from a check on real data (2026-10-12): HG008's
+  tumour Illumina BAM at 195x and 1000 Genomes HG00096 at 30x.
+
+  | Split reads at | All | Both ends above MAPQ 0 |
+  | --- | --- | --- |
+  | HG008, 85 bp deletion | 70 | 70 |
+  | HG008, chr3 inversion | 296 | 286 |
+  | HG008, chr3 translocation | 104 | 104 |
+  | HG008, CFTR, no SV | 1145 | 247 |
+
+  Without it, "Only SV evidence" over CFTR in both samples kept 14-36% of the
+  reads: clipped reads ending in an Alu's poly-A tail at chr7:117,501,7xx,
+  whose other pieces land on Alus genome-wide at MAPQ 0. At the chr7
+  pericentromere, 67% of the discordant reads had a mate below MAPQ 20.
+  `badread_long_reads.bam` carries the same shape, chimeras whose other piece
+  sits on ctgB at MAPQ 0.
+
 ## Rejected alternatives
 
 - **Renaming `properPairs` and keeping its rule.** Long reads keep the no-op.
@@ -113,6 +137,10 @@ lifted split reads and SV-size deletions, and its consequence about
 - **Folding `split` and `singletons` into `svSignal`.** `split` is the
   long-read question alone, and `singletons` asks about the window.
 - **A chain-level MAPQ rule**, every record passing `minMapq` before the chain
-  counts. The proposal left it open, and nothing decided needs it yet.
+  counts. It sees a mate only inside the window, so the answer would change
+  with the view; the SA and MQ tags give the other end's MAPQ wherever it is.
+- **Raising the placement floor with `minMapq`.** The sort and the split view
+  read the stored tier and know no filter, so a floor that moved with the
+  filter would split the three apart.
 - **A `retired` lift from `properPairs` to `svSignal`.** The two keep
   different reads, so the lift would change a figure in silence.

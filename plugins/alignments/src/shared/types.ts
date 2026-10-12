@@ -184,7 +184,8 @@ export interface ReadFilter {
   // Spliced means the CIGAR carries a reference skip (`N`).
   spliced?: CategoryFilter
   // SV evidence, judged per chain: a split read, an indel of 50 bp or more, or
-  // a paired primary read the aligner did not call concordant (`READ_SV_SIGNAL`).
+  // a paired primary read the aligner did not call concordant, with both ends
+  // placed (`svSignalTier`).
   svSignal?: CategoryFilter
   // A read whose mate and supplementary segments are all absent from this
   // window, so it stands alone (samtools calls these "singletons").

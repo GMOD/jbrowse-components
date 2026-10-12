@@ -5,6 +5,7 @@ import {
   READ_SV_DELETION,
   READ_SV_INSERTION,
   namesToBlock,
+  withSvTier,
 } from '@jbrowse/alignments-core'
 import { SV_INDEL_MIN_BP } from '@jbrowse/cigar-utils'
 
@@ -56,14 +57,17 @@ interface Read {
 // The worker's whole-record answer for a fixture read; its gap arrays stay
 // what the region drew.
 function categoryBitsOf(r: Read) {
-  return (
+  return withSvTier(
     (r.split ? READ_SPLIT : 0) |
-    (r.skips?.length ? READ_SPLICED : 0) |
-    (r.deletions?.some(([s, e]) => e - s >= SV_INDEL_MIN_BP)
-      ? READ_SV_DELETION
-      : 0) |
-    (r.insertions?.some(n => n >= SV_INDEL_MIN_BP) ? READ_SV_INSERTION : 0) |
-    (r.discordant ? READ_DISCORDANT : 0)
+      (r.skips?.length ? READ_SPLICED : 0) |
+      (r.deletions?.some(([s, e]) => e - s >= SV_INDEL_MIN_BP)
+        ? READ_SV_DELETION
+        : 0) |
+      (r.insertions?.some(n => n >= SV_INDEL_MIN_BP) ? READ_SV_INSERTION : 0) |
+      (r.discordant ? READ_DISCORDANT : 0),
+    60,
+    '',
+    undefined,
   )
 }
 
