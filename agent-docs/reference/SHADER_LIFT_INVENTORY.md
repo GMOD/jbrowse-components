@@ -81,7 +81,7 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
-| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
+| type 'vec4' is outside the supported scalar subset | 18 | `bandColorAt`, `colorCutAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, `isCulled`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
 | type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |

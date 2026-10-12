@@ -29,6 +29,7 @@
 module wiggleCommon;
 
 import hpmath;
+import markColor;
 import scoreScale;
 import valueScale;
 
@@ -162,20 +163,10 @@ public float4 cutYsPx(int from, float rowTop, float rowHeight, Uniforms u) {
   return ys;
 }
 
-public float cutYAt(int i, float4 cutYsLo, float4 cutYsHi) {
-  return i < 4 ? cutYsLo[i] : cutYsHi[i - 4];
-}
-
 // A line's color follows the band its centre line is in, not the pixel's, so
-// a line lying on a cut stays one color. Screen y grows downward, so a score
-// at or past a cut is at or above that cut's y.
+// a line lying on a cut stays one color.
 public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, Uniforms u, float4 posColor, float4 negColor) {
-  int band = 0;
-  for (int i = 0; i < u.numCuts; i++) {
-    if (centerLineYPx <= cutYAt(i, cutYsLo, cutYsHi)) {
-      band = i + 1;
-    }
-  }
+  int band = thresholdBandAtYPx(centerLineYPx, u.numCuts, cutYsLo, cutYsHi);
   return band == 0 ? negColor
     : band == u.numCuts ? posColor
     : u.innerColor[band - 1];

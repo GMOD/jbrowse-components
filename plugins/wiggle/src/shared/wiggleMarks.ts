@@ -212,7 +212,7 @@ function lineColors(source: SourceRenderData) {
 function wiggleShape(
   pass: InstancePass<SourceRenderData[]>,
   draws: (renderingType: WiggleRenderingType) => boolean,
-  paint: (row: RowDraw, p: WiggleParams) => void,
+  paint: (row: RowDraw & WiggleParams) => void,
 ): MarkShape<SourceRenderData[], WiggleParams> {
   return {
     id: pass.id,
@@ -222,25 +222,14 @@ function wiggleShape(
     paintBlock(ctx, sources, block, frame, p) {
       const rowHeight = getRowHeight(frame.canvasHeight, p.numRows)
       for (const source of sources) {
-        paint(
-          {
-            ctx,
-            source,
-            block,
-            rowHeight,
-            rowTop: getRowTop(source.rowIndex, rowHeight),
-            domainY: p.domainY,
-            scaleType: p.scaleType,
-            symlogConstant: p.symlogConstant,
-            origin: p.origin,
-            pivot: p.pivot,
-            cuts: p.cuts,
-            innerColors: p.innerColors,
-            rampLut: p.rampLut,
-            rampMid: p.rampMid,
-          },
-          p,
-        )
+        paint({
+          ...p,
+          ctx,
+          source,
+          block,
+          rowHeight,
+          rowTop: getRowTop(source.rowIndex, rowHeight),
+        })
       }
     },
   }
@@ -258,13 +247,9 @@ const fillShape = wiggleShape(
     type !== RENDERING_TYPE_DENSITY &&
     type !== RENDERING_TYPE_LINE &&
     type !== RENDERING_TYPE_LINE_CENTER,
-  (row, p) => {
+  row => {
     if (row.source.renderingType === RENDERING_TYPE_SCATTER) {
-      drawScatter({
-        ...row,
-        rgb: cssRgb(row.source),
-        diameterPx: p.diameterPx,
-      })
+      drawScatter({ ...row, rgb: cssRgb(row.source) })
     } else {
       drawXYPlot({ ...row, rgb: cssRgb(row.source) })
     }
@@ -302,11 +287,11 @@ const lineShape = wiggleShape(
     pack: packLineInstances,
   },
   type => type === RENDERING_TYPE_LINE,
-  (row, p) => {
+  row => {
     if (row.source.band) {
       drawMinMaxBand({ ...row, interpolated: false })
     } else {
-      drawLine({ ...row, ...lineColors(row.source), lineWidth: p.lineWidth })
+      drawLine({ ...row, ...lineColors(row.source) })
     }
   },
 )
@@ -317,15 +302,11 @@ const lineCenterShape = wiggleShape(
     pack: packLineCenterInstances,
   },
   type => type === RENDERING_TYPE_LINE_CENTER,
-  (row, p) => {
+  row => {
     if (row.source.band) {
       drawMinMaxBand({ ...row, interpolated: true })
     } else {
-      drawLineCenter({
-        ...row,
-        ...lineColors(row.source),
-        lineWidth: p.lineWidth,
-      })
+      drawLineCenter({ ...row, ...lineColors(row.source) })
     }
   },
 )

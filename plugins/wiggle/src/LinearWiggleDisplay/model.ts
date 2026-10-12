@@ -58,6 +58,7 @@ import {
   declaredCuts,
   paintedWiggleColor,
   resolveWiggleColor,
+  scoreGradientPaints,
   wiggleColorEncoding,
   wiggleColorNotices,
 } from '../shared/wiggleColor.ts'
@@ -332,10 +333,7 @@ export default function stateModelFactory(
        * in two colors even then.
        */
       get scoreGradientPaints() {
-        return (
-          self.isDensityMode ||
-          (this.wiggleColor.rampLut !== null && !isLineMode(self.renderingType))
-        )
+        return scoreGradientPaints(this.wiggleColor, self.renderingType)
       },
 
       /**

@@ -17,9 +17,7 @@ export function wiggleEntryShorthand(snap: Record<string, unknown>) {
   return moveDisplayDefaults(snap, 'LinearWiggleDisplay', ['rows'])
 }
 
-export default function MultiQuantitativeTrackDefaultsF(
-  pluginManager: PluginManager,
-) {
+export default function registerRowsShorthand(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('Core-preProcessTrackConfig', snap => {
     if (!QUANTITATIVE_TRACK_TYPES.has(snap.type as string)) {
       return snap

@@ -4,7 +4,6 @@ import { registerScoreAxisWidget } from '@jbrowse/wiggle-core/scoreAxisWidget'
 import BigWigAdapterF from './BigWigAdapter/index.ts'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
 import LinearWiggleDisplayF from './LinearWiggleDisplay/index.ts'
-import MultiQuantitativeTrackDefaultsF from './MultiQuantitativeTrack/displayDefaults.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
@@ -14,6 +13,7 @@ import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
 } from './WiggleRPC/rpcMethods.ts'
+import registerRowsShorthand from './rowsShorthand.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -25,7 +25,7 @@ export default class WigglePlugin extends Plugin {
     BigWigAdapterF(pm)
     QuantitativeTrackF(pm)
     MultiQuantitativeTrackF(pm)
-    MultiQuantitativeTrackDefaultsF(pm)
+    registerRowsShorthand(pm)
     LinearWiggleDisplayF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
@@ -57,7 +57,6 @@ export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
 // default, so gccontent states its default without restating the enumeration.
 export { aggregateConfigSchemaFields } from './shared/aggregateConfigSchemaFields.ts'
 export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
-export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
 export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'

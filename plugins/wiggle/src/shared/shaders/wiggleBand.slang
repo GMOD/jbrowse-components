@@ -10,6 +10,7 @@
 import antialias;
 import hpmath;
 import colorPack;
+import markColor;
 import wiggleCommon;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -116,7 +117,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float lowerCutPx = 1e9;
   for (int band = 0; band <= u.numCuts; band++) {
     float upperCutPx = band < u.numCuts
-      ? cutYAt(band, fragIn.cutYsLo, fragIn.cutYsHi)
+      ? colorCutAt(band, fragIn.cutYsLo, fragIn.cutYsHi)
       : -1e9;
     float c = bandCoverage(
       min(fragIn.inkPx.x, y - upperCutPx),

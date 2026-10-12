@@ -45,12 +45,10 @@ import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generat
 import {
   paintedWiggleColor,
   resolveWiggleColor,
+  scoreGradientPaints,
   wiggleColorEncoding,
 } from './shared/wiggleColor.ts'
-import {
-  centerLinksToPrevious,
-  isLineMode,
-} from './shared/wiggleComponentUtils.ts'
+import { centerLinksToPrevious } from './shared/wiggleComponentUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -227,9 +225,8 @@ export async function wiggleTables(
     data.sources,
     readConfObject(conf.rows, 'domain'),
   )
-  const scoreGradientPaints =
-    density || (wiggleColor.rampLut !== null && !isLineMode(renderingType))
-  const ramp = scoreRampApplies(scoreGradientPaints, wiggleColor, sources)
+  const gradientPaints = scoreGradientPaints(wiggleColor, renderingType)
+  const ramp = scoreRampApplies(gradientPaints, wiggleColor, sources)
     ? rampKeyOf(
         scoreRampScale(
           domain,
@@ -241,7 +238,7 @@ export async function wiggleTables(
       )
     : undefined
   const rowColorPaintsMarks =
-    !scoreGradientPaints && setting.value === undefined && !setting.field
+    !gradientPaints && setting.value === undefined && !setting.field
   const paletteDeals = !rowLayout && sources.length > 1 && rowColorPaintsMarks
   const rowColor = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
@@ -283,8 +280,7 @@ export async function wiggleTables(
     })),
   )
   const scaleCode = scaleTypeCode(scaleType)
-  const gradient =
-    wiggleColor.rampLut !== null && !isLineMode(renderingType) && !density
+  const gradient = gradientPaints && !density
   const colorOf = (layer: SourceRenderData) => {
     if (density) {
       if (wiggleColor.rampLut) {

@@ -13,6 +13,7 @@ import {
   WIGGLE_FIELD_PRESETS,
   WIGGLE_IMPLIED_FIELD,
 } from './wiggleColorConfigSchema.ts'
+import { isLineMode } from './wiggleComponentUtils.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -41,6 +42,20 @@ export interface ResolvedWiggleColor {
   rampLut: Uint8Array | null
   /** The score at the ramp's middle stop; unset runs the ramp straight across the domain. */
   rampMid: number | undefined
+}
+
+/**
+ * Whether color is spent on the score: density always, and bars or points
+ * under a declared gradient. A line parts in two colors even then.
+ */
+export function scoreGradientPaints(
+  wiggleColor: ResolvedWiggleColor,
+  renderingType: string,
+) {
+  return (
+    renderingType === 'density' ||
+    (wiggleColor.rampLut !== null && !isLineMode(renderingType))
+  )
 }
 
 /** A wiggle color as it paints. Unset beside `score`, the scale is the bicolor cut. */

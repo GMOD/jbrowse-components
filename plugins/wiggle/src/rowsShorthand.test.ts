@@ -3,8 +3,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
-import WigglePlugin from '../index.ts'
-import { wiggleEntryShorthand } from './displayDefaults.ts'
+import WigglePlugin from './index.ts'
+import { wiggleEntryShorthand } from './rowsShorthand.ts'
 
 describe('displayDefaults.rows on a quantitative track', () => {
   const quantitative = { type: 'QuantitativeTrack', trackId: 'q' }
