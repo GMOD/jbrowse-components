@@ -136,18 +136,13 @@ export function encodeMafRows(
     codons: codonProps,
     conservation,
   }: MafRowsEncodeProps,
-  displayedRegionIndex = 0,
+  _displayedRegionIndex?: number,
 ): MafRowsPayload {
   const runs =
     identity && detail ? buildIdentityRuns(detail.blocks, gpu.binBp) : undefined
   const codons =
     codonProps && detail && frames
-      ? locateRegionCodons(
-          detail,
-          frames,
-          codonProps.anchor,
-          displayedRegionIndex,
-        )
+      ? locateRegionCodons(detail, frames, codonProps.anchor)
       : undefined
   const bandColor = cssColorToABGR(gpu.palette.conservationColor)
   return {

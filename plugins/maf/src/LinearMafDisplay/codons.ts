@@ -321,11 +321,6 @@ export interface CodonCall {
  * on the view.
  */
 export interface LocatedCodon {
-  /**
-   * The region this codon was resolved in, since absolute genomic bp is unique
-   * only within a displayed region.
-   */
-  displayedRegionIndex: number
   codon: Codon
   /**
    * `[startBp, endBp)` runs of consecutive reference positions: one, or two
@@ -393,7 +388,6 @@ export function locateRegionCodons(
   region: MafRegionData,
   frames: MafFrameRecord[],
   anchor: string,
-  displayedRegionIndex: number,
 ): LocatedCodon[] {
   const { blocks } = region
   const indexes = new BlockIndexes(blocks)
@@ -415,7 +409,6 @@ export function locateRegionCodons(
         }
       }
       located.push({
-        displayedRegionIndex,
         codon,
         runs: consecutiveRuns(codon.positions),
         refCodon,

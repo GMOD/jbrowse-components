@@ -172,7 +172,7 @@ const frames: MafFrameRecord[] = [
 
 // `ref` is the anchor species throughout
 const locate = (region: MafRegionData, f: MafFrameRecord[] = frames) =>
-  locateRegionCodons(region, f, 'ref', 0)
+  locateRegionCodons(region, f, 'ref')
 
 // each call as [aa, change], codon-major
 const calls = (region: MafRegionData, f?: MafFrameRecord[]) =>
