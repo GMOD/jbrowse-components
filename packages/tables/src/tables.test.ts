@@ -4,6 +4,7 @@ import {
   CRAM,
   LONG_READS,
   METHYLATED,
+  OVERLAP,
   PAIRED_INVERSION,
   READ_GROUPS,
   SPLICED,
@@ -632,6 +633,19 @@ test('a chain puts a read, its mate and its split segments on one row, joined by
       expect(list[i]![0]).toBeGreaterThanOrEqual(list[i - 1]![1])
     }
   }
+})
+
+test("a chain's overlapping segments come back as spans on its row, in a neutral color", async () => {
+  const plain = await engine.alignments(OVERLAP)
+  const chained = await engine.alignments({
+    ...OVERLAP,
+    display: { unit: 'chain' },
+  })
+  expect(plain.overlaps.start).toHaveLength(0)
+  expect(chained.overlaps.start).toEqual([1100, 2150])
+  expect(chained.overlaps.end).toEqual([1200, 2300])
+  expect(chained.overlaps.row).toEqual(chained.chains.row)
+  expect(chained.overlaps.color.every(c => /^#[0-9a-f]{6}$/.test(c))).toBe(true)
 })
 
 test('a chain over split reads paints a read by its strand against its chain’s', async () => {

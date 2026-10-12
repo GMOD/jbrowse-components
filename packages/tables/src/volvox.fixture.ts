@@ -67,6 +67,17 @@ export const PAIRED_INVERSION: AlignmentTablesArgs = {
   region: { refName: 'ctgA', start: 18000, end: 32000 },
 }
 
+/** A mate pair and a split read, each with its two pieces overlapping. */
+export const OVERLAP: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-overlap.bam'),
+    index: { location: uri('volvox-overlap.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 900, end: 2600 },
+}
+
 export const LONG_READS: AlignmentTablesArgs = {
   adapterConfig: {
     type: 'BamAdapter',

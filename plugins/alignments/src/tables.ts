@@ -738,11 +738,19 @@ function qualities(d: WorkerPileupData, plainRead: string) {
 
 /**
  * The chains that join more than one read: the span of each, on the row its
- * reads share, with the hairline's color and opacity. Empty unless the
- * display's unit is a chain.
+ * reads share, with the hairline's color and opacity; and the spans where two
+ * of a chain's reads both align, in the neutral the display fills them with.
+ * Both are empty unless the display's unit is a chain.
  */
-function chainTables(laid: LaidOutPileupData | undefined, color: string) {
+function chainTables(
+  laid: LaidOutPileupData | undefined,
+  color: string,
+  overlapColor: string,
+) {
   const [start, end] = pairs(laid?.connectingLinePositions ?? new Uint32Array())
+  const [overlapStart, overlapEnd] = pairs(
+    laid?.overlapPositions ?? new Uint32Array(),
+  )
   return {
     chains: {
       start,
@@ -750,6 +758,12 @@ function chainTables(laid: LaidOutPileupData | undefined, color: string) {
       row: Array.from(laid?.connectingLineYs ?? []),
       color: Array.from(start, () => color),
       opacity: Array.from(start, () => CONNECTING_LINE_ALPHA),
+    },
+    overlaps: {
+      start: overlapStart,
+      end: overlapEnd,
+      row: Array.from(laid?.overlapYs ?? []),
+      color: Array.from(overlapStart, () => overlapColor),
     },
   }
 }
@@ -1051,6 +1065,7 @@ export async function alignmentTables(
           ...chainTables(
             chain ? laidByGroup.get(key) : undefined,
             normalizedRgbToHex(colors.palette.colorConnectingLine),
+            normalizedRgbToHex(colors.palette.colorOverlap),
           ),
           ...sectionTables(
             dataFor(key),
