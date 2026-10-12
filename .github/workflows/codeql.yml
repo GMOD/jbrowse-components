@@ -33,17 +33,18 @@ jobs:
     name: Check for new commits
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+      # Asks the API rather than cloning, since a checkout deep enough for
+      # `git log --since` is the repo's whole ~1.6 GiB history.
       - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           since=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
-          count=$(git log --since="$since" --oneline main | wc -l)
+          count=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=main&since=$since&per_page=1" --jq length)
           echo "should_run=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   analyze:

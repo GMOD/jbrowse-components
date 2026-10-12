@@ -22,6 +22,7 @@ jobs:
   gate:
     name: Wait for Push CI
     runs-on: ubuntu-latest
+    timeout-minutes: 100
     permissions:
       contents: read
       actions: read
@@ -37,6 +38,7 @@ jobs:
     name: Create release tag and JBrowse web release artifacts
     needs: gate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     # Consumed below so the prerelease flag and the latest/ gate can't drift.
@@ -146,6 +148,7 @@ jobs:
     needs: createrelease
     name: Build Mac desktop app
     runs-on: macos-latest
+    timeout-minutes: 45
     permissions:
       contents: write
     steps:
@@ -205,6 +208,7 @@ jobs:
     needs: createrelease
     name: Build Linux desktop app
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -234,6 +238,7 @@ jobs:
     needs: [buildwindows, buildmac, buildlinux]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -259,6 +264,7 @@ jobs:
     # must not overwrite it.
     if: ${{ needs.createrelease.outputs.prerelease == 'false' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       # Only for .github/actions/zip-jbrowse-web, and it has to precede the
       # download: checkout cleans untracked files out of the workspace, which

@@ -42,6 +42,7 @@ jobs:
   buildwindows:
     name: Build Windows desktop app
     runs-on: ubuntu-latest
+    timeout-minutes: 150
     permissions:
       contents: write
       # The SignPath action reads the run's jobs and downloads the artifact it

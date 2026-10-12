@@ -23,6 +23,7 @@ jobs:
   build:
     name: Build and upload website to production
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     # Publishing a release deploys too — the release commit's bare-tag message
     # never matched the 'update docs' gate. Keyed on publish, not the tag: the
     # download page links at release assets, which stay private while it's a
