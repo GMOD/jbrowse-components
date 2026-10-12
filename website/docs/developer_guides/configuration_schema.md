@@ -35,8 +35,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BedGraphAdapter
  * #trackType QuantitativeTrack
  * #fileFormat quantitative | BedGraph (plain) | Loaded entirely into memory; for small files
- * used to load plain-text bedGraph signal files. Loads the whole file into
- * memory, so prefer the BedGraphTabixAdapter for large files.
+ * Reads plain-text bedGraph signal files. The adapter loads the whole file into
+ * memory, so use `BedGraphTabixAdapter` for large files.
+ *
  * Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
  * one value column each, named by the header, or a `source` column naming each
  * row's, which is the form Save track data writes.
