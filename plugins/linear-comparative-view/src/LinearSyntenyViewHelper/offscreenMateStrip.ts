@@ -1,3 +1,5 @@
+import { getBpDisplayStr } from '@jbrowse/core/util'
+
 import {
   datasetMayHide,
   offscreenMateAt,
@@ -172,4 +174,15 @@ export function offscreenMateTotals(
     }
   }
   return { alignments, alignedBp }
+}
+
+// The hover's first line: the sequence a contig's alignments cover, then how
+// many there are
+export function offscreenMateSummary(
+  refName: string,
+  { alignments, alignedBp }: { alignments: number; alignedBp: number },
+) {
+  return alignments > 0
+    ? `${refName} · ${getBpDisplayStr(alignedBp)} in ${alignments.toLocaleString()} alignments`
+    : refName
 }

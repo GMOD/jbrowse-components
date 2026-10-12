@@ -118,10 +118,22 @@ test('a block whose mate the other row does not show is listed off screen', asyn
     mateChrom: ['ctgB'],
     count: [1],
     alignedBp: [6079],
+    label: ['ctgB · 6.08Kbp in 1 alignments'],
     color: narrow.offscreen.color,
   })
   expect(narrow.offscreen.alpha[0]).toBeCloseTo(0.35, 2)
   expect(narrow.offscreenStrip).toEqual({ height: 6, minWidth: 1.5 })
+
+  const below = await engine.synteny({
+    ...CONTIG_SWAP,
+    query: { regions: [{ refName: 'ctgC', start: 0, end: 1000 }], width: 800 },
+    view: { color: { field: 'query' } },
+  })
+  expect(below.offscreen.axis).toEqual(['target'])
+  expect(below.offscreen.chrom).toEqual(['ctgB'])
+  expect(below.offscreen.mateChrom).toEqual(['ctgA'])
+  expect(below.offscreen.color).not.toEqual(['#000000'])
+  expect(below.offscreenContigs.axis).toEqual(['target'])
 })
 
 test('the strip names a mate contig in its ribbon color only where the ribbons key that axis', async () => {

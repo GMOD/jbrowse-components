@@ -40,6 +40,7 @@ import {
 } from './LinearSyntenyRPC/syntenyKinds.ts'
 import { DEFAULT_ALPHA } from './LinearSyntenyView/consts.ts'
 import { offscreenMateMarkColorFor } from './LinearSyntenyViewHelper/offscreenMateMarkColors.ts'
+import { offscreenMateSummary } from './LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
 import type { OffscreenMateData } from './LinearSyntenyRPC/collectOffscreenMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -170,14 +171,22 @@ function offscreenRows({
 }
 
 // Each contig a lane's mates lie on, with what the strip's hover reports of
-// it: the alignments to it and the sequence they cover
+// it: the alignments to it, the sequence they cover, and the line it prints
 function offscreenContigRows({ data, axis, colorOf }: OffscreenLane) {
   const paint = data.mateRefNameDict.map(colorOf)
+  const count = Array.from(data.counts)
+  const alignedBp = Array.from(data.alignedBp)
   return {
     axis: data.mateRefNameDict.map(() => axis),
     mateChrom: [...data.mateRefNameDict],
-    count: Array.from(data.counts),
-    alignedBp: Array.from(data.alignedBp),
+    count,
+    alignedBp,
+    label: data.mateRefNameDict.map((name, i) =>
+      offscreenMateSummary(name, {
+        alignments: count[i]!,
+        alignedBp: alignedBp[i]!,
+      }),
+    ),
     color: paint.map(p => p.color),
     alpha: paint.map(p => p.alpha),
   }
@@ -203,7 +212,7 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * as a centerline; `offscreen`, the blocks whose mate lies on a contig the
  * other row is not showing, in the color the strip along that row's edge
  * paints them, `offscreenContigs`, the count and aligned bp of each such
- * contig, and `offscreenStrip`, the strip's pixel height and narrowest mark;
+ * contig and the line its hover prints, and `offscreenStrip`, the strip's pixel height and narrowest mark;
  * and `legend` and `ramps`, the key. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`.

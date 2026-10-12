@@ -1,8 +1,10 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
 import { ComparativeTooltip } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import { offscreenMateTotals } from './offscreenMateStrip.ts'
+import {
+  offscreenMateSummary,
+  offscreenMateTotals,
+} from './offscreenMateStrip.ts'
 
 import type { OffscreenMateSide } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { MateNavDestination } from './offscreenMateNav.ts'
@@ -42,18 +44,14 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
   hover: OffscreenMateHover
   destination: MateNavDestination | undefined
 }) {
-  const { alignments, alignedBp } = offscreenMateTotals(
-    model,
-    hover.refName,
-    hover.side,
-  )
   return (
     <ComparativeTooltip
       clientPoint={{ x: hover.clientX, y: hover.clientY }}
       lines={[
-        alignments > 0
-          ? `${hover.refName} · ${getBpDisplayStr(alignedBp)} in ${alignments.toLocaleString()} alignments`
-          : hover.refName,
+        offscreenMateSummary(
+          hover.refName,
+          offscreenMateTotals(model, hover.refName, hover.side),
+        ),
         ...(destination
           ? [offscreenMateClickHint(hover.side, destination)]
           : []),
