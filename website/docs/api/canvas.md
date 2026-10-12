@@ -13,7 +13,8 @@ A region's features as the feature display (`LinearBasicDisplay`) fetches,
 shapes, lays out and colors them, as tables: each top-level feature on the
 row the display's layout gives it, the boxes, intron lines, chevrons and
 strand arrows its glyph draws, its transcripts, the labels the display
-shows beside it at this zoom, and the color key. For a host that draws them
+shows beside it at this zoom, and the color key, a ramp's as `ramps`
+(`rampKeyOf`). For a host that draws them
 itself, such as R through V8. The adapters must be registered on
 `pluginManager`.
 

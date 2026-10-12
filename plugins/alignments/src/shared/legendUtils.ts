@@ -107,7 +107,7 @@ function oneRowPerMeaning(
   )
 }
 
-const READS_RAMP_ID = 'reads-ramp'
+export const READS_RAMP_ID = 'reads-ramp'
 
 // "Arc colors" -> "Read and arc colors", keeping whatever noun the overlay
 // chose for itself.

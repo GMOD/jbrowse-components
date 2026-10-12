@@ -110,7 +110,7 @@ import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
-  numericExtentAcrossGroups,
+  linearFieldExtent,
 } from './bakedColorScale.ts'
 import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
 import {
@@ -176,7 +176,6 @@ import {
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
-  mapqExtentAcrossGroups,
   presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
@@ -1375,22 +1374,14 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The span of a linear color field over the loaded reads, pinned
-           * ends or not, which the key marks an end the reads run past by.
+           * `linearFieldExtent` over the loaded reads
            */
           get tagValueExtent(): NumericExtent | undefined {
-            const encoding = self.colorEncoding
-            const { type } = self.colorBy
-            return typeof encoding !== 'object' || encoding.scale !== 'linear'
-              ? undefined
-              : type === 'mappingQuality'
-                ? mapqExtentAcrossGroups(this.laidOutByGroupFramed)
-                : type === 'tag'
-                  ? numericExtentAcrossGroups(
-                      this.laidOutByGroupFramed,
-                      d => d.readTagValues,
-                    )
-                  : undefined
+            return linearFieldExtent(
+              self.colorEncoding,
+              self.colorBy,
+              this.laidOutByGroupFramed,
+            )
           },
 
           /**

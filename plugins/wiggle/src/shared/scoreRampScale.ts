@@ -34,6 +34,23 @@ export interface ScoreRamp {
 const STEPS = 16
 
 /**
+ * Whether one ramp describes the color of every row: wherever a score
+ * gradient paints, since a declared gradient's one table ignores the rows'
+ * own colors. Density's white fade does not: a source with its own color
+ * fades to it (see buildSourceRenderData), so a single bar would describe
+ * none of them.
+ */
+export function scoreRampApplies(
+  scoreGradientPaints: boolean,
+  { rampLut }: { rampLut: Uint8Array | null },
+  sources: readonly { color?: string }[],
+) {
+  return (
+    scoreGradientPaints && (rampLut !== null || sources.every(s => !s.color))
+  )
+}
+
+/**
  * The density ramp as a `RampScale`, sampled from the live color function
  * rather than a three-stop gradient. The painted position is
  * `|norm(score) - norm(pivot)| / max(norm(pivot), 1 - norm(pivot))`, which is

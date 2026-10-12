@@ -112,6 +112,20 @@ test('density fades each bin from white at the pivot to the side it is on', asyn
   expect(new Set(t.marks.color).size).toBeGreaterThan(20)
 })
 
+test('density keys its ramp as the display does, and a bar plot keys none', async () => {
+  const t = await engine.wiggle({ ...SIGNED_BIGWIG, display: { mark: 'span' } })
+  expect(t.ramps).toHaveLength(1)
+  const [ramp] = t.ramps
+  expect(ramp!.title).toBe('Score')
+  expect([ramp!.minLabel, ramp!.maxLabel]).toEqual(t.domain.map(String))
+  expect(ramp!.offset[0]).toBe(0)
+  expect(ramp!.offset.at(-1)).toBe(1)
+  expect(ramp!.color).toHaveLength(ramp!.offset.length)
+  expect(new Set(ramp!.color).size).toBeGreaterThan(8)
+
+  expect((await engine.wiggle(SIGNED_BIGWIG)).ramps).toEqual([])
+})
+
 test('a line takes the color of the band between the cuts its score is in', async () => {
   const color = {
     field: 'score',

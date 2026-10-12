@@ -242,6 +242,24 @@ export function numericExtentAcrossGroups<D>(
 }
 
 /**
+ * The whole span of a linear color field over the laid-out reads, pinned ends
+ * or not, which the key marks an end the reads run past by.
+ */
+export function linearFieldExtent(
+  encoding: AlignmentsColorEncoding,
+  colorBy: ColorBy,
+  byGroup: LaidOutByGroup,
+): NumericExtent | undefined {
+  return typeof encoding !== 'object' || encoding.scale !== 'linear'
+    ? undefined
+    : colorBy.type === 'mappingQuality'
+      ? mapqExtentAcrossGroups(byGroup)
+      : colorBy.type === 'tag'
+        ? numericExtentAcrossGroups(byGroup, d => d.readTagValues)
+        : undefined
+}
+
+/**
  * The span of a linear color field over the laid-out reads, which a ramp's
  * open ends stretch across: their extremes, or below a `domainQuantile` of 1
  * that quantile of each sign. Undefined while `domainMin` and `domainMax`

@@ -67,7 +67,8 @@ paint each read, and the display's own key (`getReadDisplayLegendItems`) comes
 back as `legend` with `legendTitle`. Each read carries its painted `color` as
 `#rrggbb` and its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...). A host
 draws `color` as given and keys the legend off `legend`, so a scheme the
-browser gains paints in R with no port. A linear ramp keys no legend yet.
+browser gains paints in R with no port. A color bar the display keys (a
+linear tag or MAPQ ramp, base quality) comes back in `ramps`.
 A host has no assembly manager, so where a file spells a contig another way
 than the reference does, it names both: `region.refName` for the file and
 `region.originalRefName` for the reference, as the browser's renamed regions
@@ -168,7 +169,7 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
 - `labels`, each name, description and transcript label the display shows at
   this zoom, placed by its rule, with `position` in bp.
 - `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
-  display's own). A ramp keys no legend yet.
+  display's own), and `ramps`, a ramp's color bar.
 
 The layout is the display's grown to its content, as under `heightMode:
 'grow'`: no fit ladder, no facet sections. `@jbrowse/tables` installs the
@@ -202,6 +203,9 @@ layer encoder (`buildSourceRenderData`):
   under a row layout and all on row 0 in a shared panel.
 - `domain`, `scaleType` and `symlogConstant` are the axis `scales.y`
   resolves to, and `rules` the reference lines it draws.
+- `ramps` holds the score's color bar where one ramp paints every row
+  (`scoreRampApplies`, the display's own rule): density, or a declared
+  gradient outside the line renderings.
 
 A source paints the color the display gives it, through the tree sidebar's
 own rules (`dealtValueColors`, `resolveRowColors`, `markColorOf`): its row
@@ -224,8 +228,8 @@ and paints the cells as the display does (`paintCellColors`,
   `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
 - `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
   named as the display names them, in file order.
-- `legend`: the display's key, from `getVariantColorScales` over what the
-  cells painted.
+- `legend` and `ramps`: the display's key, from `getVariantColorScales` over
+  what the cells painted.
 
 The table does not apply the display's density fade, which depends on zoom,
 and does not order the rows by the `rows` arrangement. A categorical `color`
@@ -246,7 +250,9 @@ of the display's that it can't rebuild:
   column through an identity scale (ggjbrowse classes it `jbrowse_color`,
   whose `scale_type` is identity).
 - **Guides:** `legend` and the other keys are that scale's guide, a label
-  per color.
+  per color. `ramps` are its color bars (`rampKeyOf`): the stops the display
+  samples, as `offset`, `color` and `opacity`, and the end labels its bar
+  prints.
 - **Stats left to the host:** the derived geometry (a read split at its
   skips, an arc's points) is the host's, computed from the table's own
   columns. A stat the display runs on the main thread (layout, autoscale,

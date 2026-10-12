@@ -202,7 +202,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/ui/CascadingMenuButton': ['default'],
   '@jbrowse/core/ui/ColorPicker': ['ColorPopover', 'default'],
   '@jbrowse/core/ui/colors': ['categoricalColor', 'categoricalColorScale', 'categoricalPalette', 'categoricalScale', 'categoricalValueColor', 'category10', 'getQueryColor', 'hashString', 'paletteColors', 'paletteFromSpec', 'refNameColor', 'refNamePaletteColorAt', 'rowPaletteColorAt', 'set1', 'similarColors'],
-  '@jbrowse/core/ui/colorScale': ['colorScaleIsEmpty', 'legendSpecOf', 'missingRowLast'],
+  '@jbrowse/core/ui/colorScale': ['colorScaleIsEmpty', 'legendSpecOf', 'missingRowLast', 'rampKeyOf'],
   '@jbrowse/core/ui/ConfirmDialog': ['default'],
   '@jbrowse/core/ui/DataGridFlexContainer': ['default'],
   '@jbrowse/core/ui/Dialog': ['default'],

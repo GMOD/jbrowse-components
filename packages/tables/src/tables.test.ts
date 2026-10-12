@@ -169,6 +169,24 @@ test('reads paint as the display\u2019s color object paints them, with its key',
     expect(mapq.legend.color).toContain(color)
   }
   expect(new Set(mapq.reads.category)).toEqual(new Set(['mapq']))
+  expect(mapq.ramps).toEqual([])
+})
+
+test('a ramp keys a color bar: a linear MAPQ, under the color title, and base quality', async () => {
+  const t = await engine.alignments({
+    ...BAM,
+    display: {
+      color: { field: 'mapq', scale: 'linear', domainMin: 0, domainMax: 30 },
+      baseColor: { field: 'baseQuality' },
+    },
+  })
+  expect(t.ramps.map(r => r.title)).toEqual(['Base quality', 'Mapping quality'])
+  expect(t.legendTitle).toBe('Read colors')
+  const mapq = t.ramps[1]!
+  expect(mapq.minLabel).toBe('0')
+  expect(mapq.maxLabel).toMatch(/^≥?30$/)
+  expect(mapq.color[0]).not.toBe(mapq.color.at(-1))
+  expect(mapq.color).toContain(t.reads.color[0])
 })
 
 test('the display\u2019s filter object keeps the reads it keeps', async () => {

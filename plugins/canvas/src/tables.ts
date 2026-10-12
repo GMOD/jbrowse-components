@@ -1,4 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 
@@ -178,7 +179,8 @@ function arrows(d: FeatureDataResult, rows: PlacedRows, bpPerPx: number) {
  * shapes, lays out and colors them, as tables: each top-level feature on the
  * row the display's layout gives it, the boxes, intron lines, chevrons and
  * strand arrows its glyph draws, its transcripts, the labels the display
- * shows beside it at this zoom, and the color key. For a host that draws them
+ * shows beside it at this zoom, and the color key, a ramp's as `ramps`
+ * (`rampKeyOf`). For a host that draws them
  * itself, such as R through V8. The adapters must be registered on
  * `pluginManager`.
  *
@@ -351,9 +353,8 @@ export async function featureTables(
   const rects = rows.keep(d.rectFeatureIndices)
   const lines = rows.keep(d.lineFeatureIndices)
   const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
-  const key = featureColorKey(colors, [raw]).find(
-    scale => scale.kind === 'categorical',
-  )
+  const scales = featureColorKey(colors, [raw])
+  const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
   return {
     features: {
@@ -400,6 +401,7 @@ export async function featureTables(
       color: entries.map(e => cssColorToHex(e.color!)),
     },
     legendTitle: key?.title ?? '',
+    ramps: scales.filter(scale => scale.kind === 'ramp').map(rampKeyOf),
     /** The px sizes the display draws its fixed-size marks at. */
     glyph: {
       fontSize,

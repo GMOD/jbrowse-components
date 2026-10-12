@@ -53,6 +53,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { scoreRampApplies } from '../shared/scoreRampScale.ts'
 import {
   declaredCuts,
   paintedWiggleColor,
@@ -492,17 +493,13 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether one ramp describes the color of every row: wherever a score
-       * gradient paints, since a declared gradient's one table ignores the
-       * rows' own colors. Density's white fade does not: a source with its
-       * own color fades to it (see buildSourceRenderData), so a single bar
-       * would describe none of them.
+       * `scoreRampApplies` over the display's sources
        */
       get scoreRampApplies() {
-        return (
-          self.scoreGradientPaints &&
-          (self.wiggleColor.rampLut !== null ||
-            self.sources.every(s => !s.color))
+        return scoreRampApplies(
+          self.scoreGradientPaints,
+          self.wiggleColor,
+          self.sources,
         )
       },
 

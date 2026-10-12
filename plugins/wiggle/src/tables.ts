@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import {
   abgrToHex,
   cssColorToHex,
@@ -38,6 +39,7 @@ import {
   makeDensityLutFillFn,
   makeDensityRgbStringFn,
 } from './shared/getDensityColor.ts'
+import { scoreRampApplies, scoreRampScale } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
   paintedWiggleColor,
@@ -92,8 +94,9 @@ export interface WiggleTablesArgs {
  * paint order (the aggregate, and under a min-max extent the tinted max and
  * min bands, or a line's min-to-max `band`), each mark in the color it paints
  * and reaching down to `low`, the band's min or the origin bars grow from; `domain`, the score axis the
- * display autoscales to under `scales.y`; and `rules`, the reference lines it
- * draws. For a host that draws them itself, such as R through V8. The
+ * display autoscales to under `scales.y`; `rules`, the reference lines it
+ * draws; and `ramps`, the color bar its key shows where one ramp paints every
+ * row (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
  * adapters must be registered on `pluginManager` (`registerWiggleAdapters`).
  */
 export async function wiggleTables(
@@ -210,6 +213,17 @@ export async function wiggleTables(
   )
   const scoreGradientPaints =
     density || (wiggleColor.rampLut !== null && !isLineMode(renderingType))
+  const ramp = scoreRampApplies(scoreGradientPaints, wiggleColor, sources)
+    ? rampKeyOf(
+        scoreRampScale(
+          domain,
+          scaleType,
+          readConfObject(scale, 'symlogConstant'),
+          wiggleColor,
+          readConfObject(scale, 'title') || 'Score',
+        ),
+      )
+    : undefined
   const rowColorPaintsMarks =
     !scoreGradientPaints && setting.value === undefined && !setting.field
   const paletteDeals = !rowLayout && sources.length > 1 && rowColorPaintsMarks
@@ -393,6 +407,7 @@ export async function wiggleTables(
       color: rules.map(r => r.color),
       label: rules.map(r => r.label),
     },
+    ramps: ramp ? [ramp] : [],
     domain,
     scaleType,
     symlogConstant,

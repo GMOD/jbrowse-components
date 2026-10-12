@@ -6,6 +6,7 @@ import {
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import {
   abgrAlpha,
@@ -29,6 +30,7 @@ import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
+  linearFieldExtent,
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
@@ -41,7 +43,10 @@ import {
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
 import { orderedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
-import { presentMapqs } from './LinearAlignmentsDisplay/qualitySpans.ts'
+import {
+  baseQualitySpanAcrossGroups,
+  presentMapqs,
+} from './LinearAlignmentsDisplay/qualitySpans.ts'
 import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import { buildLaidOutPileupMap } from './RenderAlignmentDataRPC/sortLayout.ts'
@@ -75,7 +80,9 @@ import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
 import {
+  READS_RAMP_ID,
   arcLegendTitle,
+  colorRampScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from './shared/legendUtils.ts'
@@ -338,6 +345,21 @@ function colorReads(
       ALIGNMENTS_FIELD_PRESETS,
     ).descending,
   }).filter(item => item.color !== undefined)
+  const colorTitle = withPreset(
+    { ...setting, title },
+    ALIGNMENTS_FIELD_PRESETS,
+  ).title
+  const ramps = colorRampScales({
+    colorBy,
+    baseLayer,
+    bakedScale,
+    tagValueExtent: linearFieldExtent(encoding, colorBy, byGroup),
+    baseQualityExtent:
+      baseLayer?.type === 'perBaseQuality'
+        ? baseQualitySpanAcrossGroups(byGroup).extent
+        : undefined,
+  })
+  const readRamp = ramps.some(r => r.id === READS_RAMP_ID)
   return {
     sections,
     palette,
@@ -348,9 +370,14 @@ function colorReads(
       label: legend.map(item => item.label),
       color: legend.map(item => cssColorToHex(item.color!)),
     },
-    legendTitle:
-      withPreset({ ...setting, title }, ALIGNMENTS_FIELD_PRESETS).title ??
-      'Read colors',
+    legendTitle: (readRamp ? undefined : colorTitle) ?? 'Read colors',
+    ramps: ramps.map(r =>
+      rampKeyOf(
+        r.id === READS_RAMP_ID && colorTitle !== undefined
+          ? { ...r, title: colorTitle }
+          : r,
+      ),
+    ),
   }
 }
 
@@ -701,7 +728,8 @@ function sectionTables(
  * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
  * clips, coverage and splice junctions, each read on the row the display's
  * pileup layout gives it and in the color the display's `color` object paints
- * it, with the key the display shows. Under a `facet` each section lays out
+ * it, with the key the display shows: `legend`, and `ramps`, its color bars
+ * (`rampKeyOf`). Under a `facet` each section lays out
  * on its own, every row names its `section`, and `sections` lists them in
  * stacking order; ungrouped, there is one section, labelled `''`. For a host
  * that draws them itself, such as R through V8. The adapters must be
@@ -839,6 +867,7 @@ export async function alignmentTables(
     },
     legend: colors.legend,
     legendTitle: colors.legendTitle,
+    ramps: colors.ramps,
     arcLegend: connections.arcLegend,
     arcLegendTitle: connections.arcLegendTitle,
     arcSpanMax: connections.arcSpanMax,

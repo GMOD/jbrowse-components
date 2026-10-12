@@ -1,3 +1,4 @@
+import { cssColorToHex } from '../util/colorBits.ts'
 import { groupKeyComparator } from '../util/groupKeys.ts'
 import { formatScore } from '../util/numericUtils.ts'
 
@@ -95,13 +96,7 @@ export interface RampScale {
  */
 export type ColorScale = CategoricalScale | RampScale
 
-// A lone ramp names itself on its row: `FloatingLegend` and `legendEntries`
-// draw a section's title only beside other sections, and a bar of numbers
-// with nothing saying what they count is not a key.
-function rampItem(
-  { title, domain, stops, format = formatScore, extent }: RampScale,
-  lone: boolean,
-): LegendItem {
+function rampLabels({ domain, format = formatScore, extent }: RampScale) {
   const [min, max] = domain
   const [lo, hi] = extent ?? domain
   // compared at float32 as well, since a value lane carries the extent in one
@@ -109,12 +104,34 @@ function rampItem(
   const below = lo < min && Math.fround(lo) < Math.fround(min)
   const above = hi > max && Math.fround(hi) > Math.fround(max)
   return {
-    label: lone ? (title ?? '') : '',
-    gradient: {
-      stops,
-      minLabel: `${below ? '≤' : ''}${format(min)}`,
-      maxLabel: `${above ? '≥' : ''}${format(max)}`,
-    },
+    minLabel: `${below ? '≤' : ''}${format(min)}`,
+    maxLabel: `${above ? '≥' : ''}${format(max)}`,
+  }
+}
+
+// A lone ramp names itself on its row: `FloatingLegend` and `legendEntries`
+// draw a section's title only beside other sections, and a bar of numbers
+// with nothing saying what they count is not a key.
+function rampItem(scale: RampScale, lone: boolean): LegendItem {
+  return {
+    label: lone ? (scale.title ?? '') : '',
+    gradient: { stops: scale.stops, ...rampLabels(scale) },
+  }
+}
+
+/**
+ * A ramp's bar as columns, for a host that draws the key itself, such as R
+ * through V8: each stop's `offset`, `#rrggbb` `color` and `opacity`, and the
+ * end labels the on-screen bar prints.
+ */
+export function rampKeyOf(scale: RampScale) {
+  return {
+    id: scale.id,
+    title: scale.title ?? '',
+    ...rampLabels(scale),
+    offset: scale.stops.map(stop => stop.offset),
+    color: scale.stops.map(stop => cssColorToHex(stop.color)),
+    opacity: scale.stops.map(stop => stop.opacity ?? 1),
   }
 }
 

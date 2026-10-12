@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { rampKeyOf } from '@jbrowse/core/ui/colorScale'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import {
@@ -67,7 +68,7 @@ export interface VariantTablesArgs {
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
 
-/** A categorical key's swatches; a ramp keys no legend yet. */
+/** A categorical key's swatches; a ramp keys through `rampKeyOf`. */
 function legendOf(scales: ColorScale[]) {
   const label: string[] = []
   const color: string[] = []
@@ -93,8 +94,8 @@ function legendOf(scales: ColorScale[]) {
  * keeps, with its lane color; `cells`, each sample's (or under
  * `unit: 'haplotype'` each haplotype's) cell at each record, with its
  * genotype, its alt dosage and the fill the display paints it,
- * `shade(hue, dosage)`; `rows`, the rows the cells name; and `legend`, the
- * key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
+ * `shade(hue, dosage)`; `rows`, the rows the cells name; and `legend` and
+ * `ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
  * a reference call draws no cell. For a host that draws them itself, such as
  * R through V8. The adapters must be registered on `pluginManager`
  * (`registerVariantAdapters`).
@@ -236,25 +237,24 @@ export async function variantTables(
     }
   }
 
-  const legend = legendOf(
-    getVariantColorScales({
-      unit,
-      hasSecondaryAlt: value.hasSecondaryAlt,
-      hasAltWithoutPhaseSet: value.hasAltWithoutPhaseSet,
-      hasUnphased: value.hasUnphased,
-      hasNoCall: value.hasNoCall,
-      paintedDomain: data ? paintedColorKeys([data], cellHue) : [],
-      shadeByDosage: shade,
-      color: encoding,
-      colorSlots: slots,
-      colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).title,
-    }),
-  )
+  const scales = getVariantColorScales({
+    unit,
+    hasSecondaryAlt: value.hasSecondaryAlt,
+    hasAltWithoutPhaseSet: value.hasAltWithoutPhaseSet,
+    hasUnphased: value.hasUnphased,
+    hasNoCall: value.hasNoCall,
+    paintedDomain: data ? paintedColorKeys([data], cellHue) : [],
+    shadeByDosage: shade,
+    color: encoding,
+    colorSlots: slots,
+    colorTitle: withPreset(colorSetting, CATEGORICAL_FIELD_PRESETS).title,
+  })
   return {
     variants,
     cells,
     rows,
-    legend,
+    legend: legendOf(scales),
+    ramps: scales.filter(s => s.kind === 'ramp').map(rampKeyOf),
     rowLegend: rowColor.legend,
     rowLegendTitle: rowColor.title,
   }
