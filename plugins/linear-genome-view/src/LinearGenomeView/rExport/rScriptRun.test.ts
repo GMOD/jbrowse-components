@@ -21,6 +21,10 @@ const TWO = [
 ]
 const cases: RCase[] = []
 
+/** The zoom of a view 1,500 pixels wide over `regions`. */
+const bpPerPxOf = (regions: Region[]) =>
+  regions.reduce((sum, r) => sum + r.end - r.start, 0) / 1500
+
 function register(
   name: string,
   tracks: RExportTrack[],
@@ -33,7 +37,12 @@ function register(
   const out = path.join(dir, `${name}.png`)
   cases.push({
     name,
-    script: exportTracksToR({ tracks, regions, out }).script!,
+    script: exportTracksToR({
+      tracks,
+      regions,
+      out,
+      bpPerPx: bpPerPxOf(regions),
+    }).script!,
     probe: `c(file.size(${JSON.stringify(out)}) > 0, ${probe})`,
   })
   return name

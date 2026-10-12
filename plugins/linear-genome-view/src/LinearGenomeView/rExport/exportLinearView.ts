@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { exportTracksToR, locationPath, withoutUnset } from './rScript.ts'
+import { exportTracksToR, locationPath } from './rScript.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { RExportTrack, Region } from './rScript.ts'
@@ -71,17 +71,19 @@ async function tracksOf(view: LinearGenomeViewModel) {
   for (const track of view.tracks) {
     const display = track.displays[0]
     if (display) {
+      const { type, displayId, ...written } = getSnapshot(
+        display.configuration,
+      ) as Record<string, unknown>
+      const { heightMode, height } = fullConfSnapshot(display.configuration)
       tracks.push({
         trackId: track.configuration.trackId,
         trackName: `${getConf(track, 'name') || track.configuration.trackId}`,
         displayType: display.type,
         adapter: getConf(track, 'adapter') as Record<string, unknown>,
-        display: withoutUnset(
-          fullConfSnapshot(display.configuration),
-        ) as Record<string, unknown>,
-        writtenDisplay: getSnapshot(display.configuration),
+        display: written,
+        heightMode,
+        height,
         reference,
-        viewBpPerPx: view.bpPerPx,
         refNames: await refNamesOf(view, track),
       })
     }
@@ -97,6 +99,7 @@ export async function exportLinearViewToR(
   return exportTracksToR({
     tracks: await tracksOf(view),
     regions: viewRegions(view),
+    bpPerPx: view.bpPerPx,
     out,
     notes: view.displayedRegions.some(r => r.reversed)
       ? ['view: shown right to left, where the figure runs left to right']

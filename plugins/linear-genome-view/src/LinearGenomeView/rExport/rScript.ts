@@ -12,16 +12,15 @@ export interface RExportTrack {
   trackName: string
   displayType: string
   adapter: Record<string, unknown>
-  /** The display's resolved config. */
+  /** The display's config as written, its defaults left out, which the engine fills from the same schema. */
   display: Record<string, unknown>
-  /** `display` as written, its defaults left out, which the engine fills from the same schema. */
-  writtenDisplay?: Record<string, unknown>
+  /** The display's resolved sizing, which a feature track exports so the figure drops what the view drops. */
+  heightMode?: unknown
+  height?: unknown
   /** The assembly's FASTA or 2bit, for a CRAM and a read with no MD tag. */
   reference?: string
   /** Canonical refName to the name the track's file spells it with, where they differ. */
   refNames?: Record<string, string>
-  /** The view's zoom, which decides what a feature or quantitative display shows. */
-  viewBpPerPx?: number
 }
 
 /**
@@ -78,13 +77,9 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.3.0'
+export const GGJBROWSE_VERSION = '0.4.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
-const WIDTH_INCHES = 10
-
-/** Slots that name the display rather than set it. */
-const NAMING_SLOTS = new Set(['type', 'displayId'])
 
 function isSet(value: unknown) {
   return !(
@@ -142,11 +137,6 @@ function isIdentifier(s: string) {
   return /^[A-Za-z.][A-Za-z0-9._]*$/.test(s) && !RESERVED.has(s)
 }
 
-/** An R name safe on the left of `=` inside `list()`. */
-function rName(s: string) {
-  return isIdentifier(s) ? s : rStr(s)
-}
-
 /**
  * A config value as the R literal ggjbrowse hands the engine: a `list` per
  * object, `c()` per vector of scalars, `list()` per vector of objects and per
@@ -169,7 +159,7 @@ export function rValue(value: unknown): string {
       : `list(${items})`
   }
   return `list(${Object.entries(value as Record<string, unknown>)
-    .map(([k, v]) => `${rName(k)} = ${rValue(v)}`)
+    .map(([k, v]) => `${isIdentifier(k) ? k : rStr(k)} = ${rValue(v)}`)
     .join(', ')})`
 }
 
@@ -201,30 +191,24 @@ function isLocation(v: unknown): v is Record<string, unknown> {
   )
 }
 
-/** An adapter config with each location a path or URL R opens. */
-function openable(value: unknown): unknown {
+/** An adapter config with each location a path or URL R opens, each path also pushed onto `uris`. */
+function openable(value: unknown, uris: string[]): unknown {
   if (isLocation(value)) {
-    return { uri: locationPath(value) }
+    const uri = locationPath(value)
+    if (uri) {
+      uris.push(uri)
+    }
+    return { uri }
   }
   if (Array.isArray(value)) {
-    return value.map(openable)
+    return value.map(v => openable(v, uris))
   }
   if (value && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, openable(v)]),
+      Object.entries(value).map(([k, v]) => [k, openable(v, uris)]),
     )
   }
   return value
-}
-
-function pathsIn(value: unknown): string[] {
-  if (isLocation(value)) {
-    return [locationPath(value) ?? '']
-  }
-  if (value && typeof value === 'object') {
-    return Object.values(value).flatMap(pathsIn)
-  }
-  return []
 }
 
 /**
@@ -242,8 +226,11 @@ function fileArgument(
   if (!known) {
     return { skipped: `${type} has no R reader for this display` }
   }
-  const located = withoutUnset(openable(adapter)) as Record<string, unknown>
-  const uris = pathsIn(located).filter(Boolean)
+  const uris: string[] = []
+  const located = withoutUnset(openable(adapter, uris)) as Record<
+    string,
+    unknown
+  >
   if (uris.length === 0) {
     return { skipped: `${type} names no file` }
   }
@@ -341,19 +328,6 @@ function settingNotes(track: RExportTrack) {
   ]
 }
 
-function sourceNotes(uris: readonly string[]) {
-  return uris.some(u => u.includes('://') && u.includes('?'))
-    ? [
-        'source: a URL carries its query string, credential included, so the script is not one to share',
-      ]
-    : []
-}
-
-/** One band drawn alone over the script's own names: an alignments track's pileup, else the first track. */
-function oneBand(first: string, alignments?: string) {
-  return alignments ? `autoplot(${alignments}, "pileup")` : `autoplot(${first})`
-}
-
 /**
  * One R script for a view's tracks over its regions: a ggjbrowse reader per
  * track, reading each as its display does, then `jbrowse_stack()` drawing
@@ -364,11 +338,14 @@ function oneBand(first: string, alignments?: string) {
 export function exportTracksToR({
   tracks,
   regions,
+  bpPerPx,
   out = 'figure.png',
   notes: viewNotes = [],
 }: {
   tracks: readonly RExportTrack[]
   regions: readonly Region[]
+  /** The view's zoom, which decides what a feature or quantitative display shows. */
+  bpPerPx?: number
   out?: string
   /** What the caller knows of the view that the figure does not show. */
   notes?: readonly string[]
@@ -402,29 +379,21 @@ export function exportTracksToR({
           ),
         )
       : 'locus'
-    const display = Object.fromEntries(
-      Object.entries(
-        withoutUnset(track.writtenDisplay ?? track.display) as Record<
-          string,
-          unknown
-        >,
-      ).filter(([slot]) => !NAMING_SLOTS.has(slot)),
-    )
-    if (reader.call === 'jbrowse_features') {
-      const { heightMode, height } = track.display
-      Object.assign(
-        display,
-        heightMode === undefined ? {} : { heightMode },
-        height === undefined ? {} : { height },
-      )
-    }
+    const { heightMode, height } = track
+    const display =
+      reader.call === 'jbrowse_features'
+        ? {
+            ...track.display,
+            ...(heightMode === undefined ? {} : { heightMode }),
+            ...(height === undefined ? {} : { height }),
+          }
+        : track.display
     const reference =
       reader.call === 'jbrowse_alignments' ? track.reference : undefined
     const width =
-      reader.call === 'jbrowse_features' || reader.call === 'jbrowse_wiggle'
-        ? Math.round(
-            totalBp / (track.viewBpPerPx ?? totalBp / (WIDTH_INCHES * 150)),
-          )
+      bpPerPx &&
+      (reader.call === 'jbrowse_features' || reader.call === 'jbrowse_wiggle')
+        ? Math.round(totalBp / bpPerPx)
         : undefined
     const args = [
       ...(reference ? [`reference = ${rStr(reference)}`] : []),
@@ -448,9 +417,14 @@ export function exportTracksToR({
       alignments ??= name
     }
     notes.push(
-      ...[...sourceNotes(source.uris), ...settingNotes(track)].map(
-        n => `${track.trackName}: ${n}`,
-      ),
+      ...[
+        ...(source.uris.some(u => u.includes('://') && u.includes('?'))
+          ? [
+              'source: a URL carries its query string, credential included, so the script is not one to share',
+            ]
+          : []),
+        ...settingNotes(track),
+      ].map(n => `${track.trackName}: ${n}`),
     )
   })
   if (drawn.length === 0) {
@@ -464,7 +438,7 @@ export function exportTracksToR({
     '# Each reader returns the tables its track draws; jbrowse_stack() draws',
     '# them. Restyle every band with &, or draw one alone and add to it:',
     '#   fig & ggplot2::theme_classic()',
-    `#   ${oneBand(drawn[0]!, alignments)} + ggplot2::theme_classic()`,
+    `#   ${alignments ? `autoplot(${alignments}, "pileup")` : `autoplot(${drawn[0]})`} + ggplot2::theme_classic()`,
     ...(notes.length
       ? [
           '#',
@@ -487,8 +461,7 @@ export function exportTracksToR({
     '',
     `fig <- jbrowse_stack(${drawn.join(', ')})`,
     'print(fig)',
-    `ggplot2::ggsave(${rStr(out)}, fig, width = ${WIDTH_INCHES},
-  height = jbrowse_height(${drawn.join(', ')}))`,
+    `ggplot2::ggsave(${rStr(out)}, fig, width = 10, height = jbrowse_height(fig))`,
     '',
   ].join('\n')
   return { drawn: drawn.length, script, notes }

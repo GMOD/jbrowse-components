@@ -82,8 +82,8 @@ facets on a feature track) land in the script header.
   quantitative track resolves its labels, chevrons and BigWig zoom level as
   the view did.
 - **The figure is as tall as the view's bands.** `ggsave()` takes
-  `jbrowse_height()` over the drawn tracks, which keeps each band at the
-  display's pixels, a compact pileup included, rather than a height per
+  `jbrowse_height(fig)`, which measures the stack's bands at the display's
+  pixels, a compact pileup included, and its keys, rather than a height per
   track kind in the exporter.
 - **The script checks its ggjbrowse.** `GGJBROWSE_VERSION` is the release
   whose readers and `jbrowse_stack` it calls; an older install stops with the
@@ -99,5 +99,5 @@ facets on a feature track) land in the script header.
 - Drive the real app too: the dev server
   (`NODE_ENV=development node scripts/start.ts` in `products/jbrowse-web`),
   a volvox view, the menu item, `Rscript` on the download, the figure beside
-  a screenshot. The live path is where the resolved config, aliases and
-  `blob:` files differ from a fixture.
+  a screenshot. The live path is where the normalized adapter config,
+  aliases and `blob:` files differ from a fixture.

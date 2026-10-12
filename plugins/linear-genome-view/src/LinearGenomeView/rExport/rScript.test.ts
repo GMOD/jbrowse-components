@@ -19,6 +19,7 @@ test('a locus reads as JBrowse’s location box writes it', () => {
 test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call', () => {
   const script = scriptOf({
     regions: ONE,
+    bpPerPx: 8000 / 1500,
     tracks: [
       track('gff3tabix_genes', 'LinearBasicDisplay', {
         heightMode: 'fit',
@@ -39,9 +40,9 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
   )
   expect(script).toContain(
-    'height = jbrowse_height(gff3tabix_genes, volvox_microarray, volvox_alignments))',
+    'ggplot2::ggsave("figure.png", fig, width = 10, height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.3.0"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.4.0"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')
