@@ -507,9 +507,11 @@ function parseShortPAFLine(line: string) {
   const parts = line.split('\t')
   return {
     tname: parts[5]!,
+    tlen: +parts[6]!,
     tstart: +parts[7]!,
     tend: +parts[8]!,
     qname: parts[0]!,
+    qlen: +parts[1]!,
     qstart: +parts[2]!,
     qend: +parts[3]!,
     strand: parts[4] === '-' ? -1 : 1,
@@ -606,9 +608,11 @@ export function parsePAFLine(line: string) {
 
   return {
     tname: line.slice(t4 + 1, t5),
+    tlen: columnNum(line, t5 + 1, t6),
     tstart: columnNum(line, t6 + 1, t7),
     tend: columnNum(line, t7 + 1, t8),
     qname: line.slice(0, t0),
+    qlen: columnNum(line, t0 + 1, t1),
     qstart: columnNum(line, t1 + 1, t2),
     qend: columnNum(line, t2 + 1, t3),
     // the column is `-` and nothing else, so a `-` with anything after it is not
@@ -640,6 +644,7 @@ export function parsePifLine(line: string) {
     // rather than at each read site, which is where a `.slice(1)` is easy to
     // forget and impossible to tell from an off-by-one.
     indexedRefName: r.qname.slice(1),
+    indexedLength: r.qlen,
     indexedStart: r.qstart,
     indexedEnd: r.qend,
     mateName: r.tname,

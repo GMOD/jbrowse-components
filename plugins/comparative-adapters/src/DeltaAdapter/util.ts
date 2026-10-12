@@ -35,6 +35,8 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback } = opts ?? {}
   let rname = ''
   let qname = ''
+  let rlen = 0
+  let qlen = 0
   let qs = 0
   let qe = 0
   let rs = 0
@@ -83,9 +85,11 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
 
     records.push({
       qname,
+      qlen,
       qstart: qs,
       qend: qe,
       tname: rname,
+      tlen: rlen,
       tstart: rs,
       tend: re,
       strand,
@@ -111,6 +115,8 @@ export function paf_delta2paf(buffer: Uint8Array, opts?: BaseOptions) {
         flush()
         rname = m[1]!
         qname = m[2]!
+        rlen = +m[3]!
+        qlen = +m[4]!
         seen_gt = true
         return true
       }

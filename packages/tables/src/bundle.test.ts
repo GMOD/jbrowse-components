@@ -48,6 +48,7 @@ let jbrowse: {
   variants: (args: string) => Promise<string>
   synteny: (args: string) => Promise<string>
   dotplot: (args: string) => Promise<string>
+  contigs: (args: string) => Promise<string>
 }
 let code: string
 
@@ -164,4 +165,9 @@ test('the bundle answers a PAF as the engine does, in a bare host', async () => 
   )
   const directDots = await createTablesEngine().dotplot(INV_INDELS_DOTPLOT)
   expect(bareDots.segments).toEqual(directDots.segments)
+
+  const args = { adapterConfig: INV_INDELS.adapterConfig }
+  expect(JSON.parse(await jbrowse.contigs(JSON.stringify(args)))).toEqual(
+    await createTablesEngine().contigs(args),
+  )
 })

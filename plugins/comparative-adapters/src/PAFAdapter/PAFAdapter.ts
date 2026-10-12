@@ -50,6 +50,25 @@ export default class PAFAdapter extends PairwiseAdapterBase {
     return [...new Set(sides.flatMap(side => [...byRefName[side].keys()]))]
   }
 
+  async getContigLengths(side: 0 | 1, opts: BaseOptions = {}) {
+    const { records, byRefName } = await this.setup(opts)
+    const lengths = new Map<string, number>()
+    for (const [refName, rows] of byRefName[side]) {
+      let length = 0
+      for (const i of rows) {
+        const r = records[i]!
+        const stated = side === 0 ? r.qlen : r.tlen
+        const reached = side === 0 ? r.qend : r.tend
+        length = Math.max(
+          length,
+          stated !== undefined && Number.isFinite(stated) ? stated : reached,
+        )
+      }
+      lengths.set(refName, length)
+    }
+    return lengths
+  }
+
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { start: qstart, end: qend, refName: qref, assemblyName } = query

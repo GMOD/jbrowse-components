@@ -39,8 +39,18 @@ export function parseMashMapLine(line: string) {
     return parsePAFLine(line)
   }
   const fields = line.split(' ')
-  const [qname, , qstart, qend, strand, tname, , tstart, tend, identity] =
-    fields
+  const [
+    qname,
+    qlen,
+    qstart,
+    qend,
+    strand,
+    tname,
+    tlen,
+    tstart,
+    tend,
+    identity,
+  ] = fields
   if (identity === undefined) {
     // xref https://github.com/marbl/MashMap/issues/38
     throw new Error(`improperly formatted line: ${line}`)
@@ -49,9 +59,11 @@ export function parseMashMapLine(line: string) {
   const pct = +identity
   return {
     tname: tname!,
+    tlen: +tlen!,
     tstart: +tstart!,
     tend: +tend!,
     qname: qname!,
+    qlen: +qlen!,
     qstart: +qstart!,
     qend: +qend!,
     strand: strand === '-' ? -1 : 1,

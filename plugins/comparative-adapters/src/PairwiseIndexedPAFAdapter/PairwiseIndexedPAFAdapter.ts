@@ -60,6 +60,22 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
     ]
   }
 
+  async getContigLengths(side: 0 | 1, opts: ComparativeOptions = {}) {
+    const letter = side === 0 ? 'q' : 't'
+    const seqids = (await this.pif.refSeqNames(opts)).filter(n =>
+      n.startsWith(letter),
+    )
+    const rows = await Promise.all(
+      seqids.map(seqid => this.pif.firstLine(seqid, opts)),
+    )
+    return new Map(
+      seqids.map((seqid, i) => [
+        seqid.slice(1),
+        rows[i]?.indexedLength ?? Number.NaN,
+      ]),
+    )
+  }
+
   getFeatures(query: Region, opts: ComparativeOptions = {}) {
     const { statusCallback, signal } = opts
     return ObservableCreate<Feature>(async observer => {

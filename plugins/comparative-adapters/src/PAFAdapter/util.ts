@@ -16,9 +16,12 @@ import type { GenericFilehandle } from 'generic-filehandle2'
 
 export interface PAFRecord {
   qname: string
+  /** the query contig's length, where the format states it */
+  qlen?: number
   qstart: number
   qend: number
   tname: string
+  tlen?: number
   tstart: number
   tend: number
   strand: number

@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/plugin-alignments/tables'
 import BedPlugin from '@jbrowse/plugin-bed'
 import { featureTables } from '@jbrowse/plugin-canvas/tables'
+import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
 import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
@@ -27,6 +28,7 @@ import {
 
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
+import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
 import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
 import type { SyntenyTablesArgs } from '@jbrowse/plugin-linear-comparative-view/tables'
 import type { VariantTablesArgs } from '@jbrowse/plugin-variants/tables'
@@ -40,6 +42,10 @@ export type {
   FeatureTables,
   FeatureTablesArgs,
 } from '@jbrowse/plugin-canvas/tables'
+export type {
+  ContigTables,
+  ContigTablesArgs,
+} from '@jbrowse/plugin-comparative-adapters/tables'
 export type {
   DotplotTables,
   DotplotTablesArgs,
@@ -138,6 +144,7 @@ export function createTablesEngine() {
     variants: (args: VariantTablesArgs) => onContig(args, variantTables),
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
+    contigs: (args: ContigTablesArgs) => contigTables(pluginManager, args),
     sequence: (args: Parameters<typeof referenceSequence>[1]) =>
       referenceSequence(pluginManager, args),
   }

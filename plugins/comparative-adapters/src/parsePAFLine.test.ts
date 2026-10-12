@@ -32,9 +32,11 @@ function parsePafLineBySplit(line: string) {
   }
   return {
     tname: parts[5]!,
+    tlen: +parts[6]!,
     tstart: +parts[7]!,
     tend: +parts[8]!,
     qname: parts[0]!,
+    qlen: +parts[1]!,
     qstart: +parts[2]!,
     qend: +parts[3]!,
     strand: parts[4] === '-' ? -1 : 1,

@@ -2,6 +2,7 @@ import { ComparativeAdapterBase } from './ComparativeAdapterBase.ts'
 import { getAssemblyNamesFromConf } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * A region reached a pairwise adapter naming an assembly its `assemblyNames`
@@ -40,6 +41,19 @@ export abstract class PairwiseAdapterBase<
 > extends ComparativeAdapterBase<CONF> {
   getAssemblyNames(): string[] {
     return getAssemblyNamesFromConf(this)
+  }
+
+  /**
+   * The contigs on one side of the file, in the order it first names them,
+   * each with the length the file states, or else the furthest an alignment
+   * on it reaches; NaN where the adapter knows neither. Undefined from an
+   * adapter that cannot list them.
+   */
+  async getContigLengths(
+    _side: 0 | 1,
+    _opts?: BaseOptions,
+  ): Promise<Map<string, number> | undefined> {
+    return undefined
   }
 
   /**

@@ -29,10 +29,12 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generateRecord(
   qname: string,
+  qlen: number,
   qstart: number,
   qend: number,
   qstrand: string,
   tname: string,
+  tlen: number,
   tstart: number,
   tend: number,
   cigarParts: string[],
@@ -58,9 +60,11 @@ function generateRecord(
   }
   return {
     qname,
+    qlen,
     qstart,
     qend,
     tname,
+    tlen,
     tstart,
     tend,
     strand: qstrand === '-' ? -1 : 1,
@@ -91,11 +95,12 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const records: ReturnType<typeof generateRecord>[] = []
 
   let t_name = ''
+  let t_size = 0
   let t_start = 0
   let t_end = 0
   let q_name = ''
 
-  let q_size: number
+  let q_size = 0
   let q_strand = ''
   let q_start = 0
   let q_end = 0
@@ -138,10 +143,12 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
             records.push(
               generateRecord(
                 q_name,
+                q_size,
                 q_start,
                 q_end,
                 q_strand,
                 t_name,
+                t_size,
                 t_start,
                 t_end,
                 cigarParts,
@@ -154,6 +161,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
           seenHeader = true
 
           t_name = l_vec[2]!
+          t_size = +l_vec[3]!
           t_start = +l_vec[5]!
           t_end = +l_vec[6]!
           q_name = l_vec[7]!
@@ -218,10 +226,12 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
     records.push(
       generateRecord(
         q_name,
+        q_size,
         q_start,
         q_end,
         q_strand,
         t_name,
+        t_size,
         t_start,
         t_end,
         cigarParts,

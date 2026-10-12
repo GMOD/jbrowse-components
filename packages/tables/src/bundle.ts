@@ -35,6 +35,8 @@ const engine = createTablesEngine()
     JSON.stringify(plain(await engine.synteny(JSON.parse(args)))),
   dotplot: async (args: string) =>
     JSON.stringify(plain(await engine.dotplot(JSON.parse(args)))),
+  contigs: async (args: string) =>
+    JSON.stringify(await engine.contigs(JSON.parse(args))),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
   alignmentColors: () => JSON.stringify(alignmentColors()),
 }

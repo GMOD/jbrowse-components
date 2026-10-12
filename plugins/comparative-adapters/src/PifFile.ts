@@ -104,6 +104,29 @@ export class PifFile {
   }
 
   /**
+   * The first row filed under a seqid, which states its contig's length: the
+   * scan stops there, so it reads the one chunk the row lies in.
+   */
+  async firstLine(seqid: string, opts?: BaseOptions) {
+    const stop = new Error('first line read')
+    let first: PifLine | undefined
+    try {
+      await this.tabix.getLines(seqid, undefined, undefined, {
+        lineCallback: line => {
+          first = parsePifLine(line)
+          throw stop
+        },
+        signal: opts?.signal,
+      })
+    } catch (e) {
+      if (e !== stop) {
+        throw e
+      }
+    }
+    return first
+  }
+
+  /**
    * Read one PIF range under a determinate download bar, parsing each line and
    * checking the signal as it goes. Both adapters previously wrapped the
    * scan in a bare `updateStatus` — the only tabix adapters left showing a
