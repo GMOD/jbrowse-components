@@ -226,7 +226,6 @@ class IdentityMatrixSink implements MafBlockSink {
     _id: string,
     start: number,
     _end: number,
-    _strand: number,
     ref: string,
     refFrom: number,
     refTo: number,

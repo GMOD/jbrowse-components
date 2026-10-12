@@ -5,7 +5,7 @@ import { MafRegionSink } from './mafRegionSink.ts'
 function referenceSampleId(...named: (string | undefined)[]) {
   const sink = new MafRegionSink(undefined)
   for (const refSampleId of named) {
-    sink.startBlock('b', 0, 4, 1, 'ACGT', 0, 4, refSampleId)
+    sink.startBlock('b', 0, 4, 'ACGT', 0, 4, refSampleId)
     sink.addRow('panTro6', 'ACGT', 0, 4, 'chr1', 0, 1, undefined, undefined)
   }
   return sink.refSampleId

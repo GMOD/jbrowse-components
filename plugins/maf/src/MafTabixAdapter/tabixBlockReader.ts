@@ -173,16 +173,15 @@ export class MafTabixBlockReader {
         id,
         start,
         end,
-        0,
         text,
         this.from[ref]!,
         this.to[ref]!,
         refSampleId,
       )
     } else if (firstFrom !== -1) {
-      sink.startBlock(id, start, end, 0, text, firstFrom, firstTo, undefined)
+      sink.startBlock(id, start, end, text, firstFrom, firstTo, undefined)
     } else {
-      sink.startBlock(id, start, end, 0, '', 0, 0, undefined)
+      sink.startBlock(id, start, end, '', 0, 0, undefined)
     }
     const order = rows.order()
     for (let j = 0; j < rows.count; j++) {

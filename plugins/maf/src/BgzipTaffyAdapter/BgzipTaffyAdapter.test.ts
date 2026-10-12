@@ -1225,7 +1225,6 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
   test('flips the span through the reference srcSize', () => {
     const feature = blockToFeature(block, splitResolve)!
     expect([feature.start, feature.end]).toEqual([990, 1000])
-    expect(feature.strand).toBe(1)
   })
 
   test('turns the whole block over, not just the coordinate', () => {

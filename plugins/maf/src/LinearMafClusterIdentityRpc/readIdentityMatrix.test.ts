@@ -99,7 +99,6 @@ function adaptersOver(blocks: BedBlock[]): [MafAdapterBase, Read][] {
         b.start,
         b.end,
         blocks[i]!.refName,
-        b.strand,
         b.alignments,
         b.seq,
         b.empties,

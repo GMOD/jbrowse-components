@@ -59,7 +59,6 @@ test('the first s line fixes the block span', () => {
   const [f] = collect(tabbed)
   // the reference row, not the widest or the last
   expect(f!.start).toBe(100)
-  expect(f!.strand).toBe(1)
 })
 
 test('reads consecutive blocks', () => {
@@ -193,7 +192,6 @@ describe('a minus-strand reference row', () => {
   test('places the block on the forward strand', () => {
     const [f] = collect(minusRef)
     expect([f!.start, f!.end]).toEqual([990, 1000])
-    expect(f!.strand).toBe(1)
   })
 
   // The coordinate alone would not be a fix: the columns would then run

@@ -15,7 +15,6 @@ interface Blocks {
   ids: string[]
   start: number[]
   end: number[]
-  strand: number[]
   refName: string
 }
 
@@ -32,14 +31,13 @@ export class MafTableSink implements MafBlockSink {
   private blocks: Blocks
 
   constructor(refName: string) {
-    this.blocks = { ids: [], start: [], end: [], strand: [], refName }
+    this.blocks = { ids: [], start: [], end: [], refName }
   }
 
   startBlock(
     id: string,
     start: number,
     end: number,
-    strand: number,
     ref: string,
     refFrom: number,
     refTo: number,
@@ -47,7 +45,6 @@ export class MafTableSink implements MafBlockSink {
     this.blocks.ids.push(id)
     this.blocks.start.push(start)
     this.blocks.end.push(end)
-    this.blocks.strand.push(strand)
     this.packer.startBlockText(start, ref, refFrom, refTo)
   }
 
@@ -188,7 +185,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
       ['start', number(Uint32Array.from(blocks.start))],
       ['end', number(Uint32Array.from(blocks.end))],
       ['refName', { kind: 'value', read: () => blocks.refName }],
-      ['strand', number(Int8Array.from(blocks.strand))],
+      ['strand', number(new Int8Array(blocks.ids.length).fill(1))],
       [
         'seq',
         {

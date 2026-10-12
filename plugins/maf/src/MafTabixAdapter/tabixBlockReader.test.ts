@@ -228,6 +228,9 @@ test("the adapter's table answers the ids and JSON its MafFeatures do", async ()
   const { direct, features } = await tablesBothWays(adapter)
   expect(direct).toHaveLength(LINES.length)
   expect(direct).toEqual(features)
+  expect(direct.map(([, json]) => (json as { strand: number }).strand)).toEqual(
+    LINES.map(() => 1),
+  )
   const filtered = await tablesBothWays(adapterOver(LINES, '', ['mm10']))
   expect(filtered.direct).toEqual(filtered.features)
 })

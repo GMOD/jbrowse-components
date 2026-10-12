@@ -81,7 +81,7 @@ export class BigMafBlockReader implements MafLineTarget {
       }
     }
     ref ??= ''
-    sink.startBlock(id, start, end, 0, ref, 0, ref.length, refSampleId)
+    sink.startBlock(id, start, end, ref, 0, ref.length, refSampleId)
     const rowOrder = rows.order()
     for (let j = 0; j < rows.count; j++) {
       const slot = rowOrder[j]!

@@ -23,7 +23,6 @@ export interface TaiBlockFeature {
   refSampleId: string | undefined
   start: number
   end: number
-  strand: number
   alignments: Record<string, AlignmentRecord>
   seq: string
   empties?: Record<string, EmptyRecord>
@@ -109,7 +108,6 @@ export async function readTaiBlocks<SETUP extends TaiIndex>({
         block.uniqueId,
         block.start,
         block.end,
-        block.strand,
         seq,
         0,
         seq.length,

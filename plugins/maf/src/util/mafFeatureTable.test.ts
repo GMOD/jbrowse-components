@@ -13,7 +13,6 @@ const blocks = [
     100,
     108,
     'chr1',
-    0,
     {
       hg38: {
         chr: 'chr1',
@@ -44,7 +43,6 @@ const blocks = [
     108,
     112,
     'chr1',
-    0,
     {
       hg38: {
         chr: 'chr1',
@@ -150,7 +148,6 @@ test('a row stating no strand reads +1, as the MAF display draws it', async () =
         0,
         2,
         'chr1',
-        0,
         { hg38: { chr: 'chr1', srcStart: 0, seq: 'AC' } },
         'AC',
       ),
@@ -170,7 +167,6 @@ test('a species named like an array index lists first, as the record does', asyn
     0,
     2,
     'chr1',
-    0,
     {
       hg38: { chr: 'chr1', srcStart: 0, strand: 1, seq: 'AC' },
       '7': { chr: 'chr2', srcStart: 5, strand: 1, seq: 'AG' },

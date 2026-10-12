@@ -254,7 +254,6 @@ export function blockToFeature(
     refSampleId: resolve(row0.sequenceName)?.assemblyName || undefined,
     start: placed.start,
     end: placed.end,
-    strand: 1,
     alignments,
     seq: placed.seq,
   }

@@ -2,15 +2,14 @@ import type { AlignmentRecord, EmptyRecord } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * Lightweight Feature implementation for MAF alignments.
- * Avoids SimpleFeature overhead (validation, data Record, spreads).
+ * Lightweight Feature implementation for MAF alignments. Every block reader
+ * turns a minus-strand block over, so a block is always on the forward strand.
  */
 export default class MafFeature implements Feature {
   private _id: string
   private _start: number
   private _end: number
   private _refName: string
-  private _strand: number
   private _alignments: Record<string, AlignmentRecord>
   private _seq: string
   private _empties: Record<string, EmptyRecord>
@@ -21,7 +20,6 @@ export default class MafFeature implements Feature {
     start: number,
     end: number,
     refName: string,
-    strand: number,
     alignments: Record<string, AlignmentRecord>,
     seq: string,
     empties: Record<string, EmptyRecord> = {},
@@ -31,7 +29,6 @@ export default class MafFeature implements Feature {
     this._start = start
     this._end = end
     this._refName = refName
-    this._strand = strand
     this._alignments = alignments
     this._seq = seq
     this._empties = empties
@@ -41,7 +38,7 @@ export default class MafFeature implements Feature {
   get(name: 'refName' | 'seq'): string
   get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
   get(name: 'start' | 'end'): number
-  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'strand'): 1
   get(name: 'score'): number | undefined
   get(name: 'phase'): 0 | 1 | 2 | undefined
   get(name: 'subfeatures'): Feature[] | undefined
@@ -57,7 +54,7 @@ export default class MafFeature implements Feature {
       case 'refName':
         return this._refName
       case 'strand':
-        return this._strand
+        return 1
       case 'alignments':
         return this._alignments
       case 'empties':
@@ -81,7 +78,7 @@ export default class MafFeature implements Feature {
       start: this._start,
       end: this._end,
       refName: this._refName,
-      strand: this._strand,
+      strand: 1,
       alignments: this._alignments,
       seq: this._seq,
       empties: this._empties,

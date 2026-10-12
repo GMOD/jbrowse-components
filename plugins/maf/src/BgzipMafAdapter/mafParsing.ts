@@ -72,7 +72,6 @@ export function* parseMafBlocks(
         refSampleId: resolve(refSrc)?.assemblyName || undefined,
         start: placed.start,
         end: placed.end,
-        strand: 1,
         alignments: rows.alignments,
         empties: rows.empties,
         seq: placed.seq,

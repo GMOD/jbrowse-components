@@ -131,7 +131,6 @@ export function legacyMafTabixFeatures(
           feature.get('start'),
           feature.get('end'),
           feature.get('refName'),
-          0,
           alignments,
           selectReferenceSequenceString(
             alignments,
@@ -164,7 +163,6 @@ export function legacyBigMafFeatures(
           feature.get('start'),
           feature.get('end'),
           feature.get('refName'),
-          0,
           alignments,
           referenceSeq,
           empties,
