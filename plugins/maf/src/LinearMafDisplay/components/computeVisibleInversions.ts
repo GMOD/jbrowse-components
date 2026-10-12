@@ -1,6 +1,6 @@
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
-import { regionInversionEvents } from './mafRowEvents.ts'
+import { regionInvertedRows } from './mafRowEvents.ts'
 import { eachVisibleRegion, rowViewport } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -96,7 +96,7 @@ export function consensusStrandByRowChr(
  * overlay on top of whatever the rows show (bases/codon/identity), so an
  * inversion is visible without switching rendering mode.
  *
- * A projection over `regionInversionEvents`, which decides *which* (block, row)
+ * A projection over `regionInvertedRows`, which decides *which* (block, row)
  * pairs are inverted once per (region, consensus) rather than on every frame.
  * The test it replaces was two map hits per block × row of every visible region
  * — over a million per frame on the ce11 26-way shape — to reach a verdict that
@@ -117,7 +117,7 @@ export function computeVisibleInversions(
     visibleStart,
     visibleEnd,
   } of eachVisibleRegion(view, rpcDataMap)) {
-    const events = regionInversionEvents(regionData, consensus)
+    const invertedRows = regionInvertedRows(regionData, consensus)
     const { blocks } = regionData
     const edgeA = bpToPx(visibleStart)
     const edgeB = bpToPx(visibleEnd)
@@ -128,15 +128,10 @@ export function computeVisibleInversions(
       if (!overlaps(block.startBp, block.endBp)) {
         continue
       }
-      const { from, to } = events.ensure(b)
-      const { positionBp, rowIndex, length } = events
-      // Resolved once per block, not per inverted row: every row of a block
-      // spans the same reference extent.
       let span: ReturnType<typeof spanRect> | undefined
-      for (let e = from; e < to; e++) {
-        const row = rowIndex[e]!
+      for (const row of invertedRows(b)) {
         if (row >= firstRow && row < endRow) {
-          span ??= spanRect(bpToPx, positionBp[e]!, positionBp[e]! + length[e]!)
+          span ??= spanRect(bpToPx, block.startBp, block.endBp)
           const visibleLeft = Math.min(
             Math.max(span.left, visibleLo),
             visibleHi,

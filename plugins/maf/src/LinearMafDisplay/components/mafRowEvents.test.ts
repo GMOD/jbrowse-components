@@ -1,5 +1,5 @@
 import { emptyMafCoverage } from './coverageTestFixture.ts'
-import { MafRowEventIndex, regionInversionEvents } from './mafRowEvents.ts'
+import { regionInvertedRows } from './mafRowEvents.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { StrandConsensus } from './computeVisibleInversions.ts'
@@ -23,78 +23,47 @@ function region(blocks: ReturnType<typeof block>[]): MafRegionData {
   return { blocks, coverage: emptyMafCoverage(100) }
 }
 
-function events(index: MafRowEventIndex, blockIndex: number) {
-  const { from, to } = index.ensure(blockIndex)
-  const out: [number, number, number][] = []
-  for (let e = from; e < to; e++) {
-    out.push([index.positionBp[e]!, index.rowIndex[e]!, index.length[e]!])
+const forward: StrandConsensus = new Map([
+  [0, new Map([['chr1', 1]])],
+  [1, new Map([['chr1', 1]])],
+  [2, new Map([['chr1', 1]])],
+])
+const reverse: StrandConsensus = new Map([[0, new Map([['chr1', -1]])]])
+
+function minusStrand(startBp: number) {
+  const base = block(startBp, 'AAAA', ['AAAA'])
+  return {
+    ...base,
+    rows: base.rows.map(row => ({ ...row, chr: 'chr1', strand: -1 })),
   }
-  return out
 }
 
 test('a block is walked once, however many times it is asked for', () => {
-  let walks = 0
-  const index = new MafRowEventIndex(
-    [block(0, 'AA', ['AA']), block(2, 'AA', ['AA'])],
-    (b, _i, push) => {
-      walks++
-      push(b.startBp, 0, 1)
-    },
-  )
-  index.ensure(0)
-  index.ensure(0)
-  expect(walks).toBe(1)
-  index.ensure(1)
-  expect(walks).toBe(2)
+  const invertedRows = regionInvertedRows(region([minusStrand(100)]), forward)
+  expect(invertedRows(0)).toBe(invertedRows(0))
 })
 
-// The bp cull admits blocks in whatever order the view reaches them, so the
-// per-block range is where a block landed in the columns, not its position in
-// `blocks`.
-test('ranges follow fill order, not block order', () => {
-  const index = new MafRowEventIndex(
-    [block(0, 'AA', ['AA']), block(2, 'AA', ['AA'])],
-    (b, _i, push) => {
-      push(b.startBp, 0, 1)
-      push(b.startBp, 1, 1)
-    },
-  )
-  expect(index.ensure(1)).toEqual({ from: 0, to: 2 })
-  expect(index.ensure(0)).toEqual({ from: 2, to: 4 })
-  expect(events(index, 1)).toEqual([
-    [2, 0, 1],
-    [2, 1, 1],
+test('only rows whose strand differs from their consensus are inverted', () => {
+  const base = block(0, 'AAAA', ['AAAA', 'AAAA', 'AAAA', 'AAAA'])
+  const rows = [
+    { ...base.rows[0]!, chr: 'chr1', strand: -1 },
+    { ...base.rows[1]!, chr: 'chr1', strand: 1 },
+    { ...base.rows[2]!, chr: 'chr1' },
+    { ...base.rows[3]!, strand: -1 },
+  ]
+  expect(regionInvertedRows(region([{ ...base, rows }]), forward)(0)).toEqual([
+    0,
   ])
-})
-
-// The columns are replaced wholesale when they grow, so a caller that
-// destructured them before `ensure` would read a stale, short array.
-test('the columns survive growth past their initial capacity', () => {
-  const count = 5000
-  const index = new MafRowEventIndex([block(0, 'A', ['A'])], (_b, _i, push) => {
-    for (let i = 0; i < count; i++) {
-      push(i, i % 7, i + 1)
-    }
-  })
-  const { from, to } = index.ensure(0)
-  expect(to - from).toBe(count)
-  expect(index.positionBp[count - 1]).toBe(count - 1)
-  expect(index.length[count - 1]).toBe(count)
 })
 
 // `consensusStrandByRowChr` is scored across every loaded region, so a region
 // landing elsewhere can flip which of this one's blocks read as inverted — the
-// index has to belong to the consensus that built it.
-test('inversion events are keyed by consensus as well as region', () => {
-  const base = block(100, 'AAAA', ['AAAA'])
-  const rows = base.rows.map(row => ({ ...row, chr: 'chr1', strand: -1 }))
-  const data = region([{ ...base, rows }])
-  const forward: StrandConsensus = new Map([[0, new Map([['chr1', 1]])]])
-  const reverse: StrandConsensus = new Map([[0, new Map([['chr1', -1]])]])
-
-  expect(events(regionInversionEvents(data, forward), 0)).toEqual([[100, 0, 4]])
-  expect(events(regionInversionEvents(data, reverse), 0)).toEqual([])
-  expect(regionInversionEvents(data, forward)).not.toBe(
-    regionInversionEvents(data, reverse),
+// cache has to belong to the consensus that built it.
+test('inverted rows are keyed by consensus as well as region', () => {
+  const data = region([minusStrand(100)])
+  expect(regionInvertedRows(data, forward)(0)).toEqual([0])
+  expect(regionInvertedRows(data, reverse)(0)).toEqual([])
+  expect(regionInvertedRows(data, forward)).not.toBe(
+    regionInvertedRows(data, reverse),
   )
 })
