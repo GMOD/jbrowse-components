@@ -17,7 +17,8 @@ export type GlyphPath = Pick<
 
 /**
  * Append one of the `point` shape's glyphs to the current path, centred on
- * `(cx, y)`.
+ * `(cx, y)`. The triangle is `triangleHeight` tall, `diameter` unless the
+ * mark draws one wider than it is tall.
  *
  * The disc/crisp-square split and the square's snap are pointGlyph.slang's
  * (adr-051), so the painter cannot drift from the shader about where the split
@@ -35,12 +36,14 @@ export function appendGlyph(
   cx: number,
   y: number,
   diameter: number,
+  triangleHeight = diameter,
 ) {
   const r = diameter / 2
   if (glyph === GLYPH_TRIANGLE) {
-    ctx.moveTo(cx - r, y - r)
-    ctx.lineTo(cx + r, y - r)
-    ctx.lineTo(cx, y + r)
+    const ry = triangleHeight / 2
+    ctx.moveTo(cx - r, y - ry)
+    ctx.lineTo(cx + r, y - ry)
+    ctx.lineTo(cx, y + ry)
     ctx.closePath()
   } else if (glyph === GLYPH_DIAMOND) {
     const ri = r * DIAMOND_GLYPH_SCALE
@@ -87,8 +90,17 @@ export function glyphBox(
   cx: number,
   y: number,
   diameter: number,
+  triangleHeight = diameter,
 ): InkRect {
   const r = diameter / 2
+  if (glyph === GLYPH_TRIANGLE) {
+    return {
+      left: cx - r,
+      top: y - triangleHeight / 2,
+      width: diameter,
+      height: triangleHeight,
+    }
+  }
   if (glyph === GLYPH_DIAMOND) {
     const ri = r * DIAMOND_GLYPH_SCALE
     return { left: cx - ri, top: y - ri, width: 2 * ri, height: 2 * ri }

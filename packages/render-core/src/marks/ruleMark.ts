@@ -133,6 +133,7 @@ export const ruleMark: MarkShape<RuleChannels, RuleParams> = {
   writeUniforms(scratch, clip, block, frame, params) {
     writePointUniforms(scratch, clip, block, frame, params, {
       radiusPx: params.sizePx / 2,
+      triangleRadiusYPx: params.sizePx / 2,
       rule: true,
       minWidthPx: params.minWidthPx,
     })

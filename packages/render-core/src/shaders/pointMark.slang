@@ -56,6 +56,9 @@ struct Uniforms {
   float  zero;
   float  viewportWidth;
   float  radiusPx;
+  // Half the triangle's height, which is `radiusPx` but where a mark draws a
+  // triangle wider than it is tall.
+  float  triangleRadiusYPx;
   // CSS px per row band, the value scale ruling each on its own; the canvas
   // height where every instance is on row 0 (ADR-126).
   float  rowHeight;
@@ -180,10 +183,11 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     float unitPx = u.radiusPx * (diamond ? DIAMOND_GLYPH_SCALE : 1.0);
     float reaches = inst.glyph == GLYPH_TRIANGLE ? TRIANGLE_MITER_REACHES
                   : (diamond ? DIAMOND_MITER_REACHES : 1.0);
-    float expand = glyphExpand(unitPx, reaches, u.devicePixelRatio);
-    float halfPx = unitPx * expand;
-    float dx = pxToClipLen(local.x * halfPx, u.viewportWidth);
-    float dy = pxToClipLen(local.y * halfPx, u.canvasHeight);
+    float unitYPx = inst.glyph == GLYPH_TRIANGLE ? u.triangleRadiusYPx : unitPx;
+    float2 expand = float2(glyphExpand(unitPx, reaches, u.devicePixelRatio),
+                           glyphExpand(unitYPx, reaches, u.devicePixelRatio));
+    float dx = pxToClipLen(local.x * unitPx * expand.x, u.viewportWidth);
+    float dy = pxToClipLen(local.y * unitYPx * expand.y, u.canvasHeight);
     o.position = float4(centerClipX + dx, centerClipY + dy, 0.0, 1.0);
     o.localPos = local * expand;
     o.shape = inst.glyph == GLYPH_TRIANGLE ? SHAPE_TRI

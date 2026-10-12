@@ -71,6 +71,8 @@ export interface ValuedMarkParams extends RowParams, MarkValueScale {
 export interface PointParams extends ValuedMarkParams {
   /** Glyph diameter in CSS px. */
   diameterPx: number
+  /** The triangle's height in CSS px, where it is not `diameterPx`. */
+  triangleHeightPx?: number
 }
 
 /**
@@ -83,7 +85,12 @@ export function writePointUniforms(
   block: RenderBlock,
   frame: MarkFrame,
   params: ValuedMarkParams,
-  shape: { radiusPx: number; rule: boolean; minWidthPx: number },
+  shape: {
+    radiusPx: number
+    triangleRadiusYPx: number
+    rule: boolean
+    minWidthPx: number
+  },
 ) {
   shader.writeUniforms(scratch, {
     bpRangeX: bpRangeXTuple(clip, block.reversed),
@@ -98,6 +105,7 @@ export function writePointUniforms(
     // stretched ellipses on hi-DPI.
     viewportWidth: clip.scissorW,
     radiusPx: shape.radiusPx,
+    triangleRadiusYPx: shape.triangleRadiusYPx,
     rowHeight: bandHeightPx(params, frame.canvasHeight),
     rowOffsetPx: params.rowOffsetPx ?? 0,
     reverse: params.reverse ? 1 : 0,
@@ -123,6 +131,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   writeUniforms(scratch, clip, block, frame, params) {
     writePointUniforms(scratch, clip, block, frame, params, {
       radiusPx: params.diameterPx / 2,
+      triangleRadiusYPx: (params.triangleHeightPx ?? params.diameterPx) / 2,
       rule: false,
       minWidthPx: 0,
     })
@@ -138,6 +147,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const color = paintColors(channels, count, params.colorScale)
     const {
       diameterPx,
+      triangleHeightPx = diameterPx,
       domain,
       insetPx = 0,
       rowOffsetPx: top = 0,
@@ -178,6 +188,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
         yPx,
         diameterPx,
+        triangleHeightPx,
       )
     }
     path.flush()
@@ -190,7 +201,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     if (slot === undefined) {
       return undefined
     }
-    const { diameterPx, domain, insetPx = 0 } = params
+    const { diameterPx, triangleHeightPx, domain, insetPx = 0 } = params
     const bpToPx = makeBpMapper(block)
     const band = bandHeightPx(params, frame.canvasHeight)
     const { valueScaleType: st, valueSymlogConstant: c } =
@@ -206,6 +217,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       (bpToPx(x[i]!) + bpToPx(x2[i]!)) / 2,
       cy,
       diameterPx,
+      triangleHeightPx,
     )
   },
 
