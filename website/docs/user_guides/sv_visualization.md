@@ -262,8 +262,8 @@ band.
 [Read cloud](/docs/user_guides/alignments_track#read-cloud) lays pairs out on
 the Y axis by the log distance between mates, so the insertion pairs lift clear
 of the background and how many reads span a breakpoint is countable. Chains with
-supplementary alignments are joined by an orange line, and **Edit filters**
-shows or hides proper pairs and singletons.
+supplementary alignments are joined by an orange line, and **Filter by...**
+keeps or hides the SV evidence and the reads without a mate.
 
 <Figure caption="Read cloud on a synthetic SV dataset, colored by insert size. Reads are stratified by log distance between mates, which separates the insertion pairs (pink) from the background." src="/img/alignments/read_cloud.png" />
 

@@ -82,7 +82,7 @@ Baseline (normal-insert) arcs outnumber every categorized arc by over 100:1 and
 arc strokes are opaque, so paint order is an interest ranking (`arcPaintRank`,
 ticks under arcs in `ARC_PASSES`). `showOrdinaryPairs` ("Show ordinary pairs")
 off hides an arc only when the pair is proper (`isConcordantPairRead`,
-shared with the "Show proper pairs" read filter) **and** the arc paints the
+shared with the `svSignal` read filter) **and** the arc paints the
 baseline slot. The flag alone would also hide proper-flagged pairs whose |TLEN|
 falls below the band and paint short-insert, which would read as a bug.
 

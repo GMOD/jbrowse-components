@@ -1058,7 +1058,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // Turning both off is what left the two arcs counted above, i.e.
               // what made it possible to see there was nothing there.
               //
-              // `properPairs: 'exclude'` was never the answer: it drops whole
+              // `svSignal: 'only'` is not the answer: it drops whole
               // read-name chains in `filterChainFeatures`, which runs before the
               // COVERAGE pipeline and not merely before layout, so it would take
               // ~all the reads and the three curves with them. Nor is a jexl
