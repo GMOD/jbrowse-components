@@ -36,6 +36,7 @@
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.7.0",
     "@jbrowse/plugin-alignments": "workspace:^",
+    "@jbrowse/plugin-comparative-adapters": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/synteny-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
@@ -52,8 +53,13 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./tables": "./esm/tables.js"
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tables": "./src/tables.ts"
+  }
 }

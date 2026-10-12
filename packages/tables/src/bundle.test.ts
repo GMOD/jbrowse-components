@@ -15,6 +15,7 @@ import vm from 'node:vm'
 import { parse } from 'acorn'
 
 import { createTablesEngine } from './index.ts'
+import { INV_INDELS, INV_INDELS_DOTPLOT } from './synteny.fixture.ts'
 import {
   BAM,
   BIGBED,
@@ -45,6 +46,8 @@ let jbrowse: {
   features: (args: string) => Promise<string>
   wiggle: (args: string) => Promise<string>
   variants: (args: string) => Promise<string>
+  synteny: (args: string) => Promise<string>
+  dotplot: (args: string) => Promise<string>
 }
 let code: string
 
@@ -145,3 +148,20 @@ test.each([
     expect(bare.legend).toEqual(direct.legend)
   },
 )
+
+test('the bundle answers a PAF as the engine does, in a bare host', async () => {
+  const bare = JSON.parse(await jbrowse.synteny(JSON.stringify(INV_INDELS)))
+  const direct = await createTablesEngine().synteny(INV_INDELS)
+  expect(bare.ribbons.kind.length).toBeGreaterThan(7)
+  const { id: _bareId, ...bareAlignments } = bare.alignments
+  const { id: _directId, ...directAlignments } = direct.alignments
+  expect(bareAlignments).toEqual(directAlignments)
+  expect(bare.ribbons).toEqual(direct.ribbons)
+  expect(bare.legend).toEqual(direct.legend)
+
+  const bareDots = JSON.parse(
+    await jbrowse.dotplot(JSON.stringify(INV_INDELS_DOTPLOT)),
+  )
+  const directDots = await createTablesEngine().dotplot(INV_INDELS_DOTPLOT)
+  expect(bareDots.segments).toEqual(directDots.segments)
+})

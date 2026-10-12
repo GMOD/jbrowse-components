@@ -8,8 +8,13 @@ import {
 } from '@jbrowse/plugin-alignments/tables'
 import BedPlugin from '@jbrowse/plugin-bed'
 import { featureTables } from '@jbrowse/plugin-canvas/tables'
+import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
+import {
+  registerComparativeAdapters,
+  syntenyTables,
+} from '@jbrowse/plugin-linear-comparative-view/tables'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
 import {
   registerVariantAdapters,
@@ -22,6 +27,8 @@ import {
 
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
+import type { DotplotTablesArgs } from '@jbrowse/plugin-dotplot-view/tables'
+import type { SyntenyTablesArgs } from '@jbrowse/plugin-linear-comparative-view/tables'
 import type { VariantTablesArgs } from '@jbrowse/plugin-variants/tables'
 import type { WiggleTablesArgs } from '@jbrowse/plugin-wiggle/tables'
 
@@ -33,6 +40,14 @@ export type {
   FeatureTables,
   FeatureTablesArgs,
 } from '@jbrowse/plugin-canvas/tables'
+export type {
+  DotplotTables,
+  DotplotTablesArgs,
+} from '@jbrowse/plugin-dotplot-view/tables'
+export type {
+  SyntenyTables,
+  SyntenyTablesArgs,
+} from '@jbrowse/plugin-linear-comparative-view/tables'
 export type {
   VariantTables,
   VariantTablesArgs,
@@ -91,6 +106,7 @@ class TablesPlugin extends Plugin {
     registerSequenceAdapters(pluginManager)
     registerWiggleAdapters(pluginManager)
     registerVariantAdapters(pluginManager)
+    registerComparativeAdapters(pluginManager)
   }
 }
 
@@ -120,6 +136,8 @@ export function createTablesEngine() {
     features: (args: FeatureTablesArgs) => onContig(args, featureTables),
     wiggle: (args: WiggleTablesArgs) => onContig(args, wiggleTables),
     variants: (args: VariantTablesArgs) => onContig(args, variantTables),
+    synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
+    dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
     sequence: (args: Parameters<typeof referenceSequence>[1]) =>
       referenceSequence(pluginManager, args),
   }

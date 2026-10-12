@@ -7,6 +7,7 @@
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/synteny-core/tsconfig.build.esm.json" },
-    { "path": "../alignments/tsconfig.build.esm.json" }
+    { "path": "../alignments/tsconfig.build.esm.json" },
+    { "path": "../comparative-adapters/tsconfig.build.esm.json" }
   ]
 }

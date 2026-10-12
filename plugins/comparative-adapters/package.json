@@ -50,8 +50,13 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./tables": "./esm/tables.js"
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tables": "./src/tables.ts"
+  }
 }

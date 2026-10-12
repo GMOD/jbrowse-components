@@ -38,6 +38,7 @@
     "@jbrowse/mobx-state-tree": "^6.7.0",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-comparative-adapters": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-marks": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
@@ -57,12 +58,17 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./tables": "./esm/tables.js"
     }
   },
   "sideEffects": false,
   "devDependencies": {
     "@jbrowse/display-test-utils": "workspace:^",
     "canvas": "^3.2.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./tables": "./src/tables.ts"
   }
 }

@@ -394,3 +394,20 @@ export type {
 } from './SelectorTypes.ts'
 export { getMate } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'
+export {
+  attributeColumns,
+  axisNamePosition,
+  comparativeAxis,
+  comparativeLegend,
+  locateCum,
+  unpack,
+  viewColorSettings,
+} from './comparativeTables.ts'
+export type {
+  AxisArgs,
+  AxisRegionArgs,
+  ColorArg,
+  ComparativeAxis,
+  OpacityArg,
+  ViewColorSettings,
+} from './comparativeTables.ts'

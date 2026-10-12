@@ -41,8 +41,11 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
     "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-comparative-adapters": "workspace:^",
+    "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-gtf": "workspace:^",
+    "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-sequence": "workspace:^",
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^"
