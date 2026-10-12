@@ -73,9 +73,10 @@ function expandLooseTracks(
 /**
  * #stateModel AppCoreJBrowseModel
  * #category root
- * built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
- * config models are MST trees themselves, which is why this state model is
- * allowed to build on one. Generally found on a property named rootModel.jbrowse
+ * Holds the loaded config file, usually at `rootModel.jbrowse`, with actions
+ * that add and remove its assemblies and tracks. The model builds on the
+ * [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model, which a
+ * state model can do because a config model is itself an MST tree.
  */
 export function JBrowseModelF({
   pluginManager,

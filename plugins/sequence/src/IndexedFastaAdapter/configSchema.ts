@@ -12,6 +12,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config IndexedFastaAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat sequence | Indexed FASTA (.fa + .fai)
+ * Reads an uncompressed FASTA reference sequence through its `samtools faidx`
+ * index, fetching the bases in view as byte ranges.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.fai` index:

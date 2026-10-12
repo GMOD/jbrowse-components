@@ -1,7 +1,7 @@
 ---
 id: maftrack
 title: MafTrack
-description: "used for multiple alignment (MAF/TAF) tracks, rendered as one row per aligned species with a conservation summary above them"
+description: "Holds a multiple alignment from a MAF or TAF file, which LinearMafDisplay draws as one row per aligned species with a conservation summary above them."
 sidebar_label: Track -> MafTrack
 ---
 
@@ -33,8 +33,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Overview
 
-used for multiple alignment (MAF/TAF) tracks, rendered as one row per aligned
-species with a conservation summary above them
+Holds a multiple alignment from a MAF or TAF file, which `LinearMafDisplay`
+draws as one row per aligned species with a conservation summary above them.
 
 ### MafTrack - Identifier
 

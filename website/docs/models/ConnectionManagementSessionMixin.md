@@ -1,11 +1,15 @@
 ---
 id: connectionmanagementsessionmixin
 title: ConnectionManagementSessionMixin
-description: "Properties, getters and actions of the ConnectionManagementSessionMixin state model."
+description: "Adds connections to a session: the connection instances it has made, and the configs of the connection tracks the user opened, so those tracks load on session restore without reconnecting."
 sidebar_label: Mixin -> ConnectionManagementSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Connections.ts).
+
+Adds connections to a session: the connection instances it has made, and
+the configs of the connection tracks the user opened, so those tracks load
+on session restore without reconnecting.
 
 ## Properties
 

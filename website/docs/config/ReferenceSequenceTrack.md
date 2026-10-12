@@ -1,7 +1,7 @@
 ---
 id: referencesequencetrack
 title: ReferenceSequenceTrack
-description: "used to display base level DNA sequence tracks"
+description: "Holds an assembly's reference sequence, which LinearReferenceSequenceDisplay draws base by base."
 sidebar_label: Track -> ReferenceSequenceTrack
 ---
 
@@ -27,7 +27,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Overview
 
-used to display base level DNA sequence tracks
+Holds an assembly's reference sequence, which
+`LinearReferenceSequenceDisplay` draws base by base.
 
 ### ReferenceSequenceTrack - Identifier
 

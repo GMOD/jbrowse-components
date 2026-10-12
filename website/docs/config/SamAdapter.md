@@ -1,7 +1,7 @@
 ---
 id: samadapter
 title: SamAdapter
-description: "plain-text SAM, either a file or an inline string"
+description: "Reads plain-text SAM alignments, from a file or an inline string."
 sidebar_label: Adapter -> SamAdapter
 ---
 
@@ -34,7 +34,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-plain-text SAM, either a file or an inline string
+Reads plain-text SAM alignments, from a file or an inline string.
 
 There is no index, so the whole file is loaded and held in memory — this is
 for small files (a BLAT result, a handful of assembled contigs, a test case).

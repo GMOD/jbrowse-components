@@ -1,7 +1,7 @@
 ---
 id: mcscananchorsadapter
 title: MCScanAnchorsAdapter
-description: "used to load MCScan (jcvi) .anchors files with their two BED files"
+description: "Reads gene-level synteny from an MCScan (jcvi) .anchors file and the two BED files that place its genes."
 sidebar_label: Adapter -> MCScanAnchorsAdapter
 ---
 
@@ -33,7 +33,8 @@ The anchors file carries no coordinates: a gene is placed by matching its id aga
 
 :::
 
-used to load MCScan (jcvi) `.anchors` files with their two BED files
+Reads gene-level synteny from an MCScan (jcvi) `.anchors` file and the two
+BED files that place its genes.
 
 See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
 also covers converting an MCScanX run into these files.

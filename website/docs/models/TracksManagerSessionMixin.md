@@ -1,11 +1,15 @@
 ---
 id: tracksmanagersessionmixin
 title: TracksManagerSessionMixin
-description: "Properties, getters and actions of the TracksManagerSessionMixin state model."
+description: "Adds track configs to a session: looking one up by trackId among the config's tracks, assembly sequences and connection tracks, and adding or editing one."
 sidebar_label: Mixin -> TracksManagerSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts).
+
+Adds track configs to a session: looking one up by trackId among the
+config's tracks, assembly sequences and connection tracks, and adding or
+editing one.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

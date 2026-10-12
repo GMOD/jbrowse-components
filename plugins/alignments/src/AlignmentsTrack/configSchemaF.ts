@@ -5,7 +5,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config AlignmentsTrack
- * has very little config; most config and state logic is on the display
+ * Holds read alignments, such as a BAM or CRAM file, which
+ * `LinearAlignmentsDisplay` draws. The track has few settings, and the display
+ * holds most of the config and state.
  *
  * #example
  * A BAM track — swap the adapter to `CramAdapter` with a `uri` to a `.cram` for

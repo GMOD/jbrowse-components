@@ -1,7 +1,7 @@
 ---
 id: gwastrack
 title: GWASTrack
-description: "used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display"
+description: "Holds Genome-Wide Association Study (GWAS) results, drawn as a Manhattan plot."
 sidebar_label: Track -> GWASTrack
 ---
 
@@ -33,7 +33,8 @@ natural-log p-value, or a `jexl:...` expression of `score` such as
 
 _See the **Config slots** section below for all available configuration fields._
 
-used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
+Holds Genome-Wide Association Study (GWAS) results, drawn as a Manhattan
+plot.
 
 ## Related links
 

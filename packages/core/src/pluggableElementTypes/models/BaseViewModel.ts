@@ -40,6 +40,8 @@ function bodyInDom(view: { bodyMounted?: boolean }): boolean {
 /**
  * #stateModel BaseViewModel
  * #category view
+ * Holds a view's id, the name shown in its header, its width and whether it is
+ * minimized. Every view composes this model.
  */
 
 const BaseViewModel = types

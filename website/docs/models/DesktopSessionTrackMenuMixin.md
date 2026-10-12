@@ -1,11 +1,14 @@
 ---
 id: desktopsessiontrackmenumixin
 title: DesktopSessionTrackMenuMixin
-description: "Properties, getters and actions of the DesktopSessionTrackMenuMixin state model."
+description: "Adds the desktop track menu to a session: Settings, Copy and Delete, plus Index track for a track whose adapter supports text indexing."
 sidebar_label: Mixin -> DesktopSessionTrackMenuMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
+
+Adds the desktop track menu to a session: Settings, Copy and Delete, plus
+Index track for a track whose adapter supports text indexing.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

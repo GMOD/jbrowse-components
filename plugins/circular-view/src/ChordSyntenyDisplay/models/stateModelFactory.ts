@@ -73,6 +73,8 @@ function atAlpha(abgr: number, alpha: number) {
 
 /**
  * #stateModel ChordSyntenyDisplay
+ * Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
+ * spans of each alignment.
  *
  * #example
  * The circular-view display for a `SyntenyTrack`: each alignment is drawn as a

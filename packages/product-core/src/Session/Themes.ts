@@ -91,6 +91,8 @@ export function storedThemeArgs(): SerializableThemeArgs {
 
 /**
  * #stateModel ThemeManagerSessionMixin
+ * Adds the UI theme to a session: the selected theme, light or dark mode or
+ * following the OS, and the themes an admin adds through `extraThemes`.
  */
 export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
   return types

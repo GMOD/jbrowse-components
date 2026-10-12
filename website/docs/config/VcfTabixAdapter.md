@@ -1,7 +1,7 @@
 ---
 id: vcftabixadapter
 title: VcfTabixAdapter
-description: "used to load bgzip-compressed, tabix-indexed VCF files"
+description: "Reads bgzip-compressed, tabix-indexed VCF files."
 sidebar_label: Adapter -> VcfTabixAdapter
 ---
 
@@ -43,7 +43,7 @@ TBI cannot index a chromosome longer than 512 Mb, which some plant and animal ge
 
 :::
 
-used to load bgzip-compressed, tabix-indexed VCF files
+Reads bgzip-compressed, tabix-indexed VCF files.
 
 ## Related links
 

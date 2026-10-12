@@ -15,8 +15,9 @@ import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 /**
  * #config JBrowseConfiguration
  * #category root
- * this is the entry under the `configuration` key
- * e.g.
+ * Holds the app-wide settings in the `configuration` key of a config file,
+ * beside `assemblies` and `tracks`.
+ *
  * ```json
  * {
  *   assemblies,

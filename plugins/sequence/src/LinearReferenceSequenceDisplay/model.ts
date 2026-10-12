@@ -76,7 +76,11 @@ export interface SequenceRegionData {
 /**
  * #stateModel LinearReferenceSequenceDisplay
  * #displayFoundation MultiRegionDisplayMixin
- * base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
+ * Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
+ * reverse complement and the translation frames.
+ *
+ * The model composes `BaseDisplay`, `TrackHeightMixin` and
+ * `MultiRegionDisplayMixin`.
  */
 export function modelFactory(
   configSchema: LinearReferenceSequenceDisplayConfigModel,

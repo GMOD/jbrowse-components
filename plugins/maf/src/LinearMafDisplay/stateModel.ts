@@ -259,6 +259,8 @@ function categoricalScale(
 /**
  * #stateModel LinearMafDisplay
  * #displayFoundation MultiRegionDisplayMixin
+ * Draws the multiple alignment in a `MafTrack`, one row per aligned species,
+ * under a conservation band.
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the

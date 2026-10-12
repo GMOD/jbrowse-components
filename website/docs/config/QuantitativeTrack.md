@@ -1,7 +1,7 @@
 ---
 id: quantitativetrack
 title: QuantitativeTrack
-description: "a numerical signal track (coverage, conservation, etc.), typically backed by a BigWig file and drawn as an XY plot or density"
+description: "Holds a numeric signal such as coverage or conservation, usually from a BigWig file, which LinearWiggleDisplay draws as an XY plot or density."
 sidebar_label: Track -> QuantitativeTrack
 ---
 
@@ -53,8 +53,8 @@ the `LinearWiggleDisplay`), so you don't have to know display names:
 
 _See the **Config slots** section below for all available configuration fields._
 
-a numerical signal track (coverage, conservation, etc.), typically backed by
-a BigWig file and drawn as an XY plot or density
+Holds a numeric signal such as coverage or conservation, usually from a
+BigWig file, which `LinearWiggleDisplay` draws as an XY plot or density.
 
 ## Related links
 

@@ -5,6 +5,8 @@ import {
 
 /**
  * #config CytobandAdapter
+ * Reads an assembly's cytoband file, which the linear genome view draws as
+ * ideogram banding in its overview bar.
  *
  * #example
  * Goes on an ASSEMBLY, under `cytobands` — not on a track. It draws the

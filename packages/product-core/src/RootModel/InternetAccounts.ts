@@ -68,6 +68,8 @@ function warnScopeMismatch(internetAccountId: string, uri: string) {
 /**
  * #stateModel InternetAccountsMixin
  * #category root
+ * Adds internet accounts to the root model, and finds the account that signs
+ * the request for a given file location.
  */
 export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
   return types

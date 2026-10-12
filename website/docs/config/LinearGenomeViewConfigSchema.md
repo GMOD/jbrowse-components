@@ -1,11 +1,14 @@
 ---
 id: lineargenomeviewconfigschema
 title: LinearGenomeViewConfigSchema
-description: "Configuration slots of LinearGenomeViewConfigSchema."
+description: "Sets defaults for every linear genome view, on the root config under configuration.LinearGenomeViewPlugin."
 sidebar_label: Root -> LinearGenomeViewConfigSchema
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/index.ts).
+
+Sets defaults for every linear genome view, on the root config under
+`configuration.LinearGenomeViewPlugin`.
 
 ## Config slots
 

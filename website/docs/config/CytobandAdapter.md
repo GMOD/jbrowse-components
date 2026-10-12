@@ -1,7 +1,7 @@
 ---
 id: cytobandadapter
 title: CytobandAdapter
-description: "Configuration slots of CytobandAdapter."
+description: "Reads an assembly's cytoband file, which the linear genome view draws as ideogram banding in its overview bar."
 sidebar_label: Adapter -> CytobandAdapter
 ---
 
@@ -33,6 +33,9 @@ ideogram banding in the linear genome view's overview bar:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Reads an assembly's cytoband file, which the linear genome view draws as
+ideogram banding in its overview bar.
 
 ## Config slots
 

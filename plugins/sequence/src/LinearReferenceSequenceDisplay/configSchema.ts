@@ -3,6 +3,8 @@ import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionToo
 
 /**
  * #config LinearReferenceSequenceDisplay
+ * Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
+ * reverse complement and the translation frames.
  *
  * #example
  * The display goes in the `displays` array of the assembly's `sequence` track,

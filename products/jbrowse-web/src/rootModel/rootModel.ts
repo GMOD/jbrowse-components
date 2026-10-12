@@ -128,9 +128,13 @@ async function withSessionDB(
 /**
  * #stateModel JBrowseWebRootModel
  *
- * note: many properties of the root model are available through the session,
- * and we generally prefer using the session model (via e.g. getSession) over
- * the root model (via e.g. getRoot) in plugin code
+ * Holds JBrowse Web's top-level state: the loaded config, the session,
+ * internet accounts, undo history, the app menus and the saved sessions kept
+ * in the browser.
+ *
+ * Many properties of the root model are available through the session, and
+ * we generally prefer using the session model (via e.g. `getSession`) over the
+ * root model (via e.g. `getRoot`) in plugin code.
  */
 export default function RootModel({
   pluginManager,

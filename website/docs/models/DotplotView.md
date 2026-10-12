@@ -1,7 +1,7 @@
 ---
 id: dotplotview
 title: DotplotView
-description: "Properties, getters and actions of the DotplotView state model."
+description: "Plots the alignments between two assemblies, one on each axis, as a dot plot."
 sidebar_label: View -> DotplotView
 ---
 
@@ -24,6 +24,9 @@ directly on the view object. `views` lists the two assemblies on the axes and
 
 `autoDiagonalize` and a per-axis `loc` on each `views` entry are the other
 launch keys; everything else is a property below.
+
+Plots the alignments between two assemblies, one on each axis, as a dot
+plot.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

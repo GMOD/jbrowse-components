@@ -1,7 +1,7 @@
 ---
 id: chordvariantdisplay
 title: ChordVariantDisplay
-description: "Configuration slots of ChordVariantDisplay."
+description: "Draws the structural variants of a VariantTrack in a CircularView, each translocation as a chord across the circle."
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
@@ -37,6 +37,9 @@ chord's resting color, a constant or a field of the record with a key, and
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws the structural variants of a `VariantTrack` in a `CircularView`, each
+translocation as a chord across the circle.
 
 ## Related links
 

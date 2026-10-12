@@ -1,7 +1,7 @@
 ---
 id: linearalignmentsdisplay
 title: LinearAlignmentsDisplay
-description: "Configuration slots of LinearAlignmentsDisplay."
+description: "Draws the reads of an AlignmentsTrack as a pileup under a coverage histogram."
 sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
@@ -65,6 +65,9 @@ molecule's:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws the reads of an `AlignmentsTrack` as a pileup under a coverage
+histogram.
 
 ## Related links
 

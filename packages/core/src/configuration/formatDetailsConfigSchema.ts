@@ -10,8 +10,8 @@ export const DEFAULT_FORMAT_DETAILS_DEPTH = 2
 /**
  * #config FormatDetails
  * #category root
- * jexl callbacks that add, rewrite or hide fields in the feature-details panel.
- * The same schema hangs off every track and off the session as
+ * Holds jexl callbacks that add, rewrite or hide fields in the feature-details
+ * panel. Every track has this schema, and so does the root config as
  * `configuration.formatDetails`, which applies to every track at once. Where
  * both are set, the callbacks merge with the track's object over the session's,
  * so a track can override individual keys the global callback added, and the

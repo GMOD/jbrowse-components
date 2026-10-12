@@ -112,6 +112,9 @@ function createVolatileState() {
 /**
  * #stateModel AddTrackModel
  * #category widget
+ * Holds the Add track widget's form: the data file and its index, the adapter
+ * and track type guessed from them, the track name and assembly, and the URL
+ * list for adding several tracks at once.
  */
 export default function f(pluginManager: PluginManager) {
   return types

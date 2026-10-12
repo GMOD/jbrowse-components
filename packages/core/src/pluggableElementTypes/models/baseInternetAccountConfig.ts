@@ -2,7 +2,9 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 
 /**
  * #config BaseInternetAccount
- * the "base" internet account type
+ * Holds an internet account's name and description, the domains it handles,
+ * and the request header it sends credentials in. Every internet account type
+ * has these slots.
  */
 
 export const BaseInternetAccountConfig = ConfigurationSchema(

@@ -33,6 +33,9 @@ import type React from 'react'
 /**
  * #stateModel BaseDisplay
  * #category display
+ * Holds a display's parent track, the adapter config read from that track, its
+ * load status and error, and the component that draws it. Every display
+ * composes this model.
  */
 function stateModelFactory() {
   return types

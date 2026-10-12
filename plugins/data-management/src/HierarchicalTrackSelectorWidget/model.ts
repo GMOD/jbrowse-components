@@ -162,6 +162,8 @@ function findRowAtOffset(rows: TreeRow[], offset: number) {
 
 /**
  * #stateModel HierarchicalTrackSelectorWidget
+ * Lists a view's available tracks as a tree of categories, with a filter box,
+ * favorites and recently used tracks, and a group for each connection.
  */
 export default function stateTreeFactory(pluginManager: PluginManager) {
   return types

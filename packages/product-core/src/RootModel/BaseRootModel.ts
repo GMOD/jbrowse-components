@@ -34,7 +34,8 @@ import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 /**
  * #stateModel BaseRootModel
  * #category root
- * factory function for the Base-level root model shared by all products
+ * Holds the loaded config, the session, the assembly manager and the RPC
+ * manager. Every JBrowse product's root model composes this one.
  */
 export function BaseRootModelFactory({
   pluginManager,

@@ -1,7 +1,7 @@
 ---
 id: formatdetails
 title: FormatDetails
-description: "jexl callbacks that add, rewrite or hide fields in the feature-details panel. The same schema hangs off every track and off the session as configuration.formatDetails, which applies to every track…"
+description: "Holds jexl callbacks that add, rewrite or hide fields in the feature-details panel. Every track has this schema, and so does the root config as configuration.formatDetails, which applies to every…"
 sidebar_label: Root -> FormatDetails
 ---
 
@@ -31,8 +31,8 @@ is turned into a link for you, so no `<a>` markup is needed:
 
 _See the **Config slots** section below for all available configuration fields._
 
-jexl callbacks that add, rewrite or hide fields in the feature-details panel.
-The same schema hangs off every track and off the session as
+Holds jexl callbacks that add, rewrite or hide fields in the feature-details
+panel. Every track has this schema, and so does the root config as
 `configuration.formatDetails`, which applies to every track at once. Where
 both are set, the callbacks merge with the track's object over the session's,
 so a track can override individual keys the global callback added, and the

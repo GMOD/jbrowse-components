@@ -1,7 +1,7 @@
 ---
 id: gtftabixadapter
 title: GtfTabixAdapter
-description: "used to load bgzip-compressed, tabix-indexed GTF files"
+description: "Reads bgzip-compressed, tabix-indexed GTF files."
 sidebar_label: Adapter -> GtfTabixAdapter
 ---
 
@@ -37,7 +37,7 @@ The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load bgzip-compressed, tabix-indexed GTF files
+Reads bgzip-compressed, tabix-indexed GTF files.
 
 ## Related links
 

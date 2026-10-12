@@ -7,6 +7,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config MultiQuantitativeTrack
+ * Holds several quantitative signals, such as one BigWig per sample, which
+ * `LinearWiggleDisplay` draws one row per source by default.
  *
  * #example
  * Overlays several bigwig files as one track. `bigWigs` is the shorthand form

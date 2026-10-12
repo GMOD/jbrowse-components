@@ -1,11 +1,14 @@
 ---
 id: multipleviewssessionmixin
 title: MultipleViewsSessionMixin
-description: "Properties, getters and actions of the MultipleViewsSessionMixin state model."
+description: "Adds a list of views to a session, with actions to add, remove, replace and reorder them."
 sidebar_label: Mixin -> MultipleViewsSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts).
+
+Adds a list of views to a session, with actions to add, remove, replace and
+reorder them.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

@@ -23,7 +23,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config LinearCanvasBaseDisplay
  * #category display
- * base config for canvas-based linear feature displays (pileup-style glyphs)
+ * Holds the slots shared by the canvas-drawn linear feature displays, which
+ * stack overlapping features in rows (pileup-style glyphs).
  */
 export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(

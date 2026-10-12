@@ -1,15 +1,15 @@
 ---
 id: multiwaysyntenydisplay
 title: MultiWaySyntenyDisplay
-description: "draws a multi-genome ortholog track as one lane per assembly inside a linear genome view, with ribbons joining each gene's placements between adjacent lanes"
+description: "Draws a multi-genome ortholog track as one lane per assembly inside a linear genome view, with ribbons joining each gene's placements between adjacent lanes."
 sidebar_label: Display -> MultiWaySyntenyDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/model.ts).
 
-draws a multi-genome ortholog track as one lane per assembly inside a linear
+Draws a multi-genome ortholog track as one lane per assembly inside a linear
 genome view, with ribbons joining each gene's placements between adjacent
-lanes
+lanes.
 
 The configuration slots for this model are documented on its [config schema page](../../config/multiwaysyntenydisplay).
 

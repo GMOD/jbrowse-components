@@ -1,15 +1,16 @@
 ---
 id: appcorejbrowsemodel
 title: AppCoreJBrowseModel
-description: "built on the JBrowseRootConfig config model — config models are MST trees themselves, which is why this state model is allowed to build on one. Generally found on a…"
+description: "Holds the loaded config file, usually at rootModel.jbrowse, with actions that add and remove its assemblies and tracks. The model builds on the JBrowseRootConfig…"
 sidebar_label: Root -> AppCoreJBrowseModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseModel/index.ts).
 
-built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
-config models are MST trees themselves, which is why this state model is
-allowed to build on one. Generally found on a property named rootModel.jbrowse
+Holds the loaded config file, usually at `rootModel.jbrowse`, with actions
+that add and remove its assemblies and tracks. The model builds on the
+[JBrowseRootConfig](/docs/config/jbrowserootconfig) config model, which a
+state model can do because a config model is itself an MST tree.
 
 ## Getters
 

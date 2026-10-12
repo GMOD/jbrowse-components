@@ -24,7 +24,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearAlignmentsDisplay
  * #category display
- * configuration schema for the LinearAlignmentsDisplay
+ * Draws the reads of an `AlignmentsTrack` as a pileup under a coverage
+ * histogram.
  *
  * #example
  * Minimal BAM track — no display override needed for defaults. See the

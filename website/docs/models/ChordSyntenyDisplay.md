@@ -1,7 +1,7 @@
 ---
 id: chordsyntenydisplay
 title: ChordSyntenyDisplay
-description: "Properties, getters and actions of the ChordSyntenyDisplay state model."
+description: "Draws a SyntenyTrack in a CircularView, with a ribbon joining the two spans of each alignment."
 sidebar_label: Display -> ChordSyntenyDisplay
 ---
 
@@ -38,6 +38,9 @@ colors are the config slots on [](/docs/config/chordsyntenydisplay):
 A track aligning two assemblies needs both of them on the circle, which is
 the view's `assembly: ['hg38', 'mm39']` — see the
 [synteny track guide](/docs/config_guides/synteny_track).
+
+Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
+spans of each alignment.
 
 The configuration slots for this model are documented on its [config schema page](../../config/chordsyntenydisplay).
 

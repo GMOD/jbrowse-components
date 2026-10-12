@@ -48,9 +48,12 @@ export interface PluginsUpdate {
 /**
  * #stateModel JBrowseReactAppRootModel
  *
- * note: many properties of the root model are available through the session,
- * and we generally prefer using the session model (via e.g. getSession) over
- * the root model (via e.g. getRoot) in plugin code
+ * Holds the top-level state of the embeddable JBrowse React app: the loaded
+ * config, the session, internet accounts and the app menus.
+ *
+ * Many properties of the root model are available through the session, and
+ * we generally prefer using the session model (via e.g. `getSession`) over the
+ * root model (via e.g. `getRoot`) in plugin code.
  */
 export default function RootModel({
   pluginManager,

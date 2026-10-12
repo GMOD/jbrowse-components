@@ -1,7 +1,7 @@
 ---
 id: refnamealiasadapter
 title: RefNameAliasAdapter
-description: "can read \"chromAliases\" type files from UCSC or any tab separated file of refName aliases"
+description: "Reads refName aliases for an assembly from a UCSC chromAlias file or any other tab-separated table of aliases."
 sidebar_label: Adapter -> RefNameAliasAdapter
 ---
 
@@ -61,8 +61,8 @@ the header; `refNameColumn` takes a zero-based index instead.
 
 _See the **Config slots** section below for all available configuration fields._
 
-can read "chromAliases" type files from UCSC or any tab separated file of
-refName aliases
+Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
+other tab-separated table of aliases.
 
 ## Config slots
 

@@ -1,7 +1,7 @@
 ---
 id: multiwaysyntenydisplay
 title: MultiWaySyntenyDisplay
-description: "Configuration slots of MultiWaySyntenyDisplay."
+description: "Draws a multi-genome SyntenyTrack in a linear genome view as one lane per assembly, with ribbons joining each gene's placements in adjacent lanes."
 sidebar_label: Display -> MultiWaySyntenyDisplay
 ---
 
@@ -73,6 +73,9 @@ cluster, and ribbons colored by percent identity:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws a multi-genome `SyntenyTrack` in a linear genome view as one lane per
+assembly, with ribbons joining each gene's placements in adjacent lanes.
 
 ## Related links
 

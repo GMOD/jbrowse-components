@@ -5,7 +5,8 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 
 /**
  * #stateModel JBrowseDesktopConfigModel
- * the rootModel.jbrowse state model for JBrowseDesktop
+ * Holds JBrowse Desktop's loaded config at `rootModel.jbrowse`, adding the
+ * desktop-only `sourceConfigUrl` and `webExportUrl` slots.
  */
 export default function JBrowseDesktop(
   pluginManager: PluginManager,

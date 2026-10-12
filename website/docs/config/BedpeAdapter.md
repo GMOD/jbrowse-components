@@ -1,7 +1,7 @@
 ---
 id: bedpeadapter
 title: BedpeAdapter
-description: "intended for SVs in a single assembly"
+description: "Reads BEDPE files of paired breakends, such as structural variant calls within a single assembly."
 sidebar_label: Adapter -> BedpeAdapter
 ---
 
@@ -34,7 +34,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-intended for SVs in a single assembly
+Reads BEDPE files of paired breakends, such as structural variant calls
+within a single assembly.
 
 ## Related links
 

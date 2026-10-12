@@ -1,13 +1,17 @@
 ---
 id: linearreferencesequencedisplay
 title: LinearReferenceSequenceDisplay
-description: "base model BaseDisplay + TrackHeightMixin + MultiRegionDisplayMixin"
+description: "Draws a ReferenceSequenceTrack as rows of bases: the forward strand, the reverse complement and the translation frames."
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts).
 
-base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
+Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
+reverse complement and the translation frames.
+
+The model composes `BaseDisplay`, `TrackHeightMixin` and
+`MultiRegionDisplayMixin`.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearreferencesequencedisplay).
 

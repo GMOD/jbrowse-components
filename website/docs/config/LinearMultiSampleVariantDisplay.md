@@ -1,7 +1,7 @@
 ---
 id: linearmultisamplevariantdisplay
 title: LinearMultiSampleVariantDisplay
-description: "Configuration slots of LinearMultiSampleVariantDisplay."
+description: "Draws the genotypes in a multi-sample VariantTrack, one row per sample or per phased haplotype."
 sidebar_label: Display -> LinearMultiSampleVariantDisplay
 ---
 
@@ -99,6 +99,9 @@ separate at their positions:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws the genotypes in a multi-sample `VariantTrack`, one row per sample or
+per phased haplotype.
 
 ## Related links
 

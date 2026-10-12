@@ -1,7 +1,7 @@
 ---
 id: unindexedfastaadapter
 title: UnindexedFastaAdapter
-description: "loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole sequence into memory, so prefer the IndexedFastaAdapter for large genomes."
+description: "Reads a plain (non-bgzipped) FASTA file with no index. The adapter holds the whole sequence in memory, so use IndexedFastaAdapter for large genomes."
 sidebar_label: Adapter -> UnindexedFastaAdapter
 ---
 
@@ -22,8 +22,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
-sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
+Reads a plain (non-bgzipped) FASTA file with no index. The adapter holds the
+whole sequence in memory, so use `IndexedFastaAdapter` for large genomes.
 
 ## Related links
 

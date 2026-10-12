@@ -1,15 +1,19 @@
 ---
 id: jbrowsewebrootmodel
 title: JBrowseWebRootModel
-description: "note: many properties of the root model are available through the session, and we generally prefer using the session model (via e.g. getSession) over the root model (via e.g. getRoot) in plugin code"
+description: "Holds JBrowse Web's top-level state: the loaded config, the session, internet accounts, undo history, the app menus and the saved sessions kept in the browser."
 sidebar_label: Root -> JBrowseWebRootModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts).
 
-note: many properties of the root model are available through the session,
-and we generally prefer using the session model (via e.g. getSession) over
-the root model (via e.g. getRoot) in plugin code
+Holds JBrowse Web's top-level state: the loaded config, the session,
+internet accounts, undo history, the app menus and the saved sessions kept
+in the browser.
+
+Many properties of the root model are available through the session, and
+we generally prefer using the session model (via e.g. `getSession`) over the
+root model (via e.g. `getRoot`) in plugin code.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

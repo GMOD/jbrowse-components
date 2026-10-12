@@ -1,7 +1,7 @@
 ---
 id: linearsyntenyview
 title: LinearSyntenyView
-description: "Properties, getters and actions of the LinearSyntenyView state model."
+description: "Stacks a linear genome view per genome, and draws the synteny tracks between adjacent rows as ribbons joining the aligned regions."
 sidebar_label: View -> LinearSyntenyView
 ---
 
@@ -27,6 +27,9 @@ a ribbon:
 The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
 `sameScale` and `collapseEmptyRows`; everything else is a property below and
 needs no list to join.
+
+Stacks a linear genome view per genome, and draws the synteny tracks
+between adjacent rows as ribbons joining the aligned regions.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

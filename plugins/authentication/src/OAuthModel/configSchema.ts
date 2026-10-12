@@ -5,6 +5,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config OAuthInternetAccount
+ * Signs requests to a resource that uses OAuth 2.0, fetching and refreshing
+ * the access token through the provider's authorization flow.
  */
 
 const OAuthConfigSchema = ConfigurationSchema(

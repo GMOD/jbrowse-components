@@ -17,7 +17,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BigWigAdapter
  * #trackType QuantitativeTrack
  * #fileFormat quantitative | BigWig
- * used to load BigWig quantitative signal files
+ * Reads BigWig quantitative signal files.
  *
  * #example
  * ```js

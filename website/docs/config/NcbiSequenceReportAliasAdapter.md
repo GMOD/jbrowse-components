@@ -1,7 +1,7 @@
 ---
 id: ncbisequencereportaliasadapter
 title: NcbiSequenceReportAliasAdapter
-description: "can read \"sequencereport.tsv\" type files from NCBI"
+description: "Reads refName aliases for an assembly from an NCBI sequencereport.tsv file."
 sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
@@ -64,7 +64,8 @@ searchable as an alias:
 
 _See the **Config slots** section below for all available configuration fields._
 
-can read "sequence_report.tsv" type files from NCBI
+Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
+file.
 
 ## Config slots
 

@@ -1,7 +1,7 @@
 ---
 id: bamadapter
 title: BamAdapter
-description: "used to configure BAM adapter"
+description: "Reads BAM alignment files, with a BAI or CSI index."
 sidebar_label: Adapter -> BamAdapter
 ---
 
@@ -38,7 +38,7 @@ the full slot form:
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to configure BAM adapter
+Reads BAM alignment files, with a BAI or CSI index.
 
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.

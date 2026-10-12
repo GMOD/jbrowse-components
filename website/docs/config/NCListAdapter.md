@@ -1,7 +1,7 @@
 ---
 id: nclistadapter
 title: NCListAdapter
-description: "Configuration slots of NCListAdapter."
+description: "Reads a JBrowse 1 NCList feature store, the per-reference trackData.json files that the JBrowse 1 formatting scripts write."
 sidebar_label: Adapter -> NCListAdapter
 ---
 
@@ -29,6 +29,9 @@ is substituted per sequence, which is how the store is laid out on disk:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Reads a JBrowse 1 NCList feature store, the per-reference `trackData.json`
+files that the JBrowse 1 formatting scripts write.
 
 ## Related links
 

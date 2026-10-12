@@ -95,6 +95,8 @@ function promptForLoginWindow({
 
 /**
  * #stateModel OAuthInternetAccount
+ * Gets an OAuth 2.0 access token from the provider's login window, and renews
+ * it with a refresh token kept in `localStorage`.
  */
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return InternetAccount.named('OAuthInternetAccount')

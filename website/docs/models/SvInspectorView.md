@@ -1,7 +1,7 @@
 ---
 id: svinspectorview
 title: SvInspectorView
-description: "does not extend, but is a combination of a - SpreadsheetView - CircularView"
+description: "Shows a file of structural variants as a table beside a circular view that draws them as chords. The model holds a SpreadsheetView and a CircularView side by…"
 sidebar_label: View -> SvInspectorView
 ---
 
@@ -18,9 +18,10 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 }
 ```
 
-does not extend, but is a combination of a
-- [SpreadsheetView](../spreadsheetview)
-- [CircularView](../circularview)
+Shows a file of structural variants as a table beside a circular view that
+draws them as chords. The model holds a
+[SpreadsheetView](../spreadsheetview) and a
+[CircularView](../circularview) side by side, without extending either.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

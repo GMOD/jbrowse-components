@@ -6,6 +6,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config HicTrack
  * #category track
+ * Holds a Hi-C contact matrix, usually a `.hic` file read by `HicAdapter`,
+ * which `LinearHicDisplay` draws as a triangular heatmap.
  *
  * #example
  * A minimal `HicTrack` config. See the

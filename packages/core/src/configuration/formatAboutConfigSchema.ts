@@ -3,8 +3,8 @@ import { ConfigurationSchema } from './configurationSchema.ts'
 /**
  * #config FormatAbout
  * #category root
- * jexl callbacks that add, rewrite or hide fields in a track's About dialog.
- * The same schema hangs off every track and off the session as
+ * Holds jexl callbacks that add, rewrite or hide fields in a track's About
+ * dialog. Every track has this schema, and so does the root config as
  * `configuration.formatAbout`, which applies to every track at once. Where both
  * are set the track's object is spread over the session's, so a track can
  * override individual keys the global callback added.

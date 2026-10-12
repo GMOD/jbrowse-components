@@ -13,8 +13,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config UnindexedFastaAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat sequence | Plain FASTA (.fa, no index) | Read entirely into memory; prefer an indexed form for large genomes
- * loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
- * sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
+ * Reads a plain (non-bgzipped) FASTA file with no index. The adapter holds the
+ * whole sequence in memory, so use `IndexedFastaAdapter` for large genomes.
  *
  * #example
  * ```js

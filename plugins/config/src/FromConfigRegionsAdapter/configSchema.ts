@@ -4,7 +4,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config FromConfigRegionsAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat inline | Inline regions | refNames and sizes only, no sequence
- * used for specifying refNames+sizes of an assembly
+ * Supplies an assembly's reference names and sizes inline in the config, with
+ * no sequence.
  *
  * #example
  * Supplies refNames+sizes with no sequence, as the adapter of an assembly's

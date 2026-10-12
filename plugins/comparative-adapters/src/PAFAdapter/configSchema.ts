@@ -14,6 +14,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config PAFAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | PAF | Loaded entirely into memory; convert to PIF for large alignments
+ * Reads PAF pairwise alignment files, as written by minimap2 or wfmash, into
+ * memory.
+ *
  * #gotcha `assemblyNames` is `[query, target]`, which is the **reverse** of
  * the order minimap2 and nucmer take their inputs (`minimap2 target.fa
  * query.fa`). Getting it backwards draws every alignment against the wrong

@@ -14,8 +14,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType FeatureTrack
  * #fileFormat feature | GTF (plain) | Loaded entirely into memory; for small files
- * used to load plain-text GTF files (optionally gzipped). Loads the whole file
- * into memory, so prefer the GtfTabixAdapter for large files.
+ * Reads plain-text GTF files, optionally gzipped. The adapter loads the whole
+ * file into memory, so use `GtfTabixAdapter` for large files.
  *
  * #example
  * The `uri` shorthand works for plain or gzipped GTF:

@@ -1,15 +1,15 @@
 ---
 id: basetrackmodel
 title: BaseTrackModel
-description: "these MST models only exist for tracks that are shown. they should contain only UI state for the track, and have a reference to a track configuration. note that multiple displayed tracks could use…"
+description: "Holds the UI state of a track that is shown in a view, with a reference to its track configuration and the displays drawing it. Only shown tracks have this model, and several shown tracks can use…"
 sidebar_label: Track -> BaseTrackModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
 
-these MST models only exist for tracks that are *shown*. they should contain
-only UI state for the track, and have a reference to a track configuration.
-note that multiple displayed tracks could use the same configuration.
+Holds the UI state of a track that is *shown* in a view, with a reference to
+its track configuration and the displays drawing it. Only shown tracks have
+this model, and several shown tracks can use the same configuration.
 
 ## Properties
 

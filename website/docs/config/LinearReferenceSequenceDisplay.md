@@ -1,7 +1,7 @@
 ---
 id: linearreferencesequencedisplay
 title: LinearReferenceSequenceDisplay
-description: "Configuration slots of LinearReferenceSequenceDisplay."
+description: "Draws a ReferenceSequenceTrack as rows of bases: the forward strand, the reverse complement and the translation frames."
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
@@ -33,6 +33,9 @@ sequence: {
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws a `ReferenceSequenceTrack` as rows of bases: the forward strand, the
+reverse complement and the translation frames.
 
 ## Related links
 

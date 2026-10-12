@@ -1,7 +1,7 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
-description: "configuration for the basic linear feature display (genes, BED, GFF, etc.), which adds the gene-glyph slots — isoforms, subparts, UTRs, chevrons — to the shared canvas base; the color slots color,…"
+description: "Draws the genes and other features of a FeatureTrack, from a BED, GFF or similar file. The display adds the gene-glyph slots (isoforms, subparts, UTRs, chevrons) to the shared canvas base. The…"
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
@@ -36,11 +36,12 @@ or `superCompact`), or `collapsed` for a single-row overview:
 
 _See the **Config slots** section below for all available configuration fields._
 
-configuration for the basic linear feature display (genes, BED, GFF, etc.),
-which adds the gene-glyph slots — isoforms, subparts, UTRs, chevrons — to
-the shared canvas base; the color slots `color`, `connectorColor` and
-`utrColor` are display-level, set inside a track's `displays` array, each a
-CSS color or a `jexl:` expression for per-feature coloring.
+Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
+similar file. The display adds the gene-glyph slots (isoforms, subparts,
+UTRs, chevrons) to the shared canvas base. The color slots `color`,
+`connectorColor` and `utrColor` are display-level, set inside a track's
+`displays` array, each a CSS color or a `jexl:` expression for per-feature
+coloring.
 
 ## Related links
 

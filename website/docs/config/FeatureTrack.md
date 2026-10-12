@@ -1,7 +1,7 @@
 ---
 id: featuretrack
 title: FeatureTrack
-description: "used for basic gene and feature tracks, generally used with LinearBasicDisplay"
+description: "Holds gene and other feature annotations, such as a GFF3 or BED file, which LinearBasicDisplay usually draws."
 sidebar_label: Track -> FeatureTrack
 ---
 
@@ -59,7 +59,8 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Overview
 
-used for basic gene and feature tracks, generally used with LinearBasicDisplay
+Holds gene and other feature annotations, such as a GFF3 or BED file, which
+`LinearBasicDisplay` usually draws.
 
 ### FeatureTrack - Identifier
 

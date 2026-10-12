@@ -5,6 +5,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config HTTPBasicInternetAccount
+ * Prompts for a username and password, and sends them in an HTTP Basic
+ * `Authorization` header on requests to a matching domain.
  *
  * #example
  * An entry in the config's `internetAccounts`. JBrowse prompts for the username

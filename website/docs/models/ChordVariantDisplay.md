@@ -1,7 +1,7 @@
 ---
 id: chordvariantdisplay
 title: ChordVariantDisplay
-description: "Properties, getters and actions of the ChordVariantDisplay state model."
+description: "Draws the structural variants of a VariantTrack in a CircularView, each translocation as a chord across the circle."
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
@@ -32,6 +32,9 @@ is what creates it; its colors are the config slots on
   ],
 }
 ```
+
+Draws the structural variants of a `VariantTrack` in a `CircularView`, each
+translocation as a chord across the circle.
 
 The configuration slots for this model are documented on its [config schema page](../../config/chordvariantdisplay).
 

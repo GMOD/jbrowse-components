@@ -11,7 +11,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config NcbiSequenceReportAliasAdapter
- * can read "sequence_report.tsv" type files from NCBI
+ * Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
+ * file.
  *
  * #example
  * Goes on an ASSEMBLY, under `refNameAliases` — not on a track. The file ships

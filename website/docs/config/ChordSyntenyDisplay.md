@@ -1,7 +1,7 @@
 ---
 id: chordsyntenydisplay
 title: ChordSyntenyDisplay
-description: "Configuration slots of ChordSyntenyDisplay."
+description: "Draws a SyntenyTrack in a CircularView, with a ribbon joining the two spans of each alignment."
 sidebar_label: Display -> ChordSyntenyDisplay
 ---
 
@@ -38,6 +38,9 @@ slots are the hovered and selected fills:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
+spans of each alignment.
 
 ## Related links
 

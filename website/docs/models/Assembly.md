@@ -1,11 +1,15 @@
 ---
 id: assembly
 title: Assembly
-description: "Properties, getters and actions of the Assembly state model."
+description: "Loads an assembly's reference sequence names, refName aliases and cytobands, and maps each data file's refNames onto the assembly's canonical names."
 sidebar_label: Assembly Management -> Assembly
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts).
+
+Loads an assembly's reference sequence names, refName aliases and
+cytobands, and maps each data file's refNames onto the assembly's canonical
+names.
 
 ## Properties
 

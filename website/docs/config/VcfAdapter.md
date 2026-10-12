@@ -1,7 +1,7 @@
 ---
 id: vcfadapter
 title: VcfAdapter
-description: "used to load plain-text (non-bgzipped) VCF files. Loads the whole file into memory, so prefer the VcfTabixAdapter for large files."
+description: "Reads plain-text (non-bgzipped) VCF files. The adapter loads the whole file into memory, so use VcfTabixAdapter for large files."
 sidebar_label: Adapter -> VcfAdapter
 ---
 
@@ -34,8 +34,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
-memory, so prefer the VcfTabixAdapter for large files.
+Reads plain-text (non-bgzipped) VCF files. The adapter loads the whole file
+into memory, so use `VcfTabixAdapter` for large files.
 
 ## Related links
 

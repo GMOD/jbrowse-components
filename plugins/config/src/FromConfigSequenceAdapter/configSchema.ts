@@ -4,8 +4,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config FromConfigSequenceAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat inline | Inline sequence | Each feature's `seq` holds the bases for its region
- * supplies reference sequence inline in the config; each feature's `seq` holds
- * the bases for its region
+ * Supplies a reference sequence inline in the config, as features whose `seq`
+ * holds the bases for each region.
  *
  * #example
  * Used as the adapter of an assembly's `sequence` (a `ReferenceSequenceTrack`):

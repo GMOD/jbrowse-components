@@ -20,8 +20,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * ... and a jexl callback reading `feature.itemRgb` gets `undefined`. Set
  * `columnNames` to refer to them by name.
  *
- * used to load plain-text BED files. Loads the whole file into memory, so
- * prefer the BedTabixAdapter for large files.
+ * Reads plain-text BED files. The adapter loads the whole file into memory, so
+ * use `BedTabixAdapter` for large files.
  *
  * #example
  * ```js

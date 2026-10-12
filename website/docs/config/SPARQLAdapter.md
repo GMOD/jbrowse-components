@@ -1,7 +1,7 @@
 ---
 id: sparqladapter
 title: SPARQLAdapter
-description: "fetches features from a SPARQL endpoint, substituting the queried region into a query template"
+description: "Fetches features from a SPARQL endpoint, substituting the queried region into a query template."
 sidebar_label: Adapter -> SPARQLAdapter
 ---
 
@@ -34,8 +34,8 @@ result columns become feature fields, so the query has to select at least
 
 _See the **Config slots** section below for all available configuration fields._
 
-fetches features from a SPARQL endpoint, substituting the queried region into
-a query template
+Fetches features from a SPARQL endpoint, substituting the queried region into
+a query template.
 
 ## Related links
 

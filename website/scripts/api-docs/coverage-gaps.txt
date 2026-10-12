@@ -32,82 +32,11 @@ LinearMultiRowFeatureDisplay
 LinearReferenceSequenceDisplay
 MultiWaySyntenyDisplay
 
-# configs with no description (34)
+# configs with no description (0)
 # fix: write an opening sentence under the type’s #config tag
-BaseConnection
-BedTabixAdapter
-BgzipFastaAdapter
-BigBedAdapter
-BlastTabularAdapter
-ChordSyntenyDisplay
-ChordVariantDisplay
-CytobandAdapter
-DotplotDisplay
-DropboxOAuthInternetAccount
-ExternalTokenInternetAccount
-GoogleDriveOAuthInternetAccount
-HTTPBasicInternetAccount
-HicTrack
-IndexedFastaAdapter
-JB2TrackHubConnection
-JBrowse1Connection
-LGVSyntenyDisplay
-LinearAlignmentsDisplay
-LinearGenomeViewConfigSchema
-LinearHicDisplay
-LinearMultiSampleVariantDisplay
-LinearReferenceSequenceDisplay
-LinearSyntenyDisplay
-MultiQuantitativeTrack
-MultiWaySyntenyDisplay
-NCListAdapter
-OAuthInternetAccount
-PAFAdapter
-RpcOptions
-SyntenyTrack
-TrixTextSearchAdapter
-TwoBitAdapter
-UCSCTrackHubConnection
 
-# models with no description (37)
+# models with no description (0)
 # fix: write an opening sentence under the type’s #stateModel tag
-AddTrackModel
-Assembly
-AssemblyManager
-BaseConnectionModel
-BaseDisplay
-BaseInternetAccountModel
-BaseViewModel
-BreakpointSplitView
-ChordSyntenyDisplay
-ChordVariantDisplay
-CircularView
-ConnectionManagementSessionMixin
-DesktopSessionTrackMenuMixin
-DotplotDisplay
-DotplotView
-DrawerWidgetSessionMixin
-DropboxOAuthInternetAccount
-GoogleDriveOAuthInternetAccount
-HierarchicalTrackSelectorWidget
-HistoryManagementMixin
-InternetAccountsMixin
-JB2TrackHubConnection
-JBrowseDesktopSessionModel
-LinearGenomeView
-LinearMafDisplay
-LinearSyntenyView
-MultipleViewsSessionMixin
-OAuthInternetAccount
-ReferenceManagementSessionMixin
-RootAppMenuMixin
-SessionTracksManagerSessionMixin
-SnackbarModel
-SpreadsheetView
-ThemeManagerSessionMixin
-TracksManagerSessionMixin
-UCSCTrackHubConnection
-WebSessionConnectionsMixin
 
 # configs that fell back to the General category (0)
 # fix: add #category to the #config JSDoc

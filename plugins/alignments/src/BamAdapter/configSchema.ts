@@ -26,7 +26,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BamAdapter
  * #trackType AlignmentsTrack
  * #fileFormat alignments | BAM
- * used to configure BAM adapter
+ * Reads BAM alignment files, with a BAI or CSI index.
  *
  * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
  * automatically supplies it from the enclosing assembly's sequence track.

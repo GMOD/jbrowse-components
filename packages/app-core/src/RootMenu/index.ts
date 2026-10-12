@@ -5,6 +5,8 @@ import type { MenuItem } from '@jbrowse/core/ui/menuItems'
 
 /**
  * #stateModel RootAppMenuMixin
+ * Adds actions to the root model that let plugins add menus and menu items to
+ * the app bar.
  */
 export function RootAppMenuMixin() {
   return types

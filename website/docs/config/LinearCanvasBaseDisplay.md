@@ -1,13 +1,14 @@
 ---
 id: linearcanvasbasedisplay
 title: LinearCanvasBaseDisplay
-description: "base config for canvas-based linear feature displays (pileup-style glyphs)"
+description: "Holds the slots shared by the canvas-drawn linear feature displays, which stack overlapping features in rows (pileup-style glyphs)."
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
 
-base config for canvas-based linear feature displays (pileup-style glyphs)
+Holds the slots shared by the canvas-drawn linear feature displays, which
+stack overlapping features in rows (pileup-style glyphs).
 
 ## Related links
 

@@ -6,8 +6,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config MafTrack
  * #category track
- * used for multiple alignment (MAF/TAF) tracks, rendered as one row per aligned
- * species with a conservation summary above them
+ * Holds a multiple alignment from a MAF or TAF file, which `LinearMafDisplay`
+ * draws as one row per aligned species with a conservation summary above them.
  *
  * #example
  * A tabix-indexed MAF, with the aligned species supplied by a Newick tree that

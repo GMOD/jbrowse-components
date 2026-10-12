@@ -14,11 +14,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearBasicDisplay
  * #category display
- * configuration for the basic linear feature display (genes, BED, GFF, etc.),
- * which adds the gene-glyph slots — isoforms, subparts, UTRs, chevrons — to
- * the shared canvas base; the color slots `color`, `connectorColor` and
- * `utrColor` are display-level, set inside a track's `displays` array, each a
- * CSS color or a `jexl:` expression for per-feature coloring.
+ * Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
+ * similar file. The display adds the gene-glyph slots (isoforms, subparts,
+ * UTRs, chevrons) to the shared canvas base. The color slots `color`,
+ * `connectorColor` and `utrColor` are display-level, set inside a track's
+ * `displays` array, each a CSS color or a `jexl:` expression for per-feature
+ * coloring.
+ *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
  * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,

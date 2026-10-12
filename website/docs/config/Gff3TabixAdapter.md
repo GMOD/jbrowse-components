@@ -1,7 +1,7 @@
 ---
 id: gff3tabixadapter
 title: Gff3TabixAdapter
-description: "used to load bgzip-compressed, tabix-indexed GFF3 files"
+description: "Reads bgzip-compressed, tabix-indexed GFF3 files."
 sidebar_label: Adapter -> Gff3TabixAdapter
 ---
 
@@ -37,7 +37,7 @@ The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load bgzip-compressed, tabix-indexed GFF3 files
+Reads bgzip-compressed, tabix-indexed GFF3 files.
 
 ## Related links
 

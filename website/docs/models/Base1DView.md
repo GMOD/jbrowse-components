@@ -1,15 +1,17 @@
 ---
 id: base1dview
 title: Base1DView
-description: "used in non-lgv view representations of a 1d view e.g. the two axes of the dotplot use this. categorized General rather than View because it is not a pluggable view type, which the name-suffix…"
+description: "Holds a one-dimensional axis of displayed regions, with its zoom and scroll offset, for views other than the linear genome view, such as the two axes of the dotplot."
 sidebar_label: General -> Base1DView
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
 
-used in non-lgv view representations of a 1d view e.g. the two axes of the
-dotplot use this. categorized General rather than View because it is not a
-pluggable view type, which the name-suffix heuristic would otherwise assume
+Holds a one-dimensional axis of displayed regions, with its zoom and scroll
+offset, for views other than the linear genome view, such as the two axes of
+the dotplot.
+
+Its page sits under General because it is not a pluggable view type.
 
 ## Properties
 

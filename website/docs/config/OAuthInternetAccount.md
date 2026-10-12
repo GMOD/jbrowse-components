@@ -1,11 +1,14 @@
 ---
 id: oauthinternetaccount
 title: OAuthInternetAccount
-description: "Configuration slots of OAuthInternetAccount."
+description: "Signs requests to a resource that uses OAuth 2.0, fetching and refreshing the access token through the provider's authorization flow."
 sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/configSchema.ts).
+
+Signs requests to a resource that uses OAuth 2.0, fetching and refreshing
+the access token through the provider's authorization flow.
 
 ## Related links
 

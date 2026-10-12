@@ -13,7 +13,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config SamAdapter
  * #trackType AlignmentsTrack
  * #fileFormat alignments | SAM | Unindexed, so the whole file is loaded into memory; prefer BAM or CRAM for sequencing-scale data
- * plain-text SAM, either a file or an inline string
+ * Reads plain-text SAM alignments, from a file or an inline string.
  *
  * There is no index, so the whole file is loaded and held in memory — this is
  * for small files (a BLAT result, a handful of assembled contigs, a test case).

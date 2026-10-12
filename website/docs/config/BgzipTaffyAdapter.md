@@ -1,7 +1,7 @@
 ---
 id: bgziptaffyadapter
 title: BgzipTaffyAdapter
-description: "used to configure BgzipTaffy adapter"
+description: "Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its .tai index."
 sidebar_label: Adapter -> BgzipTaffyAdapter
 ---
 
@@ -27,7 +27,8 @@ Newick tree:
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to configure BgzipTaffy adapter
+Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
+`.tai` index.
 
 ## Related links
 

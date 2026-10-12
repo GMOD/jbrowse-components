@@ -13,9 +13,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #stateModel Base1DView
  * #category general
- * used in non-lgv view representations of a 1d view e.g. the two axes of the
- * dotplot use this. categorized General rather than View because it is not a
- * pluggable view type, which the name-suffix heuristic would otherwise assume
+ * Holds a one-dimensional axis of displayed regions, with its zoom and scroll
+ * offset, for views other than the linear genome view, such as the two axes of
+ * the dotplot.
+ *
+ * Its page sits under General because it is not a pluggable view type.
  */
 const Base1DView = types
   .model('Base1DView', {

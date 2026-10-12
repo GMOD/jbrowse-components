@@ -1,11 +1,15 @@
 ---
 id: basedisplay
 title: BaseDisplay
-description: "Properties, getters and actions of the BaseDisplay state model."
+description: "Holds a display's parent track, the adapter config read from that track, its load status and error, and the component that draws it. Every display composes this model."
 sidebar_label: Display -> BaseDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx).
+
+Holds a display's parent track, the adapter config read from that track, its
+load status and error, and the component that draws it. Every display
+composes this model.
 
 ## Properties
 

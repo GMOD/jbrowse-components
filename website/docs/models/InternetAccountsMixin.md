@@ -1,11 +1,14 @@
 ---
 id: internetaccountsmixin
 title: InternetAccountsMixin
-description: "Properties, getters and actions of the InternetAccountsMixin state model."
+description: "Adds internet accounts to the root model, and finds the account that signs the request for a given file location."
 sidebar_label: Mixin -> InternetAccountsMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/InternetAccounts.ts).
+
+Adds internet accounts to the root model, and finds the account that signs
+the request for a given file location.
 
 ## Properties
 

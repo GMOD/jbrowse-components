@@ -1,7 +1,7 @@
 ---
 id: chainadapter
 title: ChainAdapter
-description: "used to load UCSC chain alignment files (query and target assembly required)"
+description: "Reads UCSC chain alignment files, which need the query and target assembly names."
 sidebar_label: Adapter -> ChainAdapter
 ---
 
@@ -26,7 +26,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load UCSC chain alignment files (query and target assembly required)
+Reads UCSC chain alignment files, which need the query and target assembly
+names.
 
 ## Related links
 

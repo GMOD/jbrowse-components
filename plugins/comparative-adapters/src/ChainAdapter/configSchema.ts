@@ -14,7 +14,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | Chain (UCSC liftOver / lastz)
- * used to load UCSC chain alignment files (query and target assembly required)
+ * Reads UCSC chain alignment files, which need the query and target assembly
+ * names.
  *
  * #example
  * ```js

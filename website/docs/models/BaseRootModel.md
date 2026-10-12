@@ -1,13 +1,14 @@
 ---
 id: baserootmodel
 title: BaseRootModel
-description: "factory function for the Base-level root model shared by all products"
+description: "Holds the loaded config, the session, the assembly manager and the RPC manager. Every JBrowse product's root model composes this one."
 sidebar_label: Root -> BaseRootModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
 
-factory function for the Base-level root model shared by all products
+Holds the loaded config, the session, the assembly manager and the RPC
+manager. Every JBrowse product's root model composes this one.
 
 ## Properties
 

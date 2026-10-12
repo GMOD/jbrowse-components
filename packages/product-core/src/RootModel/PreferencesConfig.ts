@@ -4,10 +4,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 /**
  * #config PreferencesConfigSchema
  * #category root
- * admin/embedder defaults for user-facing preferences, found on the root config
- * as `configuration.preferences`. Individual users override these at runtime
- * (persisted to localStorage) via the session `getPreference` reader; a runtime
- * override map layered over config defaults, at app scope.
+ * Sets an admin's or embedder's defaults for user-facing preferences, found on
+ * the root config as `configuration.preferences`. Each user's runtime
+ * overrides, kept in localStorage, sit over these defaults at app scope, and
+ * the session's `getPreference` reads the result.
  */
 export function PreferencesConfigSchemaFactory() {
   return ConfigurationSchema('Preferences', {

@@ -1,7 +1,7 @@
 ---
 id: starfusionadapter
 title: StarFusionAdapter
-description: "used to load STAR-Fusion star-fusion.fusionpredictions.tsv output"
+description: "Reads the gene fusions that STAR-Fusion predicts, from its star-fusion.fusionpredictions.tsv output."
 sidebar_label: Adapter -> StarFusionAdapter
 ---
 
@@ -34,7 +34,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
+Reads the gene fusions that STAR-Fusion predicts, from its
+`star-fusion.fusion_predictions.tsv` output.
 
 ## Related links
 

@@ -1,7 +1,7 @@
 ---
 id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
-description: "note: metadata about tracks and assemblies covered by text search adapter"
+description: "Searches a names index written by JBrowse 1's generate-names.pl. The tracks and assemblyNames slots list the tracks and assemblies the index covers."
 sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
@@ -23,7 +23,9 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
 
 _See the **Config slots** section below for all available configuration fields._
 
-note: metadata about tracks and assemblies covered by text search adapter
+Searches a names index written by JBrowse 1's `generate-names.pl`. The
+`tracks` and `assemblyNames` slots list the tracks and assemblies the index
+covers.
 
 ## Config slots
 

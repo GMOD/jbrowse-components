@@ -1,7 +1,7 @@
 ---
 id: dotplotdisplay
 title: DotplotDisplay
-description: "Configuration slots of DotplotDisplay."
+description: "Draws a SyntenyTrack as a dot plot inside a DotplotView."
 sidebar_label: Display -> DotplotDisplay
 ---
 
@@ -35,6 +35,8 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 ```
 
 ## Overview
+
+Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
 
 ### DotplotDisplay - Identifier
 

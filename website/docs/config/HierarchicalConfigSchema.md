@@ -1,13 +1,15 @@
 ---
 id: hierarchicalconfigschema
 title: HierarchicalConfigSchema
-description: "generally exists on the config.json or root config as configuration.hierarchical"
+description: "Sets the hierarchical track selector's starting sort order, and which categories show as folders or start collapsed. Found on the root config as configuration.hierarchical."
 sidebar_label: Root -> HierarchicalConfigSchema
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts).
 
-generally exists on the config.json or root config as configuration.hierarchical
+Sets the hierarchical track selector's starting sort order, and which
+categories show as folders or start collapsed. Found on the root config as
+`configuration.hierarchical`.
 
 ## Config slots
 

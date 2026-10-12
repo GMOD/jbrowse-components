@@ -1,7 +1,7 @@
 ---
 id: hicadapter
 title: HicAdapter
-description: "used to load Hi-C contact matrix data from a .hic file"
+description: "Reads Hi-C contact matrices from a .hic file."
 sidebar_label: Adapter -> HicAdapter
 ---
 
@@ -34,7 +34,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load Hi-C contact matrix data from a `.hic` file
+Reads Hi-C contact matrices from a `.hic` file.
 
 ## Related links
 

@@ -1,16 +1,16 @@
 ---
 id: preferencesconfigschema
 title: PreferencesConfigSchema
-description: "admin/embedder defaults for user-facing preferences, found on the root config as configuration.preferences. Individual users override these at runtime (persisted to localStorage) via the session…"
+description: "Sets an admin's or embedder's defaults for user-facing preferences, found on the root config as configuration.preferences. Each user's runtime overrides, kept in localStorage, sit over these…"
 sidebar_label: Root -> PreferencesConfigSchema
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/PreferencesConfig.ts).
 
-admin/embedder defaults for user-facing preferences, found on the root config
-as `configuration.preferences`. Individual users override these at runtime
-(persisted to localStorage) via the session `getPreference` reader; a runtime
-override map layered over config defaults, at app scope.
+Sets an admin's or embedder's defaults for user-facing preferences, found on
+the root config as `configuration.preferences`. Each user's runtime
+overrides, kept in localStorage, sit over these defaults at app scope, and
+the session's `getPreference` reads the result.
 
 ## Config slots
 

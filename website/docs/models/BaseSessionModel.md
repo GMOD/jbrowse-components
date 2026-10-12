@@ -1,14 +1,14 @@
 ---
 id: basesessionmodel
 title: BaseSessionModel
-description: "base session shared by all JBrowse products. Be careful what you include here, everything will use it."
+description: "Holds a session's name, focused view, highlights and notifications. Every product's session composes this model, so add to it with care."
 sidebar_label: Session -> BaseSessionModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts).
 
-base session shared by all JBrowse products. Be careful what you include
-here, everything will use it.
+Holds a session's name, focused view, highlights and notifications. Every
+product's session composes this model, so add to it with care.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

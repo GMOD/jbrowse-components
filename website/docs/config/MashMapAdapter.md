@@ -1,7 +1,7 @@
 ---
 id: mashmapadapter
 title: MashMapAdapter
-description: "used to load MashMap .out alignment files (query and target assembly required)"
+description: "Reads MashMap .out alignment files, which need the query and target assembly names."
 sidebar_label: Adapter -> MashMapAdapter
 ---
 
@@ -26,8 +26,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load MashMap `.out` alignment files (query and target assembly
-required)
+Reads MashMap `.out` alignment files, which need the query and target
+assembly names.
 
 ## Related links
 

@@ -1,13 +1,14 @@
 ---
 id: jbrowsedesktopconfigmodel
 title: JBrowseDesktopConfigModel
-description: "the rootModel.jbrowse state model for JBrowseDesktop"
+description: "Holds JBrowse Desktop's loaded config at rootModel.jbrowse, adding the desktop-only sourceConfigUrl and webExportUrl slots."
 sidebar_label: Root -> JBrowseDesktopConfigModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/jbrowseModel.ts).
 
-the rootModel.jbrowse state model for JBrowseDesktop
+Holds JBrowse Desktop's loaded config at `rootModel.jbrowse`, adding the
+desktop-only `sourceConfigUrl` and `webExportUrl` slots.
 
 JBrowseDesktopConfigModel declares no members of its own — it composes the models below, and everything here is theirs.
 

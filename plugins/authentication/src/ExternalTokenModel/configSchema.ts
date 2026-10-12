@@ -5,6 +5,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config ExternalTokenInternetAccount
+ * Sends a token that the user pastes in, or that an embedding portal supplies,
+ * with every request to a matching domain.
  *
  * #example
  * For a token the user pastes in, or that an embedding portal hands over.

@@ -25,9 +25,10 @@ export function scoreAdapterFields({
  * #trackType GWASTrack
  * #fileFormat gwas | GWAS results (bgzipped, tabix-indexed BED-like)
  * #category adapter
- * adapter for GWAS results files; a BedTabixAdapter with `scoreColumn`
- * defaulted to `neg_log_pvalue` so files load with a sensible Manhattan
- * plot score out of the box
+ * Reads GWAS results from a bgzip-compressed, tabix-indexed BED-like file. The
+ * adapter is a `BedTabixAdapter` whose `scoreColumn` defaults to
+ * `neg_log_pvalue`, so a file loads with a Manhattan plot score and no further
+ * config.
  *
  * #example
  * ```js

@@ -1,7 +1,7 @@
 ---
 id: linearsyntenydisplay
 title: LinearSyntenyDisplay
-description: "Configuration slots of LinearSyntenyDisplay."
+description: "Draws a SyntenyTrack in a LinearSyntenyView, as ribbons joining the aligned regions of two stacked linear genome views."
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
@@ -28,6 +28,9 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
   },
 }
 ```
+
+Draws a `SyntenyTrack` in a `LinearSyntenyView`, as ribbons joining the
+aligned regions of two stacked linear genome views.
 
 ## Related links
 

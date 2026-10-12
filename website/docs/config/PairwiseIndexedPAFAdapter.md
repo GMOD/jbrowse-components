@@ -1,7 +1,7 @@
 ---
 id: pairwiseindexedpafadapter
 title: PairwiseIndexedPAFAdapter
-description: "a tabix-indexed PAF (PIF) for large synteny datasets. The uri shorthand auto-resolves the .tbi index (pass csi: true for a .csi index)."
+description: "Reads a tabix-indexed PAF (PIF) file, fetching only the alignments in view, for large synteny datasets. The uri shorthand auto-resolves the .tbi index (pass csi: true for a .csi index)."
 sidebar_label: Adapter -> PairwiseIndexedPAFAdapter
 ---
 
@@ -26,8 +26,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
-auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
+Reads a tabix-indexed PAF (PIF) file, fetching only the alignments in view,
+for large synteny datasets. The `uri` shorthand auto-resolves the `.tbi`
+index (pass `csi: true` for a `.csi` index).
 
 ## Related links
 

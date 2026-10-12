@@ -107,6 +107,8 @@ function takeOutRow(row: LinearGenomeViewModel) {
 
 /**
  * #stateModel LinearSyntenyView
+ * Stacks a linear genome view per genome, and draws the synteny tracks
+ * between adjacent rows as ribbons joining the aligned regions.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written

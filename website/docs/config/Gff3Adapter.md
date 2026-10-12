@@ -1,7 +1,7 @@
 ---
 id: gff3adapter
 title: Gff3Adapter
-description: "used to load plain-text GFF3 files. Loads the whole file into memory, so prefer the Gff3TabixAdapter for large files."
+description: "Reads plain-text GFF3 files. The adapter loads the whole file into memory, so use Gff3TabixAdapter for large files."
 sidebar_label: Adapter -> Gff3Adapter
 ---
 
@@ -34,8 +34,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load plain-text GFF3 files. Loads the whole file into memory, so
-prefer the Gff3TabixAdapter for large files.
+Reads plain-text GFF3 files. The adapter loads the whole file into memory,
+so use `Gff3TabixAdapter` for large files.
 
 ## Related links
 

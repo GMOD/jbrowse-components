@@ -1,7 +1,7 @@
 ---
 id: multiwiggleadapter
 title: MultiWiggleAdapter
-description: "combines multiple BigWig files into a single multi-row quantitative track"
+description: "Reads several BigWig files as the sources of one multi-row quantitative track."
 sidebar_label: Adapter -> MultiWiggleAdapter
 ---
 
@@ -85,7 +85,8 @@ track shows only the subtracks the table lists:
 
 _See the **Config slots** section below for all available configuration fields._
 
-combines multiple BigWig files into a single multi-row quantitative track
+Reads several BigWig files as the sources of one multi-row quantitative
+track.
 
 ## Related links
 

@@ -15,7 +15,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BigMafAdapter
  * #trackType MafTrack
  * #fileFormat maf | BigMaf
- * used to configure BigMaf adapter
+ * Reads a UCSC bigMaf file, a BigBed that holds a MAF multiple alignment
+ * block in each record.
  *
  * #example
  * `samples` names the rows in the order they are drawn, and has to match the

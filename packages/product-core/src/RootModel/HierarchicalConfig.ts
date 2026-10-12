@@ -3,7 +3,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config HierarchicalConfigSchema
  * #category root
- * generally exists on the config.json or root config as configuration.hierarchical
+ * Sets the hierarchical track selector's starting sort order, and which
+ * categories show as folders or start collapsed. Found on the root config as
+ * `configuration.hierarchical`.
  */
 export function HierarchicalConfigSchemaFactory() {
   return ConfigurationSchema('hierarchical', {

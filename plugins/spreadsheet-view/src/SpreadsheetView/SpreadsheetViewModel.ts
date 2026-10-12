@@ -25,6 +25,8 @@ const defaultHeight = 440
 /**
  * #stateModel SpreadsheetView
  * #category view
+ * Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose
+ * rows open their genomic location in a new view.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written

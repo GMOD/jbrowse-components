@@ -36,6 +36,8 @@ export function historyShortcut(e: ShortcutKeys) {
 /**
  * #stateModel HistoryManagementMixin
  * #category root
+ * Adds undo and redo of session changes to the root model, bound to Ctrl+Z
+ * and Ctrl+Y (Cmd on macOS).
  */
 export function HistoryManagementMixin() {
   return types

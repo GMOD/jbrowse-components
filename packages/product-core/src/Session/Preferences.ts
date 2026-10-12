@@ -33,10 +33,11 @@ function loadStoredPreferences(): Record<string, unknown> {
 /**
  * #stateModel PreferencesSessionMixin
  *
- * loads and persists user-preference overrides (the BaseSession
- * `preferencesOverrides` volatile) to localStorage. Compose into products that
- * let users edit preferences (web, desktop); embedded sessions omit it and
- * resolve preferences from `configuration.preferences` admin defaults only.
+ * Loads and saves a user's preference overrides (the BaseSession
+ * `preferencesOverrides` volatile) in localStorage. Products that let users
+ * edit preferences (web, desktop) compose it; embedded sessions omit it and
+ * resolve preferences from the `configuration.preferences` admin defaults
+ * only.
  */
 export function PreferencesSessionMixin(pluginManager: PluginManager) {
   return types

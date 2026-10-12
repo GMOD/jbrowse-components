@@ -3,6 +3,8 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 
 /**
  * #config JB2TrackHubConnection
+ * Adds the tracks of another JBrowse 2 `config.json` to the session, along
+ * with any assemblies it declares that the session lacks.
  *
  * #example
  * An entry in the config's `connections`, pointing at another JBrowse 2

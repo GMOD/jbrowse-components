@@ -14,6 +14,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BedTabixAdapter
  * #trackType FeatureTrack
  * #fileFormat feature | BED (tabix)
+ * Reads bgzip-compressed, tabix-indexed BED files.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a

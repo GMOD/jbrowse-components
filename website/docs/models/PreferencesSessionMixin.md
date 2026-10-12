@@ -1,16 +1,17 @@
 ---
 id: preferencessessionmixin
 title: PreferencesSessionMixin
-description: "loads and persists user-preference overrides (the BaseSession preferencesOverrides volatile) to localStorage. Compose into products that let users edit preferences (web, desktop); embedded sessions…"
+description: "Loads and saves a user's preference overrides (the BaseSession preferencesOverrides volatile) in localStorage. Products that let users edit preferences (web, desktop) compose it; embedded sessions…"
 sidebar_label: Mixin -> PreferencesSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts).
 
-loads and persists user-preference overrides (the BaseSession
-`preferencesOverrides` volatile) to localStorage. Compose into products that
-let users edit preferences (web, desktop); embedded sessions omit it and
-resolve preferences from `configuration.preferences` admin defaults only.
+Loads and saves a user's preference overrides (the BaseSession
+`preferencesOverrides` volatile) in localStorage. Products that let users
+edit preferences (web, desktop) compose it; embedded sessions omit it and
+resolve preferences from the `configuration.preferences` admin defaults
+only.
 
 PreferencesSessionMixin declares no members of its own — it composes the models below, and everything here is theirs.
 

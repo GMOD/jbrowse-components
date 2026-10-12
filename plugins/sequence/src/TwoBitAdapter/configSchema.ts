@@ -29,6 +29,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config TwoBitAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat sequence | UCSC 2bit
+ * Reads a UCSC `.2bit` reference sequence, optionally with a `chrom.sizes`
+ * file to speed up loading.
  *
  * #example
  * A `.2bit` file is self-contained; add `chromSizes` to skip an initial

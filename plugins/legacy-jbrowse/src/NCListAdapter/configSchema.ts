@@ -3,6 +3,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config NCListAdapter
  * #trackType FeatureTrack
+ * Reads a JBrowse 1 NCList feature store, the per-reference `trackData.json`
+ * files that the JBrowse 1 formatting scripts write.
  *
  * #example
  * Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's

@@ -1,7 +1,7 @@
 ---
 id: lgvsyntenydisplay
 title: LGVSyntenyDisplay
-description: "displays location of \"synteny\" feature in a plain LGV, allowing linking out to external synteny views"
+description: "Draws where a SyntenyTrack's alignments fall in a plain linear genome view, with menu items that open them in a synteny view."
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
@@ -34,8 +34,8 @@ display type:
 }
 ```
 
-displays location of "synteny" feature in a plain LGV, allowing linking out
-to external synteny views
+Draws where a `SyntenyTrack`'s alignments fall in a plain linear genome
+view, with menu items that open them in a synteny view.
 
 The configuration slots for this model are documented on its [config schema page](../../config/lgvsyntenydisplay).
 

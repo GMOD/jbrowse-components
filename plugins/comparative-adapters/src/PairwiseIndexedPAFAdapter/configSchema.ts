@@ -17,8 +17,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config PairwiseIndexedPAFAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | Indexed PAF (PIF) | Built by `jbrowse make-pif`; fetches only the visible region
- * a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
- * auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
+ * Reads a tabix-indexed PAF (PIF) file, fetching only the alignments in view,
+ * for large synteny datasets. The `uri` shorthand auto-resolves the `.tbi`
+ * index (pass `csi: true` for a `.csi` index).
  *
  * #example
  * ```js

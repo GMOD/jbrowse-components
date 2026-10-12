@@ -59,6 +59,9 @@ export interface BasicRegion {
 
 /**
  * #stateModel Assembly
+ * Loads an assembly's reference sequence names, refName aliases and
+ * cytobands, and maps each data file's refNames onto the assembly's canonical
+ * names.
  */
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,

@@ -9,7 +9,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config BgzipTaffyAdapter
  * #trackType MafTrack
  * #fileFormat maf | TAF (bgzipped Taffy)
- * used to configure BgzipTaffy adapter
+ * Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
+ * `.tai` index.
  *
  * #example
  * The `uri` shorthand auto-resolves the sibling `.tai` index; `nhUri` names the

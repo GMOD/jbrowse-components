@@ -1,14 +1,14 @@
 ---
 id: jbrowseconfiguration
 title: JBrowseConfiguration
-description: "this is the entry under the configuration key e.g. json { assemblies, tracks, configuration: { these entries here } } "
+description: "Holds the app-wide settings in the configuration key of a config file, beside assemblies and tracks."
 sidebar_label: Root -> JBrowseConfiguration
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/RootConfiguration.ts).
 
-this is the entry under the `configuration` key
-e.g.
+Holds the app-wide settings in the `configuration` key of a config file,
+beside `assemblies` and `tracks`.
 
 ```json
 {

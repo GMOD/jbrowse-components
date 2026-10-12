@@ -13,6 +13,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config MultiWaySyntenyDisplay
+ * Draws a multi-genome `SyntenyTrack` in a linear genome view as one lane per
+ * assembly, with ribbons joining each gene's placements in adjacent lanes.
  *
  * #example
  * Selected on a multi-genome `SyntenyTrack` (an `MCScanBlocksAdapter` listing

@@ -9,6 +9,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel UCSCTrackHubConnection
+ * Fetches a UCSC track hub's `hub.txt` on connect and adds its tracks to the
+ * session.
  */
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types

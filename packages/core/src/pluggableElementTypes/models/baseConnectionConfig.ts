@@ -4,6 +4,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BaseConnection
+ * Holds a connection's name and the assemblies its tracks belong to. Every
+ * connection type has these slots.
+ *
  * #gotcha JBrowse fetches the hub's track list when the connection loads and
  * holds it in memory, and does **not** write it into a saved or shared session.
  * The session stores only the tracks you open (under `connectionTrackConfigs`,

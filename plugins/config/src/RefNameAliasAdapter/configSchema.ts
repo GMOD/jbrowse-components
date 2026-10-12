@@ -11,8 +11,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config RefNameAliasAdapter
- * can read "chromAliases" type files from UCSC or any tab separated file of
- * refName aliases
+ * Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
+ * other tab-separated table of aliases.
  *
  * #example
  * Goes on an ASSEMBLY, under `refNameAliases` — not on a track. Writing

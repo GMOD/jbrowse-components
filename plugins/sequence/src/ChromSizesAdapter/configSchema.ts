@@ -11,10 +11,10 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config ChromSizesAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat sequence | chrom.sizes | Names and lengths only, no sequence
- * loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
- * (tab-separated `name<TAB>length`), with no actual sequence. Useful for
- * karyotype or whole-genome/synteny views where the base-level sequence isn't
- * needed.
+ * Reads the chromosome names and lengths in a UCSC-style `.chrom.sizes` file
+ * (tab-separated `name<TAB>length`), for an assembly with no sequence. Use it
+ * for karyotype, whole-genome or synteny views that need no base-level
+ * sequence.
  *
  * #example
  * ```js

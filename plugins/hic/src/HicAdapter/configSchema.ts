@@ -12,7 +12,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType HicTrack
  * #fileFormat hic | .hic contact matrix
- * used to load Hi-C contact matrix data from a `.hic` file
+ * Reads Hi-C contact matrices from a `.hic` file.
  *
  * #example
  * ```js

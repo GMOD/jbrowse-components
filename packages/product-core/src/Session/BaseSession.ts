@@ -39,8 +39,8 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 /**
  * #stateModel BaseSessionModel
  *
- * base session shared by all JBrowse products. Be careful what you include
- * here, everything will use it.
+ * Holds a session's name, focused view, highlights and notifications. Every
+ * product's session composes this model, so add to it with care.
  */
 export function BaseSessionModel<
   ROOT_MODEL_TYPE extends BaseRootModelType,

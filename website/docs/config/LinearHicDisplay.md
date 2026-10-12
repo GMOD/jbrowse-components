@@ -1,7 +1,7 @@
 ---
 id: linearhicdisplay
 title: LinearHicDisplay
-description: "Configuration slots of LinearHicDisplay."
+description: "Draws a HicTrack's contact matrix as a triangular heatmap in the linear genome view, at a bin size that follows the zoom."
 sidebar_label: Display -> LinearHicDisplay
 ---
 
@@ -27,6 +27,9 @@ A log color scale, one step coarser than the zoom picks, through the
 _See the **Config slots** section below for all available configuration fields._
 
 ## Overview
+
+Draws a `HicTrack`'s contact matrix as a triangular heatmap in the linear
+genome view, at a bin size that follows the zoom.
 
 ### LinearHicDisplay - Identifier
 

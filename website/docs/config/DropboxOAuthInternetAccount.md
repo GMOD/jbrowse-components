@@ -1,7 +1,7 @@
 ---
 id: dropboxoauthinternetaccount
 title: DropboxOAuthInternetAccount
-description: "Configuration slots of DropboxOAuthInternetAccount."
+description: "Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox endpoints and domains filled in."
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
@@ -23,6 +23,9 @@ hand in the Add Track form.
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
+endpoints and domains filled in.
 
 ## Related links
 

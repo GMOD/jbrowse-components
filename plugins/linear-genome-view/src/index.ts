@@ -19,6 +19,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
   /**
    * #config LinearGenomeViewConfigSchema
    * #category root
+   * Sets defaults for every linear genome view, on the root config under
+   * `configuration.LinearGenomeViewPlugin`.
    */
   configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
     /**

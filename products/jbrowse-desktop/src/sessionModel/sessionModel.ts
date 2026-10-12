@@ -28,6 +28,8 @@ import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseDesktopSessionModel
+ * Holds a JBrowse Desktop session: its views, session tracks, assemblies,
+ * connections, theme and preferences, and the workspace layout.
  */
 export default function sessionModelFactory({
   pluginManager,

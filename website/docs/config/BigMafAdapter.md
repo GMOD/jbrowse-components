@@ -1,7 +1,7 @@
 ---
 id: bigmafadapter
 title: BigMafAdapter
-description: "used to configure BigMaf adapter"
+description: "Reads a UCSC bigMaf file, a BigBed that holds a MAF multiple alignment block in each record."
 sidebar_label: Adapter -> BigMafAdapter
 ---
 
@@ -30,7 +30,8 @@ error:
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to configure BigMaf adapter
+Reads a UCSC bigMaf file, a BigBed that holds a MAF multiple alignment
+block in each record.
 
 ## Related links
 

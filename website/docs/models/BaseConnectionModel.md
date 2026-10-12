@@ -1,11 +1,14 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
-description: "Properties, getters and actions of the BaseConnectionModel state model."
+description: "Holds the tracks a connection has loaded. Each connection type overrides connect to fetch them from its source."
 sidebar_label: Connection -> BaseConnectionModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts).
+
+Holds the tracks a connection has loaded. Each connection type overrides
+`connect` to fetch them from its source.
 
 ## Properties
 

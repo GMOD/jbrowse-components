@@ -15,6 +15,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BlastTabularAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | BLAST tabular
+ * Reads BLAST tabular output (`-outfmt 6` or `7`) as pairwise alignments
+ * between a query and a target assembly.
  *
  * #example
  * The default `columns` are BLAST's own `-outfmt 6` order, so a file produced

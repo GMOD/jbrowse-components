@@ -13,6 +13,8 @@ type TrackConf = AnyConfigurationModel | Record<string, unknown>
 
 /**
  * #stateModel BaseConnectionModel
+ * Holds the tracks a connection has loaded. Each connection type overrides
+ * `connect` to fetch them from its source.
  */
 function stateModelFactory(pluginManager: PluginManager) {
   return types

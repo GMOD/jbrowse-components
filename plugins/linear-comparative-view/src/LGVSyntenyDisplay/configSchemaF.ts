@@ -9,6 +9,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LGVSyntenyDisplay
+ * Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
+ * colored the way an alignments display draws reads.
  *
  * #example
  * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the

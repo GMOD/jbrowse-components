@@ -1,7 +1,7 @@
 ---
 id: formatabout
 title: FormatAbout
-description: "jexl callbacks that add, rewrite or hide fields in a track's About dialog. The same schema hangs off every track and off the session as configuration.formatAbout, which applies to every track at…"
+description: "Holds jexl callbacks that add, rewrite or hide fields in a track's About dialog. Every track has this schema, and so does the root config as configuration.formatAbout, which applies to every track…"
 sidebar_label: Root -> FormatAbout
 ---
 
@@ -31,8 +31,8 @@ dialog shows the track's own configuration rather than a feature:
 
 _See the **Config slots** section below for all available configuration fields._
 
-jexl callbacks that add, rewrite or hide fields in a track's About dialog.
-The same schema hangs off every track and off the session as
+Holds jexl callbacks that add, rewrite or hide fields in a track's About
+dialog. Every track has this schema, and so does the root config as
 `configuration.formatAbout`, which applies to every track at once. Where both
 are set the track's object is spread over the session's, so a track can
 override individual keys the global callback added.

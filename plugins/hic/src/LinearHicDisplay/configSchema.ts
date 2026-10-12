@@ -10,6 +10,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearHicDisplay
  * #category display
+ * Draws a `HicTrack`'s contact matrix as a triangular heatmap in the linear
+ * genome view, at a bin size that follows the zoom.
  *
  * #example
  * A log color scale, one step coarser than the zoom picks, through the

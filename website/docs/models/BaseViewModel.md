@@ -1,11 +1,14 @@
 ---
 id: baseviewmodel
 title: BaseViewModel
-description: "Properties, getters and actions of the BaseViewModel state model."
+description: "Holds a view's id, the name shown in its header, its width and whether it is minimized. Every view composes this model."
 sidebar_label: View -> BaseViewModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseViewModel.ts).
+
+Holds a view's id, the name shown in its header, its width and whether it is
+minimized. Every view composes this model.
 
 ## Properties
 

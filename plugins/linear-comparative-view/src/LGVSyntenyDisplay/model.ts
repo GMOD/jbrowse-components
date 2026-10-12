@@ -40,8 +40,8 @@ import type { LodMode } from '@jbrowse/synteny-core'
 
 /**
  * #stateModel LGVSyntenyDisplay
- * displays location of "synteny" feature in a plain LGV, allowing linking out
- * to external synteny views
+ * Draws where a `SyntenyTrack`'s alignments fall in a plain linear genome
+ * view, with menu items that open them in a synteny view.
  *
  * #example
  * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the

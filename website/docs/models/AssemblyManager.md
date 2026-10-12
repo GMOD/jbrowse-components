@@ -1,11 +1,14 @@
 ---
 id: assemblymanager
 title: AssemblyManager
-description: "Properties, getters and actions of the AssemblyManager state model."
+description: "Keeps an Assembly for each assembly in the config and the session, and looks one up by name or alias."
 sidebar_label: Assembly Management -> AssemblyManager
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyManager.ts).
+
+Keeps an `Assembly` for each assembly in the config and the session, and
+looks one up by name or alias.
 
 ## Properties
 

@@ -20,6 +20,9 @@ import type { IComputedValue } from 'mobx'
 
 /**
  * #stateModel TracksManagerSessionMixin
+ * Adds track configs to a session: looking one up by trackId among the
+ * config's tracks, assembly sequences and connection tracks, and adding or
+ * editing one.
  */
 export function TracksManagerSessionMixin(pluginManager: PluginManager) {
   return types

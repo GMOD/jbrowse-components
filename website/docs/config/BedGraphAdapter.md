@@ -1,7 +1,7 @@
 ---
 id: bedgraphadapter
 title: BedGraphAdapter
-description: "used to load plain-text bedGraph signal files. Loads the whole file into memory, so prefer the BedGraphTabixAdapter for large files. Several signals in one file are a MultiQuantitativeTrack's…"
+description: "Reads plain-text bedGraph signal files. The adapter loads the whole file into memory, so use BedGraphTabixAdapter for large files."
 sidebar_label: Adapter -> BedGraphAdapter
 ---
 
@@ -34,8 +34,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load plain-text bedGraph signal files. Loads the whole file into
-memory, so prefer the BedGraphTabixAdapter for large files.
+Reads plain-text bedGraph signal files. The adapter loads the whole file into
+memory, so use `BedGraphTabixAdapter` for large files.
+
 Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
 one value column each, named by the header, or a `source` column naming each
 row's, which is the form Save track data writes.

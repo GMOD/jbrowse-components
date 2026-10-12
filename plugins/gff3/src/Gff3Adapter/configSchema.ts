@@ -14,8 +14,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType FeatureTrack
  * #fileFormat feature | GFF3 (plain) | Loaded entirely into memory; for small files
- * used to load plain-text GFF3 files. Loads the whole file into memory, so
- * prefer the Gff3TabixAdapter for large files.
+ * Reads plain-text GFF3 files. The adapter loads the whole file into memory,
+ * so use `Gff3TabixAdapter` for large files.
  *
  * #example
  * ```js

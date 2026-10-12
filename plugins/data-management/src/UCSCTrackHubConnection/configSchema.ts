@@ -3,6 +3,8 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 
 /**
  * #config UCSCTrackHubConnection
+ * Adds the tracks a UCSC track hub's `hub.txt` declares for each matching
+ * assembly to the session.
  *
  * #example
  * An entry in the config's `connections`. The hub's `hub.txt` is read on

@@ -1,7 +1,7 @@
 ---
 id: circularview
 title: CircularView
-description: "Properties, getters and actions of the CircularView state model."
+description: "Lays one or more assemblies' chromosomes around a circle, and draws structural variants as chords and synteny alignments as ribbons across it."
 sidebar_label: View -> CircularView
 ---
 
@@ -39,6 +39,9 @@ to follow the first:
   autoDiagonalize: true,
 }
 ```
+
+Lays one or more assemblies' chromosomes around a circle, and draws
+structural variants as chords and synteny alignments as ribbons across it.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

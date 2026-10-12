@@ -4,7 +4,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config JBrowse1TextSearchAdapter
  * #trackType TextSearchAdapter
  * #fileFormat textsearch | JBrowse 1 names index | From JBrowse 1 `generate-names.pl`
- * note: metadata about tracks and assemblies covered by text search adapter
+ * Searches a names index written by JBrowse 1's `generate-names.pl`. The
+ * `tracks` and `assemblyNames` slots list the tracks and assemblies the index
+ * covers.
  *
  * #example
  * An entry in `aggregateTextSearchAdapters`, pointing at the `names/`

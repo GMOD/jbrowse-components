@@ -55,9 +55,10 @@ function rowFeatures(rows?: { feature?: SimpleFeatureSerialized }[]) {
 /**
  * #stateModel SvInspectorView
  * #category view
- * does not extend, but is a combination of a
- * - [SpreadsheetView](../spreadsheetview)
- * - [CircularView](../circularview)
+ * Shows a file of structural variants as a table beside a circular view that
+ * draws them as chords. The model holds a
+ * [SpreadsheetView](../spreadsheetview) and a
+ * [CircularView](../circularview) side by side, without extending either.
  *
  * #example
  * ```js

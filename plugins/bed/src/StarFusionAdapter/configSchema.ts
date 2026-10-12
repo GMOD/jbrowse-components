@@ -13,7 +13,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config StarFusionAdapter
  * #trackType VariantTrack
  * #fileFormat variants | STAR-Fusion
- * used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
+ * Reads the gene fusions that STAR-Fusion predicts, from its
+ * `star-fusion.fusion_predictions.tsv` output.
  *
  * #example
  * ```js

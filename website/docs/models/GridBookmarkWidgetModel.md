@@ -1,13 +1,14 @@
 ---
 id: gridbookmarkwidgetmodel
 title: GridBookmarkWidgetModel
-description: "the list of the session's highlights"
+description: "Lists the session's highlights in a table, where the user imports them and recolors or removes the selected ones."
 sidebar_label: Widget -> GridBookmarkWidgetModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `grid-bookmark` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts).
 
-the list of the session's highlights
+Lists the session's highlights in a table, where the user imports them and
+recolors or removes the selected ones.
 
 ## Properties
 

@@ -1,7 +1,7 @@
 ---
 id: mcscansimpleanchorsadapter
 title: MCScanSimpleAnchorsAdapter
-description: "used to load MCScan (jcvi) .anchors.simple files with their two BED files"
+description: "Reads synteny blocks from an MCScan (jcvi) .anchors.simple file and the two BED files that place its genes."
 sidebar_label: Adapter -> MCScanSimpleAnchorsAdapter
 ---
 
@@ -33,7 +33,8 @@ A block row names four genes, the first and last on each side, and all four are 
 
 :::
 
-used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
+Reads synteny blocks from an MCScan (jcvi) `.anchors.simple` file and the
+two BED files that place its genes.
 
 See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
 also covers converting an MCScanX run into these files.

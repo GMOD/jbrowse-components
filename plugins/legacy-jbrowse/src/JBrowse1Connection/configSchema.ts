@@ -3,6 +3,8 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 
 /**
  * #config JBrowse1Connection
+ * Adds the tracks of a JBrowse 1 data directory to the session, translated to
+ * their JBrowse 2 equivalents.
  *
  * #example
  * An entry in the config's `connections`, pointing at a JBrowse 1 data

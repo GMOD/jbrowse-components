@@ -1,7 +1,7 @@
 ---
 id: syntenytrack
 title: SyntenyTrack
-description: "Configuration slots of SyntenyTrack."
+description: "Holds alignments between assemblies, such as a minimap2 PAF, for the linear synteny view, the dot plot view and the linear genome view."
 sidebar_label: Track -> SyntenyTrack
 ---
 
@@ -30,6 +30,9 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Holds alignments between assemblies, such as a minimap2 PAF, for the linear
+synteny view, the dot plot view and the linear genome view.
 
 ## Related links
 

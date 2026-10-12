@@ -13,8 +13,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config MashMapAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | MashMap
- * used to load MashMap `.out` alignment files (query and target assembly
- * required)
+ * Reads MashMap `.out` alignment files, which need the query and target
+ * assembly names.
  *
  * #example
  * ```js

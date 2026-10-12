@@ -1,7 +1,7 @@
 ---
 id: breakpointsplitview
 title: BreakpointSplitView
-description: "Properties, getters and actions of the BreakpointSplitView state model."
+description: "Stacks linear genome views of the regions on each side of a structural-variant breakpoint, and draws the reads and variant calls that join them across the panels."
 sidebar_label: View -> BreakpointSplitView
 ---
 
@@ -26,6 +26,10 @@ flank a structural-variant breakpoint:
 
 Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to
 set per-panel display options (e.g. a shorter alignments height).
+
+Stacks linear genome views of the regions on each side of a
+structural-variant breakpoint, and draws the reads and variant calls that
+join them across the panels.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

@@ -1,11 +1,14 @@
 ---
 id: referencemanagementsessionmixin
 title: ReferenceManagementSessionMixin
-description: "Properties, getters and actions of the ReferenceManagementSessionMixin state model."
+description: "Adds to a session a lookup of the views and widgets that refer to a track, and an action that hides the track in those views and closes those widgets."
 sidebar_label: Mixin -> ReferenceManagementSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/ReferenceManagement.ts).
+
+Adds to a session a lookup of the views and widgets that refer to a track,
+and an action that hides the track in those views and closes those widgets.
 
 ## Methods
 

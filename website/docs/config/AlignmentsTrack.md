@@ -1,7 +1,7 @@
 ---
 id: alignmentstrack
 title: AlignmentsTrack
-description: "has very little config; most config and state logic is on the display"
+description: "Holds read alignments, such as a BAM or CRAM file, which LinearAlignmentsDisplay draws. The track has few settings, and the display holds most of the config and state."
 sidebar_label: Track -> AlignmentsTrack
 ---
 
@@ -56,7 +56,9 @@ the `LinearAlignmentsDisplay`), so you don't have to know display names:
 
 _See the **Config slots** section below for all available configuration fields._
 
-has very little config; most config and state logic is on the display
+Holds read alignments, such as a BAM or CRAM file, which
+`LinearAlignmentsDisplay` draws. The track has few settings, and the display
+holds most of the config and state.
 
 ## Related links
 

@@ -1,7 +1,7 @@
 ---
 id: spreadsheetview
 title: SpreadsheetView
-description: "Properties, getters and actions of the SpreadsheetView state model."
+description: "Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose rows open their genomic location in a new view."
 sidebar_label: View -> SpreadsheetView
 ---
 
@@ -22,6 +22,9 @@ resolve genomic coordinates in the rows:
   fileType: 'VCF',
 }
 ```
+
+Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose
+rows open their genomic location in a new view.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

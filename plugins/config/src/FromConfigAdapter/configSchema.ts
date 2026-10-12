@@ -4,8 +4,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config FromConfigAdapter
  * #trackType FeatureTrack
  * #fileFormat inline | Inline features | Features written straight into config.json
- * supplies features inline in the config instead of reading a file, useful for
- * small feature sets added via a URL or session spec
+ * Supplies features written inline in the config, for a small feature set
+ * added through a URL or session spec.
  *
  * #example
  * ```js

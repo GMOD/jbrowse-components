@@ -74,6 +74,9 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 /**
  * #stateModel BreakpointSplitView
  * #category view
+ * Stacks linear genome views of the regions on each side of a
+ * structural-variant breakpoint, and draws the reads and variant calls that
+ * join them across the panels.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written

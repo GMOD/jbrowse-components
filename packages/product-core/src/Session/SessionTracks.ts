@@ -123,6 +123,8 @@ function perIdComputed<T>(derive: (trackId: string) => T) {
 
 /**
  * #stateModel SessionTracksManagerSessionMixin
+ * Adds session tracks to a session, and stores the user's edits to any track
+ * as a delta against its base config.
  */
 export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // A base is the raw config-file object — shorthand `uri`, no display stubs —

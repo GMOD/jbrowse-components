@@ -1,7 +1,7 @@
 ---
 id: linearmafdisplay
 title: LinearMafDisplay
-description: "Properties, getters and actions of the LinearMafDisplay state model."
+description: "Draws the multiple alignment in a MafTrack, one row per aligned species, under a conservation band."
 sidebar_label: Display -> LinearMafDisplay
 ---
 
@@ -34,6 +34,9 @@ height in px (or `0` to stretch rows to fill the track height):
   ],
 }
 ```
+
+Draws the multiple alignment in a `MafTrack`, one row per aligned species,
+under a conservation band.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmafdisplay).
 

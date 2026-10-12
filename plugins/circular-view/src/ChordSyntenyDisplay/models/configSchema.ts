@@ -6,6 +6,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config ChordSyntenyDisplay
+ * Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
+ * spans of each alignment.
  *
  * #example
  * The circular-view display for a `SyntenyTrack`: each alignment is a ribbon

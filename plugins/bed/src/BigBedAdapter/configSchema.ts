@@ -13,6 +13,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BigBedAdapter
  * #trackType FeatureTrack
  * #fileFormat feature | BigBed
+ * Reads BigBed files, the indexed binary form of BED.
  *
  * #example
  * ```js

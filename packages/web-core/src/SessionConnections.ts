@@ -33,6 +33,8 @@ export function isWebSessionWithConnections(
 /**
  * #stateModel WebSessionConnectionsMixin
  * #category session
+ * Adds connections that a user creates to a web session, kept in the session
+ * beside the connections the config declares.
  */
 export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
   return types

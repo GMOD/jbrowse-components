@@ -1,7 +1,7 @@
 ---
 id: deltaadapter
 title: DeltaAdapter
-description: "used to load MUMmer .delta alignment files (query and target assembly required)"
+description: "Reads MUMmer .delta alignment files, which need the query and target assembly names."
 sidebar_label: Adapter -> DeltaAdapter
 ---
 
@@ -26,8 +26,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load MUMmer `.delta` alignment files (query and target assembly
-required)
+Reads MUMmer `.delta` alignment files, which need the query and target
+assembly names.
 
 ## Related links
 

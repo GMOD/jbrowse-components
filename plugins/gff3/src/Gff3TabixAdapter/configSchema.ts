@@ -15,7 +15,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType FeatureTrack
  * #fileFormat feature | GFF3 (tabix)
- * used to load bgzip-compressed, tabix-indexed GFF3 files
+ * Reads bgzip-compressed, tabix-indexed GFF3 files.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a

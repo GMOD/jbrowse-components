@@ -1,11 +1,14 @@
 ---
 id: snackbarmodel
 title: SnackbarModel
-description: "Properties, getters and actions of the SnackbarModel state model."
+description: "Adds notifications to a session: the snackbar messages on screen, and the error shown in the stack-trace dialog."
 sidebar_label: Session -> SnackbarModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/SnackbarModel.tsx).
+
+Adds notifications to a session: the snackbar messages on screen, and the
+error shown in the stack-trace dialog.
 
 ## Volatiles
 

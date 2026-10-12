@@ -50,6 +50,7 @@ function px(n: number) {
  * #stateModel DotplotDisplay
  * #displayFoundation ComparativeFetchMixin
  * #category display
+ * Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
  */
 export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
   return types

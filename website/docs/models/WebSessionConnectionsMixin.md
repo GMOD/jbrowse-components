@@ -1,11 +1,14 @@
 ---
 id: websessionconnectionsmixin
 title: WebSessionConnectionsMixin
-description: "Properties, getters and actions of the WebSessionConnectionsMixin state model."
+description: "Adds connections that a user creates to a web session, kept in the session beside the connections the config declares."
 sidebar_label: Mixin -> WebSessionConnectionsMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/SessionConnections.ts).
+
+Adds connections that a user creates to a web session, kept in the session
+beside the connections the config declares.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

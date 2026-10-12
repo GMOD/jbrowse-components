@@ -20,6 +20,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BgzipFastaAdapter
  * #trackType ReferenceSequenceTrack
  * #fileFormat sequence | Bgzipped FASTA (.fa.gz + .fai + .gzi)
+ * Reads a bgzip-compressed FASTA reference sequence, with its `.fai` and
+ * `.gzi` indexes.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:

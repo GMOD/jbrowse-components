@@ -1,7 +1,7 @@
 ---
 id: fromconfigsequenceadapter
 title: FromConfigSequenceAdapter
-description: "supplies reference sequence inline in the config; each feature's seq holds the bases for its region"
+description: "Supplies a reference sequence inline in the config, as features whose seq holds the bases for each region."
 sidebar_label: Adapter -> FromConfigSequenceAdapter
 ---
 
@@ -26,8 +26,8 @@ Used as the adapter of an assembly's `sequence` (a `ReferenceSequenceTrack`):
 
 _See the **Config slots** section below for all available configuration fields._
 
-supplies reference sequence inline in the config; each feature's `seq` holds
-the bases for its region
+Supplies a reference sequence inline in the config, as features whose `seq`
+holds the bases for each region.
 
 ## Related links
 

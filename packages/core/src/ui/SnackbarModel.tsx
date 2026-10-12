@@ -17,6 +17,8 @@ export interface ErrorDialogState {
 /**
  * #stateModel SnackbarModel
  * #category session
+ * Adds notifications to a session: the snackbar messages on screen, and the
+ * error shown in the stack-trace dialog.
  */
 export default function SnackbarModel() {
   return types

@@ -18,7 +18,8 @@ export interface HighlightRow {
 
 /**
  * #stateModel GridBookmarkWidgetModel
- * the list of the session's highlights
+ * Lists the session's highlights in a table, where the user imports them and
+ * recolors or removes the selected ones.
  */
 export default function f(_pluginManager: PluginManager) {
   return types

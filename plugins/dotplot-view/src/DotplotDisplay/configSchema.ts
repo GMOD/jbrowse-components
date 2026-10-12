@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config DotplotDisplay
+ * Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
  *
  * #example
  * The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`

@@ -14,7 +14,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config BedGraphTabixAdapter
  * #trackType QuantitativeTrack
  * #fileFormat quantitative | BedGraph (tabix)
- * used to load bgzip-compressed, tabix-indexed bedGraph signal files.
+ * Reads bgzip-compressed, tabix-indexed bedGraph signal files.
+ *
  * Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
  * one value column each, named by the header, or a `source` column naming each
  * row's, which is the form Save track data writes.

@@ -20,7 +20,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * alongside the `uri` shorthand, or set both `index.location` and
  * `index.indexType: 'CSI'` explicitly.
  *
- * used to load bgzip-compressed, tabix-indexed VCF files
+ * Reads bgzip-compressed, tabix-indexed VCF files.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a

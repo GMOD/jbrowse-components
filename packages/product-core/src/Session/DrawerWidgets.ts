@@ -57,6 +57,8 @@ function clampDrawerWidth(width: number, availableWidth: number) {
 
 /**
  * #stateModel DrawerWidgetSessionMixin
+ * Adds the widget drawer to a session: the open widgets, which one is
+ * showing, and the drawer's side, width and minimized state.
  */
 export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
   const widgetStateModelType = pluginManager.pluggableMstType(

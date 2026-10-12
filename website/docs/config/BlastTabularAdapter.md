@@ -1,7 +1,7 @@
 ---
 id: blasttabularadapter
 title: BlastTabularAdapter
-description: "Configuration slots of BlastTabularAdapter."
+description: "Reads BLAST tabular output (-outfmt 6 or 7) as pairwise alignments between a query and a target assembly."
 sidebar_label: Adapter -> BlastTabularAdapter
 ---
 
@@ -51,6 +51,9 @@ where present:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Reads BLAST tabular output (`-outfmt 6` or `7`) as pairwise alignments
+between a query and a target assembly.
 
 ## Related links
 

@@ -6,7 +6,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config FeatureTrack
  * #category track
- * used for basic gene and feature tracks, generally used with LinearBasicDisplay
+ * Holds gene and other feature annotations, such as a GFF3 or BED file, which
+ * `LinearBasicDisplay` usually draws.
  *
  * #example
  * A minimal hand-authored entry in the top-level `tracks` array — `adapter`

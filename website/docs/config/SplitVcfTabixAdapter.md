@@ -1,7 +1,7 @@
 ---
 id: splitvcftabixadapter
 title: SplitVcfTabixAdapter
-description: "reads a set of per-chromosome VCF files, keyed by refName, instead of a single combined VCF (useful for large call sets split by chromosome)"
+description: "Reads a set of tabix-indexed VCF files, one per chromosome and keyed by refName, for a large call set split by chromosome."
 sidebar_label: Adapter -> SplitVcfTabixAdapter
 ---
 
@@ -31,8 +31,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-reads a set of per-chromosome VCF files, keyed by refName, instead of a
-single combined VCF (useful for large call sets split by chromosome)
+Reads a set of tabix-indexed VCF files, one per chromosome and keyed by
+refName, for a large call set split by chromosome.
 
 ## Related links
 

@@ -1,11 +1,14 @@
 ---
 id: historymanagementmixin
 title: HistoryManagementMixin
-description: "Properties, getters and actions of the HistoryManagementMixin state model."
+description: "Adds undo and redo of session changes to the root model, bound to Ctrl+Z and Ctrl+Y (Cmd on macOS)."
 sidebar_label: Mixin -> HistoryManagementMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/HistoryManagement/index.ts).
+
+Adds undo and redo of session changes to the root model, bound to Ctrl+Z
+and Ctrl+Y (Cmd on macOS).
 
 ## Properties
 

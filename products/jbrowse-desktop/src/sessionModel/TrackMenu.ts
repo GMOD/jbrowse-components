@@ -33,6 +33,8 @@ type SessionBase = BaseSession &
 
 /**
  * #stateModel DesktopSessionTrackMenuMixin
+ * Adds the desktop track menu to a session: Settings, Copy and Delete, plus
+ * Index track for a track whose adapter supports text indexing.
  */
 export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
   return types.compose(

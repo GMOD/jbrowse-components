@@ -1,7 +1,7 @@
 ---
 id: baseinternetaccount
 title: BaseInternetAccount
-description: "the \"base\" internet account type"
+description: "Holds an internet account's name and description, the domains it handles, and the request header it sends credentials in. Every internet account type has these slots."
 sidebar_label: Internet Account -> BaseInternetAccount
 ---
 
@@ -9,7 +9,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 ## Overview
 
-the "base" internet account type
+Holds an internet account's name and description, the domains it handles,
+and the request header it sends credentials in. Every internet account type
+has these slots.
 
 ### BaseInternetAccount - Identifier
 

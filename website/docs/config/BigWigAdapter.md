@@ -1,7 +1,7 @@
 ---
 id: bigwigadapter
 title: BigWigAdapter
-description: "used to load BigWig quantitative signal files"
+description: "Reads BigWig quantitative signal files."
 sidebar_label: Adapter -> BigWigAdapter
 ---
 
@@ -34,7 +34,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load BigWig quantitative signal files
+Reads BigWig quantitative signal files.
 
 ## Related links
 

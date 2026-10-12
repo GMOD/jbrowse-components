@@ -1,11 +1,14 @@
 ---
 id: dropboxoauthinternetaccount
 title: DropboxOAuthInternetAccount
-description: "Properties, getters and actions of the DropboxOAuthInternetAccount state model."
+description: "Fetches a file from a Dropbox share link through the Dropbox API, with an OAuth 2.0 token from the Dropbox login."
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/model.tsx).
+
+Fetches a file from a Dropbox share link through the Dropbox API, with an
+OAuth 2.0 token from the Dropbox login.
 
 The configuration slots for this model are documented on its [config schema page](../../config/dropboxoauthinternetaccount).
 

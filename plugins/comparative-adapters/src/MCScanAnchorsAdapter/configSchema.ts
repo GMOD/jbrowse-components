@@ -12,7 +12,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config MCScanAnchorsAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | MCScan anchors | Gene-level synteny; also needs one BED per assembly
- * used to load MCScan (jcvi) `.anchors` files with their two BED files
+ * Reads gene-level synteny from an MCScan (jcvi) `.anchors` file and the two
+ * BED files that place its genes.
  *
  * See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
  * also covers converting an MCScanX run into these files.

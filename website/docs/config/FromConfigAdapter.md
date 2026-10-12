@@ -1,7 +1,7 @@
 ---
 id: fromconfigadapter
 title: FromConfigAdapter
-description: "supplies features inline in the config instead of reading a file, useful for small feature sets added via a URL or session spec"
+description: "Supplies features written inline in the config, for a small feature set added through a URL or session spec."
 sidebar_label: Adapter -> FromConfigAdapter
 ---
 
@@ -26,8 +26,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-supplies features inline in the config instead of reading a file, useful for
-small feature sets added via a URL or session spec
+Supplies features written inline in the config, for a small feature set
+added through a URL or session spec.
 
 ## Related links
 

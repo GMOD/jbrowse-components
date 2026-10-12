@@ -5,8 +5,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config QuantitativeTrack
- * a numerical signal track (coverage, conservation, etc.), typically backed by
- * a BigWig file and drawn as an XY plot or density
+ * Holds a numeric signal such as coverage or conservation, usually from a
+ * BigWig file, which `LinearWiggleDisplay` draws as an XY plot or density.
  *
  * #example
  * ```js

@@ -1,7 +1,7 @@
 ---
 id: lgvsyntenydisplay
 title: LGVSyntenyDisplay
-description: "Configuration slots of LGVSyntenyDisplay."
+description: "Draws a SyntenyTrack's alignments in a linear genome view, stacked and colored the way an alignments display draws reads."
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
@@ -35,6 +35,9 @@ display type:
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
+colored the way an alignments display draws reads.
 
 ## Related links
 

@@ -1,11 +1,14 @@
 ---
 id: rootappmenumixin
 title: RootAppMenuMixin
-description: "Properties, getters and actions of the RootAppMenuMixin state model."
+description: "Adds actions to the root model that let plugins add menus and menu items to the app bar."
 sidebar_label: Mixin -> RootAppMenuMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/RootMenu/index.ts).
+
+Adds actions to the root model that let plugins add menus and menu items to
+the app bar.
 
 ## Volatiles
 

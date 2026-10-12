@@ -1,7 +1,7 @@
 ---
 id: externaltokeninternetaccount
 title: ExternalTokenInternetAccount
-description: "Configuration slots of ExternalTokenInternetAccount."
+description: "Sends a token that the user pastes in, or that an embedding portal supplies, with every request to a matching domain."
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
@@ -23,6 +23,9 @@ on every request to a matching domain.
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Sends a token that the user pastes in, or that an embedding portal supplies,
+with every request to a matching domain.
 
 ## Related links
 

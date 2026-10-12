@@ -1,7 +1,7 @@
 ---
 id: bedgraphtabixadapter
 title: BedGraphTabixAdapter
-description: "used to load bgzip-compressed, tabix-indexed bedGraph signal files. Several signals in one file are a MultiQuantitativeTrack's subtracks: one value column each, named by the header, or a source…"
+description: "Reads bgzip-compressed, tabix-indexed bedGraph signal files."
 sidebar_label: Adapter -> BedGraphTabixAdapter
 ---
 
@@ -36,7 +36,8 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 
 _See the **Config slots** section below for all available configuration fields._
 
-used to load bgzip-compressed, tabix-indexed bedGraph signal files.
+Reads bgzip-compressed, tabix-indexed bedGraph signal files.
+
 Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
 one value column each, named by the header, or a `source` column naming each
 row's, which is the form Save track data writes.

@@ -6,6 +6,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GoogleDriveOAuthInternetAccount
+ * Signs requests for Google Drive files with an OAuth 2.0 token, with the
+ * Google endpoints, read-only Drive scope and domain filled in.
  *
  * #example
  * The Google endpoints and scopes are pre-filled, so an entry needs only your

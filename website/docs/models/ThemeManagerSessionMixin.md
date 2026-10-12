@@ -1,11 +1,14 @@
 ---
 id: thememanagersessionmixin
 title: ThemeManagerSessionMixin
-description: "Properties, getters and actions of the ThemeManagerSessionMixin state model."
+description: "Adds the UI theme to a session: the selected theme, light or dark mode or following the OS, and the themes an admin adds through extraThemes."
 sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
+
+Adds the UI theme to a session: the selected theme, light or dark mode or
+following the OS, and the themes an admin adds through `extraThemes`.
 
 ## Volatiles
 

@@ -1,7 +1,7 @@
 ---
 id: chromsizesadapter
 title: ChromSizesAdapter
-description: "loads only chromosome names and lengths from a UCSC-style .chrom.sizes file (tab-separated name<TAB>length), with no actual sequence. Useful for karyotype or whole-genome/synteny views where the…"
+description: "Reads the chromosome names and lengths in a UCSC-style .chrom.sizes file (tab-separated name<TAB>length), for an assembly with no sequence. Use it for karyotype, whole-genome or synteny views…"
 sidebar_label: Adapter -> ChromSizesAdapter
 ---
 
@@ -22,10 +22,10 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
-(tab-separated `name<TAB>length`), with no actual sequence. Useful for
-karyotype or whole-genome/synteny views where the base-level sequence isn't
-needed.
+Reads the chromosome names and lengths in a UCSC-style `.chrom.sizes` file
+(tab-separated `name<TAB>length`), for an assembly with no sequence. Use it
+for karyotype, whole-genome or synteny views that need no base-level
+sequence.
 
 ## Related links
 

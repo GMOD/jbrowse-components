@@ -21,13 +21,13 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config CramAdapter
  * #trackType AlignmentsTrack
  * #fileFormat alignments | CRAM
- * `sequenceAdapter` is filled in automatically from the enclosing assembly's
- * sequence track — you never specify it.
- *
  * Reads CRAM alignments, fetching only the containers overlapping the visible
- * region through the `.crai` index. Decoding happens against that assembly's
- * sequence, so it has to be the reference the file was compressed against; a
- * mismatched one isn't rejected, it just decodes into mismatches.
+ * region through the `.crai` index. Decoding happens against the enclosing
+ * assembly's sequence, so it has to be the reference the file was compressed
+ * against; a mismatched one isn't rejected, it just decodes into mismatches.
+ *
+ * JBrowse fills in `sequenceAdapter` from the enclosing assembly's sequence
+ * track, so a config never specifies it.
  *
  * #example
  * The `uri` shorthand auto-resolves the `.crai` index:

@@ -294,9 +294,9 @@ const SCALE_COLUMN_PX =
 /**
  * #stateModel MultiWaySyntenyDisplay
  * #displayFoundation GlobalFetchMixin
- * draws a multi-genome ortholog track as one lane per assembly inside a linear
+ * Draws a multi-genome ortholog track as one lane per assembly inside a linear
  * genome view, with ribbons joining each gene's placements between adjacent
- * lanes
+ * lanes.
  */
 export function stateModelFactory(
   configSchema: MultiWaySyntenyDisplayConfigModel,

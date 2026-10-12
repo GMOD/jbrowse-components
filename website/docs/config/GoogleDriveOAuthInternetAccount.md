@@ -1,7 +1,7 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
-description: "Configuration slots of GoogleDriveOAuthInternetAccount."
+description: "Signs requests for Google Drive files with an OAuth 2.0 token, with the Google endpoints, read-only Drive scope and domain filled in."
 sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
@@ -22,6 +22,9 @@ own OAuth app's `clientId`.
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Signs requests for Google Drive files with an OAuth 2.0 token, with the
+Google endpoints, read-only Drive scope and domain filled in.
 
 ## Related links
 

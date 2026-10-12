@@ -1,15 +1,18 @@
 ---
 id: jbrowsedesktoprootmodel
 title: JBrowseDesktopRootModel
-description: "note: many properties of the root model are available through the session, and we generally prefer using the session model (via e.g. getSession) over the root model (via e.g. getRoot) in plugin code"
+description: "Holds JBrowse Desktop's top-level state: the loaded config, the session, internet accounts, undo history, the app menus and the text-indexing jobs."
 sidebar_label: Root -> JBrowseDesktopRootModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts).
 
-note: many properties of the root model are available through the session,
-and we generally prefer using the session model (via e.g. getSession) over
-the root model (via e.g. getRoot) in plugin code
+Holds JBrowse Desktop's top-level state: the loaded config, the session,
+internet accounts, undo history, the app menus and the text-indexing jobs.
+
+Many properties of the root model are available through the session, and
+we generally prefer using the session model (via e.g. `getSession`) over the
+root model (via e.g. `getRoot`) in plugin code.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

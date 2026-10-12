@@ -21,6 +21,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #config TrixTextSearchAdapter
  * #trackType TextSearchAdapter
  * #fileFormat textsearch | Trix index (.ix/.ixx) | Built by `jbrowse text-index`
+ * Looks up search-box terms in a Trix index (`.ix` and `.ixx`) built by
+ * `jbrowse text-index`.
  *
  * #example
  * `jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for

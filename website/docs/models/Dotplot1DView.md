@@ -1,14 +1,16 @@
 ---
 id: dotplot1dview
 title: Dotplot1DView
-description: "one axis of a dotplot. categorized General rather than View because it is not a pluggable view type, which the name-suffix heuristic would otherwise assume ref…"
+description: "Holds one axis of a dotplot: its displayed regions, zoom and scroll offset, and the ticks and labels drawn along it."
 sidebar_label: General -> Dotplot1DView
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts).
 
-one axis of a dotplot. categorized General rather than View because it is not
-a pluggable view type, which the name-suffix heuristic would otherwise assume
+Holds one axis of a dotplot: its displayed regions, zoom and scroll offset,
+and the ticks and labels drawn along it.
+
+Its page sits under General because it is not a pluggable view type.
 ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
 
 ## Getters

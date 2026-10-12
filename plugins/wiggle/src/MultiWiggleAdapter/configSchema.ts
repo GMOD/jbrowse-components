@@ -5,7 +5,8 @@ import { samplesTsvAdapterConfigSchemaFields } from '@jbrowse/core/util/samplesT
  * #config MultiWiggleAdapter
  * #trackType MultiQuantitativeTrack
  * #fileFormat quantitative | Multiple BigWigs
- * combines multiple BigWig files into a single multi-row quantitative track
+ * Reads several BigWig files as the sources of one multi-row quantitative
+ * track.
  *
  * #example
  * The `bigWigs` shorthand: a plain array of BigWig URLs, one subtrack each

@@ -28,6 +28,8 @@ export interface ReferringNode {
 
 /**
  * #stateModel ReferenceManagementSessionMixin
+ * Adds to a session a lookup of the views and widgets that refer to a track,
+ * and an action that hides the track in those views and closes those widgets.
  */
 export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
   return types

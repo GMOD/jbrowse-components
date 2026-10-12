@@ -25,6 +25,9 @@ export interface ConnectionTrackConfigEntry {
 
 /**
  * #stateModel ConnectionManagementSessionMixin
+ * Adds connections to a session: the connection instances it has made, and
+ * the configs of the connection tracks the user opened, so those tracks load
+ * on session restore without reconnecting.
  */
 export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
   return types

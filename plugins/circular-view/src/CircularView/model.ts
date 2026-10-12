@@ -295,6 +295,8 @@ async function applyInit(
 
 /**
  * #stateModel CircularView
+ * Lays one or more assemblies' chromosomes around a circle, and draws
+ * structural variants as chords and synteny alignments as ribbons across it.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written

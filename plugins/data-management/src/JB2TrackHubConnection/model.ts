@@ -9,6 +9,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel JB2TrackHubConnection
+ * Fetches another JBrowse 2 `config.json` on connect and adds its tracks to
+ * the session.
  */
 export default function JB2TrackHubConnection(pluginManager: PluginManager) {
   return types

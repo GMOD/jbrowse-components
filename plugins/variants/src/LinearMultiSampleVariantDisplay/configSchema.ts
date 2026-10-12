@@ -21,6 +21,8 @@ import { DEFAULT_VARIANT_LANE_HEIGHT } from './variantTopBands.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
+ * Draws the genotypes in a multi-sample `VariantTrack`, one row per sample or
+ * per phased haplotype.
  *
  * #example
  * Minimal `VariantTrack` config selecting this display type. The `displays`

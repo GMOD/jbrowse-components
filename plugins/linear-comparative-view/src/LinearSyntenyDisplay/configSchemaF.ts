@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config LinearSyntenyDisplay
+ * Draws a `SyntenyTrack` in a `LinearSyntenyView`, as ribbons joining the
+ * aligned regions of two stacked linear genome views.
  *
  * #example
  * A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query

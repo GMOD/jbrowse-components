@@ -19,6 +19,9 @@ import type React from 'react'
 /**
  * #stateModel BaseInternetAccountModel
  * #category internetAccount
+ * Adds a token header to each request for a file on one of the account's
+ * domains, keeping the token in `sessionStorage`. Every internet account type
+ * builds on this model.
  */
 
 export const InternetAccount = types

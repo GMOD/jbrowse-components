@@ -14,8 +14,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #category adapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | Delta (MUMmer / nucmer)
- * used to load MUMmer `.delta` alignment files (query and target assembly
- * required)
+ * Reads MUMmer `.delta` alignment files, which need the query and target
+ * assembly names.
  *
  * #example
  * ```js

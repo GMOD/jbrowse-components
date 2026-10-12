@@ -102,6 +102,8 @@ function viewsOfSessionSnapshot(
 
 /**
  * #stateModel MultipleViewsSessionMixin
+ * Adds a list of views to a session, with actions to add, remove, replace and
+ * reorder them.
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
   // an unknown type name passes through to fail at the union as it always has

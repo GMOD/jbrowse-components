@@ -50,6 +50,8 @@ import type { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel ChordVariantDisplay
+ * Draws the structural variants of a `VariantTrack` in a `CircularView`, each
+ * translocation as a chord across the circle.
  *
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;

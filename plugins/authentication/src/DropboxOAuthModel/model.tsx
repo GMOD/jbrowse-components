@@ -12,6 +12,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel DropboxOAuthInternetAccount
+ * Fetches a file from a Dropbox share link through the Dropbox API, with an
+ * OAuth 2.0 token from the Dropbox login.
  */
 const stateModelFactory = (
   configSchema: DropboxOAuthInternetAccountConfigModel,

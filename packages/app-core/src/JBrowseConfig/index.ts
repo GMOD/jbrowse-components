@@ -15,9 +15,8 @@ export { DEFAULT_SHARE_URL } from './defaultShareUrl.ts'
  * #config JBrowseRootConfig
  * #category root
  *
- * this is a config model representing a config.json (for jbrowse-web) or
- * somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
- * extension)
+ * Holds a whole JBrowse config file: the `config.json` of jbrowse-web, or a
+ * file with the `.jbrowse` extension in jbrowse-desktop.
  *
  * also includes any pluginManager.pluginConfigurationSchemas(), so plugins
  * that have a configurationSchema field on their class are mixed into this

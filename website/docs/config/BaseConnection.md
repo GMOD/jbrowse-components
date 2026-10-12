@@ -1,7 +1,7 @@
 ---
 id: baseconnection
 title: BaseConnection
-description: "Configuration slots of BaseConnection."
+description: "Holds a connection's name and the assemblies its tracks belong to. Every connection type has these slots."
 sidebar_label: Connection -> BaseConnection
 ---
 
@@ -14,6 +14,9 @@ JBrowse fetches the hub's track list when the connection loads and holds it in m
 :::
 
 ## Overview
+
+Holds a connection's name and the assemblies its tracks belong to. Every
+connection type has these slots.
 
 ### BaseConnection - Identifier
 

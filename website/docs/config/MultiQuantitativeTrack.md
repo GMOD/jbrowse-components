@@ -1,7 +1,7 @@
 ---
 id: multiquantitativetrack
 title: MultiQuantitativeTrack
-description: "Configuration slots of MultiQuantitativeTrack."
+description: "Holds several quantitative signals, such as one BigWig per sample, which LinearWiggleDisplay draws one row per source by default."
 sidebar_label: Track -> MultiQuantitativeTrack
 ---
 
@@ -30,6 +30,9 @@ of `MultiWiggleAdapter` — equivalent to a `subadapters` array of individual
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Holds several quantitative signals, such as one BigWig per sample, which
+`LinearWiggleDisplay` draws one row per source by default.
 
 ## Related links
 

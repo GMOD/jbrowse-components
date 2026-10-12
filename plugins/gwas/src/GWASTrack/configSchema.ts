@@ -6,7 +6,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 /**
  * #config GWASTrack
  * #category track
- * used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
+ * Holds Genome-Wide Association Study (GWAS) results, drawn as a Manhattan
+ * plot.
  *
  * #example
  * `GWASAdapter` is a `BedTabixAdapter` that defaults `scoreColumn` to

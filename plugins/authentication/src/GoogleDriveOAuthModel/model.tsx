@@ -27,6 +27,8 @@ function getUri(str: string) {
 
 /**
  * #stateModel GoogleDriveOAuthInternetAccount
+ * Fetches a file from a Google Drive share link through the Drive API, with an
+ * OAuth 2.0 token from the Google login.
  */
 export default function stateModelFactory(
   configSchema: GoogleDriveOAuthInternetAccountConfigModel,

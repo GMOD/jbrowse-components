@@ -146,9 +146,12 @@ function queueSessionDialog(
  * #stateModel JBrowseDesktopRootModel
  * #category root
  *
- * note: many properties of the root model are available through the session,
- * and we generally prefer using the session model (via e.g. getSession) over
- * the root model (via e.g. getRoot) in plugin code
+ * Holds JBrowse Desktop's top-level state: the loaded config, the session,
+ * internet accounts, undo history, the app menus and the text-indexing jobs.
+ *
+ * Many properties of the root model are available through the session, and
+ * we generally prefer using the session model (via e.g. `getSession`) over the
+ * root model (via e.g. `getRoot`) in plugin code.
  */
 export default function rootModelFactory({
   pluginManager,

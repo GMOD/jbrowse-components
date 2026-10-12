@@ -1,7 +1,7 @@
 ---
 id: jb2trackhubconnection
 title: JB2TrackHubConnection
-description: "Configuration slots of JB2TrackHubConnection."
+description: "Adds the tracks of another JBrowse 2 config.json to the session, along with any assemblies it declares that the session lacks."
 sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
@@ -25,6 +25,9 @@ others subscribe to.
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Adds the tracks of another JBrowse 2 `config.json` to the session, along
+with any assemblies it declares that the session lacks.
 
 ## Related links
 

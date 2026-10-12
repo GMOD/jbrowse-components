@@ -1,7 +1,7 @@
 ---
 id: fromconfigregionsadapter
 title: FromConfigRegionsAdapter
-description: "used for specifying refNames+sizes of an assembly"
+description: "Supplies an assembly's reference names and sizes inline in the config, with no sequence."
 sidebar_label: Adapter -> FromConfigRegionsAdapter
 ---
 
@@ -28,7 +28,8 @@ Supplies refNames+sizes with no sequence, as the adapter of an assembly's
 
 _See the **Config slots** section below for all available configuration fields._
 
-used for specifying refNames+sizes of an assembly
+Supplies an assembly's reference names and sizes inline in the config, with
+no sequence.
 
 ## Related links
 

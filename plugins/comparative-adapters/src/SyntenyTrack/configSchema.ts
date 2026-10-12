@@ -5,6 +5,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config SyntenyTrack
+ * Holds alignments between assemblies, such as a minimap2 PAF, for the linear
+ * synteny view, the dot plot view and the linear genome view.
  *
  * #example
  * A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query

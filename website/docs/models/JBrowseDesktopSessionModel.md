@@ -1,11 +1,14 @@
 ---
 id: jbrowsedesktopsessionmodel
 title: JBrowseDesktopSessionModel
-description: "Properties, getters and actions of the JBrowseDesktopSessionModel state model."
+description: "Holds a JBrowse Desktop session: its views, session tracks, assemblies, connections, theme and preferences, and the workspace layout."
 sidebar_label: Session -> JBrowseDesktopSessionModel
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/sessionModel.ts).
+
+Holds a JBrowse Desktop session: its views, session tracks, assemblies,
+connections, theme and preferences, and the workspace layout.
 
 JBrowseDesktopSessionModel declares no members of its own — it composes the models below, and everything here is theirs.
 

@@ -337,6 +337,8 @@ function isTrackSelectorVisible(self: IAnyStateTreeNode) {
 /**
  * #stateModel LinearGenomeView
  * #category view
+ * Stacks tracks under a horizontal axis of one or more genomic regions laid
+ * end to end, which the user scrolls, zooms and searches.
  *
  * #example
  * A `LinearGenomeView` is what you hand-author under `defaultSession.views`, and

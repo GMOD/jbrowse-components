@@ -140,6 +140,8 @@ function createUnrecognizedAssemblyReports() {
 
 /**
  * #stateModel AssemblyManager
+ * Keeps an `Assembly` for each assembly in the config and the session, and
+ * looks one up by name or alias.
  */
 function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
   type Conf = Instance<typeof conf> // this is type any, try to narrow...

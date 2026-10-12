@@ -1,7 +1,7 @@
 ---
 id: lineargenomeview
 title: LinearGenomeView
-description: "Properties, getters and actions of the LinearGenomeView state model."
+description: "Stacks tracks under a horizontal axis of one or more genomic regions laid end to end, which the user scrolls, zooms and searches."
 sidebar_label: View -> LinearGenomeView
 ---
 
@@ -41,6 +41,9 @@ await view.navToLocString('chr1:2,000,000-2,100,000')
 view.showTrack('alignments')
 view.zoomTo(view.bpPerPx * 2) // zoom out 2x
 ```
+
+Stacks tracks under a horizontal axis of one or more genomic regions laid
+end to end, which the user scrolls, zooms and searches.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

@@ -15,7 +15,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config ReferenceSequenceTrack
- * used to display base level DNA sequence tracks
+ * Holds an assembly's reference sequence, which
+ * `LinearReferenceSequenceDisplay` draws base by base.
  *
  * #example
  * Usually authored as the `sequence` member of an assembly rather than a

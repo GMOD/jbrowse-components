@@ -1,7 +1,7 @@
 ---
 id: hictrack
 title: HicTrack
-description: "Configuration slots of HicTrack."
+description: "Holds a Hi-C contact matrix, usually a .hic file read by HicAdapter, which LinearHicDisplay draws as a triangular heatmap."
 sidebar_label: Track -> HicTrack
 ---
 
@@ -33,6 +33,9 @@ A minimal `HicTrack` config. See the
 ```
 
 _See the **Config slots** section below for all available configuration fields._
+
+Holds a Hi-C contact matrix, usually a `.hic` file read by `HicAdapter`,
+which `LinearHicDisplay` draws as a triangular heatmap.
 
 ## Related links
 

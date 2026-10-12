@@ -6,6 +6,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config DropboxOAuthInternetAccount
+ * Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
+ * endpoints and domains filled in.
  *
  * #example
  * The Dropbox endpoints are pre-filled, so an entry needs only your own OAuth

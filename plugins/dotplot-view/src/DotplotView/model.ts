@@ -196,6 +196,8 @@ export type ExportSvgOptions = ViewExportSvgOptions
 /**
  * #stateModel DotplotView
  * #category view
+ * Plots the alignments between two assemblies, one on each axis, as a dot
+ * plot.
  *
  * #example
  * Hand-authored under `defaultSession.views`, with every setting written
