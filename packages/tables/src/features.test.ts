@@ -114,3 +114,46 @@ test('the default fit gives up what the browser gives up to fit the track', asyn
   expect(label(grown)).toBe(true)
   expect(Math.max(...grown.features.bottom)).toBeGreaterThan(bottom)
 })
+
+test('regions of one contig lay out together, a feature on one row in each', async () => {
+  const { region: _, ...args } = GFF3
+  const exons = [
+    { refName: 'ctgA', start: 1000, end: 1600 },
+    { refName: 'ctgA', start: 2900, end: 4000 },
+    { refName: 'ctgA', start: 4900, end: 5600 },
+    { refName: 'ctgA', start: 6900, end: 9100 },
+  ]
+  const t = await engine.features({
+    ...args,
+    regions: exons,
+    bpPerPx: 5,
+    display: GROW,
+  })
+  expect(new Set(t.features.region)).toEqual(new Set([0, 1, 2, 3]))
+  const eden = t.features.id[t.features.name.indexOf('EDEN')]
+  expect(t.features.region.filter((_, i) => t.features.id[i] === eden)).toEqual(
+    [0, 1, 2, 3],
+  )
+  const tops = new Map<string, Set<number>>()
+  t.features.id.forEach((id, i) => {
+    tops.set(id, (tops.get(id) ?? new Set()).add(t.features.top[i]!))
+  })
+  for (const rows of tops.values()) {
+    expect(rows.size).toBe(1)
+  }
+  // read one at a time, each region packs its own rows and EDEN moves
+  const apart = await Promise.all(
+    exons.map(region =>
+      engine.features({ ...args, region, bpPerPx: 5, display: GROW }),
+    ),
+  )
+  const edenTops = apart.map(
+    a => a.features.top[a.features.name.indexOf('EDEN')],
+  )
+  expect(new Set(edenTops).size).toBeGreaterThan(1)
+  for (const table of [t.rects, t.lines, t.labels, t.subfeatures]) {
+    table.feature.forEach((f, i) => {
+      expect(t.features.region[f]).toBe(table.region[i])
+    })
+  }
+})

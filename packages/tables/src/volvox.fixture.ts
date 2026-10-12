@@ -106,7 +106,7 @@ export const CRAM: AlignmentTablesArgs = {
 }
 
 /** volvox's genes, mRNAs, exons and CDS over the whole contig, at 50 bp/px. */
-export const GFF3: FeatureTablesArgs = {
+export const GFF3 = {
   adapterConfig: {
     type: 'Gff3TabixAdapter',
     gffGzLocation: uri('volvox.sort.gff3.gz'),
@@ -115,14 +115,14 @@ export const GFF3: FeatureTablesArgs = {
   sequenceAdapter,
   region: { refName: 'ctgA', start: 0, end: 50000 },
   bpPerPx: 50,
-}
+} satisfies FeatureTablesArgs
 
-export const BIGBED: FeatureTablesArgs = {
+export const BIGBED = {
   adapterConfig: { type: 'BigBedAdapter', bigBedLocation: uri('volvox.bb') },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 0, end: 50000 },
   bpPerPx: 50,
-}
+} satisfies FeatureTablesArgs
 
 /** A signed microarray track over the whole contig, at 50 bp/px. */
 export const SIGNED_BIGWIG = {

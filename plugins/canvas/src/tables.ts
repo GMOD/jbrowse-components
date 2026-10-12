@@ -46,17 +46,26 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
+interface TablesRegion {
+  refName: string
+  start: number
+  end: number
+  /** The contig's name in the reference, where the file spells it another way. */
+  originalRefName?: string
+}
+
 export interface FeatureTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for a CDS painted by reading frame. */
   sequenceAdapter?: Record<string, unknown>
-  region: {
-    refName: string
-    start: number
-    end: number
-    /** The contig's name in the reference, where the file spells it another way. */
-    originalRefName?: string
-  }
+  region?: TablesRegion
+  /**
+   * Several regions read as a view lays them end to end, such as a gene's
+   * exons with the introns collapsed: one layout across all of them, as the
+   * display packs every region of a contig together, so a feature crossing
+   * regions keeps its row. Each table's rows name their region's index.
+   */
+  regions?: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it: `color`,
    * `displayMode`, `showLabels`, `geneGlyphMode`, `subfeatureLabels`,
@@ -181,24 +190,26 @@ function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
 
 /**
  * #api
- * A region's features as the feature display (`LinearBasicDisplay`) fetches,
- * shapes, lays out and colors them, as tables: each top-level feature on the
+ * A region's features, or several regions', as the feature display
+ * (`LinearBasicDisplay`) fetches, shapes, lays out and colors them, as
+ * tables: each top-level feature on the
  * row the display's layout gives it, the boxes, intron lines, chevrons and
  * strand arrows its glyph draws, its transcripts, the labels the display
  * shows beside it at this zoom, and the color key, a ramp's as `ramps`
- * (`rampKeyOf`). For a host that draws them
- * itself, such as R through V8. The adapters must be registered on
- * `pluginManager`.
+ * (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
+ * adapters must be registered on `pluginManager`.
  *
  * Coordinates are 0-based genomic; every `y`, `top` and height is in the
- * display's px, down from the track's top, and `feature` is a 0-based index
- * into `features`. The layout is the display's under its `heightMode` and
- * `height`: `fit` (the default) runs the display's fit ladder, so the labels,
- * isoforms and row heights the browser gives up to fit the track are given up
- * here too, and `grow` places every feature at full size. A feature the
- * packer could not place within its 10000 px row ceiling is left out of every
- * table and counted in `truncated`; the legend keys what the worker painted,
- * such a feature included, as the browser's key does.
+ * display's px, down from the track's top, `feature` is a 0-based index into
+ * `features`, and `region` the index of the row's region. Regions of one
+ * contig share one layout, as the display packs them, so a feature crossing
+ * them is listed in each on the same row. The layout is the display's under
+ * its `heightMode` and `height`: `fit` (the default) runs the display's fit
+ * ladder, so the labels, isoforms and row heights the browser gives up to fit
+ * the track are given up here too, and `grow` places every feature at full
+ * size. A feature the packer could not place within its 10000 px row ceiling
+ * is left out of every table and counted in `truncated`; the legend keys what
+ * the worker painted, such a feature included, as the browser's key does.
  */
 export async function featureTables(
   pluginManager: PluginManager,
@@ -206,6 +217,7 @@ export async function featureTables(
     adapterConfig,
     sequenceAdapter,
     region,
+    regions = region ? [region] : [],
     display = {},
     bpPerPx,
     colorByCDS = false,
@@ -224,40 +236,47 @@ export async function featureTables(
   const subfeatureLabels = collapsed
     ? 'none'
     : readConfObject(conf, 'subfeatureLabels')
-  const args: RpcExecuteArgs<'RenderFeatureData'> = {
-    sessionId: 'tables',
-    adapterConfig,
-    sequenceAdapter,
-    region: { assemblyName: '', ...region },
-    displayConfig: {
-      ...pickDisplayConfig(fullConfSnapshot(conf)),
-      subfeatureLabels,
-    },
-    geneGlyphMode: resolvedGeneGlyphMode(
-      readConfObject(conf, 'geneGlyphMode'),
-      bpPerPx,
-    ),
-    bpPerPx,
-    colorByCDS,
-    showOnlyGenes: readConfObject(conf, 'showOnlyGenes'),
-    byteLimit,
-    statusCallback: () => {},
-  }
-  const result = await executeRenderFeatureData({ pluginManager, args })
-  const where = `${region.refName}:${region.start}-${region.end}`
-  if ('regionTooLarge' in result) {
-    throw new Error(
-      `${where} needs ${result.bytes} bytes of features, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-    )
-  }
-  const raw = result.value
-  const widthPx = (region.end - region.start) / bpPerPx
+  const raws = await Promise.all(
+    regions.map(async r => {
+      const result = await executeRenderFeatureData({
+        pluginManager,
+        args: {
+          sessionId: 'tables',
+          adapterConfig,
+          sequenceAdapter,
+          region: { assemblyName: '', ...r },
+          displayConfig: {
+            ...pickDisplayConfig(fullConfSnapshot(conf)),
+            subfeatureLabels,
+          },
+          geneGlyphMode: resolvedGeneGlyphMode(
+            readConfObject(conf, 'geneGlyphMode'),
+            bpPerPx,
+          ),
+          bpPerPx,
+          colorByCDS,
+          showOnlyGenes: readConfObject(conf, 'showOnlyGenes'),
+          byteLimit,
+          statusCallback: () => {},
+        } satisfies RpcExecuteArgs<'RenderFeatureData'>,
+      })
+      if ('regionTooLarge' in result) {
+        throw new Error(
+          `${r.refName}:${r.start}-${r.end} needs ${result.bytes} bytes of features, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
+        )
+      }
+      return result.value
+    }),
+  )
+  const items = raws.flatMap(raw => raw.flatbushItems)
+  const widthsPx = regions.map(r => (r.end - r.start) / bpPerPx)
+  const widthPx = widthsPx.reduce((a, b) => a + b, 0)
   const visibility = labelVisibility({
     mode: readConfObject(conf, 'showLabels'),
     collapsed,
-    density: raw.flatbushItems.length / widthPx,
+    density: items.length / widthPx,
     geneDensity: () => {
-      const genes = raw.flatbushItems.filter(item => item.gene).length
+      const genes = items.filter(item => item.gene).length
       return genes > 0 ? genes / widthPx : undefined
     },
     maxLabelDensity: readConfObject(conf, 'maxLabelFeatureDensity'),
@@ -266,7 +285,11 @@ export async function featureTables(
   const heightMode: string = readConfObject(conf, 'heightMode')
   const trackHeight: number = readConfObject(conf, 'height')
   const fontSize = labelFontSize(displayMode)
-  const rpcDataMap = new Map([[0, { ...raw, regionKey: region.refName }]])
+  // keyed by contig, as the display keys its regions, so the regions of one
+  // contig pack as one group
+  const rpcDataMap = new Map(
+    raws.map((raw, i) => [i, { ...raw, regionKey: regions[i]!.refName }]),
+  )
   const stage = fitLadderViews({
     ...fitLadderVolatiles(),
     rpcDataMap,
@@ -287,7 +310,7 @@ export async function featureTables(
     fitMeasureFeatureIds:
       heightMode === 'grow'
         ? undefined
-        : new Set(raw.flatbushItems.map(item => item.featureId)),
+        : new Set(items.map(item => item.featureId)),
     fitHeightToDisplay: heightMode === 'fit',
     autoHeight: heightMode === 'grow',
     showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
@@ -302,26 +325,32 @@ export async function featureTables(
   const palette = resolvePalette()
   const colors = featureColorViews({
     conf: { color: conf.color },
-    rpcDataMap: new Map([[0, raw]]),
+    rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
-  const d = resolveMapColors(laid, palette, colors.fieldPalette).get(0)!
-  const scales = featureColorKey(colors, [raw])
+  const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
+  const scales = featureColorKey(colors, raws)
   const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
+  const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
+  const labels = {
+    showLabels: stage.showLabels,
+    showDescriptions: stage.showDescriptions,
+    showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
+    fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
+    colors: labelColors(palette),
+  }
   return {
-    ...laidOutTables(d, {
-      region,
-      widthPx,
-      bpPerPx,
-      hideChevrons: !readConfObject(conf, 'displayDirectionalChevrons'),
-      labels: {
-        showLabels: stage.showLabels,
-        showDescriptions: stage.showDescriptions,
-        showSubfeatureLabels: stage.scale === 1 && !stage.dropBelowLabelRows,
-        fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
-        colors: labelColors(palette),
-      },
-    }),
+    ...joinRegionTables(
+      regions.map((r, i) =>
+        laidOutTables(resolved.get(i)!, {
+          region: r,
+          widthPx: widthsPx[i]!,
+          bpPerPx,
+          hideChevrons,
+          labels,
+        }),
+      ),
+    ),
     legend: {
       label: entries.map(e => e.label),
       color: entries.map(e => cssColorToHex(e.color!)),
@@ -454,6 +483,66 @@ export function laidOutTables(
     height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
     /** Features the packer could not place, which no table lists. */
     truncated: rows.truncated,
+  }
+}
+
+type RegionTables = ReturnType<typeof laidOutTables>
+const TABLES = [
+  'features',
+  'subfeatures',
+  'rects',
+  'lines',
+  'chevrons',
+  'arrows',
+  'labels',
+] as const
+
+/**
+ * Each region's tables as one set: every row names its region's index, and
+ * every `feature` and `subfeature` index points into the joined `features`
+ * and `subfeatures`. A feature crossing regions is listed in each.
+ */
+function joinRegionTables(parts: RegionTables[]) {
+  let features = 0
+  let subfeatures = 0
+  const joined = parts.map((part, region) => {
+    const out = Object.fromEntries(
+      TABLES.map(name => {
+        const table: Record<string, unknown[]> = { ...part[name] }
+        const n = Object.values(table)[0]?.length ?? 0
+        if (table.feature) {
+          table.feature = table.feature.map(f => (f as number) + features)
+        }
+        if (name === 'labels') {
+          table.subfeature = table.subfeature!.map(s =>
+            (s as number) < 0 ? s : (s as number) + subfeatures,
+          )
+        }
+        table.region = new Array(n).fill(region)
+        return [name, table]
+      }),
+    )
+    features += part.features.id.length
+    subfeatures += part.subfeatures.id.length
+    return out
+  })
+  const tables = Object.fromEntries(
+    TABLES.map(name => {
+      const columns = Object.keys(joined[0]?.[name] ?? {})
+      return [
+        name,
+        Object.fromEntries(
+          columns.map(c => [c, joined.flatMap(part => part[name]![c]!)]),
+        ),
+      ]
+    }),
+  ) as {
+    [K in (typeof TABLES)[number]]: RegionTables[K] & { region: number[] }
+  }
+  return {
+    ...tables,
+    height: Math.max(0, ...parts.map(part => part.height)),
+    truncated: parts.reduce((sum, part) => sum + part.truncated, 0),
   }
 }
 
