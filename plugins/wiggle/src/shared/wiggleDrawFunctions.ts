@@ -471,7 +471,7 @@ const BAND_BINS_PER_POLYGON = 1000
 
 // One polygon per run, broken where the line over it breaks. Each cut's clip
 // sits on a device pixel so neighbouring colors meet without a seam.
-export function drawWhiskerBand({
+export function drawMinMaxBand({
   ctx,
   source,
   block,

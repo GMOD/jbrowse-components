@@ -6,7 +6,7 @@ import {
   drawLine,
   drawLineCenter,
   drawScatter,
-  drawWhiskerBand,
+  drawMinMaxBand,
 } from '../plugins/wiggle/src/shared/wiggleDrawFunctions.ts'
 
 import type { MarkContext2D } from '../packages/render-core/src/marks/types.ts'
@@ -172,7 +172,7 @@ const cases: [string, number, Painter][] = [
     1_000_000,
     (ctx, n) => {
       const row = wiggleRow(ctx, n)
-      drawWhiskerBand({
+      drawMinMaxBand({
         ...row,
         source: {
           ...row.source,

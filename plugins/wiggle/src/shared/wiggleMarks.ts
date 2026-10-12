@@ -22,7 +22,7 @@ import {
   drawLine,
   drawLineCenter,
   drawScatter,
-  drawWhiskerBand,
+  drawMinMaxBand,
   drawXYPlot,
 } from './wiggleDrawFunctions.ts'
 import {
@@ -304,7 +304,7 @@ const lineShape = wiggleShape(
   type => type === RENDERING_TYPE_LINE,
   (row, p) => {
     if (row.source.band) {
-      drawWhiskerBand({ ...row, interpolated: false })
+      drawMinMaxBand({ ...row, interpolated: false })
     } else {
       drawLine({ ...row, ...lineColors(row.source), lineWidth: p.lineWidth })
     }
@@ -319,7 +319,7 @@ const lineCenterShape = wiggleShape(
   type => type === RENDERING_TYPE_LINE_CENTER,
   (row, p) => {
     if (row.source.band) {
-      drawWhiskerBand({ ...row, interpolated: true })
+      drawMinMaxBand({ ...row, interpolated: true })
     } else {
       drawLineCenter({
         ...row,
