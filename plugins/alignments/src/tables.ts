@@ -849,9 +849,9 @@ export async function alignmentTables(
 }
 
 /**
- * The display's slots that decide which bands a host stacks and what each
- * hides, resolved, so a host composes the track from the config it was read
- * with rather than restating the defaults.
+ * The display's slots that decide which bands a host stacks, what each
+ * hides and how many pixels each takes, resolved, so a host composes the
+ * track from the config it was read with rather than restating the defaults.
  */
 const COMPOSING_SLOTS = [
   'showCoverage',
@@ -864,6 +864,10 @@ const COMPOSING_SLOTS = [
   'fadeLowFrequencyMismatches',
   'fadeLowQualityMismatches',
   'readConnections',
+  'featureHeight',
+  'coverageHeight',
+  'sashimiArcsHeight',
+  'readConnectionsHeight',
 ] as const
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>
