@@ -33,6 +33,10 @@ branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)
 - **`homeViews` takes the session's WHOLE view list** (`session.views` is the
   order, `viewIds` the grouping) and is two-directional, so a partial list
   unhomes the rest.
+- **The mixin homes views itself**, in an `afterAttach` autorun over
+  `session.views`, so the layout is consistent with no component mounted (the
+  `jb` API, headless callers). It runs after the outermost action, so an action
+  that adds a view and moves it homes first (`rehomeView`).
 
 ## `PanelChrome` is the seam
 

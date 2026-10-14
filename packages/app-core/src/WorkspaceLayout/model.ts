@@ -1,5 +1,6 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
-import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import {
   resolveLayoutSpec,
@@ -234,8 +235,8 @@ export function WorkspaceLayoutMixin() {
         }
 
         /**
-         * Homes every view first, since from the classic stack none has a tab
-         * yet. Returns where the view came from, or `undefined` if it is not in
+         * Homes every view first: the homing autorun waits for the outermost
+         * action, so a view added in the same action has no tab yet. Returns where the view came from, or `undefined` if it is not in
          * the session, in which case nothing is applied.
          */
         function rehomeView(
@@ -524,6 +525,22 @@ export function WorkspaceLayoutMixin() {
           const ids = self.applyLayoutSpec(spec)
           host.orderViews(ids)
           return ids
+        },
+      }))
+      .actions(self => ({
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(
+              function homeUnassignedViewsAutorun() {
+                const host: LayoutHostSelf = self
+                if (host.views) {
+                  self.homeUnassignedViews(host.views.map(v => v.id))
+                }
+              },
+              { name: 'HomeUnassignedViews' },
+            ),
+          )
         },
       }))
       // A session saved with workspaces off showed its views stacked whatever

@@ -15,9 +15,8 @@ and using `self` over `this` in views.
 ## autorun inside useEffect
 
 Drive a side-effect from MST observables in a React component. The autorun's
-disposer is returned straight out of the `useEffect`, so it becomes the cleanup,
-and every observable read inside becomes a dependency without going in the dep
-array:
+disposer goes in the `useEffect` cleanup, and every observable read inside
+becomes a dependency without going in the dep array:
 
 <!-- include: packages/app-core/src/WorkspaceLayout/WorkspaceContainer.tsx#autorunInEffect -->
 

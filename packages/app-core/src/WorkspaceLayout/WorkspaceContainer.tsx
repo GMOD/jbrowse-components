@@ -1,7 +1,6 @@
-import { Suspense, useCallback, useEffect, useMemo } from 'react'
+import { Suspense, useCallback, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import ViewStack from '../ui/App/ViewStack.tsx'
@@ -40,18 +39,6 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
 }) {
   const { classes } = useStyles()
   const { drag, handlers } = useLayoutDrag(session)
-
-  // #region autorunInEffect
-  useEffect(
-    () =>
-      autorun(() => {
-        // homes newly launched views; reads session.views here because an
-        // action's reads are untracked
-        session.homeUnassignedViews(session.views.map(v => v.id))
-      }),
-    [session],
-  )
-  // #endregion
 
   // the layout does not own views, so every close gesture goes through here
   // or leaks them

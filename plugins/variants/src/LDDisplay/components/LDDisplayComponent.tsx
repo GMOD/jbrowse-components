@@ -75,6 +75,7 @@ const LDPointer = observer(function LDPointer({
   // The guides live on the view, so a pan moves them with no mousemove: the
   // autorun does its own reads, and re-arms only when the hovered pair
   // changes.
+  // #region autorunInEffect
   useEffect(() => {
     const dispose = autorun(() => {
       const xJ = snp2
@@ -94,6 +95,7 @@ const LDPointer = observer(function LDPointer({
       view.setVolatileGuides([])
     }
   }, [snp1, snp2, model, view])
+  // #endregion
 
   if (!item || !mouseState) {
     return null
