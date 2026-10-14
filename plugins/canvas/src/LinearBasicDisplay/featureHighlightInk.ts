@@ -13,6 +13,7 @@ import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { NamedFeature } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -164,6 +165,44 @@ function labelRects(
     }))
   }
   return []
+}
+
+/**
+ * Every named top-level feature once, boxed over the body it drew without its
+ * labels: what a host placing names itself anchors them to.
+ */
+export function namedFeatureInk(self: FeatureInkHost): NamedFeature[] {
+  const out: NamedFeature[] = []
+  const named = new Set<string>()
+  for (const idx of regionIndices(self.renderBlocks)) {
+    const index = self.regionInstanceIndexes.get(idx)
+    const data = self.renderDataMap.get(idx)
+    if (!data || !index) {
+      continue
+    }
+    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
+    for (const { featureId, name } of data.flatbushItems) {
+      const instances = index.byFeatureId.get(featureId)
+      if (!name || !instances || named.has(featureId)) {
+        continue
+      }
+      const merged = mergeBounds(
+        inkOfInstances(
+          CANVAS_FEATURE_MARKS,
+          blocks,
+          () => data,
+          self.renderState,
+          () => instances,
+        ),
+      )
+      const box = merged && clipToCanvas(merged, self.renderState)
+      if (box) {
+        named.add(featureId)
+        out.push({ featureId, text: name, ...box })
+      }
+    }
+  }
+  return out
 }
 
 /**

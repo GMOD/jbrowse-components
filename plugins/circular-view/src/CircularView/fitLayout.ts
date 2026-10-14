@@ -95,6 +95,8 @@ export interface FitInput {
   paddingPx: number
   minVisibleWidth: number
   minimumRadiusPx: number
+  /** past the ruler, for the names a one-contig circle draws outside */
+  calloutPx: number
 }
 
 export interface FitLayout {
@@ -148,7 +150,9 @@ export function fitLayout(input: FitInput): FitLayout {
           regions.length > 1
             ? [...elided.map(regionLabelText), ...elidedLabel]
             : [],
-        ) + genomeBand
+        ) +
+        genomeBand +
+        input.calloutPx
       drawn = {
         units: sum(gapUnitsAfter(elided)),
         paddingPx: Math.max(boxPadding, Math.min(needPx, halfBox / 2)),

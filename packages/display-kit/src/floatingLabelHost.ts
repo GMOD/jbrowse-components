@@ -28,3 +28,26 @@ export interface FloatingLabelHost {
 export function isFloatingLabelHost(model: object): model is FloatingLabelHost {
   return 'floatingLabels' in model
 }
+
+/** A feature's name and the box its body is drawn in, in the chrome's px. */
+export interface NamedFeature {
+  featureId: string
+  text: string
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/**
+ * A display that answers every feature it draws by name, whether or not its
+ * own label fit beside it: a host that places names on its own terms, as a
+ * one-contig circle does outside its ring, reads these.
+ */
+export interface NamedFeatureHost {
+  namedFeatures: NamedFeature[]
+}
+
+export function isNamedFeatureHost(model: object): model is NamedFeatureHost {
+  return 'namedFeatures' in model
+}

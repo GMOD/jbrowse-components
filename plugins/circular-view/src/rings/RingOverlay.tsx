@@ -1,10 +1,12 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { highlightBoxColors } from '@jbrowse/core/ui/hoverBoxStyle'
+import { radToDeg } from '@jbrowse/core/util'
 import { isFloatingLabelHost } from '@jbrowse/display-kit/floatingLabelHost'
 import { isHighlightHost } from '@jbrowse/display-kit/highlightHost'
 import { observer } from 'mobx-react'
 
 import { onBottomHalf } from '../CircularView/rulerLabels.ts'
+import { CALLOUT_FONT_PX, ringCallouts } from './ringCallouts.ts'
 import {
   ringLabelArcPath,
   ringLabels,
@@ -139,6 +141,50 @@ const RingLabels = observer(function RingLabels({
   )
 })
 
+const RingCallouts = observer(function RingCallouts({
+  rings,
+  radiusPx,
+  stripRadiusPx,
+  offsetRadians,
+}: {
+  rings: readonly Ring[]
+  radiusPx: number
+  stripRadiusPx: number
+  offsetRadians: number
+}) {
+  const palette = usePalette()
+  return (
+    <g
+      data-testid="ring-callouts"
+      transform={`rotate(${-radToDeg(offsetRadians)})`}
+      fontSize={CALLOUT_FONT_PX}
+    >
+      {ringCallouts({ rings, radiusPx, stripRadiusPx, offsetRadians }).map(
+        c => (
+          <g key={c.key} data-testid="ring-callout">
+            <polyline
+              points={c.leader.map(p => p.join(',')).join(' ')}
+              fill="none"
+              stroke={palette.text.secondary}
+              strokeOpacity={0.6}
+              strokeWidth={0.75}
+            />
+            <text
+              x={c.textXY[0]}
+              y={c.textXY[1]}
+              textAnchor={c.side === 'right' ? 'start' : 'end'}
+              dominantBaseline="middle"
+              fill={palette.text.primary}
+            >
+              {c.text}
+            </text>
+          </g>
+        ),
+      )}
+    </g>
+  )
+})
+
 /**
  * What each ring display draws over its canvas rather than into it, which the
  * ring's resampling of the canvas never sees: its highlights, and its labels
@@ -152,11 +198,13 @@ export const RingOverlay = observer(function RingOverlay({
   model: {
     id: string
     offsetRadians: number
+    radiusPx: number
+    namesFeaturesOutside: boolean
     ringHost: { rings: readonly Ring[]; stripRadiusPx: number }
   }
   exporting?: boolean
 }) {
-  const { ringHost, offsetRadians, id } = model
+  const { ringHost, offsetRadians, id, radiusPx, namesFeaturesOutside } = model
   const { stripRadiusPx } = ringHost
   return (
     <g data-testid="ring-overlay" pointerEvents="none">
@@ -167,14 +215,24 @@ export const RingOverlay = observer(function RingOverlay({
             stripRadiusPx={stripRadiusPx}
             exporting={exporting}
           />
-          <RingLabels
-            ring={ring}
-            stripRadiusPx={stripRadiusPx}
-            offsetRadians={offsetRadians}
-            idPrefix={`ring-label-${id}-${ring.display.id}`}
-          />
+          {namesFeaturesOutside ? null : (
+            <RingLabels
+              ring={ring}
+              stripRadiusPx={stripRadiusPx}
+              offsetRadians={offsetRadians}
+              idPrefix={`ring-label-${id}-${ring.display.id}`}
+            />
+          )}
         </g>
       ))}
+      {namesFeaturesOutside ? (
+        <RingCallouts
+          rings={ringHost.rings}
+          radiusPx={radiusPx}
+          stripRadiusPx={stripRadiusPx}
+          offsetRadians={offsetRadians}
+        />
+      ) : null}
     </g>
   )
 })

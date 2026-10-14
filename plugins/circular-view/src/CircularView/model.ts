@@ -37,6 +37,7 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
+import { isNamedFeatureHost } from '@jbrowse/display-kit/floatingLabelHost'
 import {
   addDisposer,
   cast,
@@ -74,6 +75,7 @@ import { ChordPass } from '../chords/chordPass.ts'
 import { buildChordAxis } from '../chords/chordStage.ts'
 import { partnerShares } from '../chords/partnerShares.ts'
 import { samePointerTarget } from '../chords/shapes.ts'
+import { calloutGutterPx } from '../rings/ringCallouts.ts'
 import { RingHost } from '../rings/ringHost.ts'
 import { turnAt } from '../rings/warpRing.ts'
 import { circularLegendSpec } from './circularLegend.ts'
@@ -562,7 +564,19 @@ function stateModelFactory(pluginManager: PluginManager) {
           paddingPx: self.paddingPx,
           minVisibleWidth: self.minVisibleWidth,
           minimumRadiusPx: self.minimumRadiusPx,
+          calloutPx: this.namesFeaturesOutside ? calloutGutterPx : 0,
         })
+      },
+      /**
+       * #getter
+       * a circle of one contig is a map: its ring displays' features are
+       * named outside the circle with leaders, not along their rows
+       */
+      get namesFeaturesOutside() {
+        return (
+          this.circleRegions.length === 1 &&
+          self.tracks.some(t => isNamedFeatureHost(t.displays[0]))
+        )
       },
       /**
        * #getter

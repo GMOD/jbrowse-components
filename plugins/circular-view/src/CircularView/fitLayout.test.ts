@@ -24,6 +24,7 @@ function input(regions: Region[], box = 800): FitInput {
     paddingPx: 80,
     minVisibleWidth: 6,
     minimumRadiusPx: 25,
+    calloutPx: 0,
   }
 }
 

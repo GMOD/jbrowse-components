@@ -83,6 +83,7 @@ import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
   buildRegionInstanceIndex,
   featureHighlightInk,
+  namedFeatureInk,
 } from './featureHighlightInk.ts'
 import {
   featureHighlightActions,
@@ -149,7 +150,10 @@ import type {
   StatusCallback,
 } from '@jbrowse/core/util'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
-import type { FloatingLabel } from '@jbrowse/display-kit/floatingLabelHost'
+import type {
+  FloatingLabel,
+  NamedFeature,
+} from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -1041,6 +1045,14 @@ export default function baseStateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Every named feature drawn, boxed over its body, for a host that
+       * places the names itself.
+       */
+      get namedFeatures(): NamedFeature[] {
+        return namedFeatureInk(self)
+      },
       /**
        * #getter
        * What the chrome lights under the pointer: the open context menu's
