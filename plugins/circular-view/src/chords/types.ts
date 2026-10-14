@@ -1,8 +1,6 @@
-import type { Slice } from '../CircularView/slices.ts'
 import type { ChordCell } from './chordMarks.ts'
 import type { ChordShape, ChordLayerDisplay, RibbonShape } from './shapes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 // what `ChordDisplayFrame` reads: the lifecycle, and the two circle-sized
@@ -33,17 +31,12 @@ export interface ChordDisplayFrameModel {
 // through `chordCell`; the SVG side draws the hovered and selected shapes over
 // it, and the export draws every shape
 interface ChordLayerModel extends ChordDisplayFrameModel, ChordLayerDisplay {
-  drawnFeatures: Feature[] | undefined
   drawnCount: number
   selectedFeatureId: string | undefined
   hoveredFeatureId: string | undefined
   highlightedFeatureIdSet?: Set<string>
   bezierRadius: number
   shapeAlpha: number
-  sliceFor: (
-    assemblyName: string | undefined,
-    refName: string,
-  ) => Slice | undefined
 }
 
 export interface ChordDisplayModel extends ChordLayerModel {

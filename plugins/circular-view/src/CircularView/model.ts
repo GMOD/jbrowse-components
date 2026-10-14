@@ -87,7 +87,7 @@ import {
   ringAt,
 } from './fitLayout.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
-import { ideogramGapPx, ideogramThicknessPx } from './rulerLabels.ts'
+import { ideogramBand } from './rulerLabels.ts'
 import { calculateStaticSlices, gapUnitsAfter } from './slices.ts'
 
 import type { ChordAxis } from '../chords/chordStage.ts'
@@ -1023,9 +1023,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * CSS px from the circle's centre in the screen frame
        */
       bandAt(dx: number, dy: number): string | undefined {
-        const innerPx = self.radiusPx + ideogramGapPx
+        const { innerPx, outerPx } = ideogramBand(self.radiusPx)
         const r = Math.hypot(dx, dy)
-        if (r < innerPx || r > innerPx + ideogramThicknessPx) {
+        if (r < innerPx || r > outerPx) {
           return undefined
         }
         const radians = turnAt(dx, dy, self.offsetRadians)
@@ -1041,9 +1041,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       bandCenter(key: string): [number, number] | undefined {
         const slice = this.staticSlices.find(s => s.key === key)
+        const { innerPx, outerPx } = ideogramBand(self.radiusPx)
         return slice
           ? polarToCartesian(
-              self.radiusPx + ideogramGapPx + ideogramThicknessPx / 2,
+              (innerPx + outerPx) / 2,
               (slice.startRadians + slice.endRadians) / 2 + self.offsetRadians,
             )
           : undefined

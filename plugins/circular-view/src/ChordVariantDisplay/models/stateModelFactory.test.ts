@@ -7,6 +7,23 @@ import { when } from 'mobx'
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
+function sliceFor(
+  display: {
+    axisSlice: (
+      a: string | undefined,
+      r: string,
+    ) => { index: number } | undefined
+    view: {
+      staticSlices: { region: { refName: string; assemblyName: string } }[]
+    }
+  },
+  assemblyName: string | undefined,
+  refName: string,
+) {
+  const axis = display.axisSlice(assemblyName, refName)
+  return axis && display.view.staticSlices[axis.index]
+}
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addConf(
@@ -87,8 +104,8 @@ async function setup(
 test('a ready display places both ends of its chords', async () => {
   const { display } = await setup()
   expect(display.features).toHaveLength(1)
-  expect(display.sliceFor(undefined, 'ctgA')?.region.refName).toBe('ctgA')
-  expect(display.sliceFor(undefined, 'ctgB')?.region.refName).toBe('ctgB')
+  expect(sliceFor(display, undefined, 'ctgA')?.region.refName).toBe('ctgA')
+  expect(sliceFor(display, undefined, 'ctgB')?.region.refName).toBe('ctgB')
 }, 20000)
 
 test('a constant color keys as one row, a field as the values it paints', async () => {
@@ -157,7 +174,7 @@ test('a one-genome variant track on a two-genome circle keeps to its genome', as
   const { display } = await setup(['volvox', 'volvox2'])
   expect(display.trackAssemblyNames).toEqual(['volvox'])
   expect(display.features).toHaveLength(1)
-  expect(display.sliceFor(undefined, 'ctgB')?.region.assemblyName).toBe(
+  expect(sliceFor(display, undefined, 'ctgB')?.region.assemblyName).toBe(
     'volvox',
   )
 }, 20000)
@@ -259,6 +276,6 @@ test('a mate on a contig the file holds no record on still finds its slice', asy
   const display = view.tracks[0]!.displays[0]!
   await when(() => display.ready)
   expect(display.features).toHaveLength(1)
-  expect(display.sliceFor(undefined, 'A')?.region.refName).toBe('ctgA')
-  expect(display.sliceFor(undefined, 'B')?.region.refName).toBe('ctgB')
+  expect(sliceFor(display, undefined, 'A')?.region.refName).toBe('ctgA')
+  expect(sliceFor(display, undefined, 'B')?.region.refName).toBe('ctgB')
 }, 20000)

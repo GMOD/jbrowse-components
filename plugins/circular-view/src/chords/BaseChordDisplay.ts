@@ -18,7 +18,6 @@ import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import { sliceKey } from './chordStage.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
-import type { Slice } from '../CircularView/slices.ts'
 import type { ChordConfigModel } from './chordConfigSchemaFields.ts'
 import type { AxisSlice, ChordStage } from './chordStage.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -163,31 +162,6 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * every slice of the circle, keyed by canonical assembly AND refName: two
-       * genomes on one circle can each carry a `chr1`. An elided slice answers
-       * to each refName it swallowed.
-       */
-      get sliceIndex(): Record<string, Slice> {
-        const result: Record<string, Slice> = {}
-        for (const block of this.view.staticSlices) {
-          const regions = block.region.elided
-            ? block.region.regions
-            : [block.region]
-          for (const region of regions) {
-            result[sliceKey(region.assemblyName, region.refName)] = block
-          }
-        }
-        return result
-      },
-      /**
-       * #getter
-       * what the chord components draw
-       */
-      get drawnFeatures(): Feature[] | undefined {
-        return self.features
-      },
-      /**
-       * #getter
        */
       get selectedFeatureId() {
         if (!isAlive(self)) {
@@ -256,18 +230,6 @@ export function BaseChordDisplay() {
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       * the slice one end of a feature lands on
-       */
-      sliceFor(assemblyName: string | undefined, refName: string) {
-        const assembly = self.assemblyOf(assemblyName)
-        return assembly === undefined
-          ? undefined
-          : self.sliceIndex[
-              sliceKey(assembly, self.canonicalRefName(assembly, refName))
-            ]
-      },
       /**
        * #method
        * the slice of the unrolled axis one end of a feature lands on

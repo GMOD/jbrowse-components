@@ -31,7 +31,6 @@ function chordModel(
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
-    drawnFeatures: [],
     drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
     shapeFor: id =>
@@ -39,7 +38,6 @@ function chordModel(
     chordCell: undefined,
     hitAt: () => undefined,
     shapeAlpha: 1,
-    sliceFor: () => undefined,
     selectedFeatureId: undefined,
     hoveredFeatureId: undefined,
     configuration,

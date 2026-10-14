@@ -1,4 +1,4 @@
-import { assembleLocStringRaw, polarToCartesian } from '@jbrowse/core/util'
+import { assembleLocStringRaw } from '@jbrowse/core/util'
 
 import type { Region } from '@jbrowse/core/util'
 
@@ -61,7 +61,7 @@ function elidedKey(regions: Region[]) {
 /**
  * One wedge of the circle: a displayed region (or a run of elided ones) placed
  * at a fixed angular span. The unit of geometry every circular display draws
- * against — `bpToXY` turns a genomic coordinate into a point at any radius.
+ * against.
  */
 export class Slice {
   key: string
@@ -85,16 +85,12 @@ export class Slice {
     this.startRadians = offsetRadians
     this.endRadians = region.widthBp / bpPerRadian + offsetRadians
   }
-
-  bpToXY(bp: number, radiusPx: number) {
-    return polarToCartesian(radiusPx, bpToRadians(this, bp))
-  }
 }
 
 // how many inter-slice gaps separate one genome's arc from the next
 export const GENOME_GAP_UNITS = 4
 
-function regionAssemblyName(region: SliceRegion) {
+export function regionAssemblyName(region: SliceRegion) {
   return region.elided ? region.regions[0]?.assemblyName : region.assemblyName
 }
 

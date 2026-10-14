@@ -12,8 +12,7 @@ import {
   assemblyArcGapPx,
   assemblyArcs,
   assemblyLabelFontSizePx,
-  ideogramGapPx,
-  ideogramThicknessPx,
+  ideogramBand,
   labelFontSizePx,
   labelGutterPx,
   labelIsDrawn,
@@ -291,8 +290,7 @@ const Ruler = observer(function Ruler({
   const palette = usePalette()
   const { radiusPx, offsetRadians } = model
   const { region, endRadians, startRadians } = slice
-  const innerPx = radiusPx + ideogramGapPx
-  const outerPx = innerPx + ideogramThicknessPx
+  const { innerPx, outerPx } = ideogramBand(radiusPx)
   return (
     <>
       <RulerLabel

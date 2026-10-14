@@ -30,12 +30,7 @@ import {
   installChordFetch,
 } from '../../chords/BaseChordDisplay.ts'
 import { ribbonHitTest } from '../../chords/chordHit.ts'
-import {
-  axisX,
-  ribbonAnglesAt,
-  ribbonFadeAt,
-  sliceKey,
-} from '../../chords/chordStage.ts'
+import { axisX, ribbonAnglesAt, ribbonFadeAt } from '../../chords/chordStage.ts'
 import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
@@ -225,20 +220,11 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       /**
        * #getter
        * the resting fill of each ribbon, opaque: the ribbons share one
-       * `ribbonOpacity`, so an opacity drag repaints no ribbon
+       * `shapeAlpha`, so an opacity drag repaints no ribbon
        */
       get ribbonFill(): (feature: Feature) => string {
         const colors = this.ribbonColors
         return feature => opaqueHex(colors.get(feature.id()) ?? DEFAULT_ABGR)
-      },
-      /**
-       * #getter
-       * the fill opacity every resting ribbon draws at, the view's
-       * `opacityLevel`; a ribbon's own color alpha (a `color.value`'s, an
-       * `opacity` field's fade) rides its lane
-       */
-      get ribbonOpacity() {
-        return self.view.opacityLevel
       },
       /**
        * #getter
@@ -257,10 +243,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * `ribbonOpacity`, as the canvas reads it
+       * the fill opacity every resting ribbon draws at, the view's
+       * `opacityLevel`; a ribbon's own color alpha (a `color.value`'s, an
+       * `opacity` field's fade) rides its lane
        */
       get shapeAlpha() {
-        return this.ribbonOpacity
+        return self.view.opacityLevel
       },
       /**
        * #getter
@@ -392,10 +380,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
               ) === first
                 ? [own, mate]
                 : [mate, own]
-            const slice =
-              self.sliceIndex[
-                sliceKey(second, self.canonicalRefName(second, to.refName))
-              ]
+            const axis = self.axisSlice(second, to.refName)
+            const slice = axis && self.view.staticSlices[axis.index]
             const color = firstAssembly?.getRefNameColor(
               self.canonicalRefName(first, from.refName),
             )

@@ -1,5 +1,7 @@
 import { max, radToDeg, toLocale } from '@jbrowse/core/util'
 
+import { regionAssemblyName } from './slices.ts'
+
 import type { Slice, SliceRegion } from './slices.ts'
 
 // The label geometry `Ruler.tsx` draws with, kept here rather than there so the
@@ -11,6 +13,12 @@ export const labelFontSizePx = 13
 // ribbons and the outermost ring stop, and this thick
 export const ideogramGapPx = 2
 export const ideogramThicknessPx = 8
+
+/** The ideogram band's radii, as it is drawn and hit. */
+export function ideogramBand(radiusPx: number) {
+  const innerPx = radiusPx + ideogramGapPx
+  return { innerPx, outerPx: innerPx + ideogramThicknessPx }
+}
 
 // base-pair ticks stand on the ideogram's outer edge, a major tick's label
 // just past its tip
@@ -175,9 +183,7 @@ export interface AssemblyArc {
 export function assemblyArcs(staticSlices: Slice[]) {
   const arcs: AssemblyArc[] = []
   for (const { region, startRadians, endRadians } of staticSlices) {
-    const assemblyName = region.elided
-      ? region.regions[0]?.assemblyName
-      : region.assemblyName
+    const assemblyName = regionAssemblyName(region)
     const last = arcs.at(-1)
     if (last !== undefined && last.assemblyName === assemblyName) {
       last.endRadians = endRadians

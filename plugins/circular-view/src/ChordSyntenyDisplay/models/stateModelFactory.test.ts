@@ -7,6 +7,21 @@ import { autorun, when } from 'mobx'
 import type { CircularViewModel } from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
 
+function sliceFor(
+  display: {
+    axisSlice: (
+      a: string | undefined,
+      r: string,
+    ) => { index: number } | undefined
+    view: { staticSlices: Slice[] }
+  },
+  assemblyName: string | undefined,
+  refName: string,
+) {
+  const axis = display.axisSlice(assemblyName, refName)
+  return axis && display.view.staticSlices[axis.index]
+}
+
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function addAssemblyConf(
@@ -97,9 +112,9 @@ test('a self-alignment places both ends on the one assembly', async () => {
   expect(display.type).toBe('ChordSyntenyDisplay')
   expect(display.features).toHaveLength(1)
   const feature = display.features[0]!
-  expect(assemblyOf(display.sliceFor('volvox', 'ctgA'))).toBe('volvox')
+  expect(assemblyOf(sliceFor(display, 'volvox', 'ctgA'))).toBe('volvox')
   expect(
-    assemblyOf(display.sliceFor(feature.get('assemblyName'), 'ctgB')),
+    assemblyOf(sliceFor(display, feature.get('assemblyName'), 'ctgB')),
   ).toBe('volvox')
 }, 20000)
 
@@ -111,8 +126,8 @@ test('a self-alignment places both ends on the one assembly', async () => {
 test('two assemblies keep their own contigs of the same name', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
   expect(view.assemblyNames).toEqual(['volvox', 'volvox2'])
-  expect(assemblyOf(display.sliceFor('volvox', 'ctgA'))).toBe('volvox')
-  expect(assemblyOf(display.sliceFor('volvox2', 'ctgA'))).toBe('volvox2')
+  expect(assemblyOf(sliceFor(display, 'volvox', 'ctgA'))).toBe('volvox')
+  expect(assemblyOf(sliceFor(display, 'volvox2', 'ctgA'))).toBe('volvox2')
 }, 20000)
 
 // a track may name an assembly by its alias, and its features then carry the
@@ -134,7 +149,7 @@ test('a track spelling an assembly by its alias places and reorders by the canon
   const display = view.tracks[0]!.displays[0]!
   await when(() => display.ready)
   expect(display.trackAssemblyNames).toEqual(['volvox', 'volvox2'])
-  expect(assemblyOf(display.sliceFor('v2', 'ctgB'))).toBe('volvox2')
+  expect(assemblyOf(sliceFor(display, 'v2', 'ctgB'))).toBe('volvox2')
   expect(display.alignmentsBetween('volvox', 'volvox2')).toEqual([
     expect.objectContaining({ refRefName: 'ctgA', queryRefName: 'ctgB' }),
   ])
@@ -171,13 +186,13 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
   expect(display.ribbonFill(feature)).toBe(ideogram('volvox', 'ctgA'))
   view.setColorField('target')
   expect(display.ribbonFill(feature)).toBe(ideogram('volvox2', 'ctgB'))
-  expect(display.ribbonOpacity).toBe(0.45)
+  expect(display.shapeAlpha).toBe(0.45)
   view.setColorField('strand')
   view.setOpacity(0.5)
   expect(display.ribbonFill(feature)).toBe(
     colord(UNIVERSAL_FIELD_PRESETS.strand.range[1]).toHex(),
   )
-  expect(display.ribbonOpacity).toBe(0.5)
+  expect(display.shapeAlpha).toBe(0.5)
 }, 20000)
 
 // a hidden row would still take the pointer through its transparent fill

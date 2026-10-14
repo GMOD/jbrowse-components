@@ -60,7 +60,6 @@ function ribbonModel(
     ready: phase === 'ready',
     displayPhase: phase,
     svgReady: phase !== 'loading',
-    drawnFeatures: [],
     drawnCount: overrides.shapes?.length ?? 0,
     shapes: [],
     shapeFor: id =>
@@ -73,7 +72,6 @@ function ribbonModel(
     configuration,
     radiusPx: 1000,
     bezierRadius: 100,
-    sliceFor: () => undefined,
     clickFeature: () => {},
     shapeLabel: () => 'an alignment',
     openErrorDialog: () => {},
