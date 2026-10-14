@@ -306,6 +306,7 @@ bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.
 
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
 - [](/docs/tutorials/primate_orthologs_synteny)
+- [](/docs/tutorials/t2t_apes_cactus_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/allvsall_synteny)

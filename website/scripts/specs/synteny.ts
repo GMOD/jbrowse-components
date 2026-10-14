@@ -38,6 +38,8 @@ const HG38_VERTEBRATES_TREE_ORDER = [
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
+const T2T_APES_CACTUS_CONFIG =
+  'https://jbrowse.org/demos/t2t_apes_cactus/config.json'
 const SYRI_CONFIG = 'test_data/syri/config.json'
 // the stack order, reference first, and SyRI's types in plotsr's order
 const SYRI_ACCESSIONS = ['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha']
@@ -1950,6 +1952,65 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+
+  // Six T2T apes in tree order, each lane joined to the one above by the Cactus
+  // chain between the two (scripts/build_t2t_apes_cactus_multiway.sh). TP53 is
+  // the control: red down to the siamang.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/t2t_apes_cactus_tp53',
+    url: sessionSpec(encodeURIComponent(T2T_APES_CACTUS_CONFIG), {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:7,400,000-7,700,000',
+          tracks: [
+            'hg38-ncbiRefSeq',
+            {
+              trackId: 't2t_apes_cactus',
+              type: 'MultiWaySyntenyDisplay',
+              ribbonColor: { field: 'strand' },
+              height: 600,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 1000,
+  },
+
+  // 17q12, where chimpanzee, bonobo and gorilla align the block reversed and
+  // the orangutans and siamang forward. The window starts at 33.2 Mb so the
+  // orangutan lanes' frames take the forward flank on the left, not the
+  // reversed one past 35.9 Mb.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/t2t_apes_cactus_17q',
+    url: sessionSpec(encodeURIComponent(T2T_APES_CACTUS_CONFIG), {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:33,200,000-35,800,000',
+          tracks: [
+            'hg38-ncbiRefSeq',
+            {
+              trackId: 't2t_apes_cactus',
+              type: 'MultiWaySyntenyDisplay',
+              ribbonColor: { field: 'strand' },
+              height: 600,
+            },
+          ],
+        },
+      ],
+    }),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1000,

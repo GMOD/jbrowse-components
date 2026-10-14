@@ -100,6 +100,7 @@ export const TUTORIAL_ORDER = [
   'synteny_visualization',
   'hg002_haplotypes',
   'hg38_vertebrates_synteny',
+  't2t_apes_cactus_synteny',
   'allvsall_synteny',
   'syri_synteny',
   'circular_synteny',

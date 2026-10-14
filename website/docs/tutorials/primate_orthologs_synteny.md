@@ -312,6 +312,7 @@ bash build_primate_orthologs.sh
 - [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/t2t_apes_cactus_synteny)
 
 ## External links
 
