@@ -437,7 +437,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           },
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
-          "rowHeight": 18,
+          "height": 400,
           "rows": "sample",
           "type": "LinearMultiRowFeatureDisplay",
         },
@@ -499,7 +499,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "match": "^(mom|dad)$",
             },
           ],
-          "rowHeight": 14,
           "rows": {
             "domain": [
               "offspring10",
