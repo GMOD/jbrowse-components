@@ -1083,7 +1083,7 @@ export default function stateModelFactory(
             void self.uploadedChannels
             void self.rowTable
           },
-          { name: 'MultiRowHitTestInputs' },
+          { name: 'MultiRowHitIndexes' },
         )
         setupTreeSidebarAutoruns(self, {
           name: 'MultiRowFeature',

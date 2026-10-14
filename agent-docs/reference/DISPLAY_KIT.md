@@ -115,9 +115,9 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`, `LaneHitIndexes`) so the set is greppable; multi-row's is
-`MultiRowUploadedChannels`, its hit index being a byproduct of the channel memo
-the autorun holds. Where the read goes through a structural `self`, **type it
+(`CanvasHitIndexes`, `LaneHitIndexes`, `MultiRowHitIndexes`) so the set is
+greppable. Multi-row's holds the channel memo, whose per-key buckets are its hit
+index, and the row table the hit test places through. Where the read goes through a structural `self`, **type it
 with the getters' real types**, not `unknown`: a rename otherwise reads
 `undefined`, establishes no dependency, and leaves a keep-alive holding nothing.
 
