@@ -96,12 +96,7 @@
             "assembly": "zebrafish"
           }
         ],
-        "tracks": [
-          ["vertebrates_orthogroups"],
-          ["vertebrates_orthogroups"],
-          ["vertebrates_orthogroups"],
-          ["vertebrates_orthogroups"]
-        ],
+        "tracks": ["vertebrates_orthogroups"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,

@@ -96,12 +96,7 @@
             "assembly": "setaria"
           }
         ],
-        "tracks": [
-          ["grasses_orthogroups"],
-          ["grasses_orthogroups"],
-          ["grasses_orthogroups"],
-          ["grasses_orthogroups"]
-        ],
+        "tracks": ["grasses_orthogroups"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,

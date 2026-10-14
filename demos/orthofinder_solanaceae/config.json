@@ -105,12 +105,7 @@
             "assembly": "coffee"
           }
         ],
-        "tracks": [
-          ["solanaceae_orthogroups"],
-          ["solanaceae_orthogroups"],
-          ["solanaceae_orthogroups"],
-          ["solanaceae_orthogroups"]
-        ],
+        "tracks": ["solanaceae_orthogroups"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,

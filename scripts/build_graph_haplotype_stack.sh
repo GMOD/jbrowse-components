@@ -153,7 +153,7 @@ session = {
                 }
                 for row in rows
             ],
-            'tracks': [['graph_adjacent'] for _ in rows[1:]],
+            'tracks': ['graph_adjacent'],
             'color': {'field': 'strand'},
             'drawCurves': True,
         }

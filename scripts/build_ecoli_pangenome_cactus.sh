@@ -554,7 +554,7 @@ cat > session.json <<'JSON'
         { "assembly": "NCTC86" },
         { "assembly": "IAI39" }
       ],
-      "tracks": [["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"], ["ecoli_cactus_ava"]],
+      "tracks": ["ecoli_cactus_ava"],
       "minAlignmentLength": 10000
     },
     {

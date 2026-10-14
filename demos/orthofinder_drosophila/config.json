@@ -132,12 +132,7 @@
             "assembly": "virilis"
           }
         ],
-        "tracks": [
-          ["drosophila_orthogroups"],
-          ["drosophila_orthogroups"],
-          ["drosophila_orthogroups"],
-          ["drosophila_orthogroups"]
-        ],
+        "tracks": ["drosophila_orthogroups"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
         "sameScale": true,

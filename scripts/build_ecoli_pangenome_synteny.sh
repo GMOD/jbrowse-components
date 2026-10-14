@@ -145,12 +145,7 @@ cat > session.json <<'JSON'
         { "assembly": "NCTC86" },
         { "assembly": "IAI39" }
       ],
-      "tracks": [
-        ["ecoli_ava"],
-        ["ecoli_ava"],
-        ["ecoli_ava"],
-        ["ecoli_ava"]
-      ],
+      "tracks": ["ecoli_ava"],
       "drawCurves": false,
       "minAlignmentLength": 10000,
       "collapseEmptyRows": true

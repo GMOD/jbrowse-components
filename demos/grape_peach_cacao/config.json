@@ -351,7 +351,7 @@
             "assembly": "GCF_030704535.1"
           }
         ],
-        "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
+        "tracks": ["grape_peach_cacao_blocks"],
         "color": {
           "field": "reference"
         },

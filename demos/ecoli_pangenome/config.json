@@ -135,12 +135,7 @@
             "assembly": "IAI39"
           }
         ],
-        "tracks": [
-          ["ecoli_pggb_ava"],
-          ["ecoli_pggb_ava"],
-          ["ecoli_pggb_ava"],
-          ["ecoli_pggb_ava"]
-        ],
+        "tracks": ["ecoli_pggb_ava"],
         "minAlignmentLength": 10000
       },
       {
