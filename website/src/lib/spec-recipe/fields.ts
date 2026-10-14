@@ -18,10 +18,7 @@ import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.
 import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
 import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
 import { ROW_HEIGHT_PRESETS as MULTIROW_HEIGHT_PRESETS } from '../../../../plugins/canvas/src/LinearMultiRowFeatureDisplay/rowHeightPresets.ts'
-import {
-  CODON_ROW_RENDERING,
-  ROW_RENDERINGS,
-} from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
+import { MAF_COLOR_FIELD_LABELS } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import {
   FACET_LABELS,
   facetTag,
@@ -513,11 +510,14 @@ function colorStep(
 }
 
 // The MAF display's `color`: a field named bare or as `{ field }`, each one a
-// Row coloring option.
+// Color by... row.
 function mafColorStep(value: unknown): FieldStep | undefined {
   const field = typeof value === 'string' ? value : asString(asRecord(value)?.field)
-  const label = field === undefined ? undefined : MAF_ROW_RENDERING_LABELS.get(field)
-  return label ? { path: `${ROW_COLORING} → ${label}` } : undefined
+  const label =
+    field !== undefined && field in MAF_COLOR_FIELD_LABELS
+      ? MAF_COLOR_FIELD_LABELS[field as keyof typeof MAF_COLOR_FIELD_LABELS]
+      : undefined
+  return label ? { path: `${MAF_COLOR_BY} → ${label}` } : undefined
 }
 
 // The multi-sample variant displays' cell `color`: a preset field has its own
@@ -709,13 +709,9 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
-// The MAF display's Row coloring radio writes `color` and `y` together, so
-// both resolve to its options, whose labels are imported.
-const ROW_COLORING = `${TRACK_MENU} → Row coloring`
-const MAF_ROW_RENDERING_LABELS = new Map<string, string>([
-  ...ROW_RENDERINGS.map(([v, l]) => [v, l] as [string, string]),
-  [CODON_ROW_RENDERING[0], CODON_ROW_RENDERING[1]],
-])
+// The MAF display's `color` is its Color by... radio, whose labels are
+// imported, and `y` its Plot type radio.
+const MAF_COLOR_BY = `${TRACK_MENU} → Color by...`
 
 // The displays whose menu carries tree-sidebar's shared "Row height" submenu,
 // with the presets each passes it; the multi-sample variant display passes
@@ -1028,7 +1024,7 @@ const READ_CONNECTIONS: Record<string, string> = {
 // verified against the inline radio list in makeAggregateSubMenu
 // (plugins/wiggle/src/shared/wiggleMenuItems.tsx)
 // The alignments coverage band's allele-fraction floor, keyed by the slot value
-// its radio row writes (SNP_FREQUENCY_OPTIONS in menus/coverage.ts).
+// its radio row writes (SNP_FREQUENCY_OPTIONS in alignments-core coverageMenuItems.ts).
 const SNP_FREQUENCY_ROWS: Record<string, string> = {
   '0': 'All mismatches',
   '0.01': 'Above 1%',
@@ -1653,13 +1649,13 @@ export const trackFields: Record<string, FieldRecipe> = {
   scales: scalesStep,
   y: (value, { displayType }) =>
     value === 'identity' && displayType === 'LinearMafDisplay'
-      ? { path: `${ROW_COLORING} → ${MAF_ROW_RENDERING_LABELS.get('xyplot')}` }
+      ? { path: `${TRACK_MENU} → Plot type → Identity X-Y plot` }
       : undefined,
   rowIdentityAutoZoom: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${ROW_COLORING} → Show bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
-          note: 'Qualifies the two identity plots above it in that submenu, and does nothing under the other row colorings.',
+          path: `${MAF_COLOR_BY} → Show bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          note: 'Qualifies identity, as the heatmap or the X-Y plot, and does nothing under the other colorings.',
         }
       : undefined,
   showConservation: (value, { displayType }) =>
@@ -1787,7 +1783,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
   // A radio list of five fractions rather than a number entry
-  // (menus/coverage.ts), so the recipe names the row and not the value.
+  // (alignments-core coverageMenuItems.ts), so the recipe names the row and
+  // not the value.
   coverageSnpMinFrequency: value => {
     const row =
       typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined

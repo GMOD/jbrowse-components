@@ -5,7 +5,7 @@ digraph maf_rendering {
 
   slots [label="color and y\ntwo independent channels"]
 
-  selected [label="selectedRowRendering\nthe radio's tick, zoom-independent", style=bold]
+  selected [label="selectedColorField\nthe Color by tick, zoom-independent", style=bold]
   slots -> selected
 
   summaryTier [label="summary tier owns the view"]
