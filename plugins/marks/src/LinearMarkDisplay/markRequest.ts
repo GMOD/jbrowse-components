@@ -146,6 +146,20 @@ export function positionSource(
   return field
 }
 
+function frameEnd(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.trunc(value)
+    : null
+}
+
+// A window's frame as the worker takes it: each end a whole row offset or
+// unbounded.
+function frameOf(frame: unknown): [number | null, number | null] {
+  return Array.isArray(frame)
+    ? [frameEnd(frame[0]), frameEnd(frame[1])]
+    : [null, 0]
+}
+
 function binEdgesOf(step: { as: readonly string[] }) {
   return pairOf(step.as, DEFAULT_BIN_AS)
 }
@@ -208,6 +222,20 @@ export function stepsOf(
           type: 'aggregate',
           groupby:
             step.groupby.length > 0 ? [...step.groupby] : (binEdges ?? []),
+          ops: step.ops.map((o): AggregateOp => {
+            const op = {
+              op: o.op,
+              field: o.field || undefined,
+              weight: o.weight || undefined,
+            }
+            return { ...op, as: o.as || aggregateFieldName(op) }
+          }),
+        }
+      case 'window':
+        return {
+          type: 'window',
+          groupby: [...step.groupby],
+          frame: frameOf(step.frame),
           ops: step.ops.map((o): AggregateOp => {
             const op = {
               op: o.op,

@@ -191,6 +191,39 @@ const aggregate = ConfigurationSchema(
   STEP,
 )
 
+const window = ConfigurationSchema(
+  'window',
+  {
+    /**
+     * #slot window.groupby
+     * The fields whose distinct value sets make the groups a frame stays
+     * inside, within a facet's section. Empty is one group per section.
+     */
+    groupby: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'grouping fields',
+    },
+    /**
+     * #slot window.frame
+     * The rows before and after each row that its summaries read, in its
+     * group's start order: `[-10, 10]` reads 21 rows, whatever bases they
+     * span, and `null` runs to the group's end.
+     */
+    frame: {
+      type: 'frozen',
+      defaultValue: [null, 0],
+      description: 'rows before and after each row, null for unbounded',
+    },
+    /**
+     * #slot window.ops
+     * The summaries each row is written with, named as an `aggregate`'s are.
+     */
+    ops: types.array(aggregateOpSchema),
+  },
+  STEP,
+)
+
 const coverage = ConfigurationSchema(
   'coverage',
   {
@@ -323,7 +356,10 @@ const pileup = ConfigurationSchema(
  * expression's value into a field; `bin` snaps each feature to a
  * genome-aligned bin, or with `fields` cuts it into a piece per bin it
  * overlaps; `aggregate` folds each group into one feature carrying
- * its summaries; `coverage` replaces the features with runs of how many
+ * its summaries; `window` writes each feature with summaries over the
+ * features of its group around it in start order, a moving average over
+ * features where a `bin` averages over bases; `coverage` replaces the
+ * features with runs of how many
  * overlap each stretch; `flatten` fans out an array or a record field;
  * `cells` replaces each aligned row with its runs of match, mismatch and gap
  * against the reference it was fanned out of and an interbase insertion per
@@ -365,6 +401,7 @@ export const markTransformStep = ConfigurationSchemaUnion('MarkTransform', {
   formula,
   bin,
   aggregate,
+  window,
   coverage,
   flatten,
   cells,

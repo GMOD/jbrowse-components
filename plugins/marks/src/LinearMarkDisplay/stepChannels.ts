@@ -38,7 +38,8 @@ function outputOf(step: ChannelStep, fallback: string) {
  * the facet's and then the mark's own steps in the order they run. An
  * `aggregate` or `coverage` makes its features anew, so it clears the row and
  * the other end a step before it wrote, and an aggregate writing two
- * summaries names no `y`.
+ * summaries names no `y`. A `window` keeps its features, so a single op names
+ * `y` and leaves the rest.
  */
 export function stepChannels(
   steps: readonly (ChannelStep | undefined)[],
@@ -65,6 +66,20 @@ export function stepChannels(
                 }),
               }
             : {}
+        break
+      }
+      case 'window': {
+        const [only, ...rest] = step.ops ?? []
+        if (only && rest.length === 0) {
+          channels = {
+            ...channels,
+            y: aggregateFieldName({
+              op: only.op ?? DEFAULT_AGGREGATE_OP,
+              field: only.field,
+              as: only.as,
+            }),
+          }
+        }
         break
       }
       case 'pileup': {

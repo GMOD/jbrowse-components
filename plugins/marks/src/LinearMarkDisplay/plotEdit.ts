@@ -165,6 +165,16 @@ export const STEP_PRESETS: readonly StepPreset[] = [
       { type: 'aggregate', ops: [{ op: 'count' }] },
     ],
   },
+  {
+    label: 'Moving average',
+    steps: [
+      {
+        type: 'window',
+        frame: [-10, 10],
+        ops: [{ op: 'mean', field: 'score' }],
+      },
+    ],
+  },
   { label: 'Coverage', steps: [{ type: 'coverage' }] },
   { label: 'Pack into rows', steps: [{ type: 'pileup' }] },
   { label: 'One per subfeature', steps: [{ type: 'flatten' }] },
@@ -206,7 +216,7 @@ export function withStepSlot(
 }
 
 /**
- * An aggregate with its one op, or the first of several, written, keeping the
+ * An aggregate or window with its one op, or the first of several, written, keeping the
  * name its output was written under, which a channel may read.
  */
 export function withAggregateOp(
@@ -214,7 +224,7 @@ export function withAggregateOp(
   op: AggregateOpName,
   field: string,
 ): StepSnapshot {
-  if (step.type !== 'aggregate') {
+  if (step.type !== 'aggregate' && step.type !== 'window') {
     return step
   }
   const [first, ...rest] = step.ops ?? []
@@ -251,6 +261,13 @@ export function stepSummary(step: StepSnapshot): string {
       )
       return `aggregate ${names.join(', ') || 'count'}`
     }
+    case 'window': {
+      const names = (step.ops ?? []).map(op =>
+        aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
+      )
+      const [before = null, after = 0] = step.frame ?? []
+      return `window ${names.join(', ') || 'count'} over rows ${before ?? '-∞'} to ${after ?? '∞'}`
+    }
     case 'coverage': {
       return `coverage as ${step.as || DEFAULT_COVERAGE_AS}`
     }
@@ -280,7 +297,8 @@ export function stepWrittenFields(steps: readonly StepSnapshot[]): string[] {
       case 'coverage': {
         return [step.as || DEFAULT_COVERAGE_AS]
       }
-      case 'aggregate': {
+      case 'aggregate':
+      case 'window': {
         return (step.ops ?? []).map(op =>
           aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
         )

@@ -135,5 +135,11 @@ test('every step slot keeps its type, default and vocabulary', () => {
     'pileup.as': 'string = "row"',
     'pileup.fields': 'stringArray = ["start","end"]',
     'pileup.padding': 'number = 0',
+    'window.frame': 'frozen = [null,0]',
+    'window.groupby': 'stringArray = []',
+    'window.ops[].as': 'string = ""',
+    'window.ops[].field': 'string = ""',
+    'window.ops[].op': 'stringEnum = "count" of count, sum, mean, min, max',
+    'window.ops[].weight': 'string = ""',
   })
 })

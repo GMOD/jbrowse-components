@@ -42,7 +42,9 @@ const StepRow = observer(function StepRow({
   onChange: (step: StepSnapshot) => void
 }) {
   const op =
-    step.type === 'aggregate' ? (step.ops?.[0] ?? { op: 'count' }) : undefined
+    step.type === 'aggregate' || step.type === 'window'
+      ? (step.ops?.[0] ?? { op: 'count' })
+      : undefined
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
       {(STEP_SLOTS[step.type] ?? []).map(slot => (
