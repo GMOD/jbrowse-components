@@ -349,6 +349,18 @@ function stateModelFactory() {
       },
       /**
        * #getter
+       * What the config's color objects and `scales.y` say together that
+       * cannot be drawn as written: the lines `plotProblems` and
+       * `jbrowse validate` report, which a display's corner notice lists
+       * before what only it can tell.
+       */
+      get schemaNotices(): string[] {
+        return schemaPlotProblems(
+          (self as unknown as DisplayModel).configuration,
+        )
+      },
+      /**
+       * #getter
        * The worked examples this display type declares, which "Edit plot..."
        * offers as buttons.
        */

@@ -56,6 +56,19 @@ const namedGene = (
     }),
   )
 
+test('a ribbon color the validator refuses is a corner notice', () => {
+  const display = createDisplay()
+  expect(display.notices).toEqual([])
+  setConf(display, 'ribbonColor', {
+    field: 'identity',
+    domainMin: 1,
+    domainMax: 0.5,
+  })
+  expect(display.notices).toEqual([
+    expect.stringMatching(/^ribbonColor\.domainMax: /),
+  ])
+})
+
 test('the text slot picks what a gene label prints, name-else-ID unset', () => {
   const display = createDisplay()
   const gene = new SimpleFeature({

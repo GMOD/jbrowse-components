@@ -10,7 +10,6 @@ import {
   rampLutOf,
   stopsFromRampLut,
 } from '@jbrowse/core/util/colorRamp'
-import { colorNotices } from '@jbrowse/core/util/colorScale'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -300,15 +299,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * What the `color` object says that cannot paint as written; the corner
-       * indicator lists the same lines `plotProblems` and `jbrowse validate`
-       * report.
+       * The corner indicator's lines: `schemaNotices`.
        */
       get notices(): string[] {
-        return colorNotices(
-          colorSettingOf(self.configuration.color),
-          LD_FIELD_PRESETS,
-        )
+        return self.schemaNotices
       },
     }))
     .views(self => ({
