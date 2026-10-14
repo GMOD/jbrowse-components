@@ -1,6 +1,7 @@
 import { useChromeOverlayOverride } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
+import { ConfigProblemsCorner } from './ConfigProblemsIndicator.tsx'
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
@@ -35,7 +36,8 @@ function useChromeOverlays() {
 /**
  * The chrome every in-tree GPU/Canvas2D display renders: `DisplayChromeBase`
  * with JBrowse's own MUI overlays bound in, unless a
- * `DisplayChromeOverlayProvider` above it says otherwise.
+ * `DisplayChromeOverlayProvider` above it says otherwise, and the display's
+ * notice chip (`ConfigProblemsCorner`) in the corner every display shares.
  *
  * All the behavior lives in `DisplayChromeBase` — see that file for the
  * `displayPhase` contract, the subtree-replacing terminal states, and the
@@ -44,7 +46,17 @@ function useChromeOverlays() {
 const DisplayChrome = observer(function DisplayChrome<
   B extends RenderingBackend,
 >(props: Omit<DisplayChromeBaseProps<B>, 'overlays'>) {
-  return <DisplayChromeBase {...props} overlays={useChromeOverlays()} />
+  const { children, model } = props
+  return (
+    <DisplayChromeBase {...props} overlays={useChromeOverlays()}>
+      {handle => (
+        <>
+          {children(handle)}
+          <ConfigProblemsCorner model={model} />
+        </>
+      )}
+    </DisplayChromeBase>
+  )
 })
 
 export default DisplayChrome

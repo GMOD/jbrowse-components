@@ -339,10 +339,10 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `colorNotices` and `rowBandingNotices`.
+         * `rowBandingNotices`.
          */
-        get notices(): string[] {
-          return [...self.colorNotices, ...self.rowBandingNotices]
+        get liveNotices(): string[] {
+          return self.rowBandingNotices
         },
         /**
          * #getter

@@ -2,7 +2,7 @@ import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
-import { colorNotices, withPreset } from '@jbrowse/core/util/colorScale'
+import { withPreset } from '@jbrowse/core/util/colorScale'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
@@ -300,24 +300,6 @@ export function featureColorViews(self: FeatureColorHost) {
             ...rampGapScales(`${id}-gaps`, this.colorValueGaps),
           ]
         : []
-    },
-
-    /**
-     * #getter
-     * What the `color` object's slots say together that it cannot paint as
-     * written.
-     */
-    get colorNotices(): string[] {
-      return colorNotices(this.colorSetting, FEATURE_FIELD_PRESETS)
-    },
-
-    /**
-     * #getter
-     * The corner notice's lines: `colorNotices`, which a display with more
-     * to say extends.
-     */
-    get notices(): string[] {
-      return this.colorNotices
     },
   }
 }

@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
-import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { autorun } from 'mobx'
@@ -145,7 +144,6 @@ const LDBody = observer(function LDBody({
         {mouseState => <LDPointer model={model} mouseState={mouseState} />}
       </PointerLayer>
       <LDStatusBar model={model} />
-      <ConfigProblemsCorner model={model} />
       <LDColumnZone model={model} />
     </>
   )

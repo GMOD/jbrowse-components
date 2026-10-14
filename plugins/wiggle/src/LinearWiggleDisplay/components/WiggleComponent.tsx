@@ -1,4 +1,3 @@
-import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import {
   DisplayCrosshairs,
   TreeSidebar,
@@ -93,7 +92,6 @@ const WiggleComponent = observer(function WiggleComponent({
           <WiggleTooltip model={model} mouseState={mouseState} />
         </>
       )}
-      indicators={() => <ConfigProblemsIndicator notices={model.notices} />}
     />
   )
 })

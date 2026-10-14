@@ -28,6 +28,25 @@ test.each([
     { scales: { y: { domainMin: 9, domainMax: 1 } } },
     /^scales\.y\.domainMax: domainMax is below domainMin/,
   ],
+  [
+    'a ninth threshold cut, past what the shader reads',
+    {
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+      },
+    },
+    /^color\.domain: a wiggle threshold reads at most 8 cuts/,
+  ],
+  [
+    'a gradient on a line',
+    {
+      mark: 'line',
+      color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+    },
+    /^color\.scale: a gradient colors bars, points and density/,
+  ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",
   (_name, draft, line) => {

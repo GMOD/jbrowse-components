@@ -193,6 +193,19 @@ test('the container follows a model height change', async () => {
 // Background work (clustering) reports through the same status channel as a
 // fetch, but has no fetch behind it, so the phase stays `ready` and the scrim
 // never comes up. The corner chip is what makes it visible.
+test('a display with notices gets the problems chip from the chrome alone', async () => {
+  const Model = types.compose(
+    TestChromeModel,
+    types.model({}).views(() => ({
+      get cornerNotices() {
+        return ['color.domainMax: domainMax is below domainMin']
+      },
+    })),
+  )
+  const { findByText } = renderChrome(Model.create({}))
+  await findByText('1 config problem')
+})
+
 test('a status set while ready shows the corner chip, not the scrim', async () => {
   const model = TestChromeModel.create({})
   act(() => {

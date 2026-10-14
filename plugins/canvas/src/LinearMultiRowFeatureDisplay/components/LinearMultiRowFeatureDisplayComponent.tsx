@@ -1,5 +1,4 @@
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -105,7 +104,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         bands={rowBands}
       />
       <TreeSidebar model={model} />
-      <ConfigProblemsCorner model={model} />
       <DisplayContextMenu model={model} />
     </>
   )

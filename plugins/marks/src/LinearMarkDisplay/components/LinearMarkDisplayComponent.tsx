@@ -1,4 +1,3 @@
-import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
@@ -47,15 +46,7 @@ const LinearMarkDisplayComponent = observer(
           <MarkTooltip model={model} mouseState={mouseState} />
         )}
         indicators={() => (
-          <>
-            <ConfigProblemsIndicator
-              notices={model.cornerNotices}
-              onClick={() => {
-                model.openMarkPlotDialog()
-              }}
-            />
-            <SkippedFeaturesIndicator {...model.skippedFeatures} />
-          </>
+          <SkippedFeaturesIndicator {...model.skippedFeatures} />
         )}
       />
     )

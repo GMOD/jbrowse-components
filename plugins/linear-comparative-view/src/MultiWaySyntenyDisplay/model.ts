@@ -589,14 +589,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The corner indicator's lines: `schemaNotices`, over `color` and
-       * `ribbonColor`.
-       */
-      get notices(): string[] {
-        return self.schemaNotices
-      },
-      /**
-       * #getter
        * undefined while the view's anchor differs from the fetch's
        */
       get features() {

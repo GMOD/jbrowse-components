@@ -221,6 +221,27 @@ function stateModelFactory() {
       trackMenuItems(): MenuItem[] {
         return []
       },
+
+      /**
+       * #method
+       * What a config says that cannot be drawn as written: by default the
+       * schema's rules over its color objects and `scales.y`, the ones
+       * `jbrowse validate` runs. A display with rules of its own overrides it.
+       * `plotProblems` asks it of a draft and `notices` of the live config,
+       * so Edit plot and the corner never disagree.
+       */
+      configProblemsOf(conf: AnyConfigurationModel): string[] {
+        return schemaPlotProblems(conf)
+      },
+
+      /**
+       * #getter
+       * What the loaded data says beside the config, such as a field no
+       * fetched feature carries. None unless a display overrides it.
+       */
+      get liveNotices(): string[] {
+        return []
+      },
     }))
     .actions(self => ({
       /**
@@ -349,15 +370,30 @@ function stateModelFactory() {
       },
       /**
        * #getter
-       * What the config's color objects and `scales.y` say together that
-       * cannot be drawn as written: the lines `plotProblems` and
-       * `jbrowse validate` report, which a display's corner notice lists
-       * before what only it can tell.
+       * `configProblemsOf` the live config.
        */
-      get schemaNotices(): string[] {
-        return schemaPlotProblems(
+      get configNotices(): string[] {
+        return self.configProblemsOf(
           (self as unknown as DisplayModel).configuration,
         )
+      },
+      /**
+       * #getter
+       * Every line the display has to say about what it cannot draw as
+       * written, as an agent's settle report reads them: `configNotices`,
+       * then `liveNotices`.
+       */
+      get notices(): string[] {
+        const { configNotices } = self as unknown as { configNotices: string[] }
+        return [...configNotices, ...self.liveNotices]
+      },
+      /**
+       * #getter
+       * The lines the display chrome's corner chip lists: `notices`, less any
+       * a display shows in a chip of its own.
+       */
+      get cornerNotices(): string[] {
+        return (self as unknown as { notices: string[] }).notices
       },
       /**
        * #getter
@@ -395,12 +431,11 @@ function stateModelFactory() {
       /**
        * #method
        * What a draft would report once applied, throwing a refusal as
-       * `liftPlot` does: what its color objects and `scales.y` say together
-       * that cannot be drawn as written. A display with a rule list over its
-       * settings overrides it; the draft still applies, and draws what it can.
+       * `liftPlot` does: `configProblemsOf` the lifted draft. The draft still
+       * applies, and draws what it can.
        */
       plotProblems(draft: Plot): string[] {
-        return schemaPlotProblems(
+        return self.configProblemsOf(
           liftPlotDraft((self as unknown as DisplayModel).configuration, draft),
         )
       },

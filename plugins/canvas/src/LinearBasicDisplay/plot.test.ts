@@ -137,6 +137,21 @@ test('an expression that does not compile is a problem, named by setting', () =>
   ).toEqual([])
 })
 
+test('an applied draft says in the corner what Edit plot said of it', () => {
+  const d = display()
+  const draft = {
+    color: { field: 'score', scale: 'linear', domainMin: 10, domainMax: 0 },
+    filter: ['jexl:feature.score >'],
+  }
+  const said = d.plotProblems(draft)
+  expect(said).toEqual([
+    expect.stringMatching(/^color\.domainMax: /),
+    expect.stringMatching(/^filter: /),
+  ])
+  d.applyPlot(draft)
+  expect(d.notices).toEqual(said)
+})
+
 test.each(PLOT_EXAMPLES)(
   'the example $plot parses, passes and applies',
   ({ plot }) => {

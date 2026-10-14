@@ -3,7 +3,7 @@ import {
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
-import { colorNotices, withImpliedField } from '@jbrowse/core/util/colorScale'
+import { withImpliedField } from '@jbrowse/core/util/colorScale'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
@@ -103,15 +103,23 @@ export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
   return withImpliedField(color, WIGGLE_IMPLIED_FIELD)
 }
 
-/** What the `color` object's slots say together that it cannot paint as written. */
-export function wiggleColorNotices(color: ColorSetting) {
-  const painted = paintedWiggleColor(color)
-  const cuts = thresholdCutsOf(wiggleColorEncoding(painted)).length
+/**
+ * What the `color` object says beside the schema's rules that the plot cannot
+ * paint as written: threshold cuts past the ones the shader reads, and a
+ * gradient on a line, which parts in its two end colors.
+ */
+export function wiggleColorProblems(color: ColorSetting, rendering: string) {
+  const encoding = wiggleColorEncoding(paintedWiggleColor(color))
+  const cuts = thresholdCutsOf(encoding).length
   return [
-    ...colorNotices(painted, WIGGLE_FIELD_PRESETS),
     ...(cuts > MAX_WIGGLE_CUTS
       ? [
           `color.domain: a wiggle threshold reads at most ${MAX_WIGGLE_CUTS} cuts, and the ${cuts - MAX_WIGGLE_CUTS} past them draw no band`,
+        ]
+      : []),
+    ...(isLineMode(rendering) && resolveWiggleColor(encoding, 0).rampLut
+      ? [
+          'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
         ]
       : []),
   ]

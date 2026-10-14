@@ -15,7 +15,6 @@ import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   CATEGORICAL_FIELD_PRESETS,
-  colorNotices,
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
@@ -766,14 +765,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * What the `color` object's slots say together that it cannot paint as
-         * written, and `rowBandingNotices`, for the corner notice.
+         * `rowBandingNotices`.
          */
-        get notices(): string[] {
-          return [
-            ...colorNotices(this.colorSetting, CATEGORICAL_FIELD_PRESETS),
-            ...self.rowBandingNotices,
-          ]
+        get liveNotices(): string[] {
+          return self.rowBandingNotices
         },
         /**
          * #getter

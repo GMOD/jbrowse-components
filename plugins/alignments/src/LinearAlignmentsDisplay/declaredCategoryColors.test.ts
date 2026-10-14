@@ -1,4 +1,5 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { colorNotices } from '@jbrowse/core/util/colorScale'
 
 import {
   buildArcColorPalette,
@@ -6,8 +7,9 @@ import {
 } from '../shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../shaders/slang/read.iface.generated.ts'
 import {
+  ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
-  alignmentsColorNotices,
+  alignmentsColorProblems,
   writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
@@ -139,7 +141,7 @@ test('an orientation field names its mate and chain levels', () => {
   expect(everyPathPaints(palette, 'splitInversion')[0]).toBe('rgb(0,0,255)')
   expect(everyPathPaints(palette, 'revStrand')[0]).toBe('rgb(255,255,0)')
   expect(
-    alignmentsColorNotices({
+    alignmentsColorProblems({
       ...UNSET,
       field: 'insertSizeAndOrientation',
       scale: 'categorical',
@@ -194,8 +196,14 @@ describe('the five levels that share the neutral default', () => {
 })
 
 describe('a domain that names no level says so', () => {
-  const notices = (color: Partial<AlignmentsColorSetting>) =>
-    alignmentsColorNotices({ ...UNSET, ...color })
+  // the schema's rules, then the reads' own, as the display's notice lists them
+  const notices = (color: Partial<AlignmentsColorSetting>) => {
+    const setting = { ...UNSET, ...color }
+    return [
+      ...colorNotices(setting, ALIGNMENTS_FIELD_PRESETS),
+      ...alignmentsColorProblems(setting),
+    ]
+  }
 
   test("strand's levels are 1 and -1, so '+' names none", () => {
     expect(

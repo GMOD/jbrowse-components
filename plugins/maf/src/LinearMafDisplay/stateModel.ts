@@ -20,7 +20,7 @@ import {
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
-import { colorNotices, withPreset } from '@jbrowse/core/util/colorScale'
+import { withPreset } from '@jbrowse/core/util/colorScale'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
@@ -142,6 +142,7 @@ import type {
 import type { MafColorField, MafYField, RowRendering } from './rowRenderings.ts'
 import type { MafHover } from './util.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -1739,54 +1740,61 @@ export default function stateModelFactory(
           return view.initialized && view.coarseBpPerPx <= 1
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * What the `color` object says that cannot paint as written, as the
-         * corner indicator lists it: the lines `plotProblems` and
-         * `jbrowse validate` report, then the ones only this display can tell.
-         */
-        get notices(): string[] {
-          const { colorField, colorSetting } = self
-          return [
-            ...colorNotices(colorSetting, MAF_FIELD_PRESETS),
-            ...(colorField === 'codon' && !self.annotationAdapterConfig
-              ? [
-                  'color.field: codon needs an annotationAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
-                ]
-              : []),
-            ...(colorSetting.range.length > 0 &&
-            (colorField === 'base' ||
-              colorField === 'mismatch' ||
-              colorField === 'codon')
-              ? [
-                  `color.range: ${colorField} paints the theme's colors and reads no range`,
-                ]
-              : []),
-          ]
-        },
-        /**
-         * #getter
-         * The Row coloring radio's tick: the X-Y plot where `y` is identity,
-         * else the color field, with codon falling back to the bases where no
-         * frames file defines a reading frame. Zoom-independent.
-         */
-        get selectedRowRendering(): RowRendering {
-          return self.yField === 'identity'
-            ? 'xyplot'
-            : self.colorField === 'codon' && !self.annotationAdapterConfig
-              ? 'mismatch'
-              : self.colorField
-        },
-        /**
-         * #getter
-         * Identity yields to the bases at base level while
-         * `rowIdentityAutoZoom` is on, where the letters say more than a mean.
-         */
-        get identityYields() {
-          return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
-        },
-      }))
+      .views(self => {
+        const superConfigProblemsOf = self.configProblemsOf
+        return {
+          /**
+           * #method
+           * The schema's rules, then what the rows cannot paint as written: a
+           * codon color with no reading frames, and a range on a field that
+           * paints the theme's colors.
+           */
+          configProblemsOf(conf: AnyConfigurationModel): string[] {
+            const colorField: string = readConfObject(conf, ['color', 'field'])
+            const range: readonly string[] = readConfObject(conf, [
+              'color',
+              'range',
+            ])
+            return [
+              ...superConfigProblemsOf(conf),
+              ...(colorField === 'codon' && !self.annotationAdapterConfig
+                ? [
+                    'color.field: codon needs an annotationAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
+                  ]
+                : []),
+              ...(range.length > 0 &&
+              (colorField === 'base' ||
+                colorField === 'mismatch' ||
+                colorField === 'codon')
+                ? [
+                    `color.range: ${colorField} paints the theme's colors and reads no range`,
+                  ]
+                : []),
+            ]
+          },
+          /**
+           * #getter
+           * The Row coloring radio's tick: the X-Y plot where `y` is identity,
+           * else the color field, with codon falling back to the bases where no
+           * frames file defines a reading frame. Zoom-independent.
+           */
+          get selectedRowRendering(): RowRendering {
+            return self.yField === 'identity'
+              ? 'xyplot'
+              : self.colorField === 'codon' && !self.annotationAdapterConfig
+                ? 'mismatch'
+                : self.colorField
+          },
+          /**
+           * #getter
+           * Identity yields to the bases at base level while
+           * `rowIdentityAutoZoom` is on, where the letters say more than a mean.
+           */
+          get identityYields() {
+            return self.rowIdentityAutoZoom && self.zoomedToBaseLevel
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter

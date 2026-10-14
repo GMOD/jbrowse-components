@@ -129,7 +129,7 @@ import {
 import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
 import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
-import { configSlotViews } from './configSlotViews.ts'
+import { alignmentsConfigProblems, configSlotViews } from './configSlotViews.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -242,6 +242,7 @@ import type {
   SectionsLayout,
 } from './sectionLayout.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -503,6 +504,7 @@ export default function stateModelFactory(
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
+        const superConfigProblemsOf = self.configProblemsOf
         return {
           /**
            * #getter
@@ -1459,19 +1461,24 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * What the `color`, `facet` and `scales.y` slots say that the display
-           * cannot draw as written, for the corner notice, and a facet field
-           * no fetched read answers.
+           * A facet field no fetched read answers.
            */
-          get notices(): string[] {
+          get liveNotices(): string[] {
+            return facetValueNotices(
+              this.effectiveFacet,
+              this.groupOrder.map(g => g.key),
+            )
+          },
+
+          /**
+           * #method
+           * The schema's rules, then what the reads cannot draw as written
+           * (`alignmentsConfigProblems`).
+           */
+          configProblemsOf(conf: AnyConfigurationModel): string[] {
             return [
-              ...self.colorNotices,
-              ...self.facetNotices,
-              ...facetValueNotices(
-                this.effectiveFacet,
-                this.groupOrder.map(g => g.key),
-              ),
-              ...self.valueScaleNotices,
+              ...superConfigProblemsOf(conf),
+              ...alignmentsConfigProblems(conf),
             ]
           },
 

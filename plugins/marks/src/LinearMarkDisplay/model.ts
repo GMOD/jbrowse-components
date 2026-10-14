@@ -174,6 +174,7 @@ import type {
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   ListedRowSource,
   RowSourceListing,
@@ -1385,12 +1386,12 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * What a draft plot would report once applied, as the lines `notices`
-         * carries, without touching the display; one a config file would
-         * refuse throws the refusal.
+         * The rule list over a config, as lines. It replaces the schema's
+         * rules rather than adding to them, since it checks the colors and
+         * `scales.y` itself.
          */
-        plotProblems(plot: MarkPlot): string[] {
-          return markProblems(this.liftMarkPlot(plot)).map(problemText)
+        configProblemsOf(conf: AnyConfigurationModel): string[] {
+          return markProblems(markPlotSettingsOf(conf)).map(problemText)
         },
         /**
          * #method
@@ -1424,28 +1425,29 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The config problems as lines, `dataNotices`, and the keys whose
-         * values collide: what the corner's problems notice lists. The
-         * skipped count has a chip of its own.
+         * The config's lines, `dataNotices`, and the keys whose values
+         * collide: what the corner's problems notice lists. The skipped count
+         * has a chip of its own.
          */
         get cornerNotices(): string[] {
           return [
-            ...this.configProblems.map(problemText),
+            ...self.configNotices,
             ...this.dataNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
           ]
         },
         /**
          * #getter
-         * `cornerNotices` and a mark whose every loaded feature was skipped,
-         * which a mistyped field is, as lines an agent's settle report
-         * carries: a display with any of them still draws, so nothing else
-         * reaches a caller that cannot see the corner.
+         * `dataNotices`, the colliding keys, and a mark whose every loaded
+         * feature was skipped, which a mistyped field is: a display with any
+         * of them still draws, so an agent's settle report is where a caller
+         * that cannot see the corner learns of them.
          */
-        get notices(): string[] {
+        get liveNotices(): string[] {
           const { skipped, total, fields } = this.skippedFeatures
           return [
-            ...this.cornerNotices,
+            ...this.dataNotices,
+            ...this.sharedKeys.map(sharedKeyNotice),
             ...(total > 0 && skipped === total
               ? [
                   `every one of ${total.toLocaleString()} ${pluralize(total, 'feature')} was skipped: ${fields.join(', ') || 'start or end'} missing or not a number`,

@@ -51,6 +51,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
+import { renderingOf } from '../renderingTypes.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { scoreRampApplies } from '../shared/scoreRampScale.ts'
@@ -60,13 +61,9 @@ import {
   resolveWiggleColor,
   wiggleColorEncoding,
   wiggleMarkColoring,
-  wiggleColorNotices,
+  wiggleColorProblems,
 } from '../shared/wiggleColor.ts'
-import {
-  getRowHeight,
-  getRowTop,
-  isLineMode,
-} from '../shared/wiggleComponentUtils.ts'
+import { getRowHeight, getRowTop } from '../shared/wiggleComponentUtils.ts'
 import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeMarkSizeMenuItems,
@@ -94,7 +91,7 @@ import type { WiggleContextInfo } from './components/findHit.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Plot } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -352,23 +349,10 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * What `colorSetting`'s and `scales.y`'s slots say together that they
-       * cannot draw as written, and a gradient a line cannot paint, for the
-       * corner notice.
+       * What the loaded sources said they could not serve.
        */
-      get notices(): string[] {
-        const notices = [
-          ...wiggleColorNotices(self.colorSetting),
-          ...self.valueScaleNotices,
-          ...sourceWarnings(self.rpcDataMap),
-        ]
-        return this.wiggleColor.rampLut !== null &&
-          isLineMode(self.renderingType)
-          ? [
-              ...notices,
-              'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
-            ]
-          : notices
+      get liveNotices(): string[] {
+        return sourceWarnings(self.rpcDataMap)
       },
 
       /**
@@ -701,6 +685,28 @@ export default function stateModelFactory(
         }
       },
     }))
+    .views(self => {
+      const superConfigProblemsOf = self.configProblemsOf
+      return {
+        /**
+         * #method
+         * The schema's rules, then what the plot cannot paint as written:
+         * threshold cuts past eight, and a gradient on a line.
+         */
+        configProblemsOf(conf: AnyConfigurationModel): string[] {
+          return [
+            ...superConfigProblemsOf(conf),
+            ...wiggleColorProblems(
+              colorSettingOf(conf.color),
+              renderingOf(
+                readConfObject(conf, 'mark'),
+                readConfObject(conf, 'interpolate'),
+              ),
+            ),
+          ]
+        },
+      }
+    })
     .actions(self => ({
       startRenderingBackend(backend: WiggleRenderingBackend) {
         installWiggleRenderingBackend(self, backend)

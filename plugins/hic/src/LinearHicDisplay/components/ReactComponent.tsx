@@ -1,7 +1,6 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
-import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
@@ -140,7 +139,6 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
             style={{ width, height, position: 'absolute', left: 0 }}
           />
           <HicOverlayPanel model={model} />
-          <ConfigProblemsCorner model={model} />
           <PointerLayer mouseTracker={mouseTracker}>
             {mouseState =>
               mouseState ? (

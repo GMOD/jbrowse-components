@@ -2,7 +2,6 @@ import { Suspense } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
-import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
@@ -53,7 +52,6 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
   const hasOverflow = model.scrollableHeight > 0
   return (
     <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
-      <ConfigProblemsIndicator notices={model.notices} />
       <TrackHeightIndicator
         heightMode={model.heightMode}
         hasOverflow={hasOverflow}

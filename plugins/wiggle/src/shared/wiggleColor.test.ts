@@ -5,7 +5,7 @@ import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import {
   resolveWiggleColor,
   wiggleColorEncoding,
-  wiggleColorNotices,
+  wiggleColorProblems,
 } from './wiggleColor.ts'
 import { wiggleColorSchema } from './wiggleColorConfigSchema.ts'
 
@@ -24,14 +24,22 @@ const color = (over: Partial<ColorSetting>) => ({ ...EMPTY, ...over })
 const resolved = (written: ColorSetting, origin: number) =>
   resolveWiggleColor(wiggleColorEncoding(written), origin)
 
-test('a threshold past the cuts the shader reads is a notice', () => {
+test('a threshold past the cuts the shader reads is a problem', () => {
   const domain = Array.from({ length: 9 }, (_, i) => String(i + 1))
-  expect(wiggleColorNotices(color({ scale: 'threshold', domain }))).toEqual([
+  const problems = (cuts: string[]) =>
+    wiggleColorProblems(color({ scale: 'threshold', domain: cuts }), 'xyplot')
+  expect(problems(domain)).toEqual([
     'color.domain: a wiggle threshold reads at most 8 cuts, and the 1 past them draw no band',
   ])
-  expect(
-    wiggleColorNotices(color({ scale: 'threshold', domain: domain.slice(1) })),
-  ).toEqual([])
+  expect(problems(domain.slice(1))).toEqual([])
+})
+
+test('a gradient on a line is a problem, and on bars none', () => {
+  const ramp = color({ field: 'score', scale: 'linear', scheme: 'viridis' })
+  expect(wiggleColorProblems(ramp, 'line')).toEqual([
+    'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
+  ])
+  expect(wiggleColorProblems(ramp, 'xyplot')).toEqual([])
 })
 
 test('a bare value paints both sides', () => {

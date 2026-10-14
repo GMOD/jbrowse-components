@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -8,7 +8,7 @@ import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
-  alignmentsColorNotices,
+  alignmentsColorProblems,
   baseLayerOf,
   bodyColorScheme,
   colorByOf,
@@ -40,6 +40,7 @@ import type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -58,6 +59,27 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * `canCollapseGroupRows`) and `showOutline` (which reads `unit`) stayed
  * behind despite also being slot reads.
  */
+/**
+ * What a config says beside the schema's rules that the reads cannot draw as
+ * written: a per-base `color.field`, levels a field does not have, and a
+ * `facet` the `unit` cannot group by.
+ */
+export function alignmentsConfigProblems(conf: AnyConfigurationModel) {
+  return [
+    ...alignmentsColorProblems({
+      ...colorSettingOf(conf.color),
+      labels: readConfObject(conf, ['color', 'labels']),
+    }),
+    ...facetUnitNotices(
+      facetSettingOf({
+        field: readConfObject(conf, ['facet', 'field']),
+        domain: readConfObject(conf, ['facet', 'domain']),
+      }),
+      readConfObject(conf, 'unit'),
+    ),
+  ]
+}
+
 export interface ConfigSlotSelf extends IStateTreeNode {
   type: string
   configuration: Instance<LinearAlignmentsDisplayConfigSchema>
@@ -225,25 +247,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
         },
         ALIGNMENTS_FIELD_PRESETS,
       ).descending
-    },
-    /**
-     * #getter
-     * What the `color` object's slots say together that it cannot paint as
-     * written, which the corner notice lists.
-     */
-    get colorNotices(): string[] {
-      return alignmentsColorNotices({
-        ...this.colorSetting,
-        labels: this.colorLabels,
-      })
-    },
-    /**
-     * #getter
-     * What `facet` names that `unit` cannot group by, which the corner notice
-     * lists.
-     */
-    get facetNotices(): string[] {
-      return facetUnitNotices(this.facet, this.unit)
     },
     /**
      * #getter

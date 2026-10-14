@@ -4,7 +4,6 @@ import { ScrollChrome } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
-import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
@@ -60,7 +59,6 @@ const MultiWayBody = observer(function MultiWayBody({
         <LaneHeaders model={model} />
       </div>
       <ScrollChrome model={model} controlsId={canvasId} />
-      <ConfigProblemsCorner model={model} />
       <PointerLayer mouseTracker={mouseTracker}>
         {mouse =>
           mouse && hoverTarget ? (

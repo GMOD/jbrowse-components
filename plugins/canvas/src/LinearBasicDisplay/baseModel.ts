@@ -4,6 +4,7 @@ import {
   ConfigurationReference,
   fullConfSnapshot,
   getConf,
+  plotOf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -136,7 +137,7 @@ import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Plot } from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -1608,18 +1609,18 @@ export default function baseStateModelFactory(
       },
     }))
     .views(self => {
-      const superPlotProblems = self.plotProblems
+      const superConfigProblemsOf = self.configProblemsOf
       return {
         /**
          * #method
-         * The base display's problems, then a `jexl:` color or filter that
-         * does not compile.
+         * The schema's rules, then a `jexl:` color or filter that does not
+         * compile.
          */
-        plotProblems(draft: Plot): string[] {
+        configProblemsOf(conf: AnyConfigurationModel): string[] {
           return [
-            ...superPlotProblems(draft),
+            ...superConfigProblemsOf(conf),
             ...plotJexlProblems(
-              draft,
+              plotOf(conf),
               getEnv<{ pluginManager: PluginManager }>(self).pluginManager.jexl,
             ),
           ]

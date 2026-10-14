@@ -1,9 +1,6 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import {
-  MEASURE_FIELD_PRESETS,
-  colorNotices,
-} from '@jbrowse/core/util/colorScale'
+import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
   thresholdLabels,
@@ -120,17 +117,18 @@ export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
   return colorEncodingOf(setting, ALIGNMENTS_FIELD_PRESETS)
 }
 
-/** What the `color` object's slots say together that it cannot paint as written. */
-export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
+/**
+ * What the `color` object says beside the schema's rules that the reads cannot
+ * paint as written: a per-base field, which is `baseColor`'s, or levels its
+ * field does not have.
+ */
+export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
   const encoding = alignmentsColorEncoding(setting)
-  return [
-    ...colorNotices(setting, ALIGNMENTS_FIELD_PRESETS),
-    ...(typeof encoding === 'object' && LAYER_OF_FIELD.has(encoding.field)
-      ? [
-          `color.field: ${encoding.field} is drawn a cell per base, which baseColor paints over the reads`,
-        ]
-      : levelNotices(encoding)),
-  ]
+  return typeof encoding === 'object' && LAYER_OF_FIELD.has(encoding.field)
+    ? [
+        `color.field: ${encoding.field} is drawn a cell per base, which baseColor paints over the reads`,
+      ]
+    : levelNotices(encoding)
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
