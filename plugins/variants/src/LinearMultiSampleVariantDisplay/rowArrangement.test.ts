@@ -404,7 +404,9 @@ describe('an adapter swap to a new cohort', () => {
 // The interned payload one variant's worth of genotypes reaches the model as:
 // codes are 1-based indices into `genotypeDict`, aligned to `sampleNames`.
 const ONE_VARIANT = {
-  simplifiedFeatures: [{ id: 'v1' }],
+  simplifiedFeatures: [
+    { id: 'v1', data: { refName: 'chr1', start: 0, end: 1, name: 'v1' } },
+  ],
   perRegionCellData: {
     0: {
       featureInfo: [
