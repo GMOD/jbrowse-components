@@ -1411,11 +1411,11 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Order the rows by their genotype at one variant's site — every
-         * record spanning its reference interval, so a site split one record
-         * per ALT sorts as one — ties broken by how far each row agrees with
-         * its neighbours to either side. Sorts `editableSources`, so the order
-         * written names every row.
+         * Order the rows by their genotype at one variant, then at the other
+         * records spanning its reference interval (a site split one record
+         * per ALT), then by how far each row agrees with its neighbours to
+         * either side. Sorts `editableSources`, so the order written names
+         * every row.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self

@@ -61,23 +61,20 @@ export function* anchorOutwardSites(
  * `readSite` resolves a site's data once for the whole pass rather than once
  * per row.
  */
-export interface SiteReader {
-  // one row's categorical value at the site, in [MISSING_VALUE, maxValue]
-  valueAt: (itemIndex: number) => number
-  maxValue: number
-}
-
 export function refineRowsBySite<T>({
   items,
   readSite,
   sites,
+  maxValue,
 }: {
   items: T[]
-  // Bind `site`. Larger values sort first, so alt-carrying rows lead and
-  // MISSING_VALUE lands last. Returning undefined means the site has nothing to
-  // say about any row, and is skipped without touching one.
-  readSite: (site: number) => SiteReader | undefined
+  // Bind `site`, returning a reader for one row's categorical value there, in
+  // [MISSING_VALUE, maxValue]. Larger sorts first, so alt-carrying rows lead
+  // and MISSING_VALUE lands last. Returning undefined means the site has
+  // nothing to say about any row, and is skipped without touching one.
+  readSite: (site: number) => ((itemIndex: number) => number) | undefined
   sites: Iterable<number>
+  maxValue: number
 }): T[] {
   const total = items.length
   const order = new Int32Array(total)
@@ -97,7 +94,9 @@ export function refineRowsBySite<T>({
     numBuckets = 1
   }
 
-  let cursors = new Int32Array(0)
+  // Values shift up by one so MISSING_VALUE indexes slot 0 and sorts last.
+  const numSlots = maxValue + 2
+  const cursors = new Int32Array(numSlots)
   const values = new Int32Array(total)
   const scratch = new Int32Array(total)
 
@@ -105,21 +104,15 @@ export function refineRowsBySite<T>({
     if (numBuckets === 0) {
       break
     }
-    const reader = readSite(site)
-    if (!reader) {
+    const valueAt = readSite(site)
+    if (!valueAt) {
       continue
-    }
-    const { valueAt } = reader
-    // Values shift up by one so MISSING_VALUE indexes slot 0 and sorts last.
-    const numSlots = reader.maxValue + 2
-    if (cursors.length < numSlots) {
-      cursors = new Int32Array(numSlots)
     }
     let numNext = 0
     for (let b = 0; b < numBuckets; b++) {
       const start = starts[b]!
       const end = ends[b]!
-      cursors.fill(0, 0, numSlots)
+      cursors.fill(0)
       for (let i = start; i < end; i++) {
         const slot = valueAt(order[i]!) + 1
         values[i] = slot
@@ -202,13 +195,11 @@ function buildValueTable({
     const ranked = [...new Set(dosages.filter(d => d > 0))].sort(
       (a, b) => a - b,
     )
-    const dosageByCode = new Int32Array(numCodes).fill(MISSING_VALUE)
     for (let d = 0; d < dosages.length; d++) {
       const dosage = dosages[d]!
       table[d + 1] = dosage > 0 ? ranked.indexOf(dosage) + 1 : dosage
-      dosageByCode[d + 1] = dosage
     }
-    return { table, stride, maxValue: ranked.length, dosageByCode }
+    return { table, stride, maxValue: ranked.length }
   }
   // An unphased call assigns no allele to either haplotype row, so it keeps the
   // MISSING fill rather than claiming one.
@@ -257,7 +248,7 @@ function buildValueTable({
 /**
  * Group features into sites, in genomic order: records spanning the same
  * reference interval are alleles of one site, which is how `bcftools norm -m-`
- * or vcfwave hands over a multiallelic site, one record per ALT.
+ * or vcfwave writes a multiallelic site, one record per ALT.
  */
 export function sitesBySpan(features: SimplifiedVariantFeature[]) {
   const byKey = new Map<string, string[]>()
@@ -273,10 +264,42 @@ export function sitesBySpan(features: SimplifiedVariantFeature[]) {
   return [...byKey.values()]
 }
 
+// Records to read, as indices into `sites.flat()`: the clicked one, then the
+// rest of its site, then the sites outward. Read record by record, a split
+// site's alleles stay apart, and each sibling lifts its own carriers before a
+// flank record can split the rows; walked by record instead, a flank to one
+// side came before the far siblings and scattered one inversion's carriers.
+export function* anchorFirstRecords(
+  sites: string[][],
+  anchorFeatureId: string,
+  maxFlank: number,
+) {
+  const offsets: number[] = []
+  let offset = 0
+  for (const ids of sites) {
+    offsets.push(offset)
+    offset += ids.length
+  }
+  const anchorSite = sites.findIndex(ids => ids.includes(anchorFeatureId))
+  for (const site of anchorOutwardSites(anchorSite, sites.length, maxFlank)) {
+    const ids = sites[site]!
+    const first = offsets[site]!
+    const lead = site === anchorSite ? ids.indexOf(anchorFeatureId) : -1
+    if (lead !== -1) {
+      yield first + lead
+    }
+    for (let i = 0; i < ids.length; i++) {
+      if (i !== lead) {
+        yield first + i
+      }
+    }
+  }
+}
+
 /**
- * Sort sample/haplotype rows around one clicked variant's site. Returns
- * undefined when the anchor isn't among the loaded features, so the caller can
- * leave the existing order alone.
+ * Sort sample/haplotype rows around one clicked variant. Returns undefined when
+ * the anchor isn't among the loaded features, so the caller can leave the
+ * existing order alone.
  */
 export function sortSourcesAroundVariant({
   sources,
@@ -296,7 +319,7 @@ export function sortSourcesAroundVariant({
   genotypeCodesByFeatureId: Map<string, Uint32Array>
   anchorFeatureId: string
   phased: boolean
-  // How far out ties may be broken, in variants each side. This is a locality
+  // How far out ties may be broken, in sites each side. This is a locality
   // bound, not a budget: the point of anchoring is to show the haplotype block
   // around one position, and a variant a thousand sites away is in a different
   // block with a different history, so letting it order rows here imports noise
@@ -304,8 +327,8 @@ export function sortSourcesAroundVariant({
   // order.
   maxFlank?: number
 }) {
-  const anchor = sites.findIndex(ids => ids.includes(anchorFeatureId))
-  if (anchor === -1) {
+  const featureIds = sites.flat()
+  if (!featureIds.includes(anchorFeatureId)) {
     return undefined
   }
   const sampleIndex = new Map<string, number>()
@@ -324,98 +347,42 @@ export function sortSourcesAroundVariant({
       ploidy = hp + 1
     }
   }
-  const { table, stride, maxValue, dosageByCode } = buildValueTable({
+  const { table, stride, maxValue } = buildValueTable({
     genotypeDict,
     phased,
     ploidy,
   })
 
-  // One site split across records, valued as its unsplit record would be:
-  // phased, the record a haplotype carries an alt of, ranked in record order
-  // as allele numbers rank; unphased, the summed dosage, as `1/2` paints full.
-  // Keys are ranked densely so the counting sort stays narrow.
-  const readSplitSite = (siteCodes: Uint32Array[]): SiteReader => {
-    const numRecords = siteCodes.length
-    const keys = new Int32Array(sources.length)
-    for (let s = 0; s < sources.length; s++) {
-      const sampleIdx = sourceSampleIdx[s]!
-      let key = MISSING_VALUE
-      if (sampleIdx !== -1) {
-        for (let r = 0; r < numRecords; r++) {
-          const code = siteCodes[r]![sampleIdx]!
-          if (code !== 0) {
-            if (dosageByCode) {
-              const dosage = dosageByCode[code]!
-              if (dosage >= 0) {
-                key = Math.min(255, Math.max(key, 0) + dosage)
-              }
-            } else {
-              const value = table[code * stride + sourceHp[s]!]!
-              if (value > 0) {
-                key = (numRecords - 1 - r) * maxValue + value
-                break
-              } else if (value === 0) {
-                key = 0
-              }
-            }
-          }
-        }
-      }
-      keys[s] = key
-    }
-    const ranked = [...new Set(keys)].filter(k => k > 0).sort((a, b) => a - b)
-    const rankOf = new Map(ranked.map((k, i) => [k, i + 1]))
-    for (let s = 0; s < keys.length; s++) {
-      const key = keys[s]!
-      if (key > 0) {
-        keys[s] = rankOf.get(key)!
-      }
-    }
-    return { maxValue: ranked.length, valueAt: s => keys[s]! }
-  }
-
   return refineRowsBySite<ProcessedSource>({
     items: sources,
-    sites: anchorOutwardSites(anchor, sites.length, maxFlank),
+    maxValue,
+    sites: anchorFirstRecords(sites, anchorFeatureId, maxFlank),
     // One `genotypeCodesByFeatureId` lookup per site rather than per row, and
     // separate phased/dosage readers so neither re-tests the mode per row.
     readSite: site => {
-      const siteCodes: Uint32Array[] = []
-      for (const id of sites[site]!) {
-        const codes = genotypeCodesByFeatureId.get(id)
-        if (codes) {
-          siteCodes.push(codes)
-        }
-      }
-      if (siteCodes.length > 1) {
-        return readSplitSite(siteCodes)
-      }
-      const codes = siteCodes[0]
+      const codes = genotypeCodesByFeatureId.get(featureIds[site]!)
       if (!codes) {
         return undefined
       }
-      return {
-        maxValue,
-        valueAt: phased
-          ? sourceIdx => {
-              const sampleIdx = sourceSampleIdx[sourceIdx]!
-              if (sampleIdx === -1) {
-                return MISSING_VALUE
-              }
-              const code = codes[sampleIdx]!
-              return code === 0
-                ? MISSING_VALUE
-                : table[code * stride + sourceHp[sourceIdx]!]!
+      return phased
+        ? sourceIdx => {
+            const sampleIdx = sourceSampleIdx[sourceIdx]!
+            if (sampleIdx === -1) {
+              return MISSING_VALUE
             }
-          : sourceIdx => {
-              const sampleIdx = sourceSampleIdx[sourceIdx]!
-              if (sampleIdx === -1) {
-                return MISSING_VALUE
-              }
-              const code = codes[sampleIdx]!
-              return code === 0 ? MISSING_VALUE : table[code]!
-            },
-      }
+            const code = codes[sampleIdx]!
+            return code === 0
+              ? MISSING_VALUE
+              : table[code * stride + sourceHp[sourceIdx]!]!
+          }
+        : sourceIdx => {
+            const sampleIdx = sourceSampleIdx[sourceIdx]!
+            if (sampleIdx === -1) {
+              return MISSING_VALUE
+            }
+            const code = codes[sampleIdx]!
+            return code === 0 ? MISSING_VALUE : table[code]!
+          }
     },
   })
 }

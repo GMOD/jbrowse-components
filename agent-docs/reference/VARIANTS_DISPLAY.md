@@ -137,14 +137,16 @@ by `altDosageByte`, the dosage the cells paint.
 `bcftools norm -m-` and vcfwave write a multiallelic site as one record per
 ALT, all spanning one reference interval.
 
-- **The anchored sort** groups them (`sitesBySpan`) and still ranks each
-  allele apart. When the sort read them as separate sites, its outward walk
-  reached unrelated records before the clicked record's siblings and scattered
-  one inversion's carriers.
+- **The anchored sort** reads the clicked record, then its siblings
+  (`sitesBySpan`, `anchorFirstRecords`), then the sites outward, each record
+  apart. A walk outward record by record reached unrelated records before the
+  far siblings and scattered one inversion's carriers. A sort that valued the
+  site as one record mixed the carriers of an insertion and a deletion sharing
+  a span in sample mode, and dropped the clicked allele down its site.
 - **Both matrices keep one column per record.** Whether two alleles at a site
   are one event (the HPRC FLNA/EMD inversion's 64) or two (C4's deletion and
-  insertion) is a similarity call the matrix cannot make from the VCF.
-  The data build collapses alleles that are one event.
+  insertion) is a similarity call the matrix cannot make from the VCF. That
+  call belongs in the data build that writes the callset.
 
 ## Settings
 
