@@ -135,8 +135,10 @@ export async function executeDotplotFeaturesAndPositions({
     // assemblyNames and returns another pair's alignments, whose refNames
     // match no vViewSnap region, leaving an empty plot behind the
     // "could not be mapped" warning. Mirrors the synteny render path's
-    // `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`; renaming
-    // rewrites refName but not assemblyName, so this stays canonical.
+    // `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`. The regions
+    // were respelled into the track's assembly names on the main thread
+    // (`renameRegionsForAdapter`), so this is the spelling the adapter
+    // compares.
     targetAssemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
   }
   const rawFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(

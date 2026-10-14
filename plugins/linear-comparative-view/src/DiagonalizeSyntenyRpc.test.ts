@@ -57,6 +57,7 @@ test('execute forwards targetAssemblyName to getFeatures and reorders the query 
         fetchRegions: [],
         refRefNameMap: {},
         queryRefNameMap: {},
+        targetAssemblyName: 'cacao',
       },
     ],
     referenceRegions: [

@@ -1,6 +1,10 @@
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import {
+  adapterAssemblyNames,
+  regionsInAssemblyNamespace,
+} from './regionsInAssemblyNamespace.ts'
+import {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
@@ -53,7 +57,21 @@ async function prepareDiagonalizeAdapter({
       regions: currentRegions,
     }),
   ])
-  return { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap }
+  // Which of its N-1 pairs a multi-genome adapter (MCScanBlocksAdapter,
+  // MultiGenomePAFAdapter) should return: the assembly being reordered, spelled
+  // as the track spells it, since the worker compares config text.
+  const [target] = regionsInAssemblyNamespace(
+    currentRegions.slice(0, 1),
+    adapterAssemblyNames(adapterConfig),
+    assemblyManager,
+  )
+  return {
+    adapterConfig,
+    fetchRegions,
+    refRefNameMap,
+    queryRefNameMap,
+    targetAssemblyName: target?.assemblyName,
+  }
 }
 
 /**

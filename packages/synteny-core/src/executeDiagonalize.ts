@@ -23,6 +23,8 @@ import type {
 //   queryRefNameMap: adapter refName -> canonical, per axis, to translate the
 //                    fetched alignments back so they match the canonical
 //                    reference/current regions
+// - targetAssemblyName: the reordered axis's assembly in this adapter's
+//                    spelling, which picks a multi-genome adapter's pair
 //
 // Build one with `prepareDiagonalizeAdapter` on the main thread.
 export interface DiagonalizeAdapterSpec {
@@ -30,6 +32,7 @@ export interface DiagonalizeAdapterSpec {
   fetchRegions: Region[]
   refRefNameMap: Record<string, string>
   queryRefNameMap: Record<string, string>
+  targetAssemblyName: string | undefined
 }
 
 // referenceRegions/currentRegions stay in the canonical namespace: the
@@ -44,8 +47,8 @@ export interface DiagonalizeArgs {
   // horizontal axis)
   referenceRegions: Region[]
   // the axis being reordered (synteny: the row below; dotplot: the vertical
-  // axis). Its assembly is also the pair selector handed to the adapter — see
-  // targetAssemblyName in the body.
+  // axis). Its assembly, respelled per adapter, is the pair selector — see
+  // DiagonalizeAdapterSpec.targetAssemblyName.
   currentRegions: Region[]
   // forwarded to getFeatures for adapters with bpPerPx-driven level-of-detail.
   // Optional on purpose: the synteny view passes its reference view's zoom, the
@@ -97,14 +100,6 @@ export async function executeDiagonalize(
   }
   checkAbortSignal(signal)
 
-  // Which of its N-1 pairs a multi-genome adapter (MCScanBlocksAdapter,
-  // MultiGenomePAFAdapter) should return: the assembly being reordered. Derived
-  // rather than taken as an argument — it is exactly currentRegions' assembly,
-  // so a caller could only ever pass the same value or a wrong one. Forgetting
-  // to pass it is what made the dotplot diagonalize against the wrong band
-  // while the synteny view worked.
-  const targetAssemblyName = currentRegions[0]?.assemblyName
-
   // The getFeatures call upgrades "Downloading alignments" to a determinate
   // download/parse bar while it runs. Still fetched sequentially: the adapters
   // are typically the same file at different perspectives, so serial fetching
@@ -114,7 +109,13 @@ export async function executeDiagonalize(
   const alignments: AlignmentData[] = []
   for (const [
     adapterIndex,
-    { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap },
+    {
+      adapterConfig,
+      fetchRegions,
+      refRefNameMap,
+      queryRefNameMap,
+      targetAssemblyName,
+    },
   ] of adapters.entries()) {
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager,

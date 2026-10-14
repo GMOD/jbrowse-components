@@ -47,6 +47,7 @@ const adapterSpec = {
   ] as Region[],
   refRefNameMap: { NC_p1: 'p1', NC_p2: 'p2' },
   queryRefNameMap: { NC_c1: 'c1', NC_c2: 'c2' },
+  targetAssemblyName: 'cacao',
 }
 
 const referenceRegions: Region[] = [
@@ -103,7 +104,7 @@ test('fetches with the renamed regions, whose assemblyName still anchors the pai
   expect(regions.map(r => r.refName)).toEqual(['NC_p1', 'NC_p2'])
   // ...but assemblyName survives renaming, which is the anchor side every
   // comparative adapter reads off the region itself. Only the mate side has to
-  // be named, and it comes from the canonical (never-renamed) currentRegions.
+  // be named, and the spec names it.
   expect(regions.map(r => r.assemblyName)).toEqual(['peach', 'peach'])
   expect(opts.targetAssemblyName).toBe('cacao')
 })
