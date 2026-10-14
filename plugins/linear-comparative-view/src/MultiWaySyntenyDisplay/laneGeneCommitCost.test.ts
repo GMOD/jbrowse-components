@@ -79,12 +79,18 @@ function changedKeys(
   return [...after.keys()].filter(key => after.get(key) !== before.get(key))
 }
 
-async function stackWithGenes() {
+async function stackWithGenes({ star = false } = {}) {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', ...laneNames],
     geneTracks: [],
     rpc: () => new Promise(() => {}),
   })
+  if (star) {
+    display.setAdapterHeader({
+      adapterConfig: display.adapterConfig,
+      value: { anchorAssemblyName: 'volvox' },
+    })
+  }
   setConf(
     display,
     'color',
@@ -180,5 +186,28 @@ test('a color setting repacks every lane', async () => {
 
   display.setGeneColorBy('cluster')
   expect(changedKeys(before, glyphCellsOf(cells())).length).toBe(before.size)
+  stop()
+})
+
+test.each([false, true])(
+  'a pan before the settle repacks no lane, star source %s',
+  async star => {
+    const { display, cells, stop } = await stackWithGenes({ star })
+    expect(display.rowsVsAnchor).toBe(star)
+    const view = display.lgv
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    const before = glyphCellsOf(cells())
+
+    view.scrollTo(view.offsetPx + 7)
+    expect(changedKeys(before, glyphCellsOf(cells()))).toEqual([])
+    stop()
+  },
+)
+
+test("the anchor's rule ticks every interval across the displayed region", async () => {
+  const { display, stop } = await stackWithGenes({ star: true })
+  expect(display.lgv.bpPerPx).toBe(1)
+  expect(display.tickIntervalBp).toBe(200)
+  expect(display.anchorTickXs).toEqual([0, 200, 400, 600, 800])
   stop()
 })

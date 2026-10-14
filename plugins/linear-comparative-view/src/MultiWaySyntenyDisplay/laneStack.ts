@@ -203,6 +203,11 @@ export interface BuildLanesOpts {
   labelOf?: (assemblyName: string) => string
 }
 
+/** px a lane's baseline and the anchor's rule draw over, a screen either side */
+export function stackReach(width: number): Span {
+  return [-width, 2 * width]
+}
+
 function clipSpan([a, b]: Span, [lo, hi]: Span): Span[] {
   const left = Math.max(Math.min(a, b), lo)
   const right = Math.min(Math.max(a, b), hi)
@@ -237,7 +242,7 @@ export function buildLanes({
     layerPx,
     inlineNames,
   )
-  const reach: Span = [-width, 2 * width]
+  const reach = stackReach(width)
   return {
     glyphHeight,
     bandHeight,

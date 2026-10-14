@@ -61,3 +61,34 @@ export function displayedRegionSpans(
     return reversed ? [right, left] : [left, right]
   })
 }
+
+/**
+ * px relative to `originPx` of every `step` bp of the displayed regions that
+ * lands in `[lo, hi]`, so a pan, which moves the view and not the origin,
+ * keeps the answer
+ */
+export function axisTickXs(
+  view: LinearGenomeViewModel,
+  step: number,
+  [lo, hi]: Span,
+  originPx = view.offsetPx,
+) {
+  const { bpPerPx, displayedRegions } = view
+  const xs: number[] = []
+  let before = 0
+  for (const { refName, start, end, reversed } of displayedRegions) {
+    const left = before / bpPerPx - originPx
+    before += end - start
+    const bpAt = (px: number) =>
+      reversed ? end - (px - left) * bpPerPx : start + (px - left) * bpPerPx
+    const from = Math.max(start, Math.min(bpAt(lo), bpAt(hi)))
+    const to = Math.min(end, Math.max(bpAt(lo), bpAt(hi)))
+    for (let bp = Math.ceil(from / step) * step; bp < to; bp += step) {
+      const span = axisSpan(view, refName, bp, bp + 1, originPx)
+      if (span) {
+        xs.push(span[0])
+      }
+    }
+  }
+  return xs
+}

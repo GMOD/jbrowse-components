@@ -90,7 +90,12 @@ import { createSyntenyPicker } from '../LinearSyntenyDisplay/syntenyPickEngine.t
 import { captureStackViewports } from '../SyntenyFollow/stackMove.ts'
 import { isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS, lanePairKey } from './alignmentOps.ts'
-import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
+import {
+  axisPlacement,
+  axisSpan,
+  axisTickXs,
+  displayedRegionSpans,
+} from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
@@ -140,6 +145,7 @@ import {
   gutterNearViewport,
   laneContentHeight,
   laneGeometry,
+  stackReach,
 } from './laneStack.ts'
 import { laneTrackIds } from './laneTrackPattern.ts'
 import {
@@ -220,7 +226,11 @@ import type {
   RowFrame,
   Span,
 } from './layoutMultiWay.ts'
-import type { LaneGlyphColors, TickGeometry } from './multiwayGeometry.ts'
+import type {
+  AnchorRule,
+  LaneGlyphColors,
+  TickGeometry,
+} from './multiwayGeometry.ts'
 import type {
   BarLayer,
   LaneMap,
@@ -260,7 +270,6 @@ export interface HoverTarget extends RibbonRef {
 
 const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
 const NO_GENES: LaneGene[] = []
-const NO_TICKS: readonly number[] = []
 
 function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
@@ -2216,27 +2225,19 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * px of the anchor's ticks across the displayed regions
+       * px of the anchor's ticks across the displayed regions, over the reach
+       * the anchor's rule draws
        */
       get anchorTickXs(): number[] {
-        const anchor = self.laneStack.lanes[0]
         const step = self.tickIntervalBp
-        const out: number[] = []
-        if (anchor && step > 0) {
-          for (const block of self.lgv.dynamicBlocks.contentBlocks) {
-            for (
-              let bp = Math.ceil(block.start / step) * step;
-              bp < block.end;
-              bp += step
-            ) {
-              const span = anchor.spanOf(block.refName, bp, bp + 1)
-              if (span) {
-                out.push(span[0])
-              }
-            }
-          }
-        }
-        return out
+        return self.lgv.initialized && step > 0
+          ? axisTickXs(
+              self.lgv,
+              step,
+              stackReach(self.canvasWidth),
+              self.renderOriginPx,
+            )
+          : []
       },
     }))
     .views(self => {
@@ -2248,9 +2249,7 @@ export function stateModelFactory(
         boxes: MultiWayCell
         boxNames: NamedSpan[]
         geneGroups: Map<string, string>
-        ruleSpans: Span[] | undefined
-        ruleTicks: readonly number[]
-        ruled: boolean
+        rule: AnchorRule | undefined
       }[] = []
       return {
         /**
@@ -2263,11 +2262,15 @@ export function stateModelFactory(
           const { lanes, glyphHeight, bandHeight } = self.laneStack
           const ink = bandInk()
           const anchorLane = self.rowsVsAnchor ? lanes[0] : undefined
-          const ruleSpans = anchorLane?.baseline
-          const ruleTicks = anchorLane ? self.anchorTickXs : NO_TICKS
           held = lanes.map((lane, row) => {
-            const ruled =
-              ruleSpans !== undefined && row > 0 && row + 1 < lanes.length
+            const rule =
+              anchorLane && row > 0 && row + 1 < lanes.length
+                ? {
+                    y: anchorRuleY(lane, bandHeight),
+                    spans: anchorLane.baseline,
+                    ticks: self.anchorTickXs,
+                  }
+                : undefined
             const colors = {
               genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
               boxes: boxColors,
@@ -2278,9 +2281,8 @@ export function stateModelFactory(
             const prev = held[row]
             if (
               prev?.lane === lane &&
-              prev.ruleSpans === ruleSpans &&
-              prev.ruleTicks === ruleTicks &&
-              prev.ruled === ruled &&
+              prev.rule?.spans === rule?.spans &&
+              prev.rule?.ticks === rule?.ticks &&
               prev.genes === genes &&
               prev.colors.genes === colors.genes &&
               prev.colors.boxes === colors.boxes &&
@@ -2295,20 +2297,11 @@ export function stateModelFactory(
               glyphHeight,
               width: self.canvasWidth,
               colors,
-              anchorRule:
-                ruleSpans && ruled
-                  ? {
-                      y: anchorRuleY(lane, bandHeight),
-                      spans: ruleSpans,
-                      ticks: ruleTicks,
-                    }
-                  : undefined,
+              anchorRule: rule,
             })
             return {
               lane,
-              ruleSpans,
-              ruleTicks,
-              ruled,
+              rule,
               genes,
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },

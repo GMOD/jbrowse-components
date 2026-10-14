@@ -960,6 +960,13 @@ function geneRow(lane: Lane, glyphHeight: number, pxDir: number) {
   }
 }
 
+/** the anchor's axis under a lane, where the next gutter reads it */
+export interface AnchorRule {
+  y: number
+  spans: readonly Span[]
+  ticks: readonly number[]
+}
+
 /**
  * Two cells, because `outlineColor` is a per-cell uniform: the boxes take the
  * lane's stroke and the genes none.
@@ -977,8 +984,7 @@ export function buildLaneCells({
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
-  /** the anchor's axis under this lane, where the next gutter reads it */
-  anchorRule?: { y: number; spans: readonly Span[]; ticks: readonly number[] }
+  anchorRule?: AnchorRule
 }): LaneCells {
   const glyphs = new GlyphBuilder()
   const boxes = new GlyphBuilder()
