@@ -174,18 +174,12 @@ export type getSubAdapterType = (
  * also told so (`freeResources`). @gmod/bam, @gmod/cram and @gmod/tabix each
  * hold their parsed chunks in a SharedReadCache charged to the shared budget,
  * and the budget credits a dropped cache back only once the collector has
- * actually taken it — whenever that is. Until @gmod/shared-read-cache 2.0 it
- * was worse than "whenever": the cache's idle sweep ran on a setInterval that
- * held the cache, a pending timer is a GC root, and so a cache nobody cleared
- * stayed reachable until that sweep emptied it three minutes later. Closing one
- * panned alignments track that way cost nothing that mattered: the worker fell
- * from 296 MB to 7 MB four minutes on. A run that opens and closes a track per
- * image does not have four minutes, and with the timer now holding its cache
- * weakly it still does not have a GC to wait for. `jb2export batch` drew a callset from CRAM slices of long reads at about a
- * record every two seconds, each record's adapters leaving a decoded slice
- * behind, and two of its four processes reached the 4 GB heap limit 135 s in
- * with the shared budget reporting 3,100 MB held against its 1,024 MB limit:
- * the budget leaves every cache its last entry, and there were 54 caches.
+ * taken it. A run that opens and closes a track per image has no GC to wait
+ * for. `jb2export batch` drew a callset from CRAM slices of long reads at
+ * about a record every two seconds, and before @gmod/shared-read-cache 2.1 two
+ * of its four processes reached the 4 GB heap limit 135 s in, with the budget
+ * at 3,100 MB against its 1,024 MB limit: the budget left each of 54 caches
+ * its last entry. 2.1 keeps one entry per budget instead.
  *
  * The refcount is what makes this safe to call on any track close: an adapter
  * pulled in as a sub-adapter carries its parent's sessionId (getSubAdapter

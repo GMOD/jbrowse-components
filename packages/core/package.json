@@ -317,7 +317,7 @@
     "@floating-ui/react": "^0.27.20",
     "@gmod/bgzf-filehandle": "^6.7.0",
     "@gmod/range-cache-filehandle": "^1.5.1",
-    "@gmod/shared-read-cache": "^2.0.1",
+    "@gmod/shared-read-cache": "^2.1.0",
     "@gmod/vcf": "^7.3.0",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/jexl": "^6.0.0",

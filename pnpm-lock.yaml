@@ -423,8 +423,8 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1
       '@gmod/shared-read-cache':
-        specifier: ^2.0.1
-        version: 2.0.1
+        specifier: ^2.1.0
+        version: 2.1.0
       '@gmod/vcf':
         specifier: ^7.3.0
         version: 7.3.0
@@ -4892,8 +4892,8 @@ packages:
   '@gmod/range-cache-filehandle@1.5.1':
     resolution: {integrity: sha512-y2VEVfdoV5G+n3GHXOcdSJfjLLpwON/Mn0Av2PhpuxhbOh/H3M+jy/rpr7cDCoo1lJw1rb2SY/M5jOai5At56Q==}
 
-  '@gmod/shared-read-cache@2.0.1':
-    resolution: {integrity: sha512-HXLI9d42+wRhnUx+Iyh5DPTIY4TnuVW9ROF90nGb0vQdOLT8MHq44VdQyc2Zt0HfngJUvhmPxjJRr28YykT05g==}
+  '@gmod/shared-read-cache@2.1.0':
+    resolution: {integrity: sha512-AyiUt0hiEGl7lWc1fuigbXR/RToIw3h72dalaRoSNau9WL9ux9rEfkcsXDYTgSDudehfAEQac1jTvn2zrfnELQ==}
 
   '@gmod/tabix@3.10.2':
     resolution: {integrity: sha512-vlHs03ILhRNuVWbqaA01nNQvRZBR+/uXia/1hWVu4wsHoArVfro5bUBCcYAhBo+kes7tdYJRc7xVWxwxT4Jscw==}
@@ -12992,13 +12992,13 @@ snapshots:
   '@gmod/bam@10.0.6':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
 
   '@gmod/bbi@11.3.2':
     dependencies:
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
   '@gmod/bed@2.3.2': {}
@@ -13010,7 +13010,7 @@ snapshots:
 
   '@gmod/cram@14.3.1':
     dependencies:
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       crc: 4.3.2
       generic-filehandle2: 2.5.1
       md5: 2.3.0
@@ -13028,20 +13028,20 @@ snapshots:
   '@gmod/hic@1.3.2':
     dependencies:
       '@gmod/inflate': 1.0.0
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
   '@gmod/indexedfasta@5.0.13':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
   '@gmod/inflate@1.0.0': {}
 
   '@gmod/nclist@3.0.15':
     dependencies:
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       '@jridgewell/resolve-uri': 3.1.2
 
   '@gmod/newick@1.0.3': {}
@@ -13050,12 +13050,12 @@ snapshots:
     dependencies:
       generic-filehandle2: 2.5.1
 
-  '@gmod/shared-read-cache@2.0.1': {}
+  '@gmod/shared-read-cache@2.1.0': {}
 
   '@gmod/tabix@3.10.2':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 2.0.1
+      '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
 

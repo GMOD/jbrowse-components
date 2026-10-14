@@ -55,10 +55,8 @@ export class BaseAdapter<
   /**
    * Called once, when the last session holding this adapter lets go and
    * dataAdapterCache drops it. An adapter whose library keeps parsed data
-   * clears it here: such a cache roots itself on an idle timer for minutes
-   * after its owner is dropped, and the shared budget in cacheBudgets leaves
-   * every cache its last entry, so a run that opens and closes a track per
-   * image otherwise holds one decoded chunk for each track it ever opened.
+   * clears it here, so the memory and its charge to the shared budget in
+   * cacheBudgets go back now rather than when the collector takes the cache.
    */
   freeResources() {}
 

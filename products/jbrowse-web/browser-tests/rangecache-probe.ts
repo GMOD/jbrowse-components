@@ -309,12 +309,6 @@ const hidden = await floor('after tab hidden')
 // the only one still helping once the parsed cache has expired. So the default
 // here has to clear fifteen plus a sweep interval, or it reports a cache that is
 // simply not due yet as one that never reclaims.
-//
-// Dropping the adapterCache key does NOT make a BamFile collectable at once
-// either: SharedReadCache runs its sweep on a setInterval whose callback closes
-// over the cache, and a pending timer is a GC root — so the parsed chunks stay
-// reachable through the timer until that sweep empties the cache and stops
-// itself.
 const IDLE_MINUTES = Number(process.env.IDLE_MINUTES || 19)
 if (process.env.SKIP_IDLE !== '1') {
   console.log(`  ...waiting out ${IDLE_MINUTES} min of idle sweeps`)
