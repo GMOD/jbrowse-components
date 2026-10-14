@@ -1,0 +1,34 @@
+{
+  "id": "multiway-lane-encode",
+  "measured": "2026-10-14",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "pnpm exec esbuild --bundle --platform=node --format=esm --target=node22 --outfile=/tmp/laneencode.mjs plugins/linear-comparative-view/benches/multiwayLaneEncode.bench.ts, then node /tmp/laneencode.mjs --lanes=40 --genes=60 --rounds=15 and again with --genes=400, on ada (load 0.2, node 24)",
+    "notes": "Forty multi-way mate lanes, each a frame over its own contig holding the given genes, every gene two mRNA isoforms of eight CDS segments, which the lane draws as nine rects, seven intron lines and an arrow. Four arms interleaved and rotated round-robin, min of 15 rounds. 'geometry' is geneGlyphGeometry per gene, the shape cut at the lane's holes and projected through its frame: the work a coordinate stage would take to the GPU. 'pack' is buildLaneCells per lane, which every settle runs on every lane, with each gene's shape already cached as LaneGene holds it; 'pack-control' the same calls through a second driver. 'encode' is the same rects, lines and arrows in lane bp through a flatten step and encodeFeatures, one call per family per lane. It is a FLOOR, as ADR-114's was: it fills x, x2, y, color and one integer lane per family, and leaves the strand row, the UTR height, the arrow width, the hit list and the cluster claims unwritten. 'vs pack' is typed rather than derived because it divides by another row."
+  },
+  "columns": [
+    { "key": "genes", "label": "genes per lane", "format": "int", "align": "right" },
+    { "key": "arm", "label": "arm" },
+    { "key": "primitives", "label": "primitives", "format": "int", "align": "right" },
+    { "key": "ms", "label": "wall", "format": "ms", "align": "right" },
+    {
+      "key": "nsPer",
+      "label": "per primitive (ns)",
+      "format": "int",
+      "align": "right",
+      "derived": "ms * 1000000 / primitives"
+    },
+    { "key": "vsPack", "label": "vs pack", "format": "x", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "genes": 60, "arm": "geometry", "primitives": 40800, "ms": 7.2, "vsPack": 0.67 } },
+    { "values": { "genes": 60, "arm": "pack", "primitives": 40800, "ms": 10.7, "vsPack": 1 } },
+    { "values": { "genes": 60, "arm": "pack-control", "primitives": 40800, "ms": 10.74, "vsPack": 1 } },
+    { "values": { "genes": 60, "arm": "encode", "primitives": 40800, "ms": 3.54, "vsPack": 0.33 } },
+    { "values": { "genes": 400, "arm": "geometry", "primitives": 272000, "ms": 50.5, "vsPack": 0.66 } },
+    { "values": { "genes": 400, "arm": "pack", "primitives": 272000, "ms": 76.5, "vsPack": 1 } },
+    { "values": { "genes": 400, "arm": "pack-control", "primitives": 272000, "ms": 76.4, "vsPack": 1 } },
+    { "values": { "genes": 400, "arm": "encode", "primitives": 272000, "ms": 20.3, "vsPack": 0.27 } }
+  ]
+}
