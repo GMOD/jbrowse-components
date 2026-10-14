@@ -45,9 +45,9 @@
 # as many words before exiting; `git status` is the check — "up to date with
 # origin/<branch>" means it landed.
 #
-# WHAT STILL ONLY REPORTS: `check-docs`, `diagrams:check` and `build:esm` have
-# no fixer, and `--fix` on either linter leaves whatever rule has no autofix.
-# Those are still yours to fix by hand, and nothing gets pushed until they
+# WHAT STILL ONLY REPORTS: `check-docs`, `diagrams:check`, `build:esm` and the
+# slot-defaults snapshot have no fixer, and `--fix` on either linter leaves
+# whatever rule has no autofix. Those are still yours to fix by hand, and nothing gets pushed until they
 # pass. They read the whole working tree, so from a shared checkout they can
 # report on someone else's uncommitted edit; the fixers cannot.
 #
@@ -278,6 +278,12 @@ eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
 docs_pid=$!
 eval "$cmd_diagrams_check" >"$tmp/diagrams.log" 2>&1 &
 diagrams_pid=$!
+
+# Report-only, never `-u`: a slot default that moved is a line someone reads
+# before it lands, which an autofix would skip.
+slot_defaults=products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts
+jest "$slot_defaults" --ci --reporters=default >"$tmp/slot-defaults.log" 2>&1 &
+slot_defaults_pid=$!
 
 # --- fixers, in sequence: each writes files the next one reads ---------------
 
@@ -513,6 +519,17 @@ if [ "$gstatus" != 0 ]; then
   echo "pre-push: pnpm diagrams:check failed" >&2
   cat "$tmp/diagrams.log" >&2
   status=$gstatus
+fi
+
+sstatus=0
+wait "$slot_defaults_pid" || sstatus=$?
+if [ "$sstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: the slot-defaults snapshot failed" >&2
+  cat "$tmp/slot-defaults.log" >&2
+  echo "A changed default, type or choice you intended: 'npx jest $slot_defaults -u'" >&2
+  echo "and commit the diff. One you didn't: the slot's configSchema is where to look." >&2
+  status=$sstatus
 fi
 
 # `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
