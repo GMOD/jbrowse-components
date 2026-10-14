@@ -14,6 +14,7 @@ import {
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { MAF_FIELD_PRESETS } from '../LinearMafDisplay/mafColorConfigSchema.ts'
+import { firstBlockEndingAfter } from './blockAtBp.ts'
 
 import type { MafBlock, MafIdentityBars } from './mafRenderingBackendTypes.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -343,21 +344,6 @@ export function identityBars(
       : new Uint32Array(runs.count).fill(XYPLOT_BAR_ABGR),
     count: runs.count,
   }
-}
-
-// Blocks are disjoint and ascending, so their ends ascend too.
-function firstBlockEndingAfter(blocks: readonly MafBlock[], bp: number) {
-  let lo = 0
-  let hi = blocks.length
-  while (lo < hi) {
-    const mid = (lo + hi) >>> 1
-    if (blocks[mid]!.endBp <= bp) {
-      lo = mid + 1
-    } else {
-      hi = mid
-    }
-  }
-  return lo
 }
 
 /**

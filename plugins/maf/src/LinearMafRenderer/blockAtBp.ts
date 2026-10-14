@@ -31,3 +31,25 @@ export function blockIndexAtBp(
   const idx = lo - 1
   return idx >= 0 && bp < blocks[idx]!.endBp ? idx : -1
 }
+
+/**
+ * The first block whose `endBp` lies past `bp`: where a walk over the blocks
+ * meeting `[bp, …)` starts. The blocks are disjoint and ascending, so their
+ * ends ascend too.
+ */
+export function firstBlockEndingAfter(
+  blocks: readonly { endBp: number }[],
+  bp: number,
+) {
+  let lo = 0
+  let hi = blocks.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (blocks[mid]!.endBp <= bp) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
