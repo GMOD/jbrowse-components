@@ -15,6 +15,7 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
   readTafBlock,
+  withoutTags,
 } from './tafParsing.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
@@ -105,14 +106,9 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
 
         // Parse the coordinate instructions
         const basesAndTags = trimmedLine.slice(0, semicolonIndex)
-        let rowInstructions = trimmedLine.slice(semicolonIndex + 3)
-
-        const atIndex = rowInstructions.indexOf(' @')
-        if (atIndex !== -1) {
-          rowInstructions = rowInstructions.slice(0, atIndex)
-        }
-
-        let instructions = parseRowInstructions(rowInstructions)
+        let instructions = parseRowInstructions(
+          withoutTags(trimmedLine.slice(semicolonIndex + 3)),
+        )
 
         if (isFirstCoordLine) {
           instructions = filterFirstLineInstructions(instructions)

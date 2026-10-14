@@ -52,16 +52,24 @@ export function parseBases(
   return basesStr
 }
 
+const TAGS = /(?:^| )@/
+
 /**
- * Strip optional ` @tags` suffix, trim, then RLE-decode if needed.
+ * `s` up to its `@` tags, which open the section or follow a space: a
+ * coordinate line whose rows are unchanged writes ` ; @ tags`, leaving the
+ * instruction list starting at the `@`.
  */
+export function withoutTags(s: string) {
+  const at = TAGS.exec(s)?.index
+  return at === undefined ? s : s.slice(0, at)
+}
+
+/** Strip optional `@tags`, trim, then RLE-decode if needed. */
 export function parseBasesColumn(
   s: string,
   runLengthEncodeBases: boolean,
 ): string {
-  const atIndex = s.indexOf(' @')
-  const basesOnly = atIndex !== -1 ? s.slice(0, atIndex) : s
-  return parseBases(basesOnly.trim(), runLengthEncodeBases)
+  return parseBases(withoutTags(s).trim(), runLengthEncodeBases)
 }
 
 // ` ; ` on a coordinate line carrying instructions, and a bare trailing ` ;` on

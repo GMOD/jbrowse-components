@@ -1195,6 +1195,28 @@ describe('readTafSlice guards a cut tail', () => {
     ])
     expect(features.map(f => f.seq)).toEqual(['AC', 'GT'])
   })
+
+  test('reads tags on a coordinate line, with or without instructions', () => {
+    const taf = [
+      'A ; i 0 hg38.chr1 100 + 1000 @ k:v',
+      'C ; @ k:v',
+      'G @ k:v',
+      'T ; g 0 2 @ k:v',
+      'A',
+      '',
+    ].join('\n')
+    const features = tafSliceBlocksOf(
+      adapter,
+      new TextEncoder().encode(taf),
+      false,
+      makeSourceResolver().resolve,
+    )
+    expect(features.map(f => [f.start, f.end])).toEqual([
+      [100, 101],
+      [101, 103],
+      [105, 107],
+    ])
+  })
 })
 
 describe('blockToFeature places a minus-strand reference row forward', () => {
