@@ -2,7 +2,7 @@
 # Answers "did that land leave main red" at the moment work actually enters main
 # here, which is `git merge --ff-only`, not `git push`.
 #
-# WHICH GATES, and why these three. A generated artifact going stale is the
+# WHICH GATES, and why these. A generated artifact going stale is the
 # oldest of the failures this catches and it is not the only one that lands
 # unseen. On 2026-08-22 main took four separate breakages in a day and only two
 # were artifacts: the others were a TS4058 in
@@ -16,6 +16,9 @@
 #   pnpm typecheck           ~2s warm
 #   pnpm lint                ~7s
 #   pnpm lint:eslint         ~29s
+#   pnpm check-config-read-types
+#                           ~10s on CI, 110s and 2GB here under load: its own
+#                           whole-repo program, too slow for pre-push
 #
 # Typecheck warm is 2s (scripts/typecheck.ts measures it: 1.8s default, 2.3s at
 # --checkers 1, against 45-60s cold), so the gate that caught the worst of that
@@ -144,13 +147,14 @@ mkdir "$lock" 2>/dev/null || exit 0
   out=$(pnpm autogen --check $flags 2>"$agen_err") && agen=0 || agen=$?
   # 2s warm, and the only gate here that sees a type error in `products/`.
   tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
+  cfg=$(pnpm check-config-read-types 2>&1) && cfg_status=0 || cfg_status=$?
   # No --fix, unlike pre-push's copy: that one runs on your own push, this one
   # against a checkout other agents have open.
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
   oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
-  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$esl_status" = 0 ] &&
-    [ "$oxl_status" = 0 ]; then
+  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$cfg_status" = 0 ] &&
+    [ "$esl_status" = 0 ] && [ "$oxl_status" = 0 ]; then
     rm -f "$marker" "$since"
   else
     head=$(git rev-parse --short HEAD)
@@ -181,6 +185,9 @@ mkdir "$lock" 2>/dev/null || exit 0
     fi
     if [ "$tsc_status" != 0 ]; then
       failed="${failed:+$failed, }typecheck"
+    fi
+    if [ "$cfg_status" != 0 ]; then
+      failed="${failed:+$failed, }check-config-read-types"
     fi
     if [ "$esl_status" != 0 ]; then
       failed="${failed:+$failed, }eslint"
@@ -239,6 +246,11 @@ mkdir "$lock" 2>/dev/null || exit 0
         echo "jest strips types -- and \`build:esm\` compiles only what we"
         echo "publish, so it never reaches products/."
         printf '%s\n' "$tsc" | grep -E 'error TS' | head -20 || true
+        echo
+      fi
+
+      if [ "$cfg_status" != 0 ]; then
+        printf '%s\n' "$cfg" | tail -8
         echo
       fi
 
