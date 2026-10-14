@@ -1,6 +1,7 @@
 import {
   anchorOutwardSites,
   refineRowsBySite,
+  sitesBySpan,
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
 
@@ -35,35 +36,46 @@ describe('refineRowsBySite', () => {
     [1, 1, 0], // d
   ]
   const items = ['a', 'b', 'c', 'd']
-  const readSite = (site: number) => (row: number) => grid[row]![site]!
+  const readSite = (site: number) => ({
+    maxValue: 3,
+    valueAt: (row: number) => grid[row]![site]!,
+  })
 
   test('sorts by the anchor site first, alt-carrying rows leading', () => {
-    expect(
-      refineRowsBySite({ items, readSite, sites: [0], maxValue: 3 }),
-    ).toEqual(['a', 'c', 'd', 'b'])
+    expect(refineRowsBySite({ items, readSite, sites: [0] })).toEqual([
+      'a',
+      'c',
+      'd',
+      'b',
+    ])
   })
 
   test('breaks anchor ties with the next site', () => {
     // at site 0 a/c/d tie at 1; site 1 splits c (0) from a and d (1)
-    expect(
-      refineRowsBySite({ items, readSite, sites: [0, 1], maxValue: 3 }),
-    ).toEqual(['a', 'd', 'c', 'b'])
+    expect(refineRowsBySite({ items, readSite, sites: [0, 1] })).toEqual([
+      'a',
+      'd',
+      'c',
+      'b',
+    ])
   })
 
   test('a later site cannot reorder rows an earlier site separated', () => {
     // site 2 would put c above d, but site 0/1 already ranked d above c
-    expect(
-      refineRowsBySite({ items, readSite, sites: [0, 1, 2], maxValue: 3 }),
-    ).toEqual(['a', 'd', 'c', 'b'])
+    expect(refineRowsBySite({ items, readSite, sites: [0, 1, 2] })).toEqual([
+      'a',
+      'd',
+      'c',
+      'b',
+    ])
   })
 
   test('rows that never differ keep their input order', () => {
     expect(
       refineRowsBySite({
         items: ['x', 'y'],
-        readSite: () => () => 1,
+        readSite: () => ({ maxValue: 3, valueAt: () => 1 }),
         sites: [0, 1],
-        maxValue: 3,
       }),
     ).toEqual(['x', 'y'])
   })
@@ -75,10 +87,9 @@ describe('refineRowsBySite', () => {
       items,
       readSite: site => {
         seen.push(site)
-        return row => distinct[row]![0]!
+        return { maxValue: 3, valueAt: row => distinct[row]![0]! }
       },
       sites: [0, 1, 2],
-      maxValue: 3,
     })
     // the anchor already made every row unique, so no flanking site is read
     expect(seen.every(site => site === 0)).toBe(true)
@@ -91,36 +102,32 @@ describe('refineRowsBySite', () => {
       items,
       readSite: site => {
         seen.push(site)
-        return row => grid[row]![site]!
+        return { maxValue: 3, valueAt: row => grid[row]![site]! }
       },
       sites: [0, 1, 2],
-      maxValue: 3,
     })
     expect(seen).toContain(2)
   })
 
   test('skips a site with no data without touching a row', () => {
     const read = jest.fn((site: number) =>
-      site === 1 ? undefined : (row: number) => grid[row]![site]!,
+      site === 1 ? undefined : readSite(site),
     )
     expect(
       refineRowsBySite({
         items,
         readSite: read,
         sites: [0, 1, 2],
-        maxValue: 3,
       }),
     ).toEqual(['a', 'c', 'd', 'b'])
     expect(read).toHaveBeenCalledWith(1)
   })
 
   test('handles a single row and no rows', () => {
-    expect(
-      refineRowsBySite({ items: ['only'], readSite, sites: [0], maxValue: 3 }),
-    ).toEqual(['only'])
-    expect(
-      refineRowsBySite({ items: [], readSite, sites: [0], maxValue: 3 }),
-    ).toEqual([])
+    expect(refineRowsBySite({ items: ['only'], readSite, sites: [0] })).toEqual(
+      ['only'],
+    )
+    expect(refineRowsBySite({ items: [], readSite, sites: [0] })).toEqual([])
   })
 })
 
@@ -160,7 +167,12 @@ function makePayload(table: Record<string, Record<string, string>>) {
     }
     genotypeCodesByFeatureId.set(featureId, codes)
   }
-  return { featureIds, sampleNames, genotypeDict, genotypeCodesByFeatureId }
+  return {
+    sites: featureIds.map(id => [id]),
+    sampleNames,
+    genotypeDict,
+    genotypeCodesByFeatureId,
+  }
 }
 
 function names(sources: ProcessedSource[] | undefined) {
@@ -170,7 +182,7 @@ function names(sources: ProcessedSource[] | undefined) {
 describe('sortSourcesAroundVariant', () => {
   test('ranks by dosage at the anchor, hom-alt first and no-call last', () => {
     const payload = makePayload({
-      v1: { homRef: '0/0', het: '0/1', homAlt: '1/1', noCall: '../shared' },
+      v1: { homRef: '0/0', het: '0/1', homAlt: '1/1', noCall: './.' },
     })
     const sorted = sortSourcesAroundVariant({
       ...payload,
@@ -184,7 +196,7 @@ describe('sortSourcesAroundVariant', () => {
   // `0/0/1` and `0/1/1` paint two shades, and `./1` paints a full dose
   test('ranks polyploid and partial calls by the dosage the cells paint', () => {
     const payload = makePayload({
-      v1: { a: '0/0/1', b: '0/1/1', c: '0/0/1', d: '0/1/1', e: '../shared/1' },
+      v1: { a: '0/0/1', b: '0/1/1', c: '0/0/1', d: '0/1/1', e: './1' },
     })
     const sorted = sortSourcesAroundVariant({
       ...payload,
@@ -276,7 +288,7 @@ describe('sortSourcesAroundVariant', () => {
 
   test('keeps every input row exactly once', () => {
     const payload = makePayload({
-      v1: { a: '0/1', b: '1/1', c: '../shared', d: '0/0' },
+      v1: { a: '0/1', b: '1/1', c: './.', d: '0/0' },
       v2: { a: '0/0', b: '0/1', c: '1/1', d: '0/1' },
     })
     const sources = makeSources(['a', 'b', 'c', 'd'], false)
@@ -287,6 +299,59 @@ describe('sortSourcesAroundVariant', () => {
       phased: false,
     })
     expect(names(sorted)!.toSorted()).toEqual(names(sources)!.toSorted())
+  })
+})
+
+// vcfwave and `bcftools norm -m-` write a multiallelic site as one record per
+// ALT, all spanning the same reference interval.
+describe('sortSourcesAroundVariant at a split site', () => {
+  test('sitesBySpan groups records by span, at the first one', () => {
+    const feature = (id: string, start: number, end: number) => ({
+      id,
+      data: { refName: 'chr1', start, end, name: id },
+    })
+    expect(
+      sitesBySpan([
+        feature('a1', 10, 500),
+        feature('b', 10, 11),
+        feature('a2', 10, 500),
+        feature('c', 20, 21),
+      ]),
+    ).toEqual([['a1', 'a2'], ['b'], ['c']])
+  })
+
+  test('lifts every carrier of the site, whichever record was clicked', () => {
+    // Read record by record, the flank on the right split the rows before the
+    // walk reached invA, so its carrier sorted under a non-carrier.
+    const payload = makePayload({
+      invA: { s1: '1|0', s2: '0|0', s3: '0|0', s4: '0|0' },
+      invB: { s1: '0|0', s2: '1|0', s3: '0|0', s4: '0|0' },
+      invC: { s1: '0|0', s2: '0|0', s3: '1|0', s4: '0|0' },
+      right: { s1: '0|0', s2: '0|0', s3: '0|0', s4: '1|0' },
+    })
+    const sorted = sortSourcesAroundVariant({
+      ...payload,
+      sites: [['invA', 'invB', 'invC'], ['right']],
+      sources: makeSources(['s1', 's2', 's3', 's4'], true),
+      anchorFeatureId: 'invC',
+      phased: true,
+    })
+    expect(names(sorted)!.slice(0, 3)).toEqual(['s1 HP0', 's2 HP0', 's3 HP0'])
+  })
+
+  test('sums dosage across the records, as the unsplit `1/2` paints', () => {
+    const payload = makePayload({
+      alt1: { d: '0/0', c: '0/0', a: '0/1', b: '1/1' },
+      alt2: { d: '0/0', c: '0/1', a: '0/1', b: '0/0' },
+    })
+    const sorted = sortSourcesAroundVariant({
+      ...payload,
+      sites: [['alt1', 'alt2']],
+      sources: makeSources(['d', 'c', 'a', 'b'], false),
+      anchorFeatureId: 'alt2',
+      phased: false,
+    })
+    expect(names(sorted)).toEqual(['a', 'b', 'c', 'd'])
   })
 })
 

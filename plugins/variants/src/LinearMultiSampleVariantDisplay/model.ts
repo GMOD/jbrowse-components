@@ -89,7 +89,10 @@ import {
   resolveSampleName,
   rowAliasOf,
 } from '../shared/getSources.ts'
-import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
+import {
+  sitesBySpan,
+  sortSourcesAroundVariant,
+} from './anchoredHaplotypeSort.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './components/variantCellSpan.ts'
@@ -195,8 +198,8 @@ function warnMissingAttribute(
   }
 }
 
-// What an anchored sort needs: the features in genomic order
-// (`simplifiedFeatures`) and each one's interned codes, which live per region.
+// What an anchored sort needs: the sites in genomic order and each feature's
+// interned codes, which live per region.
 function getOrderedGenotypeCodes(cellData: CellDataResult) {
   const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
   for (const regionData of Object.values(cellData.perRegionCellData)) {
@@ -205,7 +208,7 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
     }
   }
   return {
-    featureIds: cellData.simplifiedFeatures.map(f => f.id),
+    sites: sitesBySpan(cellData.simplifiedFeatures),
     genotypeCodesByFeatureId,
   }
 }
@@ -1408,9 +1411,11 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Order the rows by their genotype at one variant, ties broken by how
-         * far each row agrees with its neighbours to either side. Sorts
-         * `editableSources`, so the order written names every row.
+         * Order the rows by their genotype at one variant's site — every
+         * record spanning its reference interval, so a site split one record
+         * per ALT sorts as one — ties broken by how far each row agrees with
+         * its neighbours to either side. Sorts `editableSources`, so the order
+         * written names every row.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
@@ -1419,13 +1424,13 @@ export function stateModelFactory(
           // drop the cluster tree
           let sorted: ProcessedSource[] | undefined
           if (cellData && sources.length > 1) {
-            const { featureIds, genotypeCodesByFeatureId } =
+            const { sites, genotypeCodesByFeatureId } =
               getOrderedGenotypeCodes(cellData)
             sorted = sortSourcesAroundVariant({
               sources,
               sampleNames: cellData.sampleNames,
               genotypeDict: cellData.genotypeDict,
-              featureIds,
+              sites,
               genotypeCodesByFeatureId,
               anchorFeatureId: featureId,
               phased: self.unit === 'haplotype',
