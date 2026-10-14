@@ -4,6 +4,7 @@ import {
   resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { whenViewsSettled } from '@jbrowse/core/util/whenViewSettled'
 import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
@@ -17,7 +18,7 @@ import {
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
 
-import { normalizeTrackLevels } from './util/initHelpers.ts'
+import { placeSyntenyTracks } from './util/initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from './model.ts'
 import type { LinearSyntenyViewCommands } from './types.ts'
@@ -217,20 +218,41 @@ async function applyInitViewLocsAndTracks(
   )
 }
 
-// The synteny tracks themselves: `init.tracks` is per level (the gap between
-// views[i] and views[i+1]), so a 3-way view has two entries.
+// A misplaced entry is reported, never thrown: a throw here would skip the
+// level heights and the diagonalize, whose gate is already raised.
 async function applyInitSyntenyTracks(
   self: LinearSyntenyViewModel,
   init: SyntenyLaunch,
 ) {
-  if (init.tracks) {
-    for (const [i, entries] of normalizeTrackLevels(init.tracks).entries()) {
-      for (const entry of entries) {
-        if (typeof entry === 'string') {
-          await self.launchTrack(entry, i)
-        } else {
-          await self.launchTrack(entry.trackId, i, {}, {}, entry)
-        }
+  if (!init.tracks) {
+    return
+  }
+  const session = getSession(self)
+  const { levels, problems } = placeSyntenyTracks({
+    tracks: init.tracks,
+    rows: init.views.map(v => v.assembly),
+    assemblyNamesOf: entry => {
+      if (typeof entry !== 'string') {
+        return (entry.assemblyNames as string[] | undefined) ?? []
+      }
+      const conf = session.getTrackById(entry)
+      return conf ? getConfAssemblyNamesOrNone(conf) : undefined
+    },
+    assemblyManager: session.assemblyManager,
+  })
+  for (const { level, message } of problems) {
+    if (level === 'error') {
+      session.notifyError(message)
+    } else {
+      session.notify(message, 'warning')
+    }
+  }
+  for (const [i, entries] of levels.entries()) {
+    for (const entry of entries) {
+      if (typeof entry === 'string') {
+        await self.launchTrack(entry, i)
+      } else {
+        await self.launchTrack(entry.trackId, i, {}, {}, entry)
       }
     }
   }

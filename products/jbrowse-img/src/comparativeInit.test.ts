@@ -129,14 +129,14 @@ describe('dotplotInit', () => {
 })
 
 describe('syntenyInit', () => {
-  test('stacks every assembly and places each comparison at its own level', () => {
+  test('stacks every assembly and lists the comparisons the view places', () => {
     const data = config(
       [asm('a'), asm('b'), asm('c')],
       [syntenyTrack('a_b', ['a', 'b']), syntenyTrack('b_c', ['b', 'c'])],
     )
     expect(syntenyInit(data, { drawCurves: true })).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }, { assembly: 'c' }],
-      tracks: [['a_b'], ['b_c']],
+      tracks: ['a_b', 'b_c'],
       drawCurves: true,
     })
   })

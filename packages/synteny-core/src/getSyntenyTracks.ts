@@ -79,21 +79,32 @@ export function getSyntenyTracks<T extends AnyTrackConfig>(
   assemblies: string[],
   assemblyManager: AssemblyNameResolver,
 ) {
-  const needed = [
-    ...countByName(canonicalAssemblyNames(assemblies, assemblyManager)),
-  ]
-  return tracks.filter(track => {
-    if (!isSyntenyTrack(track)) {
-      return false
-    }
-    const available = countByName(
-      canonicalAssemblyNames(
+  return tracks.filter(
+    track =>
+      isSyntenyTrack(track) &&
+      coversAssemblies(
         getConfAssemblyNamesOrNone(track),
+        assemblies,
         assemblyManager,
       ),
-    )
-    return needed.every(([name, count]) => (available.get(name) ?? 0) >= count)
-  })
+  )
+}
+
+/**
+ * Whether a track naming `trackAssemblies` covers every one of `assemblies`,
+ * by the alias and multiplicity rules {@link getSyntenyTracks} states.
+ */
+export function coversAssemblies(
+  trackAssemblies: string[],
+  assemblies: string[],
+  assemblyManager: AssemblyNameResolver,
+) {
+  const available = countByName(
+    canonicalAssemblyNames(trackAssemblies, assemblyManager),
+  )
+  return [
+    ...countByName(canonicalAssemblyNames(assemblies, assemblyManager)),
+  ].every(([name, count]) => (available.get(name) ?? 0) >= count)
 }
 
 /**

@@ -1,4 +1,4 @@
-import { pairSyntenyTrackIds, syntenyTrackLevels } from './syntenyTracks.ts'
+import { pairSyntenyTrackIds, stackSyntenyTrackIds } from './syntenyTracks.ts'
 
 import type { Config, Opts } from './types.ts'
 import type { DotplotViewInit } from '@jbrowse/plugin-dotplot-view'
@@ -97,12 +97,12 @@ export function dotplotInit(data: Config, opts: Opts): DotplotViewInit {
   }
 }
 
-// Synteny stacks every assembly, with each level's comparison tracks in the gap
-// between the two assemblies they compare.
+// Synteny stacks every assembly; the view puts each comparison track in every
+// gap between two assemblies it compares.
 export function syntenyInit(data: Config, opts: Opts): LinearSyntenyViewInit {
   return {
     views: comparativeViews(data),
-    tracks: syntenyTrackLevels(data),
+    tracks: stackSyntenyTrackIds(data),
     ...syntenyViewKnobs(opts),
   }
 }

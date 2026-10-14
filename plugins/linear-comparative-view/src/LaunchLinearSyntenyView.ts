@@ -1,7 +1,5 @@
 import { launchSyntenyView } from '@jbrowse/synteny-core'
 
-import { normalizeTrackLevels } from './LinearSyntenyView/util/initHelpers.ts'
-
 import type { LinearSyntenyViewInit } from './LinearSyntenyView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
@@ -43,15 +41,13 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
     async args => {
       // Everything but session/id is a view object and forwards verbatim: the
       // view's own preProcessSnapshot sorts the launch keys from the
-      // properties. `tracks` is normalized here rather than there because the
-      // flat string[] shorthand means "all on level 0", which only this view
-      // knows.
-      const { session, id, views = [], tracks = [], ...rest } = args
+      // properties.
+      const { session, id, views = [], ...rest } = args
       await launchSyntenyView({
         session,
         id,
         viewType: 'LinearSyntenyView',
-        spec: { views, tracks: normalizeTrackLevels(tracks), ...rest },
+        spec: { views, ...rest },
       })
       return args
     },

@@ -325,6 +325,7 @@ export { SETTINGS_SURFACE_LABELS } from './settingsSurfaces.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
   connectedEndpoints,
+  coversAssemblies,
   getConnectedAssemblies,
   getSyntenyTracks,
   isSyntenyTrack,
