@@ -1,3 +1,4 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { COVERAGE_AXIS_LABEL } from '@jbrowse/wiggle-core'
 
@@ -66,6 +67,41 @@ test('the SNP floor and the interbase toggle reach the band', () => {
   expect(display.coverageBandState.snpMinFrequency).toBe(0.2)
   display.setShowInterbaseIndicators(false)
   expect(display.coverageBandState.showInterbase).toBe(false)
+})
+
+test('the zoomed-out tooltip snaps past a SNP under the floor, as the band skips it', () => {
+  const { display } = createMafTestEnvironment({
+    displayConfig: { coverageSnpMinFrequency: 0.2 },
+  }).createDisplay()
+  const A = 'A'.charCodeAt(0)
+  stageDetailRegion(display, 0, {
+    ...emptyMafWireRegionData(),
+    coverage: {
+      ...emptyMafCoverage(0),
+      coverageDepths: new Float32Array(8).fill(10),
+      coverageMaxDepth: 10,
+      mismatchPositions: Uint32Array.from([3, 6, 6, 6, 6, 6]),
+      mismatchBases: new Uint8Array(6).fill(A),
+    },
+  })
+  expect(display.coverageTooltipBin(0, 0, 8)?.position).toBe(6)
+})
+
+test('rules belong to the coverage scale, not the fixed conservation one', () => {
+  const display = displayWith({ showCoverage: false, showConservation: true })
+  expect(display.valueScales).toHaveLength(1)
+  expect(display.scoreRulesDrawn).toBe(false)
+  display.setShowCoverage(true)
+  expect(display.scoreRulesDrawn).toBe(true)
+})
+
+test('the interbase toggle greys out with the band hidden', () => {
+  const display = displayWith({ showCoverage: false })
+  const row = display
+    .trackMenuItems()
+    .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i]))
+    .find(i => 'label' in i && i.label === 'Show interbase indicators')
+  expect(row && 'disabled' in row && row.disabled).toBe(true)
 })
 
 test('the track menu offers the shared coverage rows', () => {

@@ -1,4 +1,4 @@
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import {
   COVERAGE_AXIS_LABEL,
   makeScoreAxisMenuItem,
@@ -41,8 +41,8 @@ function nearestSnpFrequencyOption(fraction: number) {
 
 // Two rows for the band: its axis, in the shared drawer widget, and its
 // allele-fraction floor, which is about what the bars are colored with
-// rather than the scale. The on/off toggle lives in the "Show..." menu (see
-// reads.ts).
+// rather than the scale. The on/off toggle and the interbase toggle below live
+// in each display's "Show..." menu.
 //
 // Both grey out with the band hidden: every setting here feeds the band's
 // draw and its hit test and nothing else, and neither row could turn it back
@@ -72,4 +72,30 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       ),
     },
   ]
+}
+
+/**
+ * The coverage band's "Show interbase indicators" row. Every interbase mark
+ * draws inside the band and its hit test reads the band's height, so with the
+ * band hidden the row greys out and names that switch.
+ */
+export function interbaseIndicatorsMenuItem(model: {
+  showCoverage: boolean
+  showInterbaseIndicators: boolean
+  setShowInterbaseIndicators: (show: boolean) => void
+}): MenuItem {
+  return toggleItem(
+    'Show interbase indicators',
+    model.showInterbaseIndicators,
+    show => {
+      model.setShowInterbaseIndicators(show)
+    },
+    {
+      disabled: !model.showCoverage,
+      disabledHelpText:
+        'Interbase marks are drawn in the coverage band — turn on "Show coverage" first',
+      helpText:
+        'Mark what occupies no reference base, insertions and on reads their clipping, with a between-base tick in the coverage band.',
+    },
+  )
 }

@@ -11,7 +11,7 @@ import type React from 'react'
  * appended after the radios (e.g. a related checkbox) within the same submenu.
  *
  * Every display has a submenu of this shape naming the one thing it draws —
- * wiggle's "Plot type", MAF's "Row coloring", Hi-C's "Color scheme", the arc
+ * wiggle's and MAF's "Plot type", Hi-C's "Color scheme", the arc
  * display's "Display mode". The labels stay display-specific (they name
  * genuinely different choices); the construction is shared so a hand-rolled
  * copy can't forget that a settings row keeps the menu open.
@@ -23,7 +23,7 @@ import type React from 'react'
 export function makeRadioSubMenu<T extends string>(opts: {
   label: string
   icon?: React.ElementType
-  value: T
+  value: T | undefined
   onChange: (value: T) => void
   options: readonly (readonly [T, string])[]
   extraItems?: MenuItem[]

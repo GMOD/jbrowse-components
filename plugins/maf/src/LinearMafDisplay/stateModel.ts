@@ -524,15 +524,16 @@ export default function stateModelFactory(
         /**
          * #getter
          * The named ramp identity paints along, the preset's where `color`
-         * writes none or is not identity.
+         * writes none or is not identity, and none while a written `range`
+         * paints instead.
          */
-        get colorScheme(): ColorSchemeName {
+        get colorScheme(): ColorSchemeName | undefined {
           const color = this.colorEncoding
-          return (
-            (color.field === 'identity' && color.scale === 'linear'
-              ? color.scheme
-              : undefined) ?? MAF_FIELD_PRESETS.identity.scheme
-          )
+          return color.field !== 'identity' || color.scale !== 'linear'
+            ? MAF_FIELD_PRESETS.identity.scheme
+            : color.range?.length
+              ? undefined
+              : (color.scheme ?? MAF_FIELD_PRESETS.identity.scheme)
         },
         /**
          * #getter
@@ -1511,6 +1512,14 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Overrides `ScoreScaleMixin`'s: `scales.y.rules` are depths, so they
+         * draw on the coverage band, never on the fixed conservation scale.
+         */
+        get scoreRulesDrawn(): boolean {
+          return self.coverageBandActive
+        },
+        /**
+         * #getter
          * The scales the chrome places the axes from: coverage over its
          * autoscaled depth, and conservation over a fixed 0-100%.
          */
@@ -1742,7 +1751,13 @@ export default function stateModelFactory(
           if (!coverage) {
             return undefined
           }
-          const position = coverageBinAt(coverage, basePos, bpPerPx, reversed)
+          const position = coverageBinAt(
+            coverage,
+            basePos,
+            bpPerPx,
+            reversed,
+            self.coverageSnpMinFrequency,
+          )
           const bin =
             position === undefined
               ? undefined

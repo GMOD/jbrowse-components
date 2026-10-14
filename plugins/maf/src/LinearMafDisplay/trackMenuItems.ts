@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
-import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
+import {
+  getCoverageMenuItems,
+  interbaseIndicatorsMenuItem,
+} from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   makeRadioSubMenu,
   toggleItem,
@@ -85,7 +88,7 @@ interface MafMenuSelf
   colorByField: (field: MafColorField) => void
   yField: MafYField | undefined
   setYField: (field: MafYField | undefined) => void
-  colorScheme: ColorSchemeName
+  colorScheme: ColorSchemeName | undefined
   setColorScheme: (scheme: ColorSchemeName) => void
   rowIdentityAutoZoom: boolean
   // Declared so the shared `rowHeightMenuItem` contract is checked here; maf is
@@ -140,9 +143,9 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 }
 
 /**
- * What the rows are colored by, as one radio over `color` and `y`. The codon
- * and identity options can tick a rendering that yields at the current zoom;
- * the hint and toggle say why the rows show bases.
+ * One Color by row, a `color.field`. The codon and identity rows can tick a
+ * field that yields at the current zoom; the hint and the toggle say why the
+ * rows show bases.
  */
 function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
   const label = MAF_COLOR_FIELD_LABELS[field]
@@ -223,11 +226,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showCoverage,
       self.setShowCoverage,
     ),
-    toggleItem(
-      'Show interbase indicators',
-      self.showInterbaseIndicators,
-      self.setShowInterbaseIndicators,
-    ),
+    interbaseIndicatorsMenuItem(self),
     toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
       'Show reference row',

@@ -61,11 +61,12 @@ export function solidColorItem(checked: boolean, onClick: () => void) {
 
 /**
  * A ramp's Color scheme submenu: a radio per named scheme with the painted one
- * ticked, then `extraItems`, the rows that adjust that ramp.
+ * ticked, none where the ramp is not a named scheme, then `extraItems`, the
+ * rows that adjust that ramp.
  */
 export function colorSchemeMenuItem(
   self: {
-    colorScheme: ColorSchemeName
+    colorScheme: ColorSchemeName | undefined
     setColorScheme: (scheme: ColorSchemeName) => void
   },
   extraItems?: MenuItem[],

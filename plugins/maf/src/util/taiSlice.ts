@@ -2,9 +2,9 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { parseTaiIndex, queryBlockSpan } from '../BgzipTaffyAdapter/taiIndex.ts'
+import { parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
-import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
+import type { IndexData } from './taiIndex.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
 

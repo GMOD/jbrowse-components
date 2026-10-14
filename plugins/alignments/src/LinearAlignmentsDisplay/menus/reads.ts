@@ -1,3 +1,4 @@
+import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -98,33 +99,10 @@ export function getReadsMenuItems(model: ReadsModel) {
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing.
     softClippingItem(model),
-    // Every interbase mark — the count bars and the fixed-size triangles alike
-    // — draws inside the coverage band (`ALIGNMENTS_COVERAGE_MARKS`, on both
-    // backends), and the hit test spells the same conjunction, so with the band
-    // hidden this toggle changes nothing:
-    // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that says so
-    // through the real draw path.
-    //
-    // Greyed rather than hidden, unlike LGVSyntenyDisplay's twin. The two
-    // displays default `showCoverage` opposite ways, and that is the whole
-    // difference: there the row would spend most of its life absent, so hiding
-    // it costs nothing, while here the band is on by default and vanishing the
-    // row would be the surprise. Greying keeps it discoverable and names the
-    // switch — this display's own idiom, shared with the arc-band options.
-    toggleItem(
-      'Show interbase indicators',
-      model.showInterbaseIndicators,
-      show => {
-        model.setShowInterbaseIndicators(show)
-      },
-      {
-        disabled: !model.showCoverage,
-        disabledHelpText:
-          'Interbase marks are drawn in the coverage band — turn on "Show coverage" first',
-        helpText:
-          'Mark insertions and clipping, which occupy no reference base, ' +
-          'with a between-base tick, in the coverage band.',
-      },
-    ),
+    // Greyed rather than hidden, unlike LGVSyntenyDisplay's twin, which
+    // defaults `showCoverage` off and so would spend its life greyed;
+    // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that the toggle
+    // draws nothing with the band hidden.
+    interbaseIndicatorsMenuItem(model),
   ] satisfies MenuItem[])
 }

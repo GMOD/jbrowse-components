@@ -59,7 +59,7 @@ describe('row coloring is the color field and the bar height', () => {
         color: { field: 'identity', range: ['red', 'blue'] },
       },
     }).createDisplay()
-    expect(display.colorScheme).toBe('redgreyblue')
+    expect(display.colorScheme).toBeUndefined()
     display.setColorScheme('viridis')
     expect(display.colorScheme).toBe('viridis')
     expect(display.colorEncoding).toMatchObject({

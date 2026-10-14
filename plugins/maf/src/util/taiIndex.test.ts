@@ -7,7 +7,7 @@ import {
   selectIndexEntries,
 } from './taiIndex.ts'
 
-import type { ByteRange, IndexData } from './types.ts'
+import type { ByteRange, IndexData } from './taiIndex.ts'
 
 // Build records at fixed chrStart positions; virtualOffset is irrelevant to
 // selection so a simple ascending offset keeps the fixtures readable.

@@ -106,7 +106,7 @@ async function run(backend: 'webgl' | 'canvas2d') {
       rowsTopOffset: display.rowsTopOffset as number,
       rowsHeight: display.rowsHeight as number,
       hasBand: display.coverageBandState !== undefined,
-      domainMax: (display.coverageDomain as number[] | undefined)?.[1],
+      domainMax: (display.coverageDepthDomain as number[] | undefined)?.[1],
     }
   })
 

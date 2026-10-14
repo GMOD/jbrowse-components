@@ -1,5 +1,5 @@
-import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
 import { mafBlocksOf } from '../util/parsedBlocks.fixture.ts'
+import { makeRefChrFilter } from '../util/taiIndex.ts'
 
 import type { ParsedAssemblyName } from '../util/parseAssemblyName.ts'
 

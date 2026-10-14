@@ -1,7 +1,7 @@
-import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
 import { MafAdapterBase } from './MafAdapterBase.ts'
 import { MafStanzaReader } from './mafStanzaReader.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
+import { makeRefChrFilter } from './taiIndex.ts'
 import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
