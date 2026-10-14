@@ -147,6 +147,24 @@ describe('a marks list in a config file', () => {
     expect(found([{ mark: 'span', interpolate: 'linear' }])).toEqual([
       `warning unread-interpolate ${DISPLAY}.marks[0].interpolate`,
     ])
+    expect(found([{ mark: 'span', gapBp: 5000 }])).toEqual([
+      `warning unread-gap ${DISPLAY}.marks[0].gapBp`,
+    ])
+    expect(
+      found([
+        {
+          mark: 'line',
+          encoding: { y: 'mean_score' },
+          transform: [
+            {
+              type: 'window',
+              frame: [5, -5],
+              ops: [{ op: 'mean', field: 'score' }],
+            },
+          ],
+        },
+      ]),
+    ).toEqual([`warning window-frame ${DISPLAY}.marks[0].transform[0].frame`])
     expect(
       found([{ mark: 'bar', rowProportion: 0.8, encoding: { y: 'score' } }]),
     ).toEqual([
