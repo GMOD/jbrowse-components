@@ -37,7 +37,7 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="property-runclustering">
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-sourcelisting">**sourceListing**</span><br><code>AdapterRead&lt;RowSourceListing &#124; undefined&gt; &#124; undefined</code> | The latest `MarkGetRowSources` answer, stamped with the adapter config it answers. |
+| <span id="volatile-sourcelisting">**sourceListing**</span><br><code>AdapterRead&lt;RowSourceListing &#124; null&gt; &#124; undefined</code> | The latest `MarkGetRowSources` answer, stamped with the adapter config it answers; null where the adapter lists none or the read failed. |
 | <span id="volatile-plotfields">**plotFields**</span><br><code>PlotFields &#124; undefined</code> |  |
 | <span id="volatile-plotfieldserror">**plotFieldsError**</span><br><code>unknown</code> |  |
 | <span id="volatile-plotdefaultchecked">**plotDefaultChecked**</span><br><code>boolean</code> |  |
@@ -222,7 +222,7 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`exp
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; undefined&gt;) =&gt; void</code> |  |
+| <span id="action-setsourcelisting">**setSourceListing**</span><br><code>(read: AdapterRead&lt;RowSourceListing &#124; null&gt;) =&gt; void</code> |  |
 | <span id="action-setrowproportion">**setRowProportion**</span><br><code>(n: number) =&gt; void</code> | Write every span mark's `rowProportion`. |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Fit the rows to the plot. The `height` getter is the slot itself, so nothing needs seeding on the way in. |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget on the read, the bin or the run a hit drew, inside its facet section, through `selectEncodedFeature`. |
