@@ -5598,13 +5598,13 @@
           }
         },
         "lengthField": {
-          "description": "feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off.",
+          "description": "feature attribute holding a signed bp length change vs the reference, or a jexl expression deriving one; enables indel glyphs. Empty = off.",
           "default": "",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/PlainString"
+            "$ref": "#/$defs/FeatureField"
           }
         },
         "color": {
