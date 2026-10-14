@@ -101,6 +101,10 @@ export interface RingLabel {
  * back to end there, as the linear view keeps one inside its region. The
  * two pieces of a feature cut at the origin meet there as one arc, which
  * takes the label of the piece before it.
+ *
+ * Labels never turn radial, as the ruler's do when one overruns its arc: a
+ * ring stacks lines, and a radial label would cross the ones inside and
+ * outside it. Declined 2026-10-14.
  */
 export function ringLabels(
   ring: Ring,
