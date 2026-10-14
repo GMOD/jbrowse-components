@@ -408,6 +408,14 @@ describe('color routing', () => {
     })
   })
 
+  test('color names a facet dimension as a read field', () => {
+    for (const field of ['pairing', 'split', 'spliced', 'mateAssembly']) {
+      expect(
+        buildDisplaySnapshot('alignments', [`color:${field}`]).snap,
+      ).toEqual({ color: { field } })
+    }
+  })
+
   test('baseColor draws over the reads, so it combines with a read color', () => {
     expect(
       buildDisplaySnapshot('alignments', [

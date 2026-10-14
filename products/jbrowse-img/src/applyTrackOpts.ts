@@ -27,6 +27,7 @@ import type {
   CategoryFilter,
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
+  ReadDimension,
 } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -54,15 +55,24 @@ function readFilterSnapOf(r: BuildResult): ReadFilterSnapshot {
 
 // What `color:` names on an alignments track: a read field fills the reads and
 // anything else is a CSS color. A per-base field is `baseColor:`'s.
-const ALIGNMENTS_COLOR_FIELDS = new Set([
+const ALIGNMENTS_COLOR_FIELD_LIST = [
   'strand',
   'firstOfPairStrand',
   'mapq',
   'insertSize',
   'pairOrientation',
   'insertSizeAndOrientation',
+  'pairing',
+  'split',
+  'spliced',
   'mateRefName',
-])
+  'mateAssembly',
+] as const
+const ALIGNMENTS_COLOR_FIELDS = new Set<string>(ALIGNMENTS_COLOR_FIELD_LIST)
+
+export type AssertColorFieldsCoverReadDimensions = AssertTrue<
+  Covers<ReadDimension, typeof ALIGNMENTS_COLOR_FIELD_LIST>
+>
 // `methylation` is the fill-unmarked view of the modifications field: one word
 // for the everyday CpG picture, which otherwise needs the JSON escape hatch to
 // reach the sibling `modifications` slot.
