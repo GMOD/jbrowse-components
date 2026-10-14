@@ -20,6 +20,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   installPrerequisiteFetch,
+  isCurrentRead,
   readFor,
 } from '@jbrowse/core/util/installPrerequisiteFetch'
 import {
@@ -635,6 +636,22 @@ export function stateModelFactory(
             ])
             ? listing
             : undefined
+        },
+        /**
+         * #getter
+         * The current adapter config's row listing has landed or failed, or
+         * this display draws no rows from one.
+         */
+        get rowListingSettled(): boolean {
+          return !self.drawsRows || isCurrentRead(self, self.sourceListing)
+        },
+        /**
+         * #getter
+         * True until the row listing settles, since the listing adds rows to
+         * the ones the features name and reorders them.
+         */
+        get dataSuperseded(): boolean {
+          return !this.rowListingSettled
         },
       }))
       .views(self => ({
@@ -1575,11 +1592,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Two or more clusterable rows and a mark that carries a value.
+         * Two or more clusterable rows once the row listing settles, and a
+         * mark that carries a value.
          */
         get autoClusterReady(): boolean {
           return (
-            self.clusterableSources.length > 1 && this.valueMarkIndex !== -1
+            self.rowListingSettled &&
+            self.clusterableSources.length > 1 &&
+            this.valueMarkIndex !== -1
           )
         },
         /**
@@ -1955,6 +1975,10 @@ export function stateModelFactory(
                 console.warn(
                   `Could not list the adapter's sources; rows come from the features alone: ${error}`,
                 )
+                self.setSourceListing({
+                  adapterConfig: self.adapterConfig,
+                  value: undefined,
+                })
               }
             },
           })

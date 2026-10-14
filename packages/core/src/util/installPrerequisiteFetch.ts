@@ -34,20 +34,28 @@ export interface AdapterRead<T> {
 }
 
 /**
+ * Whether `read` answers the adapter config `host` holds. Equal by value, as
+ * the fetch key is: an undo rebuilds the track's config, handing back an equal
+ * adapter config the fetch declines to read again.
+ */
+export function isCurrentRead<T>(
+  host: { adapterConfig: Record<string, unknown> },
+  read: AdapterRead<T> | undefined,
+): read is AdapterRead<T> {
+  return (
+    read !== undefined && isDataCurrent(read.adapterConfig, host.adapterConfig)
+  )
+}
+
+/**
  * `read`'s value while it answers the adapter config `host` holds; undefined
  * until a read of that config commits, which a failed read never does.
- *
- * Equal by value, as the fetch key is: an undo rebuilds the track's config,
- * handing back an equal adapter config the fetch declines to read again.
  */
 export function readFor<T>(
   host: { adapterConfig: Record<string, unknown> },
   read: AdapterRead<T> | undefined,
 ): T | undefined {
-  return read !== undefined &&
-    isDataCurrent(read.adapterConfig, host.adapterConfig)
-    ? read.value
-    : undefined
+  return isCurrentRead(host, read) ? read.value : undefined
 }
 
 /**
