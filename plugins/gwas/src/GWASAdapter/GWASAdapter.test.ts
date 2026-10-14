@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -61,13 +62,13 @@ test('a jexl: scoreTransform is evaluated per score', async () => {
 })
 
 describe('an LD join asked for through the fetch options', () => {
-  async function sle(opts: GWASFetchOptions = {}) {
+  async function sle(opts: GWASFetchOptions = {}, region = SLE_REGION) {
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: slePluginManager(),
       sessionId: 's',
       adapterConfig: SLE_ADAPTER,
     })
-    return dataAdapter.getFeaturesArray(SLE_REGION, opts)
+    return dataAdapter.getFeaturesArray(region, opts)
   }
   const named = (features: Feature[], name: string) =>
     features.find(f => f.get('name') === name)!
@@ -120,9 +121,20 @@ describe('an LD join asked for through the fetch options', () => {
     warn.mockRestore()
   })
 
+  it('notes nothing for a region too narrow to hold a partner', async () => {
+    const notices: string[] = []
+    const features = await sle(
+      { ld: { start: SLE_INDEX_START, refName: '2' }, notices },
+      { ...SLE_REGION, start: SLE_INDEX_START - 50, end: SLE_INDEX_START + 50 },
+    )
+    expect(features.map(f => f.get('ld_role'))).toEqual(['index'])
+    expect(notices).toEqual([])
+  })
+
   // The window follows the index, so a pan under one index reads the same
   // rows of the LD file.
   it('reads the LD file once per index SNP', async () => {
+    clearAdapterCache()
     const read = jest.spyOn(SleLDAdapter.prototype, 'getLDRecords')
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: slePluginManager(),
