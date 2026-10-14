@@ -542,6 +542,11 @@ oldifs=$IFS
 IFS='
 '
 for f in $changed; do
+  # an untracked file that came and went during the run is someone else's
+  # scratch, and a pathspec naming it fails the whole commit
+  if [ ! -e "$f" ] && ! git cat-file -e "HEAD:$f" 2>/dev/null; then
+    continue
+  fi
   if grep -Fxq -- "$f" "$tmp/dirty-before" 2>/dev/null; then
     manual=$manual$f'
 '
