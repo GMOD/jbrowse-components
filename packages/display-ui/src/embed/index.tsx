@@ -70,7 +70,10 @@ export const Track = observer(function Track({
   )
 })
 
+const KEYBOARD_RESIZE_STEP = 10
+
 export interface ResizableDisplay {
+  height: number
   setResizing: (resizing: boolean) => void
   resizeHeight: (distance: number) => unknown
 }
@@ -104,7 +107,23 @@ export const ResizeHandle = observer(function ResizeHandle({
     <div
       {...props}
       data-gesture-owner="true"
+      role="separator"
+      tabIndex={0}
+      aria-orientation="horizontal"
       aria-label={`Resize ${trackId}`}
+      aria-valuenow={Math.round(display.height)}
+      onKeyDown={event => {
+        const step =
+          event.key === 'ArrowDown'
+            ? KEYBOARD_RESIZE_STEP
+            : event.key === 'ArrowUp'
+              ? -KEYBOARD_RESIZE_STEP
+              : 0
+        if (step) {
+          event.preventDefault()
+          display.resizeHeight(step)
+        }
+      }}
       style={{
         height: 4,
         cursor: 'row-resize',

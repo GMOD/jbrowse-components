@@ -253,6 +253,7 @@ test('a resize bar draws only under a track that has a display', () => {
       trackId === 'genes'
         ? {
             activeDisplay: {
+              height: 40,
               setResizing: () => {},
               resizeHeight: () => 0,
             },
@@ -267,4 +268,20 @@ test('a resize bar draws only under a track that has a display', () => {
   )
   expect(screen.getByLabelText('Resize genes')).toBeTruthy()
   expect(screen.queryByLabelText('Resize reads')).toBeNull()
+})
+
+test('a resize bar is a separator the arrow keys resize', () => {
+  const resizeHeight = jest.fn()
+  const view = {
+    getTrack: () => ({
+      activeDisplay: { height: 40.4, setResizing: () => {}, resizeHeight },
+    }),
+  }
+  render(<ResizeHandle view={view} trackId="genes" />)
+  const bar = screen.getByRole('separator', { name: 'Resize genes' })
+  expect(bar.getAttribute('aria-valuenow')).toBe('40')
+  fireEvent.keyDown(bar, { key: 'ArrowDown' })
+  fireEvent.keyDown(bar, { key: 'ArrowUp' })
+  fireEvent.keyDown(bar, { key: 'Enter' })
+  expect(resizeHeight.mock.calls).toEqual([[10], [-10]])
 })

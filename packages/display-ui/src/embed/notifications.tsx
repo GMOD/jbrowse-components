@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
 import type React from 'react'
@@ -11,17 +12,6 @@ export interface NotificationsSession {
   popSnackbarMessage: () => unknown
   queueOfDialogs: readonly unknown[]
   removeActiveDialog: () => void
-}
-
-const row: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  marginTop: 8,
-  padding: '4px 8px',
-  fontSize: '0.8rem',
-  color: 'CanvasText',
-  background: 'color-mix(in srgb, CanvasText 8%, Canvas)',
 }
 
 /**
@@ -42,8 +32,20 @@ export const Notifications = observer(function Notifications({
   session: NotificationsSession
   style?: React.CSSProperties
 }) {
+  const palette = usePalette()
   const latest = session.snackbarMessages.at(-1)
   const queued = session.queueOfDialogs.length
+  const row: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    padding: '4px 8px',
+    fontSize: '0.8rem',
+    colorScheme: palette.mode,
+    color: palette.text.primary,
+    background: `color-mix(in srgb, ${palette.text.primary} 8%, ${palette.background.paper})`,
+  }
   return (
     <>
       {latest ? (

@@ -46,17 +46,14 @@ export interface HighlightsView extends IStateTreeNode {
   ) => { left: number; width: number } | undefined
 }
 
-const spanFill = {
-  seam: 'color-mix(in srgb, CanvasText 45%, Canvas)',
-  boundary: 'color-mix(in srgb, CanvasText 12%, Canvas)',
-  elided: 'color-mix(in srgb, CanvasText 30%, Canvas)',
-}
+const spanInk = { seam: 45, boundary: 12, elided: 30 }
 
 export const RegionSeams = observer(function RegionSeams({
   view,
 }: {
   view: RegionSeamsView
 }) {
+  const { text, background } = usePalette()
   return (
     <div
       aria-hidden
@@ -81,7 +78,7 @@ export const RegionSeams = observer(function RegionSeams({
             bottom: 0,
             left: x,
             width,
-            background: spanFill[kind],
+            background: `color-mix(in srgb, ${text.primary} ${spanInk[kind]}%, ${background.default})`,
           }}
         />
       ))}

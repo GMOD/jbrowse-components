@@ -1,3 +1,5 @@
+import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { observable } from 'mobx'
 
@@ -68,4 +70,25 @@ test('a queued dialog gets a line the reader can dismiss', () => {
   expect(screen.getByTestId('queued-dialog-notice').textContent).toContain(
     'JBrowse queued 1 dialog,',
   )
+})
+
+test("a notification takes the provider's mode, not the page's color scheme", () => {
+  const session = fakeSession()
+  session.snackbarMessages.push({ message: 'saved' })
+  const drawnIn = (mode: 'light' | 'dark') => {
+    const palette = resolvePalette({ configTheme: { palette: { mode } } })
+    const { unmount } = render(
+      <PaletteProvider palette={palette}>
+        <Notifications session={session} />
+      </PaletteProvider>,
+    )
+    const { colorScheme, background } =
+      screen.getByTestId('embed-notification').style
+    unmount()
+    return { colorScheme, background }
+  }
+  const light = drawnIn('light')
+  const dark = drawnIn('dark')
+  expect([light.colorScheme, dark.colorScheme]).toEqual(['light', 'dark'])
+  expect(dark.background).not.toBe(light.background)
 })

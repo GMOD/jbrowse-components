@@ -37,6 +37,7 @@ export { useCreateViewState } from './useCreateViewState.ts'
 export { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 export type { GpuOverride } from '@jbrowse/render-core/gpuDevice'
 export type { ViewModel } from './createModel/createModel.ts'
+export type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // the assembly vocabulary is product-core's, shared with the multi-view app
 export { resolveAssemblies } from '@jbrowse/product-core'
 export type {
