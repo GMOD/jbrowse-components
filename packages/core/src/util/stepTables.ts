@@ -22,9 +22,7 @@ import type {
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 
-export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
-/** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
-export const BIN_OVERLAP_FIELD = 'overlap'
+export { BIN_OVERLAP_FIELD, DEFAULT_BIN_AS } from './stepOutputs.ts'
 
 /**
  * A table's rows split into sections, each a contiguous range: `bounds[s]` is

@@ -1,17 +1,15 @@
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
+import { POSITION_FIELDS, stepsOutput } from '@jbrowse/core/util/stepOutputs'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
   AGGREGATE_OPS,
-  BIN_OVERLAP_FIELD,
-  CELLS_FIELDS,
   DEFAULT_AGGREGATE_OP,
   DEFAULT_CELLS_FIELD,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_WINDOW_FRAME,
-  MATE_FIELDS,
   isWindowFrame,
 } from './markVocabulary.ts'
 
@@ -19,7 +17,8 @@ import type { DraftMark } from './markEdit.ts'
 import type { MarkPlot } from './markPlot.ts'
 import type { StepSnapshot } from './markProblems.ts'
 import type { AggregateOpName, LineInterpolation } from './markVocabulary.ts'
-import type { JoinedPlotFields } from './scanPlotFields.ts'
+import type { PlotFields } from './scanPlotFields.ts'
+import type { FieldKind } from '@jbrowse/core/util/stepOutputs'
 
 type Snapshot = Record<string, unknown>
 
@@ -321,76 +320,39 @@ export function stepSummary(step: StepSnapshot): string {
   }
 }
 
-const CELLS_TEXT_FIELDS = new Set<string>(['state', 'base'])
-const MATE_NUMERIC_FIELDS = new Set<string>(['mate.start', 'mate.end'])
+const POSITIONS = new Set<string>(POSITION_FIELDS)
 
 /**
- * The fields a mark's steps write, split as a scan splits what the features
- * carry, which the field pickers offer beside those: an aggregate's
- * summaries, a coverage's depth, a pileup's row, a cell's state, a mate's
- * locus.
+ * The fields a channel can name after `steps`: the scanned features' own,
+ * less those a step that made its rows anew dropped, and the ones the steps
+ * write, each under the kind of value it holds. A step's write outranks the
+ * scan, so a cell's text `state` is categorical whatever a feature field of
+ * that name held.
  */
-export function stepWrittenFields(
+export function stepFields(
+  scanned: PlotFields,
   steps: readonly StepSnapshot[],
-): JoinedPlotFields {
-  const numeric: string[] = []
-  const categorical: string[] = []
-  for (const step of steps) {
-    switch (step.type) {
-      case 'coverage': {
-        numeric.push(step.as || DEFAULT_COVERAGE_AS)
-        break
-      }
-      case 'aggregate':
-      case 'window': {
-        for (const op of step.ops ?? []) {
-          numeric.push(
-            aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
-          )
-        }
-        break
-      }
-      case 'formula': {
-        numeric.push(step.as || DEFAULT_FORMULA_AS)
-        break
-      }
-      case 'pileup': {
-        numeric.push(step.as || DEFAULT_PILEUP_AS)
-        break
-      }
-      case 'flatten': {
-        if (step.index) {
-          numeric.push(step.index)
-        }
-        if (step.key) {
-          categorical.push(step.key)
-        }
-        break
-      }
-      case 'cells': {
-        for (const field of CELLS_FIELDS) {
-          ;(CELLS_TEXT_FIELDS.has(field) ? categorical : numeric).push(field)
-        }
-        break
-      }
-      case 'mate': {
-        for (const field of MATE_FIELDS) {
-          ;(MATE_NUMERIC_FIELDS.has(field) ? numeric : categorical).push(field)
-        }
-        break
-      }
-      case 'bin': {
-        if (step.fields?.length === 2) {
-          numeric.push(BIN_OVERLAP_FIELD)
-        }
-        break
-      }
-      case 'filter': {
-        break
-      }
-    }
+): PlotFields {
+  const { written, surviving } = stepsOutput(steps)
+  const survives = (field: string) => !surviving || surviving.has(field)
+  const kindOf = new Map(
+    written
+      .filter(w => w.kind !== 'unknown' && !POSITIONS.has(w.field))
+      .map(w => [w.field, w.kind]),
+  )
+  const offered = (list: readonly string[], kind: FieldKind) => [
+    ...new Set([
+      ...list.filter(f => survives(f) && (kindOf.get(f) ?? kind) === kind),
+      ...[...kindOf].filter(([, k]) => k === kind).map(([f]) => f),
+    ]),
+  ]
+  const sparse = scanned.sparse?.filter(survives)
+  return {
+    ...scanned,
+    numeric: offered(scanned.numeric, 'numeric'),
+    categorical: offered(scanned.categorical, 'categorical'),
+    ...(sparse ? { sparse } : {}),
   }
-  return { numeric, categorical }
 }
 
 /** The zoom a density takes over at, in bp per px. */

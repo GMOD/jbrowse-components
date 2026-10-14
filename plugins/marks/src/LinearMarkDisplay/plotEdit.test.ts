@@ -1,22 +1,14 @@
 import { withChannel } from './markEdit.ts'
-import {
-  stepWrittenFields,
-  withAggregateOp,
-  withSplitField,
-} from './plotEdit.ts'
-import { withJoinedFields } from './scanPlotFields.ts'
+import { stepFields, withAggregateOp, withSplitField } from './plotEdit.ts'
 
 import type { MarkPlot } from './markPlot.ts'
 
 test('a text field a step writes is picked as a category, a number as a ramp', () => {
-  const fields = withJoinedFields(
-    { numeric: [], categorical: [] },
-    stepWrittenFields([
-      { type: 'flatten', field: 'alignments', key: 'species' },
-      { type: 'cells' },
-      { type: 'mate' },
-    ]),
-  )
+  const fields = stepFields({ numeric: ['state'], categorical: [] }, [
+    { type: 'flatten', field: 'alignments', key: 'species' },
+    { type: 'cells' },
+    { type: 'mate' },
+  ])
   const scaleOf = (field: string) =>
     (
       withChannel({ mark: 'span' }, 'color', field, fields).encoding?.color as {
@@ -28,6 +20,23 @@ test('a text field a step writes is picked as a category, a number as a ramp', (
   expect(scaleOf('svType')).toBe('categorical')
   expect(scaleOf('match')).toBe('linear')
   expect(scaleOf('mate.start')).toBe('linear')
+  expect(fields.numeric).not.toContain('start')
+})
+
+test('the picker offers what survives an aggregate, and the edges a bin renamed', () => {
+  const scanned = { numeric: ['score'], categorical: ['strand'] }
+  const binned = [{ type: 'bin' as const, as: ['lo', 'hi'] }]
+  expect(stepFields(scanned, binned).numeric).toEqual(['score', 'lo', 'hi'])
+  const counted = stepFields(scanned, [
+    ...binned,
+    { type: 'aggregate', ops: [{ op: 'count' }] },
+  ])
+  expect(counted.numeric).toEqual(['lo', 'hi', 'count'])
+  expect(counted.categorical).toEqual([])
+  const grouped = stepFields(scanned, [
+    { type: 'aggregate', groupby: ['strand'], ops: [{ op: 'count' }] },
+  ])
+  expect(grouped.categorical).toEqual(['strand'])
 })
 
 test('a split field retyped through empty keeps the order and the steps the setting held', () => {

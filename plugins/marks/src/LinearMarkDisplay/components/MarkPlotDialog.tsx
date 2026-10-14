@@ -21,7 +21,7 @@ import {
 import { markProblemIndex } from '../markProblemIndex.ts'
 import { markProblems } from '../markProblems.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
-import { stepWrittenFields, stepsOfMark, withSteps } from '../plotEdit.ts'
+import { stepFields, stepsOfMark, withSteps } from '../plotEdit.ts'
 import { withJoinedFields } from '../scanPlotFields.ts'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
 import MarkList from './MarkList.tsx'
@@ -131,10 +131,10 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
     setMarks(marks.with(at, next))
   }
   const shared = sharedSteps(plot)
-  const fields = withJoinedFields(
-    scanned,
-    stepWrittenFields([...shared, ...(mark ? stepsOfMark(mark) : [])]),
-  )
+  const fields = stepFields(scanned, [
+    ...shared,
+    ...(mark ? stepsOfMark(mark) : []),
+  ])
   const plotOptions = [...scanned.categorical, ...scanned.numeric]
 
   return (

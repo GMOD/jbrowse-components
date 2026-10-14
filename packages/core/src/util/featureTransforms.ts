@@ -22,6 +22,12 @@ import { fieldReader, isPlainFieldRef } from './fieldReader.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 import {
+  DEFAULT_COVERAGE_AS,
+  DEFAULT_PILEUP_AS,
+  isRowwise,
+  stepWrites,
+} from './stepOutputs.ts'
+import {
   BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS,
   FannedTable,
@@ -63,8 +69,7 @@ export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export { DEFAULT_CELLS_FIELD } from './cellsStep.ts'
 export { DEFAULT_WINDOW_FRAME } from './windowStep.ts'
-export const DEFAULT_COVERAGE_AS = 'coverage'
-export const DEFAULT_PILEUP_AS = 'row'
+export { DEFAULT_COVERAGE_AS, DEFAULT_PILEUP_AS } from './stepOutputs.ts'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']
 
 function oneSection(n: number): Bounds {
@@ -1414,29 +1419,6 @@ export function runTransforms(
     .table
 }
 
-// The fields a step writes onto its rows, which a partition on one of them
-// has to wait for; none for a step that must see every row at once.
-function writes(step: TransformStep): readonly string[] | undefined {
-  switch (step.type) {
-    case 'filter': {
-      return []
-    }
-    case 'formula': {
-      return [step.as]
-    }
-    case 'bin': {
-      const as = step.as ?? DEFAULT_BIN_AS
-      return step.fields ? [...as, BIN_OVERLAP_FIELD] : as
-    }
-    case 'cells': {
-      return ['start', 'end', 'state', 'base', 'match', 'length']
-    }
-    default: {
-      return undefined
-    }
-  }
-}
-
 /**
  * How many of `steps` must run before rows can be split on `field`: the rest
  * each read a row and answer rows of it in order without writing `field`, so
@@ -1450,7 +1432,11 @@ function partitionPoint(steps: readonly TransformStep[], field: FieldRef) {
     return steps.length
   }
   let at = steps.length
-  while (at > 0 && writes(steps[at - 1]!)?.includes(field) === false) {
+  while (at > 0) {
+    const step = steps[at - 1]!
+    if (!isRowwise(step) || stepWrites(step).some(w => w.field === field)) {
+      break
+    }
     at--
   }
   return at

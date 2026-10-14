@@ -1,9 +1,21 @@
 /**
  * The names a `marks` list is written in and the ones a slot left off reads
- * as, in a module that imports nothing: the config schema declares its
+ * as, in a module that imports only the rule list's seam: the config schema declares its
  * enumerations and defaults from here, the rule list reads the same constants,
- * and `jbrowse validate` carries a copy of both.
+ * and `jbrowse validate` carries a copy of both. What a step writes, and
+ * the defaults it writes under, are the step table's.
  */
+
+export {
+  BIN_OVERLAP_FIELD,
+  CELLS_FIELDS,
+  DEFAULT_AGGREGATE_OP,
+  DEFAULT_BIN_AS,
+  DEFAULT_COVERAGE_AS,
+  DEFAULT_FORMULA_AS,
+  DEFAULT_PILEUP_AS,
+  MATE_FIELDS,
+} from './markRuleFacts.ts'
 
 export const MARK_TYPES = [
   'bar',
@@ -39,16 +51,9 @@ export const MAX_THRESHOLD_CUTS = 8
 export const SIZE_SCALES = ['linear', 'log'] as const
 export type SizeScaleName = (typeof SIZE_SCALES)[number]
 
-export const DEFAULT_FORMULA_AS = 'value'
 export const DEFAULT_BIN_FIELD = 'start'
-export const DEFAULT_BIN_AS = ['start', 'end'] as const
-/** What a `bin` over `fields` writes on each piece: the bases of its interval inside its bin. */
-export const BIN_OVERLAP_FIELD = 'overlap'
-export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
-/** What a `cells` step writes: `state` on every cell, `base` on a mismatch or an insertion, `match` off a gap or a reference `N`, `length` on an insertion. */
-export const CELLS_FIELDS = ['state', 'base', 'match', 'length'] as const
 /** The rows before and after each row a `window` reads: a moving average over 21. */
 export const DEFAULT_WINDOW_FRAME = [-10, 10] as const
 
@@ -70,22 +75,9 @@ export function isWindowFrame(
     (before === null || after === null || Number(before) <= Number(after))
   )
 }
-export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 export const DEFAULT_TEXT_FIELD = 'name'
 export const DEFAULT_X2 = 'end'
 
-/** What a `mate` step writes on every feature it answers. */
-export const MATE_FIELDS = [
-  'mate.refName',
-  'mate.start',
-  'mate.end',
-  'mate.mateDirection',
-  'mateDirection',
-  'alt',
-  'svType',
-] as const
-
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 export type AggregateOpName = (typeof AGGREGATE_OPS)[number]
-export const DEFAULT_AGGREGATE_OP: AggregateOpName = 'count'

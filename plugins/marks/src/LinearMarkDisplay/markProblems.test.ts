@@ -835,6 +835,21 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
   expect(found(text({ domainMin: 0, domainMax: 10 }))).toEqual([])
 })
 
+test('a step written with an empty as writes its default name', () => {
+  expect(
+    found([
+      {
+        mark: 'bar',
+        transform: [
+          { type: 'coverage' },
+          { type: 'formula', expr: 'jexl:feature.coverage * 2', as: '' },
+        ],
+        encoding: { y: 'value' },
+      },
+    ]),
+  ).toEqual([])
+})
+
 test('a facet or rows field the display steps leave unwritten is named', () => {
   const steps = [
     { type: 'bin', step: 100 },
