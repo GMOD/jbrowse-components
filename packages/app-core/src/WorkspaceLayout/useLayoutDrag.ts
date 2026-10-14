@@ -23,14 +23,18 @@ function samePlace(a: DragState | undefined, b: DragState | undefined) {
   )
 }
 
-// a centre drop on the tab's own cell, which `dropTabInPanel` declines, so it
+// a drop `dropTabInPanel` / `dropTabInNewSplit` would leave as it was, which
 // paints nothing either
 function declines(layout: WorkspaceLayout, drag: DragState) {
-  return (
-    !drag.strip &&
-    drag.zone === 'center' &&
-    layout.findTab(drag.tabId)?.panel.id === drag.panelId
-  )
+  const home = layout.findTab(drag.tabId)
+  if (home?.panel.id !== drag.panelId) {
+    return false
+  }
+  if (drag.strip) {
+    const from = home.panel.tabs.findIndex(t => t.id === drag.tabId)
+    return drag.strip.index === from || drag.strip.index === from + 1
+  }
+  return drag.zone === 'center' || home.panel.tabs.length === 1
 }
 
 /**

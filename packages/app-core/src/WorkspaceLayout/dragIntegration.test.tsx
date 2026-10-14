@@ -388,6 +388,24 @@ test('crossing its own cell promises nothing, and does not end the drag', () => 
   expect(session.findTab(tabA)?.panel.id).toBe(right)
 })
 
+test('a cell’s only tab dragged to its own edge promises nothing', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+  const before = JSON.stringify(session.tree)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 390, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerUp(tab, { clientX: 390, clientY: 200 })
+  })
+  expect(JSON.stringify(session.tree)).toBe(before)
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+})
+
 test('dragging a tab into the middle of another cell moves it there', () => {
   const { session, right, tabA } = setup()
   const tab = screen.getByTestId(`tab-${tabA}`)
@@ -575,6 +593,15 @@ describe('reordering within a strip', () => {
     const { a, b, c, order } = setupStrip()
     dragTabTo(c, 5, 10).drop()
     expect(order()).toEqual([c, a, b])
+  })
+
+  test('either gap beside the tab promises nothing', () => {
+    const { b } = setupStrip()
+    for (const x of [120, 180]) {
+      dragTabTo(b, x, 10)
+      expect(document.querySelector('[data-drop-caret]')).toBeNull()
+      expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+    }
   })
 
   test('a tab dropped back in its own gap changes nothing', () => {
