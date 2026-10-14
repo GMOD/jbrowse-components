@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
+import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
@@ -61,20 +62,11 @@ export default function configSchemaF() {
        * at 470-way".
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
-      /**
-       * #slot
-       * Overrides the base `height` slot as a `maybeNumber`: unset fits rows to
-       * their content height, an explicit value is a drag-resized track height.
-       * See the model's `fitTargetHeight` getter.
-       */
-      height: {
-        type: 'maybeNumber',
-        // Stated, not omitted: dropping this key inherits the base's `height`
-        // default of 100, so fit-to-content never runs.
-        defaultValue: undefined,
-        description:
-          'display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen',
-      },
+      ...trackHeightConfigSchemaFields({
+        defaultHeight: DEFAULTS.height,
+        height:
+          'display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are',
+      }),
       ...rowHeightConfigSchemaFields(),
       /**
        * #slot

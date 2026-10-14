@@ -100,7 +100,6 @@ import {
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
 import { summaryAt } from './components/summarySpans.ts'
-import { DEFAULTS } from './displayDefaults.ts'
 import {
   EMPTY_MAF_COVERAGE,
   createRowsSourceJoin,
@@ -392,21 +391,18 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The legal range for a band height that is stated by a config, session
-         * snapshot or menu rather than dragged. Undefined when the track height
-         * derives from the bands.
+         * The legal range for a band height a config, session snapshot or menu
+         * states rather than drags: up to the track height less a band's
+         * floor.
          */
-        get statedBandBounds(): BandBounds | undefined {
-          const configuredHeight = getConf(self, 'height')
-          return configuredHeight === undefined
-            ? undefined
-            : {
-                min: 0,
-                max: Math.max(
-                  MIN_BAND_HEIGHT,
-                  configuredHeight - MIN_BAND_HEIGHT,
-                ),
-              }
+        get statedBandBounds(): BandBounds {
+          return {
+            min: 0,
+            max: Math.max(
+              MIN_BAND_HEIGHT,
+              self.allottedHeight - MIN_BAND_HEIGHT,
+            ),
+          }
         },
         /**
          * #getter
@@ -1152,22 +1148,12 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The track height that fit-to-height mode divides among rows: the
-         * explicit `height` slot after a drag, else enough to show every row at
-         * the default px height.
-         *
-         * Bounded by `DEFAULTS.maxAutoFitHeight`, past which the rows shrink
-         * instead of the track growing. `maxRowsHeight` stays the hard floor
-         * under a deliberate drag.
+         * The track height fit mode divides among the rows: the `height` slot,
+         * never the row count, so more species shrink the rows rather than
+         * grow the track.
          */
         get fitTargetHeight(): number {
-          return (
-            getConf(self, 'height') ??
-            Math.min(
-              self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset,
-              DEFAULTS.maxAutoFitHeight,
-            )
-          )
+          return self.allottedHeight
         },
       }))
       .views(self => ({
@@ -1191,20 +1177,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The legal range for the two drag-resizable bands over the rows
-         * (coverage, conservation).
-         *
-         * Each band is bounded against `fitTargetHeight`, separately from the
-         * other, so a drag cannot squash the rows to nothing or push its own
-         * resize handle off the display.
+         * The legal range for a dragged band (coverage, conservation): the
+         * stated maximum, each band apart, so a drag cannot squash the rows to
+         * nothing or push its own handle off the display, and the drag floor.
          */
-        get resizableBandBounds() {
-          return {
-            max: Math.max(
-              MIN_BAND_HEIGHT,
-              self.fitTargetHeight - MIN_BAND_HEIGHT,
-            ),
-          }
+        get resizableBandBounds(): BandBounds {
+          return { max: self.statedBandBounds.max }
         },
       }))
       .views(self => ({

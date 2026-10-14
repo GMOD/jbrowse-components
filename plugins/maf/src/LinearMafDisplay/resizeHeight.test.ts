@@ -34,13 +34,13 @@ test('drag tracks the cursor in both directions', () => {
 // however many species there are: the rows canvas is the viewport, and the rows
 // that don't fit are scrolled to rather than shrunk or grown into.
 describe('a pinned row height scrolls rather than resizing the canvas', () => {
-  // 1000 species at 15px = 15000px of rows behind a 600px default track.
+  // 1000 species at 15px = 15000px of rows behind the default track.
   const deep = () => setup(1000, 15)
 
   it('honors the pinned height and scrolls the overflow', () => {
     const display = deep()
     expect(display.effectiveRowHeight).toBe(15)
-    expect(display.height).toBe(DEFAULTS.maxAutoFitHeight)
+    expect(display.height).toBe(DEFAULTS.height)
     expect(display.rowsContentHeight).toBe(15000)
     expect(display.scrollableHeight).toBe(15000 - display.rowsHeight)
   })
@@ -49,7 +49,7 @@ describe('a pinned row height scrolls rather than resizing the canvas', () => {
     const display = deep()
     const scrollable = display.scrollableHeight
     display.resizeHeight(+100)
-    expect(display.height).toBe(DEFAULTS.maxAutoFitHeight + 100)
+    expect(display.height).toBe(DEFAULTS.height + 100)
     expect(display.effectiveRowHeight).toBe(15)
     expect(display.scrollableHeight).toBeCloseTo(scrollable - 100)
   })
@@ -65,12 +65,13 @@ describe('a pinned row height scrolls rather than resizing the canvas', () => {
   it('re-clamps a stranded scroll when the content shrinks', () => {
     const display = deep()
     display.setScrollTop(display.scrollableHeight)
-    expect(display.scrollTop).toBe(14445)
+    const bottom = display.scrollTop
+    expect(bottom).toBe(15000 - display.rowsHeight)
     // shorter rows leave far less to scroll through, and the offset was sitting
     // at the old bottom — nothing but the clamp autorun brings it back
     display.setRowHeight(2)
     expect(display.scrollTop).toBe(display.scrollableHeight)
-    expect(display.scrollTop).toBeLessThan(14445)
+    expect(display.scrollTop).toBeLessThan(bottom)
   })
 
   // The canvas-size guard that used to shrink every row now sits on the rows
@@ -88,50 +89,46 @@ test('fit-to-display-height never scrolls', () => {
   expect(display.scrollableHeight).toBe(0)
 })
 
-// A freshly loaded track sizes itself from the species count, which without a
-// bound scaled the default height (and every full-height overlay canvas over
-// the rows) linearly with it. `maxAutoFitHeight` is the policy bound; the
-// `maxRowsHeight` cap exercised above stays as the backing-store crash guard.
-describe('default fit-to-display-height ceiling', () => {
-  // rowHeight 0 is the shipped default: fit rows to the track height.
+// The track keeps its `height` however many species there are, and fit mode
+// (the shipped default, rowHeight 0) shrinks the rows into it: a track never
+// grows by its row count.
+describe('fit-to-display-height keeps the track height', () => {
   const fit = (n: number) => setup(n, 0)
 
-  it('leaves a typical multiz exactly where it was', () => {
-    // 30 * 15 + 45px coverage band = 495, under the ceiling, so nothing binds
-    const display = fit(30)
-    expect(display.effectiveRowHeight).toBe(DEFAULTS.rowHeight)
-    expect(display.height).toBe(30 * DEFAULTS.rowHeight + 45)
-  })
-
-  // `height` is `nrow * ((ceiling - bands) / nrow)`, so it lands within a float
-  // epsilon of the ceiling rather than exactly on it — hence toBeCloseTo here
-  // and the epsilon in the loop below.
-  it('shrinks the rows of a deep alignment instead of growing the track', () => {
-    const display = fit(447)
-    expect(display.height).toBeCloseTo(DEFAULTS.maxAutoFitHeight)
-    // every row still drawn, just dense
-    expect(display.effectiveRowHeight).toBeCloseTo(
-      (DEFAULTS.maxAutoFitHeight - 45) / 447,
-    )
-    expect(display.effectiveRowHeight).toBeLessThan(DEFAULTS.rowHeight)
-  })
-
-  it('never grows past the ceiling however many species arrive', () => {
-    for (const n of [40, 100, 447, 2000]) {
-      expect(fit(n).height).toBeLessThan(DEFAULTS.maxAutoFitHeight + 0.001)
+  it('holds the default height whatever the species count', () => {
+    for (const n of [3, 30, 447, 2000]) {
+      expect(fit(n).height).toBeCloseTo(DEFAULTS.height)
     }
   })
 
-  it('bounds the default, not the user: an explicit height still wins', () => {
+  it('divides the rows viewport among the species', () => {
+    const display = fit(447)
+    expect(display.effectiveRowHeight).toBeCloseTo(
+      (DEFAULTS.height - display.rowsTopOffset) / 447,
+    )
+  })
+
+  it('does not grow when a discovering track finds more species', () => {
+    const display = fit(10)
+    const before = display.height
+    display.setSamples({
+      samples: Array.from({ length: 40 }, (_, i) => ({
+        id: `x${i}`,
+        label: `x${i}`,
+      })),
+      treeNewick: undefined,
+      samplesCanonical: false,
+    })
+    expect(display.sources.length).toBe(50)
+    expect(display.height).toBeCloseTo(before)
+  })
+
+  it('takes a stated or dragged height', () => {
     const display = fit(447)
     display.configuration.setSlot('height', 2000)
     expect(display.height).toBeCloseTo(2000)
-  })
-
-  it('a drag past the ceiling is honored', () => {
-    const display = fit(447)
     display.resizeHeight(+400)
-    expect(display.height).toBeCloseTo(DEFAULTS.maxAutoFitHeight + 400)
+    expect(display.height).toBeCloseTo(2400)
   })
 })
 

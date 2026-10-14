@@ -80,7 +80,7 @@ describe('a band stated taller than the track it sits on', () => {
 })
 
 describe('a kept subset puts the focus chip in a line above the rows', () => {
-  it('starts the rows a chip line under the bands and grows the track by it', () => {
+  it('starts the rows a chip line under the bands within the same track height', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     const bands = display.topBands.bottom
     const height = display.height
@@ -88,6 +88,6 @@ describe('a kept subset puts the focus chip in a line above the rows', () => {
     display.setRowFocus(['a'])
 
     expect(display.renderState.rowsTop).toBe(bands + SIDEBAR_HINT_LINE_PX)
-    expect(display.height).toBe(height + SIDEBAR_HINT_LINE_PX)
+    expect(display.height).toBe(height)
   })
 })

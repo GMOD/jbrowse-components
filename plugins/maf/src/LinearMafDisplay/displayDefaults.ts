@@ -4,13 +4,7 @@ export const DEFAULTS = {
   // Px height of the "Normal" preset; the `rowHeight` property itself defaults
   // to 0 (fit to display height).
   rowHeight: 15,
-  /**
-   * Ceiling on the height a fresh track sizes itself to before any drag; past
-   * it fit mode shrinks the rows instead of growing the track. 600 leaves every
-   * common multiz (up to 40 species) at its natural height. A drag past it is
-   * still honored.
-   */
-  maxAutoFitHeight: 600,
+  height: 300,
   rowProportion: 0.8,
   showAllLetters: false,
   showAsUpperCase: true,
