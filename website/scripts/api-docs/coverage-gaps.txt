@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1347)
+# model members with no description (1351)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -860,11 +860,13 @@ LinearMafDisplay.colorField
 LinearMafDisplay.conservationHeight
 LinearMafDisplay.conservationMode
 LinearMafDisplay.coverageHeight
+LinearMafDisplay.coverageSnpMinFrequency
 LinearMafDisplay.fetchCoarseTier
 LinearMafDisplay.rowIdentityAutoZoom
 LinearMafDisplay.rowProportion
 LinearMafDisplay.scrollViewportHeight
 LinearMafDisplay.setConservationMode
+LinearMafDisplay.setCoverageSnpMinFrequency
 LinearMafDisplay.setRowIdentityAutoZoom
 LinearMafDisplay.setRowProportion
 LinearMafDisplay.setShowAlignments
@@ -873,6 +875,7 @@ LinearMafDisplay.setShowAnnotations
 LinearMafDisplay.setShowAsUpperCase
 LinearMafDisplay.setShowConservation
 LinearMafDisplay.setShowCoverage
+LinearMafDisplay.setShowInterbaseIndicators
 LinearMafDisplay.setShowInversions
 LinearMafDisplay.setShowReferenceRow
 LinearMafDisplay.setYField
@@ -882,6 +885,7 @@ LinearMafDisplay.showAnnotations
 LinearMafDisplay.showAsUpperCase
 LinearMafDisplay.showConservation
 LinearMafDisplay.showCoverage
+LinearMafDisplay.showInterbaseIndicators
 LinearMafDisplay.showInversions
 LinearMafDisplay.showReferenceRow
 LinearMafDisplay.startRenderingBackend

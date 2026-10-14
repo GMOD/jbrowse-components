@@ -6637,6 +6637,87 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
+          "name": "scales",
+          "type": "ScalesConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "y",
+              "type": "ValueScaleConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "ValueScaleType"
+                },
+                {
+                  "name": "domainMin",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "domainMax",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "zero",
+                  "type": "boolean"
+                },
+                {
+                  "name": "autoscaleGroup",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "symlogConstant",
+                  "type": "number"
+                },
+                {
+                  "name": "domainQuantile",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                },
+                {
+                  "name": "minimalTicks",
+                  "type": "boolean"
+                },
+                {
+                  "name": "title",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "rules",
+                  "type": "ValueScaleRuleConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "number"
+                    },
+                    {
+                      "name": "color",
+                      "type": "(CssColor | undefined)"
+                    },
+                    {
+                      "name": "label",
+                      "type": "string"
+                    }
+                  ],
+                  "shorthand": {
+                    "number": "value"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "coverageSnpMinFrequency",
+          "type": "number"
+        },
+        {
+          "name": "showInterbaseIndicators",
+          "type": "boolean"
+        },
+        {
           "name": "showConservation",
           "type": "boolean"
         },

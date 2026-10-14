@@ -12988,6 +12988,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
+        "scales": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales"
+          }
+        },
+        "coverageSnpMinFrequency": {
+          "description": "hide a coverage-band allele segment whose share of that position's depth is below this fraction; 0 colors every mismatch.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "showInterbaseIndicators": {
+          "description": "draw the coverage band's insertion count bars and indicator triangles.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "showConservation": {
           "description": "show the conservation band.",
           "default": false,
@@ -17885,6 +17913,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "coverageHeight": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverageHeight"
             },
+            "scales": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/scales"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
+                }
+              ]
+            },
+            "coverageSnpMinFrequency": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverageSnpMinFrequency"
+            },
+            "showInterbaseIndicators": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInterbaseIndicators"
+            },
             "showConservation": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showConservation"
             },
@@ -17954,9 +17998,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "scales": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"

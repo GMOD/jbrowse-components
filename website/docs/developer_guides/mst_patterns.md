@@ -97,23 +97,28 @@ it.
 `types.compose(name, ...types)` layers mixins onto a base model. It takes the
 name and every part up front — there is no `.compose()` method on a model type,
 so the mixins cannot be chained on one at a time the way `.views()` and
-`.actions()` are. `LinearMafDisplay` layers four mixins onto `BaseDisplay`:
+`.actions()` are. `LinearMafDisplay` layers its mixins onto `BaseDisplay`, with
+the three parts every linear display shares nested as one, since a compose of
+more than eleven parts erases every prop rather than failing:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#compose -->
 
 ```ts
 .compose(
   'LinearMafDisplay',
-  BaseDisplay,
+  types.compose(
+    BaseDisplay,
+    TrackHeightMixin(),
+    MultiRegionDisplayMixin(),
+  ),
   StoredHoverMixin<MafRowHover>((a, b) => a.name === b.name),
-  TrackHeightMixin(),
-  MultiRegionDisplayMixin(),
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
   ColorWritesMixin(),
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),
+  ScoreScaleMixin(),
   types.model({
     /**
      * #property
