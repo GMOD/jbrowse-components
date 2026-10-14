@@ -102,10 +102,12 @@ function keyOf(
   const { display, view } = makeDisplay()
   display.setRowIdentityAutoZoom(false)
   if (rendering === 'rampBars') {
-    display.setRowRendering('identity')
+    display.colorByField('identity')
+    display.setYField('identity')
+  } else if (rendering === 'xyplot') {
     display.setYField('identity')
   } else {
-    display.setRowRendering(rendering)
+    display.colorByField(rendering)
   }
   view.zoomTo(bpPerPx)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)

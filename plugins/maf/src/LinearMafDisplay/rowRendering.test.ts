@@ -1,26 +1,33 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import { createMafTestEnvironment } from './testEnv.ts'
 
+import type { MenuItem } from '@jbrowse/core/ui'
+
 // The rows are colored by one field and, as a bar chart, may carry identity
-// on the bar height; the Row coloring radio writes the pair.
+// on the bar height: two settings, written apart.
 describe('row coloring is the color field and the bar height', () => {
   it('defaults to the mismatches', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(display.colorField).toBe('mismatch')
     expect(display.yField).toBeUndefined()
-    expect(display.selectedRowRendering).toBe('mismatch')
+    expect(display.selectedColorField).toBe('mismatch')
   })
 
-  it('the X-Y plot pick writes identity on y, and a color pick clears it', () => {
-    const { display } = createMafTestEnvironment().createDisplay()
-    display.setRowRendering('xyplot')
-    expect(display.yField).toBe('identity')
+  it('a bar height pick keeps the color, and a color pick keeps the bars', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rowIdentityAutoZoom: false },
+    }).createDisplay()
+    display.setYField('identity')
     expect(display.colorField).toBe('mismatch')
-    expect(display.selectedRowRendering).toBe('xyplot')
+    expect(display.identityEncoding).toBe('bars')
 
-    display.setRowRendering('chromosome')
-    expect(display.yField).toBeUndefined()
-    expect(display.colorField).toBe('chromosome')
-    expect(display.selectedRowRendering).toBe('chromosome')
+    display.colorByField('identity')
+    expect(display.yField).toBe('identity')
+    expect(display.identityEncoding).toBe('rampBars')
+
+    display.setYField(undefined)
+    expect(display.identityEncoding).toBe('heatmap')
   })
 
   it('takes a color and a bar height a config names together', () => {
@@ -31,7 +38,7 @@ describe('row coloring is the color field and the bar height', () => {
         rowIdentityAutoZoom: false,
       },
     }).createDisplay()
-    expect(display.selectedRowRendering).toBe('xyplot')
+    expect(display.selectedColorField).toBe('identity')
     expect(display.rowsColor).toBe('identity')
     expect(display.rowsY).toBe('identity')
   })
@@ -40,10 +47,69 @@ describe('row coloring is the color field and the bar height', () => {
   // reachable — without a `mafFrames` adapter. This track has none.
   it('does not select codon view without a frames adapter', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    display.setRowRendering('codon')
+    display.colorByField('codon')
     expect(display.annotationAdapterConfig).toBeUndefined()
-    expect(display.selectedRowRendering).toBe('mismatch')
+    expect(display.selectedColorField).toBe('mismatch')
     expect(display.rowsColor).toBe('mismatch')
+  })
+
+  it('a scheme pick paints identity along it, over a written range', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: {
+        color: { field: 'identity', range: ['red', 'blue'] },
+      },
+    }).createDisplay()
+    expect(display.colorScheme).toBe('redgreyblue')
+    display.setColorScheme('viridis')
+    expect(display.colorScheme).toBe('viridis')
+    expect(display.colorEncoding).toMatchObject({
+      scheme: 'viridis',
+      range: undefined,
+    })
+  })
+})
+
+describe('the track menu writes color and the bar height apart', () => {
+  function subMenu(items: MenuItem[], label: string) {
+    const item = items.find(i => 'label' in i && i.label === label)
+    return item && 'subMenu' in item ? resolveSubMenu(item) : []
+  }
+  function labels(items: MenuItem[]) {
+    return items.flatMap(i => ('label' in i ? [i.label] : []))
+  }
+
+  it('lists the color fields, and the scheme only under identity', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    const colorBy = () => subMenu(display.trackMenuItems(), 'Color by...')
+    expect(labels(colorBy())).toEqual(
+      expect.arrayContaining([
+        'Mismatches (SNPs vs reference)',
+        'Every base',
+        'Identity to reference',
+        'Source chromosome',
+      ]),
+    )
+    expect(labels(colorBy())).not.toContain('Color scheme')
+
+    display.colorByField('identity')
+    expect(labels(colorBy())).toContain('Color scheme')
+  })
+
+  it('reaches identity bars on the identity ramp', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rowIdentityAutoZoom: false },
+    }).createDisplay()
+    const pick = (menu: string, label: string) => {
+      const row = subMenu(display.trackMenuItems(), menu).find(
+        i => 'label' in i && i.label === label,
+      )
+      if (row && 'onClick' in row) {
+        row.onClick()
+      }
+    }
+    pick('Color by...', 'Identity to reference')
+    pick('Plot type', 'Identity X-Y plot')
+    expect(display.identityEncoding).toBe('rampBars')
   })
 })
 
@@ -73,9 +139,9 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
 
   it('draws codons at base level and the bases zoomed out', () => {
     const { display, view } = framesEnv().createDisplay()
-    display.setRowRendering('codon')
+    display.colorByField('codon')
     zoomAndSettle(view, 0.5)
-    expect(display.selectedRowRendering).toBe('codon')
+    expect(display.selectedColorField).toBe('codon')
     expect(display.zoomedToBaseLevel).toBe(true)
     expect(display.activeRowRendering).toBe('codon')
 
@@ -83,13 +149,13 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     // back to the bases. The selection is remembered, not repainted as
     // something else, and the menu's tick doesn't move.
     zoomAndSettle(view, 100)
-    expect(display.selectedRowRendering).toBe('codon')
+    expect(display.selectedColorField).toBe('codon')
     expect(display.activeRowRendering).toBe('mismatch')
   })
 
   it('yields an identity plot to the bases at base level, unless pinned', () => {
     const { display, view } = framesEnv().createDisplay()
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     zoomAndSettle(view, 100)
     expect(display.activeRowRendering).toBe('identity')
 
@@ -121,11 +187,13 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     zoomAndSettle(view, 100)
     expect(display.coarseTierActive).toBe(true)
 
-    for (const rendering of ['chromosome', 'identity', 'xyplot'] as const) {
-      display.setRowRendering(rendering)
-      expect(display.selectedRowRendering).toBe(rendering)
+    for (const field of ['chromosome', 'identity'] as const) {
+      display.colorByField(field)
+      expect(display.selectedColorField).toBe(field)
       expect(display.activeRowRendering).toBe('mismatch')
     }
+    display.setYField('identity')
+    expect(display.activeRowRendering).toBe('mismatch')
   })
 
   // ...and the base canvas can't draw from it either. `activeRowRendering`

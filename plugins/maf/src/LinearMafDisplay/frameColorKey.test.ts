@@ -131,7 +131,7 @@ describe('the CDS strip keys itself', () => {
   it('rides alongside the active rendering key rather than replacing it', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, true)
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     // pins the plot on at this zoom, where it would otherwise yield to the bases
     display.setRowIdentityAutoZoom(false)
     expect(display.activeRowRendering).toBe('identity')
@@ -147,7 +147,7 @@ describe('the CDS strip keys itself', () => {
   it('keys base-level identity with its two colors', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, false)
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     display.setRowIdentityAutoZoom(false)
     expect(display.zoomedToBaseLevel).toBe(true)
     expect(display.legendSpec.sections[0]!.items.map(i => i.label)).toEqual([

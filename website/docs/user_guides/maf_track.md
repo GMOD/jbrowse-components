@@ -22,8 +22,9 @@ what you can do once the track is on screen.
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. The features below come from
-two track-menu submenus: **Row coloring** picks the one way the rows are
-colored, and **Show...** holds the bands and overlays that layer on top of it.
+three track-menu submenus: **Color by...** picks what colors the rows, **Plot
+type** whether they draw as cells or as identity bars, and **Show...** holds the
+bands and overlays that layer on top of them.
 
 ## Zooming out past the alignment
 
@@ -58,21 +59,24 @@ fraction of aligned species whose base matches the reference, a quick read of
 which regions are conserved versus divergent. It is computed from the alignment
 itself, so no extra files are needed.
 
-The **Row coloring** menu breaks the same signal out per species, so you can see
-_which_ genomes diverge in a region. The rows are colored one way at a time:
+The **Color by...** menu breaks the same signal out per species, so you can see
+_which_ genomes diverge in a region:
 
-- **Bases (SNPs vs reference)**, the default, is the per-base coloring described
-  above.
-- **Bases (every base colored)** colors matching bases by base too, so the whole
-  alignment reads as sequence.
-- **Identity heatmap** shades each row on a red→grey→blue ramp (red divergent,
-  blue conserved).
-- **Identity X-Y plot** draws the same signal as a per-species wiggle.
+- **Mismatches (SNPs vs reference)**, the default, is the per-base coloring
+  described above.
+- **Every base** colors matching bases by base too, so the whole alignment reads
+  as sequence.
+- **Identity to reference** shades each row on a red→grey→blue ramp (red
+  divergent, blue conserved), a heatmap; its **Color scheme** submenu picks
+  another ramp.
 
-In a display config each option is a value of `color` (`mismatch`, `base`,
-`identity`, and the `chromosome` and `codon` options below) except the X-Y plot,
-which is `y: "identity"`, identity on each row's bar height. The two combine:
-`color: "identity", y: "identity"` shades the bars on the heatmap's ramp.
+**Plot type** › **Identity X-Y plot** draws identity as each row's bar height, a
+per-species wiggle. The two menus combine: bars colored by identity take the
+heatmap's ramp, and bars under any other coloring draw in one color.
+
+In a display config **Color by...** is `color` (`mismatch`, `base`, `identity`,
+and the `chromosome` and `codon` options below) and the X-Y plot is
+`y: "identity"`.
 
 The heatmap's ramp runs from 0 to 100% identity, and
 [`color`](/docs/config/mafcolor) can move it. Close relatives all sit near its
@@ -96,7 +100,7 @@ the guide tree (dendrogram) down the left.
 
 ## Color by source chromosome
 
-**Source chromosome**, in the same **Row coloring** menu, replaces the per-base
+**Source chromosome**, in the same **Color by...** menu, replaces the per-base
 coloring with a structural view. Within each species row, the source chromosomes
 its blocks come from (in that species' own genome) are ranked by coverage: the
 row's main chromosome gets the primary color, and blocks from a different source
@@ -125,9 +129,10 @@ on the display), two coding-aware options appear. **Show CDS frames** (off by
 default, under **Show...**) draws a thin reading-frame-colored strip on each
 species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. It is a strip drawn over
-whatever the rows are colored by, so it composes with any **Row coloring**.
+whatever the rows are colored by, so it composes with any **Color by...**
+choice.
 
-**Codon changes (amino acids)**, a **Row coloring** option, switches the
+**Codon changes (amino acids)**, a **Color by...** option, switches the
 per-sample rows from per-base SNP coloring to a per-codon view: every species is
 translated in the reference reading frame, and each codon cell is colored by how
 its amino acid compares to the reference: nonsynonymous changes stand out,

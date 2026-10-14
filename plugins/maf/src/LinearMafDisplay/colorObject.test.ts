@@ -120,10 +120,10 @@ describe('the key reads the encoding', () => {
   })
 })
 
-describe('a Row coloring pick writes through the color object', () => {
+describe('a Color by pick writes through the color object', () => {
   test("a new field drops the old field's members", () => {
     const { display } = displayWith({ field: 'chromosome', range: ['red'] })
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     expect(getSnapshot(display.configuration.color)).toEqual({
       field: 'identity',
     })
@@ -131,7 +131,7 @@ describe('a Row coloring pick writes through the color object', () => {
 
   test('the same field keeps them', () => {
     const { display } = displayWith({ field: 'identity', domainMin: 0.7 })
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     expect(readConfObject(display.configuration.color, 'domainMin')).toBe(0.7)
   })
 })

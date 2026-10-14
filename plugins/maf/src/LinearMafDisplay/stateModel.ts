@@ -105,7 +105,7 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
-import { paintsBases, rowRenderingSettings } from './rowRenderings.ts'
+import { paintsBases } from './rowRenderings.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
@@ -148,6 +148,7 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
@@ -496,6 +497,19 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * The named ramp identity paints along, the preset's where `color`
+         * writes none or is not identity.
+         */
+        get colorScheme(): ColorSchemeName {
+          const color = this.colorEncoding
+          return (
+            (color.field === 'identity' && color.scale === 'linear'
+              ? color.scheme
+              : undefined) ?? MAF_FIELD_PRESETS.identity.scheme
+          )
+        },
+        /**
+         * #getter
          * Each source chromosome rank's packed color, `color.range`'s while
          * `color` is chromosome. One array per range, as `identityColors`.
          */
@@ -550,6 +564,15 @@ export default function stateModelFactory(
          */
         setShowAllLetters(f: boolean) {
           setConf(self, 'showAllLetters', f)
+        },
+        /**
+         * #action
+         * Paint identity along a named ramp, clearing a written `range`, which
+         * would win over it.
+         */
+        setColorScheme(scheme: ColorSchemeName) {
+          setConf(self, ['color', 'scheme'], scheme)
+          setConf(self, ['color', 'range'], [])
         },
         /**
          * #action
@@ -1774,16 +1797,14 @@ export default function stateModelFactory(
           },
           /**
            * #getter
-           * The Row coloring radio's tick: the X-Y plot where `y` is identity,
-           * else the color field, with codon falling back to the bases where no
-           * frames file defines a reading frame. Zoom-independent.
+           * The Color by menu's tick: the color field, with codon falling back
+           * to the mismatches where no frames file defines a reading frame.
+           * Zoom-independent.
            */
-          get selectedRowRendering(): RowRendering {
-            return self.yField === 'identity'
-              ? 'xyplot'
-              : self.colorField === 'codon' && !self.annotationAdapterConfig
-                ? 'mismatch'
-                : self.colorField
+          get selectedColorField(): MafColorField {
+            return self.colorField === 'codon' && !self.annotationAdapterConfig
+              ? 'mismatch'
+              : self.colorField
           },
           /**
            * #getter
@@ -1920,17 +1941,6 @@ export default function stateModelFactory(
           return region
             ? identityOver(region.blocks, rowIndex, start, start + binBp)
             : undefined
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * Write a Row coloring pick: its color field and bar height.
-         */
-        setRowRendering(rendering: RowRendering) {
-          const { color, y } = rowRenderingSettings(rendering)
-          self.colorByField(color)
-          self.setYField(y)
         },
       }))
       .views(self => ({

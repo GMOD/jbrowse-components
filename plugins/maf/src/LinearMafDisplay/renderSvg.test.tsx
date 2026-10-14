@@ -64,7 +64,7 @@ test('the rows layer is clipped to the rows box', async () => {
 // `showLegend` at all.
 test('a dismissed color key stays out of the export', async () => {
   const { display, view } = clusteredDisplay()
-  display.setRowRendering('identity')
+  display.colorByField('identity')
   // the identity plots swap themselves out for the bases at base level
   view.zoomTo(100)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -175,7 +175,7 @@ test('the exported key is in the export palette', async () => {
   }).createDisplay()
   view.zoomTo(0.5)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  display.setRowRendering('codon')
+  display.colorByField('codon')
   display.setShowLegend(true)
   expect(display.activeRowRendering).toBe('codon')
   const legend = async (mode: 'light' | 'dark') => {

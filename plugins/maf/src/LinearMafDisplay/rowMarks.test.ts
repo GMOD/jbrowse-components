@@ -124,7 +124,7 @@ describe('color by source chromosome is a row mark', () => {
   it('encodes one span per aligned row per block, and no cells', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
-    display.setRowRendering('chromosome')
+    display.colorByField('chromosome')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
     expect(payload.sourceChrom).toMatchObject({ count: 4 })
@@ -149,7 +149,7 @@ describe('color by source chromosome is a row mark', () => {
       ],
     })
     seedRegion(display)
-    display.setRowRendering('chromosome')
+    display.colorByField('chromosome')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)!.sourceChrom
     view.horizontalScroll(500)
@@ -164,7 +164,7 @@ describe('identity is a row mark', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     display.setRowIdentityAutoZoom(false)
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     const payload = display.encodedUpload.get(0)!
     expect(payload.cells.count).toBe(0)
     expect(payload.identity!.count).toBeGreaterThan(0)
@@ -175,7 +175,7 @@ describe('identity is a row mark', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     seedRegion(display)
     display.setRowIdentityAutoZoom(false)
-    display.setRowRendering('xyplot')
+    display.setYField('identity')
     const flat = display.encodedUpload.get(0)!.identityBars!
     expect(flat.count).toBeGreaterThan(0)
     expect(new Set(flat.color as Uint32Array).size).toBe(1)
@@ -194,7 +194,7 @@ describe('identity is a row mark', () => {
     })
     seedRegion(display)
     display.setRowIdentityAutoZoom(false)
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     const dispose = observed(display)
     const before = display.encodedUpload.get(0)!.identity
     view.horizontalScroll(500)

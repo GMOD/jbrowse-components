@@ -9,6 +9,10 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
+  colorByMenuItem,
+  colorSchemeMenuItem,
+} from '@jbrowse/display-kit/colorByMenu'
+import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
@@ -16,17 +20,17 @@ import {
   showRowLabelsMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
-import PaletteIcon from '@mui/icons-material/Palette'
 
 import { CONSERVATION_MODES } from './conservationModes.ts'
 import { HEIGHT_PRESETS } from './displayDefaults.ts'
-import { CODON_ROW_RENDERING, ROW_RENDERINGS } from './rowRenderings.ts'
+import { MAF_COLOR_FIELDS, MAF_COLOR_FIELD_LABELS } from './rowRenderings.ts'
 
 import type { ConservationMode } from './conservationModes.ts'
-import type { RowRendering } from './rowRenderings.ts'
+import type { MafColorField, MafYField } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -70,8 +74,12 @@ interface MafMenuSelf
   showAnnotations: boolean
   showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
-  selectedRowRendering: RowRendering
-  setRowRendering: (m: RowRendering) => void
+  selectedColorField: MafColorField
+  colorByField: (field: MafColorField) => void
+  yField: MafYField | undefined
+  setYField: (field: MafYField | undefined) => void
+  colorScheme: ColorSchemeName
+  setColorScheme: (scheme: ColorSchemeName) => void
   rowIdentityAutoZoom: boolean
   // Declared so the shared `rowHeightMenuItem` contract is checked here; maf is
   // the one display with a proportion.
@@ -129,35 +137,42 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
  * and identity options can tick a rendering that yields at the current zoom;
  * the hint and toggle say why the rows show bases.
  */
-function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
-  const [codonValue, codonLabel] = CODON_ROW_RENDERING
-  return makeRadioSubMenu({
-    label: 'Row coloring',
-    icon: PaletteIcon,
-    value: self.selectedRowRendering,
-    onChange: m => {
-      self.setRowRendering(m)
+function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
+  const label = MAF_COLOR_FIELD_LABELS[field]
+  return {
+    label:
+      field === 'codon'
+        ? withHint(
+            label,
+            self.zoomedToBaseLevel ? undefined : 'zoom in to base level',
+          )
+        : label,
+    type: 'radio',
+    checked: self.selectedColorField === field,
+    onClick: () => {
+      self.colorByField(field)
     },
-    options: [
-      ...ROW_RENDERINGS,
-      ...(self.annotationAdapterConfig
-        ? [
-            [
-              codonValue,
-              withHint(
-                codonLabel,
-                self.zoomedToBaseLevel ? undefined : 'zoom in to base level',
-              ),
-            ] as const,
-          ]
-        : []),
+  }
+}
+
+function colorMenuItem(self: MafMenuSelf): MenuItem {
+  return colorByMenuItem({
+    blocks: [
+      {
+        rows: MAF_COLOR_FIELDS.filter(
+          field => field !== 'codon' || !!self.annotationAdapterConfig,
+        ).map(field => colorFieldRow(self, field)),
+      },
     ],
-    extraItems: [
+    additional: [
+      ...(self.selectedColorField === 'identity'
+        ? [colorSchemeMenuItem(self)]
+        : []),
       toggleItem(
         'Show bases when zoomed in',
         self.rowIdentityAutoZoom,
         self.setRowIdentityAutoZoom,
-        { helpText: 'for the identity plots above' },
+        { helpText: 'identity, in either plot, yields to the bases' },
       ),
       toggleItem(
         'Show letters at all positions',
@@ -170,6 +185,20 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
         self.setShowAsUpperCase,
       ),
     ],
+  })
+}
+
+function plotTypeMenuItem(self: MafMenuSelf): MenuItem {
+  return makeRadioSubMenu({
+    label: 'Plot type',
+    value: self.yField ?? 'cells',
+    onChange: plot => {
+      self.setYField(plot === 'cells' ? undefined : plot)
+    },
+    options: [
+      ['cells', 'Cells'],
+      ['identity', 'Identity X-Y plot'],
+    ] as const,
   })
 }
 
@@ -225,8 +254,8 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     rowHeightMenuItem(self, HEIGHT_PRESETS),
-    // Top level, like the wiggle displays' "Plot type".
-    rowRenderingMenuItem(self),
+    colorMenuItem(self),
+    plotTypeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
     rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
     clusteringMenuItem(

@@ -398,9 +398,9 @@ describe('LinearMafDisplay row placement', () => {
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
 
     display.setShowAnnotations(true)
-    display.setRowRendering('codon')
+    display.colorByField('codon')
     await settle(display)
-    display.setRowRendering('mismatch')
+    display.colorByField('mismatch')
     display.setShowAnnotations(false)
     await settle(display)
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)

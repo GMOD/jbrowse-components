@@ -19,40 +19,19 @@ export const MAF_Y_FIELDS = ['identity'] as const
 export type MafYField = (typeof MAF_Y_FIELDS)[number]
 
 /**
- * The Row coloring radio's options: a color field each, and the X-Y plot,
- * which is identity on the bar height.
+ * What the rows paint: a color field's cells, or the X-Y plot, whose bars
+ * carry identity on their height.
  */
 export type RowRendering = MafColorField | 'xyplot'
 
-const ROW_RENDERING_LABELS = {
-  mismatch: 'Bases (SNPs vs reference)',
-  base: 'Bases (every base colored)',
-  identity: 'Identity heatmap',
-  xyplot: 'Identity X-Y plot',
+/** The Color by menu's rows, in menu order; codon only with reading frames. */
+export const MAF_COLOR_FIELD_LABELS = {
+  mismatch: 'Mismatches (SNPs vs reference)',
+  base: 'Every base',
+  identity: 'Identity to reference',
   chromosome: 'Source chromosome',
-} as const satisfies Record<Exclude<RowRendering, 'codon'>, string>
-
-/** `[value, menu label]` in menu order, the `makeRadioSubMenu` shape. */
-export const ROW_RENDERINGS = Object.entries(ROW_RENDERING_LABELS) as [
-  keyof typeof ROW_RENDERING_LABELS,
-  string,
-][]
-
-/** Listed only where a `mafFrames` adapter defines the reading frame. */
-export const CODON_ROW_RENDERING = [
-  'codon',
-  'Codon changes (amino acids)',
-] as const satisfies readonly [RowRendering, string]
-
-/** The settings a Row coloring pick writes. */
-export function rowRenderingSettings(rendering: RowRendering): {
-  color: MafColorField
-  y: MafYField | undefined
-} {
-  return rendering === 'xyplot'
-    ? { color: 'mismatch', y: 'identity' }
-    : { color: rendering, y: undefined }
-}
+  codon: 'Codon changes (amino acids)',
+} as const satisfies Record<MafColorField, string>
 
 /** Whether a rendering paints the cells base by base. */
 export function paintsBases(rendering: RowRendering) {

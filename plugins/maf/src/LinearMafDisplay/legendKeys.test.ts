@@ -136,7 +136,7 @@ describe('the color key is dismissible, like every other row display', () => {
 
   function heatmapDisplay() {
     const { display, view } = createMafTestEnvironment().createDisplay()
-    display.setRowRendering('identity')
+    display.colorByField('identity')
     // the identity plots swap themselves out for the bases at base level
     view.zoomTo(100)
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
@@ -177,7 +177,7 @@ describe('the heatmap key follows the encode bin, not the base-level zoom', () =
     (bpPerPx, id) => {
       const { display, view } = createMafTestEnvironment().createDisplay()
       display.setRowIdentityAutoZoom(false)
-      display.setRowRendering('identity')
+      display.colorByField('identity')
       view.zoomTo(bpPerPx)
       view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
       expect(display.colorScales[0]!.id).toBe(id)
