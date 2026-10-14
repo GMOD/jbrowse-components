@@ -1,4 +1,5 @@
 import { EMPTY_INSERTIONS } from '@jbrowse/alignments-core'
+import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
 import { regionWithDeltas } from './featurePainting.ts'
 import { rowBand } from './rowBand.ts'
@@ -149,8 +150,8 @@ export function insertionOfChannel(insertions: MultiRowInsertions, c: number) {
 }
 
 /**
- * Each marker on its block's band, drawn where it is wider than the block's
- * reference span.
+ * Each marker on its block's band, drawn where it is wider than the block as
+ * painted: its reference span, floored at the block mark's minimum width.
  */
 export function multiRowInsertionParams(
   s: MultiRowRenderState,
@@ -160,7 +161,7 @@ export function multiRowInsertionParams(
     rowHeight: s.rowHeight,
     rowOffsetPx: band.offset,
     bandHeightPx: band.height,
-    spanFloorPx: 0,
+    spanFloorPx: MULTI_ROW_MIN_CELL_PX,
     outline: false,
     rowTable: s.rowTable,
   }

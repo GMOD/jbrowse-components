@@ -1,6 +1,7 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 import { encodeRows } from './encodeTestUtils.ts'
@@ -110,6 +111,7 @@ const INSERTION_COLOR = abgrToCssRgba(INSERTION_ABGR)
 function draw(
   region: MultiRowRegionData,
   opts?: Partial<Parameters<typeof encodeRows>[1]>,
+  renderBlock = block,
 ) {
   const { ctx, calls, texts } = mockCtx()
   const { encoded, rowTable } = encodeRows(region, {
@@ -118,8 +120,8 @@ function draw(
   })
   const uploaded = multiRowUploadData(encoded, region, INSERTION_ABGR)
   const state = { ...frame, rowTable }
-  MULTI_ROW_INSERTION_MARK.paintBlock(ctx, uploaded, block, state)
-  drawMultiRowIndelGlyphs(ctx, new Map([[0, uploaded]]), [block], state)
+  MULTI_ROW_INSERTION_MARK.paintBlock(ctx, uploaded, renderBlock, state)
+  drawMultiRowIndelGlyphs(ctx, new Map([[0, uploaded]]), [renderBlock], state)
   return { calls, texts }
 }
 
@@ -149,6 +151,15 @@ test('insertion bar centers on the block it annotates', () => {
   expect(draw(region).calls).toEqual([
     { x: 105 - BAR / 2, y: 0, w: BAR, h: 20, fillStyle: INSERTION_COLOR },
   ])
+})
+
+test('a marker no wider than its floored block draws nothing', () => {
+  const zoomedOut = { ...block, end: 100_000 }
+  const bar = insertionBarWidth(1, 0.01, 20)
+  expect(bar).toBeGreaterThan(0)
+  expect(bar).toBeLessThanOrEqual(MULTI_ROW_MIN_CELL_PX)
+  const region = { ...narrow, featureDeltas: Int32Array.from([1, 0]) }
+  expect(draw(region, undefined, zoomedOut).calls).toEqual([])
 })
 
 test('a block wider than the bar gets the label but no redundant bar', () => {
