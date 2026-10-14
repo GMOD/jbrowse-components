@@ -995,7 +995,7 @@ test('a transform step naming no type is refused where the config is read', () =
       { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
   ).toThrow(
-    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, cells, pileup and mate, and names none',
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, window, coverage, flatten, cells, pileup and mate, and names none',
   )
 })
 

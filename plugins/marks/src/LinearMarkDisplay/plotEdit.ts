@@ -165,6 +165,10 @@ export const STEP_PRESETS: readonly StepPreset[] = [
       { type: 'aggregate', ops: [{ op: 'count' }] },
     ],
   },
+  { label: 'Coverage', steps: [{ type: 'coverage' }] },
+  { label: 'Pack into rows', steps: [{ type: 'pileup' }] },
+  { label: 'One per subfeature', steps: [{ type: 'flatten' }] },
+  { label: 'Other end of a pair', steps: [{ type: 'mate' }] },
   {
     label: 'Moving average',
     steps: [
@@ -175,10 +179,6 @@ export const STEP_PRESETS: readonly StepPreset[] = [
       },
     ],
   },
-  { label: 'Coverage', steps: [{ type: 'coverage' }] },
-  { label: 'Pack into rows', steps: [{ type: 'pileup' }] },
-  { label: 'One per subfeature', steps: [{ type: 'flatten' }] },
-  { label: 'Other end of a pair', steps: [{ type: 'mate' }] },
 ]
 
 export function stepsOfMark(mark: DraftMark): StepSnapshot[] {
