@@ -91,36 +91,35 @@ the cast. The hover index inverts what is there instead.
 
 ![How a contact count becomes a color](diagrams/hic-color.svg)
 
-| setting | saturates at |
+| `color` slots | saturates at |
 | --- | --- |
-| percentile | the 95th percentile |
-| log scale | the max |
-| neither | a twentieth of the max |
+| `domainMax` set | that number, the same at every zoom |
+| `domainQuantile` below 1 (default 0.95) | that quantile of the loaded counts |
+| `domainQuantile` 1 | the loaded maximum |
 
 **Contact counts are heavily skewed**, so saturating at the true max leaves
-everything off-diagonal at the bottom of the ramp. The twentieth is what a file
-gets by default, the percentile is the same fix done properly, and log scale
-needs no correction.
+everything off-diagonal at the bottom of the ramp. The 95th percentile is the
+default for that reason, and the `scale` slot's `log` spreads the low end on its
+own.
 
 **That percentile is an exact order statistic, taken by selection rather than by
 histogram.** The obvious cheaper estimate fails on exactly the property that
 made the percentile necessary: linear buckets over `[min, max]` drop nearly
 every value into the first one and collapse the answer toward zero.
 
-**A NaN count never becomes an instance.** NaN is the file's "no value" marker,
-which `@gmod/hic` drops only on its dense path. The worker skips it while
-packing, so no painter, hover or statistic sees one; Canvas2D used to paint it in
-the previous bin's color.
-
 **Both candidates are scored off the finite counts.** A tiny normalization
 divisor yields Infinity; reaching the saturation point, it turns every bin's
 color into NaN and makes the legend silently vanish.
+
+**A NaN count never becomes an instance.** NaN is the file's "no value" marker,
+which `@gmod/hic` drops only on its dense path. The worker skips it while
+packing, so no painter, hover or statistic sees one.
 
 **The invisibility cutoff is a boundary between surfaces, not an optimization.**
 The fragment discards below it and the Canvas2D lookup returns nothing, so the
 bins missing from the figure are exactly the bins missing from the export. It is
 exported from the shader for that reason, along with the count-to-ramp mapping
-itself
+itself, `normalizeScore` in render-core's shared `scoreScale.slang`
 ([ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md)).
 
 ## What transfers

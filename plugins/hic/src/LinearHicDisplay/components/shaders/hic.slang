@@ -28,7 +28,6 @@ struct Uniforms {
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-// Dual-target shaders take a combined Sampler2D (ADR-005).
 [[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {

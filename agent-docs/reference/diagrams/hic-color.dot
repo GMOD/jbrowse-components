@@ -1,27 +1,27 @@
 digraph hic_color {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] pct; ls; visible }
+  { node [shape=diamond] pinned; q; visible }
 
-  data [label="maxScore, percentile95"]
-  pct [label="useColorPercentile"]
-  data -> pct
-  pct -> p95 [label=" on"]
-  pct -> ls  [label=" off"]
-  p95 [label="the 95th percentile"]
-  ls [label="color.scale is log"]
-  ls -> max       [label=" on"]
-  ls -> twentieth [label=" off"]
-  max [label="the max"]
-  twentieth [label="a twentieth of the max"]
+  data [label="maxScore, quantileScore\n(finite counts only)"]
+  pinned [label="color.domainMax set"]
+  data -> pinned
+  pinned -> set [label=" yes"]
+  pinned -> q   [label=" no"]
+  set [label="domainMax"]
+  q [label="domainQuantile < 1"]
+  q -> quant [label=" yes"]
+  q -> max   [label=" no"]
+  quant [label="quantileScore,\nthe 95th percentile by default"]
+  max [label="maxScore"]
 
-  sat [label="colorMaxScore", style=bold]
-  p95 -> sat  max -> sat  twentieth -> sat
+  domain [label="colorDomain\n[domainMin or 0, top]", style=bold]
+  set -> domain  quant -> domain  max -> domain
 
-  map [label="mapHicCount\nauthored in hic.slang"]
-  sat -> map
+  norm [label="normalizeScore\nlinear or log, shared with wiggle"]
+  domain -> norm
   ramp [label="one 256-entry ramp"]
-  map -> ramp
+  norm -> ramp
 
   visible [label="alpha >= MIN_VISIBLE_ALPHA"]
   ramp -> visible
