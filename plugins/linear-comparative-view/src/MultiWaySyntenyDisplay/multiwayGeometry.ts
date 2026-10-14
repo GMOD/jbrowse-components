@@ -120,7 +120,9 @@ function holesOn(lane: Lane, refName: string) {
  * Adds the ribbon between `upper`'s `start1`..`end1` and `lower`'s
  * `from2`..`to2`, which runs the other way when `from2 > to2`, cut wherever
  * either lane opens a hole inside its stretch, so the hole stays open. The
- * cut lands on the other lane in proportion.
+ * cut lands on the other lane in proportion. Proportion misses the true
+ * position by up to the stretches' length difference, so two holes that close
+ * in it are one breakpoint, each kept at its own lane's `at`.
  */
 function addAcrossHoles(
   builder: RibbonBuilder,
@@ -143,18 +145,21 @@ function addAcrossHoles(
     start1 + ((bp2 - from2) / (to2 - from2)) * length1
   const lo2 = Math.min(from2, to2)
   const hi2 = Math.max(from2, to2)
+  const slack = Math.abs(hi2 - lo2 - length1) + 1
   const cuts = holesOn(upper, refName1)
     .filter(at => at > start1 && at < end1)
-    .map(at => ({ bp1: at, bp2: toLower(at) }))
-  // where both lanes hole at one point, each keeps its own exact breakpoint
+    .map(at => ({ bp1: at, bp2: toLower(at), paired: false }))
   for (const at of holesOn(lower, refName2)) {
     if (at > lo2 && at < hi2) {
       const bp1 = toUpper(at)
-      const same = cuts.find(c => Math.abs(c.bp1 - bp1) < 1)
+      const same = cuts
+        .filter(c => !c.paired && Math.abs(c.bp1 - bp1) < slack)
+        .sort((a, b) => Math.abs(a.bp1 - bp1) - Math.abs(b.bp1 - bp1))[0]
       if (same) {
         same.bp2 = at
+        same.paired = true
       } else {
-        cuts.push({ bp1, bp2: at })
+        cuts.push({ bp1, bp2: at, paired: true })
       }
     }
   }

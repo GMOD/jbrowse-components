@@ -23,7 +23,7 @@ import {
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
-import { groupFeatures } from './layoutMultiWay.ts'
+import { frameSpan, groupFeatures } from './layoutMultiWay.ts'
 import {
   buildBandCell,
   buildLaneCells,
@@ -1432,4 +1432,62 @@ describe('a lane cell', () => {
       })
     })
   })
+})
+
+test('a lane-pair link across a deletion both lanes carry leaves the gap open', () => {
+  // one 10 kb deletion, which the lower lane reaches 1 kb later for an insertion
+  const frame = (refName: string, at: number): RowFrame => ({
+    ...peachFrame,
+    refName,
+    min: 0,
+    max: 30_000,
+    openings: [{ at, bp: 10_000 }],
+  })
+  const peach = frame('Pp1', 10_000)
+  const cacao = frame('Tc1', 11_000)
+  const { cells } = buildRibbonGeometry({
+    stack: stack({
+      features: [],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+      peach,
+      cacao,
+    }),
+    laneLinks: new Map([
+      [
+        'peach|cacao',
+        {
+          links: [
+            new SimpleFeature({
+              uniqueId: 'link',
+              assemblyName: 'peach',
+              refName: 'Pp1',
+              start: 0,
+              end: 20_000,
+              strand: 1,
+              mate: {
+                assemblyName: 'cacao',
+                refName: 'Tc1',
+                start: 0,
+                end: 21_000,
+              },
+            }),
+          ],
+          ops: new Map(),
+        },
+      ],
+    ]),
+    ribbonColor: 'grey',
+    drawCurves: false,
+    bridgeSkippedLanes: false,
+  })
+  const data = ribbonData(cells, 'ribbons:1')
+  const drawn = Array.from({ length: data.instanceCount }, (_, i) =>
+    [data.bp1[i]!, data.bp2[i]!, data.bp4[i]!, data.bp3[i]!].map(Math.round),
+  )
+  const piece = (f: RowFrame, start: number, end: number) =>
+    frameSpan(f, start, end, WIDTH)!.map(Math.round)
+  expect(drawn).toEqual([
+    [...piece(peach, 0, 10_000), ...piece(cacao, 0, 11_000)],
+    [...piece(peach, 10_000, 20_000), ...piece(cacao, 11_000, 21_000)],
+  ])
 })
