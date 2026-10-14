@@ -68,21 +68,21 @@ whether or not a gene lies there, so the track can draw each lane from the chain
 alone.
 
 Each UCSC chain aligns hg38 to one other genome, so no row aligns chimpanzee to
-mouse. The track places each lane from the chain between hg38 and that genome,
-and draws the ribbon between two neighbouring lanes through the human
-coordinates both share.
+mouse. The track places each lane from its own chain, and every ribbon joins a
+lane to hg38, whichever lane sits above it.
 
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`, which can write a coarser tier beside the per-base one for
 whole-chromosome zooms. Coarse-tier sequence names are upper-case, so `tabix`
 lists the tiers from the index without downloading the alignment.
 
-To index a chain of your own, convert it to PAF with `chain2paf` from
-[paftools](https://github.com/lh3/minimap2/tree/master/misc), then run
-`make-pif`:
+To index a chain of your own, convert it to PAF with
+[chain2paf](https://github.com/AndreaGuarracino/chain2paf), which reads an
+uncompressed chain, then run `make-pif`:
 
 ```bash
-paftools.js chain2paf genomeA.genomeB.over.chain.gz > genomeA_genomeB.paf
+gzip -dc genomeA.genomeB.over.chain.gz > genomeA_genomeB.chain
+chain2paf -i genomeA_genomeB.chain > genomeA_genomeB.paf
 jbrowse make-pif genomeA_genomeB.paf
 ```
 
@@ -164,8 +164,8 @@ tier, which the `tabix -l` line above checks on each file.
 Opened on hg38 around _TP53_, the track draws a lane per genome under the human
 axis, each fitted to wherever its chain places the window. Each lane header
 names the chromosome and the span the lane shows, with `[rev]` where that
-chromosome runs the other way relative to hg38. The lanes stack with the genomes
-placing the most of the window at the top.
+chromosome runs the other way relative to hg38. `rows.domain` stacks the lanes
+down the tree from human, the apes first and the cow last.
 
 ```json session config=https://jbrowse.org/demos/hg38_vertebrates/config.json
 {
@@ -182,6 +182,18 @@ placing the most of the window at the top.
             "trackId": "hg38_liftover_multiway",
             "type": "MultiWaySyntenyDisplay",
             "ribbonColor": { "field": "strand" },
+            "rows": {
+              "domain": [
+                "panTro6",
+                "gorGor6",
+                "ponAbe3",
+                "rheMac10",
+                "calJac4",
+                "mm39",
+                "canFam6",
+                "bosTau9"
+              ]
+            },
             "height": 600
           }
         ]
@@ -192,10 +204,9 @@ placing the most of the window at the top.
 ```
 
 **Color by... → Strand**, under **Ribbons** in the track menu, sets
-`ribbonColor`, a color scale on the ribbons that maps a `field` to colors. A
-ribbon between the anchor and the first lane takes the strand of one alignment,
-red forward and blue reverse, and a ribbon between two genome lanes takes the
-product of two alignments' strands, so two reverse alignments give forward.
+`ribbonColor`, a color scale on the ribbons that maps a `field` to colors. Each
+ribbon takes the strand of the chain record that placed it, red where the lane
+runs the same way as hg38 and blue where it runs reversed.
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,
 with the same genes in the same order.

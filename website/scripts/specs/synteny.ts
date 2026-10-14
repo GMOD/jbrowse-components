@@ -23,6 +23,18 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The paa island's graph slice and the segments lane over it share one ramp.
 const PAA_COLOR_DOMAIN = { start: 1445000, end: 1474500 }
 
+// Down the tree from human, so the breaks and flips grow top to bottom.
+const HG38_VERTEBRATES_TREE_ORDER = [
+  'panTro6',
+  'gorGor6',
+  'ponAbe3',
+  'rheMac10',
+  'calJac4',
+  'mm39',
+  'canFam6',
+  'bosTau9',
+]
+
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const AMYLASE_CONFIG = 'test_data/amylase/config.json'
@@ -1930,6 +1942,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'hg38_liftover_multiway',
                 type: 'MultiWaySyntenyDisplay',
                 ribbonColor: { field: 'strand' },
+                rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
                 height: 600,
               },
             ],
@@ -2154,6 +2167,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'hg38_liftover_multiway',
                 type: 'MultiWaySyntenyDisplay',
                 ribbonColor: { field: 'strand' },
+                rows: { domain: HG38_VERTEBRATES_TREE_ORDER },
                 height: 600,
               },
             ],

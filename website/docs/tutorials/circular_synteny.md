@@ -103,13 +103,13 @@ query is the genome it lifts to, so for hg38ToMm39 that is mouse:
 ```
 
 For your own pair, convert the alignment to a PIF, JBrowse's indexed PAF. A
-chain goes through `chain2paf` from
-[paftools](https://github.com/lh3/minimap2/tree/master/misc); a PAF from
-minimap2 or wfmash goes straight in. Then add the track with `assemblyNames` as
-`query,target`:
+chain goes through [chain2paf](https://github.com/AndreaGuarracino/chain2paf),
+which reads it uncompressed; a PAF from minimap2 or wfmash goes straight in.
+Then add the track with `assemblyNames` as `query,target`:
 
 ```bash
-paftools.js chain2paf pair.over.chain.gz > pair.paf
+gzip -dc pair.over.chain.gz > pair.over.chain
+chain2paf -i pair.over.chain > pair.paf
 jbrowse make-pif pair.paf
 jbrowse add-track pair.pif.gz -a query,target --load copy
 ```
