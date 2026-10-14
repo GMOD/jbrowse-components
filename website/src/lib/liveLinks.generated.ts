@@ -2326,7 +2326,7 @@ export const figureFrames: Record<
   },
   "protein/protein_browser_page": {
     "width": 1100,
-    "height": 580
+    "height": 640
   },
   "protein/protein_browser_tp53": {
     "width": 2000,

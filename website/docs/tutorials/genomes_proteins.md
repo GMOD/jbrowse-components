@@ -77,7 +77,7 @@ NCBI taxon ID whose genome genomes.jbrowse.org hosts with NCBI gene annotation,
 and the chips after **TP53** open other organisms on a residue each, such as
 rifampicin resistance in _M. tuberculosis_ _rpoB_.
 
-<Figure caption="The protein browser on the TP53 chip with Advanced ticked: the structure the chip picked and the AlphaMissense coloring above the launch button, and the protein map below it, with R248 on the ruler inside the DNA-binding domain." src="/img/protein/protein_browser_page.png" />
+<Figure caption="The protein browser on the TP53 chip with Advanced ticked: the structure the chip picked and the AlphaMissense coloring above the launch button, and the protein map below it, with R248 on the ruler inside the DNA-binding domain and a line under the map saying what is known at that residue." src="/img/protein/protein_browser_page.png" />
 
 ## Reading the TP53 session
 
@@ -97,7 +97,7 @@ lights up in turn. [g2p_mapper](https://github.com/cmdcolin/g2p_mapper) maps
 each position through the transcript's coding sequence, so introns, UTRs and
 residues the structure does not cover highlight nothing.
 
-<Figure caption="TP53 as the protein browser launches it on R248: the coding exons above ClinVar and AlphaMissense, the P53 family's Pfam seed alignment under them, and 3KMD beside, colored by AlphaMissense. R248 is selected in all three." src="/img/protein/protein_browser_tp53.png" />
+<Figure caption="TP53 as the protein browser launches it on R248: the coding exons above ClinVar and AlphaMissense, the P53 family's Pfam seed alignment under them, and 3KMD beside, four copies of the DNA-binding core on DNA, colored by AlphaMissense. The cores are red and their outer loops pale. R248 is magenta in each copy where it reaches into the DNA, and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
 
 ## Changing what the TP53 session opens on
 

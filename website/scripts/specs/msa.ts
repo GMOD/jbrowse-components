@@ -216,7 +216,7 @@ export const msaSpecs: ScreenshotSpec[] = [
     readyText: 'More about residue 248',
     readyTimeout: 90000,
     viewportWidth: 1100,
-    viewportHeight: 580,
+    viewportHeight: 640,
     liveLabel: 'Open TP53 in the protein browser',
     diffThreshold: 0.02,
     actions: [

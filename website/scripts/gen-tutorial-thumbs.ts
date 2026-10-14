@@ -302,11 +302,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   genomes_proteins: {
-    // The structure itself, in the Mol* canvas under the alignment panel: the
-    // folded ribbon is the one card in the set that isn't a genome browser.
-    src: 'protein/connected.png',
-    band: [0.62, 0.98],
-    xband: [0.6, 0.95],
+    // The structure itself, the Mol* canvas right of the genome and alignment:
+    // the folded ribbon is the one card in the set that isn't a genome browser.
+    src: 'protein/protein_browser_tp53.png',
+    band: [0.22, 0.58],
+    xband: [0.62, 0.97],
   },
   tp53_structures: {
     // The canvas with the two crystal fragments on the model, the part of the
