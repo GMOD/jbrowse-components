@@ -1,5 +1,7 @@
 import { copyExcept } from './copyExcept.ts'
+import { toNumberList } from './numberColumns.ts'
 
+import type { NumberListColumn } from './numberColumns.ts'
 import type { MinimalFeature } from './types.ts'
 
 interface UcscTranscriptCheck {
@@ -71,12 +73,6 @@ function frameToPhase(frame: number) {
   return (3 - frame) % 3
 }
 
-function parseFrames(frames: unknown) {
-  return typeof frames === 'string'
-    ? frames.replace(/,$/, '').split(',').map(Number)
-    : (frames as number[] | undefined)
-}
-
 interface UcscTranscriptInput {
   uniqueId: string
   strand: number
@@ -136,7 +132,9 @@ export function generateUcscTranscript(
   // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
   // _exonFrames fallback supports BED files that use the underscore-prefixed column
   // name, which the parser leaves as raw text because it is not a standard column.
-  const exonFrames = parseFrames(rest.exonFrames ?? rest._exonFrames)
+  const exonFrames = toNumberList(
+    (rest.exonFrames ?? rest._exonFrames) as NumberListColumn | undefined,
+  )
 
   const feats = oldSubfeatures
     .filter(child => child.type === 'block')

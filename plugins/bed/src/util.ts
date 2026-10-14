@@ -15,7 +15,9 @@ import {
   generateUcscTranscript,
   isUcscTranscript,
 } from './generateUcscTranscript.ts'
+import { toNumber, toNumberList } from './numberColumns.ts'
 
+import type { NumberColumn, NumberListColumn } from './numberColumns.ts'
 import type { MinimalFeature } from './types.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 
@@ -26,12 +28,12 @@ interface BedData {
   chromStart?: number | string
   chromEnd?: number | string
   description?: string
-  blockCount?: number | string
-  chromStarts?: number[] | string[] | string
-  blockSizes?: number[] | string[] | string
-  blockStarts?: number[] | string[] | string
-  thickStart?: number | string
-  thickEnd?: number | string
+  blockCount?: NumberColumn
+  chromStarts?: NumberListColumn
+  blockSizes?: NumberListColumn
+  blockStarts?: NumberListColumn
+  thickStart?: NumberColumn
+  thickEnd?: NumberColumn
   [key: string]: unknown
 }
 
@@ -192,27 +194,6 @@ export function parseStrand(strand: string | number | undefined): number {
     return 1
   }
   return 0
-}
-
-// An autoSql may declare a standard BED column `string`, as UCSC's panelApp
-// bigBeds do for the block columns, and @gmod/bed then hands back the text
-function toNumber(value: number | string | undefined) {
-  if (value === undefined || value === '') {
-    return undefined
-  }
-  const n = Number(value)
-  return Number.isNaN(n) ? undefined : n
-}
-
-function toNumberList(value: number[] | string[] | string | undefined) {
-  return typeof value === 'string'
-    ? value
-        .split(',')
-        .filter(s => s !== '')
-        .map(Number)
-    : typeof value?.[0] === 'string'
-      ? value.map(Number)
-      : (value as number[] | undefined)
 }
 
 const BED_OWN = new Set(['strand', 'score', 'chrom', 'chromStart', 'chromEnd'])

@@ -377,7 +377,7 @@ describe('featureData', () => {
   })
 
   // UCSC's hg38 panelApp bigBeds (genes.bb, cnv.bb, tandRep.bb) declare the
-  // block columns as `string`, and makeBlocks once added "0" to 42900797 as text
+  // block columns as `string`
   describe('with an autoSql that types the BED12 columns as strings', () => {
     const autoSql = `table stringBlocks
 "BED12 with string-typed thick and block columns"
