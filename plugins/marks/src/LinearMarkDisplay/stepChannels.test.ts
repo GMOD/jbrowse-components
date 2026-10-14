@@ -61,3 +61,21 @@ test('a window keeps its features, so one summary fills y and the row stays', ()
 test('a bin writing its edges as a pair fills nothing', () => {
   expect(stepChannels([{ type: 'bin', as: ['a', 'b'] }])).toEqual({})
 })
+
+test('an aggregate keeps a channel only where it keeps every field it read', () => {
+  const count = { op: 'count' as const }
+  const grouped = (groupby: string[]) => ({
+    type: 'aggregate',
+    groupby,
+    ops: [count],
+  })
+  expect(stepChannels([{ type: 'pileup' }, grouped(['row'])])).toEqual({
+    y: 'count',
+    row: 'row',
+  })
+  const mate = { type: 'mate' }
+  expect(stepChannels([mate, grouped(['mate.refName'])]).x2).toBeUndefined()
+  expect(
+    stepChannels([mate, grouped(['mate.refName', 'mate.start'])]).x2,
+  ).toEqual(MATE_X2)
+})

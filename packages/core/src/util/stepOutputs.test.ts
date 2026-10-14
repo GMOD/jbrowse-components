@@ -8,7 +8,7 @@ const everyStepHasAnEntry: Same<StepType, TransformStep['type']> = true
 
 test('the table names every step type the worker runs', () => {
   expect(everyStepHasAnEntry).toBe(true)
-  expect(Object.keys(STEP_OUTPUTS).sort()).toHaveLength(10)
+  expect(Object.keys(STEP_OUTPUTS)).toHaveLength(10)
 })
 
 test('an empty as writes the default name, as the worker does', () => {

@@ -30,12 +30,13 @@ export type ChannelStep = StepOutline
 export function stepChannels(
   steps: readonly (ChannelStep | undefined)[],
 ): StepChannels {
-  const { channels } = stepsOutput(steps)
+  const { channels, surviving } = stepsOutput(steps)
   const y = channels.get('y')
   const row = channels.get('row')
+  const x2 = channels.has('x2') && (!surviving || surviving.has(MATE_X2.pos))
   return {
     ...(y === undefined ? {} : { y }),
     ...(row === undefined ? {} : { row }),
-    ...(channels.has('x2') ? { x2: MATE_X2 } : {}),
+    ...(x2 ? { x2: MATE_X2 } : {}),
   }
 }

@@ -53,12 +53,7 @@ import {
   YSCALEBAR_LABEL_OFFSET,
   leftAxisGutterWidth,
 } from '@jbrowse/display-ui'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
@@ -164,13 +159,6 @@ import type {
   TextMarkEntry,
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
-import type {
-  FacetSnapshot,
-  MarkProblem,
-  RowsSnapshot,
-  ScalesSnapshot,
-  StepSnapshot,
-} from './markProblems.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -1369,20 +1357,6 @@ export function stateModelFactory(
             color: label.color,
             fontSize,
           }))
-        },
-        /**
-         * #getter
-         * What the declared marks say that the display cannot draw as written,
-         * reported where a load would once have refused the track.
-         */
-        get configProblems(): MarkProblem[] {
-          return markProblems({
-            marks: getSnapshot(self.conf.marks),
-            transform: getSnapshot(self.conf.transform) as StepSnapshot[],
-            facet: getSnapshot(self.conf.facet) as FacetSnapshot,
-            rows: getSnapshot(self.conf.rows) as RowsSnapshot,
-            scales: getSnapshot(self.conf.scales) as ScalesSnapshot,
-          })
         },
         /**
          * #method

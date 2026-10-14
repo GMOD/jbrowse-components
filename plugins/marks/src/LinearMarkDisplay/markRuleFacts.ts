@@ -6,22 +6,15 @@
  */
 export {
   BIN_OVERLAP_FIELD,
-  CELLS_FIELDS,
   DEFAULT_AGGREGATE_OP,
   DEFAULT_BIN_AS,
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
-  MATE_FIELDS,
-  STEP_OUTPUTS,
   aggregateFieldName,
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
-export type {
-  FieldKind,
-  StepOutline,
-  WrittenField,
-} from '@jbrowse/core/util/stepOutputs'
+export type { StepOutline } from '@jbrowse/core/util/stepOutputs'
 export { isNamedColor } from '@jbrowse/core/util/color/cssColorsLevel4'
 export { isJexl } from '@jbrowse/core/util/jexlStrings'
 export {

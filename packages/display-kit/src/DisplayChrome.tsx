@@ -1,8 +1,7 @@
-import { Suspense, lazy } from 'react'
-
 import { useChromeOverlayOverride } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
+import { ConfigProblemsCorner } from './ConfigProblemsIndicator.tsx'
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
@@ -44,30 +43,6 @@ function useChromeOverlays() {
  * `displayPhase` contract, the subtree-replacing terminal states, and the
  * canvas dispose/re-init lifecycle.
  */
-// The chip's module carries Material UI's tooltip and Edit plot's opener, so
-// it loads once a display has something to say rather than with every display.
-const ConfigProblemsCorner = lazy(() =>
-  import('./ConfigProblemsIndicator.tsx').then(m => ({
-    default: m.ConfigProblemsCorner,
-  })),
-)
-
-const NoticeCorner = observer(function NoticeCorner({
-  model,
-}: {
-  model: object
-}) {
-  const { cornerNotices, notices } = model as {
-    cornerNotices?: readonly string[]
-    notices?: readonly string[]
-  }
-  return (cornerNotices ?? notices)?.length ? (
-    <Suspense fallback={null}>
-      <ConfigProblemsCorner model={model} />
-    </Suspense>
-  ) : null
-})
-
 const DisplayChrome = observer(function DisplayChrome<
   B extends RenderingBackend,
 >(props: Omit<DisplayChromeBaseProps<B>, 'overlays'>) {
@@ -77,7 +52,7 @@ const DisplayChrome = observer(function DisplayChrome<
       {handle => (
         <>
           {children(handle)}
-          <NoticeCorner model={model} />
+          <ConfigProblemsCorner model={model} />
         </>
       )}
     </DisplayChromeBase>

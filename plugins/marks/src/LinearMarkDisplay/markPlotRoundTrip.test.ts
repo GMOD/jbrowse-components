@@ -65,7 +65,7 @@ it('writes a plot the box lifted, and the display draws by it', () => {
   }
   display.applyPlot(next)
   expect(display.markTypes).toEqual(['point'])
-  expect(display.configProblems).toEqual([])
+  expect(display.configNotices).toEqual([])
 })
 
 it('a null clears the setting rather than writing an empty one', () => {
@@ -79,10 +79,8 @@ it('a null clears the setting rather than writing an empty one', () => {
 // cannot disagree about what a plot says.
 it('says through the corner notice exactly what the box would say', () => {
   const display = displayOn({ marks: [{ mark: 'bar' }], rows: 'source' })
-  expect(markProblems(display.liftMarkPlot(display.plot))).toEqual(
-    display.configProblems,
-  )
-  expect(display.configProblems.map(p => p.rule)).toContain(
-    'mark-without-value',
-  )
+  expect(display.plotProblems(display.plot)).toEqual(display.configNotices)
+  expect(
+    markProblems(display.liftMarkPlot(display.plot)).map(p => p.rule),
+  ).toContain('mark-without-value')
 })
