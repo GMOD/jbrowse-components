@@ -1,6 +1,6 @@
 ---
 name: plasmid-maps-on-the-circle
-description: Plasmid and organelle maps on the circular view (2026-10-09). Open are overlay labels overrunning on inner lines, radial labels, overlay canvases (waiting on Colin), and the linear view's scroll through the origin. Read before touching ring labels or circular GFF3.
+description: Plasmid and organelle maps on the circular view (2026-10-14). Open are radial ring labels (a call for Colin), overlay canvases (waiting on Colin), and a way into the linear view across the origin. Read before touching ring labels or circular GFF3.
 ---
 
 # Plasmid and organelle maps on the circular view
@@ -35,25 +35,28 @@ Landed, each with a test that fails on the code before it:
   which `layoutRings` sets from bands sized by each display's
   `configuredHeight`. A fit-mode track then packs its rows and labels at the
   size they draw; a display whose height follows its content is still scaled.
+- The fit ladder keeps a body carrying an overlay subfeature label at its full
+  height (`fitLabeledBodyFloor`). The SARS-CoV-2 peptide names that ran over
+  their neighbours sat on bodies the `thinned` rung had shortened, on the
+  linear view as much as the ring.
+- `forEachDisplayLabel` labels both copies of a contig listed twice, and a
+  feature cut at the origin once where its pieces meet at the seam.
 - The walkthrough is `website/docs/tutorials/organelle_map.md`, on
   `test_data/human_mito` (track `mito_genes`).
 
 ## Next
 
-1. **An overlay subfeature label overruns its peptide on an inner line.** The
-   strip placed it to fit at `stripRadiusPx`; an inner radius gives it more
-   turn, so on SARS-CoV-2 `nsp8 (ORF1ab polyprotein)` runs over its neighbours.
-   The cull only compares labels with labels.
-2. **Radial labels.** The ring-labels proposal decided "along the arc when every
+1. **Radial labels.** The ring-labels proposal decided "along the arc when every
    label on the ring fits its span, else radial, one orientation per ring", the
-   ruler's `labelsRunAlongArcs` rule. Only along-the-arc is built. Every label
-   reads `offsetRadians` for its flip, so measure a rotation drag on a dense
-   ring before adding more.
-3. **Overlay canvases never reach a ring**: the ring samples the strip's first
+   ruler's `labelsRunAlongArcs` rule. Only along-the-arc is built. A ring stacks
+   lines, so a radial label would cross the lines inside and outside it; ask
+   Colin whether it still stands before building it.
+2. **Overlay canvases never reach a ring**: the ring samples the strip's first
    `<canvas>`, so density bands, indel glyphs, alignments labels and MAF
    overlays are dropped. Waiting on Colin, with the other review items in
    memory under circular-view-review-thread.
-4. **The linear view cannot scroll through the origin.** Listing the contig
-   twice in `displayedRegions` with zero inter-region padding gives the `2L`
-   space and true coordinates for free, and the two pieces then abut at the
-   seam. Try it by hand on a bacterial genome before building anything.
+3. **Opening the linear view across the origin.** Two regions do it by hand:
+   `NC_012920.1:15,000-16,569 NC_012920.1:1-2,000` on `human_mito` shows the
+   D-loop's pieces abutting in one row with true coordinates, labelled once.
+   What is missing is a way in that does not need two regions typed: a
+   locstring whose end wraps past the origin, or a menu item. Not decided.
