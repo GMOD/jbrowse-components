@@ -133,8 +133,9 @@ test('a hovered value names its interval and its gap as the key does', () => {
     undefined,
     () => ({ labels: ['low', 'mid', 'high'], missingLabel: 'untested' }),
   )
-  expect(valueRow(section!, 0.7, undefined)?.label).toBe('high')
-  expect(valueRow(section!, Number.NaN, NO_VALUE_ABGR)?.label).toBe('untested')
+  expect(valueRow(section!, 0.7)?.label).toBe('high')
+  expect(valueRow(section!, Number.NaN, true)?.label).toBe('untested')
+  expect(valueRow(section!, Number.NaN)?.label).toBe('(not a number)')
 })
 
 test('two regions of one threshold declaration share a key', () => {

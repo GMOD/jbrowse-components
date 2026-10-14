@@ -67,23 +67,23 @@ function colorRow(
   const swatch =
     color === undefined ? undefined : { color: abgrToCssRgba(color) }
   const section = colorSection(sections, hit.markIndex)
-  if (section && colorValue !== undefined) {
-    const row = valueRow(section, colorValue, color)
-    return {
-      channel: 'color',
-      field: section.scale.field,
-      value: Number.isNaN(colorValue)
-        ? row?.label
-        : `${toP(colorValue, 4)}${row ? ` (${row.label})` : ''}`,
-      swatch: row?.color ? { color: row.color } : swatch,
-    }
-  }
   if (section) {
+    const row =
+      colorValue === undefined
+        ? undefined
+        : valueRow(section, colorValue, hit.colorMissing)
     return {
       channel: 'color',
       field: section.scale.field,
-      value: color === undefined ? undefined : categoryLabel(section, color),
-      swatch,
+      value:
+        colorValue === undefined
+          ? color === undefined
+            ? undefined
+            : categoryLabel(section, color)
+          : Number.isNaN(colorValue)
+            ? row?.label
+            : `${toP(colorValue, 4)}${row ? ` (${row.label})` : ''}`,
+      swatch: row?.color ? { color: row.color } : swatch,
     }
   }
   if (!swatch) {

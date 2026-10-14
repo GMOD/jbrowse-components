@@ -168,10 +168,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           HIC_FIELD_PRESETS,
         ) as HicColorEncoding
       },
-      /**
-       * #getter
-       * The corner indicator's lines: `schemaNotices`.
-       */
+      /** #getter */
       get notices(): string[] {
         return self.schemaNotices
       },

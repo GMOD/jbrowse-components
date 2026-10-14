@@ -4,7 +4,9 @@ import { clamp } from '@jbrowse/core/util/numericUtils'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
   HIDDEN_ROW,
+  RAMP_NO_VALUE_BITS,
   nearestMarkHit,
+  rampValueBits,
   rowSpanIndex,
   spansInRow,
 } from '@jbrowse/render-core/marks'
@@ -40,6 +42,8 @@ export interface MarkHitInfo {
   color: number | undefined
   /** The raw value of a ramp color channel, where the display resolves it. */
   colorValue: number | undefined
+  /** Whether that value is the no-value marker rather than text that is no number. */
+  colorMissing?: boolean
   /**
    * Whether the instance's region still holds an earlier `color`
    * declaration's data (`HeldColor`), whose color no key names.
@@ -219,6 +223,9 @@ export function findMarkHit(
     y: layer.y?.[hit.index],
     color: colorAt(layer, hit.index),
     colorValue: layer.colorValue?.[hit.index],
+    colorMissing:
+      layer.colorValue &&
+      rampValueBits(layer.colorValue)[hit.index] === RAMP_NO_VALUE_BITS,
     heldColor: layer.heldColor,
     glyph: layer.glyph?.[hit.index],
     row: layer.row?.[hit.index],

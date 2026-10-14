@@ -642,12 +642,13 @@ export function shapeLabel(
 
 /**
  * The key row a hovered value falls on, for a ramp or threshold: its
- * interval, or the no-value or not-a-number row its packed color is.
+ * interval, or for a NaN the no-value row where `missing` says the feature
+ * had none and the not-a-number row otherwise.
  */
 export function valueRow(
   section: MarkLegendSection,
   value: number,
-  color: number | undefined,
+  missing = false,
 ) {
   const { scale, key } = section
   if (scale.kind !== 'ramp' && scale.kind !== 'threshold') {
@@ -655,14 +656,13 @@ export function valueRow(
   }
   if (Number.isNaN(value)) {
     const gaps = listedRows(
-      thresholdKeyEntries([], undefined, scale).slice(1),
-      {
-        missingLabel: key.missingLabel,
-      },
+      thresholdKeyEntries([], undefined, {
+        missing: true,
+        notNumber: true,
+      }).slice(1),
+      { missingLabel: key.missingLabel },
     )
-    return gaps.find(
-      e => e.color !== undefined && cssColorToABGR(e.color) === color,
-    )
+    return gaps.find(e => !!e.missing === missing)
   }
   return scale.kind === 'threshold'
     ? thresholdKeyEntries(scale.domain, scale.range, scale, key.labels)[

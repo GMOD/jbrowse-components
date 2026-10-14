@@ -106,11 +106,7 @@ export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function wiggleColorNotices(color: ColorSetting) {
   const painted = paintedWiggleColor(color)
-  const encoding = wiggleColorEncoding(painted)
-  const cuts =
-    typeof encoding === 'object' && encoding.scale === 'threshold'
-      ? thresholdCuts(encoding.domain ?? []).length
-      : 0
+  const cuts = thresholdCutsOf(wiggleColorEncoding(painted)).length
   return [
     ...colorNotices(painted, WIGGLE_FIELD_PRESETS),
     ...(cuts > MAX_WIGGLE_CUTS
@@ -121,15 +117,19 @@ export function wiggleColorNotices(color: ColorSetting) {
   ]
 }
 
+function thresholdCutsOf(encoding: ReturnType<typeof wiggleColorEncoding>) {
+  return typeof encoding === 'object' && encoding.scale === 'threshold'
+    ? thresholdCuts(encoding.domain ?? [])
+    : []
+}
+
 /**
  * The cuts a threshold over `score` declares, ascending, at most
  * `MAX_WIGGLE_CUTS`. Empty for any other encoding, and for a threshold naming
  * no cut, which parts at the `origin`.
  */
 export function declaredCuts(encoding: ReturnType<typeof wiggleColorEncoding>) {
-  return typeof encoding === 'object' && encoding.scale === 'threshold'
-    ? thresholdCuts(encoding.domain ?? []).slice(0, MAX_WIGGLE_CUTS)
-    : []
+  return thresholdCutsOf(encoding).slice(0, MAX_WIGGLE_CUTS)
 }
 
 function solid(color: string, pivot: number): ResolvedWiggleColor {

@@ -1,6 +1,7 @@
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 import {
   HIDDEN_ROW,
+  RAMP_NO_VALUE_BITS,
   backToFront,
   buildRowTable,
   nearestMarkHit,
@@ -224,6 +225,28 @@ test('a constant color answers a hover as the one number the layer holds', () =>
   const hit = findMarkHit(176, 300, [BLOCK], data, marks, state, REGIONS)
   expect(hit?.instance).toBe(1)
   expect(hit?.color).toBe(0xff0000ff)
+})
+
+test('a ramp value hovered tells no value apart from text that is no number', () => {
+  const bits = Uint32Array.from([RAMP_NO_VALUE_BITS, 0x7fc00000])
+  const layer: StoredLayer = {
+    count: 2,
+    skipped: 0,
+    x: Uint32Array.from([100, 200]),
+    x2: Uint32Array.from([140, 240]),
+    y: Float32Array.from([5, 6]),
+    color: undefined,
+    colorValue: new Float32Array(bits.buffer),
+    yMin: 5,
+    yMax: 6,
+  }
+  const state = { ...STATE, rowHeight: STATE.canvasHeight }
+  const marks = buildMarkList(entries('bar'))
+  const data = new Map([[0, { layers: [layer] }]])
+  const at = (x: number) =>
+    findMarkHit(x, 300, [BLOCK], data, marks, state, REGIONS)?.colorMissing
+  expect(at(96)).toBe(true)
+  expect(at(176)).toBe(false)
 })
 
 test('a bar with no row lane, the whole canvas its band, answers the same', () => {

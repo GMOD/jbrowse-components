@@ -297,10 +297,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
           LD_FIELD_PRESETS,
         ) as ContinuousRef & { scheme: ColorSchemeName }
       },
-      /**
-       * #getter
-       * The corner indicator's lines: `schemaNotices`.
-       */
+      /** #getter */
       get notices(): string[] {
         return self.schemaNotices
       },
