@@ -58,8 +58,9 @@ the constant; the object binds the field, and `scale: "none"` beside a
 field paints the constant while keeping the field for the way back.
 `scale: "identity"` leaves each feature its own color, a file's itemRgb or
 what a `value` callback returns, and names the colors `domain` lists in the
-key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` black, which
-otherwise reads as no color.
+key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
+which otherwise reads as no color, and reads a comma-free itemRgb as a packed
+integer.
 
 ## Config slots
 
@@ -71,7 +72,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The heading of the key this scale draws, naming what the color measures. Three states: unset, the key keeps the display's own heading, usually the field's name; some text is that text; `""` is a key with no title, and the only spelling of one. `null` reads as unset, as it does in every slot. |
 | <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one. Writing `color: "red"` or `color: "jexl:…"` lands here. Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.<br>_callback args:_ `feature` |
 | <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | a feature field, or a jexl expression over feature, whose values each paint one range color with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 paints black, and the key names the colors in domain; unset is linear for score and categorical for any other field |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme |
 | <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name |

@@ -201,11 +201,21 @@ describe('colorBits helpers', () => {
       expect(featureItemRgb('227,26,28', true)).toBe('227,26,28')
     })
 
-    test('under itemRgbOn an absent or non-triple value still reads as absent', () => {
+    test('under itemRgbOn a packed integer reads as UCSC packs it', () => {
+      expect(featureItemRgb('0', true)).toBe('0,0,0')
+      expect(featureItemRgb(0, true)).toBe('0,0,0')
+      expect(featureItemRgb('16711680', true)).toBe('255,0,0')
+      expect(featureItemRgb(0x0000ff, true)).toBe('0,0,255')
+      expect(featureItemRgb(0x1000000, true)).toBeUndefined()
+      expect(featureItemRgb(-1, true)).toBeUndefined()
+      expect(featureItemRgb(1.5, true)).toBeUndefined()
+    })
+
+    test('under itemRgbOn an absent or non-color value still reads as absent', () => {
       expect(featureItemRgb(undefined, true)).toBeUndefined()
       expect(featureItemRgb('', true)).toBeUndefined()
       expect(featureItemRgb('.', true)).toBeUndefined()
-      expect(featureItemRgb('0', true)).toBeUndefined()
+      expect(featureItemRgb('0x10', true)).toBeUndefined()
       expect(featureItemRgb('256,0,0', true)).toBeUndefined()
     })
 
@@ -281,6 +291,9 @@ describe('colorBits helpers', () => {
       expect(featureBedColor(mockFeature({ reserved: '0,0,0' }), true)).toBe(
         '0,0,0',
       )
+      // @gmod/bed hands a bigBed's `uint reserved` of "0" over as a number
+      expect(featureBedColor(mockFeature({ reserved: 0 }), true)).toBe('0,0,0')
+      expect(featureBedColor(mockFeature({ reserved: 0 }))).toBeUndefined()
       expect(featureBedColor(mockFeature({ name: 'x' }), true)).toBeUndefined()
     })
 

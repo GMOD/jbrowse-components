@@ -45,8 +45,17 @@ const INVALID_COLOR = newColor(255, 0, 255, 255)
 // Plain BED12 files fill itemRgb with "0,0,0" rather than omitting it (every
 // itemRgb in the volvox-bed12 fixture is one), and UCSC ignores the column
 // unless trackDb says `itemRgb on`. So the triple reads as absent unless the
-// caller passes `itemRgbOn`, under which UCSC paints it black.
+// caller passes `itemRgbOn`. Under it, UCSC also reads a comma-free value as a
+// packed 0xRRGGBB integer, and paints 0 its track color, black by default.
 const BED_TRIPLE_UNSET = '0,0,0'
+
+function packedRgb(raw: unknown) {
+  const n =
+    typeof raw === 'string' && /^\d+$/.test(raw.trim()) ? Number(raw) : raw
+  return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 0xffffff
+    ? `${n >> 16},${(n >> 8) & 255},${n & 255}`
+    : undefined
+}
 
 /**
  * One raw attribute value as a usable BED color, or undefined when it isn't
@@ -62,7 +71,11 @@ export function featureItemRgb(
   itemRgbOn = false,
 ): string | undefined {
   const triple = typeof raw === 'string' ? bedTriple(raw) : undefined
-  return itemRgbOn || triple !== BED_TRIPLE_UNSET ? triple : undefined
+  return itemRgbOn
+    ? (triple ?? packedRgb(raw))
+    : triple !== BED_TRIPLE_UNSET
+      ? triple
+      : undefined
 }
 
 // The names the BED color column goes by, most specific first.
@@ -86,7 +99,8 @@ const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8']
 
 /**
  * The BED color a feature declares for itself, under any column name, or
- * undefined if it declares none. `itemRgbOn` reads "0,0,0" as black.
+ * undefined if it declares none. `itemRgbOn` reads "0,0,0" as black and a
+ * packed integer as UCSC does.
  */
 export function featureBedColor(
   feature: Feature,
