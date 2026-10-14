@@ -136,7 +136,7 @@ export function positionSource(
       step.type === 'bin' &&
       pairOf(step.as, DEFAULT_BIN_AS).includes(field)
     ) {
-      return intervalFields(step) ? field : step.field
+      return intervalFields(step) ? field : step.field || DEFAULT_BIN_FIELD
     }
     if (
       step.type === 'coverage' ||
