@@ -159,6 +159,7 @@ import type {
   TextMarkEntry,
 } from './markList.ts'
 import type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
+import type { MarkProblem } from './markProblems.ts'
 import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -1357,6 +1358,14 @@ export function stateModelFactory(
             color: label.color,
             fontSize,
           }))
+        },
+        /**
+         * #getter
+         * The rule list over the live config, with each problem's level and
+         * slot: jbrowse-img fails an export on an error and warns on the rest.
+         */
+        get configProblems(): MarkProblem[] {
+          return markProblems(markPlotSettingsOf(self.conf))
         },
         /**
          * #method
