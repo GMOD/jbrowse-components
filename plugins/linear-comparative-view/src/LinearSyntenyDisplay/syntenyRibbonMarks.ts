@@ -62,8 +62,7 @@ export interface SyntenyRibbonParams {
  * agree over a ground they both know. `resolveInstanceFill` in
  * `drawSyntenyTrack.ts` is the arithmetic: a BASE ribbon comes out `rgb*darken`
  * at alpha `shade`, while a CIGAR indel comes out
- * `rgb*darken*shade + ground*(1 - shade)` FULLY OPAQUE — the indel palette is
- * opaque literals (`colorUtils.ts` warns against a non-opaque one). Those land
+ * `rgb*darken*shade + ground*(1 - shade)` FULLY OPAQUE at any fade. Those land
  * on the same pixel only when the destination IS `ground`, since
  * base-over-ground is `rgb*shade + ground*(1 - shade)`, the pre-blend byte for
  * byte. Over any other backdrop the indel stays blended toward a color that is

@@ -23,30 +23,34 @@ const H = 60
 const ALPHA = 0.3
 const BLUE = 0xffff0000
 
-function ribbon(kind: number): SyntenyInstanceData {
+function ribbon(
+  kinds: number[],
+  colors: number[] = kinds.map(() => BLUE),
+): SyntenyInstanceData {
+  const n = kinds.length
   return {
-    bp1: Float32Array.from([20]),
-    bp2: Float32Array.from([180]),
-    bp3: Float32Array.from([20]),
-    bp4: Float32Array.from([180]),
+    bp1: new Float32Array(n).fill(20),
+    bp2: new Float32Array(n).fill(180),
+    bp3: new Float32Array(n).fill(180),
+    bp4: new Float32Array(n).fill(20),
     base0: 0,
     base1: 0,
-    colors: Uint32Array.from([BLUE]),
-    kinds: Uint8Array.from([kind]),
-    instanceFeatureIdx: Uint32Array.from([0]),
-    alignmentLengths: Float32Array.from([10000]),
-    instanceCount: 1,
+    colors: Uint32Array.from(colors),
+    kinds: Uint8Array.from(kinds),
+    instanceFeatureIdx: new Uint32Array(n),
+    alignmentLengths: new Float32Array(n).fill(10000),
+    instanceCount: n,
   }
 }
 
-function centerPixel(kind: number, groundColor: string) {
+function centerPixel(kind: number | SyntenyInstanceData, groundColor: string) {
   const canvas = createCanvas(W, H)
   const ctx = canvas.getContext('2d')
   ctx.fillStyle = groundColor
   ctx.fillRect(0, 0, W, H)
   drawSyntenyTrack(
     ctx,
-    ribbon(kind),
+    typeof kind === 'number' ? ribbon([kind]) : kind,
     {
       yTop: 0,
       height: H,
@@ -76,6 +80,23 @@ describe.each(['#fff', '#121212'])('over a %s band', ground => {
     base.forEach((c, i) => {
       expect(Math.abs(c - indel[i]!)).toBeLessThanOrEqual(1)
     })
+  })
+})
+
+// An opacity field fades a ribbon and its indels together (syntenyColors), so
+// the indel's packed alpha drops below 255. Written at that alpha, the wedge
+// mixed back toward the red ribbon under it; written opaque, it lands where the
+// same wedge alone over the ground does.
+test('a faded indel over its ribbon keeps the indel color', () => {
+  const FADED_BLUE = 0x4dff0000
+  const FADED_RED = 0x4d0000ff
+  const alone = centerPixel(ribbon([KIND_CIGAR_D], [FADED_BLUE]), '#fff')
+  const over = centerPixel(
+    ribbon([KIND_BASE, KIND_CIGAR_D], [FADED_RED, FADED_BLUE]),
+    '#fff',
+  )
+  alone.forEach((c, i) => {
+    expect(Math.abs(c - over[i]!)).toBeLessThanOrEqual(1)
   })
 })
 

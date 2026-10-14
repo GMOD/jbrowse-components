@@ -43,9 +43,9 @@ function markerColor(groundColor: string) {
 }
 
 // And what "markers off" is: the same instance, painted to nothing. A zero alpha
-// is below the `isInstanceInvisible` floor the Canvas2D draw loop and the pick
-// engine share, so the tick is skipped outright there; on the GPU it rasterizes
-// and blends nothing. That is the whole cost of keeping the toggle off the RPC —
+// is below the `isInstanceInvisible` floor the Canvas2D draw loop, the pick
+// engine and the shaders' vertex prologue share, so the tick is skipped
+// outright. That is the whole cost of keeping the toggle off the RPC —
 // see `currentFetchKey` for what it buys, and MIN_MARKER_FEATURE_PX for why the
 // count is small enough not to care (a whole-genome hairball emits no ticks at
 // all).

@@ -16,6 +16,10 @@ function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
+export function isInstanceInvisible(colorAlpha: number, displayAlpha: number): boolean {
+  return (((colorAlpha * 255.0) * displayAlpha) < 3.0)
+}
+
 export function isCigarKind(kind: number): boolean {
   return (kind >= 3.0)
 }

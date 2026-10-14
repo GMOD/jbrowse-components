@@ -1,3 +1,5 @@
+import { isInstanceInvisible as isPackedInvisible } from '@jbrowse/synteny-core'
+
 import {
   KIND_BASE,
   KIND_BASE_TILE,
@@ -11,6 +13,7 @@ import {
   fillShade,
   hoverDarken,
   isCigarKind,
+  isInstanceInvisible,
   isMarkerKind,
   isTileKind,
   sBlend,
@@ -367,4 +370,16 @@ test('both curves are anchored at their endpoints', () => {
   expect(sBlend(1)).toBe(1)
   expect(yCurve(0)).toBe(0)
   expect(yCurve(1)).toBe(1)
+})
+
+// The GPU culls under the same floor Canvas2D and the pick skip under, so a
+// faded-out ribbon draws no clicked outline and a hidden one no indel wedge.
+test('the shader invisibility floor is the Canvas2D and pick one', () => {
+  for (let byte = 0; byte <= 255; byte++) {
+    for (const alpha of [0, 0.004, 0.0117, 0.0118, 0.05, 0.25, 1]) {
+      expect(isInstanceInvisible(byte / 255, alpha)).toBe(
+        isPackedInvisible(byte << 24, alpha),
+      )
+    }
+  }
 })

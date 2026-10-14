@@ -32,8 +32,6 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
 import type { CanvasLike } from './syntenyRibbonPath.ts'
 
-export type { CanvasLike } from './syntenyRibbonPath.ts'
-
 // Memoized `rgba()` text plus last-assigned tracking for one draw pass.
 // Building the strings is the dominant per-instance cost in the draw loop — a
 // 500k-instance pass spends >100ms on nothing but `rgba()` construction, before
@@ -137,7 +135,7 @@ function resolveInstanceFill(
         r: Math.round(r * shade + ground[0] * rest),
         g: Math.round(g * shade + ground[1] * rest),
         b: Math.round(b * shade + ground[2] * rest),
-        a: pa,
+        a: 1,
       }
     : { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: shade }
 }

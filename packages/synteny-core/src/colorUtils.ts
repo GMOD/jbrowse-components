@@ -19,9 +19,10 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 // `a * alpha` in Canvas2D, or blendOverGround() for a legend chip. A non-opaque
 // literal here would multiply with that alpha and render fainter than intended.
 //
-// Opaque is also what lets the synteny indel wedge be pre-blended with the band's
-// ground and written out opaque rather than composited, which is the arrangement
-// `LinearSyntenyDisplay/syntenyGroundClear` fixes that ground for.
+// The synteny indel wedge reads its alpha as its ribbon's fade: it is
+// pre-blended with the band's ground at that fade and written out opaque, which
+// is the arrangement `LinearSyntenyDisplay/syntenyGroundClear` fixes that ground
+// for.
 //
 // These remain LIGHT-GROUND colors — picked against a white band, and at the
 // 0.25 default alpha they are faint on a dark one. The ground is threaded now,

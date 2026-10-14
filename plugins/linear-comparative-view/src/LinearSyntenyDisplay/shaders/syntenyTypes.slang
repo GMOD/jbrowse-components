@@ -20,7 +20,7 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! js-export: isInstanceInvisible, isCigarKind, isMarkerKind, isTileKind, spanOutsideBand, markerTravelsTooFar, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER, KIND_BASE_TILE, STROKE_ALPHA
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
@@ -48,19 +48,18 @@ public struct Instance {
   public float featureId         : ATTR5;
   public float alignmentLength   : ATTR6;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyKinds.ts).
-  // The fill fragment uses it only for shading: CIGAR indel tiles get the white
-  // pre-blend in shadeFill and skip the density width-fade in fillFs. The
-  // coverage/AA path is identical to BASE (smooth analytic bezier edge), so
-  // indels aren't faceted or aliased.
+  // The fill fragment uses it only for shading: CIGAR indel tiles get the
+  // ground pre-blend in shadeFill and skip the density width-fade in fillFs.
+  // The coverage/AA path is identical to BASE, so indels aren't aliased.
   public float kind              : ATTR7;
 };
 
 // First CIGAR kind, and the source of truth for the boundary: syntenyKinds.ts
 // derives `KIND_CIGAR_MATCH` from this via `//! export-consts`, and numbers the
 // CIGAR kinds contiguously above it. Emitted kinds are KIND_BASE (0),
-// KIND_MARKER (2), and the per-CIGAR indel tiles I/D/N (4/5/6) — the boundary
-// itself is never an emitted instance. The shaders need only the
-// BASE-vs-CIGAR split, not the exact kind.
+// KIND_BASE_TILE (1), KIND_MARKER (2), and the per-CIGAR indel tiles I/D/N
+// (4/5/6) — the boundary itself is never an emitted instance. The shaders need
+// only the BASE-vs-CIGAR split, not the exact kind.
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
@@ -292,8 +291,7 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
 // Ease-in-out ribbon basis (single source of truth). Curve mode traces y(t) =
 // height·yCurve(t) vertically and blends edge X by sBlend(t); the fill-curve
 // fragment inverts yCurve via Newton using yCurveDeriv. Keeping the cubic in
-// one place stops the four call sites (fill evalT, fill Newton, edge
-// hermiteEdges, edge tangent) from drifting out of sync.
+// one place stops the fill and edge passes from drifting out of sync.
 //
 // There is a fifth call site, and it is not in a shader: the Canvas2D/SVG path
 // draws this curve as a `bezierCurveTo` with both control points at midheight
@@ -391,7 +389,7 @@ FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
 // factored out here and lifted into TS by `//! js-export`.
 //
 // One expression covers both fill branches: BASE writes `fillShade` straight
-// out as its alpha, CIGAR uses it as the white pre-blend factor. They were
+// out as its alpha, CIGAR uses it as the ground pre-blend factor. They were
 // separately-spelled but identical before, which is exactly the shape that
 // drifts.
 //
@@ -423,10 +421,13 @@ public float hoverDarken(bool isHovered) { return isHovered ? 0.7 : 1.0; }
 // Fill fragment output: feature color with hover darkening + alpha boost, with
 // coverage folded into the alpha (straight, not premultiplied — the HAL's
 // default blend is src-alpha / one-minus-src-alpha).
-// CIGAR kinds are indel quads drawn over a visible base block. Non-hovered
-// indels are pre-blended with u.ground at u.alpha and output fully opaque, so
-// they visually fade like they're over the band's ground while still fully
-// covering the base block (avoids double-fade against the base block color).
+// CIGAR kinds are indel quads drawn over a visible base block. They are
+// pre-blended with u.ground at `shade` and output opaque, so they fade like
+// they're over the band's ground while fully covering the base block. Opaque
+// whatever the ribbon's own fade: writing at the faded alpha mixed the indel
+// back toward the base block's color. The cost is that a wedge also covers any
+// earlier ribbon under its own, a pale hole where ribbons overlap; tiling the
+// base around indels, as 'matches' mode does, would let a wedge composite.
 float4 shadeFill(float4 color, float featureId, float coverage, float kind,
                  Uniforms u) {
   float3 rgb = color.rgb;
@@ -451,7 +452,7 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
     // when "whatever is there" is `u.ground`. Both backends guarantee it — see
     // LinearSyntenyDisplay/syntenyGroundClear.
     rgb = rgb * darken * shade + u.ground * (1.0 - shade);
-    return float4(rgb, color.a * coverage);
+    return float4(rgb, coverage);
   }
   return float4(rgb * darken, shade * coverage);
 }
@@ -547,7 +548,9 @@ public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
   o.localPos = float2(0.0);
   o.kind = inst.kind;
   c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, inst.kind, u)) {
+  if (isCulled(c, inst.alignmentLength, inst.kind, u)
+      || isInstanceInvisible(o.color.a,
+                             isMarkerKind(inst.kind) ? 1.0 : u.alpha)) {
     return false;
   }
   o.corners = c;
@@ -623,9 +626,10 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   return float4(u.ink, alpha);
 }
 
-// Only the clicked feature's BASE silhouette is outlined — never per-CIGAR-tile
-// instances (kind >= 3.0, would outline every M/I/D/N tile) nor KIND_MARKER
-// context ticks (interior lines, not part of the silhouette).
+// Only the clicked feature's BASE silhouette is outlined — never the indel
+// tiles (kind >= KIND_CIGAR_MIN) nor KIND_MARKER context ticks (interior lines,
+// not part of the silhouette). Match tiles are outlined; see the parked
+// the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.
 public bool isClickedSilhouette(Instance inst, Uniforms u) {
   return u.clickedFeatureId > 0.0
     && abs(inst.featureId - u.clickedFeatureId) < 0.5
@@ -867,4 +871,13 @@ float2 ribbonWidths(float4 c, float s0, float s1) {
   float2 a = ribbonEdges(c, s0);
   float2 b = ribbonEdges(c, s1);
   return float2(a.y - a.x, b.y - b.x);
+}
+
+// The floor below which an instance draws nothing, generated for synteny-core's
+// `isInstanceInvisible` to be pinned against (syntenyShaderParity.test.ts).
+// The vertex prologue culls under it too, so an indel can write opaque without a
+// hidden ribbon's wedge painting ground, and a faded-out ribbon draws no
+// clicked outline.
+public bool isInstanceInvisible(float colorAlpha, float displayAlpha) {
+  return colorAlpha * 255.0 * displayAlpha < 3.0;
 }
