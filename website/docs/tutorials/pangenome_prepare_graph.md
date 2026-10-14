@@ -443,7 +443,9 @@ draw a wider window.
 A `.gbz` is vg's indexed form of a graph, with one walk per haplotype. The
 browser also reads it as a **gbz-base database**, the graph in SQLite, which
 three commands build. The same lanes take more requests this way: 27 against 5
-for eight haplotypes across the 260 kb CFH cluster.
+for eight haplotypes across the 260 kb CFH cluster. gfa-to-tabix's
+[comparison with gbz-base](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md)
+lists what each holds, their sizes on HPRC v2.1 and when to pick which.
 
 Build the distance-index chains. vg 1.69.0 or newer reads them out of a distance
 index, and a top-level one (`vg index --no-nested-distance`) is enough:
@@ -560,6 +562,8 @@ The walk files come from the two commands under
   range-requested per window.
 - [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): `--walks`, and the
   [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
+- [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md):
+  what each holds, sizes and requests on HPRC v2.1.
 
 ## Citations
 
