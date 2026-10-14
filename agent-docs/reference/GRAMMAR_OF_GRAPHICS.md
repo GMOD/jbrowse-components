@@ -105,8 +105,11 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **`fold` is absent.** A frequency per population stored as one INFO field
   per group goes through bcftools to a bigWig per group, drawn as multi-wiggle
   rows (ADR-206).
-- **`window` and `sample` are absent.** A BigWig's summary tiers are the
-  adapter's (ADR-123), and `bin` takes `step: "auto"` (ADR-117).
+- **`sample` is absent.** A BigWig's summary tiers are the adapter's
+  (ADR-123), and `bin` takes `step: "auto"` (ADR-117). `window` counts its
+  `frame` in rows of a group in start order, so its moving average runs over
+  sites, where `bin` averages over bases. Over a BigWig read at a summary tier
+  a row is a tier bin, so the frame's reach in bases follows the zoom there.
 - **Scale resolution across layers: y never resolves independently.** Every
   drawing mark folds into the display's one y scale, which withdrew
   `resolve: 'independent'` (ADR-141). Two marks with open ramps over one field
