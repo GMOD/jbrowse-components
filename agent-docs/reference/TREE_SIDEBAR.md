@@ -16,6 +16,11 @@ uses `setupRunClusteringAutorun` (re-entrancy guard, init gate, abort
 controller, one-shot clear, status channel). Both plugins used to carry drifting
 copies.
 
+The flag flavor starts once the display's `autoClusterReady` holds. Until the
+run clears the flag, the mixin answers `awaitingDependentData`, so the loading
+scrim, a capture and an SVG export all wait for the rows it orders. A failed run
+reports through `notifyError`, which jb2export treats as fatal.
+
 `run` and `applyOrder` should **throw** rather than drop a row silently, so both
 land in the dialog's error state. `validateClusterOrder` guards the R-paste
 path.

@@ -265,6 +265,23 @@ describe('each tier answers for its own span', () => {
     seedSummary(display, view.displayedRegions)
     expect(display.displayPhase).toBe('ready')
   })
+
+  it('holds the summary tier and its export for a declared clustering run', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    seedSummary(display, view.displayedRegions)
+    view.zoomTo(100)
+    expect(display.coarseTierStandsIn).toBe(true)
+    expect(display.svgReady).toBe(true)
+
+    display.setRunClustering(true)
+    expect(display.displayPhase).toBe('loading')
+    expect(display.svgReady).toBe(false)
+
+    display.setRunClustering(undefined)
+    expect(display.displayPhase).toBe('ready')
+    expect(display.svgReady).toBe(true)
+  })
 })
 
 // The CDS frames ride each tier's payload, and the overlay reads the tier on

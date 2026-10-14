@@ -50,3 +50,15 @@ test('a display overrides only the members the mixin declares as hooks', () => {
   )
   expect(undeclared).toEqual([])
 })
+
+// The mixin fills `FetchMixin.awaitingDependentData`, and a compose keeps the
+// last definition, so a display composing the mixin first loses the fill.
+test('every display composes the mixin after its fetch foundation', () => {
+  const misordered = DISPLAY_MODELS.filter(file => {
+    const src = read(file)
+    const foundation = src.search(/MultiRegionDisplayMixin\(\)/)
+    const mixin = src.search(/TreeSidebarMixin(<[^>]*>)?\(\)/)
+    return foundation === -1 || mixin === -1 || mixin < foundation
+  })
+  expect(misordered).toEqual([])
+})

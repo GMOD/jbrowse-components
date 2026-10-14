@@ -50,6 +50,7 @@ describe('LinearMafDisplay declarative runClustering', () => {
       treeNewick: undefined,
       samplesCanonical: true,
     })
+    expect(display.awaitingDependentData).toBe(true)
 
     jest.advanceTimersByTime(700)
     await jest.runAllTimersAsync()
@@ -61,6 +62,7 @@ describe('LinearMafDisplay declarative runClustering', () => {
 
     // one-shot: the flag clears itself so a saved session never re-triggers it
     expect(display.runClustering).toBeUndefined()
+    expect(display.awaitingDependentData).toBe(false)
     expect(
       env.mockRpcCall.mock.calls.filter(
         ([, method]) => method === 'LinearMafClusterIdentityMatrix',
@@ -80,6 +82,7 @@ describe('LinearMafDisplay declarative runClustering', () => {
       treeNewick: undefined,
       samplesCanonical: true,
     })
+    expect(display.awaitingDependentData).toBe(false)
 
     jest.advanceTimersByTime(700)
     await jest.runAllTimersAsync()

@@ -29,6 +29,8 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
     await waitFor(() => {
       expect(display.discoveredRows.length).toBe(2)
     })
+    expect(display.awaitingDependentData).toBe(true)
+    expect(display.svgReady).toBe(false)
 
     // cluster autorun (500ms mobx delay) then fires against the now-loaded sources
     jest.advanceTimersByTime(700)
@@ -41,6 +43,8 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
     // one-shot: the flag clears itself so a saved session never re-triggers it
     expect(display.runClustering).toBeUndefined()
+    expect(display.awaitingDependentData).toBe(false)
+    expect(display.svgReady).toBe(true)
 
     expect(
       mockRpcCall.mock.calls.filter(

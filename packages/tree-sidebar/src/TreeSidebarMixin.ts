@@ -912,6 +912,15 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
+       * Fills `FetchMixin`'s hook: a declared `runClustering` run is due, so
+       * the loading scrim and the export wait for the rows it orders. The run
+       * clears the flag when it settles, failed or not.
+       */
+      get awaitingDependentData(): boolean {
+        return !!self.runClustering && self.autoClusterReady
+      },
+      /**
+       * #getter
        * The px the rows stack to, `sources` × `effectiveRowHeight`, which the
        * dendrogram's leaves spread over: the content the rows scroll through,
        * never the viewport they scroll inside.

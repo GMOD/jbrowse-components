@@ -20,6 +20,8 @@ export interface SvgReadyFoundation {
   viewportEmpty: boolean
   /** the family's own freshness answer */
   dataCurrent: boolean
+  /** `FetchMixin`'s: a load the frame depends on beyond the primary fetch */
+  awaitingDependentData: boolean
 }
 
 /**
@@ -55,6 +57,7 @@ export function foundationSvgReady(self: SvgReadyFoundation): boolean {
       extraTerminal: self.fetchInert,
       fetchCanceled: self.fetchCanceled,
     },
-    () => self.viewportEmpty || self.dataCurrent,
+    () =>
+      self.viewportEmpty || (self.dataCurrent && !self.awaitingDependentData),
   )
 }

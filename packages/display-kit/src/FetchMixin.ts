@@ -326,12 +326,15 @@ export default function FetchMixin() {
 
       /**
        * #getter
-       * Overridable hook (default false), read by `computeActivityPhase`: a load
-       * this display depends on beyond its primary fetch has not landed for the
-       * first time, so the frame the primary fetch calls current is still
-       * missing something. Multi-way synteny sets it until its lane genes and
-       * lane links first arrive, so an export or a capture never lands between
-       * the ortholog fetch and the gene models that fill the lanes.
+       * Overridable hook (default false), read by `computeActivityPhase` and
+       * `foundationSvgReady`: a load this display depends on beyond its primary
+       * fetch has not landed for the first time, so the frame the primary fetch
+       * calls current is still missing something. Multi-way synteny sets it
+       * until its lane genes and lane links first arrive, so an export or a
+       * capture never lands between the ortholog fetch and the gene models that
+       * fill the lanes. `TreeSidebarMixin` sets it while a declared
+       * `runClustering` run is due, so neither draws the rows before it orders
+       * them.
        *
        * A hook rather than a `displayPhase` override, for the reason
        * `fetchInert` is one: that display carried the override, restating the

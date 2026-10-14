@@ -68,7 +68,10 @@ export function coarseTierDisplayPhase(
           error: self.error,
         },
         () =>
-          !self.isMinimized && coarseTierPending(self) ? 'loading' : 'ready',
+          !self.isMinimized &&
+          (coarseTierPending(self) || self.awaitingDependentData)
+            ? 'loading'
+            : 'ready',
       )
     : foundationDisplayPhase(
         self,
@@ -88,6 +91,6 @@ export function coarseTierSvgReady(self: CoarseTierPhaseHost) {
     ? !!self.error ||
         self.fetchCanceled ||
         self.regionTooLarge ||
-        !coarseTierPending(self)
+        (!coarseTierPending(self) && !self.awaitingDependentData)
     : foundationSvgReady(self)
 }
