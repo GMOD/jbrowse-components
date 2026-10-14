@@ -33,7 +33,7 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
-  colorSettingOf,
+  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -251,6 +251,12 @@ function rowsNamedOrCopied(
 }
 
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
+
+/** A categorical field whose preset names no `range` paints the theme's. */
+function paintsThemeColors(field: MafColorField) {
+  const preset = MAF_FIELD_PRESETS[field]
+  return preset.scale === 'categorical' && !('range' in preset)
+}
 
 function categoricalScale(
   id: string,
@@ -481,11 +487,9 @@ export default function stateModelFactory(
         get colorSetting(): ColorSetting & { value: undefined } {
           const { color } = self.configuration
           return {
-            ...colorSettingOf(color),
+            ...colorSnapshotOf(color),
             value: undefined,
             scale: undefined,
-            labels: readConfObject(color, 'labels'),
-            title: readConfObject(color, 'title'),
           }
         },
         /**
@@ -1845,7 +1849,10 @@ export default function stateModelFactory(
            * paints the theme's colors.
            */
           configProblemsOf(conf: AnyConfigurationModel): string[] {
-            const colorField: string = readConfObject(conf, ['color', 'field'])
+            const colorField: MafColorField = readConfObject(conf, [
+              'color',
+              'field',
+            ])
             const range: readonly string[] = readConfObject(conf, [
               'color',
               'range',
@@ -1857,10 +1864,7 @@ export default function stateModelFactory(
                     'color.field: codon needs an annotationAdapter on the MAF adapter to define reading frames, so the rows paint the mismatches',
                   ]
                 : []),
-              ...(range.length > 0 &&
-              (colorField === 'base' ||
-                colorField === 'mismatch' ||
-                colorField === 'codon')
+              ...(range.length > 0 && paintsThemeColors(colorField)
                 ? [
                     `color.range: ${colorField} paints the theme's colors and reads no range`,
                   ]
