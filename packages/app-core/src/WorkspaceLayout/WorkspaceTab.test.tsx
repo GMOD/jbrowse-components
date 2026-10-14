@@ -59,17 +59,17 @@ test('an empty display name falls through', () => {
 describe('renaming', () => {
   function renderTab(title?: string) {
     const renamed: (string | undefined)[] = []
-    const layout = {
+    const renamingSession = {
+      ...session,
       renameTab: (_id: string, next: string | undefined) => {
         renamed.push(next)
       },
-    } as unknown as WorkspaceLayout
+    } as unknown as WorkspaceSessionType & WorkspaceLayout
     render(
       <WorkspaceTab
         tab={tab(title)}
         views={[view({ displayName: 'Derived' })]}
-        session={session}
-        layout={layout}
+        session={renamingSession}
         onClose={() => {}}
       />,
     )
@@ -135,8 +135,9 @@ describe('renaming inside the tab strip', () => {
             <WorkspaceTab
               tab={t}
               views={[]}
-              session={session as unknown as WorkspaceSessionType}
-              layout={session}
+              session={
+                session as unknown as WorkspaceSessionType & WorkspaceLayout
+              }
               onClose={() => {}}
             />
           ),

@@ -95,7 +95,6 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
           tab={tab}
           views={viewsOf(session, tab.viewIds)}
           session={session}
-          layout={session}
           onClose={() => {
             closeTab(tab.id)
           }}

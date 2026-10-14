@@ -43,13 +43,11 @@ export const WorkspaceTab = observer(function WorkspaceTab({
   tab,
   views,
   session,
-  layout,
   onClose,
 }: {
   tab: TabNode
   views: AbstractViewModel[]
-  session: WorkspaceSessionType
-  layout: WorkspaceLayout
+  session: WorkspaceSessionType & WorkspaceLayout
   /** closes the tab and the views it holds */
   onClose: () => void
 }) {
@@ -71,7 +69,7 @@ export const WorkspaceTab = observer(function WorkspaceTab({
       views,
       session,
     )
-    layout.renameTab(tab.id, name && name !== automatic ? name : undefined)
+    session.renameTab(tab.id, name && name !== automatic ? name : undefined)
     setEditing(false)
   }
 
