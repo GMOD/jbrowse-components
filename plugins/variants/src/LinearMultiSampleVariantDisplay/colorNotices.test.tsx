@@ -18,7 +18,7 @@ test.each([
   ['columns', createMatrixTestEnvironment],
 ])(
   'a threshold range that does not fit its cuts is a notice in the %s layout',
-  (_layout, environment) => {
+  async (_layout, environment) => {
     const { display } = environment({
       displayConfig: MISFIT_THRESHOLD,
     }).createDisplay()
@@ -26,7 +26,7 @@ test.each([
       expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
     ])
     render(<VariantDisplayComponent model={display} />)
-    expect(screen.getByText('1 config problem')).toBeTruthy()
+    expect(await screen.findByText('1 config problem')).toBeTruthy()
   },
 )
 

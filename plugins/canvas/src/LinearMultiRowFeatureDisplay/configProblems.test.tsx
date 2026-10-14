@@ -5,7 +5,7 @@ import { createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
-test('a threshold range that does not fit its cuts shows as a notice', () => {
+test('a threshold range that does not fit its cuts shows as a notice', async () => {
   const { display } = createTestEnvironment({
     displayConfig: {
       color: {
@@ -20,7 +20,7 @@ test('a threshold range that does not fit its cuts shows as a notice', () => {
     expect.stringMatching(/^color\.range: 2 threshold cuts make 3 intervals/),
   ])
   render(<LinearMultiRowFeatureDisplayComponent model={display} />)
-  expect(screen.getByText('1 config problem')).toBeTruthy()
+  expect(await screen.findByText('1 config problem')).toBeTruthy()
 })
 
 function rows(names: string[]): MultiRowRegionData {
