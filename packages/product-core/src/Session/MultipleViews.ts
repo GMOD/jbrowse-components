@@ -291,9 +291,9 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * and so lets its snackbar offer an Undo. Swapping in a new node would
          * leave nothing to undo onto.
          *
-         * The slot is `session.views`, which is the order views render in under
-         * both layout modes (a tab's `viewIds` says which tab a view is in, not
-         * where in it), so the swap lands in place either way.
+         * The slot is `session.views`, the order views render in (a tab's
+         * `viewIds` says which tab a view is in, not where in it), so the swap
+         * lands in place.
          *
          * WHICH panel is a separate question and this does not answer it: the
          * new view arrives in no tab, and `homeUnassignedViews` puts it in the

@@ -174,11 +174,10 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                       className={classes.pinnedTracks}
                       style={{
                         top: stickyTops.pinnedTracks,
-                        // the scroll port this sticks in, not the window: it is
-                        // under the app bar in the classic stack, a dockview
-                        // cell in a workspace, and the host's box when embedded.
-                        // The fallback is what an unbounded embed gets, where
-                        // the page itself is the scroller
+                        // the scroll port this sticks in, not the window: a
+                        // workspace cell, or the host's box when embedded. The
+                        // fallback is what an unbounded embed gets, where the
+                        // page itself is the scroller
                         maxHeight: `calc(var(${SCROLL_PORT_HEIGHT_VAR}, 100vh) - ${stickyTops.pinnedTracks})`,
                       }}
                     >

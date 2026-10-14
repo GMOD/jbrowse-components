@@ -2,13 +2,13 @@
 // The many-view freeze harness; findings in
 // agent-docs/reference/GPU_PORTABILITY.md.
 //
-// Loads N views x K real volvox tracks in classic and in tiled workspace mode
+// Loads N views x K real volvox tracks in tiled workspace mode
 // and reports where the main thread goes: long tasks, frame times, WebGL
 // context churn, and GL-API attribution. The freeze only reproduces with real
 // tracks on a GPU backend -- an earlier harness used empty views on canvas2d
 // and came back clean.
 //
-//   node browser-tests/workspaces-freeze-stress.ts --views=12 --tracks=3 --mode=classic,tiled
+//   node browser-tests/workspaces-freeze-stress.ts --views=12 --tracks=3 --mode=tiled
 //   node browser-tests/workspaces-freeze-stress.ts --mode=tiled --panels=4
 //   node browser-tests/workspaces-freeze-stress.ts --mode=tiled --passes=3 --renderer=canvas2d
 //   node browser-tests/workspaces-freeze-stress.ts --mode=tiled --trace=/tmp/t.json  # then analyze-trace.ts
@@ -48,7 +48,7 @@ const args = Object.fromEntries(
 
 const N = Number(args.views ?? 12)
 const K = Number(args.tracks ?? 3)
-const MODE = args.mode ?? 'both' // classic | tiled | tiled-split | both
+const MODE = args.mode ?? 'tiled' // tiled | tiled-split
 const HEADLESS = args.headed !== 'true'
 const SETTLE = Number(args.settle ?? 15000)
 const PASSES = Number(args.passes ?? 1)
@@ -97,11 +97,8 @@ function views() {
   }))
 }
 
-function spec(mode: string) {
+function spec() {
   const v = views()
-  if (mode === 'classic') {
-    return { views: v }
-  }
   const P = Number(args.panels ?? 1)
   if (P <= 1) {
     // every view homed into one panel: the shape reconcile produces by default
@@ -284,8 +281,7 @@ function report(label: string, m: Awaited<ReturnType<typeof readMetrics>>) {
 }
 
 async function scrollPass(page: Page, pattern: string) {
-  // Scroll whichever container actually scrolls (classic container or a
-  // workspace cell).
+  // Scroll whichever container actually scrolls (a workspace cell).
   //
   // Two patterns, because they ask different questions. `sweep` traverses the
   // whole stack top to bottom: every view crosses the mount band exactly once
@@ -346,7 +342,7 @@ async function run(mode: string, port: number) {
     })
     await page.evaluateOnNewDocument(instrument)
     const url = `http://localhost:${port}/?config=test_data/volvox/config.json&session=${encodeSessionSpec(
-      spec(mode),
+      spec(),
     )}&sessionName=Stress&renderer=${RENDERER}`
     const t0 = Date.now()
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 })
@@ -397,7 +393,7 @@ async function run(mode: string, port: number) {
 
 const { server, port } = await startServerOnFreePort(3001)
 try {
-  const modes = MODE === 'both' ? ['classic', 'tiled'] : MODE.split(',')
+  const modes = MODE.split(',')
   for (const mode of modes) {
     await run(mode, port)
   }
