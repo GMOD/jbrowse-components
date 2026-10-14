@@ -76,7 +76,10 @@ async function build(report: (status: string) => void) {
 const SessionInUrl = observer(function SessionInUrl() {
   const [status, setStatus] = useState('')
   const state = useCreateViewState(() => build(setStatus))
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <Toolbar>
         <LocationBox view={state.session.view} />
@@ -105,7 +108,7 @@ const SessionInUrl = observer(function SessionInUrl() {
       </Toolbar>
       <TrackStack view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default SessionInUrl

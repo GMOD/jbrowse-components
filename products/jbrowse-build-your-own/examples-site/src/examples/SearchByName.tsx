@@ -8,14 +8,14 @@ import { SearchResultsNotFoundError } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const queries = ['chr13', 'gene15876', 'TP53', 'BRC', 'zzzznotagene']
 
 const SearchBox = observer(function SearchBox({
   view,
 }: {
-  view: ViewModel['session']['view']
+  view: LinearGenomeViewModel
 }) {
   const box = useLocationBox(view)
   return (
@@ -85,13 +85,16 @@ const SearchByName = observer(function SearchByName() {
       tracks: ['genes'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <SearchBox view={state.session.view} />
       <SearchPicker view={state.session.view} />
       <TrackStack view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default SearchByName

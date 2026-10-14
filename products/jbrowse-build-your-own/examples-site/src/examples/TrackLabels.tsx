@@ -7,7 +7,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const labels = {
   hg38_phylop: 'Conservation',
@@ -81,7 +81,10 @@ const TrackLabels = observer(function TrackLabels() {
       tracks: ids,
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <div style={{ display: 'flex' }}>
         <Labels view={state.session.view} />
@@ -102,7 +105,7 @@ const TrackLabels = observer(function TrackLabels() {
         />
       </div>
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default TrackLabels

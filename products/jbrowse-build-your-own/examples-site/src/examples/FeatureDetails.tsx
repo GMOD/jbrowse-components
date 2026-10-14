@@ -41,7 +41,8 @@ const Panel = observer(function Panel({
         </button>
       </div>
       <div style={{ opacity: 0.75 }}>
-        {data.refName}:{data.start.toLocaleString()}-{data.end.toLocaleString()}
+        {data.refName}:{(data.start + 1).toLocaleString()}-
+        {data.end.toLocaleString()}
       </div>
       <dl
         style={{

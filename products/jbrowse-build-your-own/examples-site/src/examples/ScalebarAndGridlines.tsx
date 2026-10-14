@@ -11,7 +11,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const Gridlines = observer(function Gridlines({
   view,
@@ -198,11 +198,14 @@ const ScalebarAndGridlines = observer(function ScalebarAndGridlines() {
       tracks: ['hg38_phylop', 'hg38_genes'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <Demo view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default ScalebarAndGridlines

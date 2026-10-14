@@ -10,7 +10,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const base = 'https://jbrowse.org/demos/ecoli_orthologs'
 

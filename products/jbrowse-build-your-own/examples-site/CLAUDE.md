@@ -69,9 +69,10 @@ for the row to be selected, the band to carry its id and the scalebar to read
 its locus.
 
 **`viewStatusStatesAreDrawn`** drives the view-loading-and-errors page through
-the snackbar, `noRegions` (an engine built with no `view`) and a 404 assembly.
-When a demo names a state, check that some input on the site actually reaches
-it.
+the snackbar, `noRegions` (an engine built with no `view`), a 404 assembly and
+an engine build that throws, which only an `ErrorBoundary` above
+`useCreateViewState` catches. When a demo names a state, check that some input
+on the site actually reaches it.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over, so

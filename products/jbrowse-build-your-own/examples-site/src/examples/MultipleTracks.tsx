@@ -40,11 +40,14 @@ const MultipleTracks = observer(function MultipleTracks() {
       tracks: ['hg38_phylop', 'hg38_genes', 'na12878_exome'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <SessionPaletteProvider session={state.session}>
       <TrackStack view={state.session.view} />
     </SessionPaletteProvider>
-  ) : null
+  )
 })
 
 export default MultipleTracks

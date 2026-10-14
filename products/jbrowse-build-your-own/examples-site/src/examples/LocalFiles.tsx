@@ -150,12 +150,15 @@ const LocalFiles = observer(function LocalFiles() {
       tracks: ['hg38_genes'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <FilePicker session={state.session} />
       <TrackStack view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default LocalFiles

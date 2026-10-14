@@ -123,14 +123,17 @@ const SearchResults = observer(function SearchResults() {
       tracks: ['genes'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <div style={{ paddingBottom: 8 }}>
         <SearchPanel session={state.session} />
       </div>
       <TrackStack view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default SearchResults

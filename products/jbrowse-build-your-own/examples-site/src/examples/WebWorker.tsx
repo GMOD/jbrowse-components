@@ -39,11 +39,14 @@ const WebWorker = observer(function WebWorker() {
       tracks: ['hg38_phylop', 'hg38_genes', 'na12878_exome'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session}>
       <TrackStack view={state.session.view} />
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default WebWorker

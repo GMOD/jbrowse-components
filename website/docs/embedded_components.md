@@ -128,7 +128,7 @@ these draw it:
 
 - **`EmbedProvider`** wraps the page. It mounts `DisplayUIProvider` (the plain,
   Material-free overlays a track draws while it loads or fails), the theme
-  palette and, from the release after beta.13, `Notifications`.
+  palette and `Notifications`.
 - **`TrackStack`** draws a view's tracks and handles pan and zoom. `Track`,
   `Scalebar`, `LocationBox`, `Legend`, `ResizeHandle` and the rest are the
   pieces to place beside it.
@@ -142,10 +142,10 @@ pnpm add @jbrowse/react-linear-genome-view2@next @jbrowse/display-ui@next @jbrow
 ```
 
 The `next` tag is the v5 beta, and `latest` is v4, which has no
-`@jbrowse/display-ui/embed`. Pin the exact version. The
+`@jbrowse/display-ui/embed`. Pin the exact version. An example that imports a
+`@jbrowse/plugin-*` package needs that package added the same way. The
 [examples](https://jbrowse.org/storybook/byo/) build from the main branch, so
-they run ahead of npm: `Toolbar`, `NavButton` and `Notifications` are in main
-and not in `5.0.0-beta.13`. Read the package's `.d.ts` to see what a release
+they can run ahead of npm. Read the package's `.d.ts` to see what a release
 exports.
 
 **Sizing.** `TrackStack` sets `overflow: hidden` on its wrapper, and each track

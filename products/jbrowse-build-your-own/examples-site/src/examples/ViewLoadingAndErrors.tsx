@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
+import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { EmbedProvider, Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
+import type { FallbackProps } from '@jbrowse/core/ui/ErrorBoundary'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const brca1 = 'chr17:43,044,295..43,125,364'
@@ -40,11 +42,15 @@ const scenarios = {
     },
     loc: undefined,
   },
+  'a hosted genome that does not exist': {
+    jbrowseHub: 'not-a-genome',
+    loc: brca1,
+  },
 }
 
 type Scenario = keyof typeof scenarios
 
-const Notifications = observer(function Notifications({
+const LatestMessage = observer(function LatestMessage({
   session,
 }: {
   session: ViewModel['session']
@@ -81,10 +87,10 @@ const Browser = observer(function Browser({
 }: {
   scenario: Scenario
 }) {
-  const { assembly, loc } = scenarios[scenario]
+  const { loc, ...genome } = scenarios[scenario]
   const tracks = ['hg38_phylop']
   const state = useCreateViewState({
-    assembly,
+    ...genome,
     tracks: [
       {
         trackId: 'hg38_phylop',
@@ -117,7 +123,7 @@ const Browser = observer(function Browser({
           <button
             type="button"
             onClick={() => {
-              view.setLaunch({ assembly: assembly.name, loc: brca1, tracks })
+              view.setLaunch({ assembly: 'hg38', loc: brca1, tracks })
             }}
           >
             Show {brca1}
@@ -126,12 +132,25 @@ const Browser = observer(function Browser({
       ) : (
         <TrackStack view={view} />
       )}
-      <Notifications session={session} />
+      <LatestMessage session={session} />
     </EmbedProvider>
   )
 })
 
+function BuildFailed({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <div role="alert" style={{ padding: '10px 12px' }}>
+      Could not build the view:{' '}
+      {error instanceof Error ? error.message : String(error)}{' '}
+      <button type="button" onClick={resetErrorBoundary}>
+        Retry
+      </button>
+    </div>
+  )
+}
+
 const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
+  const radioGroupId = useId()
   const [scenario, setScenario] = useState<Scenario>('hg38 (2bit), which loads')
   return (
     <div>
@@ -141,7 +160,7 @@ const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
           <label key={name}>
             <input
               type="radio"
-              name="scenario"
+              name={radioGroupId}
               checked={scenario === name}
               onChange={() => {
                 setScenario(name as Scenario)
@@ -151,7 +170,9 @@ const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
           </label>
         ))}
       </Toolbar>
-      <Browser key={scenario} scenario={scenario} />
+      <ErrorBoundary key={scenario} FallbackComponent={BuildFailed}>
+        <Browser scenario={scenario} />
+      </ErrorBoundary>
     </div>
   )
 })

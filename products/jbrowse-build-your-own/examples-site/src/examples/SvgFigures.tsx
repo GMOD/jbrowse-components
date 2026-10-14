@@ -7,7 +7,7 @@ import { useViewSvgFigure } from '@jbrowse/plugin-linear-genome-view'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const Figure = observer(function Figure({
   view,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 import { EmbedProvider, Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 const modes = ['light', 'dark'] as const
 
 const DarkTheme = observer(function DarkTheme() {
+  const radioGroupId = useId()
   const [mode, setMode] = useState<(typeof modes)[number]>('dark')
   const state = useCreateViewState({
     assembly: {
@@ -36,7 +37,10 @@ const DarkTheme = observer(function DarkTheme() {
       tracks: ['hg38_phylop', 'hg38_genes'],
     },
   })
-  return state ? (
+  if (!state) {
+    return null
+  }
+  return (
     <EmbedProvider session={state.session} mode={mode}>
       <div
         style={{
@@ -51,7 +55,7 @@ const DarkTheme = observer(function DarkTheme() {
             <label key={name}>
               <input
                 type="radio"
-                name="mode"
+                name={radioGroupId}
                 checked={mode === name}
                 onChange={() => {
                   setMode(name)
@@ -64,7 +68,7 @@ const DarkTheme = observer(function DarkTheme() {
         <TrackStack view={state.session.view} />
       </div>
     </EmbedProvider>
-  ) : null
+  )
 })
 
 export default DarkTheme

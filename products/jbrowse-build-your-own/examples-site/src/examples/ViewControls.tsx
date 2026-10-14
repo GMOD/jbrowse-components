@@ -10,7 +10,7 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const catalogue = [
   { id: 'hg38_phylop', label: 'Conservation' },

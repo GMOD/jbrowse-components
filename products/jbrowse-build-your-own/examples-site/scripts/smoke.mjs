@@ -33,47 +33,8 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // Exact equality, in both directions. A new Material widget appearing in a
 // display's render path has to be noticed here; so does one disappearing,
 // because that is the moment the prose needs rewriting too.
-const MUI_BUDGET = {
-  // the landing page, which runs the scalebar demo rather than describing it
-  '': 0,
-  ultraminimal: 0,
-  'multiple-tracks': 3,
-  'track-loading-and-errors': 0,
-  'view-loading-and-errors': 0,
-  'scalebar-and-gridlines': 0,
-  'track-labels': 0,
-  'view-controls': 0,
-  'every-chromosome': 0,
-  'feature-details': 0,
-  'track-selector': 0,
-  // At rest this page shows a pileup coloured `normal`, which has no key — so
-  // this zero is the ordinary one and says nothing about the legend. The legend
-  // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
-  // driven: a census that runs before the thing appears scores an unearned zero.
-  'track-settings': 0,
-  'color-and-group-by-a-field': 0,
-  'plot-from-json': 0,
-  'genome-by-name': 0,
-  'table-of-calls': 0,
-  'search-by-name': 0,
-  'search-results': 0,
-  'local-files': 0,
-  'highlight-a-region': 0,
-  'dark-theme': 0,
-  'session-in-url': 0,
-  'web-worker': 0,
-  // measured, not chosen -- see the note below the budget
-  synteny: 0,
-  'gene-lanes': 0,
-  // Two renderings of the same two tracks on one page -- the canvas stack behind
-  // `DisplayUIProvider`, and the SVG figure under it -- and the figure's half of
-  // this zero is free rather than installed: an SVG body draws no chrome, and the
-  // one thing it draws that a display would (a color key) is vector. The page
-  // does mount a Material `ThemeProvider`, which is what JBrowse's SVG chrome
-  // reads its colors from; a provider is not an element, and this number is what
-  // says so.
-  'svg-figures': 0,
-}
+// zero on every page behind `DisplayUIProvider`; the stock page keeps its three
+const MUI_BUDGET = { 'multiple-tracks': 3 }
 
 // Record every MUI-classed element that is ever inserted, from before the
 // page's own scripts run. `recordFromLoad` in the shared harness.
@@ -131,10 +92,7 @@ function recordMuiFromLoad() {
 // nobody notices — so "ever" having a bigger number than "at rest" is not a
 // looser bar to record, it is the finding.
 async function muiBudget(page, slug) {
-  const expected = MUI_BUDGET[slug]
-  if (expected === undefined) {
-    return [`no MUI_BUDGET entry for ${slug} — add one to scripts/smoke.mjs`]
-  }
+  const expected = MUI_BUDGET[slug] ?? 0
   const found = await page.evaluate(() =>
     [...document.querySelectorAll('[class*="Mui"]')]
       .filter(el => !el.parentElement?.closest('[class*="Mui"]'))
@@ -328,10 +286,7 @@ async function clicksReachTheTrack(page) {
 // deterministically, which is the right instrument for *that* component; this
 // is the one that notices any other Material widget a pointer can raise.
 async function muiRaisedByHover(page, slug) {
-  const expected = MUI_BUDGET[slug]
-  if (expected === undefined) {
-    return []
-  }
+  const expected = MUI_BUDGET[slug] ?? 0
   const ever = await page.evaluate(() => [...(window.__muiEver ?? [])])
   return ever.length <= expected
     ? []
@@ -925,6 +880,27 @@ async function viewStatusStatesAreDrawn(page, slug) {
     out.push(
       'a 404 assembly drew no error — the view-level error state is back to ' +
         `rendering nothing, which is the bug this page exists to name. Demo read:\n${await demoText()}`,
+    )
+  }
+
+  // half four: the engine build itself throws (a hub name that does not
+  // exist), so there is no view to have a status, and only an error boundary
+  // above `useCreateViewState` keeps the throw from unmounting the page
+  if (!(await clickByText('does not exist'))) {
+    return [...out, 'no "hosted genome that does not exist" scenario radio']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        /could not build the view/i.test(
+          document.querySelector('.demo')?.innerText,
+        ),
+      { timeout: 30000 },
+    )
+  } catch {
+    out.push(
+      'a failed engine build drew no error — the throw from useCreateViewState ' +
+        `is not reaching the page's ErrorBoundary. Demo read:\n${await demoText()}`,
     )
   }
   return out

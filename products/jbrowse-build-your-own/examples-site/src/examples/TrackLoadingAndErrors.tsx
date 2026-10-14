@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
@@ -122,6 +122,7 @@ const sets = {
 type SetName = keyof typeof sets
 
 const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
+  const radioGroupId = useId()
   const [setName, setSetName] = useState<SetName>(
     'overlays defined in this file',
   )
@@ -176,7 +177,7 @@ const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
           <label key={name}>
             <input
               type="radio"
-              name="overlay-set"
+              name={radioGroupId}
               checked={setName === name}
               onChange={() => {
                 setSetName(name as SetName)

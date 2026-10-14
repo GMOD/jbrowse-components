@@ -8,8 +8,10 @@ import {
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LinearGenomeViewModel,
+  ViewModel,
+} from '@jbrowse/react-linear-genome-view2'
 
 const calls = [
   {
@@ -59,7 +61,7 @@ const Calls = observer(function Calls({
   session,
 }: {
   view: LinearGenomeViewModel
-  session: Pick<AbstractSessionModel, 'highlights' | 'setHighlights'>
+  session: ViewModel['session']
 }) {
   const shown = session.highlights[0]?.label
   return (

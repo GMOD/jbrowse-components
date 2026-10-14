@@ -8,7 +8,7 @@ import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const fields = ['gene_biotype', 'strand', 'source']
 
