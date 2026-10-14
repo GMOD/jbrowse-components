@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
+import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
 import { defer, forkJoin, mergeMap, of, toArray } from 'rxjs'
@@ -11,6 +12,7 @@ import { TOP_HIT_FACT, topHitOf } from './topHit.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
 import type { GWASFetchOptions, LdJoin, LdToIndex, ldOf } from './ldJoin.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GWASAdapter extends BedTabixAdapter {
@@ -26,15 +28,30 @@ export default class GWASAdapter extends BedTabixAdapter {
     )
   }
 
-  // The window is the index's, not the fetched region's, so every fetch
-  // under one index reads the same rows.
-  private ldLookup: { key: string; lookup: LdToIndex } | undefined
+  // The window is the index's, not the fetched region's, so every region
+  // under one index shares one read, which only all of them aborting cancels.
+  private ldLookup:
+    | {
+        key: string
+        load: (opts: BaseOptions) => Promise<LdToIndex | undefined>
+      }
+    | undefined
 
-  private async ldToIndex(join: LdJoin, opts: GWASFetchOptions) {
+  private ldToIndex(join: LdJoin, opts: GWASFetchOptions) {
     const key = `${join.refName}:${join.start}`
-    if (this.ldLookup?.key === key) {
-      return this.ldLookup.lookup
+    if (this.ldLookup?.key !== key) {
+      this.ldLookup = {
+        key,
+        load: cachedSetup({
+          label: 'Downloading LD data',
+          setup: setupOpts => this.readLdToIndex(join, setupOpts),
+        }),
+      }
     }
+    return this.ldLookup.load(opts)
+  }
+
+  private async readLdToIndex(join: LdJoin, opts: BaseOptions) {
     const config: Record<string, unknown> | undefined =
       readConfObject(this.config, 'ldAdapter') ?? undefined
     if (!config || !this.getSubAdapter) {
@@ -46,13 +63,7 @@ export default class GWASAdapter extends BedTabixAdapter {
         `Adapter type "${config.type}" cannot supply LD records for coloring`,
       )
     }
-    const lookup = await updateStatus(
-      'Downloading LD data',
-      opts.statusCallback,
-      () => ldToIndex(dataAdapter, join, opts),
-    )
-    this.ldLookup = { key, lookup }
-    return lookup
+    return ldToIndex(dataAdapter, join, opts)
   }
 
   private rewritten(f: Feature, ld?: ReturnType<typeof ldOf>) {

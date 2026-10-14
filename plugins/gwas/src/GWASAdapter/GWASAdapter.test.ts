@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -17,6 +18,7 @@ import {
 import { readTopHit } from './topHit.ts'
 
 import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -152,9 +154,71 @@ describe('an LD join asked for through the fetch options', () => {
     })
     expect(read).toHaveBeenCalledTimes(1)
     expect(panned.some(f => f.get('ld_role') === 'partner')).toBe(true)
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     await fetch(SLE_INDEX_START + 1)
     expect(read).toHaveBeenCalledTimes(2)
     read.mockRestore()
+    warn.mockRestore()
+  })
+
+  describe('two regions fetched at once under one index', () => {
+    const halves = [
+      { ...SLE_REGION, end: SLE_INDEX_START },
+      { ...SLE_REGION, start: SLE_INDEX_START },
+    ]
+    async function held() {
+      clearAdapterCache()
+      let release = () => {}
+      const gate = new Promise<void>(resolve => {
+        release = resolve
+      })
+      const original = SleLDAdapter.prototype.getLDRecords
+      const read = jest
+        .spyOn(SleLDAdapter.prototype, 'getLDRecords')
+        .mockImplementation(async function (
+          this: SleLDAdapter,
+          query,
+          opts?: BaseOptions,
+        ) {
+          await gate
+          checkAbortSignal(opts?.signal)
+          return original.call(this, query)
+        })
+      const dataAdapter = await getFeatureAdapterOrThrow({
+        pluginManager: slePluginManager(),
+        sessionId: 's',
+        adapterConfig: SLE_ADAPTER,
+      })
+      const fetch = (region: typeof SLE_REGION, signal?: AbortSignal) =>
+        dataAdapter.getFeaturesArray(region, {
+          ld: { start: SLE_INDEX_START, refName: '2' },
+          signal,
+        } as GWASFetchOptions)
+      return { read, release, fetch }
+    }
+
+    it('share one LD read', async () => {
+      const { read, release, fetch } = await held()
+      const both = Promise.all(halves.map(r => fetch(r)))
+      release()
+      await both
+      expect(read).toHaveBeenCalledTimes(1)
+      read.mockRestore()
+    })
+
+    it('keep the read alive when only one of them aborts', async () => {
+      const { read, release, fetch } = await held()
+      const controller = new AbortController()
+      const aborted = fetch(halves[0]!, controller.signal)
+      const kept = fetch(halves[1]!)
+      controller.abort()
+      await expect(aborted).rejects.toThrow(/abort/i)
+      release()
+      const features = await kept
+      expect(features.some(f => f.get('ld_role') === 'partner')).toBe(true)
+      expect(read).toHaveBeenCalledTimes(1)
+      read.mockRestore()
+    })
   })
 
   // The index the join follows is read off the file, so the join it leads to
