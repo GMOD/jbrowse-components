@@ -42,17 +42,19 @@ import type { MarkValueScale } from './valueScale.ts'
 
 /**
  * The `line` shape's channels: a stroke through consecutive instances of one
- * row, in the order given, each instance a span from `x` to `x2` at `y` on the
- * value scale. `gapBp` is the linear variant's break: a midpoint further than
- * that from the previous one on its row starts a new run, as does a start
- * before the previous one's. It rides with the data, as the neighbour fields
- * the packer derives from it do, so both backends break in the same place;
- * absent, a row's runs are its series in start order.
+ * row and one `series`, in the order given, each instance a span from `x` to
+ * `x2` at `y` on the value scale. The caller hands each series' instances
+ * together; a change of row or series starts a new run, and absent, a row is
+ * one series. `gapBp` is the linear variant's break: a midpoint further than
+ * that from the previous one starts a new run. Both ride with the data, as
+ * the neighbour fields the packer derives from them do, so both backends
+ * break in the same place.
  */
 export interface LineChannels extends ColorChannel, RowChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
+  series?: Uint32Array
   gapBp?: number
   count: number
 }
@@ -79,22 +81,26 @@ export type LineInterpolate = 'step' | 'linear'
 
 const NO_GAP = Number.POSITIVE_INFINITY
 
-function sameRow(row: ArrayLike<number>, a: number, b: number) {
-  return row[a] === row[b]
+// Whether instances `a` and `b` stand on one row and in one series.
+function sameRun(
+  c: LineChannels,
+  row: ArrayLike<number>,
+  a: number,
+  b: number,
+) {
+  return row[a] === row[b] && (!c.series || c.series[a] === c.series[b])
 }
 
-// Whether instance `i` abuts the one before it on its row, so the step joins
+// Whether instance `i` abuts the one before it in its run, so the step joins
 // them at a shared corner.
 function abutsBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
-  return i > 0 && sameRow(row, i - 1, i) && c.x2[i - 1] === c.x[i]
+  return i > 0 && sameRun(c, row, i - 1, i) && c.x2[i - 1] === c.x[i]
 }
 
 // Whether the linear variant links instance `i` to the one before it: the same
-// row, starting no earlier, within `gapBp` midpoint to midpoint. A start before
-// the previous one's begins a series of its own, so several laid end to end on
-// one row draw apart.
+// row and series, within `gapBp` midpoint to midpoint.
 function linksBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
-  if (i === 0 || !sameRow(row, i - 1, i) || c.x[i]! < c.x[i - 1]!) {
+  if (i === 0 || !sameRun(c, row, i - 1, i)) {
     return false
   }
   const gapBp = c.gapBp ?? NO_GAP

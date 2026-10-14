@@ -10,12 +10,14 @@ import {
   DEFAULT_COVERAGE_AS,
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
+  DEFAULT_WINDOW_FRAME,
+  isWindowFrame,
 } from './markVocabulary.ts'
 
 import type { DraftMark } from './markEdit.ts'
 import type { MarkPlot } from './markPlot.ts'
 import type { StepSnapshot } from './markProblems.ts'
-import type { AggregateOpName } from './markVocabulary.ts'
+import type { AggregateOpName, LineInterpolation } from './markVocabulary.ts'
 
 type Snapshot = Record<string, unknown>
 
@@ -146,6 +148,8 @@ export function withAxisMember(
 export interface StepPreset {
   label: string
   steps: StepSnapshot[]
+  /** The path a line drawing what the steps answer takes. */
+  lineInterpolate?: LineInterpolation
 }
 
 /**
@@ -171,13 +175,8 @@ export const STEP_PRESETS: readonly StepPreset[] = [
   { label: 'Other end of a pair', steps: [{ type: 'mate' }] },
   {
     label: 'Moving average',
-    steps: [
-      {
-        type: 'window',
-        frame: [-10, 10],
-        ops: [{ op: 'mean', field: 'score' }],
-      },
-    ],
+    steps: [{ type: 'window', ops: [{ op: 'mean', field: 'score' }] }],
+    lineInterpolate: 'linear',
   },
 ]
 
@@ -241,6 +240,40 @@ export function withAggregateOp(
   }
 }
 
+/** A window's frame as the step reads it: the one written, else the default. */
+export function windowFrameOf(
+  step: StepSnapshot,
+): [number | null, number | null] {
+  const frame = step.type === 'window' ? step.frame : undefined
+  return isWindowFrame(frame) ? frame : [...DEFAULT_WINDOW_FRAME]
+}
+
+/**
+ * A window with the rows on one side of its frame written: a count, either
+ * side spelled positive, or nothing for every row to the group's end.
+ */
+export function withWindowFrame(
+  step: StepSnapshot,
+  side: 'before' | 'after',
+  text: string,
+): StepSnapshot {
+  if (step.type !== 'window') {
+    return step
+  }
+  const rows = text.trim() === '' ? null : Math.abs(Number(text))
+  if (Number.isNaN(rows)) {
+    return step
+  }
+  const [before, after] = windowFrameOf(step)
+  return {
+    ...step,
+    frame:
+      side === 'before'
+        ? [rows === null ? null : -rows, after]
+        : [before, rows],
+  }
+}
+
 export { AGGREGATE_OPS }
 
 /** A step as the list names it, with what it writes. */
@@ -265,7 +298,7 @@ export function stepSummary(step: StepSnapshot): string {
       const names = (step.ops ?? []).map(op =>
         aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
       )
-      const [before = null, after = 0] = step.frame ?? []
+      const [before, after] = windowFrameOf(step)
       return `window ${names.join(', ') || 'count'} over rows ${before ?? '-∞'} to ${after ?? '∞'}`
     }
     case 'coverage': {

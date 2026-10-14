@@ -220,8 +220,13 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
               steps={stepsOfMark(mark)}
               at={at}
               problems={problems}
-              onChange={steps => {
-                write(withSteps(mark, steps))
+              onChange={(steps, lineInterpolate) => {
+                const next = withSteps(mark, steps)
+                write(
+                  lineInterpolate && markTypeOf(mark) === 'line'
+                    ? { ...next, interpolate: lineInterpolate }
+                    : next,
+                )
               }}
             />
             {editChannels(markTypeOf(mark)).map(channel => (

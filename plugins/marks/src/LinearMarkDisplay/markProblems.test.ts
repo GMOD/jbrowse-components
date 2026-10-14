@@ -224,6 +224,42 @@ test('an interpolate on a mark that draws no line waits unread', () => {
   expect(found([{ mark: 'line', encoding: { y: 'score' } }])).toEqual([])
 })
 
+test('a gapBp on a mark that draws no line waits unread', () => {
+  expect(
+    found([{ mark: 'point', encoding: { y: 'score' }, gapBp: 5000 }]),
+  ).toEqual(['warning unread-gap mark 0 gapBp'])
+  expect(
+    found([{ mark: 'line', encoding: { y: 'score' }, gapBp: 5000 }]),
+  ).toEqual([])
+})
+
+test("a window's frame is two whole row offsets or null, in order", () => {
+  const frameOf = (frame: unknown) =>
+    found([
+      {
+        mark: 'line',
+        encoding: { y: 'mean_score' },
+        transform: [
+          { type: 'window', frame, ops: [{ op: 'mean', field: 'score' }] },
+        ],
+      },
+    ])
+  for (const frame of [
+    [-10, 10],
+    [null, 0],
+    [0, null],
+    [null, null],
+    [3, 3],
+  ]) {
+    expect(frameOf(frame)).toEqual([])
+  }
+  for (const frame of [[-10, '10'], 10, [5, -5], [-1.5, 2], [-10]]) {
+    expect(frameOf(frame)).toEqual([
+      'warning window-frame mark 0 transform.0.frame',
+    ])
+  }
+})
+
 test('a rowProportion on a mark that draws no span waits unread', () => {
   expect(
     found([{ mark: 'bar', encoding: { y: 'score' }, rowProportion: 0.8 }]),

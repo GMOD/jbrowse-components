@@ -7,6 +7,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import { configSchemaFactory } from '../configSchema.ts'
 import { markPlotSettingsOf } from '../markPlot.ts'
+import { STEP_PRESETS } from '../plotEdit.ts'
 import MarkPlotDialog from './MarkPlotDialog.tsx'
 
 import type { MarkPlot } from '../markPlot.ts'
@@ -456,6 +457,70 @@ describe('the plot as a whole', () => {
 })
 
 describe("a mark's steps", () => {
+  const MOVING_AVERAGE = String(
+    STEP_PRESETS.findIndex(p => p.label === 'Moving average'),
+  )
+
+  it('adds a moving average to a line, which strokes it centre to centre', () => {
+    const { apply, written, writes } = setup({
+      marks: [{ mark: 'line', encoding: { y: 'score' } }],
+    })
+    fireEvent.change(screen.getByTestId('add-step'), {
+      target: { value: MOVING_AVERAGE },
+    })
+    expect(screen.getByTestId('mark-step-0').textContent).toContain(
+      'window mean_score over rows -10 to 10',
+    )
+    fireEvent.change(screen.getByTestId('step-window-before'), {
+      target: { value: '50' },
+    })
+    fireEvent.change(screen.getByTestId('step-window-after'), {
+      target: { value: '' },
+    })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          {
+            mark: 'line',
+            encoding: { y: 'score' },
+            interpolate: 'linear',
+            transform: [
+              {
+                type: 'window',
+                frame: [-50, null],
+                ops: [{ op: 'mean', field: 'score' }],
+              },
+            ],
+          },
+        ],
+      }),
+    )
+  })
+
+  it('adds a moving average to a bar without an interpolate it would not read', () => {
+    const { apply, written, writes } = setup({
+      marks: [{ mark: 'bar', encoding: { y: 'score' } }],
+    })
+    fireEvent.change(screen.getByTestId('add-step'), {
+      target: { value: MOVING_AVERAGE },
+    })
+    fireEvent.click(apply())
+    expect(written).toHaveBeenCalledWith(
+      writes({
+        marks: [
+          {
+            mark: 'bar',
+            encoding: { y: 'score' },
+            transform: [
+              { type: 'window', ops: [{ op: 'mean', field: 'score' }] },
+            ],
+          },
+        ],
+      }),
+    )
+  })
+
   it('adds a coverage, which fills the y a bar names none of', () => {
     const { apply, written, writes } = setup({ marks: [{ mark: 'bar' }] })
     expect(screen.getByTestId('mark-row-0-error')).toBeTruthy()

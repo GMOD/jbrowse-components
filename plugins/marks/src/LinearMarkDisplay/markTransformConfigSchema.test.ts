@@ -12,6 +12,7 @@ import {
   DEFAULT_FLATTEN_FIELD as WORKER_FLATTEN_FIELD,
   DEFAULT_PILEUP_AS as WORKER_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS as WORKER_PILEUP_FIELDS,
+  DEFAULT_WINDOW_FRAME as WORKER_WINDOW_FRAME,
 } from '@jbrowse/core/util/featureTransforms'
 import { asArrayType, isType } from '@jbrowse/mobx-state-tree'
 
@@ -24,6 +25,7 @@ import {
   DEFAULT_FLATTEN_FIELD,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_WINDOW_FRAME,
 } from './markVocabulary.ts'
 
 import type { StepSnapshot } from './markProblems.ts'
@@ -73,6 +75,7 @@ test("a step's defaults are the ones the worker reads for a slot the wire leaves
     flattenField: DEFAULT_FLATTEN_FIELD,
     pileupAs: DEFAULT_PILEUP_AS,
     pileupFields: [...DEFAULT_PILEUP_FIELDS],
+    windowFrame: [...DEFAULT_WINDOW_FRAME],
   }).toEqual({
     binField: WORKER_BIN_FIELD,
     binAs: WORKER_BIN_AS,
@@ -81,6 +84,7 @@ test("a step's defaults are the ones the worker reads for a slot the wire leaves
     flattenField: WORKER_FLATTEN_FIELD,
     pileupAs: WORKER_PILEUP_AS,
     pileupFields: WORKER_PILEUP_FIELDS,
+    windowFrame: WORKER_WINDOW_FRAME,
   })
 })
 
@@ -135,7 +139,7 @@ test('every step slot keeps its type, default and vocabulary', () => {
     'pileup.as': 'string = "row"',
     'pileup.fields': 'stringArray = ["start","end"]',
     'pileup.padding': 'number = 0',
-    'window.frame': 'frozen = [null,0]',
+    'window.frame': 'frozen = [-10,10]',
     'window.groupby': 'stringArray = []',
     'window.ops[].as': 'string = ""',
     'window.ops[].field': 'string = ""',

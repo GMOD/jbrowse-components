@@ -49,6 +49,27 @@ export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export const DEFAULT_CELLS_FIELD = 'seq'
 /** What a `cells` step writes: `state` on every cell, `base` on a mismatch or an insertion, `match` off a gap or a reference `N`, `length` on an insertion. */
 export const CELLS_FIELDS = ['state', 'base', 'match', 'length'] as const
+/** The rows before and after each row a `window` reads: a moving average over 21. */
+export const DEFAULT_WINDOW_FRAME = [-10, 10] as const
+
+/**
+ * Whether a `window`'s `frame` is what the step reads: two whole row offsets,
+ * either `null` for unbounded, the first not past the second.
+ */
+export function isWindowFrame(
+  frame: unknown,
+): frame is [number | null, number | null] {
+  if (!Array.isArray(frame) || frame.length !== 2) {
+    return false
+  }
+  const [before, after] = frame as unknown[]
+  const end = (v: unknown) => v === null || Number.isInteger(v)
+  return (
+    end(before) &&
+    end(after) &&
+    (before === null || after === null || Number(before) <= Number(after))
+  )
+}
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS = ['start', 'end'] as const
 export const DEFAULT_TEXT_FIELD = 'name'

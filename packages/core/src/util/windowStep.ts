@@ -17,7 +17,7 @@ import type { Staged } from './stepTables.ts'
 
 type Frame = NonNullable<WindowStep['frame']>
 
-export const DEFAULT_WINDOW_FRAME: Frame = [null, 0]
+export const DEFAULT_WINDOW_FRAME: Frame = [-10, 10]
 
 // The rows grouped, groups in the order first met and so sections outermost,
 // each group's rows in start order, an unreadable start sorting last; and

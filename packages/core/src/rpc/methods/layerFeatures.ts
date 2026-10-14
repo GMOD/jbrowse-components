@@ -1,5 +1,6 @@
 import { checkAbortSignal } from '../../util/aborting.ts'
 import { layerTables } from '../../util/featureTransforms.ts'
+import { pathSeries } from '../../util/pathSeries.ts'
 import { updateStatus } from '../../util/progress.ts'
 
 import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
@@ -19,14 +20,19 @@ import type { StatusCallback } from '../../util/progress.ts'
 export interface LayerFeatures {
   table: FeatureTable
   row: FieldRef | ArrayLike<number> | undefined
+  /** Each row's series, for a layer whose request names a path. */
+  series?: Uint32Array
+  /** The stretch a path breaks across, for a layer whose request names a path. */
+  gapBp?: number
 }
 
 /**
  * The table each layer of a `CoreGetEncodedLayers` request encodes: the
  * region's features through the shared steps, split by the facet where the
  * request names one, then through each layer's own steps, with each faceted
- * layer's stacked rows beside it. An instance's `featureIndex` indexes its
- * layer's table, so the same request answers which row an instance is.
+ * layer's stacked rows beside it, and a path layer's rows in series order.
+ * An instance's `featureIndex` indexes its layer's table, so the same request
+ * answers which row an instance is.
  */
 export async function layerFeatures(
   dataAdapter: BaseFeatureDataAdapter,
@@ -67,7 +73,7 @@ export async function layerFeatures(
   )
   checkAbortSignal(signal)
 
-  const { layers, sections } = layerTables(
+  const tables = layerTables(
     fetched,
     {
       transform,
@@ -79,5 +85,17 @@ export async function layerFeatures(
     },
     jexl,
   )
-  return { layers, sections, zoomRange, notices, facts }
+  const layers = tables.layers.map((layer, i): LayerFeatures => {
+    const { path, transform: own = [] } = requested[i]!
+    return path
+      ? pathSeries(
+          layer.table,
+          layer.row,
+          path,
+          [...transform, ...(facet?.transform ?? []), ...own],
+          jexl,
+        )
+      : layer
+  })
+  return { layers, sections: tables.sections, zoomRange, notices, facts }
 }

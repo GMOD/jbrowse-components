@@ -58,10 +58,10 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
       facts,
     } = await layerFeatures(dataAdapter, args, jexl)
     const layers = requested.map((request, i) => {
-      const { table, row } = layered[i]!
-      return encodeFeatures(
+      const { table, row, series, gapBp } = layered[i]!
+      const encoded = encodeFeatures(
         table,
-        { ...request.encoding, row },
+        { ...request.encoding, row, series },
         request.lanes,
         {
           jexl,
@@ -73,6 +73,7 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
           }),
         },
       )
+      return gapBp === undefined ? encoded : { ...encoded, gapBp }
     })
     const result: EncodedLayersResult = {
       layers,

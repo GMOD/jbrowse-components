@@ -306,6 +306,18 @@ const markSchema = ConfigurationSchema(
       description: 'step or linear, for a line',
     },
     /**
+     * #slot marks.gapBp
+     * The stretch in bp a `linear` line breaks across rather than bridge:
+     * where the next value's middle lies further on than this. Unset, a
+     * `window` step in front sets it to the bases its frame spans at the
+     * median row, so a moving average breaks where no data reached, and with
+     * none the line runs unbroken. Read by a line alone.
+     */
+    gapBp: {
+      type: 'maybeNumber',
+      description: 'bp a line breaks across; unset follows a window step',
+    },
+    /**
      * #slot marks.linkShape
      * The shape of a link mark: `dome`, a half-ellipse whose apex is the pair's
      * half-width clamped to the band, `arc`, a true semicircle that may leave

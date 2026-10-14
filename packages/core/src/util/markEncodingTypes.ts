@@ -184,6 +184,7 @@ export type LaneName =
   | 'text'
   | 'size'
   | 'x2Ref'
+  | 'series'
   | 'index'
 
 /**
@@ -366,6 +367,18 @@ export interface EncodedChannels {
   glyph?: Uint8Array
   row?: Uint32Array
   /**
+   * Which series of its row each instance belongs to, for a layer whose
+   * request names a {@link PathSpec}: the instances come grouped series by
+   * series, each in start order, so a path strokes a series and never joins
+   * two.
+   */
+  series?: Uint32Array
+  /**
+   * The stretch in bp past which a path breaks, from the request's
+   * {@link PathSpec}. Absent, a series is one run.
+   */
+  gapBp?: number
+  /**
    * Each feature's `text` channel as text, `''` where the field holds
    * nothing; a list joins its members with commas. Strings, so the lane is
    * cloned across the wire where the typed lanes are transferred.
@@ -418,6 +431,21 @@ export interface LayerRequest {
   lanes: LaneName[]
   /** This layer's own steps, run after the request's shared ones. */
   transform?: TransformStep[]
+  /** How a mark stroking through its instances splits them into series. */
+  path?: PathSpec
+}
+
+/**
+ * #api
+ * A path's series, as Vega-Lite draws a line: one per row and, within a row,
+ * one per distinct value of `by`, a categorical color's field, each in start
+ * order. `gapBp` breaks a series where the next instance's middle lies further
+ * on than that; absent, a `window` step among the layer's steps sets it to the
+ * bases a frame spans at the median row, and with none a series is one run.
+ */
+export interface PathSpec {
+  by?: FieldRef
+  gapBp?: number
 }
 
 /**
@@ -518,8 +546,8 @@ export interface AggregateStep {
  * group around it, Vega-Lite's window transform: a group is a distinct
  * `groupby` value set within a section, its rows taken in `start` order, and
  * `frame` counts rows before and after the current one, `null` running to the
- * group's end. `[-10, 10]` is a moving average over 21 rows, whatever bases
- * they span; `[null, 0]`, the default, a running total. A frame cut off at a
+ * group's end. `[-10, 10]`, the default, is a moving average over 21 rows,
+ * whatever bases they span; `[null, 0]` a running total. A frame cut off at a
  * group's end summarizes the rows it has. The rows come out grouped, each
  * group in `start` order, so a `line` walks one group at a time.
  */

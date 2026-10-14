@@ -41,10 +41,46 @@ test('a centred frame averages its rows, a cut-off one the rows it has', () => {
   ])
 })
 
-test('the default frame is a running total', () => {
+test('the default frame reads ten rows either side', () => {
+  const out = runTransforms(
+    Array.from({ length: 30 }, (_, i) => feature(i * 10, { score: 1 })),
+    [{ type: 'window', ops: [{ op: 'count' }] }],
+  )
+  expect(read(out, 'count').map(([c]) => c)).toEqual([
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    ...Array(10).fill(21),
+    20,
+    19,
+    18,
+    17,
+    16,
+    15,
+    14,
+    13,
+    12,
+    11,
+  ])
+})
+
+test('a frame open before its row is a running total', () => {
   const out = runTransforms(
     [0, 10, 20].map(start => feature(start, { score: 2 })),
-    [{ type: 'window', ops: [{ op: 'sum', field: 'score' }] }],
+    [
+      {
+        type: 'window',
+        frame: [null, 0],
+        ops: [{ op: 'sum', field: 'score' }],
+      },
+    ],
   )
   expect(read(out, 'sum_score')).toEqual([[2], [4], [6]])
 })

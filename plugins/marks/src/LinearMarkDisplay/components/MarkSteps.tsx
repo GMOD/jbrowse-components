@@ -8,14 +8,16 @@ import {
   AGGREGATE_OPS,
   STEP_PRESETS,
   stepSummary,
+  windowFrameOf,
   withAggregateOp,
   withStepSlot,
+  withWindowFrame,
 } from '../plotEdit.ts'
 import { MarkSlotProblems } from './MarkProblems.tsx'
 
 import type { MarkProblemIndex } from '../markProblemIndex.ts'
 import type { StepSnapshot } from '../markProblems.ts'
-import type { AggregateOpName } from '../markVocabulary.ts'
+import type { AggregateOpName, LineInterpolation } from '../markVocabulary.ts'
 
 // The slots a step's row edits in place, by type: the expression a filter or
 // formula runs, the width a bin takes, what a coverage or pileup writes. An
@@ -45,8 +47,25 @@ const StepRow = observer(function StepRow({
     step.type === 'aggregate' || step.type === 'window'
       ? (step.ops?.[0] ?? { op: 'count' })
       : undefined
+  const frame = step.type === 'window' ? windowFrameOf(step) : undefined
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {frame
+        ? (['before', 'after'] as const).map((side, end) => (
+            <TextField
+              key={side}
+              size="small"
+              label={`rows ${side} (empty: all)`}
+              value={frame[end] === null ? '' : String(Math.abs(frame[end]!))}
+              onChange={event => {
+                onChange(withWindowFrame(step, side, event.target.value))
+              }}
+              slotProps={{
+                htmlInput: { 'data-testid': `step-window-${side}` },
+              }}
+            />
+          ))
+        : null}
       {(STEP_SLOTS[step.type] ?? []).map(slot => (
         <TextField
           key={slot}
@@ -123,7 +142,7 @@ const MarkSteps = observer(function MarkSteps({
   steps: readonly StepSnapshot[]
   at: number
   problems: MarkProblemIndex
-  onChange: (steps: StepSnapshot[]) => void
+  onChange: (steps: StepSnapshot[], lineInterpolate?: LineInterpolation) => void
 }) {
   return (
     <div data-testid="mark-steps">
@@ -177,7 +196,10 @@ const MarkSteps = observer(function MarkSteps({
         onChange={event => {
           const preset = STEP_PRESETS[Number(event.target.value)]
           if (preset) {
-            onChange([...steps, ...structuredClone(preset.steps)])
+            onChange(
+              [...steps, ...structuredClone(preset.steps)],
+              preset.lineInterpolate,
+            )
           }
         }}
         slotProps={{

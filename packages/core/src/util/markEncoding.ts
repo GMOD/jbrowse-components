@@ -71,6 +71,7 @@ export type {
   FormulaStep,
   LocusRef,
   MateStep,
+  PathSpec,
   ShapeEncoding,
   ShapeName,
   ShapeScaleTable,
@@ -83,6 +84,7 @@ export type {
   ScaleTable,
   ThresholdRef,
   TransformStep,
+  WindowStep,
 } from './markEncodingTypes.ts'
 export type { ColorSchemeName } from './colorSchemes.ts'
 export { COLOR_SCHEMES } from './colorSchemes.ts'
@@ -132,6 +134,8 @@ export interface MarkEncodingInput {
   x2?: FieldRef | LocusRef | ChannelReader
   y?: FieldRef | ChannelReader
   row?: FieldRef | ChannelReader | ArrayLike<number>
+  /** Each row's series, what the `series` lane is filled from. */
+  series?: ArrayLike<number>
   color?: ColorEncoding | ChannelReader<number>
   shape?: ShapeEncoding | ChannelReader<number>
   text?: FieldRef | ChannelReader
@@ -740,6 +744,14 @@ export function encodeFeatures<L extends LaneName>(
     fillNumbers(row, rowSource(table, rowEncoding, jexl), kept, count)
   }
 
+  const seriesOf = encoding.series
+  const series = has('series') ? new Uint32Array(count) : undefined
+  if (series && seriesOf) {
+    for (let k = 0; k < count; k++) {
+      series[k] = seriesOf[rowAt(k)]!
+    }
+  }
+
   const text = has('text') ? new Array<string>(count) : undefined
   if (text) {
     if (textEncoding === undefined) {
@@ -1002,6 +1014,9 @@ export function encodeFeatures<L extends LaneName>(
   if (glyph) {
     encoded.glyph = glyph
   }
+  if (series) {
+    encoded.series = series
+  }
   if (text) {
     encoded.text = text
   }
@@ -1239,6 +1254,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.featureIndex,
     c.y,
     c.row,
+    c.series,
     typeof c.color === 'number' ? undefined : c.color,
     c.colorValue,
     c.colorKey,

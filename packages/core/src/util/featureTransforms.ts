@@ -62,6 +62,7 @@ export { BIN_OVERLAP_FIELD, DEFAULT_BIN_AS } from './stepTables.ts'
 export const DEFAULT_BIN_FIELD = 'start'
 export const DEFAULT_FLATTEN_FIELD = 'subfeatures'
 export { DEFAULT_CELLS_FIELD } from './cellsStep.ts'
+export { DEFAULT_WINDOW_FRAME } from './windowStep.ts'
 export const DEFAULT_COVERAGE_AS = 'coverage'
 export const DEFAULT_PILEUP_AS = 'row'
 export const DEFAULT_PILEUP_FIELDS: [string, string] = ['start', 'end']

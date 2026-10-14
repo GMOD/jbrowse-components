@@ -33,6 +33,60 @@ test('only a mark with a far foot reaches the other end a mate step found', () =
   expect([...enc.x2]).toEqual([1000])
 })
 
+test('a line asks for its series, split by a categorical color, and a stated gap', () => {
+  const overlay = markLayerRequest(
+    markOf({
+      mark: 'line',
+      encoding: { y: 'score', color: { field: 'source' } },
+      gapBp: 20000,
+    }),
+    {},
+    1,
+  )
+  expect(overlay.lanes).toContain('series')
+  expect(overlay.path).toEqual({ by: 'source', gapBp: 20000 })
+  const ramp = markLayerRequest(
+    markOf({
+      mark: 'line',
+      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+    }),
+    {},
+    1,
+  )
+  expect(ramp.path).toEqual({})
+  const bar = markLayerRequest(
+    markOf({ mark: 'bar', encoding: { y: 'score' } }),
+    {},
+    1,
+  )
+  expect(bar.path).toBeUndefined()
+  expect(bar.lanes).not.toContain('series')
+})
+
+test("a window's frame reaches the worker as written, or its default where the rule list refuses it", () => {
+  const frameOf = (frame: unknown) => {
+    const [step] = stepsOf(
+      markOf({
+        mark: 'line',
+        encoding: { y: 'mean_score' },
+        transform: [
+          {
+            type: 'window',
+            ...(frame === undefined ? {} : { frame }),
+            ops: [{ op: 'mean', field: 'score' }],
+          },
+        ],
+      }).transform,
+      1,
+    )
+    return step?.type === 'window' ? step.frame : undefined
+  }
+  expect(frameOf(undefined)).toEqual([-10, 10])
+  expect(frameOf([null, 0])).toEqual([null, 0])
+  expect(frameOf([-10, '10'])).toEqual([-10, 10])
+  expect(frameOf([5, -5])).toEqual([-10, 10])
+})
+
 test('an emptied step slot leaves the worker its default, which the channel reader assumed', () => {
   const mark = markOf({
     mark: 'span',

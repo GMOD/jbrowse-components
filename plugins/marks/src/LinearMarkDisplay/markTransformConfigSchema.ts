@@ -16,6 +16,7 @@ import {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_WINDOW_FRAME,
 } from './markVocabulary.ts'
 
 import type { StepSnapshot } from './markProblems.ts'
@@ -208,11 +209,12 @@ const window = ConfigurationSchema(
      * #slot window.frame
      * The rows before and after each row that its summaries read, in its
      * group's start order: `[-10, 10]` reads 21 rows, whatever bases they
-     * span, and `null` runs to the group's end.
+     * span, and `null` runs to the group's end, so `[null, 0]` is a running
+     * total.
      */
     frame: {
       type: 'frozen',
-      defaultValue: [null, 0],
+      defaultValue: [...DEFAULT_WINDOW_FRAME],
       description: 'rows before and after each row, null for unbounded',
     },
     /**

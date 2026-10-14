@@ -124,24 +124,36 @@ test('the linear record links each instance to the previous one on its row withi
   expect(u32(joined, words, 1, center.INSTANCE_OFFSET_U32.prevX)).toBe(10)
 })
 
-test('two series laid end to end on one row draw apart', () => {
-  const buf = lineCenterMark.pass.pack(
-    channels([
+// The second series lies wholly past the first, where no position rule could
+// tell the join between them from a step along one.
+test('a series change on one row starts a new run, for either variant', () => {
+  const seriesOf = {
+    ...channels([
       { x: 10, x2: 20, y: 2 },
-      { x: 60, x2: 70, y: 8 },
-      { x: 10, x2: 20, y: 5 },
-      { x: 60, x2: 70, y: 1 },
+      { x: 20, x2: 30, y: 8 },
+      { x: 30, x2: 40, y: 5 },
+      { x: 40, x2: 50, y: 1 },
     ]),
-  ) as ArrayBuffer
-  const words = center.INSTANCE_STRIDE_WORDS
+    series: Uint32Array.of(0, 0, 1, 1),
+  }
+  const centerBuf = lineCenterMark.pass.pack(seriesOf) as ArrayBuffer
   const prevX = (i: number) =>
-    u32(buf, words, i, center.INSTANCE_OFFSET_U32.prevX)
+    u32(
+      centerBuf,
+      center.INSTANCE_STRIDE_WORDS,
+      i,
+      center.INSTANCE_OFFSET_U32.prevX,
+    )
   expect([prevX(0), prevX(1), prevX(2), prevX(3)]).toEqual([
     NO_PREV_X,
     10,
     NO_PREV_X,
-    10,
+    30,
   ])
+  const stepBuf = lineStepMark.pass.pack(seriesOf) as ArrayBuffer
+  const prevY = (i: number) =>
+    f32(stepBuf, step.INSTANCE_STRIDE_WORDS, i, step.INSTANCE_OFFSET_F32.prevY)
+  expect([prevY(0), prevY(1), prevY(2), prevY(3)]).toEqual([GAP, 2, GAP, 5])
 })
 
 test('the step painter strokes a rise, the tops, the steps and a drop at each gap', () => {

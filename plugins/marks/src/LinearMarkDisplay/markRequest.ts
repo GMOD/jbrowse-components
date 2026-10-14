@@ -19,16 +19,20 @@ import {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
+  DEFAULT_WINDOW_FRAME,
   DEFAULT_X2,
+  isWindowFrame,
 } from './markVocabulary.ts'
 
 import type { MarkConfig, MarkTransformStepConfig } from './configSchema.ts'
+import type { ColorSource } from './markColor.ts'
 import type { MarkEntry } from './markList.ts'
 import type { MarkSpec } from './markSpecs.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type {
   AggregateOp,
   LayerRequest,
+  PathSpec,
   ShapeEncoding,
   MarkEncoding,
   TransformStep,
@@ -146,18 +150,10 @@ export function positionSource(
   return field
 }
 
-function frameEnd(value: unknown) {
-  return typeof value === 'number' && Number.isFinite(value)
-    ? Math.trunc(value)
-    : null
-}
-
-// A window's frame as the worker takes it: each end a whole row offset or
-// unbounded.
+// A window's frame as the worker takes it: the one written where the step
+// reads it, else the default, which the rule list names.
 function frameOf(frame: unknown): [number | null, number | null] {
-  return Array.isArray(frame)
-    ? [frameEnd(frame[0]), frameEnd(frame[1])]
-    : [null, 0]
+  return isWindowFrame(frame) ? [frame[0], frame[1]] : [...DEFAULT_WINDOW_FRAME]
 }
 
 function binEdgesOf(step: { as: readonly string[] }) {
@@ -312,10 +308,8 @@ export function markLayerRequest(
     zoomInRange(mark, bpPerPx),
     binEdges,
   )
-  const lanes = markLanes(
-    mark.mark,
-    colorLanesOf(markColorOf(mark, channels)),
-  ).filter(
+  const color = markColorOf(mark, channels)
+  const lanes = markLanes(mark.mark, colorLanesOf(color)).filter(
     lane =>
       (lane !== 'y' || marksValue(mark, channels)) &&
       (lane !== 'size' || mark.encoding.size.field !== ''),
@@ -324,6 +318,20 @@ export function markLayerRequest(
     encoding: encodingOf(mark, channels),
     lanes,
     ...(transform.length > 0 ? { transform } : {}),
+    ...(specOfMark(mark).path ? { path: pathOf(mark, color) } : {}),
+  }
+}
+
+function specOfMark(mark: MarkConfig): MarkSpec {
+  return MARK_SPECS[mark.mark]
+}
+
+// A path's series split by its categorical color's field, as a Vega-Lite line
+// is, and the gap it breaks at where the mark writes one.
+function pathOf(mark: MarkConfig, color: ColorSource): PathSpec {
+  return {
+    ...(color.kind === 'categories' ? { by: color.encoding.field } : {}),
+    ...(mark.gapBp === undefined ? {} : { gapBp: mark.gapBp }),
   }
 }
 

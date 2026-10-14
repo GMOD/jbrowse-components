@@ -27,7 +27,9 @@ import {
   DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
+  DEFAULT_WINDOW_FRAME,
   DEFAULT_X2,
+  isWindowFrame,
   MATE_FIELDS,
   MAX_THRESHOLD_CUTS,
 } from './markVocabulary.ts'
@@ -95,6 +97,10 @@ export const MARK_RULES = {
   'step-expression': 'error',
   /** A `bin` whose `step` is neither `"auto"` nor a positive width. */
   'bin-width': 'error',
+  /** A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. */
+  'window-frame': 'warning',
+  /** A `gapBp` on a mark that draws no line. */
+  'unread-gap': 'warning',
   /** A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. */
   'step-pair': 'warning',
   /** A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. */
@@ -207,6 +213,7 @@ export type MarkSnapshot = {
   mark?: MarkType
   linkShape?: LinkShape
   interpolate?: LineInterpolation
+  gapBp?: number
   rowProportion?: number
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -578,6 +585,19 @@ function stepProblems(steps: Steps, list = 'transform') {
         found('bin-width', `${at}.step`, 'a bin is a positive width in bp'),
       )
     }
+    if (
+      type === 'window' &&
+      step.frame !== undefined &&
+      !isWindowFrame(step.frame)
+    ) {
+      problems.push(
+        found(
+          'window-frame',
+          `${at}.frame`,
+          `a window's frame is two whole row offsets, either null for unbounded, the first not past the second, so it reads [${DEFAULT_WINDOW_FRAME.join(', ')}]`,
+        ),
+      )
+    }
     for (const pair of pairSlots(step)) {
       if (pair.names && pair.names.length !== 2) {
         problems.push(
@@ -751,6 +771,15 @@ function ownProblems(
         'unread-interpolate',
         'interpolate',
         `a ${type} draws no line, so it reads no interpolate`,
+      ),
+    )
+  }
+  if (mark.gapBp !== undefined && type !== 'line') {
+    problems.push(
+      found(
+        'unread-gap',
+        'gapBp',
+        `a ${type} draws no line, so it reads no gapBp`,
       ),
     )
   }
