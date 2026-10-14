@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1351)
+# model members with no description (1347)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1060,7 +1060,6 @@ MafSequenceWidget.setHoverHighlight
 MultiWaySyntenyDisplay.adapterCapabilities
 MultiWaySyntenyDisplay.adapterDeclaresLanes
 MultiWaySyntenyDisplay.adapterPairsOnAnchor
-MultiWaySyntenyDisplay.adjacentLanesAlignDirectly
 MultiWaySyntenyDisplay.advanceAnimation
 MultiWaySyntenyDisplay.anchorAssembly
 MultiWaySyntenyDisplay.anchorAssemblyName
@@ -1085,13 +1084,11 @@ MultiWaySyntenyDisplay.colorScales
 MultiWaySyntenyDisplay.dataSuperseded
 MultiWaySyntenyDisplay.declaredLanes
 MultiWaySyntenyDisplay.describedLanes
-MultiWaySyntenyDisplay.domain
 MultiWaySyntenyDisplay.drawCurves
 MultiWaySyntenyDisplay.endAnimation
 MultiWaySyntenyDisplay.endDescribingLanes
 MultiWaySyntenyDisplay.endLaneDrag
 MultiWaySyntenyDisplay.featureOps
-MultiWaySyntenyDisplay.featuresAreNameless
 MultiWaySyntenyDisplay.fetchedFeatures
 MultiWaySyntenyDisplay.flipLane
 MultiWaySyntenyDisplay.forgetUndescribedLanes
@@ -1121,7 +1118,6 @@ MultiWaySyntenyDisplay.laneDecisions
 MultiWaySyntenyDisplay.laneDescriptions
 MultiWaySyntenyDisplay.laneDragPx
 MultiWaySyntenyDisplay.laneFetches
-MultiWaySyntenyDisplay.laneFlipPinsByAnchor
 MultiWaySyntenyDisplay.laneGeneAdapters
 MultiWaySyntenyDisplay.laneGeneColors
 MultiWaySyntenyDisplay.laneGenes

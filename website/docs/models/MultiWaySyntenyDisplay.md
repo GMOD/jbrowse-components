@@ -24,6 +24,8 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
 | <span id="property-hiddenlanenames">**hiddenLaneNames**</span><br><code>hiddenLaneNames: types.frozen&lt;readonly string[] &#124; undefined&gt;()</code> | the lanes a reader hid from the lane menu, by assembly name; the lanes chosen are `rows.kept` |
 | <span id="property-frozenlanes">**frozenLanes**</span><br><code>frozenLanes: types.frozen&lt;FrozenLanes &#124; undefined&gt;()</code> |  |
+| <span id="property-lanepins">**lanePins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>lanePins: types.frozen&lt;Readonly&lt;Record&lt;string, LanePin&gt;&gt; &#124; unde…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>lanePins: types.frozen&lt;Readonly&lt;Record&lt;string, LanePin&gt;&gt; &#124; undefined&gt;()</code></pre></dialog></span> | the contig, or a block on it, a reader pinned each lane to, by lane |
+| <span id="property-laneflippins">**laneFlipPins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>laneFlipPins: types.frozen&lt; &#124; Readonly&lt;Record&lt;string, Readonly&lt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>laneFlipPins: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; Readonly&lt;Record&lt;string, Readonly&lt;Record&lt;string, LaneFlipPin&gt;&gt;&gt;&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | each lane's pinned orientation, under the anchor it was set against, since a flip is stated against the anchor's order |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>
@@ -50,8 +52,6 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-hovertarget">**hoverTarget**</span><br><code>HoverTarget &#124; undefined</code> |  |
 | <span id="volatile-clickedtarget">**clickedTarget**</span><br><code>RibbonRef &#124; undefined</code> |  |
 | <span id="volatile-lanedecisions">**laneDecisions**</span><br><code>Map&lt;string, LaneDecision &#124; undefined&gt;</code> |  |
-| <span id="volatile-pinnedlanes">**pinnedLanes**</span><br><code>Map&lt;string, LanePin&gt;</code> |  |
-| <span id="volatile-laneflippinsbyanchor">**laneFlipPinsByAnchor**</span><br><code>Map&lt;string, ReadonlyMap&lt;string, LaneFlipPin&gt;&gt;</code> |  |
 | <span id="volatile-renderoriginpx">**renderOriginPx**</span><br><code>number</code> | the view's `offsetPx` the stack was last laid out against |
 | <span id="volatile-lanetransitions">**laneTransitions**</span><br><code>Map&lt;string, LaneTransition&gt;</code> |  |
 | <span id="volatile-lanemotionclockms">**laneMotionClockMs**</span><br><code>number</code> |  |
@@ -98,9 +98,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> |  |
 | <span id="getter-laneopenings">**laneOpenings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening[]</code></pre></dialog></span> | each lane's holes, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
-| <span id="getter-featuresarenameless">**featuresAreNameless**</span><br><code>boolean</code> |  |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  |
-| <span id="getter-domain">**domain**</span><br><code>string[]</code> |  |
 | <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
@@ -132,9 +130,11 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  |
 | <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call |
 | <span id="getter-sessiontracksbyid">**sessionTracksById**</span><br><code>ReadonlyMap&lt;string, AnyTrackConfig&gt;</code> | every session track, connections' included |
-| <span id="getter-adjacentlanesaligndirectly">**adjacentLanesAlignDirectly**</span><br><code>boolean</code> |  |
 | <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its lower lane against the anchor |
+| <span id="getter-lanefetchkinds">**laneFetchKinds**</span><br><code>{ lanePairs: boolean; laneRows: boolean; }</code> | the fetches beyond the anchor's that its records call for |
+| <span id="getter-pinnedlanes">**pinnedLanes**</span><br><code>ReadonlyMap&lt;string, LanePin&gt;</code> |  |
 | <span id="getter-pinnedlaneflips">**pinnedLaneFlips**</span><br><code>ReadonlyMap&lt;string, LaneFlipPin&gt;</code> |  |
+| <span id="getter-domain">**domain**</span><br><code>string[]</code> | `rows.domain` in each placed lane's own spelling, so an order a config wrote with an alias merges with one a drag writes |
 | <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares its own lanes, empty for every other source |
 | <span id="getter-laneselection">**laneSelection**</span><br><code>readonly string[] &#124; undefined</code> | undefined means every lane, and a hidden lane stays in force |
 | <span id="getter-hiddenlanes">**hiddenLanes**</span><br><code>readonly string[]</code> |  |
@@ -154,6 +154,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-visiblegroups">**visibleGroups**</span><br><code>MultiWayGroup[]</code> | uncut at the viewport edge, cut only at a displayed region's end |
 | <span id="getter-fitgroups">**fitGroups**</span><br><code>MultiWayGroup[]</code> | the visible groups cut to the viewport, which each lane's frame fits |
 | <span id="getter-tickintervalbp">**tickIntervalBp**</span><br><code>number</code> |  |
+| <span id="getter-stackgeometry">**stackGeometry**</span><br><code>LaneGeometry</code> | every lane's band, the anchor's first |
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> |  |
 | <span id="getter-lanegenetracks">**laneGeneTracks**</span><br><code>Map&lt;string, AnyTrackConfig&gt;</code> | keyed by each lane's own spelling, not by `laneKey` |
 | <span id="getter-lanegeneadapters">**laneGeneAdapters**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
@@ -185,7 +186,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | in the stack's own px |
 | <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  |
 | <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> |  |
-| <span id="getter-anchortickxs">**anchorTickXs**</span><br><code>number[]</code> | px of the anchor's ticks across the displayed regions |
+| <span id="getter-anchortickxs">**anchorTickXs**</span><br><code>number[]</code> | px of the anchor's ticks across the displayed regions, over the reach the anchor's rule draws |
 | <span id="getter-lanecells">**laneCells**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ cells: Map&lt;string, MultiWayCell&gt;; boxNames: Map&lt;string, Named…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ cells: Map&lt;string, MultiWayCell&gt;; boxNames: Map&lt;string, NamedSpan[]&gt;; geneGroups: Map&lt;string, Map&lt;string, string&gt;&gt;; }</code></pre></dialog></span> | boxes before glyphs, so an in-order hit test finds a box over a gene |
 | <span id="getter-laneglyphcells">**laneGlyphCells**</span><br><code>Map&lt;string, MultiWayCell&gt;</code> |  |
 | <span id="getter-laneboxnames">**laneBoxNames**</span><br><code>Map&lt;string, NamedSpan[]&gt;</code> |  |
@@ -253,6 +254,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`
 | Member | Description |
 | --- | --- |
 | <span id="method-lanekey">**laneKey**</span><br><code>(assemblyName: string) =&gt; string</code> | the canonical name, so two spellings of one assembly share a key |
+| <span id="method-lanespellings">**laneSpellings**</span><br><code>(assemblyName: string) =&gt; string[]</code> | `assemblyName` and every alias the session holds it under |
 | <span id="method-namedlanetracks">**namedLaneTracks**</span><br><code>(entries: readonly string[], key: string) =&gt; AnyTrackConfig[]</code> | the tracks `entries` names for the lane keyed `key`, best first: plain ids, then `{assembly}` entries, each in entry order |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { haplotypes: string[] &#124; undefined; }</code> | reads only user-controlled state, never a fetch's output, or it loops |
 | <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
