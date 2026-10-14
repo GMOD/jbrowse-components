@@ -1,14 +1,8 @@
 /**
- * The value a banded `ldValues` cell carries when no estimator ever ran on that
- * pair. Every metric lands in [0, 1], so -2 is a value no estimator can
- * produce, and `ldValueComputed` — the generated twin the two shaders test
- * with — is what both renderers ask before painting.
- *
- * A cell needs it whenever the drawn layout and the computed layout disagree
- * about which pairs exist. `applyDisplayOrder` is the case: reordering the SNP
- * axis into screen order can put two SNPs within the band that were further
- * apart in the order the band was computed in, and the band never computed that
- * pair. Filling 0 there says the two variants are in linkage equilibrium, which
- * is a measurement; nothing measured them.
+ * The value a banded `ldValues` cell carries when the file lists no value for
+ * that pair: plink's `--ld-window-r2` leaves most pairs out, and a D' for one
+ * of them is no more 0 than it is 1. Every metric lands in [0, 1], so -2 is
+ * no measurement, and `ldValueComputed`, the generated twin the shaders test
+ * with, is what both renderers ask before painting.
  */
 export const LD_NOT_COMPUTED = -2

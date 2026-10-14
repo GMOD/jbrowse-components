@@ -46,7 +46,6 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
         originBp: 0,
         spanBp: regions.reduce((sum, r) => sum + r.end - r.start, 0),
         ldMetric: 'r2',
-        maxVariantSeparation: 0,
         useGenomicPositions,
       },
     }),

@@ -64,19 +64,6 @@ export default function ldTrackDisplayConfigSchema() {
       color: ldColorConfigSchema,
       /**
        * #slot
-       * Maximum separation, in variants, between the two SNPs of a drawn pair.
-       * Pairs further apart are dropped, which turns the matrix from n²/2 cells
-       * into n·k. This is plink's `--ld-window`, and a file plink wrote is
-       * usually already windowed, so it most often drops nothing. Set to 0 to
-       * draw every pair the file names.
-       */
-      maxVariantSeparation: {
-        type: 'number',
-        defaultValue: 0,
-        advanced: true,
-      },
-      /**
-       * #slot
        */
       showVerticalGuides: {
         type: 'boolean',

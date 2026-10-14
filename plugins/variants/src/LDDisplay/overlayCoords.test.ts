@@ -80,29 +80,6 @@ describe('effectiveUseGenomicPositions follows the loaded matrix', () => {
   })
 })
 
-// Same requested-vs-loaded split, for the window the status bar names.
-// `resolveBand` clamps `maxVariantSeparation` to n - 1, so a slot wider than
-// the matrix leaves no window to report, and reporting the slot would put a
-// caveat on a triangle that has every pair in it.
-describe('loadedLDWindow follows the loaded matrix', () => {
-  it('is undefined before anything has loaded, and at the full triangle', () => {
-    const { display } = createTestEnvironment().createDisplay()
-    expect(display.loadedLDWindow).toBeUndefined()
-
-    const loaded = loadedDisplay()
-    expect(loaded.display.rpcData!.snps).toHaveLength(4)
-    expect(loaded.display.loadedLDWindow).toBeUndefined()
-    // the band clamped exactly onto the triangle is still the full one
-    loaded.display.setRpcData({ ...loaded.display.rpcData!, band: 3 })
-    expect(loaded.display.loadedLDWindow).toBeUndefined()
-  })
-
-  it('reports the band the values were computed at', () => {
-    const { display } = loadedDisplay({ data: { band: 2 } })
-    expect(display.loadedLDWindow).toBe(2)
-  })
-})
-
 // The hover crosshair's ticks, the view's vertical guides and the connector
 // lines all point at the same two loci. Measuring the ticks off the first
 // content block instead left them short by the left gap while the guides beside
@@ -209,11 +186,8 @@ describe('cellToScreen and screenToCell are inverses', () => {
   })
 })
 
-// The tooltip is the one surface that was already honest about the band —
-// `bandPairIndex` returns -1 outside it and no tooltip appears. A cell the
-// layout HOLDS but nothing computed has to read the same way: `applyDisplayOrder`
-// can place a pair inside the screen-order band that the source-order band
-// skipped, and a tooltip there would put a number on a pair nothing measured.
+// A cell inside the band whose pair the file does not list reads as no cell:
+// a tooltip there would put a number on a pair nothing measured.
 test('a cell nothing computed has no tooltip', () => {
   const { display } = loadedDisplay()
   const values = Float32Array.from(display.rpcData!.ldValues)

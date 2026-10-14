@@ -11,7 +11,6 @@ import Crosshairs from './Crosshairs.tsx'
 import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
-import LDStatusBar from './LDStatusBar.tsx'
 import { ldMetricLabel, ldValueText } from './ldValueLabel.ts'
 
 import type { LDMetric } from '../../RenderLDDataRPC/ldTypes.ts'
@@ -141,7 +140,6 @@ const LDBody = observer(function LDBody({
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => <LDPointer model={model} mouseState={mouseState} />}
       </PointerLayer>
-      <LDStatusBar model={model} />
       <LDColumnZone model={model} />
     </>
   )

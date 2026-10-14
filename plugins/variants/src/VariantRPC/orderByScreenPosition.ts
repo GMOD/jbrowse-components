@@ -8,7 +8,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * ties column i to its feature's genomic x, so the list order IS the column
  * order. Anything else draws the connectors crossed.
  *
- * This is the LD display's convention (`RenderLDDataRPC/reversedRegions.ts`) and
+ * This is the LD display's convention (`getLDMatrixFromPlink.ts`) and
  * hic's (`mirrorU`), and it is the reason the matrix no longer carries a
  * `flipped` mirror of its own: the reflection maps each region **onto itself**,
  * so a view with some regions reversed and some not comes out right, which one

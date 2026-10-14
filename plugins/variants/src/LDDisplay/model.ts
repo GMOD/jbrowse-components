@@ -178,12 +178,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #getter
        */
-      get maxVariantSeparation(): number {
-        return getConf(self, 'maxVariantSeparation')
-      },
-      /**
-       * #getter
-       */
       get showVerticalGuides(): boolean {
         return getConf(self, 'showVerticalGuides')
       },
@@ -257,18 +251,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get dprimeAvailable(): boolean {
         return self.rpcData?.hasDprime ?? true
-      },
-      /**
-       * #getter
-       * The pair window the loaded matrix was computed at, or undefined for
-       * the whole triangle. The status bar names it, since a pair past it is
-       * not drawn and reads as no linkage.
-       */
-      get loadedLDWindow(): number | undefined {
-        const data = self.rpcData
-        return data && data.band > 0 && data.band < data.snps.length - 1
-          ? data.band
-          : undefined
       },
       /**
        * #getter
@@ -384,7 +366,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       rpcProps(): LDRpcProps {
         return {
           ldMetric: self.colorField,
-          maxVariantSeparation: self.maxVariantSeparation,
           useGenomicPositions: self.variantLayout === 'genomic',
         }
       },

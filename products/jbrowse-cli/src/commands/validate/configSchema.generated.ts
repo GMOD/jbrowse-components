@@ -11751,15 +11751,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/LDColor"
           }
         },
-        "maxVariantSeparation": {
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "showVerticalGuides": {
           "description": "on hover, draw guides across the view at the pair's genomic positions.",
           "default": true,
@@ -16412,9 +16403,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "color": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/color"
-            },
-            "maxVariantSeparation": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"
             },
             "showVerticalGuides": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"

@@ -11368,15 +11368,6 @@
             "$ref": "#/$defs/LDColor"
           }
         },
-        "maxVariantSeparation": {
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "showVerticalGuides": {
           "description": "on hover, draw guides across the view at the pair's genomic positions.",
           "default": true,
@@ -15909,9 +15900,6 @@
             },
             "color": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/color"
-            },
-            "maxVariantSeparation": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxVariantSeparation"
             },
             "showVerticalGuides": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"

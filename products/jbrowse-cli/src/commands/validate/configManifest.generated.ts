@@ -6005,10 +6005,6 @@ export const configManifest: ConfigManifest = {
           "fieldDefault": "r2"
         },
         {
-          "name": "maxVariantSeparation",
-          "type": "number"
-        },
-        {
           "name": "showVerticalGuides",
           "type": "boolean"
         },

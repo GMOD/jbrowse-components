@@ -66,7 +66,6 @@ From [TriangleMatrixMixin](../trianglematrixmixin): <span id="volatile-rpcdata">
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `color.field`, the statistic the fetch asks the file for. |
-| <span id="getter-maxvariantseparation">**maxVariantSeparation**</span><br><code>number</code> |  |
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  |
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  |
@@ -78,7 +77,6 @@ From [TriangleMatrixMixin](../trianglematrixmixin): <span id="volatile-rpcdata">
 | <span id="getter-effectiveusegenomicpositions">**effectiveUseGenomicPositions**</span><br><code>boolean</code> | Whether the loaded matrix is at genomic positions: a multi-region view falls back to uniform columns. |
 | <span id="getter-r2available">**r2Available**</span><br><code>boolean</code> |  |
 | <span id="getter-dprimeavailable">**dprimeAvailable**</span><br><code>boolean</code> |  |
-| <span id="getter-loadedldwindow">**loadedLDWindow**</span><br><code>number &#124; undefined</code> | The pair window the loaded matrix was computed at, or undefined for the whole triangle. The status bar names it, since a pair past it is not drawn and reads as no linkage. |
 | <span id="getter-focalsnpindex">**focalSnpIndex**</span><br><code>number</code> | Index of the focal SNP in `snps`, or -1. |
 | <span id="getter-colorencoding">**colorEncoding**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ContinuousRef &amp; { scheme: "blues" &#124; "blueyellowred" &#124; "cividis"…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ContinuousRef &amp; { scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "viridis"; }</code></pre></dialog></span> | The `color` object under the preset of the loaded metric, so a stale triangle during a metric switch keeps its hue. Both presets name a scheme, so the encoding always carries one. |
 | <span id="getter-colorscheme">**colorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>"blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "j…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>"blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "viridis"</code></pre></dialog></span> |  |

@@ -36,12 +36,10 @@ public float4 ldCellToClip(float2 pos, Uniforms u) {
     pos, u.canvasSize, u.viewScale, u.viewOffsetX, u.yScalar);
 }
 
-// Whether a cell holds a value the LD file actually reported. Every metric
-// lands in [0, 1], so -2 — `LD_NOT_COMPUTED` in @jbrowse/ld-core — is outside
-// them, and `applyDisplayOrder` writes one to mark a cell no pair covered. The
-// distinction is the user's, not the renderer's: an in-band cell painted at
-// r² = 0 says the two variants are in linkage equilibrium, which is a
-// measurement, and a pair the band skipped has no measurement to report.
+// Whether a cell holds a value the LD file reported. Every metric lands in
+// [0, 1], so -2, `LD_NOT_COMPUTED` in @jbrowse/ld-core, marks a pair the file
+// does not list. Painting it at r² = 0 would claim linkage equilibrium, a
+// measurement nobody made.
 //
 // The test sits halfway to the sentinel rather than on the metrics' floor, so
 // float error at an exact 0 cannot erase a cell.
@@ -67,7 +65,7 @@ public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
 // Decode flat lower-triangular instance index `idx` into (i, j) with i > j,
 // where idx = i*(i-1)/2 + j. The float sqrt gives an approximate `i`; the
 // correction loops fix the off-by-one that float32 rounding introduces once
-// 8*idx exceeds 2^24 (~n>2000 cells).
+// 8*idx exceeds 2^24 (~n>2000 SNPs).
 public uint2 decodeTriangular(uint idx) {
   uint i = uint((1.0 + sqrt(1.0 + 8.0 * float(idx))) * 0.5);
   while (i * (i - 1u) / 2u > idx) { i -= 1u; }

@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1348)
+# model members with no description (1347)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -532,7 +532,6 @@ JBrowseWebSessionModel.removePermanentPlugin
 LDTrackDisplay.colorScheme
 LDTrackDisplay.dprimeAvailable
 LDTrackDisplay.lineZoneHeight
-LDTrackDisplay.maxVariantSeparation
 LDTrackDisplay.prefersOffset
 LDTrackDisplay.r2Available
 LDTrackDisplay.renderState

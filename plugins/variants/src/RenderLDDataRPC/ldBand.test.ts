@@ -3,7 +3,6 @@ import {
   bandPairIndex,
   bandRowFirstColumn,
   bandRowStart,
-  resolveBand,
 } from './ldBand.ts'
 
 function pairsInBand(n: number, k: number) {
@@ -90,26 +89,9 @@ describe('the banded layout', () => {
   })
 })
 
-describe('resolveBand', () => {
-  test('0 means the full triangle', () => {
-    expect(resolveBand(100, 0)).toBe(99)
-  })
-
-  test('clamps a window wider than the data to the full triangle', () => {
-    expect(resolveBand(10, 500)).toBe(9)
-    expect(resolveBand(10, 9)).toBe(9)
-  })
-
-  test('keeps a narrower window', () => {
-    expect(resolveBand(100, 20)).toBe(20)
-  })
-
-  test('degenerate SNP counts', () => {
-    expect(resolveBand(0, 10)).toBe(0)
-    expect(resolveBand(1, 10)).toBe(0)
-    expect(bandCellCount(0, 0)).toBe(0)
-    expect(bandCellCount(1, 0)).toBe(0)
-  })
+test('fewer than two SNPs hold no cells', () => {
+  expect(bandCellCount(0, 0)).toBe(0)
+  expect(bandCellCount(1, 0)).toBe(0)
 })
 
 describe('the band is what makes the cost linear', () => {

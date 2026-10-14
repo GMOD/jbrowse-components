@@ -2,16 +2,22 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { LD_NOT_COMPUTED, isLDRecordSource } from '@jbrowse/ld-core'
 
 import { bpInRegion } from '../PlinkLDAdapter/bpInRegion.ts'
-import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
+import { bandCellCount, bandPairIndex } from './ldBand.ts'
 
 import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
-// PLINK LD records name the same SNP from many rows. The id is part of the
-// key because two variants can share a position: a site split into one record
-// per allele, or a SNP beside an indel.
+/**
+ * Cells past which a fetch refuses rather than allocates: 40 MB of `ldValues`,
+ * and 200 MB with the per-cell rects of genomic positions. The tutorials' full
+ * triangle of 1,258 variants is 790k cells.
+ */
+export const MAX_LD_CELLS = 10_000_000
+
+// The id is part of the key because two variants can share a position: a site
+// split into one record per allele, or a SNP beside an indel.
 function snpKey(refName: string, bp: number, id = '') {
   return `${refName}:${bp}:${id}`
 }
@@ -22,14 +28,8 @@ function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
 }
 
 /**
- * The metric the file can actually serve, given what was asked for.
- *
- * Both directions matter and only one of them used to. A `--r2 dprime` emit
- * carries DP and no R2, and `parsePlinkLDLine` reported a missing r² as 0 —
- * so an r² request against such a file painted every pair at the ramp's floor
- * with nothing anywhere saying so. `parsePlinkLDHeader` accepts the file (it
- * requires only *one* of the two columns), so this is where the mismatch has
- * to be caught.
+ * The metric the file can serve. A `--r2 dprime` emit carries DP and no R2, so
+ * an r² request against it would otherwise read every pair as missing.
  */
 function resolveMetric(
   ldMetric: LDMetric,
@@ -41,23 +41,32 @@ function resolveMetric(
   return hasR2 ? 'r2' : 'dprime'
 }
 
-// Deduplicate both endpoints of every record into a unique SNP list sorted by
-// (refName, position). Sorted order defines the matrix row/column index.
-//
-// `maf` rides along from the file's MAF_A/MAF_B columns when it has them
-// (plink's `--r2 with-freqs`, plink2's NONMAJ_FREQ_*), which the tooltip prints.
-// `parsePlinkLDLine` has always read those columns; nothing collected them.
-function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
-  const snpMap = new Map<string, LDSnp>()
+function regionIndexOf(refName: string, bp: number, regions: Region[]) {
+  return regions.findIndex(r => r.refName === refName && bpInRegion(bp, r))
+}
+
+/**
+ * Every SNP either side of a record names, in the order the view draws them:
+ * regions as `regions` lists them, and bp descending inside a reversed one.
+ * The matrix's row and column index is this order, so each renderer reads
+ * columns left to right.
+ */
+function collectScreenOrderedSnps(records: PlinkLDRecord[], regions: Region[]) {
+  const byKey = new Map<string, { snp: LDSnp; rank: number; pos: number }>()
   const add = (refName: string, bp: number, id: string, maf?: number) => {
     const key = snpKey(refName, bp, id)
-    if (!snpMap.has(key)) {
-      snpMap.set(key, {
-        id,
-        refName,
-        start: bp - 1,
-        end: bp,
-        maf: maf !== undefined && Number.isFinite(maf) ? maf : undefined,
+    if (!byKey.has(key)) {
+      const rank = regionIndexOf(refName, bp, regions)
+      byKey.set(key, {
+        snp: {
+          id,
+          refName,
+          start: bp - 1,
+          end: bp,
+          maf: maf !== undefined && Number.isFinite(maf) ? maf : undefined,
+        },
+        rank,
+        pos: regions[rank]!.reversed ? -bp : bp,
       })
     }
   }
@@ -65,11 +74,14 @@ function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
     add(r.chrA, r.bpA, r.snpA, r.mafA)
     add(r.chrB, r.bpB, r.snpB, r.mafB)
   }
-  return [...snpMap.values()].sort((a, b) =>
-    a.refName === b.refName
-      ? a.start - b.start || (a.id ?? '').localeCompare(b.id ?? '')
-      : a.refName.localeCompare(b.refName),
-  )
+  return [...byKey.values()]
+    .sort(
+      (a, b) =>
+        a.rank - b.rank ||
+        a.pos - b.pos ||
+        (a.snp.id ?? '').localeCompare(b.snp.id ?? ''),
+    )
+    .map(k => k.snp)
 }
 
 export async function getLDMatrixFromPlink({
@@ -84,16 +96,9 @@ export async function getLDMatrixFromPlink({
     headers?: Record<string, string>
     regions: Region[]
     ldMetric?: LDMetric
-    maxVariantSeparation?: number
   }
 }): Promise<LDMatrixResult> {
-  const {
-    regions,
-    adapterConfig,
-    sessionId,
-    ldMetric = 'r2',
-    maxVariantSeparation = 0,
-  } = args
+  const { regions, adapterConfig, sessionId, ldMetric = 'r2' } = args
 
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -106,60 +111,62 @@ export async function getLDMatrixFromPlink({
     )
   }
 
-  // Which columns the file actually has: a request for a metric it does not
-  // carry is downgraded rather than mislabeled in the legend, and both flags
-  // ride back so the display can disable the radio for the missing one.
   const header = await dataAdapter.getHeader(args)
   const hasR2 = header.r2Idx >= 0
   const hasDprime = header.dprimeIdx >= 0
   const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
 
-  // A pair is fetched by the region its A side is in and kept where its B
-  // side is in any displayed region, so a pair spanning two blocks loads. The
-  // A side is checked here because a tabix index built on other columns
-  // returns pairs whose A is outside the query.
-  const allRecords: PlinkLDRecord[] = []
-  for (const region of regions) {
-    const records = await dataAdapter.getLDRecords(
-      { refName: region.refName, start: region.start, end: region.end },
-      args,
-    )
-    for (const r of records) {
-      if (
-        bpInRegion(r.bpA, region) &&
-        regions.some(
-          other => other.refName === r.chrB && bpInRegion(r.bpB, other),
+  // A pair is fetched by the region its A side is in and kept where its B side
+  // is in any displayed region, so a pair spanning two blocks loads. A tabix
+  // index built on other columns returns pairs whose A is outside the query.
+  const perRegion = await Promise.all(
+    regions.map(async region =>
+      (
+        await dataAdapter.getLDRecords(
+          { refName: region.refName, start: region.start, end: region.end },
+          args,
         )
-      ) {
-        allRecords.push(r)
-      }
-    }
-  }
+      ).filter(
+        r =>
+          bpInRegion(r.bpA, region) &&
+          regionIndexOf(r.chrB, r.bpB, regions) !== -1,
+      ),
+    ),
+  )
+  const records = perRegion.flat()
 
-  const snps = collectSortedSnps(allRecords)
-  const n = snps.length
+  const snps = collectScreenOrderedSnps(records, regions)
   const indexByKey = new Map<string, number>()
   for (const [idx, snp] of snps.entries()) {
     indexByKey.set(snpKey(snp.refName, snp.end, snp.id), idx)
   }
 
-  // A pair the file does not list was never measured: plink's default
-  // `--ld-window-r2 0.2` and `--ld-window` leave most pairs out, and a D' for
-  // one of them is no more 0 than it is 1.
-  const band = resolveBand(n, maxVariantSeparation)
-  const ldValues = new Float32Array(bandCellCount(n, band)).fill(
-    LD_NOT_COMPUTED,
-  )
-
-  for (const record of allRecords) {
-    const i = indexByKey.get(snpKey(record.chrA, record.bpA, record.snpA))
-    const j = indexByKey.get(snpKey(record.chrB, record.bpB, record.snpB))
-    if (i !== undefined && j !== undefined && i !== j) {
-      const slot = bandPairIndex(i, j, band)
-      if (slot >= 0) {
-        ldValues[slot] = metricValue(record, metric)
-      }
+  // The band is the widest pair the file lists, so it hides nothing: plink's
+  // `--ld-window` already bounded the pairs when it wrote the file.
+  const pairs: { slotI: number; slotJ: number; value: number }[] = []
+  let band = 0
+  for (const record of records) {
+    const i = indexByKey.get(snpKey(record.chrA, record.bpA, record.snpA))!
+    const j = indexByKey.get(snpKey(record.chrB, record.bpB, record.snpB))!
+    const value = metricValue(record, metric)
+    if (i !== j && value !== LD_NOT_COMPUTED) {
+      pairs.push({ slotI: i, slotJ: j, value })
+      band = Math.max(band, Math.abs(i - j))
     }
+  }
+
+  const numCells = bandCellCount(snps.length, band)
+  if (numCells > MAX_LD_CELLS) {
+    throw new Error(
+      `${snps.length.toLocaleString()} variants in view would need ${numCells.toLocaleString()} LD cells; zoom in`,
+    )
+  }
+  // A pair the file does not list was never measured: plink's default
+  // `--ld-window-r2 0.2` leaves most pairs out, and a D' for one of them is no
+  // more 0 than it is 1.
+  const ldValues = new Float32Array(numCells).fill(LD_NOT_COMPUTED)
+  for (const { slotI, slotJ, value } of pairs) {
+    ldValues[bandPairIndex(slotI, slotJ, band)] = value
   }
 
   return {

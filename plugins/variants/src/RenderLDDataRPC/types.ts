@@ -10,31 +10,19 @@ export interface LDCellHit {
 
 export interface LDDataResult {
   ldValues: Float32Array
-  // n+1 boundary positions for hit testing and Canvas2D/SVG rendering.
-  // For uniform mode: boundaries[k] = k * uniformW.
-  // For genomic positions mode: midpoint boundaries between adjacent SNPs.
+  // n+1 column edges (`computeBoundaries`), empty when there are no SNPs
   boundaries: Float32Array
   numCells: number
-  /**
-   * Pair-separation window `ldValues` is laid out at. Every reader — both
-   * renderers, hitTest, the SVG export — indexes through it, and at the
-   * full-triangle value it is the layout the band generalizes.
-   */
+  // the band `ldValues` is laid out at (`ldBand.ts`)
   band: number
   uniformW: number
   // echoed from RenderLDDataArgs.originBp; see its note
   originBp: number
-  // Whether the cells above were actually laid out at genomic positions. A
-  // multi-region viewport has no single bp axis to lay them on, so a
-  // `useGenomicPositions` request falls back to uniform cells there — the
-  // display reads this rather than its own slot, the same requested-vs-loaded
-  // split as `metric`.
+  // Whether the cells were laid out at genomic positions: a multi-region view
+  // falls back to uniform columns.
   genomicMode: boolean
-  // The metric the file could actually serve, which is not always the one
-  // requested — see `resolveMetric`.
+  // the metric `ldValues` holds, and which columns the file has
   metric: LDMetric
-  // Which of the two columns the file carries, so the display can disable the
-  // radio for the one it does not.
   hasR2: boolean
   hasDprime: boolean
   snps: LDSnp[]

@@ -1,19 +1,13 @@
 /**
- * The LD matrix is stored banded: a pair (i, j), i > j, is computed and stored
- * only when its separation `i - j` is at most `k`. Pairs further apart are not
- * stored at all, so the matrix holds `n·k` cells instead of `n²/2` and the cost
- * is linear in the SNP count. The band is the same window plink means by
- * `--ld-window`, and pairs past `k` are not shown: both LD display modes draw
- * every cell they are given.
+ * The LD matrix is stored banded: a pair (i, j), i > j, has a slot only when
+ * its separation `i - j` is at most `k`, the widest pair the file lists. A file
+ * written at plink's `--ld-window` then costs `n·k` cells instead of `n²/2`.
  *
- * Rows are ragged — row `i` holds `min(i, k)` entries, its `j` running over
- * `[lo(i), i)`. **At `k >= n - 1` the ragged band covers
- * the whole triangle, `lo` collapses to 0 and `rowStart` to `i*(i-1)/2`, so the
- * layout is bit-identical to the unbanded one it generalizes.** The unwindowed
- * path therefore keeps today's exact indices, and there is no second layout for
- * a reader to get wrong. A rectangular `i*k + (i - j - 1)` would be simpler
- * arithmetic but costs `n*(n-1)` cells at `k = n-1` — twice the triangle — so
- * it would make the common case worse to make the rare case tidier.
+ * Rows are ragged: row `i` holds `min(i, k)` entries, its `j` running over
+ * `[lo(i), i)`. At `k = n - 1` the band covers the whole triangle and the
+ * indices are the triangular `i*(i-1)/2 + j`. A rectangular
+ * `i*k + (i - j - 1)` would be simpler arithmetic but costs twice the triangle
+ * at `k = n - 1`.
  */
 
 /** First `j` stored in row `i`. */
@@ -39,19 +33,6 @@ export function bandRowStart(i: number, k: number) {
 /** Total cells stored for `n` SNPs at window `k`. */
 export function bandCellCount(n: number, k: number) {
   return n < 2 ? 0 : bandRowStart(n, k)
-}
-
-/**
- * The window actually used for `n` SNPs. `maxVariantSeparation` is the config
- * slot, 0 meaning unlimited. Clamping to `n - 1` makes the collapse above
- * exact, so an unbanded run indexes through the same arithmetic as a banded
- * one.
- */
-export function resolveBand(n: number, maxVariantSeparation: number) {
-  const full = n > 0 ? n - 1 : 0
-  return maxVariantSeparation > 0 && maxVariantSeparation < full
-    ? maxVariantSeparation
-    : full
 }
 
 /**

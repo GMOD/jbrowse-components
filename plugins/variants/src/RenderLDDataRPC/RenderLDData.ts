@@ -13,8 +13,6 @@ export interface RenderLDDataArgs {
   /** axis bp from `originBp` to the far edge of the last block */
   spanBp: number
   ldMetric: LDMetric
-  /** plink's `--ld-window`; 0 for the full triangle. See `ldBand.ts`. */
-  maxVariantSeparation: number
   useGenomicPositions: boolean
 }
 
@@ -23,12 +21,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     RenderLDData: {
       args: RenderLDDataArgs
       return: LDDataResult
-      // `ldValues` is the O(n²) pair matrix — 4MB at a thousand SNPs — and it
-      // crossed by structure clone on every fetch, alongside three more
-      // Float32Arrays. Every buffer in the result is freshly allocated per call
-      // (`getLDMatrixFromPlink`, `computeBoundaries`, `buildGenomicCellBuffers`,
-      // and the empty result), so there is nothing held across calls for the
-      // transfer to detach.
+      // Every buffer in the result is allocated per call, so the transfer
+      // detaches nothing the worker keeps.
       transferables: LDDataResult
     }
   }

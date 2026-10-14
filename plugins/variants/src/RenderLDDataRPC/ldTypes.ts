@@ -2,7 +2,7 @@ export type LDMetric = 'r2' | 'dprime'
 
 export interface LDSnp {
   // The variant id the LD file names (e.g. an rsID), or `chr:bp` when the file
-  // has no id column.
+  // has no id column or writes `.`.
   id?: string
   refName: string
   start: number
@@ -14,21 +14,14 @@ export interface LDSnp {
 export interface LDMatrixResult {
   snps: LDSnp[]
   ldValues: Float32Array
-  // The metric actually represented by ldValues. Usually equals the requested
-  // metric, but a file lacking a D' column downgrades a 'dprime' request to
-  // 'r2' rather than silently mislabeling r² as D'.
+  // The metric `ldValues` holds: a file lacking the requested column serves
+  // the other one.
   metric: LDMetric
-  // Which of the two columns the file carries, so the display can disable the
-  // radio for the one it does not: `resolveMetric` downgrades in both
-  // directions, and a radio that silently serves the other column is the
-  // matrix-of-zeros bug wearing a different label.
+  // Which columns the file has, so the display disables a missing one's
+  // radio.
   hasR2: boolean
   hasDprime: boolean
-  /**
-   * The pair-separation window `ldValues` was laid out at — `resolveBand` of
-   * the requested `maxVariantSeparation`, so always concrete and never wider
-   * than `snps.length - 1`. Every reader indexes through it (`bandPairIndex`);
-   * at the full-triangle value it is the layout this one generalizes.
-   */
+  // The widest pair the file lists, the band `ldValues` is laid out at
+  // (`ldBand.ts`).
   band: number
 }
