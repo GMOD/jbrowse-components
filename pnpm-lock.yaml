@@ -1561,8 +1561,8 @@ importers:
   plugins/hic:
     dependencies:
       '@gmod/hic':
-        specifier: ^1.3.2
-        version: 1.3.2
+        specifier: ^2.0.0
+        version: 2.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4871,8 +4871,8 @@ packages:
   '@gmod/hclust@6.0.0':
     resolution: {integrity: sha512-/vCkUXOhCcNmLp13Alw8Vyf+48tYg8La4SfziOJkpgX0HrHCHa6xJZQSenpYuhYCc++kK0X+mQCbSTESKGanIg==}
 
-  '@gmod/hic@1.3.2':
-    resolution: {integrity: sha512-aFk532nEPRFDEt5B+pK7hMSyRcUxYi5YZ8c83HXgyMVOaAgrxfyrJAw8NtDaJX2wUzEhrga7SJja0U5a/HCtcA==}
+  '@gmod/hic@2.0.0':
+    resolution: {integrity: sha512-2XhUs8ogxJ3ku0j5/U/IAatPwbvpD1OAev6b3lJSmY9X2Ryuv/CJdjHHqvIwxFhSvds1jR8beakaDG1r3G4XDw==}
 
   '@gmod/indexedfasta@5.0.13':
     resolution: {integrity: sha512-qZhpJqGZVB5JJgXur2dnGLvcEmGO0wsoGkr3ETpxH42TgL7UFOAiSHCB/mPhcycCuISwaQw4IpfCXJuKPxVLxA==}
@@ -13022,7 +13022,7 @@ snapshots:
     dependencies:
       '@gmod/newick': 1.0.3
 
-  '@gmod/hic@1.3.2':
+  '@gmod/hic@2.0.0':
     dependencies:
       '@gmod/inflate': 1.0.0
       '@gmod/shared-read-cache': 2.1.0

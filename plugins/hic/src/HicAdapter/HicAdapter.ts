@@ -211,14 +211,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     onProgress: (current: number, total: number) => void
   }) {
     try {
-      // `transposed` is the parser's own answer: it decides over its alias
-      // table, which a second derivation here could disagree with.
+      // `transposed` is the parser's own answer, decided from the file's
+      // chromosome indices, which this adapter would otherwise look up again.
       const { records, appliedNormalization, transposed } =
         await this.hic.getContactRecords(
           normalization,
           { chr: region1.refName, start: region1.start, end: region1.end },
           { chr: region2.refName, start: region2.start, end: region2.end },
-          'BP',
           resolution,
           { onProgress, signal },
         )

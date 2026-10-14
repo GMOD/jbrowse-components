@@ -81,7 +81,6 @@ interface MockParser {
     norm: string,
     ref: { chr: string },
     ref2: { chr: string },
-    units?: string,
     binsize?: number,
     opts?: { onProgress?: (current: number, total: number) => void },
   ) => Promise<ReturnType<typeof oneContact>>
@@ -180,7 +179,7 @@ test('block progress inside a pair moves the bar', async () => {
   const adapter = makeAdapter({
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
-    getContactRecords: (_norm, _ref, _ref2, _units, _binsize, opts) => {
+    getContactRecords: (_norm, _ref, _ref2, _binsize, opts) => {
       opts?.onProgress?.(1, 4)
       return Promise.resolve(oneContact(0, 0, 5))
     },
