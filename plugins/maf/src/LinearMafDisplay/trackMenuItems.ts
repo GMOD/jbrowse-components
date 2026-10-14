@@ -149,14 +149,14 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
  */
 function colorFieldRow(self: MafMenuSelf, field: MafColorField): MenuItem {
   const label = MAF_COLOR_FIELD_LABELS[field]
+  const hint =
+    self.yField === 'identity' && field !== 'identity'
+      ? 'the X-Y plot draws its bars in one color'
+      : field === 'codon' && !self.zoomedToBaseLevel
+        ? 'zoom in to base level'
+        : undefined
   return {
-    label:
-      field === 'codon'
-        ? withHint(
-            label,
-            self.zoomedToBaseLevel ? undefined : 'zoom in to base level',
-          )
-        : label,
+    label: withHint(label, hint),
     type: 'radio',
     checked: self.selectedColorField === field,
     onClick: () => {

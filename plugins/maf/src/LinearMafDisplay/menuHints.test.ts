@@ -185,6 +185,28 @@ describe('the codon row coloring says when it is out of zoom range', () => {
   })
 })
 
+// Under the X-Y plot only identity colors the bars, so every other Color by
+// row ticks a field the bars do not paint.
+describe('the Color by rows say when the X-Y plot draws one color', () => {
+  const HINT = 'the X-Y plot draws its bars in one color'
+
+  it('hints on every field but identity while y is identity', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setYField('identity')
+    const items = display.trackMenuItems()
+    expect(hintOn(items, 'Source chromosome')).toBe(HINT)
+    expect(hintOn(items, 'Mismatches (SNPs vs reference)')).toBe(HINT)
+    expect(hintOn(items, 'Identity to reference')).toBeUndefined()
+  })
+
+  it('is quiet with the cells drawn', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    expect(
+      hintOn(display.trackMenuItems(), 'Source chromosome'),
+    ).toBeUndefined()
+  })
+})
+
 // The CDS strip is the one thing here that can be on, correctly on, and still
 // draw nothing: its own byte pre-flight declines the read at wide spans on a
 // deep alignment, and that failure is soft by design — nothing else on screen
