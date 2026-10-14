@@ -411,20 +411,8 @@ export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
     : root
 }
 
-/**
- * Drop a tab a move has left with no views, unless it is the panel's last.
- * Closing a tab's last view leaves the tab standing, as a place to open the
- * next one; only a move out of it prunes.
- */
-export function pruneEmptyTabIn(
-  root: LayoutTree,
-  panelId: string,
-  tabId: string,
-): LayoutTree {
-  const found = findPanel(root, panelId)
-  if (!found || found.tabs.length <= 1) {
-    return root
-  }
-  const tab = found.tabs.find(t => t.id === tabId)
-  return tab?.viewIds.length === 0 ? removeTab(root, tabId) : root
+/** Remove a tab that holds no views; a tab with views stays. */
+export function pruneEmptyTab(root: LayoutTree, tabId: string): LayoutTree {
+  const found = findTab(root, tabId)
+  return found?.tab.viewIds.length === 0 ? removeTab(root, tabId) : root
 }

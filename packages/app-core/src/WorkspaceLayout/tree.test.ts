@@ -7,7 +7,7 @@ import {
   normalize,
   panels,
   pruneEmptyPanel,
-  pruneEmptyTabIn,
+  pruneEmptyTab,
   removePanel,
   removeTab,
   removeView,
@@ -459,7 +459,7 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.93) {
       tree = pruneEmptyPanel(tree, target)
     } else if (roll < 0.96 && someTab) {
-      tree = pruneEmptyTabIn(tree, target, someTab.id)
+      tree = pruneEmptyTab(tree, someTab.id)
     } else {
       // any branch, so nested rescaling is exercised
       const branch = pick(branchesIn(tree))

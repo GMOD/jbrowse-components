@@ -18,7 +18,7 @@ import {
   panelContainingView,
   panels,
   pruneEmptyPanel,
-  pruneEmptyTabIn,
+  pruneEmptyTab,
   removePanel,
   removeTab,
   removeView,
@@ -266,16 +266,8 @@ export function WorkspaceLayoutMixin() {
             return undefined
           }
           const placed = place(removeView(tree, viewId), from)
-          const pruned = pruneEmptyTabIn(placed, from.panel.id, from.tab.id)
-          const source = panels(pruned).find(p => p.id === from.panel.id)
-          const emptiedCell =
-            source?.tabs.length === 1 &&
-            source.tabs[0]!.id === from.tab.id &&
-            source.tabs[0]!.viewIds.length === 0
           apply(
-            emptiedCell
-              ? pruneEmptyPanel(removeTab(pruned, from.tab.id), from.panel.id)
-              : pruned,
+            pruneEmptyPanel(pruneEmptyTab(placed, from.tab.id), from.panel.id),
           )
           return from
         }
