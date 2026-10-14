@@ -8790,7 +8790,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
+              "description": "field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth one-to-one against shared orthologs, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -12100,7 +12100,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "a threshold scale's color for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one color meaning white to it.",
+              "description": "a threshold scale's color for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one color painting flat.",
               "if": {
                 "type": "null"
               },

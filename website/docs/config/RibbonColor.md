@@ -1,7 +1,7 @@
 ---
 id: ribboncolor
 title: RibbonColor
-description: "The multi-way synteny display's ribbonColor setting: one color for every ribbon, or a field each ribbon carries: the record's strand, a measurement through its preset (identity, mapq, dnds), or a…"
+description: "The multi-way synteny display's ribbonColor setting: one color for every ribbon, or a field each ribbon carries: the record's strand, a measurement through its preset (identity, mapq, dnds,…"
 sidebar_label: Display -> RibbonColor
 ---
 
@@ -37,7 +37,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The multi-way synteny display's `ribbonColor` setting: one color for every
 ribbon, or a field each ribbon carries: the record's strand, a measurement
-through its preset (`identity`, `mapq`, `dnds`), or a column the table
+through its preset (`identity`, `mapq`, `dnds`, `syntenicDepth`), or a column the table
 declares in `attributeColumns`, through the same slots as the synteny
 view's [SyntenyColor](../syntenycolor). A string is the constant.
 
@@ -49,7 +49,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | Slot | Description |
 | --- | --- |
 | <span id="slot-value">**value**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(130,130,130,0.3)'</code> | The color of every ribbon under the `none` scale, and of a pair carrying no value under a field. |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it) |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each ribbon by: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth one-to-one against shared orthologs, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it) |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (none, linear, threshold) | none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | a text column's labels that take the palette first, in order, and lead the key, the rest following sorted, strand's values (1, -1) in the order range colors them, or a threshold's cuts; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval |
