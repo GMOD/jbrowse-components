@@ -6,6 +6,13 @@ import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
+import {
+  PEPTIDE_FONT_FAMILY,
+  PEPTIDE_HALO_COLOR,
+  forEachRenderedPeptide,
+  peptideBaselinePx,
+  peptideFill,
+} from './LinearBasicDisplay/components/peptidePositioning.ts'
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
 import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
@@ -36,6 +43,10 @@ import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
+import {
+  shouldRenderPeptideBackground,
+  shouldRenderPeptideText,
+} from './RenderFeatureDataRPC/zoomThresholds.ts'
 import { featureColorViews } from './shared/featureColorViews.ts'
 
 import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPositioning.ts'
@@ -82,6 +93,14 @@ export interface FeatureTablesArgs {
   /** Paint each CDS by its reading frame, as the view's "Color by CDS" does. */
   colorByCDS?: boolean
   /**
+   * Translate each CDS over `sequenceAdapter` once the zoom reaches a base a
+   * px, as the view's "Show amino acids" does: codon stripes in `rects`, and
+   * each residue in `aminoAcids`. On by default, as in the view.
+   */
+  aminoAcids?: boolean
+  /** The genetic code for a CDS whose feature names no `transl_table`. */
+  geneticCodeId?: number
+  /**
    * The most compressed bytes the region may need, refused off the index
    * before any feature is fetched. 200 MB by default.
    */
@@ -121,6 +140,54 @@ function placedFeatures(d: FeatureDataResult) {
 }
 
 type PlacedFeatures = ReturnType<typeof placedFeatures>
+
+/**
+ * Each codon piece the translation lays over a CDS box in the region, and the letter the
+ * display writes over it at this zoom: `text` is empty where the display
+ * writes none, too zoomed out or in a box too short for its font.
+ */
+function aminoAcidTable(
+  d: FeatureDataResult,
+  rows: PlacedFeatures,
+  region: { start: number; end: number },
+  widthPx: number,
+  bpPerPx: number,
+) {
+  const items = (d.aminoAcidOverlay ?? []).filter(
+    aa =>
+      rows.feature(aa.flatbushIdx) >= 0 &&
+      aa.endBp > region.start &&
+      aa.startBp < region.end,
+  )
+  const cells = new Map<
+    (typeof items)[number],
+    { text: string; size: number }
+  >()
+  if (shouldRenderPeptideText(bpPerPx)) {
+    forEachRenderedPeptide(
+      { ...d, aminoAcidOverlay: items },
+      { ...region, screenStartPx: 0, screenEndPx: widthPx },
+      (item, cell) => {
+        cells.set(item, { text: cell.text, size: cell.fontSize })
+      },
+    )
+  }
+  return {
+    start: items.map(aa => aa.startBp),
+    end: items.map(aa => aa.endBp),
+    aminoAcid: items.map(aa => aa.aminoAcid),
+    proteinIndex: items.map(aa => aa.proteinIndex),
+    top: items.map(aa => aa.topPx),
+    height: items.map(aa => aa.heightPx),
+    stopOrNonTriplet: items.map(aa => aa.isStopOrNonTriplet),
+    translExcept: items.map(aa => aa.isTranslExcept),
+    text: items.map(aa => cells.get(aa)?.text ?? ''),
+    fontSize: items.map(aa => cells.get(aa)?.size ?? 0),
+    y: items.map(aa => peptideBaselinePx(aa, cells.get(aa)?.size ?? 0)),
+    color: items.map(aa => cssColorToHex(peptideFill(aa))),
+    feature: items.map(aa => rows.feature(aa.flatbushIdx)),
+  }
+}
 
 function take<T>(lane: ArrayLike<T>, keep: readonly number[]) {
   return keep.map(i => lane[i]!)
@@ -195,7 +262,8 @@ function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
  * tables: each top-level feature on the
  * row the display's layout gives it, the boxes, intron lines, chevrons and
  * strand arrows its glyph draws, its transcripts, the labels the display
- * shows beside it at this zoom, and the color key, a ramp's as `ramps`
+ * shows beside it at this zoom, the residues it writes over a zoomed-in CDS,
+ * and the color key, a ramp's as `ramps`
  * (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
  * adapters must be registered on `pluginManager`.
  *
@@ -221,6 +289,8 @@ export async function featureTables(
     display = {},
     bpPerPx,
     colorByCDS = false,
+    aminoAcids = true,
+    geneticCodeId,
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: FeatureTablesArgs,
 ) {
@@ -255,6 +325,8 @@ export async function featureTables(
           ),
           bpPerPx,
           colorByCDS,
+          peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
+          geneticCodeId,
           showOnlyGenes: readConfObject(conf, 'showOnlyGenes'),
           byteLimit,
           statusCallback: () => {},
@@ -365,6 +437,8 @@ export async function featureTables(
       arrowStemHalfHeight: STEM_HALF_H_PX,
       chevronWidth: CHEVRON_W_PX,
       chevronHeight: CHEVRON_H_PX,
+      aminoAcidFont: PEPTIDE_FONT_FAMILY,
+      aminoAcidHalo: cssColorToHex(PEPTIDE_HALO_COLOR),
     },
     bpPerPx,
   }
@@ -480,6 +554,7 @@ export function laidOutTables(
     },
     chevrons: chevrons(d, hideChevrons ? [] : lines, rows, bpPerPx),
     arrows: arrows(d, rows, bpPerPx),
+    aminoAcids: aminoAcidTable(d, rows, region, widthPx, bpPerPx),
     labels,
     height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
     /** Features the packer could not place, which no table lists. */
@@ -495,6 +570,7 @@ const TABLES = [
   'lines',
   'chevrons',
   'arrows',
+  'aminoAcids',
   'labels',
 ] as const
 

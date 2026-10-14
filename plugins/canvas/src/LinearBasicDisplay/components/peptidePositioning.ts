@@ -9,7 +9,21 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 // `measuredFont` switches to the fixed monospace advance on seeing this name.
-const PEPTIDE_FONT_FAMILY = 'monospace'
+export const PEPTIDE_FONT_FAMILY = 'monospace'
+
+export const PEPTIDE_HALO_COLOR = 'white'
+
+export function peptideFill(item: { isStopOrNonTriplet: boolean }) {
+  return item.isStopOrNonTriplet ? 'red' : 'black'
+}
+
+// The alphabetic baseline that centers a letter of `fontSize` in its codon box.
+export function peptideBaselinePx(
+  item: { topPx: number; heightPx: number },
+  fontSize: number,
+) {
+  return item.topPx + item.heightPx / 2 + fontSize / 3
+}
 
 const PEPTIDE_MAX_FONT_SIZE = 16
 
@@ -112,7 +126,7 @@ export function drawPeptides(
   ctx.save()
   ctx.textAlign = 'center'
   ctx.textBaseline = 'alphabetic'
-  ctx.strokeStyle = 'white'
+  ctx.strokeStyle = PEPTIDE_HALO_COLOR
   ctx.lineWidth = 1
   // Every residue in a row shares a font, and reassigning ctx.font per residue
   // re-parses the same string thousands of times in a dense CDS.
@@ -122,13 +136,13 @@ export function drawPeptides(
     data,
     vr,
     (item, { centerPx, fontSize, font, text }) => {
-      const y = item.topPx + item.heightPx / 2 + fontSize / 3
+      const y = peptideBaselinePx(item, fontSize)
       if (font !== lastFont) {
         ctx.font = font
         lastFont = font
       }
       ctx.strokeText(text, centerPx, y)
-      const fill = item.isStopOrNonTriplet ? 'red' : 'black'
+      const fill = peptideFill(item)
       if (fill !== lastFill) {
         ctx.fillStyle = fill
         lastFill = fill

@@ -157,3 +157,35 @@ test('regions of one contig lay out together, a feature on one row in each', asy
     })
   }
 })
+
+test('a zoomed-in CDS carries its residues, lettered once a codon fits them', async () => {
+  const region = { refName: 'ctgA', start: 1150, end: 1350 }
+  const at = (bpPerPx: number, aminoAcids?: boolean) =>
+    engine.features({ ...GFF3, region, bpPerPx, aminoAcids, display: GROW })
+  const close = await at(0.1)
+  const aa = close.aminoAcids
+  const n = aa.start.length
+  expect(n).toBeGreaterThan(30)
+  expect(new Set(Object.values(aa).map(c => c.length))).toEqual(new Set([n]))
+  for (let i = 0; i < n; i++) {
+    expect(aa.end[i]! - aa.start[i]!).toBeLessThanOrEqual(3)
+    expect(aa.text[i]!.slice(1)).toMatch(/^\d*$/)
+    expect(aa.text[i]![0]).toBe(aa.aminoAcid[i])
+    expect(aa.color[i]).toBe(aa.stopOrNonTriplet[i] ? '#ff0000' : '#000000')
+    const f = aa.feature[i]!
+    expect(aa.top[i]).toBeGreaterThanOrEqual(close.features.top[f]!)
+    expect(aa.y[i]).toBeGreaterThan(aa.top[i]!)
+    expect(aa.y[i]).toBeLessThan(aa.top[i]! + aa.height[i]!)
+  }
+  expect(aa.text.some(t => /\d/.test(t))).toBe(false)
+  const closer = await at(0.05)
+  expect(closer.aminoAcids.text.every(t => /^.\d+$/.test(t))).toBe(true)
+  expect(close.glyph.aminoAcidHalo).toBe('#ffffff')
+
+  const middle = await at(0.5)
+  expect(middle.aminoAcids.start.length).toBe(n)
+  expect(new Set(middle.aminoAcids.text)).toEqual(new Set(['']))
+
+  expect((await at(2)).aminoAcids.start).toEqual([])
+  expect((await at(0.1, false)).aminoAcids.start).toEqual([])
+})
