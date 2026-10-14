@@ -4217,6 +4217,8 @@
       "worker": "stub",
       "uiVia": [
         "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
         "react-dom"
       ]
     },
