@@ -1478,7 +1478,9 @@ export default function stateModelFactory(
           configProblemsOf(conf: AnyConfigurationModel): string[] {
             return [
               ...superConfigProblemsOf(conf),
-              ...alignmentsConfigProblems(conf),
+              ...alignmentsConfigProblems(
+                conf as Instance<LinearAlignmentsDisplayConfigSchema>,
+              ),
             ]
           },
 

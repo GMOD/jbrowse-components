@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 75 unchecked in source, 183 in tests,
-# of 1351 total config accessor calls. The gate counts source only.
+# 77 unchecked in source, 184 in tests,
+# of 1370 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1228	readConfObject('adapter')
@@ -173,7 +173,7 @@ plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts  (1)
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
   140	getConf('adapter')
 plugins/alignments/src/tables.ts  (1)
-  367	readConfObject('descending')
+  379	readConfObject('descending')
 plugins/authentication/src/tokenEntryModelFactory.ts  (1)
   53	getConf('validateWithHEAD')
 plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
@@ -234,7 +234,7 @@ plugins/gccontent/src/GCContentTrack/index.ts  (3)
   51	readConfObject('windowDelta')
   57	readConfObject('gcMode')
 plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
-  39	readConfObject('ldAdapter')
+  56	readConfObject('ldAdapter')
 plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts  (1)
   36	readConfObject('namesIndexLocation')
 plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts  (1)
@@ -243,8 +243,12 @@ plugins/linear-comparative-view/src/LGVSyntenyDisplay/lodTierInfo.test.ts  (1)  
   84	getConf('lodMode')
 plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (1)
   26	getConf('sequence')
-plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (1)  [test]
-  79	readConfObject('trackId')
+plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
+  108	readConfObject('trackId')
+  115	readConfObject('trackId')
+plugins/linear-genome-view/src/LinearGenomeView/rExport/exportLinearView.ts  (2)
+  66	readConfObject('adapter')
+  93	readConfObject('adapter')
 plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
   98	getConf('color')
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]

@@ -40,7 +40,6 @@ import type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -64,7 +63,9 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * written: a per-base `color.field`, levels a field does not have, and a
  * `facet` the `unit` cannot group by.
  */
-export function alignmentsConfigProblems(conf: AnyConfigurationModel) {
+export function alignmentsConfigProblems(
+  conf: Instance<LinearAlignmentsDisplayConfigSchema>,
+) {
   return [
     ...alignmentsColorProblems({
       ...colorSettingOf(conf.color),

@@ -1,4 +1,8 @@
-import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
+import {
+  fullConfSnapshot,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -7,8 +11,13 @@ import { exportTracksToR, locationPath } from './rScript.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { RExportTrack, Region } from './rScript.ts'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 
 type Track = LinearGenomeViewModel['tracks'][number]
+
+function trackConf(track: Track) {
+  return track.configuration as BaseTrackConfig
+}
 
 /** The regions on screen, each displayed region cut to what the view shows of it. */
 function viewRegions(view: LinearGenomeViewModel): Region[] {
@@ -54,7 +63,7 @@ function referenceOf(view: LinearGenomeViewModel) {
 async function refNamesOf(view: LinearGenomeViewModel, track: Track) {
   try {
     const map = await getSession(view).assemblyManager.getRefNameMapForAdapter(
-      getConf(track, 'adapter'),
+      readConfObject(trackConf(track), 'adapter'),
       view.assemblyNames[0],
       { sessionId: getRpcSessionId(track) },
     )
@@ -77,9 +86,14 @@ async function tracksOf(view: LinearGenomeViewModel) {
       const { heightMode, height } = fullConfSnapshot(display.configuration)
       tracks.push({
         trackId: track.configuration.trackId,
-        trackName: `${getConf(track, 'name') || track.configuration.trackId}`,
+        trackName:
+          readConfObject(trackConf(track), 'name') ||
+          track.configuration.trackId,
         displayType: display.type,
-        adapter: getConf(track, 'adapter') as Record<string, unknown>,
+        adapter: readConfObject(trackConf(track), 'adapter') as Record<
+          string,
+          unknown
+        >,
         display: written,
         heightMode,
         height,

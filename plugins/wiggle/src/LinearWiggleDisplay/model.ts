@@ -694,13 +694,14 @@ export default function stateModelFactory(
          * threshold cuts past eight, and a gradient on a line.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
+          const own = conf as Instance<LinearWiggleDisplayConfigSchema>
           return [
             ...superConfigProblemsOf(conf),
             ...wiggleColorProblems(
               colorSettingOf(conf.color),
               renderingOf(
-                readConfObject(conf, 'mark'),
-                readConfObject(conf, 'interpolate'),
+                readConfObject(own, 'mark'),
+                readConfObject(own, 'interpolate'),
               ),
             ),
           ]
