@@ -30,6 +30,7 @@ export interface DiagonalizationResult {
 interface PairStats {
   refName: string
   refIndex: number
+  refReversed: boolean
   bases: number
   strandWeightedSum: number
   alignments: AlignmentData[]
@@ -53,7 +54,16 @@ const decisiveStrandFraction = 0.6
 // float addition is non-associative, so a varying order would perturb these sums
 // in their low bits and could flip the query-chromosome ordering on a near-tie.
 // Only intra-pair order matters, since every sum here is over one pair.
-function anchorStats({ alignments, bases, strandWeightedSum }: PairStats) {
+//
+// A reversed reference chromosome is drawn right to left, so its positions,
+// strand vote and covariance all change sign: the query is ordered and oriented
+// against the reference as drawn.
+function anchorStats({
+  alignments,
+  bases,
+  strandWeightedSum,
+  refReversed,
+}: PairStats) {
   alignments.sort(
     (a, b) =>
       a.refStart - b.refStart ||
@@ -86,13 +96,14 @@ function anchorStats({ alignments, bases, strandWeightedSum }: PairStats) {
       ((aln.queryStart + aln.queryEnd) / 2 - queryMean)
   }
 
-  const strandFraction = strandWeightedSum / bases
+  const sign = refReversed ? -1 : 1
+  const strandFraction = (sign * strandWeightedSum) / bases
   return {
-    bestRefPos: refMean,
+    bestRefPos: sign * refMean,
     shouldReverse:
       Math.abs(strandFraction) > decisiveStrandFraction || covariance === 0
         ? strandFraction < 0
-        : covariance < 0,
+        : sign * covariance < 0,
   }
 }
 
@@ -123,10 +134,13 @@ export async function diagonalizeRegions(
   })
   // first appearance wins: a refName can appear in more than one reference
   // region, and the ordering key is where that chromosome starts on the axis
-  const refOrder = new Map<string, number>()
-  for (const [i, region] of referenceRegions.entries()) {
+  const refOrder = new Map<string, { index: number; reversed: boolean }>()
+  for (const [index, region] of referenceRegions.entries()) {
     if (!refOrder.has(region.refName)) {
-      refOrder.set(region.refName, i)
+      refOrder.set(region.refName, {
+        index,
+        reversed: region.reversed ?? false,
+      })
     }
   }
 
@@ -136,8 +150,8 @@ export async function diagonalizeRegions(
   const queryGroups = new Map<string, Map<string, PairStats>>()
   for (const aln of alignments) {
     reportGrouping()
-    const refIndex = refOrder.get(aln.refRefName)
-    if (refIndex !== undefined) {
+    const ref = refOrder.get(aln.refRefName)
+    if (ref !== undefined) {
       let group = queryGroups.get(aln.queryRefName)
       if (!group) {
         group = new Map()
@@ -147,7 +161,8 @@ export async function diagonalizeRegions(
       if (!data) {
         data = {
           refName: aln.refRefName,
-          refIndex,
+          refIndex: ref.index,
+          refReversed: ref.reversed,
           bases: 0,
           strandWeightedSum: 0,
           alignments: [],

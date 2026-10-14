@@ -38,45 +38,53 @@ const names = (regions: Region[]) => regions.map(r => r.refName)
 describe('reversal decision', () => {
   // Both query chromosomes have an exactly 50/50 length-weighted strand vote, so
   // the vote cannot decide. The arrangement of the blocks can: qRev's blocks run
-  // antiparallel to the reference, qFwd's run with it.
-  test('position covariance decides when the strand vote is split', async () => {
-    const refRegions = [region('chr1', 1_000_000, 'ref')]
-    const queryRegions = [
-      region('qFwd', 1_000_000, 'asm'),
-      region('qRev', 1_000_000, 'asm'),
-    ]
-    const strands = [1, 1, -1, -1]
-    const alignments: AlignmentData[] = []
-    for (let i = 0; i < 4; i++) {
-      alignments.push(
-        aln({
-          ref: 'chr1',
-          query: 'qFwd',
-          refStart: i * 100_000,
-          queryStart: i * 100_000,
-          length: 100_000,
-          strand: strands[i],
-        }),
-        aln({
-          ref: 'chr1',
-          query: 'qRev',
-          refStart: 500_000 + i * 100_000,
-          queryStart: 300_000 - i * 100_000,
-          length: 100_000,
-          strand: strands[i],
-        }),
+  // antiparallel to the reference, qFwd's run with it. Against a reversed
+  // reference, drawn right to left, both readings flip.
+  test.each([false, true])(
+    'position covariance decides when the strand vote is split (reference reversed: %s)',
+    async reversed => {
+      const refRegions = [{ ...region('chr1', 1_000_000, 'ref'), reversed }]
+      const queryRegions = [
+        region('qFwd', 1_000_000, 'asm'),
+        region('qRev', 1_000_000, 'asm'),
+      ]
+      const strands = [1, 1, -1, -1]
+      const alignments: AlignmentData[] = []
+      for (let i = 0; i < 4; i++) {
+        alignments.push(
+          aln({
+            ref: 'chr1',
+            query: 'qFwd',
+            refStart: i * 100_000,
+            queryStart: i * 100_000,
+            length: 100_000,
+            strand: strands[i],
+          }),
+          aln({
+            ref: 'chr1',
+            query: 'qRev',
+            refStart: 500_000 + i * 100_000,
+            queryStart: 300_000 - i * 100_000,
+            length: 100_000,
+            strand: strands[i],
+          }),
+        )
+      }
+
+      const { newRegions } = await diagonalizeRegions(
+        alignments,
+        refRegions,
+        queryRegions,
       )
-    }
 
-    const { newRegions } = await diagonalizeRegions(
-      alignments,
-      refRegions,
-      queryRegions,
-    )
-
-    expect(newRegions.find(r => r.refName === 'qFwd')?.reversed).toBe(false)
-    expect(newRegions.find(r => r.refName === 'qRev')?.reversed).toBe(true)
-  })
+      expect(newRegions.find(r => r.refName === 'qFwd')?.reversed).toBe(
+        reversed,
+      )
+      expect(newRegions.find(r => r.refName === 'qRev')?.reversed).toBe(
+        !reversed,
+      )
+    },
+  )
 
   test('a decisive strand vote wins over the covariance', async () => {
     const refRegions = [region('chr1', 1_000_000, 'ref')]
@@ -177,6 +185,45 @@ describe('reference axis handling', () => {
     )
 
     expect(names(newRegions)).toEqual(['qA', 'qB'])
+  })
+
+  // Two rows down a stacked cascade, the reference row carries the reversals
+  // the level above chose. qStart sits on chrA's first megabase and qEnd on its
+  // last, so with chrA drawn right to left qEnd comes first, and a forward
+  // alignment to a reversed reference reads as antiparallel.
+  test('a reversed reference orders and orients against how it is drawn', async () => {
+    const refRegions: Region[] = [
+      { ...region('chrA', 10_000_000, 'ref'), reversed: true },
+    ]
+    const queryRegions = [
+      region('qStart', 1_000_000, 'asm'),
+      region('qEnd', 1_000_000, 'asm'),
+    ]
+    const alignments = [
+      aln({
+        ref: 'chrA',
+        query: 'qStart',
+        refStart: 0,
+        queryStart: 0,
+        length: 500_000,
+      }),
+      aln({
+        ref: 'chrA',
+        query: 'qEnd',
+        refStart: 9_000_000,
+        queryStart: 0,
+        length: 500_000,
+      }),
+    ]
+
+    const { newRegions } = await diagonalizeRegions(
+      alignments,
+      refRegions,
+      queryRegions,
+    )
+
+    expect(names(newRegions)).toEqual(['qEnd', 'qStart'])
+    expect(newRegions.map(r => r.reversed)).toEqual([true, true])
   })
 
   // A multi-genome adapter can return alignments to sequences the reference axis
