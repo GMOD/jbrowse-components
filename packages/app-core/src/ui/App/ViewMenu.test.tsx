@@ -57,6 +57,38 @@ async function openViewOptions(
   await user.click(await screen.findByText('View options'))
 }
 
+const moveLabels = [
+  'Move to new tab',
+  'Move to split view (right)',
+  'Move to split view (below)',
+]
+
+test('a lone view is offered none of the moves that change nothing', async () => {
+  const session = Session.create({ name: 'test' }, { pluginManager })
+  session.addView('StubView', { displayName: 'only' })
+  session.homeUnassignedViews(session.views.map(v => v.id))
+  const user = userEvent.setup()
+  await openViewOptions(user, session.views[0])
+
+  expect(await screen.findByText('Copy view')).toBeTruthy()
+  for (const label of moveLabels) {
+    expect(screen.queryByText(label)).toBeNull()
+  }
+})
+
+test('a view alone in one of two tabs can split but not move to a new tab', async () => {
+  const { session, user } = setup()
+  const [first, second, third] = session.views
+  session.moveViewToNewTab(third!.id)
+  session.moveViewToNewTab(second!.id)
+  expect(session.tabContainingView(first!.id)!.tab.viewIds).toHaveLength(1)
+  await openViewOptions(user, session.views[2])
+
+  expect(await screen.findByText('Move to split view (right)')).toBeTruthy()
+  expect(screen.getByText('Move to split view (below)')).toBeTruthy()
+  expect(screen.queryByText('Move to new tab')).toBeNull()
+})
+
 test('a view can be moved into a new tab or either split', async () => {
   const { session, user } = setup()
   await openViewOptions(user, session.views[0])

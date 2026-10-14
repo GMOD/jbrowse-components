@@ -76,6 +76,8 @@ const ViewMenu = observer(function ViewMenu({
           ? session.tabs.filter(t => t.id !== home.tab.id)
           : []
         const viewCount = scopeIds?.length ?? session.views.length
+        const aloneInTab = viewCount <= 1
+        const aloneInCell = aloneInTab && (home?.panel.tabs.length ?? 1) <= 1
         return [
           {
             label: 'View options',
@@ -91,13 +93,17 @@ const ViewMenu = observer(function ViewMenu({
                   )
                 },
               },
-              {
-                label: 'Move to new tab',
-                icon: OpenInNewIcon,
-                onClick: () => {
-                  moveViewOut('tab')
-                },
-              },
+              ...(aloneInTab
+                ? []
+                : [
+                    {
+                      label: 'Move to new tab',
+                      icon: OpenInNewIcon,
+                      onClick: () => {
+                        moveViewOut('tab')
+                      },
+                    },
+                  ]),
               ...(otherTabs.length > 0
                 ? [
                     {
@@ -117,20 +123,24 @@ const ViewMenu = observer(function ViewMenu({
                     },
                   ]
                 : []),
-              {
-                label: 'Move to split view (right)',
-                icon: VerticalSplitIcon,
-                onClick: () => {
-                  moveViewOut('row')
-                },
-              },
-              {
-                label: 'Move to split view (below)',
-                icon: HorizontalSplitIcon,
-                onClick: () => {
-                  moveViewOut('column')
-                },
-              },
+              ...(aloneInCell
+                ? []
+                : [
+                    {
+                      label: 'Move to split view (right)',
+                      icon: VerticalSplitIcon,
+                      onClick: () => {
+                        moveViewOut('row')
+                      },
+                    },
+                    {
+                      label: 'Move to split view (below)',
+                      icon: HorizontalSplitIcon,
+                      onClick: () => {
+                        moveViewOut('column')
+                      },
+                    },
+                  ]),
               // 'top'/'bottom' only mean something with a view above *and* below
               ...(
                 [
