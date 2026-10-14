@@ -1315,13 +1315,16 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * Writes the `facet` object, an unnamed domain as empty, keeping the
-       * hidden sections while the field holds; undefined is ungrouped. The
-       * stack starts over from the top.
+       * Writes the `facet` object; undefined is ungrouped. Naming the field
+       * already grouping, with no domain, keeps its section order and hidden
+       * sections. The stack starts over from the top.
        */
       setFacet(facet?: { field: string; domain?: readonly string[] }) {
         const next = carryGroupDomain(
-          facet && { field: facet.field, domain: [...(facet.domain ?? [])] },
+          facet && {
+            field: facet.field,
+            ...(facet.domain ? { domain: [...facet.domain] } : {}),
+          },
           facetOf(self.facet, getConf(self, ['facet', 'hidden'])) ?? undefined,
         )
         setConf(self, 'facet', next ?? {})

@@ -66,6 +66,18 @@ test('a strand domain reorders the strands', () => {
   expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
 })
 
+test('re-picking the field already grouping keeps its section order', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setFacet({ field: 'strand', domain: ['-1'] })
+  display.setFacet({ field: 'strand' })
+  expect(display.groupSections.map(s => s.key)).toEqual(['-1', '1'])
+  display.setFacet({ field: 'biotype' })
+  display.setFacet({ field: 'strand' })
+  expect(display.groupSections.map(s => s.key)).toEqual(['1', '-1'])
+})
+
 test('an attribute grouping names its sections by value', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
