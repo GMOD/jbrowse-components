@@ -33,7 +33,7 @@ import type { AttributeRange } from '@jbrowse/synteny-core'
 
 export type HeaderLane = Pick<
   Lane,
-  'assemblyName' | 'label' | 'isAnchor' | 'frame' | 'canon' | 'hasAnnotation'
+  'assemblyName' | 'label' | 'isAnchor' | 'frame' | 'canon'
 >
 
 export interface LaneHeaderModel {
@@ -53,6 +53,7 @@ export interface LaneHeaderModel {
   unpinLaneFlip: (assemblyName: string) => void
   lanesFrozen: boolean
   realignLane: (assemblyName: string) => void
+  laneGeneAdapters: ReadonlyMap<string, unknown>
 }
 
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
@@ -153,7 +154,7 @@ export function laneHeaderMenuItems(
           },
         ]
       : []),
-    ...(lane.hasAnnotation
+    ...(model.laneGeneAdapters.has(name)
       ? []
       : [
           {

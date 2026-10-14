@@ -8,7 +8,7 @@ import {
   nudgeDecision,
 } from './laneDecision.ts'
 import { laneRegion } from './laneHeader.ts'
-import { buildLanes } from './laneStack.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import {
   frameSegments,
   frameSpan,
@@ -150,14 +150,13 @@ function stackOf(
       groups.map(g => [g.key, anchorSpan(g.anchor.start, g.anchor.end)]),
     ),
     rowFrames,
-    laneGeneAdapters: new Map(),
     axisSpanOf: (_ref, start, end) => anchorSpan(start, end),
     anchorRegionSpans: [anchorSpan(WINDOW_START, WINDOW_END)],
     anchorBpPerPx: UNIT_BP / WIDTH,
     contigOf: () => ({ start: 0, end: 300_000_000 }),
     refNameAliasOf: () => undefined,
     width: WIDTH,
-    height: 400,
+    geometry: laneGeometry(400, 1 + LANES.length),
   })
 }
 

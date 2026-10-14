@@ -143,7 +143,6 @@ import {
   buildLanes,
   geneLabelRowPx,
   gutterNearViewport,
-  laneContentHeight,
   laneGeometry,
   stackReach,
 } from './laneStack.ts'
@@ -1361,15 +1360,23 @@ export function stateModelFactory(
       get tickIntervalBp() {
         return tickIntervalFor(self.visibleBpSpan)
       },
-      /** #getter */
-      get scrollContentHeight() {
-        return laneContentHeight(
+      /**
+       * #getter
+       * every lane's band, the anchor's first
+       */
+      get stackGeometry() {
+        return laneGeometry(
           self.height,
           1 + self.rowAssemblies.length,
+          self.splitStrands,
           self.geneLabelPx,
           self.layerPx,
           self.inlineLaneNames,
         )
+      },
+      /** #getter */
+      get scrollContentHeight() {
+        return this.stackGeometry.contentHeight
       },
       /**
        * #getter
@@ -1923,14 +1930,7 @@ export function stateModelFactory(
         if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
           const { lodTier, laneWindows, rowFrames } = self
           const nearViewport = gutterNearViewport(
-            laneGeometry(
-              self.height,
-              1 + self.rowAssemblies.length,
-              self.splitStrands,
-              self.geneLabelPx,
-              self.layerPx,
-              self.inlineLaneNames,
-            ),
+            self.stackGeometry,
             self.scrollTop,
             self.height,
           )
@@ -2085,7 +2085,6 @@ export function stateModelFactory(
           groups: [...self.visibleGroups, ...self.anchorlessGroups],
           anchorSpans: self.anchorSpans,
           rowFrames: self.rowFrames,
-          laneGeneAdapters: self.laneGeneAdapters,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
           anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
@@ -2102,11 +2101,7 @@ export function stateModelFactory(
             )
           },
           width: self.canvasWidth,
-          height: self.height,
-          splitStrands: self.splitStrands,
-          geneLabelPx: self.geneLabelPx,
-          layerPx: self.layerPx,
-          inlineNames: self.inlineLaneNames,
+          geometry: self.stackGeometry,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),
         })
@@ -2236,14 +2231,7 @@ export function stateModelFactory(
         return {
           kind: 'glyphs',
           data: buildBandCell({
-            ...laneGeometry(
-              self.height,
-              1 + self.rowAssemblies.length,
-              self.splitStrands,
-              self.geneLabelPx,
-              self.layerPx,
-              self.inlineLaneNames,
-            ),
+            ...self.stackGeometry,
             width: self.canvasWidth,
             paper: bandGroundColor(),
             stripe: bandInk().stripe,

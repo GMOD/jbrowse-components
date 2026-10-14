@@ -43,7 +43,10 @@ import {
   decideLaneFrames,
   frameFromDecision,
 } from '../src/MultiWaySyntenyDisplay/laneDecision.ts'
-import { buildLanes } from '../src/MultiWaySyntenyDisplay/laneStack.ts'
+import {
+  buildLanes,
+  laneGeometry,
+} from '../src/MultiWaySyntenyDisplay/laneStack.ts'
 import {
   groupFeatures,
   laneOpeningsOf,
@@ -265,14 +268,13 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       groups: visible,
       anchorSpans,
       rowFrames,
-      laneGeneAdapters: geneAdapters,
       axisSpanOf: (_r, s, e) => [pxOf(s), pxOf(e)],
       anchorRegionSpans: [[0, WIDTH]],
       anchorBpPerPx: 1,
       contigOf: () => undefined,
       refNameAliasOf: a => canonOf.get(a),
       width: WIDTH,
-      height: HEIGHT,
+      geometry: laneGeometry(HEIGHT, 1 + rows.length),
     })
   })
   const tRibbons = ms(() => {

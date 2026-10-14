@@ -40,6 +40,7 @@ import { lanesInForce } from './MultiWaySyntenyDisplay/laneSelection.ts'
 import {
   buildLanes,
   geneLabelRowPx,
+  laneGeometry,
 } from './MultiWaySyntenyDisplay/laneStack.ts'
 import {
   anchorlessGroupsOf,
@@ -583,7 +584,6 @@ export async function multiwayTables(
     groups: [...shown, ...anchorless],
     anchorSpans,
     rowFrames,
-    laneGeneAdapters: new Map(),
     axisSpanOf: (refName, start, end) =>
       place.placement(refName, start, end)?.span,
     anchorRegionSpans: anchorRegionSpans(axis),
@@ -591,10 +591,14 @@ export async function multiwayTables(
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,
     width,
-    height: settings.height,
-    splitStrands: settings.splitStrands,
-    geneLabelPx: geneLabelRowPx(settings.showGeneLabels),
-    inlineNames: settings.inlineLaneNames,
+    geometry: laneGeometry(
+      settings.height,
+      1 + rows.length,
+      settings.splitStrands,
+      geneLabelRowPx(settings.showGeneLabels),
+      0,
+      settings.inlineLaneNames,
+    ),
     labelOf: name => labels.get(name) ?? name,
   })
 

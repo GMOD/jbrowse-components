@@ -46,7 +46,6 @@ const peach = {
     alsoAt: [],
   },
   canon: (ref: string) => ref.replace('pp', 'Pp'),
-  hasAnnotation: true,
 }
 
 const grape: HeaderLane = {
@@ -55,7 +54,6 @@ const grape: HeaderLane = {
   isAnchor: true,
   frame: undefined,
   canon: ref => ref,
-  hasAnnotation: true,
 }
 
 function headerModel({
@@ -113,6 +111,10 @@ function headerModel({
     realignLane: (name: string) => {
       calls.push(`realign ${name}`)
     },
+    laneGeneAdapters: new Map([
+      ['peach', {}],
+      ['cacao', {}],
+    ]),
   }
   return { model, calls }
 }
@@ -565,7 +567,10 @@ test('the two hops are dead without a frame, and without the genome in the sessi
 
 test('a lane with no gene track says so once, as a dead menu line', () => {
   const { model } = headerModel()
-  const items = laneHeaderMenuItems(model, { ...peach, hasAnnotation: false })
+  const items = laneHeaderMenuItems(
+    { ...model, laneGeneAdapters: new Map() },
+    peach,
+  )
   expect(labelsOf(items).at(-1)).toBe('No gene track for this genome')
   expect(disabledOf(items).at(-1)).toBe(true)
   expect(labelsOf(laneHeaderMenuItems(model, peach))).not.toContain(

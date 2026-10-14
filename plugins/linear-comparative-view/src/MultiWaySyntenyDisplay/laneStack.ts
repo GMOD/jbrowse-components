@@ -136,8 +136,6 @@ export interface Lane {
   isAnchor: boolean
   /** undefined on the anchor lane and on a lane placing nothing visible */
   frame: RowFrame | undefined
-  /** the session holds an annotation track for the lane, whatever it fetched */
-  hasAnnotation: boolean
   /** keyed by group key, in the groups' anchor-sorted order */
   placements: Map<string, LaneGroup>
   /** a bp interval of this lane in px, clipped, or undefined where it misses */
@@ -181,7 +179,6 @@ export interface BuildLanesOpts {
   /** px, off the view's own `bpToPx` */
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
-  laneGeneAdapters: Map<string, unknown>
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
   anchorRegionSpans: Span[]
   anchorBpPerPx: number
@@ -194,11 +191,8 @@ export interface BuildLanesOpts {
     assemblyName: string,
   ) => ((refName: string) => string) | undefined
   width: number
-  height: number
-  splitStrands?: boolean
-  geneLabelPx?: number
-  layerPx?: number
-  inlineNames?: boolean
+  /** `laneGeometry` over every lane, the anchor's included */
+  geometry: LaneGeometry
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
 }
@@ -219,29 +213,16 @@ export function buildLanes({
   groups,
   anchorSpans,
   rowFrames,
-  laneGeneAdapters,
   axisSpanOf,
   anchorRegionSpans,
   anchorBpPerPx,
   contigOf,
   refNameAliasOf,
   width,
-  height,
-  splitStrands = false,
-  geneLabelPx = 0,
-  layerPx = 0,
-  inlineNames,
+  geometry: { glyphHeight, bandHeight, strandRows, rows },
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
-  const { glyphHeight, bandHeight, strandRows, rows } = laneGeometry(
-    height,
-    assemblyNames.length,
-    splitStrands,
-    geneLabelPx,
-    layerPx,
-    inlineNames,
-  )
   const reach = stackReach(width)
   return {
     glyphHeight,
@@ -302,7 +283,6 @@ export function buildLanes({
         label: labelOf(assemblyName),
         isAnchor,
         frame,
-        hasAnnotation: laneGeneAdapters.has(assemblyName),
         placements,
         canon,
         spanOf: isAnchor

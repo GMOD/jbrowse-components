@@ -2,7 +2,7 @@ import { MORPH_DURATION_MS, SimpleFeature } from '@jbrowse/core/util'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { LaneGene } from './geneGlyph.ts'
-import { buildLanes } from './laneStack.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
 import { buildRibbonGeometry, glyphsKey } from './multiwayGeometry.ts'
 import { MULTIWAY_MARKS } from './multiwayMarks.ts'
@@ -443,14 +443,13 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
           ['peach', peach],
           ['cacao', cacao],
         ]),
-        laneGeneAdapters: new Map(),
         axisSpanOf: () => undefined,
         anchorRegionSpans: [],
         anchorBpPerPx: 1,
         contigOf: () => undefined,
         refNameAliasOf: () => undefined,
         width: 800,
-        height: 240,
+        geometry: laneGeometry(240, 3),
       }),
       laneLinks: undefined,
       ribbonColor: 'grey',

@@ -22,7 +22,7 @@ import {
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
-import { buildLanes } from './laneStack.ts'
+import { buildLanes, laneGeometry } from './laneStack.ts'
 import { frameSpan, groupFeatures } from './layoutMultiWay.ts'
 import {
   buildBandCell,
@@ -132,17 +132,19 @@ function stack({
       ['peach', peach],
       ['cacao', cacao],
     ]),
-    laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
     anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf,
     refNameAliasOf: () => undefined,
     width: WIDTH,
-    height: HEIGHT,
-    splitStrands,
-    geneLabelPx,
-    layerPx,
+    geometry: laneGeometry(
+      HEIGHT,
+      assemblyNames.length,
+      splitStrands,
+      geneLabelPx,
+      layerPx,
+    ),
   })
 }
 

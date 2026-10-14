@@ -924,7 +924,7 @@ test('a lane-genes commit leaves the stack and the ribbons where they were', () 
   expect(display.ribbonGeometry).toBe(ribbons)
   expect(display.tickGeometry).toBe(ticks)
   expect(display.laneGlyphCells).not.toBe(glyphs)
-  expect(display.laneStack.lanes[0]!.hasAnnotation).toBe(true)
+  expect(display.laneGeneAdapters.has('volvox')).toBe(true)
   stop()
 })
 
@@ -1198,10 +1198,6 @@ test('a lane annotated through a connection has an annotation', () => {
   expect(display.laneGeneAdapters.get('volvox_random')).toMatchObject({
     type: 'Gff3TabixAdapter',
   })
-  expect(
-    display.laneStack.lanes.find(l => l.assemblyName === 'volvox_random')
-      ?.hasAnnotation,
-  ).toBe(true)
 })
 
 test('a lane draws the gene track the display names for its genome', () => {

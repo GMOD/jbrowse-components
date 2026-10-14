@@ -70,8 +70,9 @@ const axisSpanOf = (refName: string, start: number, end: number) =>
     : undefined
 
 function stack(overrides: Partial<BuildLanesOpts> = {}) {
+  const assemblyNames = overrides.assemblyNames ?? ['grape', 'peach']
   return buildLanes({
-    assemblyNames: ['grape', 'peach'],
+    assemblyNames,
     groups,
     anchorSpans: new Map(
       groups.map(g => [
@@ -80,14 +81,13 @@ function stack(overrides: Partial<BuildLanesOpts> = {}) {
       ]),
     ),
     rowFrames: new Map([['peach', peachFrame]]),
-    laneGeneAdapters: new Map([['grape', {}]]),
     axisSpanOf,
     anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf: () => undefined,
     refNameAliasOf: () => undefined,
     width: WIDTH,
-    height: HEIGHT,
+    geometry: laneGeometry(HEIGHT, assemblyNames.length),
     ...overrides,
   })
 }
@@ -567,12 +567,6 @@ describe('the baseline', () => {
       ])
     })
   })
-})
-
-test('whether a lane has an annotation is whether the session holds one for it', () => {
-  const { lanes } = stack()
-  expect(lanes[0]!.hasAnnotation).toBe(true)
-  expect(lanes[1]!.hasAnnotation).toBe(false)
 })
 
 describe('lane geometry', () => {

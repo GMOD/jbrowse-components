@@ -23,7 +23,6 @@ function mateLane(
     assemblyName: 'peach',
     label: 'peach',
     isAnchor: false,
-    hasAnnotation: true,
     glyphTop: 40,
     layerTop: 40,
     canon: (ref: string) => ref,
@@ -39,7 +38,6 @@ const anchorLane = {
   assemblyName: 'grape',
   label: 'grape',
   isAnchor: true,
-  hasAnnotation: true,
   glyphTop: 12,
   layerTop: 12,
   canon: (ref: string) => ref,
@@ -106,12 +104,6 @@ describe('the label', () => {
         }),
       ).label,
     ).toBe('peach  Pp1:1..1,960  · also at Pp1:35,000,001..35,600,000')
-  })
-
-  test('leaves a lane with no annotation unmarked', () => {
-    expect(rowOf(mateLane({ hasAnnotation: false })).label).toBe(
-      'peach  Pp1:1..1,960',
-    )
   })
 
   test('is the bare name for a mate lane the window places nothing on', () => {
