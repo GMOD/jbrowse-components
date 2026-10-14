@@ -129,6 +129,8 @@ these draw it:
 - **`EmbedProvider`** wraps the page. It mounts `DisplayUIProvider` (the plain,
   Material-free overlays a track draws while it loads or fails), the theme
   palette and `Notifications`.
+- **`EngineBoundary`** wraps the component that calls `useCreateViewState` and
+  draws a build that throws, such as a hub genome that does not exist.
 - **`TrackStack`** draws a view's tracks and handles pan and zoom. `Track`,
   `Scalebar`, `LocationBox`, `Legend`, `ResizeHandle` and the rest are the
   pieces to place beside it.

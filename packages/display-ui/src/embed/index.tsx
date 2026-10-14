@@ -21,6 +21,8 @@ import type {
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
+export { EngineBoundary } from './engineBoundary.tsx'
+export type { EngineFallbackProps } from './engineBoundary.tsx'
 export { Legend } from './legend.tsx'
 export { LocationBox, useLocationBox } from './location.tsx'
 export { Notifications } from './notifications.tsx'

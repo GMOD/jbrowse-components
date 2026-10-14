@@ -1,11 +1,14 @@
 import { useId, useState } from 'react'
 
-import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { EmbedProvider, Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  EngineBoundary,
+  Toolbar,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type { FallbackProps } from '@jbrowse/core/ui/ErrorBoundary'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const brca1 = 'chr17:43,044,295..43,125,364'
@@ -137,18 +140,6 @@ const Browser = observer(function Browser({
   )
 })
 
-function BuildFailed({ error, resetErrorBoundary }: FallbackProps) {
-  return (
-    <div role="alert" style={{ padding: '10px 12px' }}>
-      Could not build the view:{' '}
-      {error instanceof Error ? error.message : String(error)}{' '}
-      <button type="button" onClick={resetErrorBoundary}>
-        Retry
-      </button>
-    </div>
-  )
-}
-
 const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
   const radioGroupId = useId()
   const [scenario, setScenario] = useState<Scenario>('hg38 (2bit), which loads')
@@ -170,9 +161,9 @@ const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
           </label>
         ))}
       </Toolbar>
-      <ErrorBoundary key={scenario} FallbackComponent={BuildFailed}>
+      <EngineBoundary key={scenario}>
         <Browser scenario={scenario} />
-      </ErrorBoundary>
+      </EngineBoundary>
     </div>
   )
 })

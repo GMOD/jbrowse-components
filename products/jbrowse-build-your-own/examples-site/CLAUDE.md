@@ -9,12 +9,12 @@ plus the others that doc names. The mounting, status and chrome blocks every
 page needs come from `@jbrowse/display-ui/embed` (`EmbedProvider`, `Track`,
 `TrackStack`, `ViewStatus`, `Scalebar`, `RegionSeams`, `Highlights`,
 `LocationBox`, `SearchPicker`, `TrackToggle`, `ResizeHandle`, `Legend`,
-`Toolbar`, `NavButton`, `Notifications`), so an example file is its engine
-options, its own controls and nothing else. A control that is one input bound to
-one view property stays inline in the page, which shows the reader the API; a
-kit export earns its place with logic of its own. No comments in example files,
-bar a one-line pointer at an option a reader would not otherwise find
-(`geneticCodes` in `MultipleTracks`).
+`Toolbar`, `NavButton`, `Notifications`, `EngineBoundary`), so an example file
+is its engine options, its own controls and nothing else. A control that is one
+input bound to one view property stays inline in the page, which shows the
+reader the API; a kit export earns its place with logic of its own. No comments
+in example files, bar a one-line pointer at an option a reader would not
+otherwise find (`geneticCodes` in `MultipleTracks`).
 
 `ultraminimal` is the page a reader copies first, so it imports only what the
 current npm beta of `@jbrowse/display-ui` exports.
@@ -70,7 +70,7 @@ its locus.
 
 **`viewStatusStatesAreDrawn`** drives the view-loading-and-errors page through
 the snackbar, `noRegions` (an engine built with no `view`), a 404 assembly and
-an engine build that throws, which only an `ErrorBoundary` above
+an engine build that throws, which only an `EngineBoundary` above
 `useCreateViewState` catches. When a demo names a state, check that some input
 on the site actually reaches it.
 

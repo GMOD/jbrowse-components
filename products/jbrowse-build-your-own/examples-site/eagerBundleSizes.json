@@ -1,106 +1,106 @@
 {
   "index": {
-    "chunks": 265,
+    "chunks": 259,
     "gzipKb": 464
   },
   "color-and-group-by-a-field": {
-    "chunks": 266,
+    "chunks": 262,
     "gzipKb": 464
   },
   "dark-theme": {
-    "chunks": 265,
-    "gzipKb": 463
+    "chunks": 259,
+    "gzipKb": 462
   },
   "every-chromosome": {
-    "chunks": 265,
+    "chunks": 259,
     "gzipKb": 463
   },
   "feature-details": {
-    "chunks": 264,
-    "gzipKb": 463
+    "chunks": 258,
+    "gzipKb": 462
   },
   "gene-lanes": {
-    "chunks": 348,
-    "gzipKb": 587
+    "chunks": 343,
+    "gzipKb": 588
   },
   "genome-by-name": {
-    "chunks": 266,
+    "chunks": 260,
     "gzipKb": 463
   },
   "highlight-a-region": {
-    "chunks": 266,
-    "gzipKb": 464
+    "chunks": 260,
+    "gzipKb": 463
   },
   "local-files": {
-    "chunks": 264,
+    "chunks": 258,
     "gzipKb": 463
   },
   "multiple-tracks": {
-    "chunks": 256,
+    "chunks": 251,
     "gzipKb": 455
   },
   "plot-from-json": {
-    "chunks": 267,
+    "chunks": 263,
     "gzipKb": 465
   },
   "scalebar-and-gridlines": {
-    "chunks": 265,
+    "chunks": 259,
     "gzipKb": 464
   },
   "search-by-name": {
-    "chunks": 265,
+    "chunks": 259,
     "gzipKb": 463
   },
   "search-results": {
-    "chunks": 265,
-    "gzipKb": 464
+    "chunks": 259,
+    "gzipKb": 463
   },
   "session-in-url": {
-    "chunks": 266,
+    "chunks": 260,
     "gzipKb": 464
   },
   "svg-figures": {
-    "chunks": 270,
-    "gzipKb": 470
+    "chunks": 266,
+    "gzipKb": 471
   },
   "synteny": {
-    "chunks": 374,
-    "gzipKb": 627
+    "chunks": 367,
+    "gzipKb": 626
   },
   "table-of-calls": {
-    "chunks": 266,
+    "chunks": 260,
     "gzipKb": 464
   },
   "track-labels": {
-    "chunks": 264,
+    "chunks": 258,
     "gzipKb": 462
   },
   "track-loading-and-errors": {
-    "chunks": 264,
-    "gzipKb": 463
+    "chunks": 258,
+    "gzipKb": 462
   },
   "track-selector": {
-    "chunks": 264,
+    "chunks": 258,
     "gzipKb": 463
   },
   "track-settings": {
-    "chunks": 266,
+    "chunks": 261,
     "gzipKb": 464
   },
   "ultraminimal": {
-    "chunks": 264,
+    "chunks": 258,
     "gzipKb": 462
   },
   "view-controls": {
-    "chunks": 267,
+    "chunks": 261,
     "gzipKb": 465
   },
   "view-loading-and-errors": {
-    "chunks": 265,
+    "chunks": 259,
     "gzipKb": 463
   },
   "web-worker": {
-    "chunks": 264,
+    "chunks": 258,
     "gzipKb": 462
   }
 }
