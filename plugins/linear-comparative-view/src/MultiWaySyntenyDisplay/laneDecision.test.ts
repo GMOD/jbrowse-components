@@ -652,6 +652,28 @@ describe('the orientation', () => {
     expect(settle(oneChainTwoScraps).flipped).toBe(false)
   })
 
+  test('a lane one reversed record places runs backwards', () => {
+    const oneRecord = (strand: 1 | -1) =>
+      groupFeatures([
+        new SimpleFeature({
+          uniqueId: 'chain',
+          refName: 'chr1',
+          start: 100,
+          end: 900,
+          strand,
+          assemblyName: 'anchor',
+          mate: {
+            assemblyName: 'peach',
+            refName: 'Pp1',
+            start: 500_100,
+            end: 500_900,
+          },
+        }),
+      ])
+    expect(settle(oneRecord(-1)).flipped).toBe(true)
+    expect(settle(oneRecord(1)).flipped).toBe(false)
+  })
+
   test('carries across a contig change rather than re-guessing', () => {
     const previous = new Map([['peach', settle(backwards)]])
     const mixed = [250, 100, 400, 550, 850, 700]

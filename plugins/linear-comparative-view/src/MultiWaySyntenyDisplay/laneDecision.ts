@@ -328,6 +328,7 @@ function anchorOrderSign(
   refName: string,
 ) {
   let sum = 0
+  let strand = 0
   let prev: number | undefined
   for (const group of groups) {
     const p = group.mates.get(assemblyName)?.find(m => m.refName === refName)
@@ -337,9 +338,10 @@ function anchorOrderSign(
         sum += Math.sign(m - prev)
       }
       prev = m
+      strand += p.orientation * group.weight
     }
   }
-  return sum
+  return sum || strand
 }
 
 /** `unitBp` of 0 makes the fitted extent the frame. */
