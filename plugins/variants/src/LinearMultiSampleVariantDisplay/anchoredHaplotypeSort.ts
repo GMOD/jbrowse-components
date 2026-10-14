@@ -269,6 +269,9 @@ export function sitesBySpan(features: SimplifiedVariantFeature[]) {
 // site's alleles stay apart, and each sibling lifts its own carriers before a
 // flank record can split the rows; walked by record instead, a flank to one
 // side came before the far siblings and scattered one inversion's carriers.
+// That lift needs the split to call a sibling's carrier reference at the
+// clicked record, as `bcftools norm -m-` does by default; split with
+// `--multi-overlaps .`, it is missing there and sorts below every reference row.
 export function* anchorFirstRecords(
   sites: string[][],
   anchorFeatureId: string,

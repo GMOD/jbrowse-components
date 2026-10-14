@@ -371,11 +371,29 @@ describe('sortSourcesAroundVariant at a split site', () => {
     ).toEqual([['a1', 'a2'], ['b'], ['c']])
   })
 
+  test('sitesBySpan keeps one span on two chromosomes apart', () => {
+    const feature = (id: string, refName: string) => ({
+      id,
+      data: { refName, start: 10, end: 500, name: id },
+    })
+    expect(sitesBySpan([feature('x', 'chr1'), feature('y', 'chr2')])).toEqual([
+      ['x'],
+      ['y'],
+    ])
+  })
+
   test('reads the clicked record, its siblings, then the sites outward', () => {
     const sites = [['l'], ['s1', 's2', 's3'], ['r1', 'r2']]
     expect(
       [...anchorFirstRecords(sites, 's3', 10)].map(i => sites.flat()[i]),
     ).toEqual(['s3', 's1', 's2', 'l', 'r1', 'r2'])
+  })
+
+  test('counts maxFlank in sites, however many records each holds', () => {
+    const sites = [['far'], ['l1', 'l2', 'l3'], ['a'], ['r'], ['far2']]
+    expect(
+      [...anchorFirstRecords(sites, 'a', 1)].map(i => sites.flat()[i]),
+    ).toEqual(['a', 'l1', 'l2', 'l3', 'r'])
   })
 
   test('lifts every carrier of the site, the clicked allele first', () => {

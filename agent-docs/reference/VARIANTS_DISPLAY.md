@@ -132,7 +132,7 @@ a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
 column and bit-identical to the old encoding. The anchored haplotype sort ranks
 by `altDosageByte`, the dosage the cells paint.
 
-## A split site sorts as one site and clusters as its alleles
+## A split site sorts siblings first and clusters by allele
 
 `bcftools norm -m-` and vcfwave write a multiallelic site as one record per
 ALT, all spanning one reference interval.

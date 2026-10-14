@@ -20,7 +20,7 @@ which has the why — read that section before changing what it covers.
 - The legend lists what was painted
 - Mixed ploidy: five consumers, one contract
 - The unphased matrix is one column per ALT, not one per site
-- A split site sorts as one site and clusters as its alleles
+- A split site sorts siblings first and clusters by allele
 - Settings
 - The arrangement is `rows` and `rowColor`, by row name
 - One display, two layouts: `variantLayout`
