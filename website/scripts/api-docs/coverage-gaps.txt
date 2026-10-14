@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1347)
+# model members with no description (1348)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -302,6 +302,7 @@ CircularView.centerXY
 CircularView.circumferencePx
 CircularView.error
 CircularView.hasSomethingToShow
+CircularView.heightFollowsWidth
 CircularView.hideTrack
 CircularView.initialized
 CircularView.maxBpPerPx

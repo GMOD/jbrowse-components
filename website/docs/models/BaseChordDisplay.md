@@ -55,8 +55,6 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | <span id="getter-radiuspx">**radiusPx**</span><br><code>number</code> |  |
 | <span id="getter-bezierradiusratio">**bezierRadiusRatio**</span><br><code>number</code> | a chord's distance from the center at its closest, as a fraction of the radius; a shorter chord bows less, in proportion to its span |
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  |
-| <span id="getter-sliceindex">**sliceIndex**</span><br><code>Record&lt;string, Slice&gt;</code> | every slice of the circle, keyed by canonical assembly AND refName: two genomes on one circle can each carry a `chr1`. An elided slice answers to each refName it swallowed. |
-| <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | what the chord components draw |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | the feature under the pointer, which the view hit-tests for every chord display at once |
 | <span id="getter-chordstage">**chordStage**</span><br><code>ChordStage</code> | the polar stage as the canvas and the pointer see it, rotation in |
@@ -76,7 +74,6 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | --- | --- |
 | <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly. |
 | <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | a refName as the adapter wrote it, in the assembly's canonical spelling |
-| <span id="method-slicefor">**sliceFor**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; Slice &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; Slice &#124; undefined</code></pre></dialog></span> | the slice one end of a feature lands on |
 | <span id="method-axisslice">**axisSlice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlice &#124; undefined</code></pre></dialog></span> | the slice of the unrolled axis one end of a feature lands on |
 
 <details class="inherited-members" data-pagefind-ignore>

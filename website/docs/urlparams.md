@@ -639,7 +639,7 @@ restores natively:
 | [`disableImportForm`](/docs/models/circularview#property-disableimportform) | suppress the import form even on an error — what the SV inspector's circle wants, since its assembly comes from the sheet beside it and a form there would offer a control that cannot work |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`fadeThinAlignmentsMode`](/docs/models/syntenyfademixin#property-fadethinalignmentsmode) | Fade a sub-pixel-thin ribbon's opacity by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. 'auto' fades once a display is dominated by sub-pixel ribbons and leaves a sparse comparison at full alpha; 'on'/'off' pin it. Resolved view-wide by `fadeThinAlignments`. |
-| [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. |
+| [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. Left at its default, the view opens square to its width, short of the window's height. |
 | [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
 | [`hideUnlabelled`](/docs/models/trackcolorsmixin#property-hideunlabelled) | Under a text-column mode, draw only the rows that carry a label. |
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
