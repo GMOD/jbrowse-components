@@ -187,7 +187,12 @@ function statedTogether(
   a: MultiWayPlacement | undefined,
   b: MultiWayPlacement | undefined,
 ) {
-  return a?.row === undefined || b?.row === undefined || a.row === b.row
+  const other = b?.rows
+  return (
+    a?.rows === undefined ||
+    other === undefined ||
+    a.rows.some(row => other.includes(row))
+  )
 }
 
 function* lanePairs(lanes: Lane[], glyphHeight: number) {

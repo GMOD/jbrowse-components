@@ -50,8 +50,8 @@ export interface MultiWayPlacement {
   start: number
   end: number
   name?: string
-  /** the source row stating the placement, where the source keeps one */
-  row?: number
+  /** the source rows stating the placement, where the source keeps rows */
+  rows?: readonly number[]
 }
 
 /**
@@ -321,7 +321,7 @@ function groupKeyOf(feature: Feature) {
 
 export function groupFeatures(features: Feature[]) {
   const byKey = new Map<string, MultiWayGroup>()
-  const seen = new Set<string>()
+  const seen = new Map<string, number[]>()
   for (const feature of features) {
     const key = groupKeyOf(feature)
     let group = byKey.get(key)
@@ -344,8 +344,14 @@ export function groupFeatures(features: Feature[]) {
     }
     for (const mate of matesOf(feature)) {
       const seenKey = `${key}|${mate.assemblyName}|${mate.refName}|${mate.start}|${mate.end}`
-      if (!seen.has(seenKey)) {
-        seen.add(seenKey)
+      const stated = seen.get(seenKey)
+      if (stated) {
+        if (mate.row !== undefined && !stated.includes(mate.row)) {
+          stated.push(mate.row)
+        }
+      } else {
+        const rows = mate.row === undefined ? [] : [mate.row]
+        seen.set(seenKey, rows)
         let placements = group.mates.get(mate.assemblyName)
         if (!placements) {
           placements = []
@@ -356,7 +362,7 @@ export function groupFeatures(features: Feature[]) {
           start: mate.start,
           end: mate.end,
           name: nameOf(mate.name),
-          row: mate.row,
+          rows: mate.row === undefined ? undefined : rows,
           orientation: mate.orientation < 0 ? -1 : 1,
           feature,
         })
@@ -679,7 +685,7 @@ interface PlacementRun {
   max: number
   orientation: number
   name?: string
-  row?: number
+  rows?: readonly number[]
   feature: Feature
 }
 
@@ -707,6 +713,7 @@ export function groupRunsOnRow(
     max: number
     signed: number
     names: Set<string | undefined>
+    rows: Set<number> | undefined
     widest: MatePlacement
   }[] = []
   for (const p of placements) {
@@ -716,6 +723,9 @@ export function groupRunsOnRow(
       last.max = Math.max(last.max, p.end)
       last.signed += p.orientation * length
       last.names.add(p.name)
+      for (const row of p.rows ?? []) {
+        last.rows?.add(row)
+      }
       if (length > last.widest.end - last.widest.start) {
         last.widest = p
       }
@@ -725,16 +735,17 @@ export function groupRunsOnRow(
         max: p.end,
         signed: p.orientation * length,
         names: new Set([p.name]),
+        rows: p.rows && new Set(p.rows),
         widest: p,
       })
     }
   }
-  return runs.map(({ min, max, signed, names, widest }) => ({
+  return runs.map(({ min, max, signed, names, rows, widest }) => ({
     min,
     max,
     orientation: signed < 0 ? -1 : 1,
     name: names.size === 1 ? [...names][0] : undefined,
-    row: widest.row,
+    rows: rows && [...rows],
     feature: widest.feature,
   }))
 }
@@ -765,7 +776,7 @@ export function groupRunSpansOnRow(
         start: run.min,
         end: run.max,
         name: run.name,
-        row: run.row,
+        rows: run.rows,
       },
       feature: run.feature,
     }

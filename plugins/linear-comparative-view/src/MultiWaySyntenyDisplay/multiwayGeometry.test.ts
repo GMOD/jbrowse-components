@@ -954,6 +954,46 @@ describe('a gene a table states in two rows, one per half', () => {
     })
     expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(2)
   })
+
+  test('joins a single-copy gene to both copies of the next lane, one per row', () => {
+    // one row per copy, each naming the same single-copy peach gene
+    const mate = (assemblyName: string, start: number, row: number) => ({
+      assemblyName,
+      refName: assemblyName === 'peach' ? 'Pp1' : 'Tc1',
+      start,
+      end: start + 300,
+      orientation: 1,
+      name: `${assemblyName}${start}`,
+      row,
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: stack({
+        features: [
+          new SimpleFeature({
+            uniqueId: 'single',
+            name: 'single',
+            refName: 'chr1',
+            start: 100,
+            end: 400,
+            strand: 1,
+            assemblyName: 'grape',
+            mates: [
+              mate('peach', 1100, 1),
+              mate('cacao', 1100, 1),
+              mate('peach', 1100, 2),
+              mate('cacao', 1500, 2),
+            ],
+          }),
+        ],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    expect(ribbonData(cells, 'ribbons:1').instanceCount).toBe(2)
+  })
 })
 
 describe('a source stating each lane against the anchor alone', () => {
