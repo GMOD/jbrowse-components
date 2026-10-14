@@ -6396,7 +6396,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "(number | undefined)"
+          "type": "number"
         },
         {
           "name": "rowHeight",

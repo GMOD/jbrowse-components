@@ -12827,7 +12827,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen.",
+          "description": "display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are.",
+          "default": 300,
           "if": {
             "type": "null"
           },
