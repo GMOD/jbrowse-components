@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { applySnapshot, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { laneHeaderMenuItems } from './menus.ts'
 import { createDisplayWithSession } from './testEnv.ts'
@@ -81,4 +82,35 @@ test('a lane names its other block, and its menu draws it and lets go', async ()
   )
   await until(() => display.laneDecisions.get(C)!.fitMin > APART)
   expect(display.pinnedLanes.has(C)).toBe(false)
+})
+
+test('a lane pin and a flip pin ride the session, and come back with it', async () => {
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: [A, B, C],
+    geneTracks: [],
+    rpc: () => new Promise(() => {}),
+  })
+  display.setFeatures(STARTS.map((s, i) => record(i, s)))
+  await until(() => display.laneDecisions.get(C) !== undefined)
+  const unpinned = getSnapshot(display)
+
+  display.pinLane(C, { refName: 'ctgB', at: 20_200 })
+  await until(() => display.laneDecisions.get(C)!.fitMax < APART)
+  const flipped = !display.laneDecisions.get(C)!.flipped
+  display.flipLane(C)
+  await until(() => display.laneDecisions.get(C)!.flipped === flipped)
+  const pinned = getSnapshot(display)
+  expect(pinned.lanePins).toEqual({ [C]: { refName: 'ctgB', at: 20_200 } })
+  expect(pinned.laneFlipPins).toEqual({
+    [A]: { [C]: { refName: 'ctgB', flipped } },
+  })
+
+  applySnapshot(display, unpinned)
+  await until(() => display.laneDecisions.get(C)!.fitMin > APART)
+  expect(display.pinnedLaneFlips.size).toBe(0)
+
+  applySnapshot(display, pinned)
+  await until(() => display.laneDecisions.get(C)!.fitMax < APART)
+  expect(display.laneDecisions.get(C)!.flipped).toBe(flipped)
+  expect(display.laneDecisions.get(C)!.orientationPinned).toBe(true)
 })

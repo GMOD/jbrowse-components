@@ -128,7 +128,8 @@ cost is linear in lanes.
   pattern).
 - **A flip pin and a lane pin outrank the vote** (`pinnedLaneFlips`,
   `pinnedLanes`, a contig or a block on it); a released pin leaves no
-  incumbent. The decision is stored
+  incumbent. Both pins are session properties (`lanePins`, `laneFlipPins`), as
+  `hiddenLaneNames` is, so a share link opens on them. The decision is stored
   as data and the drawn frame derives from it against the live view on every pan
   (`frameFromDecision`, `rowFrames`).
 

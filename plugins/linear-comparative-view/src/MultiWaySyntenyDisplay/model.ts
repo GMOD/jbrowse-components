@@ -268,8 +268,18 @@ export interface HoverTarget extends RibbonRef {
   feature: Feature
 }
 
-const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
 const NO_GENES: LaneGene[] = []
+
+/** `record` with `key` set to `value`, or dropped for undefined; empty is undefined */
+function withEntry<T>(
+  record: Readonly<Record<string, T>> | undefined,
+  key: string,
+  value: T | undefined,
+) {
+  const { [key]: _dropped, ...rest } = record ?? {}
+  const next = value === undefined ? rest : { ...rest, [key]: value }
+  return Object.keys(next).length > 0 ? next : undefined
+}
 
 function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
@@ -331,6 +341,20 @@ export function stateModelFactory(
         hiddenLaneNames: types.frozen<readonly string[] | undefined>(),
         /** #property */
         frozenLanes: types.frozen<FrozenLanes | undefined>(),
+        /**
+         * #property
+         * the contig, or a block on it, a reader pinned each lane to, by lane
+         */
+        lanePins: types.frozen<Readonly<Record<string, LanePin>> | undefined>(),
+        /**
+         * #property
+         * each lane's pinned orientation, under the anchor it was set against,
+         * since a flip is stated against the anchor's order
+         */
+        laneFlipPins: types.frozen<
+          | Readonly<Record<string, Readonly<Record<string, LaneFlipPin>>>>
+          | undefined
+        >(),
       }),
     )
     .volatile(() => ({
@@ -373,10 +397,6 @@ export function stateModelFactory(
       clickedTarget: undefined as RibbonRef | undefined,
       /** #volatile */
       laneDecisions: new Map<string, LaneDecision | undefined>(),
-      /** #volatile */
-      pinnedLanes: new Map<string, LanePin>(),
-      /** #volatile */
-      laneFlipPinsByAnchor: new Map<string, ReadonlyMap<string, LaneFlipPin>>(),
       /**
        * #volatile
        * the view's `offsetPx` the stack was last laid out against
@@ -966,11 +986,15 @@ export function stateModelFactory(
         return !this.adjacentLanesAlignDirectly
       },
       /** #getter */
+      get pinnedLanes(): ReadonlyMap<string, LanePin> {
+        return new Map(Object.entries(self.lanePins ?? {}))
+      },
+      /** #getter */
       get pinnedLaneFlips(): ReadonlyMap<string, LaneFlipPin> {
-        return (
-          self.laneFlipPinsByAnchor.get(
-            self.laneKey(self.anchorAssemblyName),
-          ) ?? NO_FLIP_PINS
+        return new Map(
+          Object.entries(
+            self.laneFlipPins?.[self.laneKey(self.anchorAssemblyName)] ?? {},
+          ),
         )
       },
     }))
@@ -1621,10 +1645,12 @@ export function stateModelFactory(
         }
         self.laneDragPx = next
       }
-      function setFlipPins(pins: ReadonlyMap<string, LaneFlipPin>) {
-        self.laneFlipPinsByAnchor = new Map(self.laneFlipPinsByAnchor).set(
-          self.laneKey(self.anchorAssemblyName),
-          pins,
+      function setFlipPin(assemblyName: string, pin: LaneFlipPin | undefined) {
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        self.laneFlipPins = withEntry(
+          self.laneFlipPins,
+          anchor,
+          withEntry(self.laneFlipPins?.[anchor], assemblyName, pin),
         )
       }
       function nudgeLane(assemblyName: string, dxPx: number) {
@@ -1704,33 +1730,23 @@ export function stateModelFactory(
          * a contig, or a block on it; `undefined` lets the lane choose again
          */
         pinLane(assemblyName: string, pin: LanePin | undefined) {
-          const pins = new Map(self.pinnedLanes)
-          if (pin === undefined) {
-            pins.delete(assemblyName)
-          } else {
-            pins.set(assemblyName, pin)
-          }
-          self.pinnedLanes = pins
+          self.lanePins = withEntry(self.lanePins, assemblyName, pin)
           realign(assemblyName)
         },
         /** #action */
         flipLane(assemblyName: string) {
           const decision = self.laneDecisions.get(assemblyName)
           if (decision) {
-            setFlipPins(
-              new Map(self.pinnedLaneFlips).set(assemblyName, {
-                refName: decision.refName,
-                flipped: !decision.flipped,
-              }),
-            )
+            setFlipPin(assemblyName, {
+              refName: decision.refName,
+              flipped: !decision.flipped,
+            })
             realign(assemblyName)
           }
         },
         /** #action */
         unpinLaneFlip(assemblyName: string) {
-          const pins = new Map(self.pinnedLaneFlips)
-          pins.delete(assemblyName)
-          setFlipPins(pins)
+          setFlipPin(assemblyName, undefined)
           realign(assemblyName)
         },
       }
