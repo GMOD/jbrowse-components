@@ -170,8 +170,9 @@ under the circular view menu's **Tracks** item:
   type
 
 The track's `height` is how much of the circle it asks for. A ring takes at most
-half the circle's radius, and a track that asks for more lays its rows and
-labels out in the band it gets.
+half the circle's radius, and a track that asks for more lays its rows out in
+the band it gets. A circle of one sequence names its features outside the ruler,
+each joined to its feature by a line.
 
 <Figure src="/img/organelle_map/mito_ring.png" caption="The human mitochondrial genome NC_012920.1 as a circle, with the NCBI genes grouped by strand and colored by type. The outer row holds the plus-strand genes, the inner row the minus-strand ones: ND6 among the protein-coding genes, a handful of tRNAs, and the D-loop, which runs across position 1 as one arc." />
 
