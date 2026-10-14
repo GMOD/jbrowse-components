@@ -1,12 +1,12 @@
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
-import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
-import { bandCellCount } from '../VariantRPC/ldBand.ts'
+import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
+import { bandCellCount } from './ldBand.ts'
 import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
 import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
 
-import type { LDMatrixResult } from '../VariantRPC/ldTypes.ts'
+import type { LDMatrixResult } from './ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'

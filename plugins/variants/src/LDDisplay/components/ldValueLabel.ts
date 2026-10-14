@@ -1,6 +1,6 @@
 import { LD_FIELD_PRESETS } from '../ldColorConfigSchema.ts'
 
-import type { LDMetric } from '../../VariantRPC/ldTypes.ts'
+import type { LDMetric } from '../../RenderLDDataRPC/ldTypes.ts'
 
 /**
  * What to call the number in a cell: the metric's preset title. Pre-computed

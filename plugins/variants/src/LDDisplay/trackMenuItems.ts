@@ -4,7 +4,7 @@ import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 
-import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { LDMetric, LDSnp } from '../RenderLDDataRPC/ldTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

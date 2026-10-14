@@ -27,7 +27,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
-import { bandPairIndex } from '../VariantRPC/ldBand.ts'
+import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { ldMetricLabel } from './components/ldValueLabel.ts'
@@ -35,8 +35,8 @@ import { LD_FIELD_PRESETS, LD_VALUE_EXTENT } from './ldColorConfigSchema.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
+import type { LDMetric, LDSnp } from '../RenderLDDataRPC/ldTypes.ts'
 import type { LDCellHit, LDDataResult } from '../RenderLDDataRPC/types.ts'
-import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type {
   LDRenderState,

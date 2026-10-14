@@ -1,8 +1,8 @@
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 
-import { bandCellCount, bandRowFirstColumn } from '../VariantRPC/ldBand.ts'
+import { bandCellCount, bandRowFirstColumn } from './ldBand.ts'
 
-import type { LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { LDSnp } from './ldTypes.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
 // Pre-rotation coordinates are the 45°-rotated frame's axis, so every px

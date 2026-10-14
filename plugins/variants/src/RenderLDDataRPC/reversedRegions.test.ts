@@ -1,16 +1,16 @@
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { LD_NOT_COMPUTED, ldValueComputed } from '@jbrowse/ld-core'
 
-import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
+import { executeRenderLDData } from './executeRenderLDData.ts'
+import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
 import {
   bandCellCount,
   bandPairIndex,
   bandRowFirstColumn,
   resolveBand,
-} from '../VariantRPC/ldBand.ts'
-import { executeRenderLDData } from './executeRenderLDData.ts'
+} from './ldBand.ts'
 
-import type { LDMatrixResult, LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { LDMatrixResult, LDSnp } from './ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -19,8 +19,8 @@ import type { Region } from '@jbrowse/core/util'
 // triangular one these expectations were written against.
 const FULL_BAND = 1_000_000
 
-jest.mock('../VariantRPC/getLDMatrixFromPlink.ts', () => ({
-  ...jest.requireActual('../VariantRPC/getLDMatrixFromPlink.ts'),
+jest.mock('./getLDMatrixFromPlink.ts', () => ({
+  ...jest.requireActual('./getLDMatrixFromPlink.ts'),
   getLDMatrixFromPlink: jest.fn(),
 }))
 

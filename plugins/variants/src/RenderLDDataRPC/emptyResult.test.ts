@@ -1,14 +1,14 @@
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 
-import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
+import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
 
-import type { LDMatrixResult } from '../VariantRPC/ldTypes.ts'
+import type { LDMatrixResult } from './ldTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 
-jest.mock('../VariantRPC/getLDMatrixFromPlink.ts', () => ({
-  ...jest.requireActual('../VariantRPC/getLDMatrixFromPlink.ts'),
+jest.mock('./getLDMatrixFromPlink.ts', () => ({
+  ...jest.requireActual('./getLDMatrixFromPlink.ts'),
   getLDMatrixFromPlink: jest.fn(),
 }))
 

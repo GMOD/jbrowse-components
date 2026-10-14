@@ -1,6 +1,6 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { LDMetric } from '../VariantRPC/ldTypes.ts'
+import type { LDMetric } from './ldTypes.ts'
 import type { LDDataResult } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'

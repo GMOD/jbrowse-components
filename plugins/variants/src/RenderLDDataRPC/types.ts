@@ -1,4 +1,4 @@
-import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { LDMetric, LDSnp } from './ldTypes.ts'
 
 export interface LDCellHit {
   i: number

@@ -1,6 +1,6 @@
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
-import { bandPairIndex } from '../VariantRPC/ldBand.ts'
+import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'

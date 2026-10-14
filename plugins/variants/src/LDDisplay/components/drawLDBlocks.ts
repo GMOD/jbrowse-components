@@ -6,7 +6,7 @@ import {
   SCALE_TYPE_LINEAR,
 } from '@jbrowse/render-core/scoreScale'
 
-import { bandRowFirstColumn } from '../../VariantRPC/ldBand.ts'
+import { bandRowFirstColumn } from '../../RenderLDDataRPC/ldBand.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'

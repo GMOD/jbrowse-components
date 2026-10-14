@@ -6,7 +6,7 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
+import { bandCellCount, bandPairIndex } from '../../RenderLDDataRPC/ldBand.ts'
 import { drawLDBlocks } from './drawLDBlocks.ts'
 import { LD_MARKS, interleaveLDInstances } from './ldMarks.ts'
 import {

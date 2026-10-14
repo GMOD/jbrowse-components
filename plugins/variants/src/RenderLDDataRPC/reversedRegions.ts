@@ -1,12 +1,8 @@
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
-import {
-  bandCellCount,
-  bandPairIndex,
-  bandRowFirstColumn,
-} from '../VariantRPC/ldBand.ts'
+import { bandCellCount, bandPairIndex, bandRowFirstColumn } from './ldBand.ts'
 
-import type { LDSnp } from '../VariantRPC/ldTypes.ts'
+import type { LDSnp } from './ldTypes.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
 // Index of the region a SNP sits in, or -1. Regions are the worker-side

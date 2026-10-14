@@ -6,7 +6,7 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { LD_MARKS } from './components/ldMarks.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { LDMetric } from '../VariantRPC/ldTypes.ts'
+import type { LDMetric } from '../RenderLDDataRPC/ldTypes.ts'
 import type { LDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 function fnv1a(bytes: Uint8Array) {

@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { LDMetric } from '../VariantRPC/ldTypes.ts'
+import type { LDMetric } from '../RenderLDDataRPC/ldTypes.ts'
 import type { FieldPreset } from '@jbrowse/display-kit/colorConfigSchema'
 
 const LD_COLOR_SCALES = ['linear'] as const

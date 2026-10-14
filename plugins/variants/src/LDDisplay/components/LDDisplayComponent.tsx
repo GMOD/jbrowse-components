@@ -14,8 +14,8 @@ import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
 import { ldMetricLabel, ldValueText } from './ldValueLabel.ts'
 
+import type { LDMetric } from '../../RenderLDDataRPC/ldTypes.ts'
 import type { LDCellHit } from '../../RenderLDDataRPC/types.ts'
-import type { LDMetric } from '../../VariantRPC/ldTypes.ts'
 import type { LDDisplayModel } from '../model.ts'
 import type {
   MouseState,

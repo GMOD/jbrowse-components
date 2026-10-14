@@ -6,8 +6,8 @@ import { autorun, getDependencyTree } from 'mobx'
 import { LD_FIELD_PRESETS } from './ldColorConfigSchema.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { LDMetric } from '../RenderLDDataRPC/ldTypes.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
-import type { LDMetric } from '../VariantRPC/ldTypes.ts'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 const { createDisplay } = createTestEnvironment()
