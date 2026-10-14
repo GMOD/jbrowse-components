@@ -2,10 +2,7 @@ import { pluralize } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import BottomRightIndicators from './BottomRightIndicators.tsx'
-import { openPlotDialog } from './plotMenu.ts'
 import TrackControl from './trackControl/TrackControl.tsx'
-
-import type { PlotDisplay } from './plotMenu.ts'
 
 /**
  * The corner notice for a display whose config says something it cannot draw
@@ -37,7 +34,7 @@ export default ConfigProblemsIndicator
 /**
  * A display's notice chip in its bottom-right corner: `cornerNotices` where
  * the display has them, else `notices`. A click opens the display's plot form
- * where it has one, else "Edit plot..." on a display declaring plot settings.
+ * where it has one, else its `openPlotDialog`.
  * `DisplayChrome` renders it for every display, as an observer of its own so
  * the chrome's render reads none of it.
  */
@@ -52,9 +49,9 @@ export const ConfigProblemsCorner = observer(function ConfigProblemsCorner({
     ? () => {
         display.openPlotForm!(display.plot)
       }
-    : display.plotKeys?.length
+    : display.openPlotDialog
       ? () => {
-          openPlotDialog(display as unknown as PlotDisplay)
+          display.openPlotDialog!()
         }
       : undefined
   return notices.length > 0 ? (
@@ -68,7 +65,7 @@ interface CornerModel {
   cornerNotices?: readonly string[]
   notices?: readonly string[]
   scrollableHeight?: number
-  plotKeys?: readonly string[]
   plot?: unknown
   openPlotForm?: (draft: unknown) => void
+  openPlotDialog?: () => void
 }
