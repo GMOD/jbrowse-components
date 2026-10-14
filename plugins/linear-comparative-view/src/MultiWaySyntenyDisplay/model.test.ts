@@ -28,7 +28,7 @@ import {
 } from './laneFetch.ts'
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
-import { lanesMenuItem } from './menus.ts'
+import { laneHeaderMenuItems, lanesMenuItem } from './menus.ts'
 import { glyphsKey } from './multiwayGeometry.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
@@ -1944,6 +1944,39 @@ test('a mate lane can become the anchor only on a source that aligns lanes to ea
     value: { lanes: [{ name: 'HG1#1' }, { name: 'volvox' }] },
   })
   expect(graph.canReanchor).toBe(true)
+})
+
+test('Move up reorders a lane the order names by another spelling', () => {
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+    geneTracks: [],
+    assemblyAliases: { vr: 'volvox_random' },
+  })
+  display.setFeatures(
+    ['volvox_random', 'volvox_ins'].map(
+      (assemblyName, i) =>
+        new SimpleFeature({
+          uniqueId: `f${i}`,
+          name: `gene${i}`,
+          refName: 'ctgA',
+          start: 100,
+          end: 300,
+          strand: 1,
+          mate: { assemblyName, refName: 'ctgB', start: 100, end: 300 },
+        }),
+    ),
+  )
+  display.setDomain(['vr'])
+  expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
+  const lane = display.laneStack.lanes.find(
+    l => l.assemblyName === 'volvox_ins',
+  )!
+  const [moveUp] = laneHeaderMenuItems(display, lane)
+  expect(moveUp && 'label' in moveUp && moveUp.label).toBe('Move up')
+  if (moveUp && 'onClick' in moveUp) {
+    moveUp.onClick()
+  }
+  expect(display.rowAssemblies).toEqual(['volvox_ins', 'volvox_random'])
 })
 
 test('a lane selection narrows the stack and survives a refetch', () => {

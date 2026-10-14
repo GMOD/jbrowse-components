@@ -676,10 +676,6 @@ export function stateModelFactory(
       get ribbonColor(): string {
         return getConf(self, ['ribbonColor', 'value'])
       },
-      /** #getter */
-      get domain(): string[] {
-        return getConf(self, ['rows', 'domain'])
-      },
       /**
        * #getter
        * `rows.kept` as a choice: undefined while it names no lane
@@ -979,6 +975,28 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * `rows.domain` in each placed lane's own spelling, so an order a config
+       * wrote with an alias merges with one a drag writes
+       */
+      get domain(): string[] {
+        const spelled = new Map<string, string>()
+        for (const group of self.groups) {
+          for (const name of group.mates.keys()) {
+            const key = self.laneKey(name)
+            if (!spelled.has(key)) {
+              spelled.set(key, name)
+            }
+          }
+        }
+        const written: string[] = getConf(self, ['rows', 'domain'])
+        return [
+          ...new Set(
+            written.map(name => spelled.get(self.laneKey(name)) ?? name),
+          ),
+        ]
+      },
       /**
        * #getter
        * the track's assemblies beside the anchor for a source that declares its
