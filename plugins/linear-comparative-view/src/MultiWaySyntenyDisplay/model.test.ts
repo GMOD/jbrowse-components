@@ -307,7 +307,7 @@ test('lane links are asked for only between lanes the session holds', () => {
     nameless('f2', 'sample#1#undeclared'),
     nameless('f3', 'volvox_random'),
   ])
-  expect(display.featuresAreNameless).toBe(true)
+  expect(display.laneFetchKinds.lanePairs).toBe(true)
   expect(display.rowAssemblies).toEqual([
     'volvox_random',
     'sample#1#undeclared',

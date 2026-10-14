@@ -181,6 +181,7 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
+import { laneFetchesFor, rowsReadAgainstAnchor } from './sourceShape.ts'
 import { laneProfiles, structureOrder } from './structureOrder.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
@@ -705,14 +706,6 @@ export function stateModelFactory(
         return laneOpeningsOf(this.groups)
       },
       /** #getter */
-      get featuresAreNameless() {
-        return (
-          self.features !== undefined &&
-          self.features.length > 0 &&
-          !self.features.some(isNamedRecord)
-        )
-      },
-      /** #getter */
       get ribbonColor(): string {
         return getConf(self, ['ribbonColor', 'value'])
       },
@@ -981,10 +974,6 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /** #getter */
-      get adjacentLanesAlignDirectly(): boolean {
-        return self.adapterPairsOnAnchor || self.starAnchor === undefined
-      },
       /**
        * #getter
        * a source that names an anchor and answers no lane pairs states each
@@ -992,7 +981,18 @@ export function stateModelFactory(
        * against the anchor
        */
       get rowsVsAnchor(): boolean {
-        return !this.adjacentLanesAlignDirectly
+        return rowsReadAgainstAnchor(self.adapterCapabilities, self.starAnchor)
+      },
+      /**
+       * #getter
+       * the fetches beyond the anchor's that its records call for
+       */
+      get laneFetchKinds() {
+        return laneFetchesFor(
+          self.features ?? [],
+          this.rowsVsAnchor,
+          self.starAnchor,
+        )
       },
       /** #getter */
       get pinnedLanes(): ReadonlyMap<string, LanePin> {
@@ -1897,8 +1897,8 @@ export function stateModelFactory(
        * lacks; a star source indexes its anchor alone, so it has none to give
        */
       get laneGroupsFetchSpecs(): LaneGroupsFetchSpec[] {
-        const { lodTier, features, laneWindows } = self
-        return features?.some(isNamedRecord) && self.starAnchor === undefined
+        const { lodTier, laneWindows } = self
+        return self.laneFetchKinds.laneRows
           ? self.rowAssemblies.flatMap(lane => {
               const regions = laneWindows.get(lane)?.regions
               return regions
@@ -1923,7 +1923,7 @@ export function stateModelFactory(
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
         const onAnchor = self.adapterPairsOnAnchor
-        if (self.featuresAreNameless && self.adjacentLanesAlignDirectly) {
+        if (self.laneFetchKinds.lanePairs) {
           const { lodTier, laneWindows, rowFrames } = self
           const nearViewport = gutterNearViewport(
             self.stackGeometry,

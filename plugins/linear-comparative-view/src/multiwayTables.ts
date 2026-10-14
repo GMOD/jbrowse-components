@@ -30,6 +30,7 @@ import {
   multiWayFeaturesOf,
 } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import { lanePairKey } from './MultiWaySyntenyDisplay/alignmentOps.ts'
+import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
 import {
   decideLaneFrames,
   frameFromDecision,
@@ -56,8 +57,11 @@ import {
 } from './MultiWaySyntenyDisplay/layoutMultiWay.ts'
 import { ribbonColorScales } from './MultiWaySyntenyDisplay/legend.ts'
 import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.ts'
-import { ribbonColorConfigSchema } from './MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts'
-import { getMate, isNamedRecord } from './syntenyMate.ts'
+import {
+  laneFetchesFor,
+  rowsReadAgainstAnchor,
+} from './MultiWaySyntenyDisplay/sourceShape.ts'
+import { getMate } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
 import type {
@@ -116,7 +120,6 @@ export interface MultiWayTablesArgs {
   }
 }
 
-const DEFAULT_HEIGHT = 240
 const SESSION = 'tables'
 
 // `|| 0` drops the sign of a negative zero, which JSON cannot carry
@@ -183,30 +186,46 @@ function shownGroups(groups: MultiWayGroup[], axis: ComparativeAxis) {
   })
 }
 
-function readDisplay(display: MultiWayTablesArgs['display'] = {}) {
-  const color = display.ribbonColor
-  const conf = ribbonColorConfigSchema.create(
-    typeof color === 'string' ? { value: color } : (color ?? {}),
-  )
-  const setting = colorSnapshotOf(conf)
+const displayConfigSchema = configSchemaFactory()
+
+/** The display's settings as its own config reads them, defaults included. */
+function readDisplay({
+  ribbonColor,
+  ...slots
+}: MultiWayTablesArgs['display'] = {}) {
+  const conf = displayConfigSchema.create({
+    type: 'MultiWaySyntenyDisplay',
+    displayId: SESSION,
+    ...slots,
+    ...(ribbonColor === undefined
+      ? {}
+      : {
+          ribbonColor:
+            typeof ribbonColor === 'string'
+              ? { value: ribbonColor }
+              : ribbonColor,
+        }),
+  })
+  const color = conf.ribbonColor
+  const setting = colorSnapshotOf(color)
   return {
-    value: String(readConfObject(conf, 'value')),
+    value: String(readConfObject(color, 'value')),
     field: paintedField(setting),
-    paint: colorPaintOf(conf),
-    domain: (readConfObject(conf, 'domain') as string[] | undefined) ?? [],
-    range: readConfObject(conf, 'range') as string[] | undefined,
+    paint: colorPaintOf(color),
+    domain: readConfObject(color, 'domain'),
+    range: readConfObject(color, 'range'),
     labels: setting.labels,
     title: setting.title,
-    descending: readConfObject(conf, 'descending') === true,
-    rowsDomain: display.rows?.domain ?? [],
-    kept: display.rows?.kept ?? [],
-    hideUnlabelled: display.hideUnlabelled ?? false,
-    drawCurves: display.drawCurves ?? false,
-    bridgeSkippedLanes: display.bridgeSkippedLanes ?? true,
-    splitStrands: display.splitStrands ?? true,
-    showGeneLabels: display.showGeneLabels ?? true,
-    inlineLaneNames: display.inlineLaneNames ?? false,
-    height: display.height ?? DEFAULT_HEIGHT,
+    descending: readConfObject(color, 'descending'),
+    rowsDomain: readConfObject(conf, ['rows', 'domain']),
+    kept: readConfObject(conf, ['rows', 'kept']),
+    hideUnlabelled: readConfObject(conf, 'hideUnlabelled'),
+    drawCurves: readConfObject(conf, 'drawCurves'),
+    bridgeSkippedLanes: readConfObject(conf, 'bridgeSkippedLanes'),
+    splitStrands: readConfObject(conf, 'splitStrands'),
+    showGeneLabels: readConfObject(conf, 'showGeneLabels'),
+    inlineLaneNames: readConfObject(conf, 'inlineLaneNames'),
+    height: readConfObject(conf, 'height'),
   }
 }
 
@@ -529,10 +548,10 @@ export async function multiwayTables(
     return frame ? [{ assemblyName: name, ...laneFetchRegion(frame) }] : []
   }
 
-  const nameless = features.length > 0 && !features.some(isNamedRecord)
-  const rowsVsAnchor = !(pairsOnAnchor || starAnchor === undefined)
+  const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
+  const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
   const laneLinks = new Map<string, LaneLinks>()
-  if (nameless && !rowsVsAnchor) {
+  if (fetches.lanePairs) {
     await Promise.all(
       rows.slice(1).map(async (lower, i) => {
         const upper = rows[i]!
@@ -559,24 +578,23 @@ export async function multiwayTables(
       }),
     )
   }
-  const anchorless =
-    features.some(isNamedRecord) && starAnchor === undefined
-      ? anchorlessGroupsOf(
-          await Promise.all(
-            rows.map(
-              async lane =>
-                [
-                  lane,
-                  laneRegion(lane).length
-                    ? (await fetch(laneRegion(lane), { mateShape: 'grouped' }))
-                        .features
-                    : [],
-                ] as const,
-            ),
+  const anchorless = fetches.laneRows
+    ? anchorlessGroupsOf(
+        await Promise.all(
+          rows.map(
+            async lane =>
+              [
+                lane,
+                laneRegion(lane).length
+                  ? (await fetch(laneRegion(lane), { mateShape: 'grouped' }))
+                      .features
+                  : [],
+              ] as const,
           ),
-          name => name === anchor,
-        )
-      : []
+        ),
+        name => name === anchor,
+      )
+    : []
 
   const labels = new Map(declared.map(lane => [lane.name, lane.label]))
   const stack = buildLanes({

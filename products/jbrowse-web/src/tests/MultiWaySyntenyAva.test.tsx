@@ -60,7 +60,7 @@ async function openMultiWay(trackId: string) {
 test('MultiWaySyntenyDisplay on a multi-genome PAF groups per record and fetches adjacent-pair links', async () => {
   const { display } = await openMultiWay('volvox_all_vs_all')
 
-  expect(display.featuresAreNameless).toBe(true)
+  expect(display.laneFetchKinds.lanePairs).toBe(true)
   // the anchor assembly never gets its own lane, even when paralogy records
   // name it as a mate
   expect(display.rowAssemblies).toEqual(['volvox_ins', 'volvox_del'])
