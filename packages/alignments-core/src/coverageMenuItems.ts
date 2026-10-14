@@ -7,7 +7,7 @@ import {
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
-interface CoverageModel extends ScoreScaleModel {
+export interface CoverageMenuModel extends ScoreScaleModel {
   id: string
   showCoverage: boolean
   coverageSnpMinFrequency: number
@@ -51,7 +51,7 @@ function nearestSnpFrequencyOption(fraction: number) {
 const BAND_HIDDEN_HELP =
   'These settings scale the coverage band — turn on "Show coverage" first'
 
-export function getCoverageMenuItems(model: CoverageModel): MenuItem[] {
+export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
   return [
     makeScoreAxisMenuItem(model, {

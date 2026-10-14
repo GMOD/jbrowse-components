@@ -5,6 +5,7 @@ import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSch
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
@@ -191,6 +192,35 @@ export default function configSchemaF() {
         type: 'number',
         defaultValue: DEFAULTS.coverageHeight,
         description: 'height of the coverage band in px',
+      },
+      /**
+       * #slot
+       * The coverage band's value scale, spelled as the alignments display's:
+       * `symlogConstant` 1 makes symlog `log(depth+1)`.
+       */
+      scales: scalesSchema(
+        valueScaleSchema({
+          symlogConstant: 1,
+        }),
+      ),
+      /**
+       * #slot
+       */
+      coverageSnpMinFrequency: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          "hide a coverage-band allele segment whose share of that position's depth is below this fraction; 0 colors every mismatch",
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
+      showInterbaseIndicators: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          "draw the coverage band's insertion count bars and indicator triangles",
       },
       /**
        * #slot

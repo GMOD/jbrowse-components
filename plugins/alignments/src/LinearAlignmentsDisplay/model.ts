@@ -6,6 +6,7 @@ import {
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
+import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
   getConf,
@@ -163,7 +164,6 @@ import {
   featureSpacingForHeight,
   getColorByMenuItem,
   getContextMenuItems,
-  getCoverageMenuItems,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,

@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   makeRadioSubMenu,
   toggleItem,
@@ -29,6 +30,7 @@ import type { ConservationMode } from './conservationModes.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
+import type { CoverageMenuModel } from '@jbrowse/alignments-core/coverageMenuItems'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -49,7 +51,11 @@ export function zoomGatedItem(item: MenuItem, hint: string | undefined) {
 }
 
 interface MafMenuSelf
-  extends IStateTreeNode, MafClusterSelf, TreeLayoutModel<MafSource> {
+  extends
+    IStateTreeNode,
+    MafClusterSelf,
+    TreeLayoutModel<MafSource>,
+    CoverageMenuModel {
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
@@ -60,7 +66,8 @@ interface MafMenuSelf
   setShowRowLabels: (arg: boolean) => void
   showBranchLength: boolean
   treeHasBranchLengths: boolean
-  showCoverage: boolean
+  showInterbaseIndicators: boolean
+  setShowInterbaseIndicators: (f: boolean) => void
   showAlignments: boolean
   showConservation: boolean
   showReferenceRow: boolean
@@ -216,6 +223,11 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showCoverage,
       self.setShowCoverage,
     ),
+    toggleItem(
+      'Show interbase indicators',
+      self.showInterbaseIndicators,
+      self.setShowInterbaseIndicators,
+    ),
     toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
       'Show reference row',
@@ -257,6 +269,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     colorMenuItem(self),
     plotTypeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
+    ...getCoverageMenuItems(self),
     rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
     clusteringMenuItem(
       self,

@@ -1,8 +1,10 @@
 import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
+  computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
   coverageBinAt,
+  coverageDepthDomain,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
 import {
@@ -41,6 +43,7 @@ import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
   ContextMenuMixin,
@@ -54,8 +57,12 @@ import {
   sortRowsAtColumn,
   sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
-import { visibleStatsDomain } from '@jbrowse/wiggle-core'
-import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
+import {
+  ScoreScaleMixin,
+  resolveSymlogConstant,
+  visibleStatsRange,
+  widenRangeToRules,
+} from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
@@ -166,7 +173,7 @@ import type {
   RowSource,
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
-import type { YAxis } from '@jbrowse/wiggle-core'
+import type { ValueScale } from '@jbrowse/wiggle-core'
 
 /**
  * The row under the pointer, published as `hoveredFeature` so another display
@@ -298,16 +305,19 @@ export default function stateModelFactory(
       // #region compose
       .compose(
         'LinearMafDisplay',
-        BaseDisplay,
+        types.compose(
+          BaseDisplay,
+          TrackHeightMixin(),
+          MultiRegionDisplayMixin(),
+        ),
         StoredHoverMixin<MafRowHover>((a, b) => a.name === b.name),
-        TrackHeightMixin(),
-        MultiRegionDisplayMixin(),
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         ColorWritesMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
+        ScoreScaleMixin(),
         types.model({
           /**
            * #property
@@ -427,6 +437,18 @@ export default function stateModelFactory(
          */
         get coverageHeight(): number {
           return getConf(self, 'coverageHeight')
+        },
+        /**
+         * #getter
+         */
+        get coverageSnpMinFrequency(): number {
+          return getConf(self, 'coverageSnpMinFrequency')
+        },
+        /**
+         * #getter
+         */
+        get showInterbaseIndicators(): boolean {
+          return getConf(self, 'showInterbaseIndicators')
         },
         /**
          * #getter
@@ -623,6 +645,18 @@ export default function stateModelFactory(
          */
         setShowCoverage(arg: boolean) {
           setConf(self, 'showCoverage', arg)
+        },
+        /**
+         * #action
+         */
+        setCoverageSnpMinFrequency(fraction: number) {
+          setConf(self, 'coverageSnpMinFrequency', fraction)
+        },
+        /**
+         * #action
+         */
+        setShowInterbaseIndicators(arg: boolean) {
+          setConf(self, 'showInterbaseIndicators', arg)
         },
         /**
          * #action
@@ -1427,48 +1461,81 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * [min, max] coverage domain over the visible content blocks, from the
-         * worker-shipped `coverage.coverageDepths`. Linear and unbounded; feeds
-         * `axes`.
+         * `ScoreScaleMixin`'s hook: the depth range over the visible content
+         * blocks, from the worker-shipped `coverage.coverageDepths`, widened
+         * to the `scales.y` rules.
          */
-        get coverageDomain() {
-          return visibleStatsDomain({
+        get autoscaleRange(): [number, number] | undefined {
+          return visibleStatsRange({
             active: self.coverageBandActive,
             view: self.view,
             payloadFor: index => self.rpcDataMap.get(index)?.coverage,
             itemsFor: coverage => [coverage],
             accumulate: entries => computeVisibleCoverageStats(entries),
-            range: ({ scoreMin, scoreMax }) => [scoreMin, scoreMax],
-            bounds: [undefined, undefined],
-            scaleType: 'linear',
-            zero: true,
+            range: (stats, entries) =>
+              widenRangeToRules(
+                computeVisibleCoverageDomain({
+                  stats,
+                  quantile: self.domainQuantile,
+                  entries,
+                }),
+                self.scoreRules.map(rule => rule.value),
+              ),
           })
+        },
+        /**
+         * #getter
+         * Depth floors at 0 while the axis reaches zero.
+         */
+        get defaultScoreDomain(): [number | undefined, number | undefined] {
+          return [self.scaleZero ? 0 : undefined, undefined]
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * The band axes the chrome places: the coverage band's, off its
-         * autoscaled domain, and the conservation band's fixed 0-100%. Answers
-         * the resolved axes directly rather than composing `ScoreScaleMixin`.
+         * The domain the coverage band draws against, a log scale's floor at
+         * one read; the ticks and the marks both read it.
          */
-        get axes(): YAxis[] {
-          const { topBands } = self
-          const axes: YAxis[] = []
-          const { coverageDomain } = self
-          if (self.coverageBandActive && coverageDomain) {
+        get coverageDepthDomain(): [number, number] | undefined {
+          const domain = self.autoscaledDomain
+          return domain
+            ? coverageDepthDomain(domain, self.scaleType)
+            : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The scales the chrome places the axes from: coverage over its
+         * autoscaled depth, and conservation over a fixed 0-100%.
+         */
+        get valueScales(): ValueScale[] {
+          const { topBands, coverageDepthDomain: domain } = self
+          const scales: ValueScale[] = []
+          if (self.coverageBandActive && domain) {
             const height = topBands.reserved.coverage
-            axes.push({
-              domain: coverageDomain,
-              scaleType: 'linear',
+            scales.push({
+              domain,
+              scaleType: self.scaleType,
               height,
-              ticks: computeCoverageTicks(coverageDomain, height, 'linear'),
+              ticks: computeCoverageTicks(
+                domain,
+                height,
+                self.scaleType,
+                self.symlogConstant,
+                self.minimalTicks,
+              ),
+              symlogConstant: self.symlogConstant,
+              caption: self.scaleTitle,
+              rules: self.scoreRules,
+              grid: self.grid,
               bandTops: [topBands.top.coverage],
             })
           }
           if (self.conservationBandActive) {
             const height = topBands.reserved.conservation
-            axes.push({
+            scales.push({
               domain: [0, 100],
               scaleType: 'linear',
               height,
@@ -1476,7 +1543,7 @@ export default function stateModelFactory(
               bandTops: [topBands.top.conservation],
             })
           }
-          return axes
+          return scales
         },
         /**
          * #getter
@@ -1493,18 +1560,23 @@ export default function stateModelFactory(
          * #getter
          * The coverage band as the shared marks and their hit test take it.
          * Height 0 draws no band: the setting is off or the summary tier owns
-         * the view. Linear and unbounded, counting every mismatch column.
+         * the view.
          */
         get coverageBandState(): CoverageBandState {
+          const [domainMin, domainMax] = self.coverageDepthDomain ?? [0, 0]
           return {
             height: self.coverageBandActive ? self.coverageDisplayHeight : 0,
             top: 0,
-            domainMin: 0,
-            domainMax: self.coverageDomain?.[1],
-            scaleType: SCALE_TYPE_LINEAR,
-            symlogConstant: 1,
-            snpMinFrequency: 0,
-            showInterbase: true,
+            domainMin,
+            domainMax: self.coverageDepthDomain?.[1],
+            scaleType: scaleTypeCode(self.scaleType),
+            symlogConstant: resolveSymlogConstant(
+              domainMin,
+              domainMax,
+              self.symlogConstant,
+            ),
+            snpMinFrequency: self.coverageSnpMinFrequency,
+            showInterbase: self.showInterbaseIndicators,
             colors: self.coverageBandColors,
           }
         },

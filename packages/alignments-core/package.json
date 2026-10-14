@@ -23,6 +23,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./CoverageTooltipTables": "./src/CoverageTooltipTables.tsx",
+    "./coverageMenuItems": "./src/coverageMenuItems.ts",
     "./variantSortColumn": "./src/variantSortColumn.ts"
   },
   "files": [
@@ -55,6 +56,7 @@
     "exports": {
       ".": "./esm/index.js",
       "./CoverageTooltipTables": "./esm/CoverageTooltipTables.js",
+      "./coverageMenuItems": "./esm/coverageMenuItems.js",
       "./variantSortColumn": "./esm/variantSortColumn.js"
     }
   },

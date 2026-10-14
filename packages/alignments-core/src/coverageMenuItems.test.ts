@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { getCoverageMenuItems } from './coverage.ts'
+import { getCoverageMenuItems } from './coverageMenuItems.ts'
 
 // Both rows scale or color the coverage band and reach nothing else, and
 // neither carries the band's visibility toggle, so with the band hidden they

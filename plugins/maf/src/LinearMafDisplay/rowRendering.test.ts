@@ -248,7 +248,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.coverageBandActive).toBe(false)
     expect(display.coverageDisplayHeight).toBe(0)
     expect(display.rowsTopOffset).toBe(0)
-    expect(display.coverageDomain).toBeUndefined()
+    expect(display.coverageDepthDomain).toBeUndefined()
 
     // the *setting* is untouched, so the menu tick still reports what the user
     // chose rather than where they are zoomed
