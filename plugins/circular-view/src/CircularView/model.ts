@@ -98,7 +98,6 @@ import type {
   ChordLayerDisplay,
   PointerTarget,
 } from '../chords/shapes.ts'
-import type { RingFrame } from '../rings/ringMarks.ts'
 import type { FitLayout } from './fitLayout.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -719,7 +718,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        * what the ring and chord canvases both draw against: the view's box,
        * the circle's centre in it and the figure's rotation
        */
-      get polarFrame(): RingFrame {
+      get polarFrame(): {
+        canvasWidth: number
+        canvasHeight: number
+        centerX: number
+        centerY: number
+        offsetRadians: number
+      } {
         const [centerX, centerY] = this.circleCenterXY
         return {
           canvasWidth: this.width,
