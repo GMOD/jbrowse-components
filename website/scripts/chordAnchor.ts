@@ -29,8 +29,7 @@ export async function chordPoint(page: Page, anchor: ActionAnchor) {
       id: string
       type: string
       offsetRadians: number
-      figureOriginXY: [number, number]
-      centerXY: [number, number]
+      circleCenterXY: [number, number]
       chordDisplays: {
         shapes: { feature: { id: () => string } }[]
         shapeLabel: (feature: { id: () => string }) => string
@@ -77,8 +76,8 @@ export async function chordPoint(page: Page, anchor: ActionAnchor) {
         if (!box) {
           continue
         }
-        const centreX = box.left + view.figureOriginXY[0] + view.centerXY[0]
-        const centreY = box.top + view.figureOriginXY[1] + view.centerXY[1]
+        const centreX = box.left + view.circleCenterXY[0]
+        const centreY = box.top + view.circleCenterXY[1]
         const cos = Math.cos(view.offsetRadians)
         const sin = Math.sin(view.offsetRadians)
         for (const display of view.chordDisplays) {
@@ -118,8 +117,7 @@ export async function ideogramPoint(page: Page, anchor: ActionAnchor) {
     interface BandView {
       id: string
       type: string
-      figureOriginXY: [number, number]
-      centerXY: [number, number]
+      circleCenterXY: [number, number]
       staticSlices: {
         key: string
         region: { elided: boolean; refName?: string; assemblyName?: string }
@@ -147,8 +145,8 @@ export async function ideogramPoint(page: Page, anchor: ActionAnchor) {
         ?.getBoundingClientRect()
       if (centre && box && view.bandAt(...centre) === key) {
         return {
-          x: box.left + view.figureOriginXY[0] + view.centerXY[0] + centre[0],
-          y: box.top + view.figureOriginXY[1] + view.centerXY[1] + centre[1],
+          x: box.left + view.circleCenterXY[0] + centre[0],
+          y: box.top + view.circleCenterXY[1] + centre[1],
         }
       }
     }

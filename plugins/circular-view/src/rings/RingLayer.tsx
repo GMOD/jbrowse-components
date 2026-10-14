@@ -1,30 +1,17 @@
 import { Suspense } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
-import { passPhase } from '../CircularView/passPhase.ts'
+import { PassCanvas } from '../CircularView/components/PassCanvas.tsx'
 import { ringMarks } from './ringMarks.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
-import type {
-  RingBackend,
-  RingDisplay,
-  RingHostModel,
-  RingPassModel,
-} from './ringHost.ts'
+import type { RingBackend, RingDisplay, RingHostModel } from './ringHost.ts'
 import type { ComponentType } from 'react'
 
 const useStyles = makeStyles()({
-  canvas: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    pointerEvents: 'none',
-  },
   strips: {
     position: 'absolute',
     left: 0,
@@ -43,28 +30,6 @@ function ringFactory(canvas: HTMLCanvasElement): Promise<RingBackend> {
   return createMarkBackend(canvas, ringMarks)
 }
 
-const RingCanvas = observer(function RingCanvas({
-  pass,
-  view,
-}: {
-  pass: RingPassModel
-  view: CircularViewModel
-}) {
-  const { classes } = useStyles()
-  const handle = useRenderingBackend(ringFactory, pass)
-  const { width, height } = view
-  return (
-    <RenderCanvas
-      handle={handle}
-      className={classes.canvas}
-      style={{ width, height }}
-      data-testid="circular-ring-canvas"
-      drawn={pass.painted}
-      phase={passPhase(pass)}
-    />
-  )
-})
-
 /**
  * The rings: one canvas per group of ring passes, under the figure's SVG.
  * The ring pass places the circle's centre and rotation itself, so a canvas is
@@ -78,7 +43,13 @@ export const RingCanvases = observer(function RingCanvases({
   return (
     <>
       {view.ringHost.passes.map(pass => (
-        <RingCanvas key={pass.group} pass={pass} view={view} />
+        <PassCanvas
+          key={pass.group}
+          pass={pass}
+          factory={ringFactory}
+          view={view}
+          testid="circular-ring-canvas"
+        />
       ))}
     </>
   )

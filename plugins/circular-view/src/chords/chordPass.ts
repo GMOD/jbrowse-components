@@ -3,6 +3,7 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
+import type { RingFrame } from '../rings/ringMarks.ts'
 import type { ChordCell, ChordLayerFrame } from './chordMarks.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -12,11 +13,7 @@ export type ChordBackend = PerRegionRenderingBackend<ChordCell, ChordLayerFrame>
 /** What the chord canvas reads off the circular view. */
 export interface ChordPassView {
   initialized: boolean
-  width: number
-  height: number
-  offsetRadians: number
-  centerXY: [number, number]
-  figureOriginXY: [number, number]
+  polarFrame: RingFrame
   chordRadiusPx: number
   chordScale: { radiansPerBp: number; gapRadians: number }
   chordThinFadeFloor: number
@@ -58,16 +55,10 @@ export const ChordPass = types
   .views(self => ({
     get frame(): ChordLayerFrame {
       const view = self.view!
-      const [ox, oy] = view.figureOriginXY
-      const [cx, cy] = view.centerXY
       return {
-        canvasWidth: view.width,
-        canvasHeight: view.height,
-        centerX: ox + cx,
-        centerY: oy + cy,
+        ...view.polarFrame,
         radiansPerBp: view.chordScale.radiansPerBp,
         gapRadians: view.chordScale.gapRadians,
-        offsetRadians: view.offsetRadians,
         radiusPx: view.chordRadiusPx,
         thinFadeFloor: view.chordThinFadeFloor,
         focusGaps: view.chordFocusGaps,

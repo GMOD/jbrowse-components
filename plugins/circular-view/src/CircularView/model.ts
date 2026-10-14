@@ -98,6 +98,7 @@ import type {
   ChordLayerDisplay,
   PointerTarget,
 } from '../chords/shapes.ts'
+import type { RingFrame } from '../rings/ringMarks.ts'
 import type { FitLayout } from './fitLayout.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -703,6 +704,30 @@ function stateModelFactory(pluginManager: PluginManager) {
             figureSize / 2 +
             self.panY,
         ]
+      },
+      /**
+       * #getter
+       * the circle's centre in the view's box
+       */
+      get circleCenterXY(): [number, number] {
+        const [ox, oy] = this.figureOriginXY
+        const [cx, cy] = this.centerXY
+        return [ox + cx, oy + cy]
+      },
+      /**
+       * #getter
+       * what the ring and chord canvases both draw against: the view's box,
+       * the circle's centre in it and the figure's rotation
+       */
+      get polarFrame(): RingFrame {
+        const [centerX, centerY] = this.circleCenterXY
+        return {
+          canvasWidth: this.width,
+          canvasHeight: self.height,
+          centerX,
+          centerY,
+          offsetRadians: self.offsetRadians,
+        }
       },
       /**
        * #getter
@@ -1316,13 +1341,8 @@ function stateModelFactory(pluginManager: PluginManager) {
           this.setBpPerPx(newBpPerPx)
           return
         }
-        const [originX, originY] = self.figureOriginXY
-        const [cx, cy] = self.centerXY
-        this.zoomToPoint(
-          newBpPerPx,
-          self.width / 2 - originX - cx,
-          self.height / 2 - originY - cy,
-        )
+        const [cx, cy] = self.circleCenterXY
+        this.zoomToPoint(newBpPerPx, self.width / 2 - cx, self.height / 2 - cy)
       },
 
       /**

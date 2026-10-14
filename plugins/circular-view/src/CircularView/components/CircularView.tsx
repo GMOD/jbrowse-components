@@ -41,12 +41,8 @@ function offsetFromCenter(
   rect: DOMRect,
   { clientX, clientY }: { clientX: number; clientY: number },
 ) {
-  const [originX, originY] = model.figureOriginXY
-  const [cx, cy] = model.centerXY
-  return [
-    clientX - rect.left - originX - cx,
-    clientY - rect.top - originY - cy,
-  ] as const
+  const [cx, cy] = model.circleCenterXY
+  return [clientX - rect.left - cx, clientY - rect.top - cy] as const
 }
 
 const useStyles = makeStyles()(theme => ({

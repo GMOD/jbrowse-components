@@ -63,8 +63,7 @@ export interface RingHostView {
   radiusPx: number
   circumferencePx: number
   offsetRadians: number
-  centerXY: [number, number]
-  figureOriginXY: [number, number]
+  polarFrame: RingFrame
   displayedRegions: Region[]
   staticSlices: Slice[]
   assemblyNames: string[]
@@ -272,16 +271,7 @@ export const RingPass = types
   }))
   .views(self => ({
     get frame(): RingFrame {
-      const { view } = self.host!
-      const [ox, oy] = view.figureOriginXY
-      const [cx, cy] = view.centerXY
-      return {
-        canvasWidth: view.width,
-        canvasHeight: view.height,
-        centerX: ox + cx,
-        centerY: oy + cy,
-        offsetRadians: view.offsetRadians,
-      }
+      return self.host!.view.polarFrame
     },
     get cells(): ReadonlyMap<number, RingCell> {
       const cells = new Map<number, RingCell>()

@@ -15,6 +15,7 @@ import * as chordShader from './shaders/chord.generated.ts'
 import { focusAlpha } from './shaders/chordStage.js.generated.ts'
 import * as ribbonShader from './shaders/ribbon.generated.ts'
 
+import type { RingFrame } from '../rings/ringMarks.ts'
 import type { ChordLanes, ChordStage, RibbonLanes } from './chordStage.ts'
 import type {
   MarkContext2D,
@@ -181,12 +182,9 @@ export interface ChordCellDisplay {
 }
 
 /** The polar stage a frame draws through, shared by every display's cell. */
-export interface ChordLayerFrame extends MarkFrame {
-  centerX: number
-  centerY: number
+export interface ChordLayerFrame extends RingFrame {
   radiansPerBp: number
   gapRadians: number
-  offsetRadians: number
   radiusPx: number
   thinFadeFloor: number
   focusGaps: number
