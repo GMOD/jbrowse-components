@@ -144,10 +144,12 @@ describe('pickDotplotFeature', () => {
     // cumBp (42,40) is px (42,60); the endpoint (40,40) is px (40,60).
     const hit = pick(data, 42, 60)
     expect(hit?.distancePx).toBeCloseTo(2)
-    const halfLen = Math.hypot(30, 30) / 2
-    const along = Math.hypot(2, 0) * Math.cos(Math.PI / 4) + halfLen
-    const across = Math.hypot(2, 0) * Math.sin(Math.PI / 4)
-    expect(hit?.distancePx).toBeCloseTo(capsuleDistPx(along, across, halfLen))
+    const len = Math.hypot(30, 30)
+    const fromStart = 2 * Math.cos(Math.PI / 4) + len
+    const across = 2 * Math.sin(Math.PI / 4)
+    expect(hit?.distancePx).toBeCloseTo(
+      capsuleDistPx(fromStart, len - fromStart, across),
+    )
     // Diagonally off the corner a box would still contain, 3·√2 ≈ 4.2 px away.
     expect(pick(data, 43, 57)).toBeUndefined()
   })

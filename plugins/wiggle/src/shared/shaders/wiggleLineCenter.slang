@@ -38,16 +38,14 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // the color line's y at the segment centre and its rise per px along, so
+  // the color line's y at the segment start and its rise per px along, so
   // the fragment reads the value under itself
-  nointerpolation float2 centerLine : TEXCOORD2;
+  nointerpolation float2 startLine : TEXCOORD2;
   // each cut's y in the row
   nointerpolation float4 cutYsLo : TEXCOORD3;
   nointerpolation float4 cutYsHi : TEXCOORD4;
-  // signed px distance (along, perp) from the segment centre, and the
-  // segment's half-length, for the capsule SDF
-  float2 localPos : TEXCOORD0;
-  nointerpolation float segHalfLen : TEXCOORD1;
+  // capsule.slang's (along from start, along back from end, across)
+  float3 localPos : TEXCOORD0;
 };
 
 // Adjacent capsules share a round cap centred on the joint vertex, so the max
@@ -78,32 +76,27 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
     : currYpx;
   // Built in px space (clip x → px via viewportWidth) so the capsule stays
   // isotropic despite the differing per-axis px→clip scales.
-  float centerClipX = (midPrevX + midCurrX) * 0.5;
-  float centerYpx = (prevYpx + currYpx) * 0.5;
   float2 deltaPx = float2(
     (midCurrX - midPrevX) * u.viewportWidth * 0.5, currYpx - prevYpx);
   float len = length(deltaPx);
-  CapsuleFrame f = capsuleFrame(deltaPx, len);
-  float2 local =
-    capsuleQuadLocal(vid, len * 0.5, u.lineWidth * 0.5, u.devicePixelRatio);
-  float2 off = f.tangent * local.x + f.normal * local.y;
+  SegmentCorner c =
+    capsuleCorner(vid, deltaPx, u.lineWidth * 0.5, u.devicePixelRatio);
 
   VsOut o;
   o.position = float4(
-    centerClipX + pxToClipLen(off.x, u.viewportWidth),
-    1.0 - (centerYpx + off.y) * pxToClip,
+    (c.atEnd ? midCurrX : midPrevX) + pxToClipLen(c.offsetPx.x, u.viewportWidth),
+    1.0 - ((c.atEnd ? currYpx : prevYpx) + c.offsetPx.y) * pxToClip,
     0.0,
     1.0);
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.negColor = float4(unpackRGBA(inst.negColor).rgb, 1.0);
-  o.localPos = local;
-  o.segHalfLen = len * 0.5;
+  o.localPos = c.local;
   float currColorYpx = rowColorYPx(inst.score, rowTop, rowHeight, u);
   float prevColorYpx = hasPrev
     ? rowColorYPx(inst.prevScore, rowTop, rowHeight, u)
     : currColorYpx;
-  o.centerLine = float2(
-    (prevColorYpx + currColorYpx) * 0.5,
+  o.startLine = float2(
+    prevColorYpx,
     len > CAPSULE_MIN_LEN_PX ? (currColorYpx - prevColorYpx) / len : 0.0);
   o.cutYsLo = cutYsPx(0, rowTop, rowHeight, u);
   o.cutYsHi = cutYsPx(4, rowTop, rowHeight, u);
@@ -112,14 +105,15 @@ VsOut vs_main(WiggleLineCenterInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float dist = capsuleDist(fragIn.localPos, fragIn.segHalfLen);
+  float dist = capsuleDist(fragIn.localPos);
   float alpha = edgeCoverage(u.lineWidth * 0.5 - dist, u.devicePixelRatio);
   if (alpha <= 0.0) {
     discard;
   }
-  float along = clamp(fragIn.localPos.x, -fragIn.segHalfLen, fragIn.segHalfLen);
+  float along = clamp(
+    fragIn.localPos.x, 0.0, fragIn.localPos.x + fragIn.localPos.y);
   float4 color = bandColorAt(
-    fragIn.centerLine.x + fragIn.centerLine.y * along,
+    fragIn.startLine.x + fragIn.startLine.y * along,
     fragIn.cutYsLo,
     fragIn.cutYsHi,
     u,

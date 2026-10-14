@@ -8,7 +8,7 @@
 // So this mirrors vs_main's quad and fs_main's capsule SDF and asserts the
 // invariant the pair relies on: every point the fragment would give non-zero
 // coverage lies inside the polygon the vertex stage emitted.
-// SYNC: keep in step with vs_main's `ext` and fs_main's ramp.
+// SYNC: keep in step with capsule.slang's `capsuleCorner` pad and fs_main's ramp.
 //
 // The synteny twin is shaders/syntenyFillPad.test.ts, which exists for the same
 // reason and found the same class of bug.
@@ -138,7 +138,7 @@ function worstCrop(
   p2: Pt,
   halfWidth: number,
   dpr: number,
-  // What the vertex stage extends by — `capsuleQuadLocal`'s own expression.
+  // What the vertex stage extends by — `capsuleCorner`'s own expression.
   // The "do not reintroduce" test feeds the bare halfWidth it used to use.
   vsExt = halfWidth + aaHalfPx(dpr),
 ) {

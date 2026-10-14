@@ -25,10 +25,8 @@
 
 import alignmentsUniforms;
 import antialias;
-// The FRAME only. capsule.slang's cap is deliberately not this pass's — the
-// Canvas2D twin strokes butt caps, so the coverage stays buttSegmentCoverage
-// (alignmentsUniforms) and buttSegmentCoverage.test.ts fails if a round one
-// comes back. Orienting a segment is the half that carries no cap at all.
+// The butt-capped half: the Canvas2D twin strokes butt caps, and
+// buttSegmentCoverage.test.ts fails if a round one comes back.
 import capsule;
 import colorPack;
 import hpmath;
@@ -59,13 +57,8 @@ struct Instance {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // Offset from the segment's centre in CSS px, in the segment's OWN frame:
-  // x along it, y perpendicular. The quad is extruded by exactly the padded
-  // half-extents, so |grad| is 1 per CSS px on both axes and the AA ramp is a
-  // constant.
-  float2 local    : COLOR1;
-  // Half-length of the drawn segment, so the fragment can measure the butt caps.
-  nointerpolation float halfLen : COLOR2;
+  // capsule.slang's (along from bp1, along back from bp2, across), CSS px
+  float3 local    : COLOR1;
 };
 
 // linkedReadColorSlot (alignmentsUniforms) is the index rule, split out so the
@@ -82,29 +75,15 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // not itself flip, so this frame is unflipped and `flipX` is applied to the
   // finished vertex below — a reflection is an isometry, so it mirrors the quad
   // without changing its width.
-  float x1Px = clipXToPx(bpToClipX(inst.bp1, u), u.canvasW);
-  float x2Px = clipXToPx(bpToClipX(inst.bp2, u), u.canvasW);
-  float y1Px = pileupRowCenterPx(inst.y1, u);
-  float y2Px = pileupRowCenterPx(inst.y2, u);
+  float2 p1 = float2(
+    clipXToPx(bpToClipX(inst.bp1, u), u.canvasW), pileupRowCenterPx(inst.y1, u));
+  float2 p2 = float2(
+    clipXToPx(bpToClipX(inst.bp2, u), u.canvasW), pileupRowCenterPx(inst.y2, u));
+  SegmentCorner c = buttSegmentCorner(
+    vid, p2 - p1, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
+  o.local = c.local;
 
-  float2 mid = float2(x1Px + x2Px, y1Px + y2Px) * 0.5;
-  float2 delta = float2(x2Px - x1Px, y2Px - y1Px);
-  float len = length(delta);
-  // A zero-length connector needs two mates at the same bp AND the same row,
-  // which is the same read; capsuleFrame's guard is what keeps a degenerate
-  // instance from emitting NaN positions and taking the whole draw with it.
-  CapsuleFrame frame = capsuleFrame(delta, len);
-  float2 dir = frame.tangent;
-  float2 nrm = frame.normal;
-
-  // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
-  // coverage the fragment measures with.
-  float halfLen = len * 0.5;
-  o.local =
-    segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
-  o.halfLen = halfLen;
-
-  float2 p = mid + dir * o.local.x + nrm * o.local.y;
+  float2 p = (c.atEnd ? p2 : p1) + c.offsetPx;
   o.position = float4(flipX(pxToClipX(p.x, u.canvasW), u),
                       yPxToClipY(p.y, u.canvasH), 0.0, 1.0);
 
@@ -120,7 +99,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // is a constant number of device pixels rather than a derivative
   // (aaHalfPx).
   float alpha = buttSegmentCoverage(
-    fragIn.local, fragIn.halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
+    fragIn.local, LINKED_READ_LINE_WIDTH_PX * 0.5, u.devicePixelRatio);
   // Straight alpha; the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

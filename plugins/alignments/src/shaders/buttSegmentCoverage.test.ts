@@ -9,12 +9,14 @@ import * as linkedReadLineWgsl from './slang/linkedReadLine.wgsl.generated.ts'
 // for a while, under comments calling it butt-capped: a whole halfWidth of ink
 // overhanging each endpoint that no other backend drew. This pins the cut.
 //
-// `buttSegmentCoverage` takes a float2, so it is outside the emitter's scalar
+// `buttSegmentCoverage` takes a float3, so it is outside the emitter's scalar
 // subset and has no generated twin. What it is made of does — `edgeCoverage`
 // is imported here, so the ramp arithmetic is the shader's own and only the
 // one-line product is restated, which is the residue adr-051 accepts (the
 // alternative, restating the ramp, is what makes a parity test pass against a
 // shader drawing something else).
+// Arguments stay centre-relative for the tests' sake; the shader's `local`
+// measures along from each end, which is `halfLen ± localX`.
 function buttSegmentCoverage(
   localX: number,
   localY: number,
@@ -22,15 +24,17 @@ function buttSegmentCoverage(
   halfWidthPx: number,
   dpr: number,
 ) {
+  const fromStart = halfLenPx + localX
+  const fromEnd = halfLenPx - localX
   return (
     edgeCoverage(halfWidthPx - Math.abs(localY), dpr) *
-    edgeCoverage(halfLenPx - Math.abs(localX), dpr)
+    edgeCoverage(Math.min(fromStart, fromEnd), dpr)
   )
 }
 
 // The round-capped form these two passes used to ink, modelled here only so the
 // difference can be asserted rather than described. This is render-core's
-// capsule.slang, where the round cap is load-bearing for its own two consumers.
+// capsule.slang's `capsuleDist`, where the round cap is load-bearing.
 function capsuleCoverage(
   localX: number,
   localY: number,
@@ -77,7 +81,7 @@ test('the ends are exactly as soft as the sides', () => {
 })
 
 test('the quad pad is exactly the ramp reach, at every dpr', () => {
-  // `segmentQuadLocal` grows the quad by `aaHalfPx(dpr)` on both axes, and the
+  // `buttSegmentCorner` grows the quad by `aaHalfPx(dpr)` on both axes, and the
   // ramp reaches exactly that far past the ink — so the pad contains the ramp
   // and adds nothing beyond it. Both halves are failures: pad less and the
   // ramp is clipped into a hard 50%-alpha edge; pad more and every fragment in
@@ -119,9 +123,10 @@ test.each([
   for (const src of [wgsl, glsl]) {
     expect(src).toContain('buttSegmentCoverage_0(')
     // The separable product, in the emitted source rather than in the .slang:
-    // one ramp across the width, one along the length, multiplied.
+    // one ramp across the width, one along the length from the nearer end,
+    // multiplied.
     expect(src).toMatch(
-      /return edgeCoverage_0\([^\n]*abs\(\w+\.y\)[^\n]*\* edgeCoverage_0\([^\n]*abs\(\w+\.x\)/,
+      /return edgeCoverage_0\([^\n]*abs\(\w+\.z\)[^\n]*\* edgeCoverage_0\([^\n]*min\(\w+\.x, \w+\.y\)/,
     )
     // The round-capped distance these passes used to measure with. Its return
     // would be a dome of ink past each endpoint that no other backend draws.

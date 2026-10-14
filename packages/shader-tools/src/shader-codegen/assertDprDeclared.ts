@@ -29,10 +29,10 @@ const DPR_CONSUMERS = [
   'aaPx',
   'aaHalfPx',
   'edgeCoverage',
-  'capsuleQuadLocal',
+  'capsuleCorner',
   'discExpand',
   'glyphExpand',
-  'segmentQuadLocal',
+  'buttSegmentCorner',
   'buttSegmentCoverage',
   'dashCoverage',
 ]

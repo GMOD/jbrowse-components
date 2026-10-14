@@ -45,11 +45,9 @@ struct LineCenterInstance {
 struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color : COLOR0;
-  // signed px distance (along, across) from the segment centre, and the
-  // segment's half-length, for the capsule SDF
-  float2 localPos : TEXCOORD0;
-  nointerpolation float segHalfLen : TEXCOORD1;
-  // the color line's y at the segment centre and its rise per px along, so
+  // capsule.slang's (along from start, along back from end, across)
+  float3 localPos : TEXCOORD0;
+  // the color line's y at the segment start and its rise per px along, so
   // the fragment reads the value under itself
   nointerpolation float2 colorLine : TEXCOORD2;
   nointerpolation float4 cutYsLo : TEXCOORD3;
@@ -65,8 +63,7 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
   if (place.hidden) {
     o.position = float4(2.0, 2.0, 0.0, 1.0);
     o.color = float4(0.0);
-    o.localPos = float2(0.0);
-    o.segHalfLen = 0.0;
+    o.localPos = float3(0.0);
     o.colorLine = float2(0.0);
     o.cutYsLo = float4(0.0);
     o.cutYsHi = float4(0.0);
@@ -87,27 +84,22 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
   float prevYPx = hasPrev ? lineValueYPx(inst.prevY, bandTop, u) : currYPx;
   // Built in px space so the capsule stays isotropic despite the differing
   // per-axis px→clip scales.
-  float centerClipX = (midPrevX + midCurrX) * 0.5;
-  float centerYPx = (prevYPx + currYPx) * 0.5;
   float2 deltaPx = float2(
     (midCurrX - midPrevX) * u.viewportWidth * 0.5, currYPx - prevYPx);
   float len = length(deltaPx);
-  CapsuleFrame f = capsuleFrame(deltaPx, len);
-  float2 local =
-    capsuleQuadLocal(vid, len * 0.5, u.lineWidth * 0.5, u.devicePixelRatio);
-  float2 off = f.tangent * local.x + f.normal * local.y;
+  SegmentCorner c =
+    capsuleCorner(vid, deltaPx, u.lineWidth * 0.5, u.devicePixelRatio);
   o.position = float4(
-    centerClipX + pxToClipLen(off.x, u.viewportWidth),
-    yPxToClipY(centerYPx + off.y, u.canvasHeight),
+    (c.atEnd ? midCurrX : midPrevX) + pxToClipLen(c.offsetPx.x, u.viewportWidth),
+    yPxToClipY((c.atEnd ? currYPx : prevYPx) + c.offsetPx.y, u.canvasHeight),
     0.0,
     1.0);
   o.color = place.color;
-  o.localPos = local;
-  o.segHalfLen = len * 0.5;
+  o.localPos = c.local;
   float currColorYPx = lineColorYPx(inst.y, bandTop, u);
   float prevColorYPx = hasPrev ? lineColorYPx(inst.prevY, bandTop, u) : currColorYPx;
   o.colorLine = float2(
-    (prevColorYPx + currColorYPx) * 0.5,
+    prevColorYPx,
     len > CAPSULE_MIN_LEN_PX ? (currColorYPx - prevColorYPx) / len : 0.0);
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
   o.cutYsHi = lineCutYsPx(4, bandTop, u);
@@ -118,12 +110,12 @@ VsOut vs_main(LineCenterInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  float dist = capsuleDist(v.localPos, v.segHalfLen);
+  float dist = capsuleDist(v.localPos);
   float alpha = edgeCoverage(u.lineWidth * 0.5 - dist, u.devicePixelRatio);
   if (alpha <= 0.0) {
     discard;
   }
-  float along = clamp(v.localPos.x, -v.segHalfLen, v.segHalfLen);
+  float along = clamp(v.localPos.x, 0.0, v.localPos.x + v.localPos.y);
   float4 color = lineFragmentColor(
     v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, u);
   // premultiplied, so same-color overlaps union under the max blend

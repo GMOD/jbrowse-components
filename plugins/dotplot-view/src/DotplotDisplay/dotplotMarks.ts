@@ -30,14 +30,11 @@ export interface DotplotSegmentParams {
   baseV: number
 }
 
-// Where the cursor lands on a segment's ink, in the segment's own frame: the
-// shader's `capsuleFrame` (with its guard for the zero-length dots a
-// whole-genome plot is mostly made of) measured by the shader's own
-// `capsuleDistPx`, so a hit is the ink the fragment actually shades, end caps
-// included. The distance is to the centreline, so the stroke's half width is
-// the caller's tolerance — as it is for `point`'s GLYPH branch, though not its
-// bar, which is grabbed anywhere inside the rect it fills. The capsule metric
-// IS the distance to that clamped point, so `nearestInk` never re-derives it.
+// Where the cursor lands on a segment's ink, measured by the shader's own
+// `capsuleDistPx` from each end, with `capsuleFrame`'s guard for the
+// zero-length dots a whole-genome plot is mostly made of — so a hit is the ink
+// the fragment shades, end caps included. The distance is to the centreline;
+// the stroke's half width is the caller's tolerance.
 function nearestOnSegmentPx(
   px: number,
   py: number,
@@ -52,19 +49,16 @@ function nearestOnSegmentPx(
   const degenerate = len <= CAPSULE_MIN_LEN_PX
   const tx = degenerate ? 1 : dx / len
   const ty = degenerate ? 0 : dy / len
-  const cx = (ax + bx) / 2
-  const cy = (ay + by) / 2
-  const rx = px - cx
-  const ry = py - cy
-  const halfLen = len / 2
-  const along = rx * tx + ry * ty
-  const clamped = Math.min(Math.max(along, -halfLen), halfLen)
-  const distPx = capsuleDistPx(along, ry * tx - rx * ty, halfLen)
+  const rx = px - ax
+  const ry = py - ay
+  const fromStart = rx * tx + ry * ty
+  const along = Math.min(Math.max(fromStart, 0), len)
+  const distPx = capsuleDistPx(fromStart, len - fromStart, ry * tx - rx * ty)
   // x/y/distSq in `InkHit`'s own order, as the shared rect and point forms
   // declare them, so one hidden class serves every `nearestInk` caller.
   return {
-    x: cx + tx * clamped,
-    y: cy + ty * clamped,
+    x: ax + tx * along,
+    y: ay + ty * along,
     distSq: distPx * distPx,
   }
 }
@@ -78,22 +72,18 @@ export const segmentMark: MarkShape<DotplotGeometryData, DotplotSegmentParams> =
     },
 
     writeUniforms(scratch, _clip, _block, frame, p) {
+      // cumBpToPxH/V with the fetch-time base folded into the offset, in
+      // float64: both operands of `base - viewBp` are near the view, so no
+      // genome-scale magnitude reaches the Float32 the shader multiplies by.
       dotplotShader.writeUniforms(scratch, {
         resolution: [frame.canvasWidth, frame.canvasHeight],
+        scale: [p.bpPerPxHInv, -p.bpPerPxVInv],
+        offset: [
+          cumBpToPxH(p.baseH, p.viewBpH, p.bpPerPxHInv),
+          cumBpToPxV(p.baseV, p.viewBpV, p.bpPerPxVInv, frame.canvasHeight),
+        ],
         lineWidth: p.lineWidth,
         alpha: p.alpha,
-        bpPerPxHInv: p.bpPerPxHInv,
-        bpPerPxVInv: p.bpPerPxVInv,
-        // panPx = (base - viewBp)/bpPerPx: how far the view has panned from the
-        // fetch-time base, in px. Both operands are near the view (small delta),
-        // so no genome-scale magnitude multiplies the rounded inv — that's what
-        // keeps a single Float32 coord sub-pixel. SYNC: the `bpRel*bpPerPxInv +
-        // panPx` reconstruction in dotplot.slang's vs_main, and
-        // drawDotplotInstances' equivalent from absolute cumBp.
-        panPxH: (p.baseH - p.viewBpH) * p.bpPerPxHInv,
-        panPxV: (p.baseV - p.viewBpV) * p.bpPerPxVInv,
-        // The shader measures in CSS px, so it needs the screen's ratio to size
-        // its AA ramp at one output pixel; see aaHalf in dotplot.slang.
         devicePixelRatio: getDpr(),
       })
     },

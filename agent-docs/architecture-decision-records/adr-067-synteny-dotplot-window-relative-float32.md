@@ -49,9 +49,26 @@ err ≈ (bpRel / bpPerPx) · 2⁻²³ = distanceFromBaseInPx · 2⁻²³
 The fetch window is grid-snapped with a `max(width/2, 2000)` px pan buffer
 (`syntenyFetchWindow.ts`) and the base is recaptured whenever geometry rebuilds,
 so anything on screen is within a few thousand px of the base — worst case
-~5×10⁻⁴ px. Far-off-screen corners do lose precision, but the error at the far
-end is scaled by the visible fraction of the run, so it lands on the
-clipped-away sliver.
+~5×10⁻⁴ px.
+
+That bound is per coordinate, and it reaches the screen only if the shader
+builds visible geometry from the near corner. Two shaders didn't, and both
+were measured in the compiled float32 (slangc's C++ target) on a segment with
+one end on screen:
+
+- **The capsule quad** (dotplot, linked reads, the line-centre plots) placed
+  corners at centre ± half-length: 0.6 px off at 1 px/bp over 10 Mbp, 2.7 px at
+  50 px/bp over 1 Mbp, and the round cap read 0 or 2 px where the truth was 0.3.
+  `capsule.slang`'s `segmentCorner` now hangs each corner off its own endpoint.
+- **Synteny's curve edges** blended `a + s(b − a)` with `s = sBlend(t)` rounding
+  near 1: 4.9 px with a top corner 5×10⁷ px away. `curveBlend` computes the top
+  weight as `sBlend(1 − t)` and the edge as a weighted sum; both are exact there.
+
+What remains is the far corner's own bp→px rounding, which tilts a segment
+passing through the view with both ends off screen: 0.2 px over 10 Mbp at
+1 px/bp, 3–10 px at 50 px/bp. Clipping segments to the fetch window at pack time
+would bound it; it is parked, because the clipped ends would then need a flag to
+draw no cap.
 
 Strictly better than both predecessors at once: half the bytes of hi/lo, **and**
 no whole-assembly ceiling, so 100+ Gbp genomes render correctly.

@@ -5,15 +5,15 @@
   the single source of truth for WGSL, GLSL ES 300, instance stride, field
   offsets, and GL attribute layout. See
   `agent-docs/architecture-decision-records/adr-005-shader-codegen-slang.md`.
-- **The AA ramp is `0.5/dpr` CSS px and the vertex quad is padded by the same
-  amount.** The shader measures in CSS px while the viewport is device px, so
-  the ratio arrives as a uniform (`devicePixelRatio`) — the same constant, for
-  the same reason, as `syntenyTypes.slang`'s `aaHalfPx`. It is analytic, not
-  `fwidth(d)`: `d` is a true Euclidean distance so `|grad d| = 1` and there is
-  nothing to measure, while `fwidth` overshoots by up to sqrt(2) on exactly the
-  diagonals a dotplot is made of. The two halves are one change — a ramp the
-  quad doesn't contain gets cropped at 50% alpha, which is a hard aliased edge.
-  `shaders/dotplotCapsulePad.test.ts` pins the containment and the
+- **The AA ramp is `0.5/dpr` CSS px and the vertex quad is padded past the ink
+  by the same amount** (`capsuleCorner`: halfWidth + `aaHalfPx`). The shader
+  measures in CSS px while the viewport is device px, so the ratio arrives as a
+  uniform (`devicePixelRatio`); `antialias.slang` owns the conversion. It is
+  analytic, not `fwidth(d)`: `d` is a true Euclidean distance so `|grad d| = 1`
+  and there is nothing to measure, while `fwidth` overshoots by up to sqrt(2) on
+  exactly the diagonals a dotplot is made of. The two halves are one change — a
+  ramp the quad doesn't contain gets cropped at 50% alpha, which is a hard
+  aliased edge. `shaders/dotplotCapsulePad.test.ts` pins the containment and the
   counterexample; it is the twin of
   `LinearSyntenyDisplay/shaders/syntenyFillPad.test.ts`. Change either half, run
   it.
@@ -28,11 +28,11 @@
   the per-region mark backend.** The view hands it one canvas-wide block per
   display keyed by `sharedBackendKey` (`canvasWideBlocks`) and its
   `geometryByDisplayKey` map: a dotplot's x is the payload's own absolute cumBp
-  through the shader's `panPx` fold, so the block's bp span is an identity clip
-  and the per-region frame is the whole of what a keyed one was. `baseH`/`baseV`
-  ride the payload and the projection rides the frame, and
+  through the shader's per-axis `offset` fold, so the block's bp span is an
+  identity clip and the per-region frame is the whole of what a keyed one was.
+  `baseH`/`baseV` ride the payload and the projection rides the frame, and
   `params(state, region)` is where they meet — which is what puts each display's
-  own base in its own `panPx`.
+  own base in its own `offset`.
 - `instanceInterleave.ts` owns the pack loop and the recolor fast path beside it
   (`dotplotInstanceCache`, which the mark's `pack` calls), keyed on `x1`'s
   identity. Keyed on the geometry rather than on the display, because the mark

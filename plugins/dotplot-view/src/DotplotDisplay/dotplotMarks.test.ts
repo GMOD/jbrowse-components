@@ -5,6 +5,7 @@ import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { DOTPLOT_MARKS, segmentMark } from './dotplotMarks.ts'
+import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 import {
   INSTANCE_OFFSET_F32 as F_F32,
   INSTANCE_OFFSET_U32 as F_U32,
@@ -107,11 +108,11 @@ describe('the dotplot mark list', () => {
     expect(stored[F_F32.y1]).toBe(200)
   })
 
-  // panPx is the whole point of the window-relative scheme: it folds the
+  // The offset is the whole point of the window-relative scheme: it folds the
   // genome-scale (base - viewBp) delta on the CPU (float64) so a single Float32
   // coord projects correctly. base = 0 in the other fixtures, so this is the
   // only test exercising a non-trivial base.
-  test('panPx projects a genome-scale coord to the correct screen X/Y', () => {
+  test('scale and offset project a genome-scale coord to its screen X/Y', () => {
     const base = 1.5e9 // fetch-time base cumBp, past Float32 exact-int
     const offsetBp = base - 500 // view panned 500px past the base
     const { hal } = render(
@@ -130,13 +131,10 @@ describe('the dotplot mark list', () => {
     )
 
     const u = hal.getLastUniformsF32()!
-    // panPx = (base - viewBp)/bpPerPx = 500
-    expect(u[U.panPxH]!).toBeCloseTo(500, 2)
-    expect(u[U.panPxV]!).toBeCloseTo(500, 2)
-    // screenX = xRel*bpPerPxInv + panPx == (cumBp - viewBp)/bpPerPx
-    const xRel = Math.fround(base + 300 - base)
-    const screenX = xRel * u[U.bpPerPxHInv]! + u[U.panPxH]!
-    expect(screenX).toBeCloseTo(base + 300 - offsetBp, 2)
+    const screenX = Math.fround(300) * u[U.scale]! + u[U.offset]!
+    const screenY = Math.fround(700) * u[U.scale + 1]! + u[U.offset + 1]!
+    expect(screenX).toBeCloseTo(cumBpToPxH(base + 300, offsetBp, 1), 2)
+    expect(screenY).toBeCloseTo(cumBpToPxV(base + 700, offsetBp, 1, 600), 2)
   })
 
   test('writes the resolution, stroke width and opacity of the frame', () => {
@@ -162,7 +160,7 @@ describe('the dotplot mark list', () => {
 
   // One block per display, so each display's own base reaches the uniforms
   // rather than the last uploaded one's.
-  test('each display uses its own base for panPx', () => {
+  test('each display uses its own base for the offset', () => {
     const { hal } = render(
       new Map([
         [7, makeGeometry({ baseH: 1000, baseV: 2000 })],
@@ -171,10 +169,12 @@ describe('the dotplot mark list', () => {
     )
     const draws = hal.draws()
     expect(draws.map(d => d.regionKey)).toEqual([7, 9])
-    expect(hal.uniformsOf(draws[0]!)![U.panPxH]).toBeCloseTo(1000, 2)
-    expect(hal.uniformsOf(draws[0]!)![U.panPxV]).toBeCloseTo(2000, 2)
-    expect(hal.uniformsOf(draws[1]!)![U.panPxH]).toBeCloseTo(3000, 2)
-    expect(hal.uniformsOf(draws[1]!)![U.panPxV]).toBeCloseTo(4000, 2)
+    const offsetOf = (i: number) => {
+      const u = hal.uniformsOf(draws[i]!)!
+      return [u[U.offset], u[U.offset + 1]]
+    }
+    expect(offsetOf(0)).toEqual([1000, 600 - 2000])
+    expect(offsetOf(1)).toEqual([3000, 600 - 4000])
   })
 
   // An empty pack IS the release, and the key stays in the map: the cleared

@@ -28,8 +28,8 @@ import type {
 } from '@jbrowse/synteny-core'
 
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
-// without losing per-base precision. Hi/lo splitting happens at the GPU upload
-// boundary only — never in plain JS, per project rules.
+// without losing per-base precision. The GPU upload narrows `cumBp - base` to
+// Float32 (instanceInterleave.ts).
 export interface DotplotFeaturesAndPositionsResult {
   p11: Float64Array
   p12: Float64Array

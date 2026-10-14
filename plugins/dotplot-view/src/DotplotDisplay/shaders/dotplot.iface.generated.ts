@@ -18,11 +18,9 @@ export const UNIFORMS_SIZE_BYTES = 48
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   resolution: 0,
-  lineWidth: 2,
-  panPxH: 3,
-  bpPerPxHInv: 4,
-  panPxV: 5,
-  bpPerPxVInv: 6,
+  scale: 2,
+  offset: 4,
+  lineWidth: 6,
   alpha: 7,
   devicePixelRatio: 8,
 } as const
@@ -30,11 +28,9 @@ export const UNIFORM_OFFSET_F32 = {
 
 export interface Uniforms {
   resolution: [number, number]
+  scale: [number, number]
+  offset: [number, number]
   lineWidth: number
-  panPxH: number
-  bpPerPxHInv: number
-  panPxV: number
-  bpPerPxVInv: number
   alpha: number
   devicePixelRatio: number
 }
@@ -43,11 +39,11 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const f32 = new Float32Array(buf)
   f32[0] = uniforms.resolution[0]
   f32[1] = uniforms.resolution[1]
-  f32[2] = uniforms.lineWidth
-  f32[3] = uniforms.panPxH
-  f32[4] = uniforms.bpPerPxHInv
-  f32[5] = uniforms.panPxV
-  f32[6] = uniforms.bpPerPxVInv
+  f32[2] = uniforms.scale[0]
+  f32[3] = uniforms.scale[1]
+  f32[4] = uniforms.offset[0]
+  f32[5] = uniforms.offset[1]
+  f32[6] = uniforms.lineWidth
   f32[7] = uniforms.alpha
   f32[8] = uniforms.devicePixelRatio
 }

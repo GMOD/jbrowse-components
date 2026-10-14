@@ -124,11 +124,12 @@ try {
       const uf = new Float32Array(ub)
       uf[0] = 1200
       uf[1] = 800
-      uf[2] = lineWidth
-      uf[3] = 0 // panPxH
-      uf[4] = 1 // bpPerPxHInv — data is already in px
-      uf[5] = 0 // panPxV
-      uf[6] = 1 // bpPerPxVInv
+      // data is already in px: scale (1,-1), offset (0, height)
+      uf[2] = 1
+      uf[3] = -1
+      uf[4] = 0
+      uf[5] = 800
+      uf[6] = lineWidth
       uf[7] = 1 // alpha
       uf[8] = 1 // devicePixelRatio
       gl.bindBuffer(gl.UNIFORM_BUFFER, ubo)

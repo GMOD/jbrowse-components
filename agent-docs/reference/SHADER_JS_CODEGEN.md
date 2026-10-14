@@ -157,6 +157,11 @@ Butt caps serve alignments `linkedReadLine` and render-core `linkMark` under `li
 because their Canvas2D/SVG twins stroke butt: inking round caps on a read connector
 diverges from the other two backends.
 
+Both caps take their quad from `capsule.slang`'s `segmentCorner`, which hangs each
+corner off its own endpoint and hands the fragment its distance along from each
+end. A segment with one end on screen and the other 1e7 px away is ordinary, and
+built from its centre its visible corners came out pixels off (ADR-067).
+
 ### The pad is the other half of every coverage
 
 The quad the vertex stage emits and the ramp the fragment stage shades must be

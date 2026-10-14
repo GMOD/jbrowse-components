@@ -13,7 +13,6 @@
 //! js-skip: expandMinWidthX — the clip-space half of this plugin's 1 CSS px floor; the px core it wraps is hpmath's expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports into @jbrowse/alignments-core and fillSpanRect (this pass's Canvas2D twin) places its edges with
 module alignmentsUniforms;
 
-import antialias;
 import colorPack;
 import hpmath;
 
@@ -132,39 +131,6 @@ public struct Uniforms {
   // ramp in DEVICE pixels. Appended at the tail for offset stability.
   public float devicePixelRatio;
 };
-
-
-// A BUTT-capped stroked segment: the quad that covers it, and the coverage that
-// shades it. They belong together because the pad is the contract — the quad
-// grows by exactly `aaHalfPx(dpr)` past the ink on both axes, which is the
-// ramp's reach and no more. Pad less and the ramp is clipped, silently; pad
-// more and the surplus fragments shade to alpha 0 and blend anyway.
-//
-// Butt caps, because that is what the Canvas2D/SVG twin draws: its painter
-// strokes moveTo/lineTo with the default lineCap. The round cap belongs to
-// `capsuleDist`, where it is load-bearing (a dotplot dot is the degenerate
-// cap; linecenter's coincident caps make its max-blend joins seamless) —
-// nothing here wants it, so the cut at the ends is the ink's own edge ramp.
-//
-// The product form is exact: box-filter coverage of an axis-aligned rectangle
-// separates per axis, so the ends are exactly as soft as the sides.
-//
-// `local` is in the SEGMENT's own frame — x along it, y across it — so a
-// diagonal segment costs nothing here. Mapping that frame to the screen is the
-// caller's: a linked-read connector rotates it onto capsuleFrame's
-// tangent/normal.
-public float2 segmentQuadLocal(
-    uint vid, float halfLenPx, float halfWidthPx, float dpr) {
-  float ext = aaHalfPx(dpr);
-  float2 q = quadLocal(vid) * 2.0 - 1.0;
-  return float2(q.x * (halfLenPx + ext), q.y * (halfWidthPx + ext));
-}
-
-public float buttSegmentCoverage(
-    float2 local, float halfLenPx, float halfWidthPx, float dpr) {
-  return edgeCoverage(halfWidthPx - abs(local.y), dpr)
-       * edgeCoverage(halfLenPx - abs(local.x), dpr);
-}
 
 // ---- Helper functions ---------------------------------------------------
 //

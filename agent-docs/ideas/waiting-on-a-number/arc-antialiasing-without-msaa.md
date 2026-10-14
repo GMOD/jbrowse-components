@@ -48,7 +48,7 @@ nothing to smooth. Anything above zero is ink the rasterizer cuts, and that is
 exactly what MSAA resolves.
 
 The arc passes inflate their geometry by half a ramp past the ink
-(`evalArcVertex`'s `hw = halfWidthPx + aaHalfPx(dpr)`, and `segmentQuadLocal`
+(`evalArcVertex`'s `hw = halfWidthPx + aaHalfPx(dpr)`, and `buttSegmentCorner`
 for the flat/tick/linked-read forms), and `aaHalfPx(dpr)` is `0.5 / dpr` CSS px
 — exactly the reach of the ramp `edgeCoverage` runs. Substituting that offset
 `d = halfWidthPx + 0.5 / dpr`:
@@ -59,7 +59,7 @@ edgeCoverage(halfWidthPx - d, dpr) = clamp(-0.5/dpr * dpr + 0.5, 0, 1) = 0
 
 The blend is `src-alpha / one-minus-src-alpha`, so alpha 0 is a no-op on the
 framebuffer. Note it comes out to zero *exactly*, with no slack: the pad is the
-ramp's reach and not a pixel more, which is deliberate (`segmentQuadLocal`'s own
+ramp's reach and not a pixel more, which is deliberate (`buttSegmentCorner`'s own
 note) and which leaves the claim resting entirely on the geometry landing where
 the arithmetic says.
 
@@ -130,7 +130,7 @@ other things, none of them curves.
 The same pattern covers the link's straight shapes — the read cloud's `line`
 and the tick's stem, both a segment distance plus a ramped dash — and
 `linkedReadLine.slang` (`buttSegmentCoverage`), which pads with
-`segmentQuadLocal`, which is a quad rather than a chorded hull, so the
+`buttSegmentCorner`, which is a quad rather than a chorded hull, so the
 substitution is the whole story for them and it comes out 0 on every edge the
 fragment measures — all four for the two butt-capped forms, the two long sides
 for the tick, whose ends are the band cut instead.
@@ -185,7 +185,7 @@ capsule; `wiggleLine`'s smooth mode (`wiggleLineCenter.slang`); both
 synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
 `strokeFs`); the circular view's `ringWarp`. Each pads by exactly the ramp's own
 reach and no shape intervenes between the pad and the ink —
-`segmentQuadLocal`, `capsuleQuadLocal`, `straightGeometry`'s `pad`, and
+`buttSegmentCorner`, `capsuleCorner`, `straightGeometry`'s `pad`, and
 `ringWarp`'s rim polygons, which circumscribe the outer rim and inscribe the
 inner one with a device pixel to spare. Re-checked 2026-09-25 by substitution;
 these are the rows that came out 0.

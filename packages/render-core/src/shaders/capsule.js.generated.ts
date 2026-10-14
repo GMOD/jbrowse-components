@@ -8,7 +8,7 @@ function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
 }
 
-export function capsuleDistPx(alongPx: number, acrossPx: number, halfLenPx: number): number {
-  let _t0 = _max((Math.abs(alongPx) - halfLenPx), 0.0)
+export function capsuleDistPx(fromStartPx: number, fromEndPx: number, acrossPx: number): number {
+  let _t0 = _max(_max(-fromStartPx, -fromEndPx), 0.0)
   return Math.sqrt(((_t0 * _t0) + (acrossPx * acrossPx)))
 }

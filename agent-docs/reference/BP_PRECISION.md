@@ -47,7 +47,12 @@ corner relative to a per-axis fetch-time base (`base = offsetPx * bpPerPx`):
 
 - The vertex attribute is one Float32 `bpRel = cumBp − base`; the shader computes
   screen X as `bpRel * bpPerPxInv + panPx`, with `panPx` folded on the CPU in
-  float64 (`computeTransform` is the single implementation).
+  float64 (`computeTransform` is the single implementation). Dotplot folds each
+  axis, v flip included, into one `scale`/`offset` pair the same way.
+- A per-coordinate bound is not an on-screen one. The shader has to build
+  visible geometry from the near corner, never as a difference of two far ones
+  (a centre ± half-length, a `lerp`). ADR-067 has the two that did and the
+  residual for a segment with both ends off screen.
 
 ### The Float64 stage is a precision requirement
 

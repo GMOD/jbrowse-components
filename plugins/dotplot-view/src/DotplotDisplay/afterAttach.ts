@@ -187,10 +187,12 @@ export function doAfterAttach(
         // Read offsetPx untracked so panning alone doesn't rebuild geometry
         // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
         // which IS tracked, so the base is recaptured near the view on zoom.
+        // Whole bp, so an integer coordinate minus it stays exact in Float32
+        // out to 2^24 bp.
         // eslint-disable-next-line no-restricted-syntax -- effect input: the geometry build consumes the pan offset, zoom is the decision
         const { baseH, baseV } = untracked(() => ({
-          baseH: hview.offsetPx * hview.bpPerPx,
-          baseV: vview.offsetPx * vview.bpPerPx,
+          baseH: Math.round(hview.offsetPx * hview.bpPerPx),
+          baseV: Math.round(vview.offsetPx * vview.bpPerPx),
         }))
         self.setInstanceData(
           buildLineSegments(
