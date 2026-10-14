@@ -71,3 +71,10 @@ describe('parsePlinkLDLine', () => {
     expect(parsePlinkLDLine('1 100 rs1 1 200 rs2 0', header)?.r2).toBe(0)
   })
 })
+
+test('a `.` id falls back to chr:bp, as a missing id column does', () => {
+  const h = parsePlinkLDHeader('CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2')
+  const r = parsePlinkLDLine('1 100 . 1 200 rsB 0.5', h)!
+  expect(r.snpA).toBe('1:100')
+  expect(r.snpB).toBe('rsB')
+})

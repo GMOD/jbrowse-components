@@ -96,6 +96,12 @@ export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {
   }
 }
 
+// plink writes `.` for a variant with no id
+function variantId(fields: string[], idx: number) {
+  const id = idx >= 0 ? fields[idx] : undefined
+  return id === '.' ? undefined : id
+}
+
 export function parsePlinkLDLine(
   line: string,
   header: PlinkLDHeader,
@@ -111,12 +117,8 @@ export function parsePlinkLDLine(
     return null
   }
 
-  const snpA =
-    (header.snpAIdx >= 0 ? fields[header.snpAIdx] : undefined) ??
-    `${chrA}:${bpA}`
-  const snpB =
-    (header.snpBIdx >= 0 ? fields[header.snpBIdx] : undefined) ??
-    `${chrB}:${bpB}`
+  const snpA = variantId(fields, header.snpAIdx) ?? `${chrA}:${bpA}`
+  const snpB = variantId(fields, header.snpBIdx) ?? `${chrB}:${bpB}`
 
   const r2 =
     header.r2Idx >= 0

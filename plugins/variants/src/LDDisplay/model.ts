@@ -418,8 +418,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
         const n = boundaries.length - 1
         const j = upperBoundFloat32(boundaries, x) - 1
         const i = upperBoundFloat32(boundaries, y) - 1
-        const idx =
-          i > j && i > 0 && j >= 0 && i < n ? bandPairIndex(i, j, band) : -1
+        const idx = i > j && j >= 0 && i < n ? bandPairIndex(i, j, band) : -1
         return idx < 0 || !ldValueComputed(ldValues[idx]!)
           ? undefined
           : {
