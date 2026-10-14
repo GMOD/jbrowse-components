@@ -331,12 +331,20 @@ function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
+  const windowChromePx = 150
   const defaultOffsetRadians = -Math.PI / 2
   const defaultBpPerPx = 200
   const defaultMinimumRadiusPx = 25
   const defaultSpacingPx = 10
   const defaultPaddingPx = 80
   const defaultMinVisibleWidth = 6
+  function openingHeight(width: number) {
+    const room =
+      typeof window === 'undefined'
+        ? defaultHeight
+        : window.innerHeight - windowChromePx
+    return Math.max(defaultHeight, Math.min(width, room))
+  }
   const model = types
     .compose(
       'CircularView',
@@ -407,7 +415,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * the height of the view in pixels. The circle auto-fits its
-         * container, so this is what sizes the drawing.
+         * container, so this is what sizes the drawing. Left at its default,
+         * the view opens square to its width, short of the window's height.
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
@@ -465,8 +474,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         launch: types.frozen<LaunchInput<CircularViewCommands> | undefined>(),
       }),
     )
-    .volatile(() => ({
+    .volatile(self => ({
       volatileWidth: undefined as number | undefined,
+      heightFollowsWidth: self.height === defaultHeight,
 
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       volatileError: undefined as unknown,
@@ -1208,6 +1218,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number): number {
         const clamped = Math.max(newWidth, minWidth)
+        if (self.volatileWidth === undefined && self.heightFollowsWidth) {
+          self.height = openingHeight(clamped)
+        }
         self.volatileWidth = clamped
         if (self.autoFit) {
           this.fitToWindow()
@@ -1218,6 +1231,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setHeight(newHeight: number) {
+        self.heightFollowsWidth = false
         self.height = Math.max(newHeight, minHeight)
         if (self.autoFit) {
           this.fitToWindow()

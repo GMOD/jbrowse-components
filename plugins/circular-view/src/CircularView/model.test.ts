@@ -382,3 +382,47 @@ test('short labels leave the padding free to shrink', () => {
   const view = createView({ regions: short, width: 475, height: 316 })
   expect(view.effectivePaddingPx).toBeLessThan(view.paddingPx)
 })
+
+function openView(snapshot: Record<string, unknown>) {
+  const pluginManager = new PluginManager()
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const Session = types
+    .model('Session', { view: stateModelFactory(pluginManager) })
+    .volatile(() => ({ rpcManager: {}, configuration: {} }))
+  return Session.create({ view: { type: 'CircularView', ...snapshot } }).view
+}
+
+describe('the height a view opens at', () => {
+  test('a default height grows square to the first measured width', () => {
+    const view = openView({})
+    view.setWidth(500)
+    expect(view.height).toBe(500)
+  })
+
+  test('the square stops short of the window', () => {
+    const view = openView({})
+    view.setWidth(5000)
+    expect(view.height).toBe(window.innerHeight - 150)
+  })
+
+  test('a later width leaves the height alone', () => {
+    const view = openView({})
+    view.setWidth(500)
+    view.setWidth(600)
+    expect(view.height).toBe(500)
+  })
+
+  test('an authored height is kept', () => {
+    const view = openView({ height: 300 })
+    view.setWidth(500)
+    expect(view.height).toBe(300)
+  })
+
+  test('a height set before the first width is kept', () => {
+    const view = openView({})
+    view.setHeight(450)
+    view.setWidth(900)
+    expect(view.height).toBe(450)
+  })
+})
