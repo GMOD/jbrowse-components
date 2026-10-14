@@ -375,6 +375,72 @@ describe('featureData', () => {
     expect(result.type).toBeUndefined()
     expect(result.geneName2).toBe('MYGENE')
   })
+
+  // UCSC's hg38 panelApp bigBeds (genes.bb, cnv.bb, tandRep.bb) declare the
+  // block columns as `string`, and makeBlocks once added "0" to 42900797 as text
+  describe('with an autoSql that types the BED12 columns as strings', () => {
+    const autoSql = `table stringBlocks
+"BED12 with string-typed thick and block columns"
+(
+string chrom;       "Chromosome"
+uint   chromStart;  "Start"
+uint   chromEnd;    "End"
+string name;        "Name"
+uint   score;       "Score"
+char[1] strand;     "Strand"
+string thickStart;  "Thick start"
+string thickEnd;    "Thick end"
+uint   itemRgb;     "Color"
+string blockCount;  "Block count"
+string blockSizes;  "Block sizes"
+string blockStarts; "Block starts"
+)`
+    const parser = new BED({ autoSql })
+    const input = (thick: [string, string], blocks: [string, string, string]) =>
+      featureData({
+        splitLine: [
+          'chr1',
+          '1000',
+          '2000',
+          'g',
+          '0',
+          '+',
+          ...thick,
+          '0',
+          ...blocks,
+        ],
+        refName: 'chr1',
+        start: 1000,
+        end: 2000,
+        parser,
+        uniqueId: 'string-blocks',
+        scoreColumn: '',
+      })
+
+    it('reads a single block as numbers', () => {
+      const result = input(['1000', '2000'], ['1', '1000', '0'])
+      expect(result.subfeatures).toEqual([
+        { type: 'CDS', phase: 0, start: 1000, end: 2000, refName: 'chr1' },
+      ])
+    })
+
+    it('splits comma-separated blocks and places the thick range by number', () => {
+      const result = input(
+        ['1100', '1900'],
+        ['3', '200,300,200,', '0,400,800,'],
+      )
+      expect(result.type).toBe('mRNA')
+      expect(
+        result.subfeatures?.map(({ type, start, end }) => [type, start, end]),
+      ).toEqual([
+        ['five_prime_UTR', 1000, 1100],
+        ['CDS', 1100, 1200],
+        ['CDS', 1400, 1700],
+        ['CDS', 1800, 1900],
+        ['three_prime_UTR', 1900, 2000],
+      ])
+    })
+  })
 })
 
 describe('bedFeatureLocus', () => {

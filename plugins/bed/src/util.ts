@@ -26,12 +26,12 @@ interface BedData {
   chromStart?: number | string
   chromEnd?: number | string
   description?: string
-  blockCount?: number
-  chromStarts?: number[]
-  blockSizes?: number[]
-  blockStarts?: number[]
-  thickStart?: number
-  thickEnd?: number
+  blockCount?: number | string
+  chromStarts?: number[] | string[] | string
+  blockSizes?: number[] | string[] | string
+  blockStarts?: number[] | string[] | string
+  thickStart?: number | string
+  thickEnd?: number | string
   [key: string]: unknown
 }
 
@@ -194,6 +194,27 @@ export function parseStrand(strand: string | number | undefined): number {
   return 0
 }
 
+// An autoSql may declare a standard BED column `string`, as UCSC's panelApp
+// bigBeds do for the block columns, and @gmod/bed then hands back the text
+function toNumber(value: number | string | undefined) {
+  if (value === undefined || value === '') {
+    return undefined
+  }
+  const n = Number(value)
+  return Number.isNaN(n) ? undefined : n
+}
+
+function toNumberList(value: number[] | string[] | string | undefined) {
+  return typeof value === 'string'
+    ? value
+        .split(',')
+        .filter(s => s !== '')
+        .map(Number)
+    : typeof value?.[0] === 'string'
+      ? value.map(Number)
+      : (value as number[] | undefined)
+}
+
 const BED_OWN = new Set(['strand', 'score', 'chrom', 'chromStart', 'chromEnd'])
 const REPEAT_OWN = new Set([
   ...BED_OWN,
@@ -272,23 +293,24 @@ export function featureData({
   }
 
   const rest = copyExcept(data, BED_OWN)
-  const subfeatures = data.blockCount
+  const blockCount = toNumber(data.blockCount)
+  const subfeatures = blockCount
     ? makeBlocks({
         start,
         uniqueId,
         refName,
-        chromStarts: data.chromStarts,
-        blockCount: data.blockCount,
-        blockSizes: data.blockSizes,
-        blockStarts: data.blockStarts,
+        chromStarts: toNumberList(data.chromStarts),
+        blockCount,
+        blockSizes: toNumberList(data.blockSizes),
+        blockStarts: toNumberList(data.blockStarts),
       })
     : undefined
 
   const transcriptCheck = {
     strand,
-    blockCount: data.blockCount,
-    thickStart: data.thickStart,
-    thickEnd: data.thickEnd,
+    blockCount,
+    thickStart: toNumber(data.thickStart),
+    thickEnd: toNumber(data.thickEnd),
   }
   if (
     !disableGeneHeuristic &&
