@@ -736,7 +736,11 @@ Anything else is a CSS color, painting every read with it:
 | `insertSize`               | Paired-end insert size                         |
 | `pairOrientation`          | Paired-end orientation                         |
 | `insertSizeAndOrientation` | Combined insert size + orientation             |
+| `pairing`                  | Concordant, discordant, unpaired or nonPrimary |
+| `split`                    | Split reads against the rest                   |
+| `spliced`                  | Spliced reads against the rest                 |
 | `mateRefName`              | Reference the mate landed on                   |
+| `mateAssembly`             | Assembly the mate landed on, for synteny reads |
 | `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |
 
 Available `baseColor:` fields:
