@@ -31,6 +31,11 @@ const Display = types
     runClustering: types.maybe(types.boolean),
     clusterRegion: types.maybe(types.string),
   })
+  .views(() => ({
+    get autoClusterReady() {
+      return true
+    },
+  }))
   .actions(self => ({
     setRunClustering(arg?: boolean) {
       self.runClustering = arg
@@ -69,7 +74,7 @@ const settle = (ms = 600) =>
 
 function setup(run: Parameters<typeof setupRunClusteringAutorun>[1]['run']) {
   const model = Display.create({ runClustering: true })
-  setupRunClusteringAutorun(model, { name: 'Test', ready: () => true, run })
+  setupRunClusteringAutorun(model, { name: 'Test', run })
   return model
 }
 

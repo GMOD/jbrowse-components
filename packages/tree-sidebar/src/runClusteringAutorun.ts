@@ -25,12 +25,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // `init`: a session/config sets `runClustering: true` on the display, the real
 // clustering RPC runs once automatically as soon as the display is ready, and
 // the flag clears itself afterward (setRunClustering(undefined)) so a saved
-// session never re-triggers it. Shared by the multi-sample variant, multi-wiggle
-// and multi-row feature displays: each supplies its own `ready` gate and `run`
-// (the actual RPC), while this owns the re-entrancy guard, the view.initialized
-// gate, the signal lifecycle, and the status channel. `ready` and `run`'s
-// dependency reads happen synchronously before the first await, so MobX tracks
-// them and the autorun re-fires when sources arrive or the view initializes.
+// session never re-triggers it. Shared by every row display: each supplies its
+// own `run` (the actual RPC) and may override `autoClusterReady`, while this
+// owns the re-entrancy guard, the view.initialized gate, the signal lifecycle,
+// and the status channel. `autoClusterReady` and `run`'s dependency reads
+// happen synchronously before the first await, so MobX tracks them and the
+// autorun re-fires when sources arrive or the view initializes.
 //
 // `run` gets a `statusCallback` to hand the RPC. It writes the display's
 // `statusMessage`/`statusProgress`, which `DisplayChrome` shows as a corner
@@ -50,6 +50,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export function setupRunClusteringAutorun(
   self: IStateTreeNode & {
     runClustering?: boolean
+    autoClusterReady: boolean
     // The locus the run reads from, if the session named one.
     clusterRegion?: string
     setRunClustering: (arg?: boolean) => void
@@ -58,7 +59,6 @@ export function setupRunClusteringAutorun(
   },
   opts: {
     name: string
-    ready: () => boolean
     // Everything the flavor needs to make its RPC call, in one object.
     //
     // `regions` is what to cluster over: the display's `clusterRegion`
@@ -99,7 +99,7 @@ export function setupRunClusteringAutorun(
     self,
     autorun(
       async () => {
-        if (!self.runClustering || applying || !opts.ready()) {
+        if (!self.runClustering || applying || !self.autoClusterReady) {
           return
         }
         const view = containingLgv(self)

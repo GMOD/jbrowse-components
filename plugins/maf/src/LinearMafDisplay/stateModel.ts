@@ -790,6 +790,14 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Two or more display rows, so a hidden reference row does not count.
+         */
+        get autoClusterReady(): boolean {
+          return this.sources.length > 1
+        },
+
+        /**
+         * #getter
          * Whether the species list has arrived from the adapter. `rowsVisible`
          * and the render callback's first-paint gate read this, since an empty
          * `sources` cannot tell.
@@ -2410,7 +2418,6 @@ export default function stateModelFactory(
             name: 'Maf',
             sortRows: (refName, pos) => self.sortRowsByBaseAt(refName, pos),
             clustering: {
-              ready: () => self.sources.length > 1,
               run: async args => {
                 const { runMafClustering } =
                   await import('./runMafClustering.ts')

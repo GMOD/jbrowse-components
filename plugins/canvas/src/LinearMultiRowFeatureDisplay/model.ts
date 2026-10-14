@@ -1159,7 +1159,6 @@ export default function stateModelFactory(
             // that column", and it holds `sortRowsBy` for the fetch that will.
             sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
             clustering: {
-              ready: () => self.clusterableSources.length > 1,
               run: async args => {
                 const { runMultiRowClustering } =
                   await import('./runMultiRowClustering.ts')

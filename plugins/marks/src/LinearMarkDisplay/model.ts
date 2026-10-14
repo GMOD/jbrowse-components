@@ -1575,6 +1575,15 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Two or more clusterable rows and a mark that carries a value.
+         */
+        get autoClusterReady(): boolean {
+          return (
+            self.clusterableSources.length > 1 && this.valueMarkIndex !== -1
+          )
+        },
+        /**
+         * #getter
          */
         get svgSidebar(): SvgSidebarProps | undefined {
           const { sidebarPanel } = self
@@ -1953,9 +1962,6 @@ export function stateModelFactory(
             name: 'Mark',
             sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
             clustering: {
-              ready: () =>
-                self.clusterableSources.length > 1 &&
-                self.valueMarkIndex !== -1,
               run: async args => {
                 const { runMarkClustering } =
                   await import('./runMarkClustering.ts')

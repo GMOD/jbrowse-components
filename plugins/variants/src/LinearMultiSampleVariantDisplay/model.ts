@@ -1166,7 +1166,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether the declarative `runClustering: true` path may fire.
+         * Whether the declarative `runClustering: true` path may fire: the fetched
+         * inputs have landed and two or more rows are on screen.
          */
         get autoClusterReady() {
           return this.clusteringReady && this.hasClusterableRows

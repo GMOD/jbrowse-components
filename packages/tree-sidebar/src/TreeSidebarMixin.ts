@@ -880,6 +880,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
+       * Overridable hook: whether the declarative `runClustering` run may
+       * start, two or more `clusterableSources` by default.
+       */
+      get autoClusterReady(): boolean {
+        return self.clusterableSources.length > 1
+      },
+      /**
+       * #getter
        * Overridable hook: the tree `hierarchy` positions, `root` by default.
        * `computeClusterHierarchy` declines to position a tree whose leaves are
        * no longer the rows drawn, so a display that hides a row prunes it from

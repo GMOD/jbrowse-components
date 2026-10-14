@@ -12,7 +12,7 @@ import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
  *
  * What stays per display is exactly what the two callbacks say: which value a
  * row carries at a column (`sortRows`), and what a clustering run *is*
- * (`clustering.run`, gated by `clustering.ready`). `name` prefixes the
+ * (`clustering.run`). `name` prefixes the
  * autoruns so a reaction census can still tell the displays apart.
  */
 export function setupTreeSidebarAutoruns(

@@ -813,7 +813,6 @@ export default function stateModelFactory(
           // `clusterRegion` locus if the session named one and the visible
           // blocks if not. Refuses a single row, matching the track menu's gate
           clustering: {
-            ready: () => self.clusterableSources.length > 1,
             run: async args => {
               const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
                 await Promise.all([
