@@ -13,12 +13,8 @@ export function legendStops(ramp: Uint8Array) {
  */
 export function makeHicFillStyleLut(ramp: Uint8Array) {
   const fill = makeRampFillStyleLut(ramp)
-  const opaque = new Uint8Array(256)
-  for (let i = 0; i < 256; i++) {
-    opaque[i] = ramp[i * 4 + 3]! / 255 < MIN_VISIBLE_ALPHA ? 0 : 1
-  }
-  return (t: number) => {
-    const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
-    return opaque[idx] === 0 ? undefined : fill(t)
-  }
+  const table = Array.from({ length: 256 }, (_, i) =>
+    ramp[i * 4 + 3]! / 255 < MIN_VISIBLE_ALPHA ? undefined : fill(i / 255),
+  )
+  return (t: number) => table[Math.max(0, Math.min(255, Math.round(t * 255)))]
 }

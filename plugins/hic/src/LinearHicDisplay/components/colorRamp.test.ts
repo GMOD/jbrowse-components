@@ -43,6 +43,19 @@ describe('makeHicFillStyleLut', () => {
     expect(lut(2)).toBe(lut(1))
   })
 
+  test('skips a NaN t rather than handing Canvas2D an invalid fillStyle', () => {
+    const lut = makeHicFillStyleLut(generateColorRamp('fall'))
+    expect(lut(Number.NaN)).toBeUndefined()
+  })
+
+  test('fills a visible bin with the rgba of its ramp entry', () => {
+    const ramp = generateColorRamp('fall')
+    const lut = makeHicFillStyleLut(ramp)
+    expect(lut(0.5)).toBe(
+      `rgba(${ramp[128 * 4]},${ramp[128 * 4 + 1]},${ramp[128 * 4 + 2]},${(ramp[128 * 4 + 3]! / 255).toFixed(3)})`,
+    )
+  })
+
   // The fragment discards on the same test (hic.slang), so this is a boundary
   // between backends, not a Canvas2D detail: a bin either exists in all three
   // paths or none of them. Walking the exact alpha the ramp carries at each
