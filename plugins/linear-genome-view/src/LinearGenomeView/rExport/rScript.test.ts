@@ -40,9 +40,9 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
   )
   expect(script).toContain(
-    'ggplot2::ggsave("figure.png", fig, width = 10, height = jbrowse_height(fig))',
+    'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.6.0"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.8.0"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')

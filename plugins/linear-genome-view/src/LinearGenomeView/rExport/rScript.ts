@@ -77,7 +77,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.6.0'
+export const GGJBROWSE_VERSION = '0.8.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
@@ -456,7 +456,7 @@ export function exportTracksToR({
     '',
     `fig <- jbrowse_stack(${drawn.join(', ')})`,
     'print(fig)',
-    `ggplot2::ggsave(${rStr(out)}, fig, width = 10, height = jbrowse_height(fig))`,
+    `ggplot2::ggsave(${rStr(out)}, fig, width = jbrowse_width(fig), height = jbrowse_height(fig))`,
     '',
   ].join('\n')
   return { drawn: drawn.length, script, notes }

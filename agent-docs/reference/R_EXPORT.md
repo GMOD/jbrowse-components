@@ -81,10 +81,12 @@ track) land in the script header.
 - **`width` is the view's pixels** (`bp / bpPerPx`), so a feature or
   quantitative track resolves its labels, chevrons and BigWig zoom level as
   the view did.
-- **The figure is as tall as the view's bands.** `ggsave()` takes
-  `jbrowse_height(fig)`, which measures the stack's bands at the display's
-  pixels, a compact pileup included, and its keys, rather than a height per
-  track kind in the exporter.
+- **The figure is as tall as the view's bands and as wide as its pixels.**
+  `ggsave()` takes `jbrowse_height(fig)`, which measures the stack's bands at
+  the display's pixels, a compact pileup included, and its keys, rather than a
+  height per track kind in the exporter. `jbrowse_width(fig)` gives the width
+  at the same 150 px an inch: a 2,500 px view saved 10 inches wide drew its
+  feature labels at 3 pt, since a label takes the panel's smaller scale.
 - **The script checks its ggjbrowse.** `GGJBROWSE_VERSION` is the release
   whose readers and `jbrowse_stack` it calls; an older install stops with the
   install line rather than an "unused argument" error.
