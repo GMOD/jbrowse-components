@@ -317,7 +317,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/installClearHoverOnSurfaceMove': ['installClearHoverOnSurfaceMove'],
   '@jbrowse/core/util/installFetch': ['installFetch', 'runFetchOnce'],
   '@jbrowse/core/util/installInitAutorun': ['installInitAutorun'],
-  '@jbrowse/core/util/installPrerequisiteFetch': ['installPrerequisiteFetch', 'readFor'],
+  '@jbrowse/core/util/installPrerequisiteFetch': ['installPrerequisiteFetch', 'isCurrentRead', 'readFor'],
   '@jbrowse/core/util/io': ['CachedFilehandle', 'RemoteFileWithRangeCache', 'getFetcher', 'openLocation', 'openTabixIndexFilehandle', 'resolveUriLocation'],
   '@jbrowse/core/util/io/RemoteFileWithRangeCache': ['CachedFilehandle', 'RemoteFileWithRangeCache', 'clearCache', 'sweepIdleCache'],
   '@jbrowse/core/util/isDataCurrent': ['isDataCurrent'],
