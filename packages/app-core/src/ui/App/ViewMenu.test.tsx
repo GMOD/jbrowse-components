@@ -78,11 +78,9 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
 
   expect(session.tabContainingView(first!.id)!.tab.id).toBe(target)
   expect(session.tabContainingView(second!.id)!.tab.id).not.toBe(target)
+  const members = session.findTab(target)!.tab.viewIds
   expect(
-    session.viewIdsForTab(
-      target,
-      session.views.map(v => v.id),
-    ),
+    session.views.map(v => v.id).filter(id => members.includes(id)),
   ).toEqual([third!.id, first!.id])
 })
 

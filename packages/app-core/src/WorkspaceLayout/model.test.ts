@@ -2,6 +2,7 @@ import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { WorkspaceLayoutMixin } from './model.ts'
+import { activeTabOf } from './tree.ts'
 
 import type { LayoutSpecNode } from './spec.ts'
 import type { PanelNode } from './tree.ts'
@@ -66,12 +67,12 @@ test('closing a tab falls back to its left neighbour', () => {
   const first = session.tabs[0]!.id
   const second = session.addTab(panelId)!.id
   const third = session.addTab(panelId)!.id
-  expect(session.activeTabOf(panelId)?.id).toBe(third)
+  expect(activeTabOf(session.tree, panelId)?.id).toBe(third)
 
   session.closeTab(third)
-  expect(session.activeTabOf(panelId)?.id).toBe(second)
+  expect(activeTabOf(session.tree, panelId)?.id).toBe(second)
   session.closeTab(second)
-  expect(session.activeTabOf(panelId)?.id).toBe(first)
+  expect(activeTabOf(session.tree, panelId)?.id).toBe(first)
 })
 
 test('undo is applySnapshot, with nothing to notify', () => {
@@ -227,7 +228,7 @@ test('tiling into tabs collapses the grid back to one cell', () => {
 // in a background tab
 describe('setPendingMove', () => {
   const shownIn = (session: ReturnType<typeof createSession>, i: number) =>
-    session.activeTabOf(session.panels[i]!.id)?.viewIds
+    activeTabOf(session.tree, session.panels[i]!.id)?.viewIds
 
   test('a new tab is the tab that shows', () => {
     const session = createSession()
@@ -278,7 +279,9 @@ describe('setPendingMove', () => {
       ['v3'],
       ['v2'],
     ])
-    expect(session.activeTabOf(session.panels[0]!.id)?.viewIds).toEqual(['v3'])
+    expect(activeTabOf(session.tree, session.panels[0]!.id)?.viewIds).toEqual([
+      'v3',
+    ])
   })
 
   test('with nothing to move relative to, the view takes the space', () => {
@@ -399,7 +402,7 @@ describe('maximize', () => {
     const { session, right } = twoCells()
     session.toggleMaximizedPanel(right)
 
-    session.closeTab(session.activeTabOf(right)!.id)
+    session.closeTab(activeTabOf(session.tree, right)!.id)
 
     expect(session.panels).toHaveLength(1)
     expect(session.maximizedPanelId).toBeUndefined()
@@ -415,7 +418,7 @@ describe('maximize', () => {
     [
       'an edge drop that makes a new cell',
       (s: ReturnType<typeof createSession>, id: string) => {
-        s.dropTabInNewSplit(s.activeTabOf(id)!.id, id, 'column', false)
+        s.dropTabInNewSplit(activeTabOf(s.tree, id)!.id, id, 'column', false)
       },
     ],
     [
@@ -726,7 +729,7 @@ describe('moveViewToTab', () => {
       ['v2', 'v3'],
     ])
     expect(session.activePanelId).toBe(session.panels[1]!.id)
-    expect(session.activeTabOf(session.panels[1]!.id)?.id).toBe(target)
+    expect(activeTabOf(session.tree, session.panels[1]!.id)?.id).toBe(target)
   })
 
   test('takes the emptied cell away with it', () => {

@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspaceLayoutMixin } from './model.ts'
+import { activeTabOf } from './tree.ts'
 import { useLayoutDrag } from './useLayoutDrag.ts'
 
 import type { TabNode } from './tree.ts'
@@ -262,7 +263,7 @@ describe('which press starts a drag', () => {
       })
     })
 
-    expect(session.activeTabOf(left)?.id).toBe(other)
+    expect(activeTabOf(session.tree, left)?.id).toBe(other)
   })
 
   // a second finger must not steer the first one's drag, or end it on release
@@ -795,6 +796,6 @@ test('clicking a tab makes it active without moving anything', () => {
     fireEvent.pointerUp(tab, { clientX: 10, clientY: 10 })
   })
 
-  expect(session.activeTabOf(left)?.id).toBe(first)
+  expect(activeTabOf(session.tree, left)?.id).toBe(first)
   expect(session.findTab(other)?.panel.id).toBe(left)
 })

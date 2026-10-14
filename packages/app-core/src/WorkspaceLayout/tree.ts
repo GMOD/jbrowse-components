@@ -78,6 +78,11 @@ export function activeTabIn(panel: PanelNode): TabNode | undefined {
   return panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
 }
 
+export function activeTabOf(root: LayoutTree, panelId: string) {
+  const panel = panels(root).find(p => p.id === panelId)
+  return panel && activeTabIn(panel)
+}
+
 export function tabContainingView(node: LayoutTree, viewId: string) {
   return homeOf(node, t => t.viewIds.includes(viewId))
 }

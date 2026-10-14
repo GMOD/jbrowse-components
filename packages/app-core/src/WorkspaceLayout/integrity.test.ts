@@ -1,6 +1,7 @@
 import { getSnapshot, onSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { WorkspaceLayoutMixin } from './model.ts'
+import { activeTabOf } from './tree.ts'
 
 const TestSession = types.compose(
   'TestSession',
@@ -154,7 +155,7 @@ test('activePanelId never dangles', () => {
   check()
   // closing a cell's last tab closes the cell
   session.setActivePanelId(p2.id)
-  session.closeTab(session.activeTabOf(p2.id)!.id)
+  session.closeTab(activeTabOf(session.tree, p2.id)!.id)
   check()
   session.closePanel(session.panels[0]!.id)
   check()
@@ -164,7 +165,7 @@ test('activePanelId never dangles', () => {
 test('closing the only panel takes activeTabId with the tabs', () => {
   const session = TestSession.create({ name: 't' })
   const only = session.panels[0]!.id
-  expect(session.activeTabOf(only)).toBeDefined()
+  expect(activeTabOf(session.tree, only)).toBeDefined()
 
   session.closePanel(only)
 
@@ -197,8 +198,8 @@ test('moving one view out leaves the others where they were', () => {
   })
   const first = session.panels[0]!.id
   const second = session.splitPanel(first, 'row')!
-  session.addViewToTab(session.activeTabOf(first)!.id, 'view-1')
-  session.addViewToTab(session.activeTabOf(second.id)!.id, 'view-2')
+  session.addViewToTab(activeTabOf(session.tree, first)!.id, 'view-1')
+  session.addViewToTab(activeTabOf(session.tree, second.id)!.id, 'view-2')
 
   session.moveViewToNewTab('view-1')
 

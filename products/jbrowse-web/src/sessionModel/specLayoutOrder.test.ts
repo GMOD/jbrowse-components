@@ -16,16 +16,14 @@ test('a stated within-tab order is what the tab renders', () => {
   // the spec stacks b above a, the reverse of the order they were added in
   session.orderViews(session.applyLayoutSpec({ views: [b, a] }))
 
-  const tabId = session.tabs[0]!.id
   // `viewIds` is membership, so it held this order all along — the assertion
   // that matters is the next one, which is what WorkspaceContainer's `viewsOf`
   // computes for the stack it draws
   expect([...session.tabs[0]!.viewIds]).toEqual([b, a])
   expect(
-    session.viewIdsForTab(
-      tabId,
-      session.views.map(v => v.id),
-    ),
+    session.views
+      .map(v => v.id)
+      .filter(id => session.tabs[0]!.viewIds.includes(id)),
   ).toEqual([b, a])
 })
 
@@ -45,6 +43,8 @@ test('an order for one panel leaves the views of another where they sit', () => 
 
   const order = session.views.map(v => v.id)
   const [left, right] = session.panels
-  expect(session.viewIdsForTab(left!.tabs[0]!.id, order)).toEqual([a])
-  expect(session.viewIdsForTab(right!.tabs[0]!.id, order)).toEqual([c, b])
+  const inOrder = (panel: { tabs: { viewIds: readonly string[] }[] }) =>
+    order.filter(id => panel.tabs[0]!.viewIds.includes(id))
+  expect(inOrder(left!)).toEqual([a])
+  expect(inOrder(right!)).toEqual([c, b])
 })

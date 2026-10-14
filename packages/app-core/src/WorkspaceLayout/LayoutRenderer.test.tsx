@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspaceLayoutMixin } from './model.ts'
+import { activeTabOf } from './tree.ts'
 import { workspaceTheme } from './workspaceTheme.ts'
 
 const TestSession = types.compose(
@@ -372,14 +373,14 @@ test('arrowing moves focus without showing the tab it lands on', () => {
   const first = session.tabs[0]!.id
   const second = session.addTab(p1)!.id
   const { container } = renderLayout(session)
-  expect(session.activeTabOf(p1)?.id).toBe(second)
+  expect(activeTabOf(session.tree, p1)?.id).toBe(second)
 
   const shownTab = tabsIn(container).find(t => t.dataset.tabId === second)!
   shownTab.focus()
   fireEvent.keyDown(shownTab, { key: 'ArrowLeft' })
 
   expect((document.activeElement as HTMLElement).dataset.tabId).toBe(first)
-  expect(session.activeTabOf(p1)?.id).toBe(second)
+  expect(activeTabOf(session.tree, p1)?.id).toBe(second)
   expect(screen.getByTestId(`content-${second}`)).toBeTruthy()
   expect(screen.queryByTestId(`content-${first}`)).toBeNull()
 })
@@ -397,7 +398,7 @@ test('Enter shows the focused tab, and Home and End reach the ends', () => {
   expect((document.activeElement as HTMLElement).dataset.tabId).toBe(first)
 
   fireEvent.keyDown(document.activeElement!, { key: 'Enter' })
-  expect(session.activeTabOf(p1)?.id).toBe(first)
+  expect(activeTabOf(session.tree, p1)?.id).toBe(first)
 
   fireEvent.keyDown(document.activeElement!, { key: 'End' })
   expect((document.activeElement as HTMLElement).dataset.tabId).toBe(second)
@@ -659,7 +660,7 @@ test('a tab that becomes current without being touched is scrolled into view', (
       added = session.addTab(p1)!.id
     })
 
-    expect(session.activeTabOf(p1)?.id).toBe(added)
+    expect(activeTabOf(session.tree, p1)?.id).toBe(added)
     expect(scrolled).toContain(added)
   } finally {
     Element.prototype.scrollIntoView = original

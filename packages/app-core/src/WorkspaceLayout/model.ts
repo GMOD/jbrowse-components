@@ -9,7 +9,6 @@ import {
   viewIdsInSpec,
 } from './spec.ts'
 import {
-  activeTabIn,
   addTab,
   addViewToTab,
   findTab,
@@ -164,16 +163,6 @@ export function WorkspaceLayoutMixin() {
         },
         panelContainingView(viewId: string) {
           return panelContainingView(self.tree, viewId)
-        },
-        /** The views a tab renders: its members, in `session.views` order. */
-        viewIdsForTab(tabId: string, order: string[]) {
-          const members = new Set(findTab(self.tree, tabId)?.tab.viewIds ?? [])
-          return order.filter(id => members.has(id))
-        },
-        /** The tab a panel is showing, or its first. */
-        activeTabOf(panelId: string) {
-          const panel = panels(self.tree).find(p => p.id === panelId)
-          return panel ? activeTabIn(panel) : undefined
         },
         /**
          * The maximized cell alone, or the whole tree. The cell is resized to 1
@@ -485,10 +474,6 @@ export function WorkspaceLayoutMixin() {
             self.moveViewToNewTab(move.viewId)
           } else {
             self.moveViewToSplit(move.viewId, 'row')
-          }
-          const home = tabContainingView(self.tree, move.viewId)
-          if (home) {
-            self.setActiveTab(home.panel.id, home.tab.id)
           }
         },
         /**
