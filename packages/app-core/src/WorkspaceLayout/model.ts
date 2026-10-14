@@ -56,15 +56,8 @@ function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
 }
 
-/**
- * A caller's view list narrowed to the session's views, deduplicated. The list
- * may be stale, and `applyLayoutSpec` throws on an unknown or repeated id.
- */
-function liveViewIds(self: LayoutHostSelf, allViewIds: string[]) {
-  const live = sessionViewIds(self)
-  return [
-    ...new Set(live ? allViewIds.filter(id => live.includes(id)) : allViewIds),
-  ]
+function everySessionViewId(self: LayoutHostSelf) {
+  return sessionViewIds(self) ?? []
 }
 
 /**
@@ -240,16 +233,6 @@ export function WorkspaceLayoutMixin() {
           )
         }
 
-        function everyViewId(action: string, allViewIds: string[] | undefined) {
-          const ids = allViewIds ?? sessionViewIds(self)
-          if (!ids) {
-            throw new Error(
-              `${action}(viewId, allViewIds): allViewIds is every view id in the session, and this session has no view list to default it from`,
-            )
-          }
-          return ids
-        }
-
         /**
          * Homes every view first, since from the classic stack none has a tab
          * yet. Returns where the view came from, or `undefined` if it is not in
@@ -257,10 +240,9 @@ export function WorkspaceLayoutMixin() {
          */
         function rehomeView(
           viewId: string,
-          allViewIds: string[],
           place: (tree: LayoutTree, from: TabHome) => LayoutTree,
         ) {
-          const tree = home(self.tree, allViewIds)
+          const tree = home(self.tree, everySessionViewId(self))
           const from = tabContainingView(tree, viewId)
           if (!from) {
             return undefined
@@ -426,15 +408,11 @@ export function WorkspaceLayoutMixin() {
           },
           /**
            * ViewMenu's "move to new tab": the view leaves its tab for a new one.
-           * `allViewIds` is EVERY view in the session, defaulting to the host's
-           * own list, since homing drops any view the list omits.
            */
-          moveViewToNewTab(viewId: string, allViewIds?: string[]) {
+          moveViewToNewTab(viewId: string) {
             const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }
-            const from = rehomeView(
-              viewId,
-              everyViewId('moveViewToNewTab', allViewIds),
-              (tree, at) => addTab(tree, at.panel.id, tab),
+            const from = rehomeView(viewId, (tree, at) =>
+              addTab(tree, at.panel.id, tab),
             )
             if (!from) {
               return undefined
@@ -446,11 +424,7 @@ export function WorkspaceLayoutMixin() {
            * ViewMenu's "move to split": the view leaves for a new cell to the
            * right (`row`) or below (`column`) of its own.
            */
-          moveViewToSplit(
-            viewId: string,
-            direction: 'row' | 'column',
-            allViewIds?: string[],
-          ) {
+          moveViewToSplit(viewId: string, direction: 'row' | 'column') {
             const tabId = nextId('tab')
             const panel: PanelNode = {
               id: nextId('panel'),
@@ -458,10 +432,8 @@ export function WorkspaceLayoutMixin() {
               tabs: [{ id: tabId, viewIds: [viewId] }],
               activeTabId: tabId,
             }
-            const from = rehomeView(
-              viewId,
-              everyViewId('moveViewToSplit', allViewIds),
-              (tree, at) => splitPanel(tree, at.panel.id, direction, panel),
+            const from = rehomeView(viewId, (tree, at) =>
+              splitPanel(tree, at.panel.id, direction, panel),
             )
             if (!from) {
               return undefined
@@ -473,15 +445,13 @@ export function WorkspaceLayoutMixin() {
            * ViewMenu's "move to tab": the view joins an existing tab, which
            * becomes the one shown.
            */
-          moveViewToTab(viewId: string, tabId: string, allViewIds?: string[]) {
+          moveViewToTab(viewId: string, tabId: string) {
             const target = findTab(self.tree, tabId)
             if (!target || target.tab.viewIds.includes(viewId)) {
               return
             }
-            const from = rehomeView(
-              viewId,
-              everyViewId('moveViewToTab', allViewIds),
-              tree => addViewToTab(tree, tabId, viewId),
+            const from = rehomeView(viewId, tree =>
+              addViewToTab(tree, tabId, viewId),
             )
             const landed = findTab(self.tree, tabId)
             if (from && landed) {
@@ -500,21 +470,20 @@ export function WorkspaceLayoutMixin() {
         /**
          * Move one view to a new tab or a split beside its cell, keeping the
          * rest of the arrangement. PUBLIC API: protein3d and msaview call it
-         * with the move alone, so `allViewIds` stays optional; it is read only
-         * on a host with no view list.
+         * with the move alone. The second argument is an old plugin signature;
+         * the session's own views are read instead.
          */
-        setPendingMove(move: PendingMove | undefined, allViewIds?: string[]) {
-          // the session's own list wins over a plugin's possibly stale copy
-          const ids = sessionViewIds(self) ?? allViewIds
+        setPendingMove(move: PendingMove | undefined, _allViewIds?: string[]) {
+          const ids = sessionViewIds(self)
           if (!move || !ids?.includes(move.viewId)) {
             return
           }
           if (ids.length === 1) {
             self.homeUnassignedViews(ids)
           } else if (move.type === 'newTab') {
-            self.moveViewToNewTab(move.viewId, ids)
+            self.moveViewToNewTab(move.viewId)
           } else {
-            self.moveViewToSplit(move.viewId, 'row', ids)
+            self.moveViewToSplit(move.viewId, 'row')
           }
           const home = tabContainingView(self.tree, move.viewId)
           if (home) {
@@ -523,13 +492,10 @@ export function WorkspaceLayoutMixin() {
         },
         /**
          * Re-arrange the whole workspace, one view per cell, in one of four
-         * shapes. Pass `allViewIds` in `session.views` order so there is
-         * nothing for `orderViews` to apply.
+         * shapes, in `session.views` order.
          */
-        tileViews(mode: TileMode, allViewIds: string[]) {
-          self.applyLayoutSpec(
-            tileLayoutSpec(liveViewIds(self, allViewIds), mode),
-          )
+        tileViews(mode: TileMode) {
+          self.applyLayoutSpec(tileLayoutSpec(everySessionViewId(self), mode))
         },
         /**
          * #action

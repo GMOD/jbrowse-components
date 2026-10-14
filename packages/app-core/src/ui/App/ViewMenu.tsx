@@ -48,11 +48,10 @@ const ViewMenu = observer(function ViewMenu({
   }
 
   const moveViewOut = (to: 'tab' | 'row' | 'column') => {
-    const allViewIds = session.views.map(v => v.id)
     if (to === 'tab') {
-      session.moveViewToNewTab(model.id, allViewIds)
+      session.moveViewToNewTab(model.id)
     } else {
-      session.moveViewToSplit(model.id, to, allViewIds)
+      session.moveViewToSplit(model.id, to)
     }
   }
 
@@ -60,11 +59,7 @@ const ViewMenu = observer(function ViewMenu({
   // goes to its bottom rather than wherever its old slot falls
   const moveViewToTab = (tabId: string) => {
     const members = session.findTab(tabId)?.tab.viewIds ?? []
-    session.moveViewToTab(
-      model.id,
-      tabId,
-      session.views.map(v => v.id),
-    )
+    session.moveViewToTab(model.id, tabId)
     session.moveViewToBottom(model.id, [...members, model.id])
   }
 

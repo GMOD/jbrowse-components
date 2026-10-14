@@ -6,11 +6,32 @@ import { WorkspaceLayoutMixin } from './model.ts'
 import type { LayoutSpecNode } from './spec.ts'
 import type { PanelNode } from './tree.ts'
 
-const TestSession = types.compose(
-  'TestSession',
+const BareSession = types.compose(
+  'BareSession',
   types.model({ name: types.string }),
   WorkspaceLayoutMixin(),
 )
+
+const TestSession = types
+  .compose(
+    'TestSession',
+    types.model({
+      name: types.string,
+      views: types.array(types.model({ id: types.identifier })),
+    }),
+    WorkspaceLayoutMixin(),
+  )
+  .actions(self => {
+    const base = self.addViewToTab
+    return {
+      addViewToTab(tabId: string, viewId: string) {
+        if (!self.views.some(v => v.id === viewId)) {
+          self.views.push({ id: viewId })
+        }
+        base(tabId, viewId)
+      },
+    }
+  })
 
 function createSession() {
   const session = TestSession.create({ name: 'test' })
@@ -178,7 +199,7 @@ test('tiling horizontally gives every view a cell of one row', () => {
   session.addViewToTab(session.tabs[0]!.id, 'view-2')
   session.addViewToTab(session.tabs[0]!.id, 'view-3')
 
-  session.tileViews('horizontal', ['view-1', 'view-2', 'view-3'])
+  session.tileViews('horizontal')
 
   expect(session.panels).toHaveLength(3)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([
@@ -193,7 +214,7 @@ test('tiling into tabs collapses the grid back to one cell', () => {
   const right = session.splitPanel(session.panels[0]!.id, 'row')!
   session.addViewToTab(right.tabs[0]!.id, 'view-2')
 
-  session.tileViews('tabs', ['view-1', 'view-2'])
+  session.tileViews('tabs')
 
   expect(session.panels).toHaveLength(1)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([
@@ -277,7 +298,7 @@ test('a tiling leaves every view somewhere, and homing after it is a no-op', () 
     session.addViewToTab(session.tabs[0]!.id, id)
   }
 
-  session.tileViews('grid', ids)
+  session.tileViews('grid')
   const tiled = getSnapshot(session.layout)
   // otherwise the homing autorun would undo the arrangement
   session.homeUnassignedViews(ids)
@@ -292,26 +313,20 @@ test('a tiling leaves every view somewhere, and homing after it is a no-op', () 
 // only overriding shows the difference
 test('the sugars call the applyLayoutSpec the session actually has', () => {
   const calls: string[] = []
-  const Overridden = types
-    .compose(
-      'Overridden',
-      types.model({ name: types.string }),
-      WorkspaceLayoutMixin(),
-    )
-    .actions(self => {
-      const base = self.applyLayoutSpec
-      return {
-        applyLayoutSpec(spec: Parameters<typeof base>[0]) {
-          calls.push('override')
-          return base(spec)
-        },
-      }
-    })
+  const Overridden = TestSession.actions(self => {
+    const base = self.applyLayoutSpec
+    return {
+      applyLayoutSpec(spec: Parameters<typeof base>[0]) {
+        calls.push('override')
+        return base(spec)
+      },
+    }
+  })
 
   const session = Overridden.create({ name: 'test' })
   session.addViewToTab(session.tabs[0]!.id, 'view-1')
 
-  session.tileViews('grid', ['view-1'])
+  session.tileViews('grid')
 
   expect(calls).toEqual(['override'])
 })
@@ -406,13 +421,13 @@ describe('maximize', () => {
     [
       'moving a view out to a split',
       (s: ReturnType<typeof createSession>) => {
-        s.moveViewToSplit('view-1', 'row', ['view-1'])
+        s.moveViewToSplit('view-1', 'row')
       },
     ],
     [
       'a whole-workspace tiling',
       (s: ReturnType<typeof createSession>) => {
-        s.tileViews('horizontal', ['view-1'])
+        s.tileViews('horizontal')
       },
     ],
   ])('%s leaves the mode', (_name, act) => {
@@ -644,19 +659,11 @@ describe('a stale id in a caller-supplied list', () => {
     }).not.toThrow()
     expect(getSnapshot(session.layout)).toEqual(before)
   })
-
-  test('costs tileViews that cell and nothing else', () => {
-    const session = createViewsSession()
-
-    expect(() => {
-      session.tileViews('vertical', ['v1', 'gone', 'v2', 'v1'])
-    }).not.toThrow()
-    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1'], ['v2']])
-  })
 })
 
 test('an index means nothing on a host with no view list, and says so', () => {
-  const session = createSession()
+  const session = BareSession.create({ name: 'test' })
+  session.addViewToTab(session.tabs[0]!.id, 'view-1')
 
   expect(() => session.applyLayoutSpec({ views: [0] })).toThrow(
     /no view list for an index to count into/,

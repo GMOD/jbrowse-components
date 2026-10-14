@@ -34,7 +34,7 @@ test('an exported workspace keeps its tabs', () => {
   const session = createTestSession()
   const [first, second] = addViews(session, 2)
   mountWorkspace(session)
-  session.moveViewToNewTab(second, [first!, second!])
+  session.moveViewToNewTab(second)
 
   const reopened = reopen(session)
 
@@ -94,7 +94,7 @@ test('a view closed before export does not come back as a phantom tab entry', ()
   const session = createTestSession()
   const [first, second] = addViews(session, 2)
   mountWorkspace(session)
-  session.moveViewToNewTab(second, [first!, second!])
+  session.moveViewToNewTab(second)
   session.removeView(session.views[1])
 
   const reopened = reopen(session)

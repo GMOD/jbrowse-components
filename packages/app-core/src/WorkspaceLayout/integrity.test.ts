@@ -4,7 +4,10 @@ import { WorkspaceLayoutMixin } from './model.ts'
 
 const TestSession = types.compose(
   'TestSession',
-  types.model({ name: types.string }),
+  types.model({
+    name: types.string,
+    views: types.array(types.model({ id: types.identifier })),
+  }),
   WorkspaceLayoutMixin(),
 )
 
@@ -63,9 +66,12 @@ test('homing writes nothing when there is nothing to home', () => {
 
 // seven equal panes have no floating-point fixed point without SIZE_EPSILON
 test('a tiled workspace stops emitting snapshots once it is settled', () => {
-  const session = TestSession.create({ name: 't' })
   const views = Array.from({ length: 7 }, (_, i) => `view-${i}`)
-  session.tileViews('horizontal', views)
+  const session = TestSession.create({
+    name: 't',
+    views: views.map(id => ({ id })),
+  })
+  session.tileViews('horizontal')
   session.homeUnassignedViews(views)
 
   let snapshots = 0
@@ -184,15 +190,17 @@ test('an edge drop onto a panel that is not there claims no cell', () => {
   expect(session.activePanelId).toBe(before)
 })
 
-// homing drops any view its list omits, so `allViewIds` must be every view
 test('moving one view out leaves the others where they were', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = TestSession.create({
+    name: 't',
+    views: [{ id: 'view-1' }, { id: 'view-2' }],
+  })
   const first = session.panels[0]!.id
   const second = session.splitPanel(first, 'row')!
   session.addViewToTab(session.activeTabOf(first)!.id, 'view-1')
   session.addViewToTab(session.activeTabOf(second.id)!.id, 'view-2')
 
-  session.moveViewToNewTab('view-1', ['view-1', 'view-2'])
+  session.moveViewToNewTab('view-1')
 
   expect(session.panelContainingView('view-2')?.id).toBe(second.id)
   expect(session.tabContainingView('view-1')).toBeDefined()

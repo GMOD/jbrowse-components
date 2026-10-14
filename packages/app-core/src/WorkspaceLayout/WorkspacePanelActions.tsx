@@ -49,10 +49,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
   const canClose = session.panels.length > 1
   const maximized = session.maximizedPanelId === panel.id
   const tile = (mode: TileMode) => {
-    session.tileViews(
-      mode,
-      session.views.map(v => v.id),
-    )
+    session.tileViews(mode)
   }
 
   return (
