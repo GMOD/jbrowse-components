@@ -125,14 +125,12 @@ export function stateModelFactory(
       get sharedSteps(): MarkTransformStepConfig[] {
         return [...self.conf.transform, ...self.conf.facet.transform]
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Whether "Color by LD to index SNP" has a point mark to color.
        */
       get ldColorable(): boolean {
-        return self.conf.marks.some(m => colorsByLd(m, self.sharedSteps))
+        return self.conf.marks.some(m => colorsByLd(m, this.sharedSteps))
       },
     }))
     .views(self => ({
@@ -184,8 +182,6 @@ export function stateModelFactory(
           config && (await ldJoinFor(self, config, ld, region, signal))
         return join ? { ld: join } : undefined
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * The loaded data was joined under an index other than the top hit, so
@@ -196,8 +192,8 @@ export function stateModelFactory(
         return (
           self.joinsLd &&
           !self.indexSnpPinned &&
-          self.topSnp !== undefined &&
-          self.topSnp !== self.indexSnp
+          this.topSnp !== undefined &&
+          this.topSnp !== self.indexSnp
         )
       },
     }))

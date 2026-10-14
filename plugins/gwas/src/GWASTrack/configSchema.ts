@@ -10,12 +10,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * plot.
  *
  * #example
- * `GWASAdapter` is a `BedTabixAdapter` that defaults `scoreColumn` to
- * `neg_log_pvalue`. If your BED holds a raw p-value (not -log10 p), point
- * `scoreColumn` at that column *and* set `scoreTransform: 'negLog10'` so it's
- * converted into the Manhattan -log10 p value (use `negLog10FromLn` for a
- * natural-log p-value, or a `jexl:...` expression of `score` such as
- * `jexl:-log10(score)` for anything else):
+ * A BED of raw p-values: `scoreTransform: 'negLog10'` turns each into
+ * -log10(p) at load. `GWASAdapter` lists the other transforms:
  * ```js
  * {
  *   type: 'GWASTrack',
