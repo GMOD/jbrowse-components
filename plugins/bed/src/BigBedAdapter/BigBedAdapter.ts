@@ -25,6 +25,16 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
+// UCSC reads column 9 of a bed9+ bigBed as itemRgb whatever its autoSql calls
+// it (spliceVarDb calls it `color`); colorBits reads only the standard names.
+function positionalItemRgbField(
+  definedFieldCount: number,
+  fields: { name: string }[],
+) {
+  const name = definedFieldCount >= 9 ? fields[8]?.name : undefined
+  return name && name !== 'itemRgb' && name !== 'reserved' ? name : undefined
+}
+
 export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterConfig> {
   // `label` on cachedSetup so "Downloading header" shows only while the first
   // fetch is in flight; every later getFeatures resolves from the memo with no
@@ -47,6 +57,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       bigbed,
       header,
       parser,
+      positionalItemRgb: positionalItemRgbField(
+        header.definedFieldCount,
+        parser.autoSql.fields,
+      ),
     }
   }
 
@@ -148,7 +162,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     const scoreColumn = this.getConf('scoreColumn')
     const aggregateField = this.getConf('aggregateField')
     const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
-    const { parser, bigbed } = await this.configure(opts)
+    const { parser, bigbed, positionalItemRgb } = await this.configure(opts)
     // downloadStatus, not updateStatus: bbi knows the total block bytes up front
     // (they come from the R-tree index) so this reports a determinate fraction
     // rather than an indeterminate spinner. Matters most here — BigBed is a
@@ -185,6 +199,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
           refName: query.refName,
           disableGeneHeuristic,
         })
+        if (positionalItemRgb) {
+          f.itemRgb ??= f[positionalItemRgb]
+        }
         const aggr = f[aggregateField]
         const aggrIsNotNone =
           typeof aggr === 'string' && aggr && aggr !== 'none'

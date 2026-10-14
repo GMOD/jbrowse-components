@@ -40,3 +40,28 @@ test('bigBed features carry their color under the autoSql `reserved` name', asyn
   expect(featureBedColor(feature)).toBeUndefined()
   expect(featureBedColor(feature, true)).toBe('0,0,0')
 })
+
+test('a bed9+ bigBed whose autoSql names column 9 otherwise still yields its color', async () => {
+  const adapter = new BigBedAdapter(
+    configSchema.create({
+      bigBedLocation: {
+        localPath: require.resolve('./test_data/colorcol.bb'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+  const [colored, placeholder] = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 50000,
+        assemblyName: 'volvox',
+      })
+      .pipe(toArray()),
+  )
+
+  expect(colored!.get('color')).toBe('227,26,28')
+  expect(featureBedColor(colored!)).toBe('227,26,28')
+  expect(featureBedColor(placeholder!)).toBeUndefined()
+})
