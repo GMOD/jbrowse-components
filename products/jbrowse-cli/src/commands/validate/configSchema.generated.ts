@@ -5761,16 +5761,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureField"
           }
         },
-        "lengthField": {
-          "description": "feature attribute holding a signed bp length change vs the reference, or a jexl expression deriving one; enables indel glyphs. Empty = off.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/FeatureField"
-          }
-        },
         "color": {
           "if": {
             "type": "null"
@@ -14791,9 +14781,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "clusterField": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/clusterField"
-            },
-            "lengthField": {
-              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/lengthField"
             },
             "rowColor": {
               "anyOf": [

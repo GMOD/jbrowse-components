@@ -3344,10 +3344,6 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
-          "name": "lengthField",
-          "type": "string"
-        },
-        {
           "name": "color",
           "type": "FeatureColorConfigurationSchema",
           "subSlots": [
