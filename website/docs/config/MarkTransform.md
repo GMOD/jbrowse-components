@@ -18,6 +18,20 @@ transform: [
 ]
 ```
 
+A moving average of each file's `score` over 101 sites, one series per
+file of a multi-file track, each weighted by its read depth:
+
+```js
+transform: [
+  {
+    type: 'window',
+    groupby: ['source'],
+    frame: [-50, 50],
+    ops: [{ op: 'mean', field: 'score', weight: 'n_valid_cov', as: 'meth' }],
+  },
+]
+```
+
 The fraction of aligned bases matching the reference per bin, no reference
 `N` counted, behind a
 `cells` step, each run weighted by the bases it puts in the bin:
@@ -79,7 +93,7 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 | <span id="slot-aggregategroupby">**aggregate.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups. Empty takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's, so binning and counting needs no restatement; with none there it folds the whole region into one feature. |
 | <span id="slot-aggregateops">**aggregate.ops**</span><br><code>types.array(aggregateOpSchema)</code> | The summaries each group carries. |
 | <span id="slot-windowgroupby">**window.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups a frame stays inside, within a facet's section. Empty is one group per section. |
-| <span id="slot-windowframe">**window.frame**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[null, 0]</code> | The rows before and after each row that its summaries read, in its group's start order: `[-10, 10]` reads 21 rows, whatever bases they span, and `null` runs to the group's end. |
+| <span id="slot-windowframe">**window.frame**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[...DEFAULT_WINDOW_FRAME]</code> | The rows before and after each row that its summaries read, in its group's start order: `[-10, 10]` reads 21 rows, whatever bases they span, and `null` runs to the group's end, so `[null, 0]` is a running total. |
 | <span id="slot-windowops">**window.ops**</span><br><code>types.array(aggregateOpSchema)</code> | The summaries each row is written with, named as an `aggregate`'s are. |
 | <span id="slot-coverageas">**coverage.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'coverage'</code> | The field each run's depth is written to. |
 | <span id="slot-flattenfield">**flatten.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'subfeatures'</code> | The field fanned out, one feature per element of an array or per entry of a record keyed by name: a name or a dotted path. |

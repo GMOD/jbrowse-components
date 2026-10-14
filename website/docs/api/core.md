@@ -996,6 +996,30 @@ import { parseSvAlt } from '@jbrowse/core/util/svAlt'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
+## pathSeries
+
+A path layer's table in series order, as PathSpec defines a series,
+with each row's series beside it and the stretch past which a series breaks.
+`steps` are every step the layer's rows went through, which a `window` among
+them reads the default break from.
+
+```js
+// type signature
+(table: FeatureTable, row: RowEncoding, path: PathSpec, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => { table: FeatureTable; row: RowEncoding; series: Uint32Array<ArrayBuffer>; gapBp: number | undefined; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/pathSeries.ts)
+
+## PathSpec
+
+A path's series, as Vega-Lite draws a line: one per row and, within a row,
+one per distinct value of `by`, a categorical color's field, each in start
+order. `gapBp` breaks a series where the next instance's middle lies further
+on than that; absent, a `window` step among the layer's steps sets it to the
+bases a frame spans at the median row, and with none a series is one run.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## PileupStep
 
 Assign every feature the lowest row on which it overlaps nothing already
@@ -1666,8 +1690,8 @@ Every row kept, each written with `ops` summarized over the rows of its
 group around it, Vega-Lite's window transform: a group is a distinct
 `groupby` value set within a section, its rows taken in `start` order, and
 `frame` counts rows before and after the current one, `null` running to the
-group's end. `[-10, 10]` is a moving average over 21 rows, whatever bases
-they span; `[null, 0]`, the default, a running total. A frame cut off at a
+group's end. `[-10, 10]`, the default, is a moving average over 21 rows,
+whatever bases they span; `[null, 0]` a running total. A frame cut off at a
 group's end summarizes the rows it has. The rows come out grouped, each
 group in `start` order, so a `line` walks one group at a time.
 

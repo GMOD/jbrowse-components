@@ -9824,8 +9824,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "frame": {
           "description": "rows before and after each row, null for unbounded. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": [
-            null,
-            0
+            -10,
+            10
           ],
           "if": {
             "type": "null"
@@ -10238,6 +10238,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "step",
               "linear"
             ]
+          }
+        },
+        "gapBp": {
+          "description": "bp a line breaks across; unset follows a window step.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
           }
         },
         "linkShape": {

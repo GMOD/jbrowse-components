@@ -5126,6 +5126,10 @@ export const configManifest: ConfigManifest = {
                   "type": "LineInterpolation"
                 },
                 {
+                  "name": "gapBp",
+                  "type": "(number | undefined)"
+                },
+                {
                   "name": "linkShape",
                   "type": "LinkShape"
                 },
@@ -6820,6 +6824,10 @@ export const configManifest: ConfigManifest = {
               "type": "LineInterpolation"
             },
             {
+              "name": "gapBp",
+              "type": "(number | undefined)"
+            },
+            {
               "name": "linkShape",
               "type": "LinkShape"
             },
@@ -7313,6 +7321,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "interpolate",
               "type": "LineInterpolation"
+            },
+            {
+              "name": "gapBp",
+              "type": "(number | undefined)"
             },
             {
               "name": "linkShape",

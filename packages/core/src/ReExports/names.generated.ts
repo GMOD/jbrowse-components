@@ -296,7 +296,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/eventPoint': ['eventPoint'],
   '@jbrowse/core/util/expandLooseSearchIndex': ['expandLooseSearchIndex'],
   '@jbrowse/core/util/featureTable': ['ColumnTable', 'DerivedTable', 'NO_COLUMN', 'SelectTable', 'SourceTable', 'TableRow', 'WithTable', 'asTable', 'numberReaderOf', 'readerOf', 'selectRows', 'throughIndex', 'valueAt', 'withColumns'],
-  '@jbrowse/core/util/featureTransforms': ['BIN_OVERLAP_FIELD', 'DEFAULT_BIN_AS', 'DEFAULT_BIN_FIELD', 'DEFAULT_CELLS_FIELD', 'DEFAULT_COVERAGE_AS', 'DEFAULT_FLATTEN_FIELD', 'DEFAULT_PILEUP_AS', 'DEFAULT_PILEUP_FIELDS', 'facetLayers', 'layerTables', 'matedBy', 'runTransforms'],
+  '@jbrowse/core/util/featureTransforms': ['BIN_OVERLAP_FIELD', 'DEFAULT_BIN_AS', 'DEFAULT_BIN_FIELD', 'DEFAULT_CELLS_FIELD', 'DEFAULT_COVERAGE_AS', 'DEFAULT_FLATTEN_FIELD', 'DEFAULT_PILEUP_AS', 'DEFAULT_PILEUP_FIELDS', 'DEFAULT_WINDOW_FRAME', 'facetLayers', 'layerTables', 'matedBy', 'runTransforms'],
   '@jbrowse/core/util/fetchContext': ['fanOutStatus', 'makeFetchContext'],
   '@jbrowse/core/util/fetchHub': ['fetchHub', 'hubUrl'],
   '@jbrowse/core/util/fetchPhases': [],

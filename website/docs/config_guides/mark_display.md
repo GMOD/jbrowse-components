@@ -937,6 +937,8 @@ each reported under its id:
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
+| `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
+| `unread-gap` | warning | A `gapBp` on a mark that draws no line. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |
 | `bin-field-and-fields` | warning | A `bin` naming a `field` beside the `fields` it cuts at the bin edges, which leaves the `field` unread. |
 | `unread-weight` | warning | A `weight` on a `min` or a `max`, which no weight moves. |

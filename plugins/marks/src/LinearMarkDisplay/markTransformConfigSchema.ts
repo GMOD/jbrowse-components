@@ -385,6 +385,20 @@ const pileup = ConfigurationSchema(
  * ```
  *
  * #example
+ * A moving average of each file's `score` over 101 sites, one series per
+ * file of a multi-file track, each weighted by its read depth:
+ * ```js
+ * transform: [
+ *   {
+ *     type: 'window',
+ *     groupby: ['source'],
+ *     frame: [-50, 50],
+ *     ops: [{ op: 'mean', field: 'score', weight: 'n_valid_cov', as: 'meth' }],
+ *   },
+ * ]
+ * ```
+ *
+ * #example
  * The fraction of aligned bases matching the reference per bin, no reference
  * `N` counted, behind a
  * `cells` step, each run weighted by the bases it puts in the bin:

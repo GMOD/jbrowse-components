@@ -15,6 +15,7 @@ export type MarkLane =
   | 'colorKey'
   | 'glyph'
   | 'x2Ref'
+  | 'series'
   | 'index'
 
 export interface MarkSpec {
@@ -46,6 +47,11 @@ export interface MarkSpec {
    * through the `size` lane. Absent, the mark draws no size.
    */
   readonly size?: 'constant' | 'channel'
+  /**
+   * Whether the mark strokes through its instances in order, and so asks for
+   * the series each one belongs to.
+   */
+  readonly path?: boolean
 }
 
 /**
@@ -81,6 +87,7 @@ export const MARK_SPECS = {
     value: 'required',
     hit: 'rows',
     size: 'constant',
+    path: true,
   },
   span: {
     channels: ['row', 'color'],
@@ -139,6 +146,7 @@ export function markLanes(
           : [channel],
     ),
     ...(spec.farFoot ? (['x2Ref'] as const) : []),
+    ...(spec.path ? (['series'] as const) : []),
     ...(hitsByIndex(type) ? (['index'] as const) : []),
   ]
 }
