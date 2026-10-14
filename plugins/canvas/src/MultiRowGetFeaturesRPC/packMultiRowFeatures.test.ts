@@ -311,6 +311,27 @@ test('packs signed deltas from lengthField, coercing strings', () => {
   expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
 })
 
+test('reads lengthField through a jexl expression or a dotted path', () => {
+  const features = [
+    feat({ start: 0, end: 50, svtype: 'INS', INFO: { SVLEN: 400 } }),
+    feat({ start: 0, end: 30, svtype: 'DEL', INFO: { SVLEN: 30 } }),
+  ]
+  const pack = (lengthField: string) =>
+    packMultiRowFeatures({
+      features,
+      rowsField: '',
+      lengthField,
+      colorConfig: { value: undefined, field: '' },
+      jexl: createJexlInstance(),
+    })
+  expect([
+    ...pack(
+      "jexl:feature.svtype == 'DEL' ? 0 - feature.INFO.SVLEN : feature.INFO.SVLEN",
+    ).featureDeltas,
+  ]).toEqual([400, -30])
+  expect([...pack('INFO.SVLEN').featureDeltas]).toEqual([400, 30])
+})
+
 const RMSK_CLASS = "jexl:split(split(feature.name,'#')[1],'/')[0]"
 
 test('partitions on a jexl expression, not just an attribute', () => {

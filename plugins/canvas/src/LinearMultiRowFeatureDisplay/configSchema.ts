@@ -112,8 +112,11 @@ export default function configSchemaF() {
       /**
        * #slot
        * Feature attribute holding a signed bp length change against the
-       * reference, which turns on indel glyphs over the blocks; empty (the
-       * default) leaves the display a plain block painter.
+       * reference, or a `jexl:` expression deriving one, which turns on indel
+       * glyphs over the blocks; empty (the default) leaves the display a plain
+       * block painter. A gain draws the insertion marker and its size; a loss
+       * prints its size on the block, and a line across the block only where
+       * the loss is the block's whole span.
        *
        * #example
        * A pangenome-graph path BED, where `delta` is each haplotype's bp gained
@@ -121,12 +124,21 @@ export default function configSchemaF() {
        * ```js
        * { rows: 'strain', lengthField: 'delta' }
        * ```
+       *
+       * #example
+       * An SV BED with an unsigned `svlen` and an `svtype`:
+       * ```js
+       * {
+       *   lengthField:
+       *     "jexl:feature.svtype == 'DEL' ? 0 - feature.svlen : feature.svlen",
+       * }
+       * ```
        */
       lengthField: {
-        type: 'string',
+        type: 'featureField',
         defaultValue: '',
         description:
-          'feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off',
+          'feature attribute holding a signed bp length change vs the reference, or a jexl expression deriving one; enables indel glyphs. Empty = off',
       },
       /**
        * #slot color
