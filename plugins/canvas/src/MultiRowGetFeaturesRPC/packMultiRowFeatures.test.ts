@@ -230,8 +230,8 @@ test('a numeric name column is a label, not an absent name', () => {
 })
 
 describe('makeFeatureColorResolver', () => {
-  const resolve = (colorConfig: string | undefined) =>
-    features.map(makeFeatureColorResolver(colorConfig, createJexlInstance()))
+  const resolve = (value: string | undefined) =>
+    features.map(makeFeatureColorResolver({ value }, createJexlInstance()))
 
   test('unset slot resolves each feature to its own itemRgb', () => {
     const colors = resolve(undefined)

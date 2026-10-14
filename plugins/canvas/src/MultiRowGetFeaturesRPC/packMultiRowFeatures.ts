@@ -31,11 +31,10 @@ function evalColorSlot(color: string, feature: Feature, jexl: JexlInstance) {
 }
 
 export function makeFeatureColorResolver(
-  colorConfig: string | undefined,
+  { value, itemRgbOn }: Pick<WorkerColor, 'value' | 'itemRgbOn'>,
   jexl: JexlInstance,
-  itemRgbOn?: boolean,
 ) {
-  if (colorConfig === undefined) {
+  if (value === undefined) {
     const fallback = { css: featureDefaultColor, fromBed: false }
     return (feature: Feature) => {
       const bedColor = featureBedColor(feature, itemRgbOn)
@@ -43,13 +42,13 @@ export function makeFeatureColorResolver(
         ? fallback
         : { css: bedColor, fromBed: true }
     }
-  } else if (isCallbackValue(colorConfig)) {
+  } else if (isCallbackValue(value)) {
     return (feature: Feature) => ({
-      css: evalColorSlot(colorConfig, feature, jexl),
+      css: evalColorSlot(value, feature, jexl),
       fromBed: false,
     })
   } else {
-    const constant = { css: colorConfig, fromBed: false }
+    const constant = { css: value, fromBed: false }
     return () => constant
   }
 }
@@ -250,11 +249,7 @@ export function packMultiRowFeatures({
   const featureIds: string[] = new Array(n)
   const rowValues: string[] = []
   const valueIndex = new Map<string, number>()
-  const featureColor = makeFeatureColorResolver(
-    colorConfig.value,
-    jexl,
-    colorConfig.itemRgbOn,
-  )
+  const featureColor = makeFeatureColorResolver(colorConfig, jexl)
   const colorValues = colorConfig.field
     ? createColorValueCollector(colorConfig.field, jexl)
     : undefined
