@@ -132,6 +132,20 @@ a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
 column and bit-identical to the old encoding. The anchored haplotype sort ranks
 by `altDosageByte`, the dosage the cells paint.
 
+## A split site sorts as one site and clusters as its alleles
+
+`bcftools norm -m-` and vcfwave write a multiallelic site as one record per
+ALT, all spanning one reference interval.
+
+- **The anchored sort** groups them (`sitesBySpan`) and still ranks each
+  allele apart. When the sort read them as separate sites, its outward walk
+  reached unrelated records before the clicked record's siblings and scattered
+  one inversion's carriers.
+- **Both matrices keep one column per record.** Whether two alleles at a site
+  are one event (the HPRC FLNA/EMD inversion's 64) or two (C4's deletion and
+  insertion) is a similarity call the matrix cannot make from the VCF.
+  The data build collapses alleles that are one event.
+
 ## Settings
 
 - **Row order is not a fetch input** (ARCHITECTURE.md). The row _set_ is

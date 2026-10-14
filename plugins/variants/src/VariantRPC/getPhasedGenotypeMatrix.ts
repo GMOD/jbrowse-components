@@ -34,6 +34,12 @@ export async function getPhasedGenotypeMatrix({
 
   // Float32 because a haplotype with nothing to say is NaN
   // (genotypeMatrixEncoding.ts)
+  //
+  // One column per record, so a site split one record per ALT keeps its
+  // alleles apart. Merging a split site into one column was tried and reverted
+  // (2026-10-14): of the HPRC callset's 140,926 split sites, 18,506 mix
+  // insertions and deletions the merged column could no longer tell apart.
+  // Collapsing alleles that are one event belongs in the data build.
   const numFeatures = filteredVariants.length
   // Map, keyed in `rowSpecs` order — see getGenotypeMatrix.
   const rows = new Map<string, Float32Array>()
