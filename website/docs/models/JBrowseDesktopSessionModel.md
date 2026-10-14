@@ -78,7 +78,7 @@ From [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin): <span id="getter-v
 ## Methods
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>25 inherited methods from 10 models</summary>
+<summary>23 inherited methods from 10 models</summary>
 
 From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
 
@@ -98,7 +98,7 @@ From [DesktopSessionTrackMenuMixin](../desktopsessiontrackmenumixin): <span id="
 
 From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span>
 
-From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>, <span id="method-viewidsfortab">[`viewIdsForTab`](../workspacelayoutmixin#method-viewidsfortab)</span>, <span id="method-activetabof">[`activeTabOf`](../workspacelayoutmixin#method-activetabof)</span>
+From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>
 
 </details>
 

@@ -18,18 +18,24 @@ Drive a side-effect from MST observables in a React component. The autorun's
 disposer goes in the `useEffect` cleanup, and every observable read inside
 becomes a dependency without going in the dep array:
 
-<!-- include: packages/app-core/src/WorkspaceLayout/WorkspaceContainer.tsx#autorunInEffect -->
+<!-- include: plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx#autorunInEffect -->
 
 ```tsx
-useEffect(
-  () =>
-    autorun(() => {
-      // homes newly launched views; reads session.views here because an
-      // action's reads are untracked
-      session.homeUnassignedViews(session.views.map(v => v.id))
-    }),
-  [session],
-)
+useEffect(() => {
+  const dispose = autorun(() => {
+    const xJ = snp2 ? model.locusViewportX(snp2.refName, snp2.start) : undefined
+    const xI = snp1 ? model.locusViewportX(snp1.refName, snp1.start) : undefined
+    view.setVolatileGuides(
+      xJ !== undefined && xI !== undefined && model.showVerticalGuides
+        ? [{ xPos: xJ }, { xPos: xI }]
+        : [],
+    )
+  })
+  return () => {
+    dispose()
+    view.setVolatileGuides([])
+  }
+}, [snp1, snp2, model, view])
 ```
 
 Prefer `autorun` over `reaction` for side-effects: it runs immediately and

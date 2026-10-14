@@ -95,7 +95,7 @@ From [WebSessionManagementMixin](../websessionmanagementmixin): <span id="getter
 ## Methods
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>26 inherited methods from 10 models</summary>
+<summary>24 inherited methods from 10 models</summary>
 
 From [BaseWebSessionModel](../basewebsessionmodel): <span id="method-canedittrack">[`canEditTrack`](../basewebsessionmodel#method-canedittrack)</span>, <span id="method-gettrackactions">[`getTrackActions`](../basewebsessionmodel#method-gettrackactions)</span>
 
@@ -113,7 +113,7 @@ From [AssembliesMixin](../assembliesmixin): <span id="method-findassemblyconf">[
 
 From [AppSessionMixin](../appsessionmixin): <span id="method-menus">[`menus`](../appsessionmixin#method-menus)</span>
 
-From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>, <span id="method-viewidsfortab">[`viewIdsForTab`](../workspacelayoutmixin#method-viewidsfortab)</span>, <span id="method-activetabof">[`activeTabOf`](../workspacelayoutmixin#method-activetabof)</span>
+From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>
 
 From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span>
 

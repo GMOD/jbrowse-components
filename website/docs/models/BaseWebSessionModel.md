@@ -105,7 +105,7 @@ From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="getter-tree">[`t
 | <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete) without submenu wrapper |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>24 inherited methods from 9 models</summary>
+<summary>22 inherited methods from 9 models</summary>
 
 From [ReferenceManagementSessionMixin](../referencemanagementsessionmixin): <span id="method-getreferringmultiple">[`getReferringMultiple`](../referencemanagementsessionmixin#method-getreferringmultiple)</span>, <span id="method-getreferring">[`getReferring`](../referencemanagementsessionmixin#method-getreferring)</span>
 
@@ -121,7 +121,7 @@ From [AssembliesMixin](../assembliesmixin): <span id="method-findassemblyconf">[
 
 From [AppSessionMixin](../appsessionmixin): <span id="method-menus">[`menus`](../appsessionmixin#method-menus)</span>
 
-From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>, <span id="method-viewidsfortab">[`viewIdsForTab`](../workspacelayoutmixin#method-viewidsfortab)</span>, <span id="method-activetabof">[`activeTabOf`](../workspacelayoutmixin#method-activetabof)</span>
+From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="method-haspanel">[`hasPanel`](../workspacelayoutmixin#method-haspanel)</span>, <span id="method-findtab">[`findTab`](../workspacelayoutmixin#method-findtab)</span>, <span id="method-tabcontainingview">[`tabContainingView`](../workspacelayoutmixin#method-tabcontainingview)</span>, <span id="method-panelcontainingview">[`panelContainingView`](../workspacelayoutmixin#method-panelcontainingview)</span>
 
 From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span>
 
