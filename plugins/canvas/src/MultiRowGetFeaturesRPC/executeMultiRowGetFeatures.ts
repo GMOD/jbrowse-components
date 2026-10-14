@@ -17,15 +17,8 @@ export async function executeMultiRowGetFeatures({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiRowGetFeatures'>
 }) {
-  const {
-    region,
-    byteLimit,
-    rowsField,
-    lengthField,
-    colorConfig,
-    signal,
-    statusCallback,
-  } = args
+  const { region, byteLimit, rowsField, colorConfig, signal, statusCallback } =
+    args
 
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
 
@@ -52,7 +45,6 @@ export async function executeMultiRowGetFeatures({
   const result = packMultiRowFeatures({
     features,
     rowsField,
-    lengthField,
     colorConfig,
     jexl: pluginManager.jexl,
     report: createProgressReporter({

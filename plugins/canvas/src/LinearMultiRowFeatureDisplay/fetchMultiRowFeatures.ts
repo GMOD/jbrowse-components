@@ -9,10 +9,7 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 
 interface FetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
-  rpcProps: () => Pick<
-    MultiRowGetFeaturesArgs,
-    'rowsField' | 'lengthField' | 'colorConfig'
-  >
+  rpcProps: () => Pick<MultiRowGetFeaturesArgs, 'rowsField' | 'colorConfig'>
   pinnedRowsField: string
   resolvedByteLimit: () => number | undefined
 }

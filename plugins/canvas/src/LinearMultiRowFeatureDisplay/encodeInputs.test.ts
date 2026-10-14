@@ -11,7 +11,6 @@ function regionData(): MultiRowRegionData {
     featureEnds: new Uint32Array([100, 200]),
     featureColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: ['sampleA', 'sampleB'],
     featureRowValueIndex: new Uint32Array([0, 1]),
     featureNames: ['segA', 'segB'],
@@ -131,7 +130,6 @@ describe('encodeInputs', () => {
       featureColors: new Uint32Array([
         0xff0000ff, 0xff00ff00, 0xffff0000, 0xff00ffff,
       ]),
-      featureDeltas: new Int32Array(0),
       rowValues: names,
       featureRowValueIndex: new Uint32Array([0, 1, 2, 3]),
       featureNames: ['segA', 'segB', 'segC', 'segD'],

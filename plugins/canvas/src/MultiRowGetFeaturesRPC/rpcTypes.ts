@@ -18,7 +18,6 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
     assemblyName: string
   }
   rowsField: string
-  lengthField: string
   colorConfig: WorkerColor
 }
 
@@ -44,13 +43,6 @@ export interface MultiRowRegionData {
   // in `featureColors`' place.
   rectColorValues: Uint32Array
   colorValues?: MultiRowColorValues
-  /**
-   * Length 0 when the `lengthField` slot is unset, which gates the whole
-   * indel-glyph pass — read it as `featureDeltas.length ===
-   * featureStarts.length`, never as `deltas[i] === 0`, since 0 is a legitimate
-   * reference-length allele.
-   */
-  featureDeltas: Int32Array
   rowValues: string[]
   featureRowValueIndex: Uint32Array
   featureNames: string[]

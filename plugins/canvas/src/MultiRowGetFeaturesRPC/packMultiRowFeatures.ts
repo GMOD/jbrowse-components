@@ -204,15 +204,6 @@ export function resolveRowsField(
     : rowsField
 }
 
-function deltaOf(read: (feature: Feature) => unknown, feature: Feature) {
-  try {
-    const num = Number(read(feature))
-    return Number.isFinite(num) ? num : 0
-  } catch {
-    return 0
-  }
-}
-
 /**
  * Reads a field the way `color.field` does, through core's `fieldReader`: a
  * name, a dotted path or a `jexl:` expression. Both the row a feature paints
@@ -235,14 +226,12 @@ export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
 export function packMultiRowFeatures({
   features,
   rowsField,
-  lengthField,
   colorConfig,
   jexl,
   report,
 }: {
   features: Feature[]
   rowsField: string
-  lengthField: string
   colorConfig: WorkerColor
   jexl: JexlInstance
   report?: ProgressReporter
@@ -252,8 +241,6 @@ export function packMultiRowFeatures({
   const featureEnds = new Uint32Array(n)
   const featureColors = new Uint32Array(n)
   const featureRowValueIndex = new Uint32Array(n)
-  const readDelta = lengthField ? fieldReader(lengthField, jexl) : undefined
-  const featureDeltas = new Int32Array(readDelta ? n : 0)
   const featureNames: string[] = new Array(n)
   const featureIds: string[] = new Array(n)
   const rowValues: string[] = []
@@ -277,10 +264,6 @@ export function packMultiRowFeatures({
     featureIds[i] = feature.id()
     const name: unknown = feature.get('name')
     featureNames[i] = columnValue(name)
-
-    if (readDelta) {
-      featureDeltas[i] = deltaOf(readDelta, feature)
-    }
 
     const value = featureRowValue(feature)
     let idx = valueIndex.get(value)
@@ -307,7 +290,6 @@ export function packMultiRowFeatures({
     featureColors,
     rectColorValues,
     colorValues: colorValues?.colorValues,
-    featureDeltas,
     rowValues,
     featureRowValueIndex,
     featureNames,

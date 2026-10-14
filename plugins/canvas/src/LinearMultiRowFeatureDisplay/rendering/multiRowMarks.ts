@@ -1,13 +1,8 @@
-import { insertionMark } from '@jbrowse/alignments-core'
 import { defineMark, spanMark } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
-import { multiRowInsertionParams } from './multiRowIndels.ts'
-
-import type {
-  MultiRowRenderState,
-  MultiRowUploadData,
-} from './multiRowRenderingBackendTypes.ts'
+import type { MultiRowEncoded } from './multiRowChannels.ts'
+import type { MultiRowRenderState } from './multiRowRenderingBackendTypes.ts'
 import type { Mark, SpanChannels } from '@jbrowse/render-core/marks'
 
 // This display sizes its canvas to the whole row stack and never scrolls, so
@@ -26,11 +21,6 @@ export const MULTI_ROW_MARK = defineMark({
   }),
 })
 
-export const MULTI_ROW_INSERTION_MARK = defineMark({
-  shape: insertionMark,
-  channels: (c: MultiRowUploadData) => c.insertions,
-  params: multiRowInsertionParams,
-})
-
-export const MULTI_ROW_MARKS: Mark<MultiRowUploadData, MultiRowRenderState>[] =
-  [MULTI_ROW_MARK, MULTI_ROW_INSERTION_MARK]
+export const MULTI_ROW_MARKS: Mark<MultiRowEncoded, MultiRowRenderState>[] = [
+  MULTI_ROW_MARK,
+]

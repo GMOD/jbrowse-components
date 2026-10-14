@@ -41,7 +41,6 @@ function run(byteLimit?: number) {
       region: { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
       byteLimit,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: 'goldenrod', field: '' },
     },
   })

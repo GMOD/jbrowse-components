@@ -8,18 +8,13 @@ import { spansInRow } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
-import { regionWithDeltas } from './rendering/featurePainting.ts'
-import {
-  MULTI_ROW_INSERTION_MARK,
-  MULTI_ROW_MARK,
-} from './rendering/multiRowMarks.ts'
+import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
 import { rowBand } from './rendering/rowBand.ts'
 
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
-  MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { MarkInstance, RowKeys } from '@jbrowse/render-core/marks'
@@ -37,10 +32,6 @@ export interface MultiRowHit {
   refName: string
   start: number
   end: number
-  // Signed bp length change vs the reference, absent whenever the `lengthField`
-  // slot is unset. The block's width is reference span and says nothing about
-  // it.
-  delta?: number
 }
 
 export interface MultiRowContextMenuInfo extends ContextMenuAnchor {
@@ -78,7 +69,7 @@ export interface MultiRowHitTestSlice {
   renderBlocks: RenderBlock[]
   renderState: MultiRowRenderState
   rpcDataMap: ReadonlyMap<number, MultiRowRegionData>
-  uploadedChannels: ReadonlyMap<number, MultiRowUploadData>
+  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   view: HitTestView
 }
 
@@ -147,33 +138,12 @@ function channelsOnRows(
 }
 
 /**
- * The insertion markers on `keys`, each row's back to front. A marker can
- * stand wider than its block, so the span's reach cannot find it; there are
- * few enough per region to scan.
- */
-function markersOnRows(
-  { row, count }: MultiRowUploadData['insertions'],
-  keys: readonly number[],
-) {
-  const out: number[] = []
-  for (const key of keys) {
-    for (let k = count - 1; k >= 0; k--) {
-      if (row[k] === key) {
-        out.push(k)
-      }
-    }
-  }
-  return out
-}
-
-/**
  * `rowsUnderPointer` asks at the pixel's centre, the scanline that decided the
  * color under the cursor — at the 0.32 px rows a cohort painting fits into, the
  * top edge names a row one and a half off. Several sub-pixel rows share one
  * drawn pixel, so the walk from `nearest` to `lowest` finds whichever of them
- * actually put a block there. The insertion mark, painted over the blocks,
- * answers first; then the span mark, which of those rows' blocks the pixel's
- * centre is on.
+ * actually put a block there; the span mark answers which of those rows'
+ * blocks the pixel's centre is on.
  *
  * The row window is asked in band space because `rowProportion` insets each
  * band inside its slot; `yPx` stays slot-relative, the space `spanMark`
@@ -186,7 +156,7 @@ function featureAtBase(
   mouseY: number,
 ): MultiRowHit | undefined {
   const region = self.rpcDataMap.get(p.index)
-  const channels = self.uploadedChannels.get(p.index)
+  const channels = self.encodedChannels.get(p.index)
   const block = self.renderBlocks.find(b => b.displayedRegionIndex === p.index)
   if (!region || !channels || !block) {
     return undefined
@@ -200,27 +170,15 @@ function featureAtBase(
   )
   const xPx = Math.floor(mouseX) + 0.5
   const yPx = contentYAt(mouseY, { rowHeight })
-  const keys = rowKeysUnder(self, nearest, lowest)
-  const marker = MULTI_ROW_INSERTION_MARK.hitNearest?.(
+  const c = MULTI_ROW_MARK.hitNearest?.(
     channels,
     block,
     self.renderState,
     xPx,
     yPx,
-    markersOnRows(channels.insertions, keys),
+    channelsOnRows(channels, block, xPx, rowKeysUnder(self, nearest, lowest)),
     INSIDE_ONLY,
-  )
-  const c = marker
-    ? channels.insertions.channel[marker.index]
-    : MULTI_ROW_MARK.hitNearest?.(
-        channels,
-        block,
-        self.renderState,
-        xPx,
-        yPx,
-        channelsOnRows(channels, block, xPx, keys),
-        INSIDE_ONLY,
-      )?.index
+  )?.index
   if (c === undefined) {
     return undefined
   }
@@ -237,7 +195,6 @@ function featureAtBase(
     refName: p.refName,
     start: region.featureStarts[i]!,
     end: region.featureEnds[i]!,
-    delta: regionWithDeltas(region)?.featureDeltas[i],
   }
 }
 
@@ -280,12 +237,12 @@ export function contextTargetAtPixel(
 export function hitInstance(
   self: Pick<
     MultiRowHitTestSlice,
-    'rowIndexByValue' | 'rowKeys' | 'rpcDataMap' | 'uploadedChannels'
+    'rowIndexByValue' | 'rowKeys' | 'rpcDataMap' | 'encodedChannels'
   >,
   hit: MultiRowHit | undefined,
 ): MarkInstance | undefined {
   const region = hit && self.rpcDataMap.get(hit.regionIndex)
-  const channels = hit && self.uploadedChannels.get(hit.regionIndex)
+  const channels = hit && self.encodedChannels.get(hit.regionIndex)
   if (!region || !channels || !self.rowIndexByValue.has(hit.rowName)) {
     return undefined
   }

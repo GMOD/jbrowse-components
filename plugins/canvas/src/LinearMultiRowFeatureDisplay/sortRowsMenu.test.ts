@@ -22,7 +22,6 @@ function regionData(rowValues: string[]): MultiRowRegionData {
     featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
     featureIds: [],
-    featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     rowsFieldCandidates: [],
     rowsFieldCandidateValues: [],

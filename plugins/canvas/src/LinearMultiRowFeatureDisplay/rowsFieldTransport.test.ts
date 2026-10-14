@@ -57,7 +57,6 @@ function regionData(resolvedRowsField: string) {
     featureEnds: new Uint32Array([100]),
     featureColors: new Uint32Array([0xff0000ff]),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: ['LINE'],
     featureRowValueIndex: new Uint32Array([0]),
     featureNames: ['L1HS'],

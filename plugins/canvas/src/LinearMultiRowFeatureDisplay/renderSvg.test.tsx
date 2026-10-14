@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { RowKeys, buildRowTable } from '@jbrowse/render-core/marks'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
@@ -9,7 +8,6 @@ import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
-import { multiRowUploadData } from './rendering/multiRowIndels.ts'
 
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
@@ -70,7 +68,6 @@ function makeRegionData(start = 1100, end = 1200): MultiRowGetFeaturesResult {
     featureRowValueIndex: Uint32Array.from([0]),
     featureNames: ['feat'],
     featureIds: ['f0'],
-    featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     rowsFieldCandidates: [],
     rowsFieldCandidateValues: [],
@@ -137,18 +134,12 @@ function makeModel(
     error: undefined,
     regionTooLarge: false,
     svgReady: true,
-    lengthField: '',
-    uploadedChannelsIn: palette =>
-      new Map(
-        [...drawnRegionData].map(([k, d]) => [
-          k,
-          multiRowUploadData(
-            buildMultiRowChannels(d, encodeInputs),
-            d,
-            cssColorToABGR(palette.insertion),
-          ),
-        ]),
-      ),
+    encodedChannels: new Map(
+      [...drawnRegionData].map(([k, d]) => [
+        k,
+        buildMultiRowChannels(d, encodeInputs),
+      ]),
+    ),
     renderState,
     sources,
     svgSidebar: {

@@ -29,7 +29,6 @@ function painted(): MultiRowRegionData {
     featureEnds: new Uint32Array([200]),
     featureColors: Uint32Array.from([cssColorToABGR('red')]),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: ['HG001'],
     featureRowValueIndex: new Uint32Array([0]),
     featureNames: ['EUR'],

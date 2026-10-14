@@ -10,7 +10,6 @@ function region(rowsFieldCandidateValues: RowsFieldCandidateValues[]) {
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: [],
     featureRowValueIndex: new Uint32Array(0),
     featureNames: [],

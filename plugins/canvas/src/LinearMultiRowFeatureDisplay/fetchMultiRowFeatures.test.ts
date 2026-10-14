@@ -47,7 +47,6 @@ function makeSelf() {
       // sent and the cache key they are stored under stay one expression.
       rpcProps: () => ({
         rowsField: 'name',
-        lengthField: '',
         colorConfig: undefined,
       }),
       resolvedByteLimit: () => 1000,

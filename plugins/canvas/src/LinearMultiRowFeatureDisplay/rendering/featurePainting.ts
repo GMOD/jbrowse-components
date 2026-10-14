@@ -1,15 +1,6 @@
 import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
-// `featureDeltas` is EMPTY, not zero-filled, when the `lengthField` slot is
-// unset, so "has deltas" is a length agreement with `featureStarts` — and every
-// per-feature `featureDeltas[i]!` read is sound only once it holds.
-export function regionWithDeltas(data: MultiRowRegionData | undefined) {
-  return data && data.featureDeltas.length === data.featureStarts.length
-    ? data
-    : undefined
-}
-
 type OwnColorData = Pick<
   MultiRowRegionData,
   'featureColors' | 'rectColorValues' | 'colorValues'

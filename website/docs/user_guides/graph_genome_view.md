@@ -609,20 +609,35 @@ per strain:
         "field": "strain",
         "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
       },
-      "lengthField": "delta"
+      "color": {
+        "scale": "identity",
+        "domain": [
+          "rgb(204,204,204)",
+          "rgb(192,0,192)",
+          "rgb(128,128,128)",
+          "rgb(0,154,138)",
+          "rgb(191,170,64)"
+        ],
+        "labels": [
+          "reference path",
+          "insertion",
+          "deletion",
+          "same length, different path",
+          "no call"
+        ]
+      }
     }
   ]
 }
 ```
 
 - `rows` puts each strain in a separate row, `domain` in the order given
-- `lengthField` names the BED's signed `delta` column, the strain's `pathLen`
-  minus K12's `refLen`. Without it, a 100 kb insertion and a 1 bp one draw as
-  the same box. With it:
-  - a gain draws the [alignments track](/docs/user_guides/alignments_track)'s
-    insertion marker and its size
-  - a loss prints its size on the block, plus a line through the block where the
-    strain has no sequence in the bubble at all
+- `color` names the class colors the BED carries in its itemRgb column
+- A block spans the reference its allele replaces, so a 100 kb insertion and a 1
+  bp one draw the same width. The popup gives the size: `name` is the signed
+  `delta`, the strain's `pathLen` minus K12's `refLen`.
+  [Alleles from the rGFA alone](#when-all-you-have-is-the-graph) draws each
+  allele at its size.
 - `delta` is a net change. A strain that drops one segment of a bubble and gains
   a longer one reads as a small insertion; the `path` column in the popup lists
   the segments it actually takes

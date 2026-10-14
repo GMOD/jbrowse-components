@@ -19,7 +19,6 @@ function region(): MultiRowRegionData {
       cssColorToABGR('red'),
       cssColorToABGR('blue'),
     ]),
-    featureDeltas: new Int32Array(0),
     rowValues: ['a', 'b'],
     featureRowValueIndex: Uint32Array.from([0, 1]),
     featureNames: ['top', 'bottom'],

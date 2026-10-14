@@ -470,7 +470,6 @@
             "field": "strain",
             "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
           },
-          "lengthField": "delta",
           "color": {
             "scale": "identity",
             "domain": [

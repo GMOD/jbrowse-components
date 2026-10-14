@@ -1,18 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
-import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
-import type {
-  MultiRowRenderState,
-  MultiRowUploadData,
-} from './rendering/multiRowRenderingBackendTypes.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
+import type { MultiRowRenderState } from './rendering/multiRowRenderingBackendTypes.ts'
 import type {
   LgvSvgBodyProps,
   LgvSvgExportable,
@@ -21,10 +16,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
 export interface RenderSvgModel extends LgvSvgExportable {
-  lengthField: string
-  uploadedChannelsIn: (
-    palette: JBrowsePalette,
-  ) => ReadonlyMap<number, MultiRowUploadData>
+  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   renderState: MultiRowRenderState
   sources: RowSource[]
   svgSidebar: SvgSidebarProps
@@ -48,25 +40,17 @@ function MultiRowSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  const palette = usePalette()
-  const uploaded = self.uploadedChannelsIn(palette)
   return (
     <>
       <g transform={`translate(0 ${self.rowsTopOffset})`}>
         <MarkSvgLayer
           marks={MULTI_ROW_MARKS}
-          regions={uploaded}
+          regions={self.encodedChannels}
           blocks={renderBlocks}
           state={self.renderState}
           width={canvasWidth}
           height={self.rowsHeight}
           opts={opts}
-          paint={(ctx, state) => {
-            // the overlay the screen composites over the canvas
-            if (overlays && self.lengthField) {
-              drawMultiRowIndelGlyphs(ctx, uploaded, renderBlocks, state)
-            }
-          }}
         />
         {/* Before the sidebar, so the tree panel paints over the lines */}
         {overlays && self.showRowSeparators ? (

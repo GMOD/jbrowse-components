@@ -1125,9 +1125,6 @@ importers:
 
   plugins/canvas:
     dependencies:
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

@@ -29,7 +29,6 @@ function pack(field: string): MultiRowRegionData {
   return packMultiRowFeatures({
     features: SEGMENTS,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field },
     jexl: createJexlInstance(),
   })
@@ -128,7 +127,6 @@ describe('a color field on the multi-row display', () => {
           (f, i) => new SimpleFeature({ ...f.toJSON(), score: i }),
         ),
         rowsField: 'sample',
-        lengthField: '',
         colorConfig: { value: undefined, field: 'score' },
         jexl: createJexlInstance(),
       }),
@@ -192,7 +190,6 @@ describe('a ramp color on the multi-row display', () => {
     const data = packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: 'score' },
       jexl: createJexlInstance(),
     })
@@ -248,7 +245,6 @@ test('a domain quantile weighs each feature, so a lone spike stops short', () =>
     packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: 'score' },
       jexl: createJexlInstance(),
     }),

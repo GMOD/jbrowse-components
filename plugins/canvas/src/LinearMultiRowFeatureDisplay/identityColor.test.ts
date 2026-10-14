@@ -42,7 +42,6 @@ function loaded(color?: typeof CHROMHMM, features = STATES) {
     packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig,
       jexl: createJexlInstance(),
     }),

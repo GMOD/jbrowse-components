@@ -5,11 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  assembleLocString,
-  getPaletteHost,
-  getSession,
-} from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
@@ -68,10 +64,6 @@ import {
   resolveIdentityLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
-import {
-  insertionOfChannel,
-  multiRowUploadData,
-} from './rendering/multiRowIndels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { compileRowGroups, orderRowValues, tagRowGroups } from './rowSources.ts'
 import {
@@ -97,13 +89,11 @@ import type {
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowRenderingBackend,
-  MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { RowGroup } from './rowSources.ts'
 import type { RowCountByField } from './rowsFields.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Region } from '@jbrowse/core/util'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
@@ -222,14 +212,6 @@ export default function stateModelFactory(
        */
       get clusterField(): string {
         return self.conf.clusterField
-      },
-      /**
-       * #getter
-       * Feature attribute holding a signed bp length change vs the reference;
-       * empty turns the indel-glyph pass off.
-       */
-      get lengthField(): string {
-        return readConfObject(self.conf, 'lengthField')
       },
       /**
        * #getter
@@ -729,7 +711,6 @@ export default function stateModelFactory(
       rpcProps() {
         return {
           rowsField: self.rowsField,
-          lengthField: self.lengthField,
           colorConfig: self.workerColor,
         }
       },
@@ -745,50 +726,16 @@ export default function stateModelFactory(
         () => self.encodeInputs,
         buildMultiRowChannels,
       )
-      const withIndels = (
-        channels: MultiRowEncoded,
-        insertionAbgr: number,
-        key: number,
-      ) => multiRowUploadData(channels, self.rpcDataMap.get(key), insertionAbgr)
-      const uploaded = createEncodeMemo(
-        () => encoded(),
-        () => cssColorToABGR(getPaletteHost(self).palette.insertion),
-        withIndels,
-      )
       return {
         /**
          * #getter
          * Every loaded region's `span` channels with their per-key buckets:
-         * what `uploadedChannels` adds the indels to. The memo lives in this
-         * closure so it outlives a context-loss recovery.
+         * what the backend uploads, the hit test reads and the hover and
+         * export draw from. The memo lives in this closure so it outlives a
+         * context-loss recovery.
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
           return encoded()
-        },
-        /**
-         * #getter
-         * `encodedChannels` with each region's indels, its insertion markers
-         * in the theme's insertion color: what the backend uploads, the hit
-         * test reads and the hover, glyph overlay and export draw from.
-         */
-        get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
-          return uploaded()
-        },
-        /**
-         * #method
-         * `uploadedChannels` in another palette: the SVG export's, whose
-         * theme need not be the session's.
-         */
-        uploadedChannelsIn(
-          palette: JBrowsePalette,
-        ): ReadonlyMap<number, MultiRowUploadData> {
-          const insertionAbgr = cssColorToABGR(palette.insertion)
-          return new Map(
-            [...encoded()].map(([key, channels]) => [
-              key,
-              withIndels(channels, insertionAbgr, key),
-            ]),
-          )
         },
       }
     })
@@ -827,22 +774,15 @@ export default function stateModelFactory(
       get hoverInk(): HighlightRect[] {
         const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
         const instance = hitInstance(self, hit)
-        const uploaded = hit && self.uploadedChannels.get(hit.regionIndex)
-        if (!hit || !instance || !uploaded) {
+        if (!hit || !instance) {
           return []
         }
-        const marker = insertionOfChannel(uploaded.insertions, instance.index)
         return inkOfInstances(
           MULTI_ROW_MARKS,
           self.renderBlocks,
-          index => self.uploadedChannels.get(index),
+          index => self.encodedChannels.get(index),
           self.renderState,
-          index =>
-            index === hit.regionIndex
-              ? marker === undefined
-                ? [instance]
-                : [instance, { mark: 1, index: marker }]
-              : undefined,
+          index => (index === hit.regionIndex ? [instance] : undefined),
         ).map(r => shiftInk(r, 0, self.rowsTopOffset))
       },
       /**
@@ -1032,7 +972,7 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: MultiRowRenderingBackend) {
           installUpload(self, backend, {
-            cells: () => self.uploadedChannels,
+            cells: () => self.encodedChannels,
             render: (b, uploaded) =>
               b.renderBlocks(self.renderBlocks, uploaded, self.renderState),
           })
@@ -1056,14 +996,14 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       afterAttach() {
-        // What makes `uploadedChannels` and the row table memos at all: their
+        // What makes `encodedChannels` and the row table memos at all: their
         // consumers are pointer handlers, and MobX discards an unobserved
         // computed's value as it hands it over. Safe to hold because both key
         // off the data, the rows and the colors, never live view geometry.
         autorunOnReadyView(
           self,
           () => {
-            void self.uploadedChannels
+            void self.encodedChannels
             void self.rowTable
           },
           { name: 'MultiRowHitIndexes' },

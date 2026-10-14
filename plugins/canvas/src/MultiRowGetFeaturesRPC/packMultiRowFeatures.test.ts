@@ -29,7 +29,6 @@ test('a rows field that does not compile throws rather than reading empty', () =
     packMultiRowFeatures({
       features: [feat({ start: 0, end: 50, sample: 'mom' })],
       rowsField: 'jexl:feature.sample +',
-      lengthField: '',
       colorConfig: { value: 'goldenrod', field: '' },
       jexl: createJexlInstance(),
     }),
@@ -46,7 +45,6 @@ test('dedupes partition values and indexes features into them', () => {
   const r = packMultiRowFeatures({
     features,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'goldenrod', field: '' },
     jexl: createJexlInstance(),
   })
@@ -60,7 +58,6 @@ test('resolves a jexl color expression per feature (the demo rgb() form)', () =>
   const r = packMultiRowFeatures({
     features,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: `jexl:'rgb('+get(feature,'itemRgb')+')'`, field: '' },
     jexl: createJexlInstance(),
   })
@@ -78,7 +75,6 @@ test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash
       feat({ start: 5, end: 9, sample: 'mom', itemRgb: '' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: `jexl:'rgb('+get(feature,'itemRgb')+')'`, field: '' },
     jexl: createJexlInstance(),
   })
@@ -92,7 +88,6 @@ test('an unset color slot paints from the feature itemRgb, no jexl needed', () =
   const r = packMultiRowFeatures({
     features,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -108,7 +103,6 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom' })],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -123,7 +117,6 @@ test('a placeholder itemRgb does not hijack the per-row palette', () => {
       feat({ start: 5, end: 9, sample: 'dad', itemRgb: '0' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -137,7 +130,6 @@ test('under itemRgbOn a black itemRgb paints black', () => {
       feat({ start: 5, end: 9, sample: 'dad' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '', itemRgbOn: true },
     jexl: createJexlInstance(),
   })
@@ -152,7 +144,6 @@ test('the jexl template-string form reads a non-itemRgb color column', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom', ancestryRgb: '1,2,3' })],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: {
       value: 'jexl:`rgb(${get(feature,"ancestryRgb")})`',
       field: '',
@@ -166,7 +157,6 @@ test('plain (non-jexl) color applies to every feature, beating itemRgb', () => {
   const r = packMultiRowFeatures({
     features,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
@@ -179,7 +169,6 @@ test('missing partition value collapses to a single empty-string row', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 1, end: 2 }), feat({ start: 3, end: 4 })],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
@@ -194,7 +183,6 @@ test('captures feature id for the click → details fetch', () => {
       feat({ id: 'feat2', start: 5, end: 9, sample: 'mom' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
@@ -208,7 +196,6 @@ test('captures feature name for tooltips ("" when absent)', () => {
       feat({ start: 5, end: 9, sample: 'mom' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
@@ -222,7 +209,6 @@ test('a numeric name column is a label, not an absent name', () => {
       feat({ start: 5, end: 9, sample: 'mom', name: 0 }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: 'red', field: '' },
     jexl: createJexlInstance(),
   })
@@ -274,7 +260,6 @@ describe('makeFeatureColorResolver', () => {
     const r = packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -282,54 +267,6 @@ describe('makeFeatureColorResolver', () => {
       resolve(undefined).map(c => cssColorToABGR(c.css)),
     )
   })
-})
-
-test('packs no deltas when lengthField is unset', () => {
-  const r = packMultiRowFeatures({
-    features,
-    rowsField: 'sample',
-    lengthField: '',
-    colorConfig: { value: undefined, field: '' },
-    jexl: createJexlInstance(),
-  })
-  expect(r.featureDeltas).toHaveLength(0)
-})
-
-test('packs signed deltas from lengthField, coercing strings', () => {
-  const r = packMultiRowFeatures({
-    features: [
-      feat({ start: 0, end: 50, sample: 'a', delta: '113174' }),
-      feat({ start: 0, end: 30, sample: 'b', delta: -3217 }),
-      feat({ start: 30, end: 50, sample: 'c' }),
-      feat({ start: 30, end: 50, sample: 'd', delta: 'ref' }),
-    ],
-    rowsField: 'sample',
-    lengthField: 'delta',
-    colorConfig: { value: undefined, field: '' },
-    jexl: createJexlInstance(),
-  })
-  expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
-})
-
-test('reads lengthField through a jexl expression or a dotted path', () => {
-  const features = [
-    feat({ start: 0, end: 50, svtype: 'INS', INFO: { SVLEN: 400 } }),
-    feat({ start: 0, end: 30, svtype: 'DEL', INFO: { SVLEN: 30 } }),
-  ]
-  const pack = (lengthField: string) =>
-    packMultiRowFeatures({
-      features,
-      rowsField: '',
-      lengthField,
-      colorConfig: { value: undefined, field: '' },
-      jexl: createJexlInstance(),
-    })
-  expect([
-    ...pack(
-      "jexl:feature.svtype == 'DEL' ? 0 - feature.INFO.SVLEN : feature.INFO.SVLEN",
-    ).featureDeltas,
-  ]).toEqual([400, -30])
-  expect([...pack('INFO.SVLEN').featureDeltas]).toEqual([400, 30])
 })
 
 const RMSK_CLASS = "jexl:split(split(feature.name,'#')[1],'/')[0]"
@@ -343,7 +280,6 @@ test('partitions on a jexl expression, not just an attribute', () => {
       feat({ start: 50, end: 60, name: '(ACCTA)n#Simple_repeat' }),
     ],
     rowsField: RMSK_CLASS,
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -359,7 +295,6 @@ test('partitions on a dotted path, as color.field reads one', () => {
       feat({ start: 30, end: 50, INFO: { SVTYPE: ['DEL'] } }),
     ],
     rowsField: 'INFO.SVTYPE',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -378,7 +313,6 @@ describe('the empty rowsField picks a column off the data', () => {
     return packMultiRowFeatures({
       features,
       rowsField,
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -411,7 +345,6 @@ test('a feature the expression throws on costs its own row, not the region', () 
       feat({ start: 0, end: 30, name: 'unparseable' }),
     ],
     rowsField: RMSK_CLASS,
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -427,7 +360,6 @@ test('coerces a numeric partition value rather than dropping it', () => {
       feat({ start: 30, end: 50 }),
     ],
     rowsField: 'state',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -451,7 +383,6 @@ describe('the legend candidates', () => {
     return packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -488,7 +419,6 @@ test('collects the attribute names a reader could partition on', () => {
   const r = packMultiRowFeatures({
     features,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -502,7 +432,6 @@ test('unions the names over the head of the list, not just the first feature', (
       feat({ start: 0, end: 30, sample: 'dad', clade: 'B' }),
     ],
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -516,7 +445,6 @@ test('offers the source a stacked track stamps on each feature', () => {
       feat({ start: 0, end: 30, source: 'peaks_b' }),
     ],
     rowsField: 'source',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -531,7 +459,6 @@ test('samples the head rather than every feature', () => {
   const r = packMultiRowFeatures({
     features: many,
     rowsField: 'sample',
-    lengthField: '',
     colorConfig: { value: undefined, field: '' },
     jexl: createJexlInstance(),
   })
@@ -544,7 +471,6 @@ describe('the distinct values per partition candidate', () => {
     const r = packMultiRowFeatures({
       features,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -566,7 +492,6 @@ describe('the distinct values per partition candidate', () => {
     const r = packMultiRowFeatures({
       features: many,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -581,7 +506,6 @@ describe('the distinct values per partition candidate', () => {
     const r = packMultiRowFeatures({
       features: [feat({ start: 0, end: 1, sample: 'a', note: long })],
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })
@@ -602,7 +526,6 @@ describe('the distinct values per partition candidate', () => {
     const r = packMultiRowFeatures({
       features: many,
       rowsField: 'sample',
-      lengthField: '',
       colorConfig: { value: undefined, field: '' },
       jexl: createJexlInstance(),
     })

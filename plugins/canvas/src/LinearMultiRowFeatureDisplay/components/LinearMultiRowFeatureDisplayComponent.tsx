@@ -14,7 +14,6 @@ import { observer } from 'mobx-react'
 
 import { MULTI_ROW_MARKS } from '../rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
-import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
@@ -66,7 +65,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             top: 0,
           }}
         />
-        <MultiRowIndelGlyphOverlay model={model} />
         {/* inline rather than portaled: the tree sidebar is a later sibling
             with an opaque panel, so the lines stop at the dendrogram */}
         {showRowSeparators ? (

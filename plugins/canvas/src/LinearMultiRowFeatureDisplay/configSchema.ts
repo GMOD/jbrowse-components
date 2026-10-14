@@ -110,37 +110,6 @@ export default function configSchemaF() {
           "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = presence alone",
       },
       /**
-       * #slot
-       * Feature attribute holding a signed bp length change against the
-       * reference, or a `jexl:` expression deriving one, which turns on indel
-       * glyphs over the blocks; empty (the default) leaves the display a plain
-       * block painter. A gain draws the insertion marker and its size; a loss
-       * prints its size on the block, and a line across the block only where
-       * the loss is the block's whole span.
-       *
-       * #example
-       * A pangenome-graph path BED, where `delta` is each haplotype's bp gained
-       * or lost at that bubble:
-       * ```js
-       * { rows: 'strain', lengthField: 'delta' }
-       * ```
-       *
-       * #example
-       * An SV BED with an unsigned `svlen` and an `svtype`:
-       * ```js
-       * {
-       *   lengthField:
-       *     "jexl:feature.svtype == 'DEL' ? 0 - feature.svlen : feature.svlen",
-       * }
-       * ```
-       */
-      lengthField: {
-        type: 'featureField',
-        defaultValue: '',
-        description:
-          'feature attribute holding a signed bp length change vs the reference, or a jexl expression deriving one; enables indel glyphs. Empty = off',
-      },
-      /**
        * #slot color
        * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
        * callback in `value`, or a field whose values each take a color

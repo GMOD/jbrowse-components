@@ -222,7 +222,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `insertion.slang` | `insertionBarWidthPx` (+ the four thresholds via `export-consts`) | `@jbrowse/alignments-core` `labelConstants.ts` — the insertion marker's width, read by two plugins' renderers and three hit tests |
 | `read.slang` | `showChevron` | `features/read/drawCanvas.ts` — "Mirror of read.slang `showChev`"; the first export needing bit operations |
 | `gap.slang` | `intronAlpha` | `rendererTypes.ts` — a hand-expanded smoothstep, under a "keep these in sync" comment on *each* side |
-| `rowRect.slang` | `drawnRowHeightPx`, `rowBandOffsetPx` (+ `MIN_DRAWN_ROW_PX`) | `plugins/canvas` `rowBand.ts` — the row band the painter, the indel glyphs and the hover box all inset from |
+| `rowRect.slang` | `drawnRowHeightPx`, `rowBandOffsetPx` (+ `MIN_DRAWN_ROW_PX`) | `plugins/canvas` `rowBand.ts` — the row band the painter and the hover box inset from |
 | `variant.slang` | `drawnCellHeightPx` | `Canvas2DVariantRenderer` + `variantCellLookup` — `Math.max(rowHeight, 2)` twice, so a cell could paint taller than it picks |
 | `manhattan.slang` | `INDEX_GLYPH_SCALE` via `export-consts` | `Canvas2DManhattanRenderer` — a re-typed `1.6`, previously guarded by a test that scraped the `.slang` with a regex |
 | `variant.slang` | `snapCellEdgePx`, `snappedCellWidthPx` | `snapVariantCellX.ts` — the half-canvas-offset pixel snap, which is parity rather than an approximation to `Math.round` only because someone worked the clip-space algebra out by hand |

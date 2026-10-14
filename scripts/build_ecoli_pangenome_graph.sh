@@ -667,11 +667,9 @@ JSON
 jb add-track-json rgfa_track.json --update --out "$APP"
 
 # The same graph read per strain rather than per segment: one row per strain,
-# each block that strain's allele at one bubble. `lengthField` is what makes the
-# insertions legible — a block can only be as wide as the reference it covers, so
-# without it Sakai's 113 kb allele draws the same 3.4 kb box K12's reference path
-# does. The class colors are in the file (itemRgb), so an identity scale just
-# names them.
+# each block that strain's allele at one bubble, spanning the reference it
+# replaces. The class colors are in the file (itemRgb), so an identity scale
+# just names them; the allele's size is the BED's name, which the hover shows.
 cp ecoli_minigraph_paths.bed.gz ecoli_minigraph_paths.bed.gz.tbi "$APP/"
 cat > paths_track.json <<JSON
 {
@@ -690,7 +688,6 @@ cat > paths_track.json <<JSON
         "field": "strain",
         "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
       },
-      "lengthField": "delta",
       "color": {
         "scale": "identity",
         "domain": [

@@ -19,7 +19,6 @@ function regionData(): MultiRowRegionData {
     featureEnds: new Uint32Array([200, 4000]),
     featureColors: new Uint32Array([0xff0000ff, 0xff00ff00]),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: ['sampleA', 'sampleB'],
     featureRowValueIndex: new Uint32Array([0, 1]),
     featureNames: ['segA', 'segB'],

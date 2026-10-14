@@ -91,7 +91,6 @@ function region(): MultiRowRegionData {
     featureEnds,
     featureColors,
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: Array.from({ length: rows }, (_, r) => `sample${r}`),
     featureRowValueIndex,
     featureNames: Array.from({ length: n }, () => ''),

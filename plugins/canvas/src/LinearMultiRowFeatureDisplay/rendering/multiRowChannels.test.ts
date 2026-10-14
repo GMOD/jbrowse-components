@@ -35,7 +35,6 @@ const region: MultiRowRegionData = {
   featureRowValueIndex: Uint32Array.from([0, 1, 0]),
   featureNames: ['a', 'b', 'c'],
   featureIds: ['f1', 'f2', 'f3'],
-  featureDeltas: new Int32Array(0),
   usedItemRgb: false,
   rowsFieldCandidates: [],
   rowsFieldCandidateValues: [],

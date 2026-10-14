@@ -8,7 +8,6 @@ function rows(n: number): MultiRowRegionData {
     featureEnds: new Uint32Array(0),
     featureColors: new Uint32Array(0),
     rectColorValues: new Uint32Array(0),
-    featureDeltas: new Int32Array(0),
     rowValues: Array.from({ length: n }, (_, i) => `dog${i}`),
     featureRowValueIndex: new Uint32Array(0),
     featureNames: [],
