@@ -21,6 +21,7 @@ import {
   featureColorEncoding,
   withPreset,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { rampMidNorm, scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import type { MarkConfig } from './configSchema.ts'
@@ -637,6 +638,35 @@ export function shapeLabel(
     .filter(e => e.shape === shape)
     .map(e => label(e.value))
   return values.length > 0 ? values.join(', ') : undefined
+}
+
+/**
+ * The key row a hovered value falls on, for a ramp or threshold: its
+ * interval, or the no-value or not-a-number row its packed color is.
+ */
+export function valueRow(
+  section: MarkLegendSection,
+  value: number,
+  color: number | undefined,
+) {
+  const { scale, key } = section
+  if (scale.kind !== 'ramp' && scale.kind !== 'threshold') {
+    return undefined
+  }
+  if (Number.isNaN(value)) {
+    const gaps = listedRows(
+      thresholdKeyEntries([], undefined, scale).slice(1),
+      {
+        missingLabel: key.missingLabel,
+      },
+    )
+    return gaps.find(e => cssColorToABGR(e.color) === color)
+  }
+  return scale.kind === 'threshold'
+    ? thresholdKeyEntries(scale.domain, scale.range, scale, key.labels)[
+        thresholdBandOf(value, scale.domain)
+      ]
+    : undefined
 }
 
 /**

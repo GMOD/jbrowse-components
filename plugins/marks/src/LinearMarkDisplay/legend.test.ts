@@ -15,6 +15,7 @@ import {
   categoryLabel,
   markColorScales,
   shapeLabel,
+  valueRow,
 } from './legend.ts'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
@@ -124,6 +125,16 @@ test('a threshold key lists one swatch per interval, in bin order', () => {
     '0.1 \u2013 0.5',
     '\u2265 0.5',
   ])
+})
+
+test('a hovered value names its interval and its gap as the key does', () => {
+  const [section] = buildMarkLegend(
+    [region({ ...thresholdTable(), missing: true })],
+    undefined,
+    () => ({ labels: ['low', 'mid', 'high'], missingLabel: 'untested' }),
+  )
+  expect(valueRow(section!, 0.7, undefined)?.label).toBe('high')
+  expect(valueRow(section!, Number.NaN, NO_VALUE_ABGR)?.label).toBe('untested')
 })
 
 test('two regions of one threshold declaration share a key', () => {
