@@ -9,21 +9,10 @@ jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
     Promise.resolve({ getFeaturesInMultipleRegionsArray: mockGetFeatures }),
 }))
 
-// Each feature its own site unless a test names the span: records sharing one
-// are alleles of one site, and share a matrix column.
-let nextStart = 0
-function span(start = nextStart++, end = start + 1) {
-  return { refName: 'chr1', start, end }
-}
-
 // A feature carrying only the genotypes Record, i.e. the fallback path taken by
 // any adapter that isn't @gmod/vcf-backed.
-function makeFeature(
-  id: string,
-  genotypes: Record<string, string>,
-  site = span(),
-): Feature {
-  const data: Record<string, unknown> = { genotypes, ...site }
+function makeFeature(id: string, genotypes: Record<string, string>): Feature {
+  const data: Record<string, unknown> = { genotypes }
   return {
     id: () => id,
     get: (key: string) => data[key],
@@ -42,14 +31,8 @@ function makeVcfFeature(
   id: string,
   sampleNames: string[],
   genotypes: Record<string, string>,
-  site = span(),
 ): Feature {
-  const data: Record<string, unknown> = {
-    genotypes,
-    sampleNames,
-    ALT: ['T'],
-    ...site,
-  }
+  const data: Record<string, unknown> = { genotypes, sampleNames, ALT: ['T'] }
   return {
     id: () => id,
     get: (key: string) => data[key],
@@ -129,37 +112,6 @@ describe('getPhasedGenotypeMatrix', () => {
     })
     expect([...rows.get('HG001 HP0')!]).toEqual([1])
     expect([...rows.get('HG001 HP1')!]).toEqual([1])
-  })
-
-  // vcfwave's HPRC inversion at FLNA/EMD is 64 records, one per allele, each
-  // carried by a haplotype or two. A column apiece made two of its carriers
-  // further apart than either was from a haplotype carrying none.
-  test('reads a site split one record per ALT as the record it was', async () => {
-    const site = span()
-    const rows = await build({
-      features: [
-        makeFeature(
-          'altA',
-          { S1: '1|0', S2: '0|0', S3: '.|0', S4: '.|.' },
-          site,
-        ),
-        makeFeature(
-          'altB',
-          { S1: '0|0', S2: '0|1', S3: '0|0', S4: '.|.' },
-          site,
-        ),
-        makeFeature('next', { S1: '0|0', S2: '0|0', S3: '0|0', S4: '0|0' }),
-      ],
-      sources: [{ name: 'S1' }, { name: 'S2' }, { name: 'S3' }, { name: 'S4' }],
-      samplePloidy: { S1: diploid, S2: diploid, S3: diploid, S4: diploid },
-    })
-    // either alt is the alt, as '1|2' reads at one record
-    expect([...rows.get('S1 HP0')!]).toEqual([1, 0])
-    expect([...rows.get('S2 HP1')!]).toEqual([1, 0])
-    expect([...rows.get('S1 HP1')!]).toEqual([0, 0])
-    // a reference call on one record outranks a no-call on another
-    expect([...rows.get('S3 HP0')!]).toEqual([0, 0])
-    expect([...rows.get('S4 HP0')!]).toEqual([NaN, 0])
   })
 
   test('marks an unphased call missing on both haplotypes', async () => {

@@ -132,21 +132,6 @@ a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
 column and bit-identical to the old encoding. The anchored haplotype sort ranks
 by `altDosageByte`, the dosage the cells paint.
 
-## A site split one record per ALT is one site
-
-`bcftools norm -m-` and vcfwave write a multiallelic site as one record per ALT,
-all spanning one reference interval. `siteSpanKey` names the site, and whatever
-reads genotypes by site must read the split records as the one record they were:
-
-- **The anchored sort** groups them with `sitesBySpan` and ranks a haplotype by
-  which record's alt it carries, as allele numbers rank.
-- **The phased matrix** gives the site one column, as it gives a multiallelic
-  record one indicator. With a column per record, two carriers of the HPRC
-  FLNA/EMD inversion (64 records) sat further apart than either sat from a
-  non-carrier.
-- **The unphased matrix** already gives an unsplit record one column per ALT,
-  so a split site arrives at the same columns.
-
 ## Settings
 
 - **Row order is not a fetch input** (ARCHITECTURE.md). The row _set_ is

@@ -1,6 +1,5 @@
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
-import { siteSpanKey } from '../shared/siteSpanKey.ts'
 import {
   MISSING,
   readPhasedAlleleIndicators,
@@ -9,20 +8,6 @@ import { prepareMatrixWalk } from './matrixWalk.ts'
 
 import type { MatrixWalkArgs } from './matrixWalk.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-
-// On a column several records share, an alt on any of them wins, then a called
-// reference. A lone record writes straight through: merging every cell cost
-// the build a measurable slowdown on a 1000 Genomes-sized panel.
-function writeIndicator(
-  row: Float32Array,
-  column: number,
-  value: number,
-  shared: boolean,
-) {
-  if (!shared || value === 1 || (value === 0 && Number.isNaN(row[column]!))) {
-    row[column] = value
-  }
-}
 
 export async function getPhasedGenotypeMatrix({
   pluginManager,
@@ -47,34 +32,13 @@ export async function getPhasedGenotypeMatrix({
     report,
   } = await prepareMatrixWalk({ pluginManager, args })
 
-  // One column per site (`siteSpanKey`), as a multiallelic record's alts all
-  // read as one indicator. With a column per record, two carriers of one
-  // split-site inversion sat further apart than either sat from a non-carrier.
-  const numFeatures = filteredVariants.length
-  const siteColumnOf = new Int32Array(numFeatures)
-  const recordsInColumn = new Int32Array(numFeatures)
-  const columnByKey = new Map<string, number>()
-  for (let f = 0; f < numFeatures; f++) {
-    const feature = filteredVariants[f]!.feature
-    const key = siteSpanKey(
-      feature.get('refName'),
-      feature.get('start'),
-      feature.get('end'),
-    )
-    let siteColumn = columnByKey.get(key)
-    if (siteColumn === undefined) {
-      siteColumn = columnByKey.size
-      columnByKey.set(key, siteColumn)
-    }
-    siteColumnOf[f] = siteColumn
-    recordsInColumn[siteColumn]!++
-  }
   // Float32 because a haplotype with nothing to say is NaN
   // (genotypeMatrixEncoding.ts)
+  const numFeatures = filteredVariants.length
   // Map, keyed in `rowSpecs` order — see getGenotypeMatrix.
   const rows = new Map<string, Float32Array>()
   const rowArrays = rowSpecs.map(spec => {
-    const arr = new Float32Array(columnByKey.size).fill(MISSING)
+    const arr = new Float32Array(numFeatures)
     rows.set(spec.name, arr)
     return arr
   })
@@ -103,8 +67,6 @@ export async function getPhasedGenotypeMatrix({
 
   for (let f = 0; f < numFeatures; f++) {
     const feature = filteredVariants[f]!.feature
-    const siteColumn = siteColumnOf[f]!
-    const shared = recordsInColumn[siteColumn]! > 1
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
       // @gmod/vcf skips the callback for a sample whose FORMAT fields stop
       // before GT
@@ -125,14 +87,8 @@ export async function getPhasedGenotypeMatrix({
       })
       for (let k = 0; k < rowArrays.length; k++) {
         const idx = rowSampleIdx[k]!
-        if (idx !== -1) {
-          writeIndicator(
-            rowArrays[k]!,
-            siteColumn,
-            indicators[idx * maxPloidy + rowHp[k]!]!,
-            shared,
-          )
-        }
+        rowArrays[k]![f] =
+          idx === -1 ? MISSING : indicators[idx * maxPloidy + rowHp[k]!]!
       }
     } else {
       // `?? {}` for the sites-only case — see getGenotypeMatrix.
@@ -154,7 +110,7 @@ export async function getPhasedGenotypeMatrix({
           )
           scannedKey = key
         }
-        writeIndicator(rowArrays[k]!, siteColumn, scratch[hp]!, shared)
+        rowArrays[k]![f] = scratch[hp]!
       }
     }
     report(f)

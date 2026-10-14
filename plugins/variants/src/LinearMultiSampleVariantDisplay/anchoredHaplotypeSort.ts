@@ -1,5 +1,4 @@
 import { altDosageByte } from '../shared/getPhasedColor.ts'
-import { siteSpanKey } from '../shared/siteSpanKey.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { ProcessedSource } from '../shared/types.ts'
@@ -255,11 +254,15 @@ function buildValueTable({
   return { table, stride, maxValue: sortedAlts.length }
 }
 
-// Feature ids grouped by `siteSpanKey`, in genomic order
+/**
+ * Group features into sites, in genomic order: records spanning the same
+ * reference interval are alleles of one site, which is how `bcftools norm -m-`
+ * or vcfwave hands over a multiallelic site, one record per ALT.
+ */
 export function sitesBySpan(features: SimplifiedVariantFeature[]) {
   const byKey = new Map<string, string[]>()
   for (const { id, data } of features) {
-    const key = siteSpanKey(data.refName, data.start, data.end)
+    const key = `${data.refName}:${data.start}:${data.end}`
     const site = byKey.get(key)
     if (site) {
       site.push(id)
