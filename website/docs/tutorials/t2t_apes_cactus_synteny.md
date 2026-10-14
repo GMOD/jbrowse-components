@@ -158,6 +158,7 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 Opened on hg38 around _TP53_, the track draws a lane per ape under human, each
 in that genome's own coordinates. Each lane header names the chromosome and the
 span the lane shows, with `[rev]` where the lane runs against human.
+
 **Color by... → Strand**, under **Ribbons** in the track menu, colors each
 ribbon by whether its two lanes agree in orientation, and the session below
 opens with it:
