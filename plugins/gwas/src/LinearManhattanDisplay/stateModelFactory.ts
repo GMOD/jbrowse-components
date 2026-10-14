@@ -217,7 +217,7 @@ export function stateModelFactory(
        */
       get displayNotices(): string[] {
         const locus = self.joinsLd && parseChrBp(self.indexSnp ?? '')
-        if (!locus) {
+        if (!locus || self.trackVisibleRegions.length === 0) {
           return []
         }
         const { assemblyManager } = getSession(self)
