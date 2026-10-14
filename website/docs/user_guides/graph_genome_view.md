@@ -616,10 +616,16 @@ per strain:
 ```
 
 - `rows` puts each strain in a separate row, `domain` in the order given
-- `lengthField` sets the length channel. Without it, a large insertion and a 1
-  bp one draw as the same box. Pointed at the BED's signed `delta` column, it
-  draws the insertion and deletion marks the
-  [alignments track](/docs/user_guides/alignments_track) uses
+- `lengthField` names the BED's signed `delta` column, the strain's `pathLen`
+  minus K12's `refLen`. Without it, a 100 kb insertion and a 1 bp one draw as
+  the same box. With it:
+  - a gain draws the [alignments track](/docs/user_guides/alignments_track)'s
+    insertion marker and its size
+  - a loss prints its size on the block, plus a line through the block where the
+    strain has no sequence in the bubble at all
+- `delta` is a net change. A strain that drops one segment of a bubble and gains
+  a longer one reads as a small insertion; the `path` column in the popup lists
+  the segments it actually takes
 
 A row covers only the bubbles under it. `--call` emits a record per bubble and
 nothing between bubbles, so over 200 kb of this graph the bubbles cover about a

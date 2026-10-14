@@ -23,8 +23,9 @@ export interface MultiRowInsertions extends InsertionChannels {
 }
 
 /**
- * One line per drawn block whose `lengthField` delta is a loss, across the
- * reference span it removes: `length` is the bp lost, `row` and `color` the
+ * One entry per drawn block whose `lengthField` delta is a loss: `x..x2` is
+ * the block's reference span, `length` the bp lost, which equals the span only
+ * where the allele has no sequence there at all; `row` and `color` are the
  * block's own channels, so the label reads against the block's paint.
  */
 export interface MultiRowDeletions {

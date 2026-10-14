@@ -29,10 +29,12 @@ const DELETION_LABEL_MIN_PX = 30
 
 /**
  * The text over the multi-row blocks: each insertion marker's count, and each
- * deletion's line and length. The markers themselves are the insertion mark's,
- * on either backend. Both walk the upload the blocks were drawn from, placed
- * through the row table, so a glyph sits on its block whatever hid, moved or
- * recolored it.
+ * deletion's length, with a line across the block where the allele lost the
+ * whole span. A partial loss has no position within the bubble to draw a gap
+ * at, so it gets the number alone. The markers themselves are the insertion
+ * mark's, on either backend. Both walk the upload the blocks were drawn from,
+ * placed through the row table, so a glyph sits on its block whatever hid,
+ * moved or recolored it.
  */
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,
@@ -82,8 +84,11 @@ export function drawMultiRowIndelGlyphs(
         const yMid = Math.round(offset + rowHeight * rowIndex + h / 2)
         const left = Math.min(xa, xb)
         const width = Math.abs(xb - xa)
-        ctx.fillStyle = DELETION_LINE_COLOR
-        ctx.fillRect(left, yMid - DELETION_LINE_H / 2, width, DELETION_LINE_H)
+        const whole = length[k]! >= x2[k]! - x[k]!
+        if (whole) {
+          ctx.fillStyle = DELETION_LINE_COLOR
+          ctx.fillRect(left, yMid - DELETION_LINE_H / 2, width, DELETION_LINE_H)
+        }
         if (labelFits && width >= DELETION_LABEL_MIN_PX) {
           if (!fontSet) {
             ctx.font = FONT
@@ -91,11 +96,14 @@ export function drawMultiRowIndelGlyphs(
             ctx.textAlign = 'center'
             fontSet = true
           }
-          // the label sits above the line, so it reads against the block
           ctx.fillStyle = textOn(rowColor(color[k]!, row, k, rowTable))
           // the magnitude, not a signed delta: a bare "-9048" reads as a
           // sequence length that went negative
-          ctx.fillText(String(length[k]), left + width / 2, yMid - h / 4)
+          ctx.fillText(
+            String(length[k]),
+            left + width / 2,
+            whole ? yMid - h / 4 : yMid,
+          )
         }
       }
     },

@@ -165,17 +165,24 @@ test('a large insertion labels itself with the bp count', () => {
   ])
 })
 
-test('a deletion draws a line across the reference span it removes', () => {
-  const region = { ...wide, featureDeltas: Int32Array.from([0, -3217]) }
+test('a loss of the whole span draws a line across it', () => {
+  const region = { ...wide, featureDeltas: Int32Array.from([0, -10]) }
   const { calls, texts } = draw(region)
   // feature 1 spans x 500-600 on row 1 (y 20-40), so the line sits at its
   // vertical middle
   expect(calls).toEqual([{ x: 500, y: 29, w: 100, h: 2, fillStyle: '#333' }])
-  expect(texts).toEqual([{ text: '3217', x: 550, y: 25, fillStyle: '#fff' }])
+  expect(texts).toEqual([{ text: '10', x: 550, y: 25, fillStyle: '#fff' }])
+})
+
+test('a partial loss prints its size on the block without a line', () => {
+  const region = { ...wide, featureDeltas: Int32Array.from([0, -4]) }
+  const { calls, texts } = draw(region)
+  expect(calls).toEqual([])
+  expect(texts).toEqual([{ text: '4', x: 550, y: 30, fillStyle: '#fff' }])
 })
 
 test('labels read against a pale block rather than staying white on it', () => {
-  const region = { ...wide, featureDeltas: Int32Array.from([113174, -3217]) }
+  const region = { ...wide, featureDeltas: Int32Array.from([113174, -10]) }
   const { texts } = draw(region, {
     // '#BBCCEE' is tagColorPalette[0]; '#800080' is the theme insertion purple
     rowColors: [cssColorToABGR('#BBCCEE'), cssColorToABGR('#800080')],
@@ -183,7 +190,7 @@ test('labels read against a pale block rather than staying white on it', () => {
 
   expect(texts).toEqual([
     { text: '113174', x: 150, y: 10, fillStyle: 'rgba(0, 0, 0, 0.87)' },
-    { text: '3217', x: 550, y: 25, fillStyle: '#fff' },
+    { text: '10', x: 550, y: 25, fillStyle: '#fff' },
   ])
 })
 
