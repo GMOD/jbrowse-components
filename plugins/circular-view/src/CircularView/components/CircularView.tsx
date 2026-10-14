@@ -15,6 +15,7 @@ import ChordLayer from '../../chords/ChordLayer.tsx'
 import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
 import { RingOverlay } from '../../rings/RingOverlay.tsx'
+import { RingStatus } from '../../rings/RingStatus.tsx'
 import { RingPointer } from '../../rings/ringPointer.ts'
 import Controls from './Controls.tsx'
 import { Rulers } from './Ruler.tsx'
@@ -94,6 +95,7 @@ const Slices = observer(function Slices({
       <Rulers model={model} />
       <RingAxes model={model} />
       <RingOverlay model={model} />
+      <RingStatus model={model} />
       {model.tracks.map(track => {
         const display = track.displays[0]
         return model.ringHost.ringDisplays.includes(display) ? null : (

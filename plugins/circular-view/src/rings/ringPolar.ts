@@ -173,7 +173,7 @@ export function ringLabels(
  * back the other way on the lower.
  */
 export function ringLabelArcPath(
-  { radians, turn, radiusPx }: RingLabel,
+  { radians, turn, radiusPx }: Pick<RingLabel, 'radians' | 'turn' | 'radiusPx'>,
   upsideDown: boolean,
 ) {
   const half = turn * 0.75
