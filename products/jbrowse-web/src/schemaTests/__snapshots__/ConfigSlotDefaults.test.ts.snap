@@ -535,7 +535,6 @@ exports[`every registered schema slot default 1`] = `
     "forceLoad": "boolean = false",
     "height": "number = 100",
     "lengthField": "string = """,
-    "rowHeight": "number = 0",
     "rowProportion": "number = 1",
     "showBranchLength": "boolean = true",
     "showLegend": "boolean = true",
