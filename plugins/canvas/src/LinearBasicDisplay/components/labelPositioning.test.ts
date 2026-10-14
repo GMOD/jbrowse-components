@@ -407,29 +407,59 @@ describe('forEachDisplayLabel', () => {
     return { ...FULL_REGION, displayedRegionIndex }
   }
 
-  test('emits a feature label once when it spans back-to-back regions', () => {
-    // A collapsed-intron feature is laid out into both regions' data.
-    const spanning = { f1: makeLabelData('f1', { nameLabel: makeLabel() }) }
-    const laidOutDataMap = new Map([
-      [0, makeData(spanning)],
-      [1, makeData(spanning)],
-    ])
+  const everyKind = {
+    showLabels: true,
+    showDescriptions: true,
+    showSubfeatureLabels: true,
+    fontSize: LABEL_FONT,
+    colors: TEST_LABEL_COLORS,
+  }
+
+  function emittedIds(
+    regions: RegionWithData[],
+    data: Record<string, FeatureLabelData>[],
+  ) {
     const emitted: string[] = []
     forEachDisplayLabel(
-      [regionWithData(0), regionWithData(1)],
-      laidOutDataMap,
-      {
-        showLabels: true,
-        showDescriptions: true,
-        showSubfeatureLabels: true,
-        fontSize: LABEL_FONT,
-        colors: TEST_LABEL_COLORS,
-      },
+      regions,
+      new Map(data.map((d, i) => [i, makeData(d)])),
+      everyKind,
       featureId => {
         emitted.push(featureId)
       },
     )
-    expect(emitted).toEqual(['f1'])
+    return emitted
+  }
+
+  const named = (id: string, minX: number, maxX: number) =>
+    makeLabelData(id, { minX, maxX, nameLabel: makeLabel() })
+
+  test('emits a feature label once when it spans back-to-back regions', () => {
+    // A collapsed-intron feature is laid out into both exons' data.
+    const spanning = { f1: named('f1', 400, 1600) }
+    const exons = [
+      { start: 0, end: 500, screenStartPx: 0, screenEndPx: 500 },
+      { start: 1500, end: 2000, screenStartPx: 500, screenEndPx: 1000 },
+    ].map((r, displayedRegionIndex) => ({ ...r, displayedRegionIndex }))
+    expect(emittedIds(exons, [spanning, spanning])).toEqual(['f1'])
+  })
+
+  test('labels a feature again in a region that goes back over its sequence', () => {
+    const contig = { f1: named('f1', 100, 200) }
+    expect(
+      emittedIds([regionWithData(0), regionWithData(1)], [contig, contig]),
+    ).toEqual(['f1', 'f1'])
+  })
+
+  test('labels a feature cut at the origin once where its pieces meet at the seam', () => {
+    const tail = { 'dloop-origin': named('dloop-origin', 0, 100) }
+    const seam = [regionWithData(0), regionWithData(1)]
+    expect(
+      emittedIds(seam, [{ dloop: named('dloop', 900, 1000) }, tail]),
+    ).toEqual(['dloop'])
+    expect(
+      emittedIds(seam, [{ other: named('other', 900, 1000) }, tail]),
+    ).toEqual(['other', 'dloop-origin'])
   })
 
   test('still emits distinct features from different regions', () => {

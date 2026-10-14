@@ -1,3 +1,4 @@
+import { originTailId } from '@jbrowse/core/util/originCut'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
@@ -408,7 +409,11 @@ export function forEachRenderedLabel(
 export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 
 // Owns the cross-region dedup, so a feature spanning back-to-back regions emits
-// its labels once. A worker-baked subfeature label survives with names and
+// its labels once, as does one spanning the exons of a collapsed-intron view.
+// A region that goes back over sequence (a contig listed twice) labels afresh,
+// except that one starting at the origin leaves unlabelled each piece past it
+// whose piece before it the previous region labelled: the two meet at the seam
+// as one feature. A worker-baked subfeature label survives with names and
 // descriptions off, because `subfeatureLabels` is a config choice rather than a
 // fit rung and the packer reserves its overhang unconditionally.
 export function forEachDisplayLabel(
@@ -422,8 +427,17 @@ export function forEachDisplayLabel(
   ) => void,
   cullBand?: LabelCullBand,
 ) {
-  const rendered = new Set<string>()
+  let rendered = new Set<string>()
+  let previous: { region: RegionWithData; emitted: string[] } | undefined
   for (const region of regions) {
+    if (previous && revisits(previous.region, region)) {
+      rendered = new Set(
+        region.start === 0 && !region.reversed
+          ? previous.emitted.map(originTailId)
+          : [],
+      )
+    }
+    const emitted: string[] = []
     const data = dataMap.get(region.displayedRegionIndex)
     if (data?.floatingLabelsData) {
       forEachRenderedLabel(
@@ -432,11 +446,20 @@ export function forEachDisplayLabel(
         context,
         (featureId, labels) => {
           rendered.add(featureId)
+          emitted.push(featureId)
           emit(featureId, labels, region)
         },
         rendered,
         cullBand,
       )
     }
+    previous = { region, emitted }
   }
+}
+
+function revisits(previous: BpRegionBounds, next: BpRegionBounds) {
+  return (
+    !!previous.reversed !== !!next.reversed ||
+    (next.reversed ? next.end > previous.start : next.start < previous.end)
+  )
 }
