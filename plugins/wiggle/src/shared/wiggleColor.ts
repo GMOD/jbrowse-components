@@ -105,7 +105,20 @@ export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function wiggleColorNotices(color: ColorSetting) {
-  return colorNotices(paintedWiggleColor(color), WIGGLE_FIELD_PRESETS)
+  const painted = paintedWiggleColor(color)
+  const encoding = wiggleColorEncoding(painted)
+  const cuts =
+    typeof encoding === 'object' && encoding.scale === 'threshold'
+      ? thresholdCuts(encoding.domain ?? []).length
+      : 0
+  return [
+    ...colorNotices(painted, WIGGLE_FIELD_PRESETS),
+    ...(cuts > MAX_WIGGLE_CUTS
+      ? [
+          `color.domain: a wiggle threshold reads at most ${MAX_WIGGLE_CUTS} cuts, and the ${cuts - MAX_WIGGLE_CUTS} past them draw no band`,
+        ]
+      : []),
+  ]
 }
 
 /**

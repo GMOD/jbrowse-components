@@ -87,8 +87,8 @@ export const wiggleColorSchema = ConfigurationSchema(
      * the lowest cut to the first `range` color below it and the last above it;
      * `linear` runs `range`, else `scheme`, else viridis across
      * the y domain through `scales.y.type`, with `domainMid` at the middle
-     * stop, coloring each bar, point and density cell by its score, and a
-     * one-color `range` runs from white to that color; a line still parts
+     * stop, coloring each bar, point and density cell by its score; a one-color
+     * `range` paints flat, so one color is `value`. A line still parts
      * in the two end colors. `none` paints `value`, keeping the field for a
      * switch back. Unset beside the field, it is `threshold`.
      */
@@ -104,7 +104,7 @@ export const wiggleColorSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        "a threshold scale's color for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one color meaning white to it",
+        "a threshold scale's color for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one color painting flat",
     }),
     ...colorRampSlots,
     ...colorLabelsSlot,
