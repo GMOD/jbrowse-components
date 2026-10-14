@@ -11,7 +11,8 @@ base-modification tags (`MM` and `ML`), and JBrowse draws those calls straight
 from the BAM. We follow one dataset, HG002 nanopore reads over the _SNRPN_
 imprinting center, where one parent's copy is methylated and the other's is not,
 from per-read calls to an aggregate profile to the two parental alleles pulled
-apart.
+apart, and then a moving average of each allele across the whole imprinted
+domain.
 
 ## Prerequisites
 
@@ -39,8 +40,8 @@ from these files.
 <summary>The files</summary>
 
 - the HP1 bedMethyl (per-CpG methylation fractions) from the
-  `wf-human-variation` sup run on HG002, restricted to the SNRPN locus and to
-  `m` (5mC) rows:
+  `wf-human-variation` sup run on HG002, restricted to `m` (5mC) rows and cut to
+  the SNRPN locus, and to chr15:22,000,000-27,000,000 for the last section:
   https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
 - the HP2 bedMethyl from that same run:
   https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
@@ -234,6 +235,111 @@ covers the Group-by dialog:
 whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz reads.bam
 samtools index haplotagged.bam
 ```
+
+## Smoothing across the imprinted domain
+
+A single CpG's fraction rests on the few reads covering it, so per-site values
+scatter from 0 to 100 and a difference spread over many sites is hard to see. A
+`window` step averages each CpG with a fixed number of neighbouring CpGs, so a
+CpG island weighs as many sites as it holds. We'll load both haplotypes over 5
+Mb of chr15 around _SNRPN_, each in a row with its raw values under a moving
+average:
+
+```json addtrack loc=chr15:24,800,000-25,200,000
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "HG002_imprinted_5mC_smoothed",
+  "name": "HG002 5mC by haplotype, moving average",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BedTabixAdapter",
+        "name": "HP1",
+        "color": "#d62728",
+        "uri": "https://jbrowse.org/demos/methylation/HG002_chr15_imprinted_hp1.modkit.bed.gz"
+      },
+      {
+        "type": "BedTabixAdapter",
+        "name": "HP2",
+        "color": "#1f77b4",
+        "uri": "https://jbrowse.org/demos/methylation/HG002_chr15_imprinted_hp2.modkit.bed.gz"
+      }
+    ]
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "HG002_imprinted_5mC_smoothed-LinearMarkDisplay",
+      "rows": "source",
+      "showLegend": false,
+      "fetchSizeLimit": 5000000,
+      "scales": { "y": { "domainMin": 0, "domainMax": 100, "title": "% 5mC" } },
+      "marks": [
+        {
+          "mark": "point",
+          "encoding": {
+            "y": "score",
+            "color": { "value": "#bbbbbb" },
+            "size": 2
+          }
+        },
+        {
+          "mark": "line",
+          "interpolate": "linear",
+          "transform": [
+            {
+              "type": "window",
+              "groupby": ["source"],
+              "frame": [-50, 50],
+              "ops": [
+                {
+                  "op": "mean",
+                  "field": "score",
+                  "weight": "n_valid_cov",
+                  "as": "meth"
+                }
+              ]
+            }
+          ],
+          "encoding": {
+            "y": "meth",
+            "color": {
+              "field": "source",
+              "domain": ["HP1", "HP2"],
+              "range": ["#d62728", "#1f77b4"]
+            },
+            "size": 2
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+The display draws two marks over the same rows:
+
+- **the `point` mark** plots each CpG's `score`, its percent methylated, in grey
+- **the `line` mark** plots `meth`, which the `window` step writes: each CpG's
+  mean over the 50 CpGs on either side, weighted by `n_valid_cov`, the read
+  depth modkit counted there
+- **with `groupby: ["source"]`** the step averages each haplotype over its own
+  CpGs, and with `rows: "source"` the display gives each haplotype a row whose
+  label names it, so `showLegend` is off
+- **`fetchSizeLimit`** lets the track read the whole slice when zoomed out
+
+Type `chr15:24,800,000-25,200,000` into the location box to see the _SNRPN_
+promoter and the stretch of _SNHG14_ downstream of it:
+
+<Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average. HP1 is methylated at the SNRPN promoter where HP2 is not, and HP2 is the more methylated across the SNHG14 gene body. Upstream of SNRPN the two rows sit at about the same level." src="/img/methylation/hg002_imprinted_smoothed.png" />
+
+**Edit plot...** in the track menu opens the marks. In the line's `window` step,
+set **rows before** and **rows after** to 500 for a 1,001-CpG average, then type
+`chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
+
+<Figure caption="The same track across the Prader-Willi and Angelman domain with a 1,001-CpG moving average. The haplotypes track each other everywhere but across SNRPN and SNHG14." src="/img/methylation/hg002_imprinted_domain.png" />
 
 ## See also
 

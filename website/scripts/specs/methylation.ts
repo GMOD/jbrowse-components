@@ -81,6 +81,60 @@ const SNRPN_MODKIT_MULTI_TRACK = pageTrack(
   'HG002_snrpn_modkit_multi',
 )
 
+// The smoothing section's track as the page prints it: raw points under a
+// window step's moving average, a row per haplotype.
+const IMPRINTED_SMOOTHED_TRACK = pageTrack(
+  'tutorials/methylation.md',
+  'HG002_imprinted_5mC_smoothed',
+)
+
+// The page's marks with the window widened to `rows` either side, what the
+// section has the reader set through Edit plot.
+function imprintedMarksWithFrame(rows: number) {
+  const [display] = IMPRINTED_SMOOTHED_TRACK.displays as {
+    marks: { transform?: { type: string; frame?: unknown }[] }[]
+  }[]
+  return display!.marks.map(mark => ({
+    ...mark,
+    ...(mark.transform
+      ? {
+          transform: mark.transform.map(step =>
+            step.type === 'window' ? { ...step, frame: [-rows, rows] } : step,
+          ),
+        }
+      : {}),
+  }))
+}
+
+// The CpG islands, the genes and the smoothed track, at `loc`.
+function imprintedPanel(loc: string, marks?: unknown[]) {
+  return sessionSpec(DEMO_CONFIG, {
+    sessionTracks: [IMPRINTED_SMOOTHED_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc,
+        tracks: [
+          {
+            trackId: 'cpgisland_ucsc_hg38',
+            type: 'LinearBasicDisplay',
+            height: 40,
+          },
+          HG38_GENE_LANE,
+          {
+            trackId: 'HG002_imprinted_5mC_smoothed',
+            type: 'LinearMarkDisplay',
+            height: 300,
+            forceLoad: true,
+            ...(marks ? { marks } : {}),
+          },
+        ],
+      },
+    ],
+  })
+}
+
 // The three lanes the WGBS pileup is read against, shared by the contexts
 // figure and by the tour that films one pileup cycling through the contexts:
 // the gene models, the repeat lane that names the element, and the aggregate
@@ -685,5 +739,34 @@ export const methylationSpecs: ScreenshotSpec[] = [
         anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
       },
     ],
+  },
+
+  // The window step over the SNRPN promoter and the start of SNHG14: the
+  // promoter DMR on one haplotype, gene-body methylation on the other, and the
+  // upstream stretch where the two sit level as the control.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_imprinted_smoothed',
+    url: imprintedPanel('chr15:24,800,000-25,200,000'),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 90000,
+    // cpg(40) + gene(90) + smoothed(300) + chrome
+    viewportHeight: 725,
+  },
+
+  // The same track over the whole Prader-Willi and Angelman domain, the frame
+  // widened as the page has the reader do: the haplotypes part only across
+  // SNRPN and SNHG14.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_imprinted_domain',
+    url: imprintedPanel(
+      'chr15:22,200,000-26,900,000',
+      imprintedMarksWithFrame(500),
+    ),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 90000,
+    // cpg(40) + gene(90) + smoothed(300) + chrome
+    viewportHeight: 725,
   },
 ]
