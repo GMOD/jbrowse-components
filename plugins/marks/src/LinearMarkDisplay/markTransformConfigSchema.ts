@@ -359,8 +359,8 @@ const pileup = ConfigurationSchema(
  * genome-aligned bin, or with `fields` cuts it into a piece per bin it
  * overlaps; `aggregate` folds each group into one feature carrying
  * its summaries; `window` writes each feature with summaries over the
- * features of its group around it in start order, a moving average over
- * features where a `bin` averages over bases; `coverage` replaces the
+ * features of its group around it in start order, a moving average over a
+ * fixed number of features; `coverage` replaces the
  * features with runs of how many
  * overlap each stretch; `flatten` fans out an array or a record field;
  * `cells` replaces each aligned row with its runs of match, mismatch and gap

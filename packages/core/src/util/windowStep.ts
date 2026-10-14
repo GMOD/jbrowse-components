@@ -69,7 +69,7 @@ function frameAt([before, after]: Frame, j: number, m: number) {
 }
 
 // A sum, count or mean over each frame from running totals, which answer an
-// empty frame exactly 0 since the totals do not move across it.
+// empty frame exactly 0, since the totals hold one value across it.
 function totalsOver(
   op: AggregateOp['op'],
   values: Float64Array,

@@ -369,8 +369,8 @@ export interface EncodedChannels {
   /**
    * Which series of its row each instance belongs to, for a layer whose
    * request names a {@link PathSpec}: the instances come grouped series by
-   * series, each in start order, so a path strokes a series and never joins
-   * two.
+   * series, each in start order, so a path strokes each series as a run of
+   * its own.
    */
   series?: Uint32Array
   /**

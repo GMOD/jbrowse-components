@@ -328,18 +328,19 @@ The display draws two marks over the same rows:
 - **with `groupby: ["source"]`** the step averages each haplotype over its own
   CpGs, and with `rows: "source"` the display gives each haplotype a row whose
   label names it, so `showLegend` is off
-- **`fetchSizeLimit`** lets the track read the whole slice when zoomed out
+- **with `fetchSizeLimit`** raised, the track reads the whole slice when zoomed
+  out
 
 Type `chr15:24,800,000-25,200,000` into the location box to see the _SNRPN_
 promoter and the stretch of _SNHG14_ downstream of it:
 
-<Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average. HP1 is methylated at the SNRPN promoter where HP2 is not, and HP2 is the more methylated across the SNHG14 gene body. Upstream of SNRPN the two rows sit at about the same level." src="/img/methylation/hg002_imprinted_smoothed.png" />
+<Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average. At the SNRPN promoter HP1 is methylated and HP2 unmethylated, and across the SNHG14 gene body HP2 is the more methylated. Upstream of SNRPN the two rows sit at about the same level." src="/img/methylation/hg002_imprinted_smoothed.png" />
 
 **Edit plot...** in the track menu opens the marks. In the line's `window` step,
 set **rows before** and **rows after** to 500 for a 1,001-CpG average, then type
 `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 
-<Figure caption="The same track across the Prader-Willi and Angelman domain with a 1,001-CpG moving average. The haplotypes track each other everywhere but across SNRPN and SNHG14." src="/img/methylation/hg002_imprinted_domain.png" />
+<Figure caption="The same track across the Prader-Willi and Angelman domain with a 1,001-CpG moving average. The haplotypes part across SNRPN and SNHG14 and track each other over the rest of the domain." src="/img/methylation/hg002_imprinted_domain.png" />
 
 ## See also
 
