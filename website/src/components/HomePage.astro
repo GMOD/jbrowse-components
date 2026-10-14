@@ -60,54 +60,6 @@ import btn from '../styles/button.module.css'
 </div>
 
 <div class="outer-box">
-  <!-- Genome Hubs -->
-  <section class="section-box">
-    <h2 class="section-title">Ready-made genome browsers</h2>
-    <div class="hubs-row">
-      <div class="hubs-text">
-        <ul class="hubs-list">
-          <li>
-            Full featured hg38, hg19, hs1, and mm39 genomes pre-loaded with UCSC
-            Genome Browser tracks
-          </li>
-          <li>
-            Thousands of plant, animal and microbial assemblies from UCSC
-            GenArk/NCBI Genomes
-          </li>
-          <li>Customized portals to help launch comparative views</li>
-        </ul>
-        <div class="btn-row">
-          <a
-            class:list={[btn.btn, btn.btnPrimary]}
-            href="https://genomes.jbrowse.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon name="mdi:open-in-new" width="20" height="20" />
-            genomes.jbrowse.org
-          </a>
-        </div>
-      </div>
-      <div class="hubs-image">
-        <button
-          type="button"
-          class="lightbox-trigger"
-          data-label="JBrowse Desktop's Available genomes picker"
-          aria-label="Enlarge: JBrowse Desktop available genomes picker"
-        >
-          <img
-            src={`${baseUrl}/img/desktop-available-genomes.webp`}
-            width="1400"
-            height="763"
-            loading="lazy"
-            decoding="async"
-            alt="JBrowse Desktop 'Available genomes' picker, a searchable list of human, mouse, and other assemblies each with a one-click launch link"
-          />
-        </button>
-      </div>
-    </div>
-  </section>
-
   <!-- Resources -->
   <section class="section-box">
     <h2 class="section-title">Get started</h2>

@@ -128,15 +128,7 @@ const HAS_THUMB = new Set(
   currentSlug="tutorials"
   description="Step-by-step, data-driven walkthroughs of common JBrowse workflows."
 >
-  <p class="lead">
-    Hands-on walkthroughs of common JBrowse workflows, from first setup to
-    advanced analysis. The first section runs on
-    <a href="https://genomes.jbrowse.org" target="_blank" rel="noopener">
-      genomes.jbrowse.org
-    </a>
-    , which hosts a configured JBrowse for every UCSC genome, so those pages
-    need nothing installed and no data prepared.
-  </p>
+  <p class="lead">Hands-on walkthroughs of common JBrowse workflows</p>
   {grouped.map(group => (
     <section class="tut-section">
       <h2 class="tut-heading" id={slug(group.category)}>

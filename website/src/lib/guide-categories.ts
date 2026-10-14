@@ -59,8 +59,8 @@ export const DEVELOPER_CATEGORIES = [
 // nothing installed. A section too big to scan splits into
 // TUTORIAL_SUBCATEGORIES rather than into more top-level headings.
 export const TUTORIAL_CATEGORIES = [
-  'genomes.jbrowse.org',
   'Getting started',
+  'genomes.jbrowse.org',
   'Synteny & comparative genomics',
   'Pangenomes',
   'Structural variation',
