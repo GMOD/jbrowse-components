@@ -2693,6 +2693,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
           const { width } = self
           const { viewWidth = width } = opts
+          // The on-screen tracks redraw at `viewWidth` until the export ends. A
+          // hidden copy of the view would keep them still, but it needs a
+          // session slot that autosave and undo skip, and new ids for the view,
+          // its tracks and displays, since widgets find them by id.
           if (viewWidth !== width) {
             layOutAt(viewWidth)
           }
