@@ -366,3 +366,94 @@ export class OpSums {
     return { kind: 'number', values, at: undefined, nanIsAbsent: true }
   }
 }
+
+// Rows in start order, ties in the order they came: a start and a row packed
+// into one double and sorted without a comparator, which leaves the typed
+// sort's fast path only where the packing could not be exact.
+export function sortByStart(rows: Uint32Array, starts: Float64Array) {
+  const n = rows.length
+  let lo = Infinity
+  let hi = -Infinity
+  let whole = true
+  for (let k = 0; k < n; k++) {
+    const v = starts[rows[k]!]!
+    if (v < lo) {
+      lo = v
+    }
+    if (v > hi) {
+      hi = v
+    }
+    whole &&= Number.isInteger(v)
+  }
+  if (whole && (hi - lo + 1) * n < Number.MAX_SAFE_INTEGER) {
+    const keys = new Float64Array(n)
+    for (let k = 0; k < n; k++) {
+      keys[k] = (starts[rows[k]!]! - lo) * n + k
+    }
+    keys.sort()
+    const placed = Uint32Array.from(rows)
+    for (let k = 0; k < n; k++) {
+      rows[k] = placed[keys[k]! % n]!
+    }
+  } else {
+    rows.sort((a, b) => starts[a]! - starts[b]! || a - b)
+  }
+}
+
+// Each row's group, numbered in the order groups are first met, a section
+// being the outermost level: the groups keyed by their raw values, one Map
+// level per groupby field, where a string key built per row was the
+// aggregate's whole cost.
+export function groupRows(
+  n: number,
+  bounds: Bounds,
+  reads: readonly ((i: number) => unknown)[],
+  normalize: boolean,
+) {
+  type Trie = Map<unknown, Trie | number>
+  const groupOf = new Uint32Array(n)
+  const firstRow: number[] = []
+  const sectionOf: number[] = []
+  const last = reads.length - 1
+  for (let s = 0; s + 1 < bounds.length; s++) {
+    const root: Trie = new Map()
+    for (let i = bounds[s]!; i < bounds[s + 1]!; i++) {
+      let g: number
+      if (reads.length === 0) {
+        g =
+          firstRow.length > 0 && sectionOf.at(-1) === s
+            ? firstRow.length - 1
+            : -1
+        if (g < 0) {
+          g = firstRow.length
+          firstRow.push(i)
+          sectionOf.push(s)
+        }
+      } else {
+        let node = root
+        for (let l = 0; l < last; l++) {
+          const raw = reads[l]!(i)
+          const v = normalize && typeof raw !== 'object' ? raw : groupKey(raw)
+          let next = node.get(v) as Trie | undefined
+          if (!next) {
+            next = new Map()
+            node.set(v, next)
+          }
+          node = next
+        }
+        const raw = reads[last]!(i)
+        const v = normalize && typeof raw !== 'object' ? raw : groupKey(raw)
+        let at = node.get(v) as number | undefined
+        if (at === undefined) {
+          at = firstRow.length
+          node.set(v, at)
+          firstRow.push(i)
+          sectionOf.push(s)
+        }
+        g = at
+      }
+      groupOf[i] = g
+    }
+  }
+  return { groupOf, firstRow, sectionOf }
+}

@@ -514,6 +514,24 @@ export interface AggregateStep {
 
 /**
  * #api
+ * Every row kept, each written with `ops` summarized over the rows of its
+ * group around it, Vega-Lite's window transform: a group is a distinct
+ * `groupby` value set within a section, its rows taken in `start` order, and
+ * `frame` counts rows before and after the current one, `null` running to the
+ * group's end. `[-10, 10]` is a moving average over 21 rows, whatever bases
+ * they span; `[null, 0]`, the default, a running total. A frame cut off at a
+ * group's end summarizes the rows it has. The rows come out grouped, each
+ * group in `start` order, so a `line` walks one group at a time.
+ */
+export interface WindowStep {
+  type: 'window'
+  groupby?: FieldRef[]
+  frame?: [number | null, number | null]
+  ops: AggregateOp[]
+}
+
+/**
+ * #api
  * Replace the features with runs of constant depth: how many of them overlap
  * each stretch of the region, in a field `as` (`coverage` by default), with
  * the stretches nothing overlaps left out. A read counts across its whole
@@ -608,6 +626,7 @@ export type TransformStep =
   | CellsStep
   | BinStep
   | AggregateStep
+  | WindowStep
   | CoverageStep
   | PileupStep
   | MateStep
