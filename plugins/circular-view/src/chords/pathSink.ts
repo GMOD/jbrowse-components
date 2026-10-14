@@ -23,17 +23,26 @@ function point(radius: number, radians: number) {
 
 export function svgPathSink() {
   const parts: string[] = []
+  // An arc whose two ends meet draws nothing in SVG, so a full turn, or one
+  // rounding short of it, goes as halves.
+  const arcTo = (from: number, to: number, radius: number) => {
+    if (Math.abs(to - from) > Math.PI) {
+      const mid = (from + to) / 2
+      arcTo(from, mid, radius)
+      arcTo(mid, to, radius)
+    } else {
+      const sweep = to > from ? 1 : 0
+      parts.push(`A ${radius} ${radius} 0 0 ${sweep} ${point(radius, to)}`)
+    }
+  }
   return {
     moveTo(radius: number, radians: number) {
       parts.push(`M ${point(radius, radians)}`)
     },
-    arcTo(from: number, to: number, radius: number) {
-      const largeArc = Math.abs(to - from) > Math.PI ? 1 : 0
-      const sweep = to > from ? 1 : 0
-      parts.push(
-        `A ${radius} ${radius} 0 ${largeArc} ${sweep} ${point(radius, to)}`,
-      )
+    lineTo(radius: number, radians: number) {
+      parts.push(`L ${point(radius, radians)}`)
     },
+    arcTo,
     quadTo(cx: number, cy: number, radius: number, radians: number) {
       parts.push(`Q ${cx} ${cy} ${point(radius, radians)}`)
     },
@@ -82,4 +91,28 @@ export function canvasPathSink(ctx: MarkContext2D): PathSink {
       ctx.closePath()
     },
   }
+}
+
+/** The arc at `radius` from one turn to another, as an SVG path. */
+export function arcPath(radius: number, from: number, to: number) {
+  const sink = svgPathSink()
+  sink.moveTo(radius, from)
+  sink.arcTo(from, to, radius)
+  return sink.toString()
+}
+
+/** The annular sector between two radii over a span of turns, as an SVG path. */
+export function sectorPath(
+  innerPx: number,
+  outerPx: number,
+  from: number,
+  to: number,
+) {
+  const sink = svgPathSink()
+  sink.moveTo(outerPx, from)
+  sink.arcTo(from, to, outerPx)
+  sink.lineTo(innerPx, to)
+  sink.arcTo(to, from, innerPx)
+  sink.close()
+  return sink.toString()
 }

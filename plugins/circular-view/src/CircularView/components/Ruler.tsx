@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { arcPath, sectorPath } from '../../chords/pathSink.ts'
 import {
   assemblyArcGapPx,
   assemblyArcs,
@@ -33,79 +34,6 @@ import type { CircularViewModel } from '../model.ts'
 import type { AssemblyArc } from '../rulerLabels.ts'
 import type { Slice, SliceNonElidedRegion } from '../slices.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-
-// the slice's own angular span as an SVG arc. A slice covers its region
-// exactly, so this is equally the arc from its first base to its last
-function sliceArcPath(
-  slice: Pick<Slice, 'startRadians' | 'endRadians'>,
-  radiusPx: number,
-) {
-  const { startRadians, endRadians } = slice
-  const arcTo = (radians: number, largeArc: '0' | '1') => [
-    'A',
-    radiusPx,
-    radiusPx,
-    '0',
-    largeArc,
-    '1',
-    ...polarToCartesian(radiusPx, radians),
-  ]
-  const moveToStart = ['M', ...polarToCartesian(radiusPx, startRadians)]
-  const spanRadians = endRadians - startRadians
-  // A slice covering the whole circle ends exactly where it began, and SVG
-  // renders an arc segment whose two endpoints coincide as nothing at all — a
-  // lone chromosome with no inter-slice gap coming out of its span (spacingPx
-  // 0) lost its entire ideogram ring, label still drawn. Sub-pixel short of a
-  // full turn is the same thing once coordinates round. Two half-turns have
-  // distinct endpoints and draw.
-  return (
-    (2 * Math.PI - spanRadians) * radiusPx < 1
-      ? [
-          ...moveToStart,
-          ...arcTo(startRadians + Math.PI, '0'),
-          ...arcTo(startRadians, '0'),
-        ]
-      : [
-          ...moveToStart,
-          ...arcTo(endRadians, spanRadians > Math.PI ? '1' : '0'),
-        ]
-  ).join(' ')
-}
-
-// the annulus between two radii over the slice's span, outer arc first
-function sliceBandPath(
-  slice: Pick<Slice, 'startRadians' | 'endRadians'>,
-  innerPx: number,
-  outerPx: number,
-): string {
-  const { startRadians, endRadians } = slice
-  if ((2 * Math.PI - (endRadians - startRadians)) * outerPx < 1) {
-    const half = startRadians + Math.PI
-    return `${sliceBandPath({ startRadians, endRadians: half }, innerPx, outerPx)} ${sliceBandPath({ startRadians: half, endRadians: startRadians + 2 * Math.PI }, innerPx, outerPx)}`
-  }
-  const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
-  return [
-    'M',
-    ...polarToCartesian(outerPx, startRadians),
-    'A',
-    outerPx,
-    outerPx,
-    '0',
-    largeArc,
-    '1',
-    ...polarToCartesian(outerPx, endRadians),
-    'L',
-    ...polarToCartesian(innerPx, endRadians),
-    'A',
-    innerPx,
-    innerPx,
-    '0',
-    largeArc,
-    '0',
-    ...polarToCartesian(innerPx, startRadians),
-    'Z',
-  ].join(' ')
-}
 
 const middleTitleFontSizePx = 16
 
@@ -186,7 +114,12 @@ const IdeogramBand = observer(function IdeogramBand({
   outerPx: number
 }) {
   const palette = usePalette()
-  const band = sliceBandPath(slice, innerPx, outerPx)
+  const band = sectorPath(
+    innerPx,
+    outerPx,
+    slice.startRadians,
+    slice.endRadians,
+  )
   const runs =
     region.assemblyName === model.paintedAssemblyName
       ? (model.ideogramPaint.get(slice.key) ?? [])
@@ -205,11 +138,7 @@ const IdeogramBand = observer(function IdeogramBand({
         return (
           <path
             key={run.start}
-            d={sliceBandPath(
-              { startRadians: Math.min(a, b), endRadians: Math.max(a, b) },
-              innerPx,
-              outerPx,
-            )}
+            d={sectorPath(innerPx, outerPx, Math.min(a, b), Math.max(a, b))}
             fill={stripAlpha(run.color)}
           />
         )
@@ -309,7 +238,11 @@ const Ruler = observer(function Ruler({
       />
       {region.elided ? (
         <path
-          d={sliceArcPath(slice, (innerPx + outerPx) / 2)}
+          d={arcPath(
+            (innerPx + outerPx) / 2,
+            slice.startRadians,
+            slice.endRadians,
+          )}
           stroke={palette.text.secondary}
           strokeWidth={2}
           strokeDasharray="2,2"
@@ -361,7 +294,7 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
   return (
     <>
       <path
-        d={sliceArcPath(arc, radiusPx)}
+        d={arcPath(radiusPx, startRadians, endRadians)}
         stroke={palette.divider}
         strokeWidth={1}
         fill="none"

@@ -178,20 +178,33 @@ test('a slice covering the whole circle still draws its ring', async () => {
 
   const svg = await renderToSvg(view, {})
   const d = /<path d="([^"]*)"/.exec(svg)![1]!
-  // two half-bands, each M x0 y0 A r r 0 0 1 x1 y1 L … A … Z
-  const [first, second] = d
-    .split('M')
-    .filter(Boolean)
-    .map(part => part.match(/-?[\d.]+/g)!.map(Number))
-  expect(second).toBeDefined()
-  // the halfway point is genuinely across the circle...
-  expect(
-    Math.hypot(first![7]! - first![0]!, first![8]! - first![1]!),
-  ).toBeGreaterThan(1)
-  // ...and the second half closes back onto the start
-  expect(
-    Math.hypot(second![7]! - first![0]!, second![8]! - first![1]!),
-  ).toBeLessThan(0.05)
+  // An arc whose two ends meet draws nothing, so each arc of the outer edge
+  // must move the pen, and together they must come back round to the start
+  const segments = [...d.matchAll(/([MALZ])([^MALZ]*)/g)].map(
+    ([, cmd, args]) => ({
+      cmd,
+      xy:
+        args!
+          .match(/-?[\d.]+(?:e-?\d+)?/g)
+          ?.map(Number)
+          .slice(-2) ?? [],
+    }),
+  )
+  const start = segments[0]!.xy
+  let pen = start
+  let arcs = 0
+  for (const { cmd, xy } of segments.slice(1)) {
+    if (cmd !== 'A') {
+      break
+    }
+    expect(Math.hypot(xy[0]! - pen[0]!, xy[1]! - pen[1]!)).toBeGreaterThan(1)
+    pen = xy
+    arcs++
+  }
+  expect(arcs).toBeGreaterThan(1)
+  expect(Math.hypot(pen[0]! - start[0]!, pen[1]! - start[1]!)).toBeLessThan(
+    0.05,
+  )
 }, 20000)
 
 // A sequence alone on the circle closes into a ring only where its assembly

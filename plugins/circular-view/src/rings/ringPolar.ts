@@ -1,7 +1,7 @@
-import { polarToCartesian } from '@jbrowse/core/util'
 import { originHeadId } from '@jbrowse/core/util/originCut'
 import { cullOverlappingLabels } from '@jbrowse/display-ui'
 
+import { arcPath, sectorPath } from '../chords/pathSink.ts'
 import { stripPerRingPx } from './ringHost.ts'
 
 import type { Ring } from './ringHost.ts'
@@ -51,28 +51,7 @@ export function stripRectToSectorPath(
   if (outer <= inner || end <= start) {
     return undefined
   }
-  const largeArc = end - start > Math.PI ? 1 : 0
-  return [
-    'M',
-    ...polarToCartesian(outer, start),
-    'A',
-    outer,
-    outer,
-    0,
-    largeArc,
-    1,
-    ...polarToCartesian(outer, end),
-    'L',
-    ...polarToCartesian(inner, end),
-    'A',
-    inner,
-    inner,
-    0,
-    largeArc,
-    0,
-    ...polarToCartesian(inner, start),
-    'Z',
-  ].join(' ')
+  return sectorPath(inner, outer, start, end)
 }
 
 export interface RingLabel {
@@ -177,18 +156,7 @@ export function ringLabelArcPath(
   upsideDown: boolean,
 ) {
   const half = turn * 0.75
-  const [from, to] = upsideDown
-    ? [radians + half, radians - half]
-    : [radians - half, radians + half]
-  return [
-    'M',
-    ...polarToCartesian(radiusPx, from),
-    'A',
-    radiusPx,
-    radiusPx,
-    0,
-    0,
-    upsideDown ? 0 : 1,
-    ...polarToCartesian(radiusPx, to),
-  ].join(' ')
+  return upsideDown
+    ? arcPath(radiusPx, radians + half, radians - half)
+    : arcPath(radiusPx, radians - half, radians + half)
 }

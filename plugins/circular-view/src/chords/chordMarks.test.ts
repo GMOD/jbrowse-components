@@ -131,12 +131,20 @@ describe('one trace, two sinks', () => {
         return { from: Number(from), to: Number(to), ccw: ccw === 'true' }
       })
     expect(arcs).toHaveLength(2)
-    for (const [i, arc] of arcs.entries()) {
+    // the svg sink draws an arc past half a turn as two halves, so no flag
+    // ever needs largeArc
+    let next = 0
+    for (const arc of arcs) {
+      const pieces = Math.abs(arc.to - arc.from) > Math.PI ? 2 : 1
       // a sweep of 1 is an increasing angle, which the canvas draws clockwise
       expect(arc.ccw).toBe(arc.to < arc.from)
-      expect(flags[i]!.sweep).toBe(arc.to > arc.from)
-      expect(flags[i]!.largeArc).toBe(Math.abs(arc.to - arc.from) > Math.PI)
+      for (const flag of flags.slice(next, next + pieces)) {
+        expect(flag.sweep).toBe(arc.to > arc.from)
+        expect(flag.largeArc).toBe(false)
+      }
+      next += pieces
     }
+    expect(next).toBe(flags.length)
     expect(calls.map(c => c.split('(')[0])).toEqual([
       'moveTo',
       'arc',
