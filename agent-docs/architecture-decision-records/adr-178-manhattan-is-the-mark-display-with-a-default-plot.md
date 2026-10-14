@@ -19,8 +19,8 @@ display users reach for stays, and its plot is now the mark display's.
 The Manhattan display repeated the mark display's point plot by hand: its own
 layer request, mark list, hit test, hover, tooltip, legend, point size, SVG
 export and component, about a thousand lines. What it had of its own was the LD
-join: an index SNP that follows the top hit until pinned, the r² each fetch
-joins against it, and the menus that set both. A mark display over a GWAS file
+join: an index SNP chosen from the top hit, the r² each fetch joins against
+it, and the menus that set both. A mark display over a GWAS file
 drew the same points, and the Manhattan plot had none of its facets, rows,
 transforms or Edit plot.
 
@@ -34,8 +34,8 @@ transforms or Edit plot.
   leaves `marks` out, as ADR-172 has a track's display defaults stated as schema
   defaults. The mark display's own `marks` is `markListSchema([])`, so the two
   schemas type alike.
-- **The model composes the mark model** and adds `indexSnp`, `indexSnpPinned`,
-  the top-hit follow and the LD menus. The mark model gained two hooks for it:
+- **The model composes the mark model** and adds `indexSnp`, its one-time
+  pick and the LD menus. The mark model gained two hooks for it:
   `adapterOptions`, what every region's fetch hands the adapter, carried in
   `rpcProps` so a change refetches, and `resolveAdapterOptions`, which places
   it on one region on the main thread, where the LD file's aliases are. The
@@ -45,17 +45,28 @@ transforms or Edit plot.
 - **The top hit is the adapter's, read off the file** (amended 2026-10-08).
   `GWASAdapter` reports each region's highest-scoring SNP in the fetch's
   `facts`, a channel beside `notices` that rides the encoded result to the
-  region's stored data, and `topSnp` is the best of them. It is read before
-  the join and before every step of the plot, which is the only place nothing
-  the plot does can move it: LocusZoom.js picks its LD reference the same way,
-  the highest `log_pvalue` of the association data. The model first read the
-  top hit off the points the LD-reading marks drew, which the join's own
+  region's stored data, and `topSnp` is the best of them over the regions on
+  screen. It is read before every step of the plot, which is the only place
+  nothing the plot does can move it, as LocusZoom.js defaults its LD reference
+  to the highest `log_pvalue` of the association data. The model first read
+  the top hit off the points the LD-reading marks drew, which the join's own
   `ld_role` filter changes. A plot with the partner mark and no index twin,
   one deletion in Edit plot away from the shipped plot, adopted a SNP, lost it
   to the filter, adopted the runner-up and got the first back, refetching each
   way without end; a plot whose only LD mark plots `r2` drew nothing before a
   join and so never found an index to join. An index SNP a display `filter`
-  hides still colors its partners, and a pin overrides it.
+  hides still colors its partners.
+- **The index is picked once** (amended 2026-10-14). The display writes
+  `indexSnp` from `topSnp` only while none is set: when a plot first joins LD,
+  and when "Color by LD to index SNP" is turned on. After that only the user
+  moves it, by right-click or "Set index SNP to top hit". It first followed
+  `topSnp` until pinned, which turned one fetch's output into the next fetch's
+  input. Reviews of that loop found an index left on a contig scrolled off
+  screen, a sliver of a contig at the screen edge choosing it, and a restored
+  session re-picking a different index than the one saved. A write that only
+  fills an empty index cannot feed itself. Where no visible block lies within
+  `LD_WINDOW_BP` of the index, a notice from the view says so; it reads no
+  fetched data and gates no export.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
   a mark whose encoding names `r2` or `ld_role`. LocusZoom's plot is two
   points, each behind a `filter` on `ld_role`: every SNP but the index by a
@@ -130,8 +141,8 @@ transforms or Edit plot.
   color lanes) for the missing-index notice: it held only for plots shaped
   like `LD_MARKS`. The adapter reports through `BaseOptions.notices` instead.
 - **The top hit read after the plot's shared steps**, to follow a display
-  `filter`: a display-level filter on `ld_role` would reopen the refetch loop
-  the adapter's report closes.
+  `filter`: a display-level filter on `ld_role` would make the top hit depend
+  on the join it picks the index for.
 - **Joining whenever the track has an LD file and an index**: every default
   plot would fetch twice and read the LD file to color nothing.
 - **An index SNP named by its id** (amended 2026-10-08: `indexSnp` took a SNP
@@ -142,6 +153,7 @@ transforms or Edit plot.
   a `chr:bp`, and one that is not joins nothing.
 - **The auto index following the top visible SNP under a row focus**: a focus
   would refetch every region, undoing the row table's one-upload promise.
+  Since the index is picked once, nothing follows the view at all.
 - **A conditional color on the encoding** (Vega-Lite's `condition`) for the
   pink index: layering with a `filter` step used pieces the grammar already
   had.

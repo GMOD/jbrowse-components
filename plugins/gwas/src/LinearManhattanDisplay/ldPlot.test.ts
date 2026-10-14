@@ -413,15 +413,11 @@ test('right-click offers LD to a SNP only on a mark that places each SNP', () =>
   expect(offered(1)).toBe(true)
 })
 
-test('right-clicking a point colors by LD to it and pins it', () => {
+test('right-clicking a point colors by LD to it as the index', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.colorByLdToHit({ refName: 'ctgA', start: 499 })
   expect(display.joinsLd).toBe(true)
   expect(display.indexSnp).toBe('ctgA:500')
-  expect(display.indexSnpPinned).toBe(true)
-
-  display.useTopHitAsIndex()
-  expect(display.indexSnpPinned).toBe(false)
 })
 
 test('the LD menu is there only for a track with an LD file', () => {

@@ -191,7 +191,7 @@ describe('the LD join a fetch asks for', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({ marks })
     answerFetches(mockRpcCall)
     const { display } = createDisplay({
-      displaySnapshot: { indexSnp, indexSnpPinned: true },
+      displaySnapshot: { indexSnp },
     })
     const names = jest
       .spyOn(getSession(display).assemblyManager, 'getRefNameMapForAdapter')

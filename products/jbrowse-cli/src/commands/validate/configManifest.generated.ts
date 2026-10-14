@@ -7359,8 +7359,7 @@ export const configManifest: ConfigManifest = {
         "clusterRegion",
         "sortRowsBy",
         "configuration",
-        "indexSnp",
-        "indexSnpPinned"
+        "indexSnp"
       ]
     },
     "LinearMarkDisplay": {

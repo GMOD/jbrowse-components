@@ -1400,6 +1400,15 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Overridable hook: notices a display derives from its own state and
+         * the view, beside the adapter's. Manhattan's says when the LD index
+         * SNP is out of reach of the screen.
+         */
+        get displayNotices(): string[] {
+          return []
+        },
+        /**
+         * #getter
          * The shape keys whose unlisted values collide on one shape, each
          * with the domain Pin distinct shapes writes.
          */
@@ -1416,6 +1425,7 @@ export function stateModelFactory(
           return [
             ...self.configNotices,
             ...this.dataNotices,
+            ...this.displayNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
           ]
         },
@@ -1430,6 +1440,7 @@ export function stateModelFactory(
           const { skipped, total, fields } = this.skippedFeatures
           return [
             ...this.dataNotices,
+            ...this.displayNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
             ...(total > 0 && skipped === total
               ? [

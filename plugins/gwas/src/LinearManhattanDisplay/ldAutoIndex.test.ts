@@ -61,13 +61,9 @@ async function settle(times: number) {
 }
 
 describe('LinearManhattanDisplay LD auto-index', () => {
-  // Regression: indexSnp is both a fetch input (adapterOptions -> rpcProps ->
-  // SettingsInvalidate) and derived from the fetched data (topSnp). Reading
-  // a partial load made the index flip between each partially-loaded winner
-  // and the true top hit, each flip superseding the fetch and refetching —
-  // forever, with the plot never settling. Gating on a settled load makes
-  // topSnp a fixpoint.
-  it('settles on the global top hit without refetching forever', async () => {
+  // indexSnp is a fetch input picked from fetched data, so the pick waits for
+  // a complete load: mid-batch, topSnp is the best of what has arrived.
+  it('picks the global top hit once, after the whole load', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       marks: LD_MARKS,
     })
@@ -85,10 +81,66 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     // adopted. Adopting the top hit must cost exactly one recolor round-trip.
     expect(mockRpcCall).toHaveBeenCalledTimes(4)
 
-    // Converged: further ticks must provoke no new work. A livelock keeps
-    // issuing a fresh pair of region fetches on every debounce window.
     await settle(5)
     expect(mockRpcCall).toHaveBeenCalledTimes(4)
+  })
+
+  // The pick is once: moving the view or restoring a session never moves
+  // the index, which the user changes by right-click or the track menu.
+  describe('once picked', () => {
+    function loaded(displaySnapshot?: Record<string, unknown>) {
+      const { createDisplay, mockRpcCall } = createTestEnvironment({
+        marks: LD_MARKS,
+      })
+      mockRpcCall.mockImplementation(
+        (_sessionId: string, _method: string, args: FetchArgs) =>
+          Promise.resolve(makeResult(args)),
+      )
+      const { display } = createDisplay({ displaySnapshot })
+      const view = getContainingView(display) as LinearGenomeViewModel
+      return { display, view, mockRpcCall }
+    }
+
+    it('stays put when the view moves, with a notice while out of reach', async () => {
+      const { display, view } = loaded()
+      await settle(8)
+      expect(display.indexSnp).toBe(TOP_SNP)
+      expect(display.displayNotices).toEqual([])
+
+      view.navTo({ refName: 'ctgA', start: 0, end: 10_000 })
+      await settle(8)
+      expect(display.indexSnp).toBe(TOP_SNP)
+      expect(display.topSnp).toBe('ctgA:101')
+      expect(display.displayNotices).toEqual([
+        expect.stringContaining(`LD index SNP ${TOP_SNP}`),
+      ])
+      expect(display.cornerNotices).toEqual(
+        expect.arrayContaining(display.displayNotices),
+      )
+
+      display.useTopHitAsIndex()
+      expect(display.indexSnp).toBe('ctgA:101')
+      expect(display.displayNotices).toEqual([])
+    })
+
+    it('keeps a restored index the top hit would replace', async () => {
+      const { display } = loaded({ indexSnp: 'ctgA:101' })
+      await settle(8)
+      expect(display.topSnp).toBe(TOP_SNP)
+      expect(display.indexSnp).toBe('ctgA:101')
+    })
+
+    it('picks again when LD coloring is turned back on', async () => {
+      const { display, view } = loaded()
+      await settle(8)
+      view.navTo({ refName: 'ctgA', start: 0, end: 10_000 })
+      await settle(8)
+      display.setLdColoring(false)
+      await settle(8)
+      display.setLdColoring(true)
+      await settle(8)
+      expect(display.indexSnp).toBe('ctgA:101')
+    })
   })
 
   // The other way in, and the one production actually uses: the track menu's
@@ -120,10 +172,8 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   })
 
   // Exact ties at the top are routine (negLog10 clamps every underflowed p=0 to
-  // the same ~323.3), and adopting the index refetches, which clears rpcDataMap
-  // and refills it in RPC-resolution order. If topSnp broke ties by arrival
-  // order it would flip between the tied SNPs and never converge — the same
-  // livelock as above, reached a different way.
+  // the same ~323.3), and regions land in RPC-resolution order, so a tie
+  // broken by arrival would pick a different SNP on each load.
   it('breaks a score tie by region index, not by which region landed first', () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       marks: LD_MARKS,
@@ -180,8 +230,8 @@ describe('LinearManhattanDisplay LD auto-index', () => {
 
   // Manhattan's supersession replaced the mark display's, so an export of a
   // plot with rows passed before the listing that adds and orders them
-  // landed. The listing must not reach the auto-pick, which would write the
-  // top hit over a pinned index.
+  // landed. The listing must not reach the pick, which would write the top
+  // hit over the user's index.
   it("keeps the mark display's wait on its row listing, apart from the auto-pick", async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       marks: LD_MARKS,
@@ -202,11 +252,9 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(display.indexSnp).toBe('ctgA:100')
   })
 
-  // The top hit used to be read off the points the LD marks drew, which the
-  // join's own `ld_role` filter changes: with the index twin deleted in Edit
-  // plot or gated off by zoom, adopting a SNP filtered it out, the runner-up
-  // became the top hit, and adopting that one brought the first back, a
-  // refetch each way and no end to it.
+  // The top hit is read off the file, not the points the LD marks draw, which
+  // the join's own `ld_role` filter changes: with the index twin deleted in
+  // Edit plot, the picked SNP is filtered out of the drawn points.
   it('settles where the plot draws every SNP but the index', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({
       marks: [

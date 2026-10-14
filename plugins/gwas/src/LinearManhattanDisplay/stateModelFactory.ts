@@ -3,12 +3,13 @@ import {
   getConf,
   setConf,
 } from '@jbrowse/core/configuration'
-import { toLocale } from '@jbrowse/core/util'
+import { getSession, toLocale } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
+import { LD_WINDOW_BP } from '../GWASAdapter/ldJoin.ts'
 import { readTopHit } from '../GWASAdapter/topHit.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
 import {
@@ -19,6 +20,7 @@ import {
   withLd,
   withoutLd,
 } from './ldPlot.ts'
+import { parseChrBp } from './parseChrBp.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
@@ -35,8 +37,7 @@ const NO_PLOT_FIELDS = { numeric: [], categorical: [] }
  * #stateModel LinearManhattanDisplay
  * #category display
  * The mark display with the LD join: an index SNP each fetch joins r² to,
- * which follows the top hit until the user pins one, and the menus that color
- * the points by it.
+ * picked once from the top hit, and the menus that color the points by it.
  */
 export function stateModelFactory(
   pluginManager: PluginManager,
@@ -57,15 +58,11 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * The index SNP the LD join reads r² to, as a 1-based `chr:bp`. It
-         * follows the highest-scoring loaded SNP until the user pins one.
+         * The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The
+         * display picks the top hit on screen once, when a plot first joins
+         * LD or LD coloring is turned on; after that only the user moves it.
          */
         indexSnp: types.maybe(types.string),
-        /**
-         * #property
-         * True once the user pins an index SNP by right-clicking a point.
-         */
-        indexSnpPinned: types.stripDefault(types.boolean, false),
       }),
     )
     .views(self => ({
@@ -137,16 +134,13 @@ export function stateModelFactory(
       /**
        * #getter
        * The highest-scoring SNP loaded for the regions on screen, as a 1-based
-       * `chr:bp`: the index the join follows while none is pinned.
-       * `GWASAdapter` reports each region's top hit off the file, so no
-       * filter, zoom gate or mark of the plot moves it. A region scrolled off
-       * screen stays loaded, and counting it left the index on a contig the
-       * view no longer shows.
+       * `chr:bp`. `GWASAdapter` reports each region's top hit off the file, so
+       * no filter, zoom gate or mark of the plot moves it. A region scrolled
+       * off screen stays loaded, and is not counted.
        *
        * A tie goes to the lowest region index, then the lowest position,
-       * never to arrival order: adopting the index refetches, so a tie broken
-       * by arrival would flip between the tied SNPs and never paint
-       * (`ldAutoIndex.test.ts`).
+       * never to arrival order, so one load picks the same SNP however its
+       * regions land (`ldAutoIndex.test.ts`).
        */
       get topSnp(): string | undefined {
         const onScreen = new Set(
@@ -164,8 +158,18 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The index the fetch joins r² to, a fetch input, so adopting or
-       * pinning one refetches. None before the first load names a top hit.
+       * `topSnp` once the load covering the screen is complete, or undefined:
+       * mid-batch, `topSnp` is the best of what has arrived.
+       */
+      get settledTopSnp(): string | undefined {
+        return self.viewportWithinLoadedData && !self.isLoading
+          ? this.topSnp
+          : undefined
+      },
+      /**
+       * #getter
+       * The index the fetch joins r² to, a fetch input, so picking one
+       * refetches. None before the first load names a top hit.
        */
       get adapterOptions(): { ld: string } | undefined {
         return self.joinsLd && self.indexSnp !== undefined
@@ -188,24 +192,50 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The loaded data was joined under an index other than the top hit, so
-       * the auto-pick adopts it, which clears the data and refetches.
+       * The plot joins LD and no index is picked yet, though the loaded data
+       * names a top hit: the one-time pick is due, and its refetch with it.
        */
-      get indexSuperseded(): boolean {
+      get indexPending(): boolean {
         return (
           self.joinsLd &&
-          !self.indexSnpPinned &&
-          this.topSnp !== undefined &&
-          this.topSnp !== self.indexSnp
+          self.indexSnp === undefined &&
+          this.topSnp !== undefined
         )
       },
       /**
        * #getter
        * `MultiRegionDisplayMixin`'s supersession hook, true while the mark
-       * display's row listing is unsettled or an index awaits adoption.
+       * display's row listing is unsettled or the index pick is due.
        */
       get dataSuperseded(): boolean {
-        return !self.rowListingSettled || this.indexSuperseded
+        return !self.rowListingSettled || this.indexPending
+      },
+      /**
+       * #getter
+       * Where the plot joins LD, a notice that no point on screen lies in
+       * the LD window of the index, so none can be colored by it.
+       */
+      get displayNotices(): string[] {
+        const locus = self.joinsLd && parseChrBp(self.indexSnp ?? '')
+        if (!locus) {
+          return []
+        }
+        const { assemblyManager } = getSession(self)
+        const start = locus.bp - 1
+        const inReach = self.trackVisibleRegions.some(
+          block =>
+            (assemblyManager
+              .get(block.assemblyName)
+              ?.getCanonicalRefName2(locus.refName) ?? locus.refName) ===
+              block.refName &&
+            block.end > start - LD_WINDOW_BP &&
+            block.start <= start + LD_WINDOW_BP,
+        )
+        return inReach
+          ? []
+          : [
+              `No point on screen is within ${LD_WINDOW_BP / 1_000_000} Mb of the LD index SNP ${self.indexSnp}, so none is colored by LD: right-click a point to color by LD to it, or use LD → Set index SNP to top hit in the track menu`,
+            ]
       },
     }))
     .actions(self => ({
@@ -220,6 +250,8 @@ export function stateModelFactory(
        * Color each point by its r² to the index SNP, the index a pink
        * diamond over them, or take that coloring off, leaving every other
        * member and mark of the plot as it was (`withLd`, `withoutLd`).
+       * Turning it on picks the top hit on screen as the index, or leaves the
+       * pick for the load in flight to make.
        */
       setLdColoring(on: boolean) {
         if (on === self.conf.marks.some(readsLd)) {
@@ -231,28 +263,28 @@ export function stateModelFactory(
         if (!on || marks) {
           setConf(self, 'marks', marks)
         }
+        if (on && marks) {
+          self.indexSnp = self.settledTopSnp
+        }
       },
     }))
     .actions(self => ({
       /**
        * #action
        * Right-click "Color by LD to this SNP": color by r² to the clicked
-       * point and pin it as the index, in one action so the fetch inputs
-       * settle once.
+       * point as the index, in one action so the fetch inputs settle once.
        */
       colorByLdToHit(hit: { refName: string; start: number }) {
         self.setLdColoring(true)
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
-        self.indexSnpPinned = true
       },
       /**
        * #action
-       * Release a pinned index back to following the top hit.
+       * Make the top hit on screen the index.
        */
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST action named for its semantic meaning, not a React hook
       useTopHitAsIndex() {
-        self.indexSnpPinned = false
-        self.indexSnp = self.topSnp
+        self.indexSnp = self.settledTopSnp ?? self.indexSnp
       },
     }))
     .views(self => {
@@ -284,9 +316,13 @@ export function stateModelFactory(
                         },
                       },
                       {
-                        label: 'Set index SNP to top hit',
+                        label: self.settledTopSnp
+                          ? `Set index SNP to top hit (${self.settledTopSnp})`
+                          : 'Set index SNP to top hit',
                         disabled:
-                          !self.joinsLd || !self.topSnp || !self.indexSnpPinned,
+                          !self.joinsLd ||
+                          !self.settledTopSnp ||
+                          self.settledTopSnp === self.indexSnp,
                         onClick: () => {
                           self.useTopHitAsIndex()
                         },
@@ -325,21 +361,16 @@ export function stateModelFactory(
     })
     .actions(self => ({
       afterAttach() {
-        // adopted only from a complete load: mid-batch, topSnp is the best
-        // of what has arrived, and adopting it would refetch forever
-        // (ldAutoIndex.test.ts)
+        // writes only while no index is picked, and its write ends that
         namedAutorun(
           self,
           () => {
-            if (
-              self.indexSuperseded &&
-              self.viewportWithinLoadedData &&
-              !self.isLoading
-            ) {
-              self.setIndexSnp(self.topSnp)
+            const top = self.settledTopSnp
+            if (self.indexPending && top !== undefined) {
+              self.setIndexSnp(top)
             }
           },
-          { name: 'ManhattanAdoptTopSnp' },
+          { name: 'ManhattanPickIndexSnp' },
         )
       },
     }))

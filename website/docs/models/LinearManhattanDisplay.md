@@ -1,15 +1,14 @@
 ---
 id: linearmanhattandisplay
 title: LinearManhattanDisplay
-description: "The mark display with the LD join: an index SNP each fetch joins r² to, which follows the top hit until the user pins one, and the menus that color the points by it."
+description: "The mark display with the LD join: an index SNP each fetch joins r² to, picked once from the top hit, and the menus that color the points by it."
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
 
 The mark display with the LD join: an index SNP each fetch joins r² to,
-which follows the top hit until the user pins one, and the menus that color
-the points by it.
+picked once from the top hit, and the menus that color the points by it.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmanhattandisplay).
 
@@ -22,8 +21,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('LinearManhattanDisplay')</code> |  |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-indexsnp">**indexSnp**</span><br><code>indexSnp: types.maybe(types.string)</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. It follows the highest-scoring loaded SNP until the user pins one. |
-| <span id="property-indexsnppinned">**indexSnpPinned**</span><br><code>indexSnpPinned: types.stripDefault(types.boolean, false)</code> | True once the user pins an index SNP by right-clicking a point. |
+| <span id="property-indexsnp">**indexSnp**</span><br><code>indexSnp: types.maybe(types.string)</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The display picks the top hit on screen once, when a plot first joins LD or LD coloring is turned on; after that only the user moves it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 2 models</summary>
@@ -78,10 +76,12 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="volatile-hoveredtreenode
 | <span id="getter-joinedplotfields">**joinedPlotFields**</span><br><code>{ numeric: string[]; categorical: string[]; }</code> | The two fields the LD join writes, for Edit plot to offer. |
 | <span id="getter-sharedsteps">**sharedSteps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>UnionNode&lt;{ filter: ConfigurationSchemaType&lt;…&gt;; formula: Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>UnionNode&lt;{ filter: ConfigurationSchemaType&lt;…&gt;; formula: ConfigurationSchemaType&lt;…&gt;; bin: ConfigurationSchemaType&lt;…&gt;; aggregate: ConfigurationSchemaType&lt;…&gt;; window: ConfigurationSchemaType&lt;…&gt;; coverage: ConfigurationSchemaType&lt;…&gt;; flatten: ConfigurationSchemaType&lt;…&gt;; cells: ConfigurationSchemaType&lt;…&gt;; pileup: ConfigurationSchemaType&lt;…&gt;; mate: ConfigurationSchemaType&lt;{ type: { type: "string"; } &amp; { defaultValue: string; }; }, ConfigurationSchemaOptions&lt;undefined, undefined, true, ConfigurationSchemaRequirement&lt;Partial&lt;Record&lt;string, string[]&gt;&gt;, string&gt;, any&gt;&gt;; }&gt;[]</code></pre></dialog></span> | The steps every mark runs before its own: the display's, then the facet's. |
 | <span id="getter-ldcolorable">**ldColorable**</span><br><code>boolean</code> | Whether "Color by LD to index SNP" has a point mark to color. |
-| <span id="getter-topsnp">**topSnp**</span><br><code>string &#124; undefined</code> | The highest-scoring SNP loaded for the regions on screen, as a 1-based `chr:bp`: the index the join follows while none is pinned. `GWASAdapter` reports each region's top hit off the file, so no filter, zoom gate or mark of the plot moves it. A region scrolled off screen stays loaded, and counting it left the index on a contig the view no longer shows.<br><br>A tie goes to the lowest region index, then the lowest position, never to arrival order: adopting the index refetches, so a tie broken by arrival would flip between the tied SNPs and never paint (`ldAutoIndex.test.ts`). |
-| <span id="getter-adapteroptions">**adapterOptions**</span><br><code>{ ld: string; } &#124; undefined</code> | The index the fetch joins r² to, a fetch input, so adopting or pinning one refetches. None before the first load names a top hit. |
-| <span id="getter-indexsuperseded">**indexSuperseded**</span><br><code>boolean</code> | The loaded data was joined under an index other than the top hit, so the auto-pick adopts it, which clears the data and refetches. |
-| <span id="getter-datasuperseded">**dataSuperseded**</span><br><code>boolean</code> | `MultiRegionDisplayMixin`'s supersession hook, true while the mark display's row listing is unsettled or an index awaits adoption. |
+| <span id="getter-topsnp">**topSnp**</span><br><code>string &#124; undefined</code> | The highest-scoring SNP loaded for the regions on screen, as a 1-based `chr:bp`. `GWASAdapter` reports each region's top hit off the file, so no filter, zoom gate or mark of the plot moves it. A region scrolled off screen stays loaded, and is not counted.<br><br>A tie goes to the lowest region index, then the lowest position, never to arrival order, so one load picks the same SNP however its regions land (`ldAutoIndex.test.ts`). |
+| <span id="getter-settledtopsnp">**settledTopSnp**</span><br><code>string &#124; undefined</code> | `topSnp` once the load covering the screen is complete, or undefined: mid-batch, `topSnp` is the best of what has arrived. |
+| <span id="getter-adapteroptions">**adapterOptions**</span><br><code>{ ld: string; } &#124; undefined</code> | The index the fetch joins r² to, a fetch input, so picking one refetches. None before the first load names a top hit. |
+| <span id="getter-indexpending">**indexPending**</span><br><code>boolean</code> | The plot joins LD and no index is picked yet, though the loaded data names a top hit: the one-time pick is due, and its refetch with it. |
+| <span id="getter-datasuperseded">**dataSuperseded**</span><br><code>boolean</code> | `MultiRegionDisplayMixin`'s supersession hook, true while the mark display's row listing is unsettled or the index pick is due. |
+| <span id="getter-displaynotices">**displayNotices**</span><br><code>string[]</code> | Where the plot joins LD, a notice that no point on screen lies in the LD window of the index, so none can be colored by it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>226 inherited getters from 14 models</summary>
@@ -148,9 +148,9 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`exp
 | Member | Description |
 | --- | --- |
 | <span id="action-setindexsnp">**setIndexSnp**</span><br><code>(snp?: string &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setldcoloring">**setLdColoring**</span><br><code>(on: boolean) =&gt; void</code> | Color each point by its r² to the index SNP, the index a pink diamond over them, or take that coloring off, leaving every other member and mark of the plot as it was (`withLd`, `withoutLd`). |
-| <span id="action-colorbyldtohit">**colorByLdToHit**</span><br><code>(hit: { refName: string; start: number; }) =&gt; void</code> | Right-click "Color by LD to this SNP": color by r² to the clicked point and pin it as the index, in one action so the fetch inputs settle once. |
-| <span id="action-usetophitasindex">**useTopHitAsIndex**</span><br><code>() =&gt; void</code> | Release a pinned index back to following the top hit. |
+| <span id="action-setldcoloring">**setLdColoring**</span><br><code>(on: boolean) =&gt; void</code> | Color each point by its r² to the index SNP, the index a pink diamond over them, or take that coloring off, leaving every other member and mark of the plot as it was (`withLd`, `withoutLd`). Turning it on picks the top hit on screen as the index, or leaves the pick for the load in flight to make. |
+| <span id="action-colorbyldtohit">**colorByLdToHit**</span><br><code>(hit: { refName: string; start: number; }) =&gt; void</code> | Right-click "Color by LD to this SNP": color by r² to the clicked point as the index, in one action so the fetch inputs settle once. |
+| <span id="action-usetophitasindex">**useTopHitAsIndex**</span><br><code>() =&gt; void</code> | Make the top hit on screen the index. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>96 inherited actions from 14 models</summary>
