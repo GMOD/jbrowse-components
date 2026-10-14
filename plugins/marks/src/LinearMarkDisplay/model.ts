@@ -604,17 +604,18 @@ export function stateModelFactory(
         /**
          * #volatile
          * The latest `MarkGetRowSources` answer, stamped with the adapter
-         * config it answers.
+         * config it answers; null where the adapter lists none or the read
+         * failed.
          */
         sourceListing: undefined as
-          | AdapterRead<RowSourceListing | undefined>
+          | AdapterRead<RowSourceListing | null>
           | undefined,
       }))
       .actions(self => ({
         /**
          * #action
          */
-        setSourceListing(read: AdapterRead<RowSourceListing | undefined>) {
+        setSourceListing(read: AdapterRead<RowSourceListing | null>) {
           self.sourceListing = read
         },
       }))
@@ -1965,8 +1966,9 @@ export function stateModelFactory(
             delay: 0,
             report: { setStatusMessage: () => {} },
             gate: () => self.drawsRows,
-            run: (adapterConfig, ctx) =>
-              ctx.callRpc('MarkGetRowSources', { adapterConfig }),
+            run: async (adapterConfig, ctx) =>
+              (await ctx.callRpc('MarkGetRowSources', { adapterConfig })) ??
+              null,
             commit: read => {
               self.setSourceListing(read)
             },
@@ -1977,7 +1979,7 @@ export function stateModelFactory(
                 )
                 self.setSourceListing({
                   adapterConfig: self.adapterConfig,
-                  value: undefined,
+                  value: null,
                 })
               }
             },

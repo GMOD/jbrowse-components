@@ -66,6 +66,15 @@ test('a failed listing lets the export draw the rows the features name', async (
   error.mockRestore()
 })
 
+test('an adapter that lists no rows lets the export draw the rows the features name', async () => {
+  const display = displayListing(Promise.resolve(undefined))
+  await waitFor(() => {
+    expect(display.svgReady).toBe(true)
+  })
+  expect(display.dataSuperseded).toBe(false)
+  expect(display.sources.map(row => row.name)).toEqual(['dad', 'mom'])
+})
+
 test('a display drawing no rows from a listing never waits on one', () => {
   const display = displayListing(new Promise(() => {}), {})
   expect(display.svgReady).toBe(true)
