@@ -124,6 +124,26 @@ test('the linear record links each instance to the previous one on its row withi
   expect(u32(joined, words, 1, center.INSTANCE_OFFSET_U32.prevX)).toBe(10)
 })
 
+test('two series laid end to end on one row draw apart', () => {
+  const buf = lineCenterMark.pass.pack(
+    channels([
+      { x: 10, x2: 20, y: 2 },
+      { x: 60, x2: 70, y: 8 },
+      { x: 10, x2: 20, y: 5 },
+      { x: 60, x2: 70, y: 1 },
+    ]),
+  ) as ArrayBuffer
+  const words = center.INSTANCE_STRIDE_WORDS
+  const prevX = (i: number) =>
+    u32(buf, words, i, center.INSTANCE_OFFSET_U32.prevX)
+  expect([prevX(0), prevX(1), prevX(2), prevX(3)]).toEqual([
+    NO_PREV_X,
+    10,
+    NO_PREV_X,
+    10,
+  ])
+})
+
 test('the step painter strokes a rise, the tops, the steps and a drop at each gap', () => {
   const { ctx, calls } = mockCtx()
   lineStepMark.paintBlock(ctx, stepped, block, frame, params)

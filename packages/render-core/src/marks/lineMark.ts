@@ -44,9 +44,10 @@ import type { MarkValueScale } from './valueScale.ts'
  * The `line` shape's channels: a stroke through consecutive instances of one
  * row, in the order given, each instance a span from `x` to `x2` at `y` on the
  * value scale. `gapBp` is the linear variant's break: a midpoint further than
- * that from the previous one on its row starts a new run. It rides with the
- * data, as the neighbour fields the packer derives from it do, so both
- * backends break in the same place; absent, a row is one run.
+ * that from the previous one on its row starts a new run, as does a start
+ * before the previous one's. It rides with the data, as the neighbour fields
+ * the packer derives from it do, so both backends break in the same place;
+ * absent, a row's runs are its series in start order.
  */
 export interface LineChannels extends ColorChannel, RowChannel {
   x: Uint32Array
@@ -89,9 +90,11 @@ function abutsBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
 }
 
 // Whether the linear variant links instance `i` to the one before it: the same
-// row, within `gapBp` midpoint to midpoint.
+// row, starting no earlier, within `gapBp` midpoint to midpoint. A start before
+// the previous one's begins a series of its own, so several laid end to end on
+// one row draw apart.
 function linksBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
-  if (i === 0 || !sameRow(row, i - 1, i)) {
+  if (i === 0 || !sameRow(row, i - 1, i) || c.x[i]! < c.x[i - 1]!) {
     return false
   }
   const gapBp = c.gapBp ?? NO_GAP
