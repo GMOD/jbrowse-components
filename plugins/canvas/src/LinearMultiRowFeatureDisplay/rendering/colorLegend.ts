@@ -63,79 +63,54 @@ export function resolveIdentityLegend(
 /**
  * The categorical color key for a per-feature-colored painting, derived as
  * every color channel's is (`derivedColorScale`): a row per color naming each
- * feature name painted in it, in `domain`'s order. A row with a per-row color
- * override paints every block that one color, so it contributes nothing here —
- * the legend describes the `color` axis, not the row axis.
+ * value painted in it. Under a color `field` the values are the ones the
+ * worker found, each painted through the field's scale in the field's order,
+ * and every bin of a threshold once anything painted; otherwise they are
+ * feature names in `domain`'s order. A row with a per-row color override
+ * paints every block that one color, so it contributes nothing here — the
+ * legend describes the `color` axis, not the row axis.
  */
 export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
-  rowIndexByValue: ReadonlyMap<string, number>,
-  rowColorsByIndex: readonly (number | undefined)[],
-  domain: readonly string[] = [],
+  {
+    field,
+    domain = [],
+    rowIndexByValue,
+    rowColorsByIndex,
+  }: {
+    field?: CategoricalField
+    domain?: readonly string[]
+    rowIndexByValue: ReadonlyMap<string, number>
+    rowColorsByIndex: readonly (number | undefined)[]
+  },
 ): LegendEntry[] {
   // The default configuration: an unset `color` over features with no itemRgb
-  // gives every row a palette color.
-  if (everyRowOverridden(rowColorsByIndex)) {
+  // gives every row a palette color, and no region need be read.
+  if (
+    rowColorsByIndex.length > 0 &&
+    rowColorsByIndex.every(c => c !== undefined)
+  ) {
     return []
   }
   const rowPaints = rowPaintsOwnColors(rowIndexByValue, rowColorsByIndex)
-  const [key] = derivedColorScale(
+  const [scale] = derivedColorScale(
     regions,
-    data => ({
-      candidates: data.legendCandidates,
-      rowPaintsCandidateColor: rowValueIndex => rowPaints(data, rowValueIndex),
-    }),
+    field
+      ? fieldColorCandidates<MultiRowRegionData>(field, rowPaints)
+      : data => ({
+          candidates: data.legendCandidates,
+          rowPaintsCandidateColor: rowValueIndex =>
+            rowPaints(data, rowValueIndex),
+        }),
     {
       id: 'features',
-      field: categoricalField(FEATURE_NAME, { domain }),
+      field: field ?? categoricalField(FEATURE_NAME, { domain }),
       maxItems: MAX_LEGEND_ENTRIES,
     },
   )
-  return (key?.entries ?? []).map(
-    ({ label, value, values = [value], color }) => ({
-      label,
-      values,
-      color: cssColorToABGR(color!),
-    }),
-  )
-}
-
-// No region need be read when every row paints its own color.
-function everyRowOverridden(rowColorsByIndex: readonly (number | undefined)[]) {
-  return (
-    rowColorsByIndex.length > 0 && rowColorsByIndex.every(c => c !== undefined)
-  )
-}
-
-/**
- * The key the color field's scale derives from the values the worker found,
- * each painted through `field`, as every derived key runs it: one row per
- * color naming every value painted in it, in the field's order, and every bin
- * of a threshold once anything painted. A row painting its own color paints
- * none of these, so its values stay out.
- */
-export function buildFieldColorLegend(
-  regions: Iterable<MultiRowRegionData>,
-  field: CategoricalField,
-  rowIndexByValue: ReadonlyMap<string, number>,
-  rowColorsByIndex: readonly (number | undefined)[],
-): LegendEntry[] {
-  if (everyRowOverridden(rowColorsByIndex)) {
-    return []
-  }
-  const [scale] = derivedColorScale(
-    regions,
-    fieldColorCandidates<MultiRowRegionData>(
-      field,
-      rowPaintsOwnColors(rowIndexByValue, rowColorsByIndex),
-    ),
-    { id: 'features', field, maxItems: MAX_LEGEND_ENTRIES },
-  )
-  return scale?.kind === 'categorical'
-    ? scale.entries.map(e => ({
-        label: e.label,
-        values: e.values ?? [e.value],
-        color: cssColorToABGR(e.color ?? ''),
-      }))
-    : []
+  return (scale?.entries ?? []).map(e => ({
+    label: e.label,
+    values: e.values ?? [e.value],
+    color: cssColorToABGR(e.color ?? ''),
+  }))
 }

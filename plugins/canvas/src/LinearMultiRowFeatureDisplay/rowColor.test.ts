@@ -1,7 +1,8 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { createTestEnvironment, ctgA } from './testEnv.ts'
+import { abgrsOf, createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -112,7 +113,7 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
 test('deals no rainbow: an unpaired row paints the default block color', () => {
   const display = loaded({})
   expect(display.rowPaletteDeals).toBe(false)
-  expect(display.rowColorStringsByIndex).toEqual([
+  expect(display.rowColorsByIndex).toEqual([
     undefined,
     undefined,
     undefined,
@@ -138,12 +139,9 @@ test('the row colors keep their identity across a reorder, a focus and a relabel
 
 test("unknown: '' deals no palette, and the pairs still paint", () => {
   const display = loaded({ rowColor: { ...DECLARED.rowColor, unknown: '' } })
-  expect(display.rowColorStringsByIndex).toEqual([
-    '#00f',
-    undefined,
-    '#0f0',
-    undefined,
-  ])
+  expect(display.rowColorsByIndex).toEqual(
+    abgrsOf(['#00f', undefined, '#0f0', undefined]),
+  )
 })
 
 test('a recolor from None reads as Each row, and None clears it', () => {
@@ -155,16 +153,13 @@ test('a recolor from None reads as Each row, and None clears it', () => {
     unknown: '',
   })
   expect(display.rowColorChoice).toBe('name')
-  expect(display.rowColorStringsByIndex).toEqual([
-    undefined,
-    '#123456',
-    undefined,
-    undefined,
-  ])
+  expect(display.rowColorsByIndex).toEqual(
+    abgrsOf([undefined, '#123456', undefined, undefined]),
+  )
 
   display.setRowColorChoice('')
   expect(display.rowColorChoice).toBe('')
-  expect(display.rowColorStringsByIndex).toEqual([
+  expect(display.rowColorsByIndex).toEqual([
     undefined,
     undefined,
     undefined,
@@ -182,10 +177,10 @@ const GROUPS = {
 test('rowColor by group deals a color per group, and offers the field', () => {
   const display = loaded({ rowColor: 'group', ...GROUPS })
   expect(display.rowColorFields).toEqual(['group'])
-  const [a, b, c] = display.rowColorStringsByIndex
-  expect(a).toBe(rowPaletteColorAt(0))
+  const [a, b, c] = display.rowColorsByIndex
+  expect(a).toBe(cssColorToABGR(rowPaletteColorAt(0)))
   expect(b).toBe(a)
-  expect(c).toBe(rowPaletteColorAt(1))
+  expect(c).toBe(cssColorToABGR(rowPaletteColorAt(1)))
   expect(loaded({}).rowColorFields).toEqual([])
 })
 
@@ -203,11 +198,9 @@ test('rowColor by group pairs its domain with its range, on the blocks and the l
     },
     ...GROUPS,
   })
-  expect(display.rowColorStringsByIndex.slice(0, 3)).toEqual([
-    '#e41a1c',
-    '#e41a1c',
-    '#123456',
-  ])
+  expect(display.rowColorsByIndex.slice(0, 3)).toEqual(
+    abgrsOf(['#e41a1c', '#e41a1c', '#123456']),
+  )
   expect(display.sources.slice(0, 3).map(s => s.rowColor)).toEqual([
     '#e41a1c',
     '#e41a1c',
@@ -223,7 +216,7 @@ test('a row with no group takes no color from the deal', () => {
   expect(dealt.sources[3]!.name).toBe('')
   expect(dealt.sources[3]!.rowColor).toBeUndefined()
   expect(dealt.dealtRowColors.has('')).toBe(false)
-  expect(dealt.rowColorStringsByIndex[3]).toBeUndefined()
+  expect(dealt.rowColorsByIndex[3]).toBeUndefined()
 
   const unknown = loaded({
     rowColor: {
@@ -234,12 +227,9 @@ test('a row with no group takes no color from the deal', () => {
     },
     ...GROUPS,
   })
-  expect(unknown.rowColorStringsByIndex).toEqual([
-    '#999999',
-    '#999999',
-    '#123456',
-    undefined,
-  ])
+  expect(unknown.rowColorsByIndex).toEqual(
+    abgrsOf(['#999999', '#999999', '#123456', undefined]),
+  )
 })
 
 test('a pair naming the empty value paints the rows with no group', () => {
@@ -247,5 +237,5 @@ test('a pair naming the empty value paints the rows with no group', () => {
     rowColor: { field: 'group', domain: [''], range: ['#cccccc'] },
     ...GROUPS,
   })
-  expect(display.rowColorStringsByIndex[3]).toBe('#cccccc')
+  expect(display.rowColorsByIndex[3]).toBe(cssColorToABGR('#cccccc'))
 })

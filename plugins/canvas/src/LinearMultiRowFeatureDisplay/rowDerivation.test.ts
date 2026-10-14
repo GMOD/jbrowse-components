@@ -1,5 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { runMultiRowClustering } from './runMultiRowClustering.ts'
 import { createTestEnvironment, ctgA } from './testEnv.ts'
@@ -113,7 +113,9 @@ function derived(display: Display) {
       name,
       label,
     })),
-    rowColorStringsByIndex: display.rowColorStringsByIndex,
+    rowColors: display.rowColorsByIndex.map(c =>
+      c === undefined ? undefined : abgrToCssRgba(c),
+    ),
     rowColorScale: display.colorScales.find(s => s.id === 'rowColor'),
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,

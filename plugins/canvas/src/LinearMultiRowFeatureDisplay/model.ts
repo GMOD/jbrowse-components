@@ -64,7 +64,6 @@ import {
 } from './hitTesting.ts'
 import {
   buildColorLegend,
-  buildFieldColorLegend,
   entryHidden,
   resolveIdentityLegend,
 } from './rendering/colorLegend.ts'
@@ -439,31 +438,21 @@ export default function stateModelFactory(
       get rowIndexByValue(): Map<string, number> {
         return new Map(self.sources.map((s, i) => [s.name, i] as const))
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * Per-row CSS color by display row, `undefined` where the row has none
-       * or `rowColorPaintsMarks` is off, and the feature's own color paints
-       * instead.
+       * Each display row's color, packed for the painters, `undefined` where
+       * the row has none or `rowColorPaintsMarks` is off and the feature's own
+       * color paints instead. Applied at render time, so any color change
+       * repaints without a refetch.
        */
-      get rowColorStringsByIndex(): (string | undefined)[] {
+      get rowColorsByIndex(): (number | undefined)[] {
         const colors = self.rowColorPaintsMarks
           ? self.resolvedRowColors
           : undefined
-        return self.sources.map(s => colors?.get(s.name))
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `rowColorStringsByIndex` packed for the painters, applied at render time
-       * so any color change repaints without a refetch.
-       */
-      get rowColorsByIndex(): (number | undefined)[] {
-        return self.rowColorStringsByIndex.map(css =>
-          css === undefined ? undefined : cssColorToABGR(css),
-        )
+        return self.sources.map(s => {
+          const css = colors?.get(s.name)
+          return css === undefined ? undefined : cssColorToABGR(css)
+        })
       },
       /**
        * #getter
@@ -480,14 +469,28 @@ export default function stateModelFactory(
       get fitTargetHeight(): number {
         return self.allottedHeight
       },
-    }))
-    .views(self => ({
+      /**
+       * #getter
+       * Ceiling on the whole row stack in CSS px: this display sizes its canvas
+       * to its content and never scrolls, so nothing downstream bounds it.
+       */
+      get maxCanvasHeight(): number {
+        return maxCanvasCssPx()
+      },
       /**
        * #getter
        * The rows an identity `color` names, whether or not anything is drawn.
        */
       get identityLegend() {
         return resolveIdentityLegend(self.identityKeyEntries)
+      },
+      /**
+       * #getter
+       * The single place "is this category hidden?" is answered, so a change to
+       * how a label is matched cannot reach some legends and miss the rest.
+       */
+      get hiddenCategorySet(): ReadonlySet<string> {
+        return new Set(self.hiddenCategories)
       },
     }))
     .views(self => ({
@@ -505,32 +508,26 @@ export default function stateModelFactory(
           return []
         }
         const identity = self.hasDrawnFeatures ? self.identityLegend : []
-        const field = self.paintedColorField
         return identity.length
           ? identity
-          : field
-            ? buildFieldColorLegend(
-                self.rpcDataMap.values(),
-                field,
-                self.rowIndexByValue,
-                self.rowColorsByIndex,
-              )
-            : buildColorLegend(
-                self.rpcDataMap.values(),
-                self.rowIndexByValue,
-                self.rowColorsByIndex,
-                self.colorSetting.domain,
-              )
+          : buildColorLegend(self.rpcDataMap.values(), {
+              field: self.paintedColorField,
+              domain: self.colorSetting.domain,
+              rowIndexByValue: self.rowIndexByValue,
+              rowColorsByIndex: self.rowColorsByIndex,
+            })
       },
-    }))
-    .views(self => ({
       /**
        * #getter
-       * The single place "is this category hidden?" is answered, so a change to
-       * how a label is matched cannot reach some legends and miss the rest.
+       * The display height under `rowsTopOffset` split evenly across rows.
+       * Deliberately not floored at a pixel — `rowBand` widens a sub-pixel row
+       * for drawing without changing how many rows fit, where a floor here
+       * would grow the track to thousands of pixels instead.
        */
-      get hiddenCategorySet(): ReadonlySet<string> {
-        return new Set(self.hiddenCategories)
+      get autoRowHeight(): number {
+        return (
+          Math.max(0, self.fitTargetHeight - self.rowsTopOffset) / self.nrow
+        )
       },
     }))
     .views(self => {
@@ -558,76 +555,50 @@ export default function stateModelFactory(
         get hiddenColors(): ReadonlySet<number> {
           return hiddenColors.get()
         },
+        /**
+         * #getter
+         * Overrides `RowHeightMixin`'s resolved height to cap the row stack at
+         * `maxCanvasHeight`, since nothing downstream bounds it. The cap is not
+         * floored back up: a row below a pixel is legitimate here.
+         */
+        get effectiveRowHeight(): number {
+          return Math.min(
+            resolveRowHeight(self.rowHeight, self.autoRowHeight),
+            self.maxCanvasHeight / self.nrow,
+          )
+        },
+        /**
+         * #getter
+         * `LegendMixin`'s hook, two vocabularies as two scales: the per-feature
+         * painting, toggleable and dimmed where a category is hidden, and the
+         * row color key, which names rows and is not.
+         */
+        get colorScales(): ColorScale[] {
+          const hidden = self.hiddenCategorySet
+          const { paintedColorField: field } = self
+          const ramp = self.hasDrawnFeatures
+            ? self.rampColorScales('features')
+            : []
+          return [
+            ...ramp,
+            {
+              kind: 'categorical' as const,
+              id: 'features',
+              title: self.colorKeyTitle ?? 'Feature colors',
+              domain: field ? field.domain : self.colorSetting.domain,
+              entries: self.colorLegend.map(e => ({
+                value: e.values[0]!,
+                values: e.values,
+                label: e.label,
+                color: abgrToCssRgba(e.color),
+                hidden: entryHidden(e, hidden),
+              })),
+            },
+            ...self.rowColorScales,
+          ].filter(scale => scale.kind === 'ramp' || scale.entries.length > 0)
+        },
       }
     })
-    .views(self => ({
-      /**
-       * #getter
-       * The display height under `rowsTopOffset` split evenly across rows.
-       * Deliberately not floored at a pixel — `rowBand` widens a sub-pixel row
-       * for drawing without changing how many rows fit, where a floor here
-       * would grow the track to thousands of pixels instead.
-       */
-      get autoRowHeight(): number {
-        return (
-          Math.max(0, self.fitTargetHeight - self.rowsTopOffset) / self.nrow
-        )
-      },
-      /**
-       * #getter
-       * Ceiling on the whole row stack in CSS px: this display sizes its canvas
-       * to its content and never scrolls, so nothing downstream bounds it.
-       */
-      get maxCanvasHeight(): number {
-        return maxCanvasCssPx()
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Overrides `RowHeightMixin`'s resolved height to cap the row stack at
-       * `maxCanvasHeight`, since nothing downstream bounds it. The cap is not
-       * floored back up: a row below a pixel is legitimate here.
-       */
-      get effectiveRowHeight(): number {
-        return Math.min(
-          resolveRowHeight(self.rowHeight, self.autoRowHeight),
-          self.maxCanvasHeight / self.nrow,
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `LegendMixin`'s hook, two vocabularies as two scales: the per-feature
-       * painting, toggleable and dimmed where a category is hidden, and the
-       * row color key, which names rows and is not.
-       */
-      get colorScales(): ColorScale[] {
-        const hidden = self.hiddenCategorySet
-        const { paintedColorField: field } = self
-        const ramp = self.hasDrawnFeatures
-          ? self.rampColorScales('features')
-          : []
-        return [
-          ...ramp,
-          {
-            kind: 'categorical' as const,
-            id: 'features',
-            title: self.colorKeyTitle ?? 'Feature colors',
-            domain: field ? field.domain : self.colorSetting.domain,
-            entries: self.colorLegend.map(e => ({
-              value: e.values[0]!,
-              values: e.values,
-              label: e.label,
-              color: abgrToCssRgba(e.color),
-              hidden: entryHidden(e, hidden),
-            })),
-          },
-          ...self.rowColorScales,
-        ].filter(scale => scale.kind === 'ramp' || scale.entries.length > 0)
-      },
-    }))
     .views(self => ({
       /**
        * #getter
@@ -637,8 +608,6 @@ export default function stateModelFactory(
       get hasLegendKey() {
         return self.colorScales.length > 0 || self.identityLegend.length > 0
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Overrides BaseLinearDisplay.height so the track container matches the
@@ -654,18 +623,6 @@ export default function stateModelFactory(
             : self.rowsTopOffset + self.nrow * self.effectiveRowHeight,
         )
       },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The box the rows paint in, under `rowsTopOffset`: the canvas, its
-       * overlays and the labels.
-       */
-      get rowsHeight(): number {
-        return Math.max(0, self.height - self.rowsTopOffset)
-      },
-    }))
-    .views(self => ({
       /**
        * #getter
        * Pixel width reserved on the left for the tree, 0 when no tree shows.
@@ -686,6 +643,16 @@ export default function stateModelFactory(
           showLabels: self.showRowLabels,
           bands: self.rowBands,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The box the rows paint in, under `rowsTopOffset`: the canvas, its
+       * overlays and the labels.
+       */
+      get rowsHeight(): number {
+        return Math.max(0, self.height - self.rowsTopOffset)
       },
     }))
     .views(self => {
@@ -845,8 +812,16 @@ export default function stateModelFactory(
       featureAt(mouseX: number, mouseY: number): MultiRowHit | undefined {
         return featureAtPixel(self, mouseX, mouseY - self.rowsTopOffset)
       },
-    }))
-    .views(self => ({
+      /**
+       * #method
+       * A region that answered a different attribute than the pin holds nothing
+       * this display can draw, and is refetched with the field spelled out. A
+       * view, not an action: an action untracks the `rpcDataMap` read and
+       * `FetchVisibleRegions` keeps a stale answer.
+       */
+      regionHasData(displayedRegionIndex: number) {
+        return regionHasPinnedData(self, displayedRegionIndex)
+      },
       /**
        * #method
        * What a right-click at this display-relative pixel resolves to.
@@ -1081,18 +1056,6 @@ export default function stateModelFactory(
         },
       }
     })
-    .views(self => ({
-      /**
-       * #method
-       * A region that answered a different attribute than the pin holds nothing
-       * this display can draw, and is refetched with the field spelled out. A
-       * view, not an action: an action untracks the `rpcDataMap` read and
-       * `FetchVisibleRegions` keeps a stale answer.
-       */
-      regionHasData(displayedRegionIndex: number) {
-        return regionHasPinnedData(self, displayedRegionIndex)
-      },
-    }))
     .actions(self => ({
       /**
        * #action
@@ -1108,44 +1071,35 @@ export default function stateModelFactory(
         return renderSvg(self, opts)
       },
     }))
-    .actions(self => {
-      return {
-        afterAttach() {
-          // What makes `uploadedChannels` a memo at all: its consumers are
-          // pointer handlers, and MobX discards an unobserved computed's value
-          // as it hands it over. Safe to hold because it keys off the data, the
-          // rows and the colors, never live view geometry.
-          autorunOnReadyView(
-            self,
-            () => {
-              void self.uploadedChannels
+    .actions(self => ({
+      afterAttach() {
+        // What makes `uploadedChannels` and the row table memos at all: their
+        // consumers are pointer handlers, and MobX discards an unobserved
+        // computed's value as it hands it over. Safe to hold because both key
+        // off the data, the rows and the colors, never live view geometry.
+        autorunOnReadyView(
+          self,
+          () => {
+            void self.uploadedChannels
+            void self.rowTable
+          },
+          { name: 'MultiRowHitTestInputs' },
+        )
+        setupTreeSidebarAutoruns(self, {
+          name: 'MultiRowFeature',
+          // Forwarded, not swallowed: `false` is "no loaded region covers
+          // that column", and it holds `sortRowsBy` for the fetch that will.
+          sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
+          clustering: {
+            run: async args => {
+              const { runMultiRowClustering } =
+                await import('./runMultiRowClustering.ts')
+              await runMultiRowClustering({ model: self, ...args })
             },
-            { name: 'MultiRowUploadedChannels' },
-          )
-          // The table the hit test places through, held for the same reason.
-          autorunOnReadyView(
-            self,
-            () => {
-              void self.rowTable
-            },
-            { name: 'MultiRowRowTable' },
-          )
-          setupTreeSidebarAutoruns(self, {
-            name: 'MultiRowFeature',
-            // Forwarded, not swallowed: `false` is "no loaded region covers
-            // that column", and it holds `sortRowsBy` for the fetch that will.
-            sortRows: (refName, pos) => self.sortRowsByValueAt(refName, pos),
-            clustering: {
-              run: async args => {
-                const { runMultiRowClustering } =
-                  await import('./runMultiRowClustering.ts')
-                await runMultiRowClustering({ model: self, ...args })
-              },
-            },
-          })
-        },
-      }
-    })
+          },
+        })
+      },
+    }))
     .views(self => ({
       /**
        * #method

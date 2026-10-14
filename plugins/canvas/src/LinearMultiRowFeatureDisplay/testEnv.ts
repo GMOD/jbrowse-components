@@ -1,3 +1,4 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
@@ -52,3 +53,7 @@ export function createTestEnvironment(opts?: {
 
 export const ctgA = REGIONS[0]!
 export const ctgB = REGIONS[1]!
+
+export function abgrsOf(colors: (string | undefined)[]) {
+  return colors.map(c => (c === undefined ? undefined : cssColorToABGR(c)))
+}

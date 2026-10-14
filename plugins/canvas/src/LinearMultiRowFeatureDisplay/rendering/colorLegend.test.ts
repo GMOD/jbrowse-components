@@ -39,7 +39,10 @@ const rowIndexByValue = new Map([
 
 test('distinct (name -> color) pairs, in the names order', () => {
   expect(
-    buildColorLegend([region], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([region], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
@@ -57,12 +60,11 @@ test('a pan meeting the names in another order lists them in the same order', ()
     ]),
   })
   const labels = (regions: MultiRowRegionData[], domain?: string[]) =>
-    buildColorLegend(
-      regions,
+    buildColorLegend(regions, {
       rowIndexByValue,
-      [undefined, undefined],
+      rowColorsByIndex: [undefined, undefined],
       domain,
-    ).map(e => e.label)
+    }).map(e => e.label)
   expect(labels([panned, region])).toEqual(labels([region, panned]))
   expect(labels([panned, region], ['TssA'])).toEqual(['TssA', 'Quies'])
 })
@@ -85,7 +87,10 @@ test('reads the packed candidates rather than the features', () => {
     },
   }
   expect(
-    buildColorLegend([watched], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([watched], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toHaveLength(2)
   expect(readFeatures).toBe(false)
 })
@@ -101,26 +106,38 @@ test('unions the candidates of every loaded region', () => {
     featureEnds: Uint32Array.from([65, 75]),
   })
   expect(
-    buildColorLegend([region, second], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([region, second], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([
     { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
   expect(
-    buildColorLegend([region, region], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([region, region], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toHaveLength(2)
 })
 
 test('rows with a per-row color override contribute nothing', () => {
   expect(
-    buildColorLegend([region], rowIndexByValue, [0xff123456, undefined]),
+    buildColorLegend([region], {
+      rowIndexByValue,
+      rowColorsByIndex: [0xff123456, undefined],
+    }),
   ).toEqual([
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
   ])
   expect(
-    buildColorLegend([region], rowIndexByValue, [0xff123456, 0xff654321]),
+    buildColorLegend([region], {
+      rowIndexByValue,
+      rowColorsByIndex: [0xff123456, 0xff654321],
+    }),
   ).toEqual([])
 })
 
@@ -133,7 +150,10 @@ test('a category only an overridden row carries is left out', () => {
     ]),
   })
   expect(
-    buildColorLegend([withRowOnly], rowIndexByValue, [0xff123456, undefined]),
+    buildColorLegend([withRowOnly], {
+      rowIndexByValue,
+      rowColorsByIndex: [0xff123456, undefined],
+    }),
   ).toEqual([
     { label: 'Enh', values: ['Enh'], color: 0xffabcdef },
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
@@ -147,7 +167,10 @@ test('a painting in one color has no key', () => {
     featureNames: ['seg1', 'seg2', 'seg3', 'seg4'],
   })
   expect(
-    buildColorLegend([oneColor], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([oneColor], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([])
 })
 
@@ -160,7 +183,10 @@ test('all rows overridden reads no regions at all', () => {
     yield region
   }
   expect(
-    buildColorLegend(regions(), rowIndexByValue, [0xff123456, 0xff654321]),
+    buildColorLegend(regions(), {
+      rowIndexByValue,
+      rowColorsByIndex: [0xff123456, 0xff654321],
+    }),
   ).toEqual([])
   expect(consumed).toBe(false)
 })
@@ -174,7 +200,10 @@ test('two names sharing a color are one row naming both', () => {
     ]),
   })
   expect(
-    buildColorLegend([shared], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([shared], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     {
@@ -192,10 +221,10 @@ test('a hidden name stays hidden when another joins its color', () => {
     ...region,
     featureNames: ['TssAFlnk', 'Quies', 'TssA', 'Quies'],
   })
-  const [, row] = buildColorLegend([later], rowIndexByValue, [
-    undefined,
-    undefined,
-  ])
+  const [, row] = buildColorLegend([later], {
+    rowIndexByValue,
+    rowColorsByIndex: [undefined, undefined],
+  })
   expect(row).toEqual({
     label: 'TssA, TssAFlnk',
     values: ['TssA', 'TssAFlnk'],
@@ -213,7 +242,10 @@ test('a name reused across two colors keeps its first-seen color', () => {
     ]),
   })
   expect(
-    buildColorLegend([reused], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([reused], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
@@ -230,7 +262,10 @@ test('a second name on a color still carries it when the first is taken', () => 
     ]),
   })
   expect(
-    buildColorLegend([masked], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([masked], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([
     { label: 'Quies', values: ['Quies'], color: 0xff00ff00 },
     { label: 'TssA', values: ['TssA'], color: 0xff0000ff },
@@ -241,7 +276,10 @@ test('unnamed features produce no legend', () => {
   const unnamed = regionData({ ...region, featureNames: ['', '', '', ''] })
   expect(unnamed.legendCandidates).toEqual([])
   expect(
-    buildColorLegend([unnamed], rowIndexByValue, [undefined, undefined]),
+    buildColorLegend([unnamed], {
+      rowIndexByValue,
+      rowColorsByIndex: [undefined, undefined],
+    }),
   ).toEqual([])
 })
 
@@ -303,7 +341,10 @@ function statesRegion(n: number) {
 
 test("a 25-state chromHMM model's key lists every state", () => {
   expect(
-    buildColorLegend([statesRegion(25)], new Map([['E001', 0]]), [undefined]),
+    buildColorLegend([statesRegion(25)], {
+      rowIndexByValue: new Map([['E001', 0]]),
+      rowColorsByIndex: [undefined],
+    }),
   ).toHaveLength(25)
 })
 
@@ -324,9 +365,12 @@ test('too many distinct labels is treated as non-categorical', () => {
     rowsFieldCandidateValues: [],
     resolvedRowsField: 'name',
   })
-  expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
-    [],
-  )
+  expect(
+    buildColorLegend([many], {
+      rowIndexByValue: new Map([['E001', 0]]),
+      rowColorsByIndex: [undefined],
+    }),
+  ).toEqual([])
 })
 
 test('a candidate list truncated at the cap still reads non-categorical', () => {
@@ -348,6 +392,9 @@ test('a candidate list truncated at the cap still reads non-categorical', () => 
   })
   expect(capped.legendCandidates.length).toBeLessThan(n)
   expect(
-    buildColorLegend([capped], new Map([['E001', 0]]), [undefined]),
+    buildColorLegend([capped], {
+      rowIndexByValue: new Map([['E001', 0]]),
+      rowColorsByIndex: [undefined],
+    }),
   ).toEqual([])
 })

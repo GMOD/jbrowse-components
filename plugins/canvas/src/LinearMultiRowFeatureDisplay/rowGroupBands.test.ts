@@ -1,4 +1,4 @@
-import { createTestEnvironment, ctgA } from './testEnv.ts'
+import { abgrsOf, createTestEnvironment, ctgA } from './testEnv.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 
@@ -139,13 +139,9 @@ test('facet group bands, and rowColor by group colors every group but none', () 
     { key: 'Village dog', label: 'Village dog', start: 2, end: 3 },
     { key: '', label: '(no group)', start: 3, end: 5 },
   ])
-  expect(display.rowColorStringsByIndex).toEqual([
-    '#4e79a7',
-    '#4e79a7',
-    '#123456',
-    undefined,
-    undefined,
-  ])
+  expect(display.rowColorsByIndex).toEqual(
+    abgrsOf(['#4e79a7', '#4e79a7', '#123456', undefined, undefined]),
+  )
   expect(display.rowColorFields).toEqual(['group'])
   expect(display.notices).toEqual([])
 })
