@@ -56,10 +56,6 @@ function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
 }
 
-function everySessionViewId(self: LayoutHostSelf) {
-  return sessionViewIds(self) ?? []
-}
-
 /**
  * #stateModel WorkspaceLayoutMixin
  *
@@ -225,14 +221,16 @@ export function WorkspaceLayoutMixin() {
 
         /**
          * Homes every view first: the homing autorun waits for the outermost
-         * action, so a view added in the same action has no tab yet. Returns where the view came from, or `undefined` if it is not in
-         * the session, in which case nothing is applied.
+         * action, so a view added in the same action has no tab yet. Returns
+         * where the view came from, or `undefined` if it is not in the
+         * session, in which case nothing is applied.
          */
         function rehomeView(
           viewId: string,
           place: (tree: LayoutTree, from: TabHome) => LayoutTree,
         ) {
-          const tree = home(self.tree, everySessionViewId(self))
+          const ids = sessionViewIds(self)
+          const tree = ids ? home(self.tree, ids) : self.tree
           const from = tabContainingView(tree, viewId)
           if (!from) {
             return undefined
@@ -481,7 +479,7 @@ export function WorkspaceLayoutMixin() {
          * shapes, in `session.views` order.
          */
         tileViews(mode: TileMode) {
-          self.applyLayoutSpec(tileLayoutSpec(everySessionViewId(self), mode))
+          self.applyLayoutSpec(tileLayoutSpec(sessionViewIds(self) ?? [], mode))
         },
         /**
          * #action
