@@ -77,7 +77,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.8.0'
+export const GGJBROWSE_VERSION = '0.8.1'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
@@ -291,7 +291,7 @@ function lociLiteral(loci: readonly string[]) {
 
 /** An R-safe name per track id, unique within the script. */
 function trackNames(tracks: readonly RExportTrack[]) {
-  const taken = new Set<string>(['locus', 'fig'])
+  const taken = new Set<string>(['locus', 'width', 'fig'])
   return tracks.map(track => {
     let base = track.trackId
       .replaceAll(/[^a-zA-Z0-9]/g, '_')
@@ -348,6 +348,8 @@ export function exportTracksToR({
   const notes = [...viewNotes]
   const loci = regions.map(r => locusOf(r.refName, r.start, r.end))
   const totalBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
+  const viewPx = bpPerPx ? Math.round(totalBp / bpPerPx) : undefined
+  const widthReaders: string[] = []
   const names = trackNames(tracks)
   const reads: string[] = []
   const drawn: string[] = []
@@ -386,10 +388,8 @@ export function exportTracksToR({
     const reference =
       reader.call === 'jbrowse_alignments' ? track.reference : undefined
     const width =
-      bpPerPx &&
+      viewPx !== undefined &&
       (reader.call === 'jbrowse_features' || reader.call === 'jbrowse_wiggle')
-        ? Math.round(totalBp / bpPerPx)
-        : undefined
     const args = [
       ...(reference ? [`reference = ${rStr(reference)}`] : []),
       ...(reference && aliased
@@ -397,9 +397,12 @@ export function exportTracksToR({
         : []),
       ...(source.index ? [`index = ${rStr(source.index)}`] : []),
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),
-      ...(width === undefined ? [] : [`width = ${width}`]),
+      ...(width ? ['width = width'] : []),
     ]
     const name = names[i]!
+    if (width) {
+      widthReaders.push(name)
+    }
     reads.push(
       [
         `# ${track.trackName}`,
@@ -451,6 +454,14 @@ export function exportTracksToR({
     'library(ggjbrowse)',
     '',
     `locus <- ${lociLiteral(loci)}`,
+    ...(widthReaders.length
+      ? [
+          "# The view's pixels across its regions. A smaller number lays the tracks",
+          '# out as a narrower browser window would, for a narrower figure with',
+          '# fewer labels at the same size.',
+          `width <- ${viewPx}`,
+        ]
+      : []),
     '',
     reads.join('\n\n'),
     '',

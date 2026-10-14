@@ -80,7 +80,9 @@ track) land in the script header.
   spelling, and an alignments reader `reference_chrom` in the assembly's.
 - **`width` is the view's pixels** (`bp / bpPerPx`), so a feature or
   quantitative track resolves its labels, chevrons and BigWig zoom level as
-  the view did.
+  the view did. The script sets it once, as `width <- N` under `locus`, so a
+  reader after a narrower figure edits one number; `jbrowse_stack` hands it
+  on to an alignments track's pileup too.
 - **The figure is as tall as the view's bands and as wide as its pixels.**
   `ggsave()` takes `jbrowse_height(fig)`, which measures the stack's bands at
   the display's pixels, a compact pileup included, and its keys, rather than a
