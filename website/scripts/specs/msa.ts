@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { deflateSync } from 'node:zlib'
+
 import { UCSC_HG38_CONFIG, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type {
@@ -189,122 +193,47 @@ export const proteinTourFixtures = {
   }),
 }
 
-const TP53_CDS: [number, number, number][] = [
-  [7669608, 7669690, 1],
-  [7670608, 7670715, 0],
-  [7673534, 7673608, 2],
-  [7673700, 7673837, 1],
-  [7674180, 7674290, 0],
-  [7674858, 7674971, 2],
-  [7675052, 7675236, 0],
-  [7675993, 7676272, 0],
-  [7676381, 7676403, 1],
-  [7676520, 7676594, 0],
-]
+// What the protein browser's Open in JBrowse link carries for the TP53 chip with
+// Colour set to AlphaMissense, decoded from the link's `encoded-` session:
+// https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&label=Cancer+hotspot+R248&structure=3kmd
+const PROTEIN_BROWSER_TP53 = deflateSync(
+  readFileSync(
+    fileURLToPath(
+      new URL('protein_browser_tp53.session.json', import.meta.url),
+    ),
+  ),
+).toString('base64url')
 
-const TP53_TRANSCRIPT = {
-  uniqueId: 'NM_000546.6',
-  type: 'mRNA',
-  refName: 'chr17',
-  start: 7669608,
-  end: 7676594,
-  strand: -1,
-  name: 'NM_000546.6',
-  subfeatures: TP53_CDS.map(([start, end, phase]) => ({
-    type: 'CDS',
-    start,
-    end,
-    strand: -1,
-    phase,
-  })),
-}
-
-const TP53_PROTEIN =
-  'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD'
-
-const PROTEIN_BROWSER_TP53 = {
-  name: 'Gene explorer: TP53',
-  views: [
-    {
-      id: 'lgv-TP53',
-      type: 'LinearGenomeView',
-      colorByCDS: true,
-      hideHeaderOverview: true,
-      showGridlines: false,
-      init: {
-        assembly: 'hg38',
-        loc: 'chr17:7676481-7676634[rev] chr17:7676342-7676443[rev] chr17:7675954-7676312[rev] chr17:7675013-7675276[rev] chr17:7674819-7675011[rev] chr17:7674141-7674330[rev] chr17:7673661-7673877[rev] chr17:7673495-7673648[rev] chr17:7670569-7670755[rev] chr17:7669569-7669730[rev]',
-        tracks: [
-          'hg38-ncbiRefSeqSelect',
-          'hg38-clinvarMain',
-          'hg38-alphaMissense',
-        ],
-      },
-    },
-    {
-      id: 'msa-TP53',
-      type: 'MsaView',
-      connectedViewId: 'lgv-TP53',
-      connectedFeature: TP53_TRANSCRIPT,
-      uniprotId: 'P04637',
-      colorSchemeName: 'percent_identity_dynamic',
-      labelsAlignRight: true,
-      treeAreaWidth: 200,
-      allowedGappyness: 50,
-      orthologParams: {
-        taxId: 9606,
-        geneCandidates: ['P04637', 'TP53'],
-        source: 'ncbi',
-        msaAlgorithm: 'browser',
-        maxSpecies: 100,
-        proteinSequence: TP53_PROTEIN,
-      },
-    },
-    {
-      id: 'protein-TP53',
-      type: 'ProteinView',
-      height: 500,
-      zoomToBaseLevel: false,
-      showAlignment: false,
-      structures: [
-        {
-          url: 'https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif',
-          feature: TP53_TRANSCRIPT,
-          userProvidedTranscriptSequence: TP53_PROTEIN,
-          connectedViewId: 'lgv-TP53',
-          initialTranscriptResidues: [{ start: 248, end: 248 }],
-        },
-      ],
-    },
-  ],
-  useWorkspaces: true,
-  activePanelId: 'panel-left',
-  layout: {
-    id: 'branch-root',
-    direction: 'row',
-    size: 1,
-    children: [
-      {
-        id: 'panel-left',
-        size: 58,
-        tabs: [{ id: 'tab-left', viewIds: ['lgv-TP53', 'msa-TP53'] }],
-        activeTabId: 'tab-left',
-      },
-      {
-        id: 'panel-right',
-        size: 42,
-        tabs: [{ id: 'tab-right', viewIds: ['protein-TP53'] }],
-        activeTabId: 'tab-right',
-      },
-    ],
-  },
-}
+const PROTEIN_BROWSER_PAGE =
+  'https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&label=Cancer+hotspot+R248&structure=3kmd'
 
 export const msaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
+    name: 'protein/protein_browser_page',
+    noSession: true,
+    url: PROTEIN_BROWSER_PAGE,
+    readyText: 'More about residue 248',
+    readyTimeout: 90000,
+    viewportWidth: 1100,
+    viewportHeight: 580,
+    liveLabel: 'Open TP53 in the protein browser',
+    diffThreshold: 0.02,
+    actions: [
+      { type: 'click', selector: '.msv-advanced-switch input' },
+      {
+        type: 'type',
+        selector: '.msv-advanced > label:nth-child(2) select',
+        value: 'Al',
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+  {
+    mode: 'url',
     name: 'protein/protein_browser_tp53',
-    url: `?config=${UCSC_HG38_CONFIG}&session=json-${encodeURIComponent(JSON.stringify({ session: PROTEIN_BROWSER_TP53 }))}`,
+    url: `?config=${UCSC_HG38_CONFIG}&session=encoded-${PROTEIN_BROWSER_TP53}`,
     readySelector:
       'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
     readyTimeout: 300000,
