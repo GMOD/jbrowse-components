@@ -137,12 +137,16 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.
-- **`plotProblems` judges a draft's color objects and `scales.y` on every
-  display** through the schema's own `fieldPresets` (`schemaPlotProblems`),
-  the rule `jbrowse validate` runs offline; the mark display adds its rule
-  list and canvas its jexl checks. A display-side notice with no schema
-  behind it (a row banding over a field no row carries, alignments' level
-  notices) stays a live notice only.
+- **One checker per display, `configProblemsOf(conf)`, answers both Edit plot
+  and the corner.** The base runs the schema's own `fieldPresets`
+  (`schemaPlotProblems`), the rule `jbrowse validate` runs offline; a display
+  adds its rules (wiggle's cut cap, MAF's codon frames, alignments' levels,
+  canvas's jexl) and the mark display replaces it with its rule list.
+  `plotProblems` asks it of a lifted draft and `notices` of the live config,
+  then adds `liveNotices`, the lines only loaded data can say (a facet value no
+  read answers, a row banding over a field no row carries). `DisplayChrome`
+  draws the chip. A display's own rules stay out of `jbrowse validate`, which
+  reads data and not code.
 - **No ordinal x**, until a declared plot wants equal-width columns. LD and the
   multi-sample matrix draw one column per variant under one `variantLayout`
   slot;
