@@ -1,6 +1,34 @@
-import { withAggregateOp, withSplitField } from './plotEdit.ts'
+import { withChannel } from './markEdit.ts'
+import {
+  stepWrittenFields,
+  withAggregateOp,
+  withSplitField,
+} from './plotEdit.ts'
+import { withJoinedFields } from './scanPlotFields.ts'
 
 import type { MarkPlot } from './markPlot.ts'
+
+test('a text field a step writes is picked as a category, a number as a ramp', () => {
+  const fields = withJoinedFields(
+    { numeric: [], categorical: [] },
+    stepWrittenFields([
+      { type: 'flatten', field: 'alignments', key: 'species' },
+      { type: 'cells' },
+      { type: 'mate' },
+    ]),
+  )
+  const scaleOf = (field: string) =>
+    (
+      withChannel({ mark: 'span' }, 'color', field, fields).encoding?.color as {
+        scale?: string
+      }
+    ).scale
+  expect(scaleOf('species')).toBe('categorical')
+  expect(scaleOf('state')).toBe('categorical')
+  expect(scaleOf('svType')).toBe('categorical')
+  expect(scaleOf('match')).toBe('linear')
+  expect(scaleOf('mate.start')).toBe('linear')
+})
 
 test('a split field retyped through empty keeps the order and the steps the setting held', () => {
   const facet = {

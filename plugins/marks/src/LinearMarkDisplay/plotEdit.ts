@@ -11,6 +11,7 @@ import {
   DEFAULT_FORMULA_AS,
   DEFAULT_PILEUP_AS,
   DEFAULT_WINDOW_FRAME,
+  MATE_FIELDS,
   isWindowFrame,
 } from './markVocabulary.ts'
 
@@ -18,6 +19,7 @@ import type { DraftMark } from './markEdit.ts'
 import type { MarkPlot } from './markPlot.ts'
 import type { StepSnapshot } from './markProblems.ts'
 import type { AggregateOpName, LineInterpolation } from './markVocabulary.ts'
+import type { JoinedPlotFields } from './scanPlotFields.ts'
 
 type Snapshot = Record<string, unknown>
 
@@ -319,43 +321,76 @@ export function stepSummary(step: StepSnapshot): string {
   }
 }
 
+const CELLS_TEXT_FIELDS = new Set<string>(['state', 'base'])
+const MATE_NUMERIC_FIELDS = new Set<string>(['mate.start', 'mate.end'])
+
 /**
- * The fields a mark's steps write, which the field pickers offer beside the
- * ones the features carry: an aggregate's summaries, a coverage's depth, a
- * formula's output, a pileup's row.
+ * The fields a mark's steps write, split as a scan splits what the features
+ * carry, which the field pickers offer beside those: an aggregate's
+ * summaries, a coverage's depth, a pileup's row, a cell's state, a mate's
+ * locus.
  */
-export function stepWrittenFields(steps: readonly StepSnapshot[]): string[] {
-  return steps.flatMap(step => {
+export function stepWrittenFields(
+  steps: readonly StepSnapshot[],
+): JoinedPlotFields {
+  const numeric: string[] = []
+  const categorical: string[] = []
+  for (const step of steps) {
     switch (step.type) {
       case 'coverage': {
-        return [step.as || DEFAULT_COVERAGE_AS]
+        numeric.push(step.as || DEFAULT_COVERAGE_AS)
+        break
       }
       case 'aggregate':
       case 'window': {
-        return (step.ops ?? []).map(op =>
-          aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
-        )
+        for (const op of step.ops ?? []) {
+          numeric.push(
+            aggregateFieldName({ ...op, op: op.op ?? DEFAULT_AGGREGATE_OP }),
+          )
+        }
+        break
       }
       case 'formula': {
-        return [step.as || DEFAULT_FORMULA_AS]
+        numeric.push(step.as || DEFAULT_FORMULA_AS)
+        break
       }
       case 'pileup': {
-        return [step.as || DEFAULT_PILEUP_AS]
+        numeric.push(step.as || DEFAULT_PILEUP_AS)
+        break
       }
       case 'flatten': {
-        return [step.index, step.key].filter((f): f is string => !!f)
+        if (step.index) {
+          numeric.push(step.index)
+        }
+        if (step.key) {
+          categorical.push(step.key)
+        }
+        break
       }
       case 'cells': {
-        return [...CELLS_FIELDS]
+        for (const field of CELLS_FIELDS) {
+          ;(CELLS_TEXT_FIELDS.has(field) ? categorical : numeric).push(field)
+        }
+        break
+      }
+      case 'mate': {
+        for (const field of MATE_FIELDS) {
+          ;(MATE_NUMERIC_FIELDS.has(field) ? numeric : categorical).push(field)
+        }
+        break
       }
       case 'bin': {
-        return step.fields?.length === 2 ? [BIN_OVERLAP_FIELD] : []
+        if (step.fields?.length === 2) {
+          numeric.push(BIN_OVERLAP_FIELD)
+        }
+        break
       }
-      default: {
-        return []
+      case 'filter': {
+        break
       }
     }
-  })
+  }
+  return { numeric, categorical }
 }
 
 /** The zoom a density takes over at, in bp per px. */

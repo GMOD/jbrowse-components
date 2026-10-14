@@ -94,16 +94,6 @@ function sharedSteps(plot: MarkPlot): StepSnapshot[] {
   ]
 }
 
-/**
- * The fields a channel can name: what the scanned features carry, and what
- * the steps before the mark write, since a count or a coverage is a field the
- * features never had.
- */
-function fieldsFor(fields: PlotFields, written: readonly string[]): PlotFields {
-  const numeric = [...new Set([...fields.numeric, ...written])]
-  return { ...fields, numeric }
-}
-
 const MarkPlotDialog = observer(function MarkPlotDialog({
   model,
   seed,
@@ -141,7 +131,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
     setMarks(marks.with(at, next))
   }
   const shared = sharedSteps(plot)
-  const fields = fieldsFor(
+  const fields = withJoinedFields(
     scanned,
     stepWrittenFields([...shared, ...(mark ? stepsOfMark(mark) : [])]),
   )
