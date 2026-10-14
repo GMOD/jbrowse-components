@@ -28,6 +28,7 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
+import { isSessionWithMultipleViews } from '@jbrowse/core/util/types'
 import {
   assemblyErrorMessage,
   computeViewStatus,
@@ -417,8 +418,9 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          * the height of the view in pixels. The circle auto-fits its
-         * container, so this is what sizes the drawing. Left at its default,
-         * the view opens square to its width, short of the window's height.
+         * container, so this is what sizes the drawing. Left at its default in
+         * a session that holds a list of views, the view opens square to its
+         * width, short of the window's height; an embedded view keeps 400.
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
@@ -1263,7 +1265,11 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setWidth(newWidth: number): number {
         const clamped = Math.max(newWidth, minWidth)
-        if (self.volatileWidth === undefined && self.heightFollowsWidth) {
+        if (
+          self.volatileWidth === undefined &&
+          self.heightFollowsWidth &&
+          isSessionWithMultipleViews(getSession(self))
+        ) {
           self.height = openingHeight(clamped)
         }
         self.volatileWidth = clamped

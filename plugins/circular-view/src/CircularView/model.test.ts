@@ -388,9 +388,25 @@ function openView(snapshot: Record<string, unknown>) {
   pluginManager.createPluggableElements()
   pluginManager.configure()
   const Session = types
+    .model('Session', { views: types.array(stateModelFactory(pluginManager)) })
+    .volatile(() => ({ rpcManager: {}, configuration: {} }))
+  return Session.create({ views: [{ type: 'CircularView', ...snapshot }] })
+    .views[0]!
+}
+
+function openEmbeddedView() {
+  const pluginManager = new PluginManager()
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const Session = types
     .model('Session', { view: stateModelFactory(pluginManager) })
     .volatile(() => ({ rpcManager: {}, configuration: {} }))
-  return Session.create({ view: { type: 'CircularView', ...snapshot } }).view
+    .views(self => ({
+      get views() {
+        return [self.view]
+      },
+    }))
+  return Session.create({ view: { type: 'CircularView' } }).view
 }
 
 describe('the height a view opens at', () => {
@@ -417,6 +433,12 @@ describe('the height a view opens at', () => {
     const view = openView({ height: 300 })
     view.setWidth(500)
     expect(view.height).toBe(300)
+  })
+
+  test('an embedded view keeps the default height', () => {
+    const view = openEmbeddedView()
+    view.setWidth(900)
+    expect(view.height).toBe(400)
   })
 
   test('a height set before the first width is kept', () => {
