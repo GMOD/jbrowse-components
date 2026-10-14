@@ -195,6 +195,20 @@ describe('colorBits helpers', () => {
       expect(featureItemRgb('0,0,0')).toBeUndefined()
     })
 
+    test('under itemRgbOn the all-zero triple is black', () => {
+      expect(featureItemRgb('0,0,0', true)).toBe('0,0,0')
+      expect(featureItemRgb('0, 0, 0', true)).toBe('0,0,0')
+      expect(featureItemRgb('227,26,28', true)).toBe('227,26,28')
+    })
+
+    test('under itemRgbOn an absent or non-triple value still reads as absent', () => {
+      expect(featureItemRgb(undefined, true)).toBeUndefined()
+      expect(featureItemRgb('', true)).toBeUndefined()
+      expect(featureItemRgb('.', true)).toBeUndefined()
+      expect(featureItemRgb('0', true)).toBeUndefined()
+      expect(featureItemRgb('256,0,0', true)).toBeUndefined()
+    })
+
     test('missing / non-string / empty reads as absent', () => {
       expect(featureItemRgb(undefined)).toBeUndefined()
       expect(featureItemRgb('')).toBeUndefined()
@@ -255,6 +269,19 @@ describe('colorBits helpers', () => {
       expect(
         featureBedColor(mockFeature({ itemRgb: '0,0,0', reserved: '2,2,2' })),
       ).toBe('2,2,2')
+    })
+
+    test('under itemRgbOn a black itemRgb is claimed, not fallen through', () => {
+      expect(
+        featureBedColor(
+          mockFeature({ itemRgb: '0,0,0', reserved: '2,2,2' }),
+          true,
+        ),
+      ).toBe('0,0,0')
+      expect(featureBedColor(mockFeature({ reserved: '0,0,0' }), true)).toBe(
+        '0,0,0',
+      )
+      expect(featureBedColor(mockFeature({ name: 'x' }), true)).toBeUndefined()
     })
 
     test('a reserved column holding a non-color reads as absent', () => {

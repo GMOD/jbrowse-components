@@ -705,7 +705,8 @@ export function colorFieldOf(
  * field paints the constant while keeping the field for the way back.
  * `scale: "identity"` leaves each feature its own color, a file's itemRgb or
  * what a `value` callback returns, and names the colors `domain` lists in the
- * key.
+ * key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` black, which
+ * otherwise reads as no color.
  *
  * #example
  * ```js
@@ -766,7 +767,7 @@ export const colorConfigSchema = ConfigurationSchema(
       field:
         "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise",
       scale:
-        "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does, and the key names the colors in domain; unset is linear for score and categorical for any other field",
+        "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 paints black, and the key names the colors in domain; unset is linear for score and categorical for any other field",
     }),
     ...colorDomainSlot({
       domain:

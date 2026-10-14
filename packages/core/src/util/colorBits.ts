@@ -42,13 +42,11 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-// UCSC's convention is that a color of "0" means "no color specified", and plain
-// BED12 files fill the column with that placeholder (often spelled as the
-// all-zero triple) rather than omitting it — every itemRgb in our own
-// volvox-bed12 fixture is "0,0,0". Honoring those literally would paint an
-// ordinary BED12 track solid black, so read them as absent. A file that really
-// wants black can say so with an explicit `color` slot.
-const BED_TRIPLE_UNSET = /^0(,0,0)?$/
+// Plain BED12 files fill itemRgb with "0,0,0" rather than omitting it (every
+// itemRgb in the volvox-bed12 fixture is one), and UCSC ignores the column
+// unless trackDb says `itemRgb on`. So the triple reads as absent unless the
+// caller passes `itemRgbOn`, under which UCSC paints it black.
+const BED_TRIPLE_UNSET = '0,0,0'
 
 /**
  * One raw attribute value as a usable BED color, or undefined when it isn't
@@ -59,11 +57,12 @@ const BED_TRIPLE_UNSET = /^0(,0,0)?$/
  * rendering as the magenta invalid-color sentinel. Takes the raw value so it
  * stays dependency-free and directly testable.
  */
-export function featureItemRgb(raw: unknown): string | undefined {
+export function featureItemRgb(
+  raw: unknown,
+  itemRgbOn = false,
+): string | undefined {
   const triple = typeof raw === 'string' ? bedTriple(raw) : undefined
-  return triple !== undefined && !BED_TRIPLE_UNSET.test(triple)
-    ? triple
-    : undefined
+  return itemRgbOn || triple !== BED_TRIPLE_UNSET ? triple : undefined
 }
 
 // The names the BED color column goes by, most specific first.
@@ -86,13 +85,16 @@ export function featureItemRgb(raw: unknown): string | undefined {
 const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8']
 
 /**
- * The BED color a feature declares for itself, under either column name, or
- * undefined if it declares none.
+ * The BED color a feature declares for itself, under any column name, or
+ * undefined if it declares none. `itemRgbOn` reads "0,0,0" as black.
  */
-export function featureBedColor(feature: Feature): string | undefined {
+export function featureBedColor(
+  feature: Feature,
+  itemRgbOn = false,
+): string | undefined {
   let found: string | undefined
   for (const field of BED_COLOR_FIELDS) {
-    found ??= featureItemRgb(feature.get(field))
+    found ??= featureItemRgb(feature.get(field), itemRgbOn)
   }
   return found
 }

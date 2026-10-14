@@ -81,11 +81,11 @@ const INVALID_COLOR = MISCONFIGURED_COLOR
 
 // A BED's color rides on the top-level feature, but the gene glyph draws one
 // box per subfeature, which carry none — hence the walk up the parent chain.
-function inheritedBedColor(feature: Feature) {
+function inheritedBedColor(feature: Feature, itemRgbOn?: boolean) {
   let cur: Feature | undefined = feature
   let found: string | undefined
   while (cur !== undefined && found === undefined) {
-    found = featureBedColor(cur)
+    found = featureBedColor(cur, itemRgbOn)
     cur = cur.parent?.()
   }
   return found
@@ -133,7 +133,7 @@ export function boxColor(
   const raw = slot === 'color' ? config.color.value : config.utrColor
   const fill =
     raw === undefined
-      ? (inheritedBedColor(feature) ??
+      ? (inheritedBedColor(feature, config.color.itemRgbOn) ??
         glyphDefault ??
         BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
       : readConfigValueSafe<string>(

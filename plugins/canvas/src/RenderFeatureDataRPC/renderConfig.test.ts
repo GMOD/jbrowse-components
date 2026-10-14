@@ -5,6 +5,7 @@ import {
   isDisplayMode,
   pickDisplayConfig,
   readConfigValueSafe,
+  workerColorOf,
 } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -91,5 +92,20 @@ describe('pickDisplayConfig', () => {
     expect(picked.transcriptTypes).toEqual(['mRNA'])
     expect(picked.subParts).toBe('CDS')
     expect(picked.impliedUTRs).toBe(GENE_GLYPH_DEFAULTS.impliedUTRs)
+  })
+})
+
+describe('workerColorOf', () => {
+  it('turns itemRgbOn on only under an identity scale', () => {
+    expect(workerColorOf({ scale: 'identity' })).toEqual({
+      value: undefined,
+      field: '',
+      itemRgbOn: true,
+    })
+    expect(workerColorOf({ scale: 'categorical', field: 'x' })).toEqual({
+      value: undefined,
+      field: 'x',
+    })
+    expect(workerColorOf({})).toEqual({ value: undefined, field: '' })
   })
 })

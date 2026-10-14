@@ -1,4 +1,5 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
+import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
 import type { SubfeatureLabels } from './displayModes.ts'
@@ -39,14 +40,26 @@ export function readConfigValueSafe<T>(
   }
 }
 
-export type WorkerColor = Pick<ColorSetting, 'value' | 'field'>
+/**
+ * `itemRgbOn` is present only under an identity scale, the track declaring its
+ * features' colors their own as UCSC's `itemRgb on` does, so "0,0,0" paints
+ * black.
+ */
+export type WorkerColor = Pick<ColorSetting, 'value' | 'field'> & {
+  itemRgbOn?: true
+}
 
-/** The share of a color object the worker reads: its value, and its field. */
+/** The share of a color object the worker reads. */
 export function workerColorOf({
   value,
   field,
-}: Partial<Pick<ColorSetting, 'value' | 'field'>>): WorkerColor {
-  return { value, field: field ?? '' }
+  scale,
+}: Partial<Pick<ColorSetting, 'value' | 'field' | 'scale'>>): WorkerColor {
+  return {
+    value,
+    field: field ?? '',
+    ...(scale === IDENTITY_SCALE ? { itemRgbOn: true } : {}),
+  }
 }
 
 // Fully enumerated — no index signature, so a typo on any property is a type
@@ -76,8 +89,9 @@ export interface DisplayConfig {
   // union makes any new direct read a type error rather than a Float32Array full
   // of NaN.
   featureHeight: number | string
-  // The two members a box reads: its value, and the field whose values it
-  // ships. The scale is the main thread's, so a recolor never refetches.
+  // The members a box reads: its value, the field whose values it ships, and
+  // whether "0,0,0" is black. The scale is otherwise the main thread's, so a
+  // recolor never refetches.
   color: WorkerColor
   // `maybeColor` slots, as `color.value`.
   connectorColor: string | undefined

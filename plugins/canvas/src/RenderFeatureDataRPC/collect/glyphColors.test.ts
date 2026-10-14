@@ -74,6 +74,13 @@ describe('boxColor (BED itemRgb)', () => {
     expect(fill(bed12Child('five_prime_UTR', '0'))).toBe(utrDefaultColor)
   })
 
+  it('under itemRgbOn a black itemRgb paints black', () => {
+    const config = mockDisplayConfig({ color: { itemRgbOn: true } })
+    expect(fill(bed12Child('exon', '0,0,0'), config)).toBe('0,0,0')
+    expect(fill(bed12Child('five_prime_UTR', '0,0,0'), config)).toBe('0,0,0')
+    expect(fill(bed12Child('exon'), config)).toBe(featureDefaultColor)
+  })
+
   it('no itemRgb anywhere on the chain keeps the slot defaults', () => {
     expect(fill(bed12Child('exon'))).toBe(featureDefaultColor)
     expect(fill(bed12Child('five_prime_UTR'))).toBe(utrDefaultColor)

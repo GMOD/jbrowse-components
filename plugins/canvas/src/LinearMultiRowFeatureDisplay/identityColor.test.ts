@@ -1,3 +1,4 @@
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
@@ -31,7 +32,7 @@ const CHROMHMM = {
   labels: ['1 Active TSS', '4 Strong transcription', '15 Quiescent / low'],
 }
 
-function loaded(color?: typeof CHROMHMM) {
+function loaded(color?: typeof CHROMHMM, features = STATES) {
   const { display } = createTestEnvironment({
     displayConfig: { rows: 'sample', ...(color ? { color } : {}) },
   }).createDisplay()
@@ -39,7 +40,7 @@ function loaded(color?: typeof CHROMHMM) {
   display.setRpcData(
     0,
     packMultiRowFeatures({
-      features: STATES,
+      features,
       rowsField: 'sample',
       lengthField: '',
       colorConfig,
@@ -85,5 +86,31 @@ describe('an identity color over a file that colors its own features', () => {
     const display = loaded(CHROMHMM)
     display.toggleCategory(display.colorLegend[0]!.values)
     expect(paintedColors(display)).toHaveLength(2)
+  })
+})
+
+describe('an identity color over a black itemRgb', () => {
+  const BLACK = [
+    new SimpleFeature({
+      uniqueId: 'b0',
+      refName: 'ctgA',
+      start: 0,
+      end: 50,
+      sample: 'E001',
+      itemRgb: '0,0,0',
+    }),
+  ]
+
+  it('paints black, as UCSC does under itemRgb on', () => {
+    const color = { ...CHROMHMM, domain: ['rgb(0,0,0)'], labels: ['Black'] }
+    expect(paintedColors(loaded(color, BLACK))).toEqual([
+      cssColorToABGR('rgb(0,0,0)'),
+    ])
+  })
+
+  it('reads as no color when the track declares no identity scale', () => {
+    expect(paintedColors(loaded(undefined, BLACK))).toEqual([
+      cssColorToABGR(featureDefaultColor),
+    ])
   })
 })

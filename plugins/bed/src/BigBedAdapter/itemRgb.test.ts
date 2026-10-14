@@ -38,4 +38,5 @@ test('bigBed features carry their color under the autoSql `reserved` name', asyn
   // volvox.bb only carries the "no color specified" placeholder, so nothing is
   // claimed — the whole point of the placeholder guard
   expect(featureBedColor(feature)).toBeUndefined()
+  expect(featureBedColor(feature, true)).toBe('0,0,0')
 })
