@@ -848,6 +848,15 @@ test('a facet or rows field the display steps leave unwritten is named', () => {
   expect(found(bar, undefined, steps, 'strand')).toEqual([
     'warning unwritten-field mark undefined rows.field',
   ])
+  // with no facet field, facet.transform runs before the rows split
+  expect(found(bar, { transform: steps }, [], 'strand')).toEqual([
+    'warning unwritten-field mark undefined rows.field',
+  ])
+  const grouped = [
+    steps[0],
+    { type: 'aggregate', groupby: ['strand'], ops: [{ op: 'count' }] },
+  ]
+  expect(found(bar, { transform: grouped }, [], 'strand')).toEqual([])
   expect(
     found([{ mark: 'bar', encoding: { y: 'score' } }], 'strand', []),
   ).toEqual([])

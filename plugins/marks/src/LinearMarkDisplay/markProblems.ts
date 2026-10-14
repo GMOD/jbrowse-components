@@ -920,7 +920,9 @@ export function markProblems({
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]
-  const madeBeforeSplit = split ? madeFields(display) : undefined
+  const madeBeforeSplit = split
+    ? madeFields(drawsRows ? shared : display)
+    : undefined
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
     ...(split && madeBeforeSplit && !madeBeforeSplit.has(split)
