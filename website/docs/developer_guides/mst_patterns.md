@@ -23,8 +23,8 @@ becomes a dependency without going in the dep array:
 ```tsx
 useEffect(() => {
   const dispose = autorun(() => {
-    const xJ = snp2 ? model.locusViewportX(snp2.refName, snp2.start) : undefined
-    const xI = snp1 ? model.locusViewportX(snp1.refName, snp1.start) : undefined
+    const xJ = snp2 && model.locusViewportX(snp2.refName, snp2.start)
+    const xI = snp1 && model.locusViewportX(snp1.refName, snp1.start)
     view.setVolatileGuides(
       xJ !== undefined && xI !== undefined && model.showVerticalGuides
         ? [{ xPos: xJ }, { xPos: xI }]
