@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { LD_WINDOW_BP, ldOf, ldToIndex } from './ldJoin.ts'
+import { LD_WINDOW_BP, joinLd, ldOf, ldToIndex } from './ldJoin.ts'
 
 import type { LdJoin } from './ldJoin.ts'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -194,6 +194,29 @@ describe('the window the LD file is read over', () => {
       refName: '2',
     })
     expect(ld.byStart.size).toBe(0)
+  })
+})
+
+// A reference panel routinely holds SNPs the summary statistics dropped, so a
+// partner placed in the region that no feature matches is ordinary data
+describe('the missing-index notice', () => {
+  const join = { start: 99, refName: '1' }
+  const index = feat({ start: 99 })
+  const unlisted = feat({ start: 499 })
+
+  it('is raised where the LD file names no partner of a shown index', () => {
+    const empty = { byName: new Map(), byStart: new Map() }
+    expect(joinLd([index, unlisted], empty, join).unjoined).toBe(true)
+  })
+
+  it('is not raised for a partner the GWAS file lacks', () => {
+    const ld = { byName: new Map(), byStart: new Map([[1199, 0.5]]) }
+    expect(joinLd([index, unlisted], ld, join).unjoined).toBe(false)
+  })
+
+  it('is not raised where the index is off the region', () => {
+    const empty = { byName: new Map(), byStart: new Map() }
+    expect(joinLd([unlisted], empty, join).unjoined).toBe(false)
   })
 })
 

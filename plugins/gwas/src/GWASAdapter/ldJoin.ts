@@ -1,5 +1,5 @@
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LDRecordSource } from '@jbrowse/ld-core'
 
 /**
@@ -119,23 +119,16 @@ export function ldOf(
 
 /**
  * Each feature's part in the join, and whether the region shows the index
- * with no partner where the lookup promises one: an empty lookup, or a
- * partner placed inside the region that no feature matched. A region narrower
- * than the LD window may hold the index alone, which is no fault.
+ * while the LD file names no partner of it at all. A partner the GWAS file
+ * lacks, or one outside a narrow region, is ordinary and goes unremarked.
  */
-export function joinLd(
-  features: Feature[],
-  ld: LdToIndex,
-  join: LdJoin,
-  region: Region,
-) {
+export function joinLd(features: Feature[], ld: LdToIndex, join: LdJoin) {
   const joined = features.map(f => ldOf(f, ld, join))
-  const roles = new Set(joined.map(l => l?.role))
-  const promised =
-    (ld.byName.size === 0 && ld.byStart.size === 0) ||
-    [...ld.byStart.keys()].some(s => s >= region.start && s < region.end)
   return {
     joined,
-    unjoined: roles.has('index') && !roles.has('partner') && promised,
+    unjoined:
+      ld.byName.size === 0 &&
+      ld.byStart.size === 0 &&
+      joined.some(l => l?.role === 'index'),
   }
 }

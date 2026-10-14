@@ -44,7 +44,8 @@ export default class GWASAdapter extends BedTabixAdapter {
         key,
         load: cachedSetup({
           label: 'Downloading LD data',
-          setup: setupOpts => this.readLdToIndex(join, setupOpts),
+          setup: ({ signal, statusCallback }) =>
+            this.readLdToIndex(join, { signal, statusCallback }),
         }),
       }
     }
@@ -79,8 +80,9 @@ export default class GWASAdapter extends BedTabixAdapter {
       : f
   }
 
-  // The top hit is read here, before the join and every step of the plot, so
-  // nothing a plot filters or draws moves the index the join follows.
+  // The top hit is read here, off the rescored file before every step of the
+  // plot, so nothing a plot filters or draws moves the index the join
+  // follows; the join writes no score, so it cannot move it either.
   getFeatures(region: Region, opts: GWASFetchOptions = {}) {
     const { ld, facts } = opts
     return forkJoin([
@@ -90,7 +92,7 @@ export default class GWASAdapter extends BedTabixAdapter {
       mergeMap(([lookup, loaded]) => {
         const { joined, unjoined } =
           ld && lookup
-            ? joinLd(loaded, lookup, ld, region)
+            ? joinLd(loaded, lookup, ld)
             : { joined: [], unjoined: false }
         if (unjoined) {
           opts.notices?.push(INDEX_SNP_MISSING)
