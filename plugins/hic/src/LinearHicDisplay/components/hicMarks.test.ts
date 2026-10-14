@@ -336,4 +336,45 @@ describe('the hic painter', () => {
       expect(drawnAt(px, px, 800)).toBe(true)
     })
   })
+
+  // An unsquashed triangle stands half the view's width tall, so over a
+  // shorter track most contacts sit below the canvas.
+  describe('below-canvas culling', () => {
+    const H = 100
+    const W = 10
+    // screen y of a point is `((py - px) / √2) * viewScale * yScalar`; a
+    // cell's highest corner is (px + W, py)
+    const screenY = (px: number, py: number, yScalar: number) =>
+      ((py - px) / Math.SQRT2) * yScalar
+
+    function drawnAt(px: number, py: number, yScalar = 1) {
+      const ctx = paint(
+        makeData({ positions: [px, py], binWidth: W }),
+        makeRenderState({ canvasHeight: H, yScalar }),
+      )
+      return ctx.fillRect.mock.calls.length === 1
+    }
+
+    it('drops a cell entirely below the canvas', () => {
+      const py = 300
+      expect(screenY(W, py, 1)).toBeGreaterThan(H)
+      expect(drawnAt(0, py)).toBe(false)
+    })
+
+    it('keeps a cell straddling the bottom edge', () => {
+      const py = H * Math.SQRT2 + W / 2
+      expect(screenY(0, py, 1)).toBeGreaterThan(H)
+      expect(screenY(W, py, 1)).toBeLessThan(H)
+      expect(drawnAt(0, py)).toBe(true)
+    })
+
+    it.each([0.5, 2])('measures the height through yScalar %p', yScalar => {
+      const inside = (H * Math.SQRT2) / yScalar - W
+      const below = (H * Math.SQRT2) / yScalar + 2 * W
+      expect(screenY(W, inside, yScalar)).toBeLessThan(H)
+      expect(screenY(W, below, yScalar)).toBeGreaterThan(H)
+      expect(drawnAt(0, inside, yScalar)).toBe(true)
+      expect(drawnAt(0, below, yScalar)).toBe(false)
+    })
+  })
 })

@@ -36,7 +36,7 @@ const contactMark: MarkShape<HicUploadData, HicContactParams> = {
   },
 
   paintBlock(ctx, data, _block, frame, p) {
-    drawHicBlocks(ctx, data, p, frame.canvasWidth)
+    drawHicBlocks(ctx, data, p, frame.canvasWidth, frame.canvasHeight)
   },
 }
 

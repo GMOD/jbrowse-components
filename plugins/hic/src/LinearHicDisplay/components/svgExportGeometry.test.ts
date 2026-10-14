@@ -41,7 +41,8 @@ function exportBin(yScalar: number) {
       canvasWidth: 10_000,
       canvasHeight: 10_000,
     },
-    // wide enough that the cull can't be what makes the assertions pass
+    // big enough that the cull can't be what makes the assertions pass
+    10_000,
     10_000,
   )
   const svg = ctx.getSerializedSvg()

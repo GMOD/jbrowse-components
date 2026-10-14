@@ -14,33 +14,39 @@ import type {
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 /**
- * The Canvas2D and SVG painter. `width` is the painted surface's, used only to
- * skip off-surface bins: a pan redraws the whole fetched matrix, 300k to 4.5M
- * contacts, under the live transform. A cell's `px + py` spans
- * `2 * binWidth`, hence the pad on the low side.
+ * The Canvas2D and SVG painter. `width` and `height` are the painted
+ * surface's, used only to skip off-surface bins: a pan redraws the whole
+ * fetched matrix, 300k to 4.5M contacts, under the live transform, and an
+ * unsquashed triangle stands `width / 2` tall over a shorter track. A cell's
+ * `px + py` spans `2 * binWidth`, hence the pad on the low side, and its
+ * axis-ward corner's `py - px` is `binWidth` smaller, hence the pad on the
+ * height.
  */
 export function drawHicBlocks(
   ctx: MarkContext2D,
   data: HicUploadData,
   state: HicRenderState,
   width: number,
+  height: number,
 ) {
   const { instances, numContacts, binWidth } = data
   if (numContacts === 0) {
     return
   }
-  const { viewScale, domainMin, domainMax, scaleType, colorRamp } = state
+  const { viewScale, yScalar, domainMin, domainMax, scaleType, colorRamp } =
+    state
   const normalize = makeScoreNormalizer(domainMin, domainMax, scaleType, 1)
   const fillStyleLut = makeHicFillStyleLut(colorRamp)
   const { minSum, maxSum } = enterTriangleCellSpace(ctx, state, width)
   const lo = minSum - 2 * binWidth
+  const maxDiff = (height * Math.SQRT2) / (viewScale * yScalar) + binWidth
   const size = binWidth * viewScale
 
   for (let i = 0; i < numContacts; i++) {
     const px = getInstancePosition(instances, i, 0)
     const py = getInstancePosition(instances, i, 1)
     const sum = px + py
-    if (sum < lo || sum > maxSum) {
+    if (sum < lo || sum > maxSum || py - px > maxDiff) {
       continue
     }
     const fill = fillStyleLut(normalize(getInstanceCount(instances, i)))
