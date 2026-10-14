@@ -63,7 +63,7 @@ describe('contextTargetAt', () => {
 
   it('carries the position alone where the click missed every block', () => {
     const display = setup()
-    // "Sort rows by color here" acts on the column, so a click in a gap still
+    // "Sort rows by ... here" acts on the column, so a click in a gap still
     // opens a menu.
     expect(display.contextTargetAt(250, 10)).toMatchObject({
       refName: 'ctgA',
@@ -130,6 +130,6 @@ describe('multi-row feature context menu', () => {
       .map(i => ('label' in i ? i.label : ''))
     expect(labels).not.toContain('Copy location')
     expect(labels).not.toContain('Open feature details')
-    expect(labels).toContain('Sort rows by color here')
+    expect(labels).toContain('Sort rows by presence here')
   })
 })

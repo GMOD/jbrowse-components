@@ -2,7 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { runMultiRowClustering } from './runMultiRowClustering.ts'
-import { createTestEnvironment, ctgA } from './testEnv.ts'
+import { createTestEnvironment, ctgA, stubColumnValues } from './testEnv.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -276,9 +276,11 @@ test('a cluster run lands its tree turned towards the seed, and a reorder drops 
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('sort at a column orders rows by the color painted there', () => {
+test('sort at a column orders rows by the value each carries there', async () => {
   const display = loaded({}, {}, regionData([...FAMILY, UNANSWERED]))
-  expect(display.sortRowsByValueAt('ctgA', 100)).toBe(true)
+  display.setClusterField('state')
+  stubColumnValues(display, { mom: 'Enh', s2: 'TssA', dad: 'TssA', '': 'Enh' })
+  expect(await display.sortRowsByValueAt('ctgA', 100)).toBe(true)
   expect(derived(display)).toMatchSnapshot()
 })
 

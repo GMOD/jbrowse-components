@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
@@ -53,6 +54,28 @@ export function createTestEnvironment(opts?: {
 
 export const ctgA = REGIONS[0]!
 export const ctgB = REGIONS[1]!
+
+/**
+ * Answers the column sort's `MultiRowValuesAt` call with `values` by row name,
+ * where this harness has no worker to read the adapter in, and passes every
+ * other call through. The returned mock records the sort's calls' args.
+ */
+export function stubColumnValues(
+  display: LinearMultiRowFeatureDisplayModel,
+  values: Record<string, string>,
+) {
+  const { rpcManager } = getSession(display)
+  const original = rpcManager.call.bind(rpcManager)
+  const valuesAt = jest.fn((_args: unknown) => new Map(Object.entries(values)))
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation((sessionId, method, args) =>
+      method === 'MultiRowValuesAt'
+        ? Promise.resolve(valuesAt(args))
+        : original(sessionId, method, args),
+    )
+  return valuesAt
+}
 
 export function abgrsOf(colors: (string | undefined)[]) {
   return colors.map(c => (c === undefined ? undefined : cssColorToABGR(c)))

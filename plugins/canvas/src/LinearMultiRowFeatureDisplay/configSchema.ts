@@ -93,10 +93,11 @@ export default function configSchemaF() {
       rows: rowsConfigSchema,
       /**
        * #slot
-       * Feature attribute whose value each row is clustered on; `auto` (the
-       * default) takes the attribute the `color` slot reads, else `name`, and
-       * an empty string clusters on presence alone — which bins each row
-       * covers. A `jexl:` expression derives the value.
+       * Feature attribute whose value each row is clustered on, and which
+       * "Sort rows by ... here" orders by at a column; `auto` (the default)
+       * takes the attribute the `color` slot reads, else `name`, and an empty
+       * string compares presence alone — which bins each row covers. A
+       * `jexl:` expression derives the value.
        *
        * #example
        * ```js
@@ -107,7 +108,7 @@ export default function configSchemaF() {
         type: 'featureField',
         defaultValue: 'auto',
         description:
-          "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone",
+          "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = presence alone",
       },
       /**
        * #slot

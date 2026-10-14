@@ -5752,7 +5752,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "clusterField": {
-          "description": "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone.",
+          "description": "feature attribute the rows cluster and sort on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = presence alone.",
           "default": "auto",
           "if": {
             "type": "null"

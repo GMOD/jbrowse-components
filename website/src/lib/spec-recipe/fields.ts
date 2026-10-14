@@ -1953,8 +1953,8 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: `Ranks the subtracks by the score each one carries at a single base (${where} in this figure), highest at the top, which is how a cohort is read at a candidate locus. "Reset row order" in the same menu undoes it.`,
         }
       : {
-          path: 'Right-click the track at the column to sort on → Sort rows by color here',
-          note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
+          path: 'Right-click the track at the column to sort on → Sort rows by … here',
+          note: `Reorders the rows by the value each one carries at a single position (${where} in this figure), of the attribute clustering compares rows on, which is how a painting is lined up under a peak. "Reset row order" in the same menu undoes it.`,
         }
   },
 }

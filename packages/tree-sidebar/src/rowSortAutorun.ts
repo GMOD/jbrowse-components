@@ -31,8 +31,8 @@ export interface RowSortSpec {
 //
 // Shared rather than per display because the flag, the gate and the clear are
 // the same three lines whichever value the rows are being ordered by; `sortRows`
-// is what differs (the multi-row feature display ranks by the color at the
-// column, multi-wiggle by the score there).
+// is what differs (the multi-row feature display ranks by an attribute it reads
+// in the worker, multi-wiggle by the score at the column).
 export function setupRowSortAutorun(
   self: IStateTreeNode & {
     sortRowsBy?: RowSortSpec
@@ -50,7 +50,11 @@ export function setupRowSortAutorun(
     // about — the multi-sample variant sort needs a RECORD at the position,
     // not merely a loaded region over it, so a session `sortRowsBy` on a
     // variant-free column sorted nothing and cleared itself.
-    sortRows: (refName: string, pos: number) => void | boolean
+    // A promise holds the trigger until it resolves.
+    sortRows: (
+      refName: string,
+      pos: number,
+    ) => void | boolean | Promise<boolean>
   },
 ) {
   addDisposer(
@@ -97,9 +101,18 @@ export function setupRowSortAutorun(
         if (!loaded) {
           return
         }
+        // Only this spec: one a session wrote while an async sort was in
+        // flight is the next sort, not this one's to clear.
+        const clearIfSorted = (sorted: void | boolean) => {
+          if (sorted !== false && isAlive(self) && self.sortRowsBy === spec) {
+            self.setSortRowsBy(undefined)
+          }
+        }
         const sorted = opts.sortRows(refName, spec.pos)
-        if (sorted !== false && isAlive(self)) {
-          self.setSortRowsBy(undefined)
+        if (sorted instanceof Promise) {
+          void sorted.then(clearIfSorted, () => {})
+        } else {
+          clearIfSorted(sorted)
         }
       },
       { name: opts.name },

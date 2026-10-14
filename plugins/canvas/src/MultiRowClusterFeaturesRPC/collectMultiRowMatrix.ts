@@ -7,21 +7,25 @@ import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
-import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
+import type { MultiRowFeatureValuesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 
-export async function collectMultiRowMatrix({
+/**
+ * Every feature in `regions` with the row it paints in and its `clusterField`
+ * value, read through the resolver the painting partitions with, so the
+ * clustering matrix and the column sort place each feature in the row the
+ * painting drew it in.
+ */
+export async function collectMatrixFeatures({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: MultiRowClusterFeaturesArgs & RpcCallContext
+  args: MultiRowFeatureValuesArgs & RpcCallContext
 }) {
-  const { regions, sources, rowsField, clusterField, signal, statusCallback } =
-    args
+  const { regions, rowsField, clusterField, signal, statusCallback } = args
   const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
-
   const featureRowValue = makeFeatureValueResolver(
     rowsField,
     pluginManager.jexl,
@@ -60,6 +64,20 @@ export async function collectMultiRowMatrix({
       })
     }
   }
+  return features
+}
 
-  return buildMultiRowMatrix({ sources, regions, features, clusterField })
+export async function collectMultiRowMatrix({
+  pluginManager,
+  args,
+}: {
+  pluginManager: PluginManager
+  args: MultiRowFeatureValuesArgs & { sources: string[] } & RpcCallContext
+}) {
+  return buildMultiRowMatrix({
+    sources: args.sources,
+    regions: args.regions,
+    features: await collectMatrixFeatures({ pluginManager, args }),
+    clusterField: args.clusterField,
+  })
 }

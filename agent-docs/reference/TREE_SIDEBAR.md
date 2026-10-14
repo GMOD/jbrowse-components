@@ -267,7 +267,8 @@ stage's recomputes and the display's named reaction runs.
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
 Only _which value a row carries at the column_ is the display's (multi-wiggle
-the score, multi-row the painted color). `rowSortColumn.ts` owns the rest:
+the score, multi-row its clustering attribute). `rowSortColumn.ts` owns the
+rest:
 
 - **`regionCoversColumn` is asked by the gate and by the sort.**
   `setupRowSortAutorun` waits for a region satisfying it and then clears
@@ -279,6 +280,9 @@ the score, multi-row the painted color). `rowSortColumn.ts` owns the rest:
   Filtering the regions on refName alone is the near-miss (multi-row shipped
   it): coordinates repeat across regions by refName, so two loaded windows on
   one contig both answer and the map's iteration order picks.
+- **A read can be async.** Multi-row's values come from a worker RPC, so its
+  `sortRows` returns a promise, and `setupRowSortAutorun` clears `sortRowsBy`
+  only once it resolves `true`.
 - **`orderRowsByValueAt` owns missing-last and stability**, and hands `compare`
   only values that exist. A neutral fill-in instead (`0`) ranks a valueless row
   above every negative score and into the middle of every color block.

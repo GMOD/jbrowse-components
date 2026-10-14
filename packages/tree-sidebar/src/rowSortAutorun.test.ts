@@ -9,7 +9,7 @@ jest.mock('@jbrowse/core/util', () => ({
 }))
 
 function makeDisplay(
-  sortRows: (refName: string, pos: number) => void | boolean,
+  sortRows: (refName: string, pos: number) => void | boolean | Promise<boolean>,
 ) {
   const model = types
     .model({
@@ -97,4 +97,51 @@ test.each([
     expect.stringContaining(`sortRowsBy.${field}`),
   )
   warn.mockRestore()
+})
+
+// Multi-row reads its values in the worker. Cleared at dispatch, a figure
+// waiting on the trigger would capture the rows before the order landed.
+describe('an async sort', () => {
+  const settle = () => new Promise(r => setTimeout(r, 0))
+
+  function deferred() {
+    let resolve: (sorted: boolean) => void = () => {}
+    const promise = new Promise<boolean>(r => {
+      resolve = r
+    })
+    return { promise, resolve }
+  }
+
+  test('holds the trigger until it resolves true', async () => {
+    const sort = deferred()
+    const model = makeDisplay(() => sort.promise)
+    expect(model.sortRowsBy).toEqual({ refName: 'chr1', pos: 500 })
+    sort.resolve(true)
+    await settle()
+    expect(model.sortRowsBy).toBeUndefined()
+  })
+
+  test('keeps it where the sort resolves false', async () => {
+    const model = makeDisplay(() => Promise.resolve(false))
+    await settle()
+    expect(model.sortRowsBy).toEqual({ refName: 'chr1', pos: 500 })
+  })
+
+  test('a sort landing after a newer spec leaves that spec set', async () => {
+    const first = deferred()
+    const second = deferred()
+    const sortRows = jest
+      .fn<Promise<boolean>, [string, number]>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise)
+    const model = makeDisplay(sortRows)
+    model.setSortRowsBy({ refName: 'chr1', pos: 600 })
+    expect(sortRows).toHaveBeenLastCalledWith('chr1', 600)
+    first.resolve(true)
+    await settle()
+    expect(model.sortRowsBy).toEqual({ refName: 'chr1', pos: 600 })
+    second.resolve(true)
+    await settle()
+    expect(model.sortRowsBy).toBeUndefined()
+  })
 })

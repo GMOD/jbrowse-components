@@ -10,6 +10,7 @@ import {
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
+import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
@@ -42,7 +43,7 @@ import {
   TreeSidebarMixin,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
-  sortRowsAtColumn,
+  loadedRegionIndexAt,
   sortRowsHereMenuItem,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
@@ -55,6 +56,7 @@ import {
   fetchCanvasFeatureDetails,
 } from '../shared/fetchCanvasFeatureDetails.ts'
 import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
+import { applyColumnSort, columnSortLabel } from './columnSort.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
@@ -73,7 +75,6 @@ import {
   multiRowUploadData,
 } from './rendering/multiRowIndels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
-import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import { compileRowGroups, orderRowValues, tagRowGroups } from './rowSources.ts'
 import {
   answeredRowsField,
@@ -770,9 +771,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * Every loaded region's `span` channels with their per-key buckets:
-         * what `uploadedChannels` adds the indels to, and what the row sort
-         * reads. The memo lives in this closure so it outlives a
-         * context-loss recovery.
+         * what `uploadedChannels` adds the indels to. The memo lives in this
+         * closure so it outlives a context-loss recovery.
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
           return encoded()
@@ -875,6 +875,9 @@ export default function stateModelFactory(
     }))
     .actions(self => {
       const openDetails = createCanvasFeatureDetailsOpener(self)
+      // The sort in flight, which a newer one supersedes: landing after it
+      // would overwrite the order the reader asked for last.
+      let columnSort: AbortController | undefined
       return {
         /**
          * #action
@@ -938,26 +941,41 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Reorder the rows by the value each carries at (refName, pos), off the
-         * already-loaded region data with no refetch.
+         * Reorder the rows by each one's `effectiveClusterField` value at
+         * (refName, pos). Resolves whether it wrote an order; `false` right
+         * away where no region holding data covers the column or there is
+         * under two rows to order.
          */
-        sortRowsByValueAt(refName: string, pos: number) {
-          return sortRowsAtColumn(
-            self,
-            refName,
-            pos,
-            // The encode the painters drew, so a hidden legend category orders
-            // the rows as it draws them.
-            index => self.encodedChannels.get(index),
-            (sources, encoded) =>
-              rowOrderByValueAt(
-                sources,
-                encoded,
-                pos,
-                self.rowKeys,
-                self.rowTable,
-              ),
-          )
+        async sortRowsByValueAt(refName: string, pos: number) {
+          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+          const region =
+            index === undefined || !self.rpcDataMap.has(index)
+              ? undefined
+              : self.loadedRegions.get(index)
+          if (!region || self.editableSources.length < 2) {
+            return false
+          }
+          columnSort?.abort()
+          const controller = new AbortController()
+          columnSort = controller
+          try {
+            return await applyColumnSort(
+              self,
+              {
+                rpcManager: getSession(self).rpcManager,
+                sessionId: getRpcSessionId(self),
+                signal: controller.signal,
+              },
+              region,
+              pos,
+            )
+          } catch (e) {
+            if (!isAbortException(e)) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+            return false
+          }
         },
         /**
          * #action
@@ -1113,10 +1131,10 @@ export default function stateModelFactory(
         const { hit } = info
         return [
           sortRowsHereMenuItem({
-            label: 'Sort rows by color here',
+            label: columnSortLabel(self.effectiveClusterField),
             rowCount: self.editableSources.length,
             onClick: () => {
-              self.sortRowsByValueAt(info.refName, info.pos)
+              void self.sortRowsByValueAt(info.refName, info.pos)
             },
           }),
           ...(hit

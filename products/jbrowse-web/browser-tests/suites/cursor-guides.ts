@@ -167,7 +167,7 @@ export const suite: TestSuite = {
         await delay(800)
         assert(
           await page.evaluate(() =>
-            document.body.textContent.includes('Sort rows by color here'),
+            /Sort rows by .+ here/.test(document.body.textContent),
           ),
           'right-click did not open the display context menu',
         )

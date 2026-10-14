@@ -187,10 +187,12 @@ no value last. Three ways to change that:
 - **Edit colors/arrangement...** reorders, relabels or hand-picks rows in a
   dialog, and `rows.domain` pins an explicit order in config: the values it
   lists lead, and the rest sort.
-- Right-click a position and choose **Sort rows by color here** to order rows by
-  the value each has at that exact base, the analogue of an alignments track's
-  sort-by-base. Rows sharing a value become contiguous blocks, turning a QTL
-  painting at its peak into a clean split by allele.
+- Right-click a position and choose **Sort rows by _attribute_ here** to order
+  rows by the value each has at that exact base, the analogue of an alignments
+  track's sort-by-base. The attribute is the one clustering compares rows on
+  (`clusterField`, **Cluster on** in the clustering dialog). Numbers sort
+  highest first; other values form contiguous blocks, the largest first, turning
+  a QTL painting at its peak into a clean split by allele.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).
