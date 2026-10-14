@@ -16,21 +16,20 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
   model: LinearMultiRowFeatureDisplayModel
 }) {
   const {
-    indelGlyphRegions,
+    lengthField,
     uploadedChannels,
     renderBlocks,
     renderState,
-    height,
+    rowsHeight,
     canvasWidthPx,
   } = model
-  return indelGlyphRegions ? (
+  return lengthField ? (
     <OverlayCanvas
       width={canvasWidthPx}
-      height={height}
+      height={rowsHeight}
       draw={ctx => {
         drawMultiRowIndelGlyphs(
           ctx,
-          indelGlyphRegions,
           uploadedChannels,
           renderBlocks,
           renderState,

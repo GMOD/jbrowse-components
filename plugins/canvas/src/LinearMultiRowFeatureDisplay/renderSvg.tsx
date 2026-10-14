@@ -9,7 +9,6 @@ import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type {
-  MultiRowRegionData,
   MultiRowRenderState,
   MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -22,7 +21,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
 export interface RenderSvgModel extends LgvSvgExportable {
-  indelGlyphRegions: ReadonlyMap<number, MultiRowRegionData> | undefined
+  lengthField: string
   uploadedChannelsIn: (
     palette: JBrowsePalette,
   ) => ReadonlyMap<number, MultiRowUploadData>
@@ -64,14 +63,8 @@ function MultiRowSvgBody({
           opts={opts}
           paint={(ctx, state) => {
             // the overlay the screen composites over the canvas
-            if (overlays && self.indelGlyphRegions) {
-              drawMultiRowIndelGlyphs(
-                ctx,
-                self.indelGlyphRegions,
-                uploaded,
-                renderBlocks,
-                state,
-              )
+            if (overlays && self.lengthField) {
+              drawMultiRowIndelGlyphs(ctx, uploaded, renderBlocks, state)
             }
           }}
         />

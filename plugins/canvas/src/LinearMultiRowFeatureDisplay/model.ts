@@ -71,8 +71,8 @@ import {
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
 import {
   insertionOfChannel,
-  multiRowInsertionChannels,
-} from './rendering/multiRowInsertions.ts'
+  multiRowUploadData,
+} from './rendering/multiRowIndels.ts'
 import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import { compileRowGroups, orderRowValues, tagRowGroups } from './rowSources.ts'
@@ -172,8 +172,6 @@ export default function stateModelFactory(
       get rpcDataMap(): ReadonlyMap<number, MultiRowRegionData> {
         return self.regionPayloads as ReadonlyMap<number, MultiRowRegionData>
       },
-    }))
-    .views(() => ({
       /**
        * #getter
        * This display always draws its label above the plot.
@@ -181,8 +179,6 @@ export default function stateModelFactory(
       get prefersOffset() {
         return true
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */
@@ -264,6 +260,7 @@ export default function stateModelFactory(
         })
       },
     }))
+    .views(featureColorViews)
     .views(self => ({
       /**
        * #getter
@@ -272,8 +269,74 @@ export default function stateModelFactory(
       get rowGroupMatchers() {
         return compileRowGroups(self.rowGroups)
       },
+      /**
+       * #getter
+       * Whether anything is painted right now. An identity scale's key is
+       * gated on this.
+       */
+      get hasDrawnFeatures(): boolean {
+        return [...self.rpcDataMap.values()].some(
+          data => data.featureIds.length > 0,
+        )
+      },
+      /**
+       * #getter
+       * Whether the loaded data colored itself via `itemRgb`, which suppresses
+       * the per-row palette that would paint over those colors.
+       */
+      get usedItemRgb(): boolean {
+        return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
+      },
+      /**
+       * #getter
+       * The attribute a loaded region actually resolved its rows on, or
+       * undefined while none has.
+       */
+      get answeredRowsField(): string | undefined {
+        return answeredRowsField(self)
+      },
+      /**
+       * #getter
+       * The attribute the rows are actually partitioned on: the slot, or what
+       * the worker picked off the data under auto. Everything asking "which
+       * attribute are these rows" reads this rather than the raw slot above.
+       */
+      get effectiveRowsField(): string {
+        return effectiveRowsField(self)
+      },
+      /**
+       * #getter
+       * What a fetch issued now should partition on under auto. Deliberately
+       * not an `rpcProps()` key, which would refetch every region the moment
+       * the first one answered.
+       */
+      get pinnedRowsField(): string {
+        return pinnedRowsField(self)
+      },
+      /**
+       * #getter
+       * The attribute names on the loaded features, offered by the
+       * "One row per..." menu.
+       */
+      get rowsFieldCandidates(): string[] {
+        return rowsFieldCandidates(self)
+      },
+      /**
+       * #getter
+       * The attribute names "Cluster rows by similarity" offers.
+       */
+      get clusterCandidates(): string[] {
+        return clusterCandidates(self)
+      },
+      /**
+       * #getter
+       * How many rows each candidate would draw, which the menu shows beside
+       * each name so a reader can judge it before paying the refetch.
+       */
+      get rowCountsByField(): ReadonlyMap<string, RowCountByField> {
+        return rowCountsByField(self)
+      },
     }))
-    .views(featureColorViews)
     .views(self => {
       // A plain getter hands out a fresh array on every write to `rpcDataMap`,
       // and this list reaches the row table, whose identity has to hold
@@ -285,7 +348,7 @@ export default function stateModelFactory(
             values.add(v)
           }
         }
-        const unanswered = `(no ${effectiveRowsField(self)})`
+        const unanswered = `(no ${self.effectiveRowsField})`
         return orderRowValues(values, self.baseRowDomain).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
@@ -346,48 +409,13 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether anything is painted right now. An identity scale's key is
-         * gated on this.
-         */
-        get hasDrawnFeatures(): boolean {
-          return [...self.rpcDataMap.values()].some(
-            data => data.featureIds.length > 0,
-          )
-        },
-        /**
-         * #getter
-         * Whether the loaded data colored itself via `itemRgb`, which suppresses
-         * the per-row palette that would paint over those colors.
-         */
-        get usedItemRgb(): boolean {
-          return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: a row's color paints its blocks while
          * nothing else colors them: no `color` value or field, and no itemRgb
          * in the file.
          */
         get rowColorPaintsMarks(): boolean {
           const { value, field } = self.workerColor
-          return value === undefined && !field && !this.usedItemRgb
-        },
-        /**
-         * #getter
-         * The attribute a loaded region actually resolved its rows on, or
-         * undefined while none has.
-         */
-        get answeredRowsField(): string | undefined {
-          return answeredRowsField(self)
-        },
-        /**
-         * #getter
-         * The attribute the rows are actually partitioned on: the slot, or what
-         * the worker picked off the data under auto. Everything asking "which
-         * attribute are these rows" reads this rather than the raw slot above.
-         */
-        get effectiveRowsField(): string {
-          return effectiveRowsField(self)
+          return value === undefined && !field && !self.usedItemRgb
         },
         /**
          * #getter
@@ -398,41 +426,9 @@ export default function stateModelFactory(
           return resolveClusterField({
             clusterField: self.clusterField,
             color: self.workerColor,
-            candidates: clusterCandidates(self),
-            rowsField: effectiveRowsField(self),
+            candidates: self.clusterCandidates,
+            rowsField: self.effectiveRowsField,
           })
-        },
-        /**
-         * #getter
-         * What a fetch issued now should partition on under auto. Deliberately
-         * not an `rpcProps()` key, which would refetch every region the moment
-         * the first one answered.
-         */
-        get pinnedRowsField(): string {
-          return pinnedRowsField(self)
-        },
-        /**
-         * #getter
-         * The attribute names on the loaded features, offered by the
-         * "One row per..." menu.
-         */
-        get rowsFieldCandidates(): string[] {
-          return rowsFieldCandidates(self)
-        },
-        /**
-         * #getter
-         * The attribute names "Cluster rows by similarity" offers.
-         */
-        get clusterCandidates(): string[] {
-          return clusterCandidates(self)
-        },
-        /**
-         * #getter
-         * How many rows each candidate would draw, which the menu shows beside
-         * each name so a reader can judge it before paying the refetch.
-         */
-        get rowCountsByField(): ReadonlyMap<string, RowCountByField> {
-          return rowCountsByField(self)
         },
       }
     })
@@ -770,18 +766,6 @@ export default function stateModelFactory(
         }
       },
       /**
-       * #getter
-       * Per-region data for the indel-glyph overlay, undefined when there is no
-       * glyph pass. A plain `Map` rather than the ObservableMap: the overlay
-       * draws inside an effect, where nothing it reads is tracked, so the read
-       * has to happen here for a refetch to redraw the glyphs.
-       */
-      get indelGlyphRegions() {
-        return self.lengthField
-          ? new Map<number, MultiRowRegionData>(self.rpcDataMap.entries())
-          : undefined
-      },
-      /**
        * #method
        * Fetch-input cache keys; color is resolved in the worker, so the raw
        * color slot is one.
@@ -805,29 +789,22 @@ export default function stateModelFactory(
         () => self.encodeInputs,
         buildMultiRowChannels,
       )
-      const withInsertions = (
+      const withIndels = (
         channels: MultiRowEncoded,
         insertionAbgr: number,
         key: number,
-      ): MultiRowUploadData => ({
-        ...channels,
-        insertions: multiRowInsertionChannels(
-          channels,
-          self.rpcDataMap.get(key),
-          insertionAbgr,
-        ),
-      })
+      ) => multiRowUploadData(channels, self.rpcDataMap.get(key), insertionAbgr)
       const uploaded = createEncodeMemo(
         () => encoded(),
         () => cssColorToABGR(getPaletteHost(self).palette.insertion),
-        withInsertions,
+        withIndels,
       )
       return {
         /**
          * #getter
          * Every loaded region's `span` channels with their per-key buckets:
-         * what `uploadedChannels` adds the insertion markers to, and what the
-         * row sort reads. The memo lives in this closure so it outlives a
+         * what `uploadedChannels` adds the indels to, and what the row sort
+         * reads. The memo lives in this closure so it outlives a
          * context-loss recovery.
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
@@ -835,9 +812,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `encodedChannels` with each region's insertion markers, in the
-         * theme's insertion color: what the backend uploads, the hit test
-         * reads and the hover and export draw from.
+         * `encodedChannels` with each region's indels, its insertion markers
+         * in the theme's insertion color: what the backend uploads, the hit
+         * test reads and the hover, glyph overlay and export draw from.
          */
         get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
           return uploaded()
@@ -854,7 +831,7 @@ export default function stateModelFactory(
           return new Map(
             [...encoded()].map(([key, channels]) => [
               key,
-              withInsertions(channels, insertionAbgr, key),
+              withIndels(channels, insertionAbgr, key),
             ]),
           )
         },

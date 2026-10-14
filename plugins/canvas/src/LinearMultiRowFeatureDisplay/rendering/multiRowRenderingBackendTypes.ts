@@ -1,6 +1,6 @@
 import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type { MultiRowEncoded } from './multiRowChannels.ts'
-import type { MultiRowInsertions } from './multiRowInsertions.ts'
+import type { MultiRowDeletions, MultiRowInsertions } from './multiRowIndels.ts'
 import type { RowKeys, RowTable } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
@@ -30,12 +30,13 @@ export interface MultiRowRenderState {
 }
 
 /**
- * What one region uploads: its blocks' `span` channels and the insertion
- * markers its `lengthField` gains wear, both encoded on the main thread once
- * per region arrival; the row table carries every later change to the rows.
+ * What one region uploads: its blocks' `span` channels and the indels its
+ * `lengthField` deltas carry, all encoded on the main thread once per region
+ * arrival; the row table carries every later change to the rows.
  */
 export interface MultiRowUploadData extends MultiRowEncoded {
   insertions: MultiRowInsertions
+  deletions: MultiRowDeletions
 }
 
 export type MultiRowRenderingBackend = PerRegionRenderingBackend<

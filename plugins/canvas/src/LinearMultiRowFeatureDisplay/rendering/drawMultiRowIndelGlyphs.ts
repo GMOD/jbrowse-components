@@ -10,12 +10,10 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { rowColor, rowSlot } from '@jbrowse/render-core/marks'
 
-import { regionWithDeltas } from './featurePainting.ts'
-import { multiRowInsertionParams } from './multiRowInsertions.ts'
+import { multiRowInsertionParams } from './multiRowIndels.ts'
 import { rowBand } from './rowBand.ts'
 
 import type {
-  MultiRowRegionData,
   MultiRowRenderState,
   MultiRowUploadData,
 } from './multiRowRenderingBackendTypes.ts'
@@ -31,14 +29,13 @@ const DELETION_LABEL_MIN_PX = 30
 
 /**
  * The text over the multi-row blocks: each insertion marker's count, and each
- * deletion's line and length, from the signed bp deltas the `lengthField` slot
- * packs. The markers themselves are the insertion mark's, on either backend.
- * The walk is the encode the blocks were drawn from, placed through the row
- * table, so a glyph sits on its block whatever hid, moved or recolored it.
+ * deletion's line and length. The markers themselves are the insertion mark's,
+ * on either backend. Both walk the upload the blocks were drawn from, placed
+ * through the row table, so a glyph sits on its block whatever hid, moved or
+ * recolored it.
  */
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,
-  regions: { get(key: number): MultiRowRegionData | undefined },
   uploaded: ReadonlyMap<number, MultiRowUploadData>,
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
@@ -47,6 +44,7 @@ export function drawMultiRowIndelGlyphs(
     state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
   const insertionParams = multiRowInsertionParams(state)
+  const labelFits = h >= MIN_HEIGHT_FOR_TEXT
   const labelColor = new Map<number, string>()
   const textOn = (abgr: number) => {
     let text = labelColor.get(abgr)
@@ -62,32 +60,25 @@ export function drawMultiRowIndelGlyphs(
     renderBlocks,
     canvasWidth,
     canvasHeight,
-    block => regionWithDeltas(regions.get(block.displayedRegionIndex)),
-    (regionData, renderBlock) => {
-      const encoded = uploaded.get(renderBlock.displayedRegionIndex)
-      if (!encoded) {
-        return
-      }
+    block => uploaded.get(block.displayedRegionIndex),
+    ({ insertions, deletions }, renderBlock) => {
       paintBlockInsertionLabels(
         ctx,
-        encoded.insertions,
+        insertions,
         renderBlock,
         state,
         insertionParams,
       )
       const bpToPx = makeBpMapper(renderBlock)
-      const { featureStarts, featureEnds, featureDeltas } = regionData
-      const labelFits = h >= MIN_HEIGHT_FOR_TEXT
+      const { x, x2, row, length, color, count } = deletions
       let fontSet = false
-      for (let c = 0; c < encoded.count; c++) {
-        const i = encoded.featureIndex[c]!
-        const delta = featureDeltas[i]!
-        const rowIndex = rowSlot(encoded.row, c, rowTable)
-        if (delta >= 0 || rowIndex === undefined) {
+      for (let k = 0; k < count; k++) {
+        const rowIndex = rowSlot(row, k, rowTable)
+        if (rowIndex === undefined) {
           continue
         }
-        const xa = bpToPx(featureStarts[i]!)
-        const xb = bpToPx(featureEnds[i]!)
+        const xa = bpToPx(x[k]!)
+        const xb = bpToPx(x2[k]!)
         const yMid = Math.round(offset + rowHeight * rowIndex + h / 2)
         const left = Math.min(xa, xb)
         const width = Math.abs(xb - xa)
@@ -101,13 +92,10 @@ export function drawMultiRowIndelGlyphs(
             fontSet = true
           }
           // the label sits above the line, so it reads against the block
-          ctx.fillStyle = textOn(
-            rowColor(encoded.color[c]!, encoded.row, c, rowTable),
-          )
-          // the magnitude, not the signed delta: a bare "-9048" reads as a
-          // sequence length that went negative, and the glyph already says
-          // which direction this is
-          ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
+          ctx.fillStyle = textOn(rowColor(color[k]!, row, k, rowTable))
+          // the magnitude, not a signed delta: a bare "-9048" reads as a
+          // sequence length that went negative
+          ctx.fillText(String(length[k]), left + width / 2, yMid - h / 4)
         }
       }
     },

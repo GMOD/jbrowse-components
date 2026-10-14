@@ -4,7 +4,7 @@ import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 import { encodeRows } from './encodeTestUtils.ts'
-import { multiRowInsertionChannels } from './multiRowInsertions.ts'
+import { multiRowUploadData } from './multiRowIndels.ts'
 import { MULTI_ROW_INSERTION_MARK } from './multiRowMarks.ts'
 
 import type {
@@ -116,19 +116,10 @@ function draw(
     rows: ['mom', 'dad'],
     ...opts,
   })
-  const uploaded = {
-    ...encoded,
-    insertions: multiRowInsertionChannels(encoded, region, INSERTION_ABGR),
-  }
+  const uploaded = multiRowUploadData(encoded, region, INSERTION_ABGR)
   const state = { ...frame, rowTable }
   MULTI_ROW_INSERTION_MARK.paintBlock(ctx, uploaded, block, state)
-  drawMultiRowIndelGlyphs(
-    ctx,
-    new Map([[0, region]]),
-    new Map([[0, uploaded]]),
-    [block],
-    state,
-  )
+  drawMultiRowIndelGlyphs(ctx, new Map([[0, uploaded]]), [block], state)
   return { calls, texts }
 }
 

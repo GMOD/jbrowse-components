@@ -9,7 +9,7 @@ import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
-import { multiRowInsertionChannels } from './rendering/multiRowInsertions.ts'
+import { multiRowUploadData } from './rendering/multiRowIndels.ts'
 
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RenderSvgModel } from './renderSvg.tsx'
@@ -137,23 +137,17 @@ function makeModel(
     error: undefined,
     regionTooLarge: false,
     svgReady: true,
-    indelGlyphRegions: undefined,
+    lengthField: '',
     uploadedChannelsIn: palette =>
       new Map(
-        [...drawnRegionData].map(([k, d]) => {
-          const channels = buildMultiRowChannels(d, encodeInputs)
-          return [
-            k,
-            {
-              ...channels,
-              insertions: multiRowInsertionChannels(
-                channels,
-                d,
-                cssColorToABGR(palette.insertion),
-              ),
-            },
-          ]
-        }),
+        [...drawnRegionData].map(([k, d]) => [
+          k,
+          multiRowUploadData(
+            buildMultiRowChannels(d, encodeInputs),
+            d,
+            cssColorToABGR(palette.insertion),
+          ),
+        ]),
       ),
     renderState,
     sources,

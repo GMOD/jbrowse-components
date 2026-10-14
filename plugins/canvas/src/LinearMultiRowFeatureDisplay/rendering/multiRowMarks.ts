@@ -2,7 +2,7 @@ import { insertionMark } from '@jbrowse/alignments-core'
 import { defineMark, spanMark } from '@jbrowse/render-core/marks'
 import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 
-import { multiRowInsertionParams } from './multiRowInsertions.ts'
+import { multiRowInsertionParams } from './multiRowIndels.ts'
 
 import type {
   MultiRowRenderState,
