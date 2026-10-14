@@ -236,7 +236,7 @@ test('a ramp value hovered tells no value apart from text that is no number', ()
     x2: Uint32Array.from([140, 240]),
     y: Float32Array.from([5, 6]),
     color: undefined,
-    colorValue: new Float32Array(bits.buffer),
+    colorValue: new Float32Array(bits.buffer, bits.byteOffset, bits.length),
     yMin: 5,
     yMax: 6,
   }
