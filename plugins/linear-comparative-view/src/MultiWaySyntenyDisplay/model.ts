@@ -267,6 +267,34 @@ export interface HoverTarget extends RibbonRef {
   feature: Feature
 }
 
+interface MultiWayVolatiles {
+  fetchedFeatures:
+    | {
+        anchor: string
+        features: Feature[]
+        ops: AlignmentOpsById
+        lanes?: string[]
+      }
+    | undefined
+  seenAttributeRanges: Record<string, AttributeRange>
+  laneGenes: LaneFetchState<HeldLaneGenes>
+  laneDescriptions: Map<string, AssemblyDescription>
+  describedLanes: Set<string>
+  lanesBeingDescribed: Set<string>
+  releasedLanes: Set<string>
+  laneLinks: LaneFetchState<HeldLaneLinks>
+  laneGroups: LaneFetchState<HeldLaneGroups>
+  laneLayerData: LaneFetchState<HeldLaneLayer>
+  hoverTarget: HoverTarget | undefined
+  clickedTarget: RibbonRef | undefined
+  laneDecisions: Map<string, LaneDecision | undefined>
+  renderOriginPx: number
+  laneTransitions: Map<string, LaneTransition>
+  laneMotionClockMs: number
+  laneMotionHalfway: ReadonlySet<string>
+  laneDragPx: ReadonlyMap<string, number>
+}
+
 const NO_GENES: LaneGene[] = []
 
 /** `record` with `key` set to `value`, or dropped for undefined; empty is undefined */
@@ -356,59 +384,52 @@ export function stateModelFactory(
         >(),
       }),
     )
-    .volatile(() => ({
+    .volatile((): MultiWayVolatiles => ({
       /** #volatile */
-      fetchedFeatures: undefined as
-        | {
-            anchor: string
-            features: Feature[]
-            ops: AlignmentOpsById
-            lanes?: string[]
-          }
-        | undefined,
+      fetchedFeatures: undefined,
       /** #volatile */
-      seenAttributeRanges: {} as Record<string, AttributeRange>,
+      seenAttributeRanges: {},
       /** #volatile */
-      laneGenes: {} as LaneFetchState<HeldLaneGenes>,
+      laneGenes: {},
       /** #volatile */
-      laneDescriptions: new Map<string, AssemblyDescription>(),
+      laneDescriptions: new Map(),
       /** #volatile */
-      describedLanes: new Set<string>(),
+      describedLanes: new Set(),
       /** #volatile */
-      lanesBeingDescribed: new Set<string>(),
+      lanesBeingDescribed: new Set(),
       /** #volatile */
-      releasedLanes: new Set<string>(),
+      releasedLanes: new Set(),
       /**
        * #volatile
        * per adjacent mate-lane pair, at the lanes' own coordinates
        */
-      laneLinks: {} as LaneFetchState<HeldLaneLinks>,
+      laneLinks: {},
       /**
        * #volatile
        * per mate lane, a gene table's rows on the lane's own window
        */
-      laneGroups: {} as LaneFetchState<HeldLaneGroups>,
+      laneGroups: {},
       /** #volatile */
-      laneLayerData: {} as LaneFetchState<HeldLaneLayer>,
+      laneLayerData: {},
       /** #volatile */
-      hoverTarget: undefined as HoverTarget | undefined,
+      hoverTarget: undefined,
       /** #volatile */
-      clickedTarget: undefined as RibbonRef | undefined,
+      clickedTarget: undefined,
       /** #volatile */
-      laneDecisions: new Map<string, LaneDecision | undefined>(),
+      laneDecisions: new Map(),
       /**
        * #volatile
        * the view's `offsetPx` the stack was last laid out against
        */
       renderOriginPx: 0,
       /** #volatile */
-      laneTransitions: new Map<string, LaneTransition>(),
+      laneTransitions: new Map(),
       /** #volatile */
       laneMotionClockMs: 0,
       /** #volatile */
-      laneMotionHalfway: new Set<string>() as ReadonlySet<string>,
+      laneMotionHalfway: new Set(),
       /** #volatile */
-      laneDragPx: new Map<string, number>() as ReadonlyMap<string, number>,
+      laneDragPx: new Map(),
     }))
     .actions(self => {
       function ribbonColorSetting(): SyntenyColorSnapshot {
@@ -817,66 +838,48 @@ export function stateModelFactory(
     }))
     .views(self => {
       const { jexl } = getEnv(self).pluginManager
-      let boxes:
-        | { features?: Feature[]; settings: string; colors: GeneColors }
-        | undefined
-      let lanes = new Map<
-        string,
-        { held: HeldLaneGenes; settings: string; colors: GeneColors }
-      >()
-      return {
-        /** #getter */
-        get boxColors(): GeneColors {
-          const { features, geneColorSettings } = self
-          const settings = JSON.stringify(geneColorSettings)
-          if (
-            boxes === undefined ||
-            boxes.features !== features ||
-            boxes.settings !== settings
-          ) {
-            boxes = {
-              features,
+      // a fresh resolver per data identity and settings, since each memoizes
+      // by feature id
+      interface Held {
+        data: unknown
+        settings: string
+        colors: GeneColors
+      }
+      const colorsFor = (prev: Held | undefined, data: unknown): Held => {
+        const settings = JSON.stringify(self.geneColorSettings)
+        return prev !== undefined &&
+          prev.data === data &&
+          prev.settings === settings
+          ? prev
+          : {
+              data,
               settings,
               colors: geneColors(
                 self.configuration,
                 self.geneColorEncoding,
-                geneColorSettings.utrColor,
+                self.geneColorSettings.utrColor,
                 jexl,
                 self.geneColorSlots,
               ),
             }
-          }
+      }
+      let boxes: Held | undefined
+      let lanes = new Map<string, Held>()
+      return {
+        /** #getter */
+        get boxColors(): GeneColors {
+          boxes = colorsFor(boxes, self.features)
           return boxes.colors
         },
         /** #getter */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
-          const { geneColorSettings } = self
-          const settings = JSON.stringify(geneColorSettings)
-          const next = new Map<
-            string,
-            { held: HeldLaneGenes; settings: string; colors: GeneColors }
-          >()
-          for (const [lane, held] of self.laneGenes.held ?? []) {
-            const prev = lanes.get(lane)
-            next.set(
+          lanes = new Map(
+            [...(self.laneGenes.held ?? [])].map(([lane, held]) => [
               lane,
-              prev?.held === held && prev.settings === settings
-                ? prev
-                : {
-                    held,
-                    settings,
-                    colors: geneColors(
-                      self.configuration,
-                      self.geneColorEncoding,
-                      geneColorSettings.utrColor,
-                      jexl,
-                      self.geneColorSlots,
-                    ),
-                  },
-            )
-          }
-          lanes = next
-          return new Map([...next].map(([lane, { colors }]) => [lane, colors]))
+              colorsFor(lanes.get(lane), held),
+            ]),
+          )
+          return new Map([...lanes].map(([lane, { colors }]) => [lane, colors]))
         },
       }
     })
@@ -933,6 +936,19 @@ export function stateModelFactory(
         )
       },
       /**
+       * #method
+       * `assemblyName` and every alias the session holds it under
+       */
+      laneSpellings(assemblyName: string) {
+        const { assemblyManager } = getSession(self)
+        return [
+          assemblyName,
+          ...((assemblyManager.has(assemblyName) &&
+            assemblyManager.get(assemblyName)?.allAliases) ||
+            []),
+        ]
+      },
+      /**
        * #getter
        * every session track, connections' included
        */
@@ -952,14 +968,8 @@ export function stateModelFactory(
        * plain ids, then `{assembly}` entries, each in entry order
        */
       namedLaneTracks(entries: readonly string[], key: string) {
-        const { assemblyManager } = getSession(self)
-        const spellings = new Set([
-          key,
-          ...((assemblyManager.has(key) &&
-            assemblyManager.get(key)?.allAliases) ||
-            []),
-        ])
-        return laneTrackIds(entries, [...spellings]).flatMap(id => {
+        const spellings = [...new Set(self.laneSpellings(key))]
+        return laneTrackIds(entries, spellings).flatMap(id => {
           const track = self.sessionTracksById.get(id)
           return track &&
             getConfAssemblyNamesOrNone(track).some(
@@ -1057,19 +1067,7 @@ export function stateModelFactory(
         const selection = self.adapterDeclaresLanes
           ? self.laneSelection
           : undefined
-        const { assemblyManager } = getSession(self)
-        return (
-          selection && [
-            ...new Set(
-              selection.flatMap(name => [
-                name,
-                ...((assemblyManager.has(name) &&
-                  assemblyManager.get(name)?.allAliases) ||
-                  []),
-              ]),
-            ),
-          ]
-        )
+        return selection && [...new Set(selection.flatMap(self.laneSpellings))]
       },
     }))
     .views(self => ({
@@ -1094,11 +1092,9 @@ export function stateModelFactory(
       },
       /** #method */
       holdsTemporarily(assemblyName: string) {
-        const { assemblyManager, temporaryAssemblies = [] } = getSession(self)
-        const name =
-          assemblyManager.getCanonicalAssemblyName(assemblyName) ?? assemblyName
-        return temporaryAssemblies.some(
-          conf => (conf as { name?: unknown }).name === name,
+        const name = self.laneKey(assemblyName)
+        return (getSession(self).temporaryAssemblies ?? []).some(
+          conf => isObject(conf) && conf.name === name,
         )
       },
       /**
