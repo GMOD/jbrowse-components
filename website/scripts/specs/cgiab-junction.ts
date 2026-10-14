@@ -261,7 +261,7 @@ export const scaffoldOverview = (
         minAlignmentLength: 100000,
         opacity: 0.35,
         showOffscreenMates: false,
-        tracks: [[PIF], [PIF]],
+        tracks: [PIF],
         views: [
           {
             loc: 'chr13_hap2:1-99565785 chr3_chr6_chr11_hap2:1-196000000',

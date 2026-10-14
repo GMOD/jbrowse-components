@@ -568,12 +568,7 @@ This session opens the script's `config.json`; point `config=` at your copy:
             "tracks": ["hprc_genes_HG00232_1"]
           }
         ],
-        "tracks": [
-          ["amylase_adjacent"],
-          ["amylase_adjacent"],
-          ["amylase_adjacent"],
-          ["amylase_adjacent"]
-        ],
+        "tracks": ["amylase_adjacent"],
         "color": { "field": "strand" },
         "drawCurves": true,
         "levelHeights": [110, 110, 110, 110]

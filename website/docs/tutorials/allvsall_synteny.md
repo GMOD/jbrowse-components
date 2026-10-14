@@ -202,7 +202,7 @@ A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
           { "assembly": "NCTC86" },
           { "assembly": "IAI39" }
         ],
-        "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+        "tracks": ["ecoli_ava"],
         "minAlignmentLength": 10000,
         "collapseEmptyRows": true
       }
@@ -211,8 +211,8 @@ A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
 }
 ```
 
-- `tracks` is one entry per band, so five rows take four: `tracks[0]` connects
-  rows 0-1, `tracks[1]` rows 1-2, and so on
+- `tracks` names the track once, and the view puts it on every band whose two
+  rows its `assemblyNames` cover
 - `collapseEmptyRows` gives each trackless row a bare scale bar
 
 Row order is a free choice with an all-vs-all PAF, since the file aligns every

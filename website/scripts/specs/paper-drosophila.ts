@@ -46,7 +46,7 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           views: ROWS,
-          tracks: ROWS.slice(1).map(() => [TRACK]),
+          tracks: [TRACK],
           color: {
             field: 'muller',
             domain: ['A', 'B', 'C', 'D', 'E', 'F'],

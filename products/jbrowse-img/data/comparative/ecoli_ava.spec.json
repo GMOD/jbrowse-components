@@ -7,7 +7,7 @@
     { "assembly": "NCTC86" },
     { "assembly": "IAI39" }
   ],
-  "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+  "tracks": ["ecoli_ava"],
   "minAlignmentLength": 10000,
   "levelHeights": [130, 130, 130, 130]
 }

@@ -963,7 +963,7 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
             { assembly: 'CFT073' },
             { assembly: 'NCTC86' },
           ],
-          tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
+          tracks: ['ecoli_ava'],
           drawCurves: false,
           // Strand, not the 'default' red the standalone multi-way figure
           // uses, because strand is what the two halves have in common:
@@ -1165,10 +1165,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'GCF_000208745.1' },
               { assembly: 'GCF_030704535.1' },
             ],
-            tracks: [
-              ['grape_peach_cacao_blocks'],
-              ['grape_peach_cacao_blocks'],
-            ],
+            tracks: ['grape_peach_cacao_blocks'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             // the rows hold no track, so uncollapsed each draws a "No tracks
@@ -1257,10 +1254,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 ],
               },
             ],
-            tracks: [
-              ['grape_peach_cacao_blocks'],
-              ['grape_peach_cacao_blocks'],
-            ],
+            tracks: ['grape_peach_cacao_blocks'],
             drawCurves: true,
             color: { field: 'syntenicDepth' },
           },
@@ -1987,12 +1981,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               tracks: ['hprc_genes_HG00232_1'],
             },
           ],
-          tracks: [
-            ['amylase_adjacent'],
-            ['amylase_adjacent'],
-            ['amylase_adjacent'],
-            ['amylase_adjacent'],
-          ],
+          tracks: ['amylase_adjacent'],
           color: { field: 'strand' },
           drawCurves: true,
           levelHeights: [110, 110, 110, 110],
@@ -2057,7 +2046,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           views: SYRI_ACCESSIONS.map(assembly => ({ assembly })),
-          tracks: SYRI_ACCESSIONS.slice(1).map(() => ['syri_pangenome']),
+          tracks: ['syri_pangenome'],
           color: { field: 'syri', domain: SYRI_TYPES },
           drawCurves: true,
           opacity: 0.9,
@@ -2398,12 +2387,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'gar' },
               { assembly: 'zebrafish' },
             ],
-            tracks: [
-              ['vertebrates_orthogroups'],
-              ['vertebrates_orthogroups'],
-              ['vertebrates_orthogroups'],
-              ['vertebrates_orthogroups'],
-            ],
+            tracks: ['vertebrates_orthogroups'],
             color: { field: 'reference' },
             // On, and it runs on every level including the last (review: "the
             // last comparison with zebrafish is particularly scrambled, unclear
@@ -2509,12 +2493,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'tobacco' },
               { assembly: 'coffee' },
             ],
-            tracks: [
-              ['solanaceae_orthogroups'],
-              ['solanaceae_orthogroups'],
-              ['solanaceae_orthogroups'],
-              ['solanaceae_orthogroups'],
-            ],
+            tracks: ['solanaceae_orthogroups'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             sameScale: true,
@@ -2567,14 +2546,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'melanogaster' },
               { assembly: 'virilis' },
             ],
-            tracks: [
-              ['drosophila_orthogroups'],
-              ['drosophila_orthogroups'],
-              ['drosophila_orthogroups'],
-              ['drosophila_orthogroups'],
-              ['drosophila_orthogroups'],
-              ['drosophila_orthogroups'],
-            ],
+            tracks: ['drosophila_orthogroups'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
@@ -2617,14 +2589,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'melanogaster' },
               { assembly: 'virilis' },
             ],
-            tracks: [
-              ['drosophila_blocks'],
-              ['drosophila_blocks'],
-              ['drosophila_blocks'],
-              ['drosophila_blocks'],
-              ['drosophila_blocks'],
-              ['drosophila_blocks'],
-            ],
+            tracks: ['drosophila_blocks'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             diagonalizeAnchorRow: 1,
@@ -2666,12 +2631,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'brachypodium' },
               { assembly: 'setaria' },
             ],
-            tracks: [
-              ['grasses_orthogroups'],
-              ['grasses_orthogroups'],
-              ['grasses_orthogroups'],
-              ['grasses_orthogroups'],
-            ],
+            tracks: ['grasses_orthogroups'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             // One bp/px down the stack, see the wheat spec below. This set has
@@ -2830,7 +2790,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 ],
               },
             ],
-            tracks: [['grasses_orthogroups'], ['grasses_orthogroups']],
+            tracks: ['grasses_orthogroups'],
             // by the row BELOW each band (field 'query' paints views[level],
             // 'target' views[level+1]). That is what splits the bottom band into
             // two colors, one per maize chromosome, while the top band stays one
@@ -2903,13 +2863,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'urartu' },
               { assembly: 'timopheevii' },
             ],
-            tracks: [
-              ['wheat_orthogroups'],
-              ['wheat_orthogroups'],
-              ['wheat_orthogroups'],
-              ['wheat_orthogroups'],
-              ['wheat_orthogroups'],
-            ],
+            tracks: ['wheat_orthogroups'],
             color: { field: 'reference' },
             autoDiagonalize: true,
             // One bp/px down the whole stack instead of fitting each row to the

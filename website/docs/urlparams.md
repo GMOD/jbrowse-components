@@ -852,20 +852,22 @@ restores natively:
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
 
-`levels` is accepted because the view declares it; `tracks` fills it, one entry
-per level, and `levelHeights` sizes them, so reach for `levels` only to author a
-band's full state.
+`levels` is accepted because the view declares it; `tracks` fills it and
+`levelHeights` sizes them, so reach for `levels` only to author a band's full
+state.
 
 #### Linear synteny view (multi-way)
 
-`tracks` is then an array of arrays, one per level between adjacent rows:
+With three or more rows, each track in a flat `tracks` list goes on every band
+whose two rows its `assemblyNames` cover. A pairwise track lands on its one
+band, and one multi-genome track covers the whole stack:
 
 ```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "type": "LinearSyntenyView",
-      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]],
+      "tracks": ["volvox_ins.paf", "volvox_del.paf"],
       "views": [
         { "loc": "ctgA:1-50000", "assembly": "volvox_ins" },
         { "loc": "ctgA:1000-50000", "assembly": "volvox" },
@@ -875,6 +877,12 @@ band's full state.
   ]
 }
 ```
+
+- A track that covers no band, or whose config names no `assemblyNames`, is
+  reported and not drawn.
+- A list of lists names each band's tracks instead, `tracks[i]` between rows `i`
+  and `i + 1`. Use it to give a band a different track than its coverage picks,
+  or none.
 
 ### Breakpoint split view
 

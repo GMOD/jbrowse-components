@@ -190,7 +190,7 @@ strain:
 ```
 
 To stack the five strains, a linear synteny view takes one panel per strain and
-one `tracks` entry per band, each naming the same track. Put this in the
+names the track once in `tracks`, which puts it on every band. Put this in the
 session's `views`, or use **Add → Linear synteny view**, whose Quick start fills
 in a row per assembly the track lists.
 
@@ -204,12 +204,7 @@ in a row per assembly the track lists.
     { "assembly": "NCTC86" },
     { "assembly": "IAI39" }
   ],
-  "tracks": [
-    ["ecoli_cactus_ava"],
-    ["ecoli_cactus_ava"],
-    ["ecoli_cactus_ava"],
-    ["ecoli_cactus_ava"]
-  ],
+  "tracks": ["ecoli_cactus_ava"],
   "minAlignmentLength": 10000,
   "levelHeights": [110, 110, 110, 110],
   "color": { "field": "strand" }

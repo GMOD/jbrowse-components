@@ -76,7 +76,7 @@ export function ecoliAvaStack(trackId: string) {
       { assembly: 'NCTC86' },
       { assembly: 'IAI39' },
     ],
-    tracks: [[trackId], [trackId], [trackId], [trackId]],
+    tracks: [trackId],
     // An EXPLICIT false, not the unset default: these FIGURES need straight
     // chords whatever the capture environment holds, because the slant IS the
     // signal on a whole-genome stack. The live ecoli_pangenome demo omits it,

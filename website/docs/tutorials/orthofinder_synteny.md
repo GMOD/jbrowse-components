@@ -242,13 +242,7 @@ so the bands take a while to draw:
           { "assembly": "urartu" },
           { "assembly": "timopheevii" }
         ],
-        "tracks": [
-          ["wheat_orthogroups"],
-          ["wheat_orthogroups"],
-          ["wheat_orthogroups"],
-          ["wheat_orthogroups"],
-          ["wheat_orthogroups"]
-        ],
+        "tracks": ["wheat_orthogroups"],
         "sameScale": true,
         "autoDiagonalize": true,
         "collapseEmptyRows": true,

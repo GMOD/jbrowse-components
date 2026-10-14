@@ -189,7 +189,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * Transient launch state: the settings written on the view object that
          * need resolving before they can be view state — the genome rows to
-         * open, the synteny tracks per level, the shared scale. The afterAttach
+         * open, the synteny tracks for each band, the shared scale. The afterAttach
          * autorun applies and clears it. Not written by hand: author every
          * setting directly on the view.
          */

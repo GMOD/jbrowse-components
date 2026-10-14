@@ -984,9 +984,10 @@ and comparison tracks supplied via `--config`). The spec is the same shape used
 by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
 browser URL works directly: see
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
-for the full format. `tracks` is one sub-array per level (the gap between
-adjacent `views`); the subcommand is optional since the render mode comes from
-the spec's view `type`.
+for the full format. A flat `tracks` list puts each track on every gap between
+adjacent `views` that its `assemblyNames` cover; one sub-array per gap names
+each gap's tracks instead. The subcommand is optional since the render mode
+comes from the spec's view `type`.
 
 ```bash
 jb2export --config jbrowse.json --spec spec.json --out synteny.svg
@@ -1093,10 +1094,10 @@ The
 [all-vs-all synteny tutorial](https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/)
 builds this track and the five strain assemblies it names.
 
-Where a config holds more than one such track, `--spec` says which one each band
-uses. The hosted demo below is that case — it has the same five strains aligned
-four ways (minimap2, pggb/wfmash, cactus, and untangle) — and its spec is where
-the repetition is, one entry per band:
+Where a config holds more than one such track, the `--spec` file names the one
+the stack uses. The hosted demo below is that case — it has the same five
+strains aligned four ways (minimap2, pggb/wfmash, cactus, and untangle) — and
+its spec names one of them:
 
 ```json
 {
@@ -1108,7 +1109,7 @@ the repetition is, one entry per band:
     { "assembly": "NCTC86" },
     { "assembly": "IAI39" }
   ],
-  "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+  "tracks": ["ecoli_ava"],
   "minAlignmentLength": 10000,
   "levelHeights": [130, 130, 130, 130]
 }

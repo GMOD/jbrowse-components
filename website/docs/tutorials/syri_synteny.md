@@ -212,13 +212,7 @@ between the two genomes it joins:
           { "assembly": "Kyo" },
           { "assembly": "Sha" }
         ],
-        "tracks": [
-          ["syri_pangenome"],
-          ["syri_pangenome"],
-          ["syri_pangenome"],
-          ["syri_pangenome"],
-          ["syri_pangenome"]
-        ],
+        "tracks": ["syri_pangenome"],
         "color": {
           "field": "syri",
           "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]

@@ -61,9 +61,11 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
     // span on two rows is how a synteny figure says "this object, seen twice".
     highlight?: (string | HighlightInput)[]
   } & LinearGenomeViewLaunchProps)[]
-  // synteny tracks per level: tracks[i] is shown between views[i] and
-  // views[i+1]. A flat list is treated as a single level-0 entry. An entry is a
-  // trackId, or an inline track config for a band no session list holds
+  // The synteny tracks. A flat list puts each track on every band whose two
+  // rows its assemblyNames cover; a list of lists names each band's tracks,
+  // tracks[i] between views[i] and views[i+1]. An entry is a trackId, or an
+  // inline track config, with its assemblyNames, for a band no session list
+  // holds
   tracks?: SyntenyTrackInit[] | SyntenyTrackInit[][]
   // Pixel height of each synteny strip, one entry per level. Useful for
   // whole-genome views where the default ~100px is too cramped for the

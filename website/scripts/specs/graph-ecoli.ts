@@ -1347,7 +1347,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // just lineargenomeview, showing how it is a big insertion not in the
           // others". Top band runs unbroken across the island, bottom band
           // starts at its right edge.
-          tracks: [[ECOLI_AVA_TRACK], [ECOLI_AVA_TRACK]],
+          tracks: [ECOLI_AVA_TRACK],
           drawCurves: true,
           // Default alpha. This spec used to halve it, because wfmash maps
           // all-to-all in both directions and the adapter unioned both

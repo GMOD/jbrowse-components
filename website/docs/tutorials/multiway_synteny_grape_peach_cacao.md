@@ -244,7 +244,7 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
           { "assembly": "GCF_000208745.1" },
           { "assembly": "GCF_030704535.1" }
         ],
-        "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
+        "tracks": ["grape_peach_cacao_blocks"],
         "color": { "field": "reference" },
         "autoDiagonalize": true,
         "collapseEmptyRows": true
@@ -254,7 +254,8 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 }
 ```
 
-- `tracks` is one entry per band
+- `tracks` names the track once, and it backs both bands because its
+  `assemblyNames` list all three genomes
 - `collapseEmptyRows` gives each trackless row a bare scale bar
 - `color` is a color scale, a `field` mapped to colors; the `reference` field
   colors both bands by the chromosomes of the shared middle row
