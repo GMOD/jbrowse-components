@@ -365,6 +365,7 @@ export default [
   '@jbrowse/core/util/simpleFeature',
   '@jbrowse/core/util/starFusion',
   '@jbrowse/core/util/stats',
+  '@jbrowse/core/util/stepOutputs',
   '@jbrowse/core/util/svAlt',
   '@jbrowse/core/util/SvgCanvas',
   '@jbrowse/core/util/svgColorProps',

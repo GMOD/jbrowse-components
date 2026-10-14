@@ -365,6 +365,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/simpleFeature': ['buildJexlContext', 'default', 'isFeature', 'jexlFeatureProxy', 'unwrapFeature'],
   '@jbrowse/core/util/starFusion': ['parseStarFusionBreakpoint', 'starFusionColumns'],
   '@jbrowse/core/util/stats': ['blankStats', 'calcStdFromSums', 'rectifyStats', 'scoresToStats'],
+  '@jbrowse/core/util/stepOutputs': ['BIN_OVERLAP_FIELD', 'CELLS_FIELDS', 'DEFAULT_AGGREGATE_OP', 'DEFAULT_BIN_AS', 'DEFAULT_COVERAGE_AS', 'DEFAULT_FORMULA_AS', 'DEFAULT_PILEUP_AS', 'MATE_FIELDS', 'POSITION_FIELDS', 'STEP_OUTPUTS', 'aggregateFieldName', 'isRowwise', 'stepWrites', 'stepsOutput'],
   '@jbrowse/core/util/svAlt': ['SV_MIN_LENGTH', 'SV_SYMBOLIC_ALLELES', 'breakendKeepsDirections', 'getBreakendMateLocString', 'isBreakend', 'junctionEnds', 'parseSvAlt', 'readTranslocationMate', 'safeParseBreakend', 'svClassOf', 'svClassOfAlt', 'svClassOfToken'],
   '@jbrowse/core/util/SvgCanvas': ['SvgCanvas', 'withFreshSvgClipIds'],
   '@jbrowse/core/util/svgColorProps': ['getFillProps', 'getStrokeProps', 'splitPaintAlpha', 'stripAlpha'],

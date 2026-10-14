@@ -3618,6 +3618,26 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/stepOutputs": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BIN_OVERLAP_FIELD",
+        "CELLS_FIELDS",
+        "DEFAULT_AGGREGATE_OP",
+        "DEFAULT_BIN_AS",
+        "DEFAULT_COVERAGE_AS",
+        "DEFAULT_FORMULA_AS",
+        "DEFAULT_PILEUP_AS",
+        "MATE_FIELDS",
+        "POSITION_FIELDS",
+        "STEP_OUTPUTS",
+        "aggregateFieldName",
+        "isRowwise",
+        "stepWrites",
+        "stepsOutput"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/svAlt": {
       "package": "@jbrowse/core",
       "names": [

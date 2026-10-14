@@ -2,7 +2,6 @@
 import { AUTO_BIN } from './autoBin.ts'
 import {
   FEATURE_FIELD_PRESETS,
-  aggregateFieldName,
   colorProblems,
   fieldScaleOf,
   isJexl,
@@ -10,28 +9,23 @@ import {
   isNamedColor,
   paintedScale,
   scaleEndProblems,
+  stepsOutput,
   universalPresetOf,
 } from './markRuleFacts.ts'
 import { MARK_SPECS, readsValue } from './markSpecs.ts'
 import {
   DEFAULT_AGGREGATE_OP,
-  BIN_OVERLAP_FIELD,
   DEFAULT_BIN_AS,
   DEFAULT_BIN_FIELD,
-  DEFAULT_COVERAGE_AS,
-  DEFAULT_FORMULA_AS,
   DEFAULT_LINE_INTERPOLATE,
   DEFAULT_ROW_PROPORTION,
   DEFAULT_LINK_SHAPE,
   DEFAULT_MARK_TYPE,
-  CELLS_FIELDS,
-  DEFAULT_PILEUP_AS,
   DEFAULT_PILEUP_FIELDS,
   DEFAULT_TEXT_FIELD,
   DEFAULT_WINDOW_FRAME,
   DEFAULT_X2,
   isWindowFrame,
-  MATE_FIELDS,
   MAX_THRESHOLD_CUTS,
 } from './markVocabulary.ts'
 import { stepChannels } from './stepChannels.ts'
@@ -384,8 +378,6 @@ function drawTogether(a: MarkSnapshot, b: MarkSnapshot) {
   return lower(a) < upper(b) && lower(b) < upper(a)
 }
 
-type BinSnapshot = Extract<StepSnapshot, { type: 'bin' }>
-
 // The field names a step reads, by the slot each is written in.
 function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
   const list = (slot: string, refs: readonly string[] = []) =>
@@ -492,69 +484,10 @@ function banded(mark: MarkSnapshot, shared: readonly StepSnapshot[]) {
 }
 
 // The fields the last step that makes its features from nothing leaves behind,
-// with what the steps after it add, over the display's steps and then the
-// mark's; undefined where no step does, and every field of the file is still
-// there.
+// with what the steps after it add; undefined where no step does, and every
+// field of the file is still there.
 function madeFields(steps: readonly StepSnapshot[]) {
-  const made = steps.findLastIndex(
-    s => s.type === 'aggregate' || s.type === 'coverage',
-  )
-  const last = steps[made]
-  if (!last) {
-    return undefined
-  }
-  const fields = new Set(['refName', 'start', 'end'])
-  if (last.type === 'coverage') {
-    fields.add(last.as ?? DEFAULT_COVERAGE_AS)
-  } else if (last.type === 'aggregate') {
-    const bin = steps
-      .slice(0, made)
-      .findLast((s): s is BinSnapshot => s.type === 'bin')
-    const edges = bin?.as ?? DEFAULT_BIN_AS
-    for (const field of last.groupby?.length
-      ? last.groupby
-      : edges.length === 2
-        ? edges
-        : []) {
-      fields.add(field)
-    }
-    for (const { op = DEFAULT_AGGREGATE_OP, field, as } of last.ops ?? []) {
-      fields.add(aggregateFieldName({ op, field, as }))
-    }
-  }
-  for (const step of steps.slice(made + 1)) {
-    if (step.type === 'formula') {
-      fields.add(step.as ?? DEFAULT_FORMULA_AS)
-    } else if (step.type === 'pileup') {
-      fields.add(step.as ?? DEFAULT_PILEUP_AS)
-    } else if (step.type === 'window') {
-      for (const { op = DEFAULT_AGGREGATE_OP, field, as } of step.ops ?? []) {
-        fields.add(aggregateFieldName({ op, field, as }))
-      }
-    } else if (step.type === 'flatten') {
-      for (const field of [step.index, step.key]) {
-        if (field) {
-          fields.add(field)
-        }
-      }
-    } else if (step.type === 'mate') {
-      for (const field of MATE_FIELDS) {
-        fields.add(field)
-      }
-    } else if (step.type === 'cells') {
-      for (const field of CELLS_FIELDS) {
-        fields.add(field)
-      }
-    } else if (step.type === 'bin') {
-      for (const edge of step.as?.length === 2 ? step.as : DEFAULT_BIN_AS) {
-        fields.add(edge)
-      }
-      if (step.fields?.length === 2) {
-        fields.add(BIN_OVERLAP_FIELD)
-      }
-    }
-  }
-  return fields
+  return stepsOutput(steps).surviving
 }
 
 // What a list of steps cannot run as written, a mark's, the facet's or the
