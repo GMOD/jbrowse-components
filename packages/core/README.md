@@ -2365,6 +2365,19 @@ readonly ColorRampStop[]
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+### WindowStep
+
+Every row kept, each written with `ops` summarized over the rows of its group
+around it, Vega-Lite's window transform: a group is a distinct `groupby` value
+set within a section, its rows taken in `start` order, and `frame` counts rows
+before and after the current one, `null` running to the group's end. `[-10, 10]`
+is a moving average over 21 rows, whatever bases they span; `[null, 0]`, the
+default, a running total. A frame cut off at a group's end summarizes the rows
+it has. The rows come out grouped, each group in `start` order, so a `line`
+walks one group at a time.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### withColumns
 
 The table's rows with `written` beside them, in the order `rows` names where it

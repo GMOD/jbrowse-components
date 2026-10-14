@@ -9801,6 +9801,58 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkTransform.window": {
+      "title": "MarkTransform.window",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "type": {
+          "const": "window"
+        },
+        "groupby": {
+          "description": "grouping fields.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "frame": {
+          "description": "rows before and after each row, null for unbounded. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "default": [
+            null,
+            0
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
+          }
+        },
+        "ops": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkAggregateOp"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MarkTransform.coverage": {
       "title": "MarkTransform.coverage",
       "type": "object",
@@ -9977,6 +10029,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "formula",
             "bin",
             "aggregate",
+            "window",
             "coverage",
             "flatten",
             "cells",
@@ -10051,6 +10104,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/MarkTransform.aggregate"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "window"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MarkTransform.window"
           }
         },
         {

@@ -193,7 +193,9 @@ test('each op over each frame agrees with summing the frame row by row', () => {
       const group = features
         .filter(f => f.get('source') === source)
         .sort(
-          (x, y) => x.get('start') - y.get('start') || x.get('i') - y.get('i'),
+          (x, y) =>
+            Number(x.get('start')) - Number(y.get('start')) ||
+            Number(x.get('i')) - Number(y.get('i')),
         )
       return group.map((f, j) => {
         const [before, after] = frame!

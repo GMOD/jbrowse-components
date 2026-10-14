@@ -41,7 +41,10 @@ is refused at load.
 expression's value into a field; `bin` snaps each feature to a
 genome-aligned bin, or with `fields` cuts it into a piece per bin it
 overlaps; `aggregate` folds each group into one feature carrying
-its summaries; `coverage` replaces the features with runs of how many
+its summaries; `window` writes each feature with summaries over the
+features of its group around it in start order, a moving average over
+features where a `bin` averages over bases; `coverage` replaces the
+features with runs of how many
 overlap each stretch; `flatten` fans out an array or a record field;
 `cells` replaces each aligned row with its runs of match, mismatch and gap
 against the reference it was fanned out of and an interbase insertion per
@@ -75,6 +78,9 @@ A MarkTransform is one of the types its rows begin with, named by its `type`, an
 | <span id="slot-aggregateopsas">**aggregate.ops.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The output field. Empty is `count`, or `<op>_<field>`. |
 | <span id="slot-aggregategroupby">**aggregate.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups. Empty takes the edges the last `bin` before it wrote, in this mark's `transform`, the facet's or the display's, so binning and counting needs no restatement; with none there it folds the whole region into one feature. |
 | <span id="slot-aggregateops">**aggregate.ops**</span><br><code>types.array(aggregateOpSchema)</code> | The summaries each group carries. |
+| <span id="slot-windowgroupby">**window.groupby**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The fields whose distinct value sets make the groups a frame stays inside, within a facet's section. Empty is one group per section. |
+| <span id="slot-windowframe">**window.frame**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[null, 0]</code> | The rows before and after each row that its summaries read, in its group's start order: `[-10, 10]` reads 21 rows, whatever bases they span, and `null` runs to the group's end. |
+| <span id="slot-windowops">**window.ops**</span><br><code>types.array(aggregateOpSchema)</code> | The summaries each row is written with, named as an `aggregate`'s are. |
 | <span id="slot-coverageas">**coverage.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'coverage'</code> | The field each run's depth is written to. |
 | <span id="slot-flattenfield">**flatten.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'subfeatures'</code> | The field fanned out, one feature per element of an array or per entry of a record keyed by name: a name or a dotted path. |
 | <span id="slot-flattenindex">**flatten.index**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The field each element's position in its array is written to. Empty writes none. |

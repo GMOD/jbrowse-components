@@ -162,6 +162,12 @@ export type StepSnapshot =
       as?: string[]
     }
   | { type: 'aggregate'; groupby?: string[]; ops?: OpSnapshot[] }
+  | {
+      type: 'window'
+      groupby?: string[]
+      frame?: (number | null)[]
+      ops?: OpSnapshot[]
+    }
   | { type: 'coverage'; as?: string }
   | {
       type: 'flatten'
@@ -386,6 +392,7 @@ function fieldRefs(step: StepSnapshot): [string, string | undefined][] {
     case 'pileup':
       return list('fields', step.fields)
     case 'aggregate':
+    case 'window':
       return [
         ...list('groupby', step.groupby),
         ...(step.ops ?? []).flatMap((o, k): [string, string | undefined][] => [
@@ -513,6 +520,10 @@ function madeFields(steps: readonly StepSnapshot[]) {
       fields.add(step.as ?? DEFAULT_FORMULA_AS)
     } else if (step.type === 'pileup') {
       fields.add(step.as ?? DEFAULT_PILEUP_AS)
+    } else if (step.type === 'window') {
+      for (const { op = DEFAULT_AGGREGATE_OP, field, as } of step.ops ?? []) {
+        fields.add(aggregateFieldName({ op, field, as }))
+      }
     } else if (step.type === 'flatten') {
       for (const field of [step.index, step.key]) {
         if (field) {
@@ -593,7 +604,7 @@ function stepProblems(steps: Steps, list = 'transform') {
         ),
       )
     }
-    if (type === 'aggregate') {
+    if (type === 'aggregate' || type === 'window') {
       for (const [k, { op = DEFAULT_AGGREGATE_OP, field, weight }] of (
         step.ops ?? []
       ).entries()) {
