@@ -140,19 +140,45 @@ export function openedBp(
   return out
 }
 
-/** The lane bp at an opened coordinate; inside a hole, the hole's own `at`. */
-export function laneBpOfOpened(openings: readonly LaneOpening[], at: number) {
+/**
+ * A lane point: a lane bp, and how far into the hole opening there it sits,
+ * since a hole holds no lane bp of its own
+ */
+export interface LanePoint {
+  bp: number
+  inHole: number
+}
+
+/** The lane point at an opened coordinate. */
+export function lanePointOfOpened(
+  openings: readonly LaneOpening[],
+  at: number,
+): LanePoint {
   let shift = 0
   for (const opening of openings) {
     if (at <= opening.at + shift) {
       break
     }
-    if (at < opening.at + shift + opening.bp) {
-      return opening.at
+    if (at <= opening.at + shift + opening.bp) {
+      return { bp: opening.at, inHole: at - opening.at - shift }
     }
     shift += opening.bp
   }
-  return at - shift
+  return { bp: at - shift, inHole: 0 }
+}
+
+/** The lane bp at an opened coordinate; inside a hole, the hole's own `at`. */
+export function laneBpOfOpened(openings: readonly LaneOpening[], at: number) {
+  return lanePointOfOpened(openings, at).bp
+}
+
+/** `lanePointOfOpened`'s inverse, held to the hole at `bp`, or none. */
+export function openedOfLanePoint(
+  openings: readonly LaneOpening[],
+  { bp, inHole }: LanePoint,
+) {
+  const hole = inHole > 0 ? openings.find(o => o.at === bp) : undefined
+  return openedBp(openings, bp) + (hole ? Math.min(inHole, hole.bp) : 0)
 }
 
 export function frameOpenings(frame: RowFrame) {

@@ -24,6 +24,7 @@ function decision(over: Partial<LaneDecision> = {}): LaneDecision {
     rung: 1,
     pivotAnchor: { refName: 'chr1', coord: 5000 },
     pivotLaneBp: 1_000_000,
+    pivotInHoleBp: 0,
     fitMin: 995_000,
     fitMax: 1_005_000,
     alsoOn: [],

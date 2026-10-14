@@ -5,7 +5,9 @@ import {
   groupRunsOnRow,
   laneBpOfOpened,
   laneOpeningsOf,
+  lanePointOfOpened,
   openedBp,
+  openedOfLanePoint,
   rowFrameX,
 } from './layoutMultiWay.ts'
 
@@ -38,6 +40,8 @@ export interface LaneDecision {
   rung: number
   pivotAnchor: AnchorCoord
   pivotLaneBp: number
+  /** bp into the hole opening at `pivotLaneBp`, where the pivot sits in one */
+  pivotInHoleBp: number
   fitMin: number
   fitMax: number
   alsoOn: string[]
@@ -77,13 +81,16 @@ export function nudgeDecision(
   openings: readonly LaneOpening[] = [],
 ): LaneDecision {
   const mirrored = d.flipped !== anchorReversed
-  return {
-    ...d,
-    pivotLaneBp: laneBpOfOpened(
-      openings,
-      openedBp(openings, d.pivotLaneBp) + (mirrored ? 1 : -1) * dxPx * bpPerPx,
-    ),
-  }
+  const { bp, inHole } = lanePointOfOpened(
+    openings,
+    openedOfLanePoint(openings, pivotOf(d)) +
+      (mirrored ? 1 : -1) * dxPx * bpPerPx,
+  )
+  return { ...d, pivotLaneBp: bp, pivotInHoleBp: inHole }
+}
+
+function pivotOf(d: LaneDecision) {
+  return { bp: d.pivotLaneBp, inHole: d.pivotInHoleBp }
 }
 
 // multiples of the anchor's visible span; rung 1 never zooms in past the anchor
@@ -584,14 +591,15 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
   return inside
 }
 
-export function laneBpAt(frame: RowFrame, px: number, width: number) {
+function openedAt(frame: RowFrame, px: number, width: number) {
   const bpPerPx = (frame.max - frame.min) / width
-  return laneBpOfOpened(
-    frameOpenings(frame),
-    frame.flipped
-      ? frame.min + (width - px) * bpPerPx
-      : frame.min + px * bpPerPx,
-  )
+  return frame.flipped
+    ? frame.min + (width - px) * bpPerPx
+    : frame.min + px * bpPerPx
+}
+
+export function laneBpAt(frame: RowFrame, px: number, width: number) {
+  return laneBpOfOpened(frameOpenings(frame), openedAt(frame, px, width))
 }
 
 /** `pivotPx` and `unitBp` are the view's live pivot px and visible span. */
@@ -606,7 +614,7 @@ export function frameFromDecision(
   const span = d.rung * unitBp
   const bpPerPx = span / width
   const flipped = d.flipped !== anchorReversed
-  const pivot = openedBp(openings, d.pivotLaneBp)
+  const pivot = openedOfLanePoint(openings, pivotOf(d))
   const min = flipped
     ? pivot - (width - pivotPx) * bpPerPx
     : pivot - pivotPx * bpPerPx
@@ -652,6 +660,7 @@ function sameDecision(a: LaneDecision, b: LaneDecision) {
     a.flipped === b.flipped &&
     a.rung === b.rung &&
     a.pivotLaneBp === b.pivotLaneBp &&
+    a.pivotInHoleBp === b.pivotInHoleBp &&
     a.pivotAnchor.refName === b.pivotAnchor.refName &&
     a.pivotAnchor.coord === b.pivotAnchor.coord &&
     a.fitMin === b.fitMin &&
@@ -802,12 +811,17 @@ export function decideLaneFrames({
       const group = pivot?.group
       const pivotPx = group && pxOfAnchor(anchorCoordOf(group))
       if (group && pivotPx !== undefined) {
+        const lanePivot = lanePointOfOpened(
+          frameOpenings(aligned),
+          openedAt(aligned, pivotPx, width),
+        )
         decision = {
           refName: aligned.refName,
           flipped: relativeFlipped,
           rung,
           pivotAnchor: anchorCoordOf(group),
-          pivotLaneBp: laneBpAt(aligned, pivotPx, width),
+          pivotLaneBp: lanePivot.bp,
+          pivotInHoleBp: lanePivot.inHole,
           fitMin: aligned.fitMin,
           fitMax: aligned.fitMax,
           alsoOn: aligned.alsoOn,

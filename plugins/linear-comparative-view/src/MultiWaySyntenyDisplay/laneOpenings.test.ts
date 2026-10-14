@@ -2,7 +2,11 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { NO_OPS } from './alignmentOps.ts'
 import { LaneGene } from './geneGlyph.ts'
-import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
+import {
+  decideLaneFrames,
+  frameFromDecision,
+  nudgeDecision,
+} from './laneDecision.ts'
 import { laneRegion } from './laneHeader.ts'
 import { buildLanes } from './laneStack.ts'
 import {
@@ -466,6 +470,76 @@ describe('a deletion the lane carries against the anchor', () => {
     )
     expect(moved.min).toBeCloseTo(frame.min, 6)
     expect(moved.max).toBeCloseTo(frame.max, 6)
+  })
+})
+
+describe('a pivot inside a hole', () => {
+  // the lane's first piece carries a 4 kb insertion, then a 30 kb deletion
+  const record = (id: string, start: number, end: number, mate: Span) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start,
+      end,
+      strand: 1,
+      mate: { assemblyName: 'L', refName: 'ctg', start: mate[0], end: mate[1] },
+    })
+  const groups = groupFeatures([
+    record('a', 0, 20_000, [0, 24_000]),
+    record('b', 50_000, 52_000, [24_000, 26_000]),
+  ])
+  const pxOf = (bp: number) => bp / 100
+  const openings = laneOpeningsOf(groups)('L', 'ctg')
+
+  test('keeps the lane where the alignment put it', () => {
+    expect(openings).toEqual([{ at: 24_000, bp: 30_000 }])
+    const d = decideLaneFrames({
+      groups,
+      openingsOf: laneOpeningsOf(groups),
+      assemblyNames: ['L'],
+      anchorX: new Map(groups.map(g => [g.key, pxOf(anchorCenter(g))])),
+      anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),
+      pxOfAnchor: c => pxOf(c.coord),
+      unitBp: 100_000,
+      width: 1000,
+      previous: new Map(),
+    }).get('L')!
+    expect(d.pivotAnchor.coord).toBe(51_000)
+    const frame = frameFromDecision(
+      d,
+      pxOf(d.pivotAnchor.coord),
+      100_000,
+      1000,
+      false,
+      openings,
+    )
+    expect(rowFrameX(frame, 12_000, 1000)).toBeCloseTo(pxOf(10_000))
+  })
+
+  test('slides a frozen lane as far as the drag, across the hole too', () => {
+    let d: LaneDecision = {
+      refName: 'ctg',
+      flipped: false,
+      rung: 1,
+      pivotAnchor: { refName: 'chr1', coord: 50_000 },
+      pivotLaneBp: 900,
+      pivotInHoleBp: 0,
+      fitMin: 0,
+      fitMax: 2000,
+      alsoOn: [],
+      alsoOnMore: 0,
+      alsoAt: [],
+      pinned: false,
+      orientationPinned: false,
+    }
+    const hole = [{ at: 1000, bp: 5000 }]
+    const minOf = (x: LaneDecision) =>
+      frameFromDecision(x, 500, 10_000, 1000, false, hole).min
+    for (const dxPx of [-50, -50, -400, 10, -100, 60]) {
+      const next = nudgeDecision(d, dxPx, 10, false, hole)
+      expect(minOf(next) - minOf(d)).toBeCloseTo(-dxPx * 10)
+      d = next
+    }
   })
 })
 
