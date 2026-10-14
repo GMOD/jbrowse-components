@@ -11,9 +11,6 @@ test('a row height is the shared Row height menu, with each display its presets'
     return Array.isArray(step) ? undefined : step?.path
   }
   expect(path(8, 'LinearMafDisplay')).toBe('Track menu → Row height → Compact')
-  expect(path(14, 'LinearMultiRowFeatureDisplay')).toBe(
-    'Track menu → Row height → Normal',
-  )
   expect(path(2, 'LinearMultiSampleVariantDisplay')).toBe(
     'Track menu → Row height → Custom... → 2px',
   )

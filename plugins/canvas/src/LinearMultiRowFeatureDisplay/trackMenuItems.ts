@@ -10,7 +10,6 @@ import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
-  rowHeightMenuItem,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
   treeSidebarShowMenuItems,
@@ -19,7 +18,6 @@ import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import { entryHidden } from './rendering/colorLegend.ts'
-import { ROW_HEIGHT_PRESETS } from './rowHeightPresets.ts'
 import { rowCountHint } from './rowsFields.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
@@ -64,7 +62,6 @@ interface MultiRowMenuSelf
   rowFocus?: readonly string[]
   rowArrangementIsCustom: boolean
   rowTree?: string
-  rowHeight: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowRowSeparators: (f: boolean) => void
@@ -73,8 +70,6 @@ interface MultiRowMenuSelf
   setShowBranchLength: (f: boolean) => void
   setRowFocus: (names?: readonly string[]) => void
   setScrollTop: (scrollTop: number) => void
-  setRowHeight: (n: number) => void
-  setFitToHeight: () => void
 }
 
 function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
@@ -187,7 +182,6 @@ export function buildMultiRowTrackMenuItems(
 ): MenuItem[] {
   return [
     ...makeShowSubMenu(showMenuItems(self)),
-    rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     ...rowsFieldMenuItems(self),
     ...groupByMenuItems(self),
     ...categoriesMenuItems(self),

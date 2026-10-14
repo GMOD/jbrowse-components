@@ -17,7 +17,6 @@ import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
 import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
 import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
-import { ROW_HEIGHT_PRESETS as MULTIROW_HEIGHT_PRESETS } from '../../../../plugins/canvas/src/LinearMultiRowFeatureDisplay/rowHeightPresets.ts'
 import { MAF_COLOR_FIELD_LABELS } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import {
   FACET_LABELS,
@@ -718,7 +717,6 @@ const MAF_COLOR_BY = `${TRACK_MENU} → Color by...`
 // none.
 const ROW_HEIGHT_MENUS: Record<string, readonly RowHeightPreset[]> = {
   LinearMafDisplay: MAF_HEIGHT_PRESETS,
-  LinearMultiRowFeatureDisplay: MULTIROW_HEIGHT_PRESETS,
   LinearMultiSampleVariantDisplay: [],
 }
 

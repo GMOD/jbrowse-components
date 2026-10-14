@@ -13,7 +13,6 @@ import {
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
-import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -39,7 +38,6 @@ import {
 } from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
-  RowHeightMixin,
   TreeSidebarMixin,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
@@ -141,7 +139,6 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       LegendMixin(),
-      RowHeightMixin(),
       TreeSidebarMixin(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       StoredHoverMixin<MultiRowHit>(
@@ -465,7 +462,8 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The track height that auto-fit mode divides among rows.
+       * The track height the rows divide among them, as multi-wiggle's do:
+       * more rows shrink them, never grow the track.
        */
       get fitTargetHeight(): number {
         return self.allottedHeight
@@ -518,18 +516,6 @@ export default function stateModelFactory(
               rowColorsByIndex: self.rowColorsByIndex,
             })
       },
-      /**
-       * #getter
-       * The display height under `rowsTopOffset` split evenly across rows.
-       * Deliberately not floored at a pixel — `rowBand` widens a sub-pixel row
-       * for drawing without changing how many rows fit, where a floor here
-       * would grow the track to thousands of pixels instead.
-       */
-      get autoRowHeight(): number {
-        return (
-          Math.max(0, self.fitTargetHeight - self.rowsTopOffset) / self.nrow
-        )
-      },
     }))
     .views(self => {
       // Identity-stable, in color order: the encode keys on it, and the legend
@@ -558,14 +544,16 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Overrides `RowHeightMixin`'s resolved height to cap the row stack at
-         * `maxCanvasHeight`, since nothing downstream bounds it. The cap is not
-         * floored back up: a row below a pixel is legitimate here.
+         * The height under `rowsTopOffset` split evenly across the rows, the
+         * stack capped at `maxCanvasHeight`. Not floored at a pixel: `rowBand`
+         * widens a sub-pixel row for drawing without changing how many fit.
          */
         get effectiveRowHeight(): number {
-          return Math.min(
-            resolveRowHeight(self.rowHeight, self.autoRowHeight),
-            self.maxCanvasHeight / self.nrow,
+          return (
+            Math.min(
+              Math.max(0, self.fitTargetHeight - self.rowsTopOffset),
+              self.maxCanvasHeight,
+            ) / self.nrow
           )
         },
         /**
@@ -611,17 +599,17 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Overrides BaseLinearDisplay.height so the track container matches the
-       * rendering canvas. The MIN_DISPLAY_HEIGHT floor is on the track, never
-       * on the row, so a sub-pixel row stays legitimate. With no rows it is the
-       * `height` slot whatever the row mode.
+       * The `height` slot, the row stack capped at `maxCanvasHeight` and the
+       * track floored at MIN_DISPLAY_HEIGHT, never the row, so a sub-pixel row
+       * stays legitimate.
        */
       get height(): number {
         return Math.max(
           MIN_DISPLAY_HEIGHT,
-          self.sources.length === 0
-            ? self.fitTargetHeight
-            : self.rowsTopOffset + self.nrow * self.effectiveRowHeight,
+          Math.min(
+            self.fitTargetHeight,
+            self.rowsTopOffset + self.maxCanvasHeight,
+          ),
         )
       },
       /**
@@ -1023,25 +1011,11 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Set the track height: auto-fit restretches the rows to it, fixed mode
-         * redistributes what `rowsTopOffset` leaves across the current rows as
-         * a row height, and with no rows it is the `height` slot either way.
+         * Set the track height, floored at MIN_DISPLAY_HEIGHT; the rows divide
+         * it.
          */
-        // Both branches floor the track at MIN_DISPLAY_HEIGHT, never the row: a
-        // sub-pixel row is legitimate here, and flooring the row instead stalls
-        // a shrink drag on a large cohort while letting a 3-row track collapse
-        // past the point where its resize handle can be grabbed again.
         setHeight(newHeight: number) {
-          const clamped = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
-          if (self.rowHeight === 0 || self.sources.length === 0) {
-            setConf(self, 'height', clamped)
-          } else {
-            setConf(
-              self,
-              'rowHeight',
-              (clamped - self.rowsTopOffset) / self.nrow,
-            )
-          }
+          setConf(self, 'height', Math.max(newHeight, MIN_DISPLAY_HEIGHT))
           return self.height
         },
         /**
@@ -1052,15 +1026,6 @@ export default function stateModelFactory(
           const oldHeight = self.height
           self.setHeight(self.height + distance)
           return self.height - oldHeight
-        },
-        /**
-         * #action
-         * Switch to auto-fit, seeding the `height` slot from the current content
-         * height so toggling on does not jump.
-         */
-        setFitToHeight() {
-          setConf(self, 'height', self.height)
-          setConf(self, 'rowHeight', 0)
         },
         /**
          * #action

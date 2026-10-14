@@ -251,7 +251,6 @@ describe('featureAt', () => {
 
     function cohortDisplay(featureRows: number[]) {
       const { display } = createTestEnvironment().createDisplay(CTGA_1KB)
-      display.setRowHeight(0)
       display.setRpcData(0, cohort(featureRows), ctgA)
       display.setHeight(320)
       expect(display.effectiveRowHeight).toBeCloseTo(0.32)
@@ -462,21 +461,12 @@ describe('while rows.kept narrows the rows', () => {
     expect(display.hoverInk[0]!.top).toBe(SIDEBAR_HINT_LINE_PX)
   })
 
-  it('fits every row under the line in auto-fit mode', () => {
+  it('fits every row under the line', () => {
     const display = focusedDisplay()
     expect(display.height).toBe(100)
     expect(
       display.rowsTopOffset + display.nrow * display.effectiveRowHeight,
     ).toBe(display.height)
-  })
-
-  it('grows a fixed-row track by the line', () => {
-    const display = focusedDisplay()
-    display.setRowHeight(50)
-    expect(display.height).toBe(100 + SIDEBAR_HINT_LINE_PX)
-    expect(display.renderState.canvasHeight).toBe(100)
-    display.setRowFocus(undefined)
-    expect(display.height).toBe(100)
   })
 })
 

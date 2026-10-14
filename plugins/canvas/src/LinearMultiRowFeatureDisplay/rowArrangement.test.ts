@@ -47,21 +47,18 @@ describe('the dendrogram positions only while it describes the rows', () => {
     expect(display.hierarchy).toBeDefined()
   })
 
-  // Three 5 px rows are 15 px of content in a track floored at 20 px, and the
-  // leaves belong on the rows, not spread over the floor.
-  it('puts each leaf on its row where the track is taller than the rows', () => {
+  it('puts each leaf at the center of its row', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b', 'c']), ctgA)
     display.setRowOrder([{ name: 'c' }, { name: 'a' }, { name: 'b' }], {
       tree: '((c,a),b);',
     })
-    display.setRowHeight(5)
 
-    expect(display.height).toBeGreaterThan(15)
+    const h = display.effectiveRowHeight
     const rowCenters = leaves(display.hierarchy!)
       .map(leaf => leaf.x)
       .sort((p, q) => p - q)
-    expect(rowCenters).toEqual([2.5, 7.5, 12.5])
+    expect(rowCenters).toEqual([0.5 * h, 1.5 * h, 2.5 * h])
   })
 
   // No `setRowOrder` call happens here: the rows move because a later region

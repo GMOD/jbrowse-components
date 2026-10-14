@@ -267,8 +267,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_pggb_untangle_rows',
               type: 'LinearMultiRowFeatureDisplay',
-              // four strain rows; rowHeight 0 (the default) auto-fits them to
-              // this height, so each is ~55px and a run of red reads as a band
+              // four strain rows divide this height, so each is ~55px and a
+              // run of red reads as a band
               height: 240,
             },
           ],

@@ -24,37 +24,22 @@ function rowsOnly(n: number): MultiRowRegionData {
 }
 
 // The floor lands on the track rather than on the row, so a sub-pixel row stays
-// reachable in fixed mode as it already is in auto-fit.
+// reachable.
 describe('the track cannot be dragged below a usable height', () => {
-  it('floors a few-row painting at MIN_DISPLAY_HEIGHT in fixed row-height mode', () => {
+  it('floors a few-row painting at MIN_DISPLAY_HEIGHT', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, rowsOnly(3), ctgA)
-    display.setRowHeight(14)
-
-    display.setHeight(2)
-
-    // toBeCloseTo because the height round-trips through a per-row division
-    // and back.
-    expect(display.height).toBeCloseTo(MIN_DISPLAY_HEIGHT)
-  })
-
-  it('floors auto-fit mode the same way', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(3), ctgA)
-    display.setRowHeight(0)
 
     display.setHeight(2)
 
     expect(display.height).toBeCloseTo(MIN_DISPLAY_HEIGHT)
   })
 
-  it('lets a fixed-height drag shrink a big cohort past a pixel a row', () => {
+  it('lets a drag shrink a big cohort past a pixel a row', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, rowsOnly(1987), ctgA)
-    display.setRowHeight(14)
 
     // Sub-pixel rows are legitimate — rowBand widens them to MIN_DRAWN_ROW_PX
     // for drawing — so a 1px-per-row floor would stall this drag at 1987px.
@@ -66,39 +51,28 @@ describe('the track cannot be dragged below a usable height', () => {
   })
 })
 
-// The derived `height` sizes the canvas, the too-large banner and the density
-// band alike, and a pinned row height over no rows sized every one of them to a
-// sliver, which a drag then turned into one enormous row.
-describe('a display with no rows', () => {
-  it('takes the height slot under a pinned row height', () => {
+// The rows divide the height slot, so how many rows arrive never moves it.
+describe('the track height holds however many rows arrive', () => {
+  it('takes the height slot with no rows', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setHeight(150)
-    display.setRowHeight(14)
 
     expect(display.sources).toHaveLength(0)
     expect(display.height).toBe(150)
   })
 
-  it('keeps the pinned row height through a drag, for the rows that land after', () => {
+  it('keeps it as rows land, and divides it among them', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setRowHeight(14)
-
     display.setHeight(200)
-    expect(display.height).toBe(200)
-    expect(display.rowHeight).toBe(14)
 
     display.setRpcData(0, rowsOnly(12), ctgA)
-    expect(display.height).toBeCloseTo(168)
-  })
+    expect(display.height).toBe(200)
+    expect(display.effectiveRowHeight).toBeCloseTo(200 / 12)
 
-  it('leaves a taller stack alone', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(10), ctgA)
-    display.setRowHeight(14)
-
-    expect(display.height).toBeCloseTo(140)
+    display.setRpcData(0, rowsOnly(40), ctgA)
+    expect(display.height).toBe(200)
+    expect(display.effectiveRowHeight).toBeCloseTo(200 / 40)
   })
 })

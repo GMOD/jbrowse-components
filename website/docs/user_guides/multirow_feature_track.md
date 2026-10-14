@@ -174,10 +174,9 @@ applies at render time, with no refetch.
 
 ## Row height
 
-The track menu's **Row height** offers **Squeeze to fit view** (the default:
-rows divide the track height, so adding samples shrinks the rows), **Normal**,
-and **Compact**. With fit, drag the track taller to give a deep cohort more room
-per row.
+The rows divide the track height between them, as a multi-row wiggle's do, so
+more samples shrink the rows and the track keeps its height. Drag the track
+taller to give a deep cohort more room per row.
 
 ## Ordering and clustering rows
 
@@ -265,5 +264,5 @@ Each of these builds the input file and the track config end to end:
 - [LinearMultiRowFeatureDisplay config schema](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config_guides/customizing_feature_colors)
 - [ROW_HEIGHT_AND_FIT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ROW_HEIGHT_AND_FIT.md)
-  — the same Row height menu across every multi-row display: the slot whose `0`
-  means fit, and the resolved getter beside it that other plugins read
+  — how each multi-row display fits its rows, and the resolved row height other
+  plugins read

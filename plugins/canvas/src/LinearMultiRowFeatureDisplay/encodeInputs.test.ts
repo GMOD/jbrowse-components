@@ -57,7 +57,7 @@ describe('encodeInputs', () => {
     const contexts = countRecomputes(() => display.encodedChannels)
     const render = countRecomputes(() => display.renderState)
 
-    display.setRowHeight(14)
+    display.setHeight(300)
     display.setHeight(400)
 
     expect(render.count()).toBeGreaterThan(1)
@@ -274,7 +274,7 @@ describe('encodeInputs', () => {
     })
     expect(uploads).toEqual([0])
 
-    display.setRowHeight(14)
+    display.setHeight(300)
     display.setHeight(400)
     expect(uploads).toEqual([0])
 

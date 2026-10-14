@@ -5,7 +5,6 @@ import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
@@ -174,10 +173,6 @@ export default function configSchemaF() {
        * ```
        */
       rowColor: rowColorConfigSchema,
-      ...rowHeightConfigSchemaFields({
-        rowHeight:
-          'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',
-      }),
       /**
        * #slot
        * Fraction of the row height each block fills (1 = full, leaving no gap

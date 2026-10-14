@@ -51,7 +51,6 @@ function makeSelf(
     adapterConfig: {},
     effectiveClusterField: 'name',
     setClusterField: () => {},
-    rowHeight: 0,
     setShowTree: () => {},
     setShowLegend: () => {},
     setShowRowSeparators: () => {},
@@ -119,7 +118,6 @@ describe('multi-row track menu', () => {
 
     expect(labels(items)).toEqual([
       'Show...',
-      'Row height',
       'Edit colors/arrangement...',
       'Clustering',
     ])
@@ -180,30 +178,9 @@ describe('multi-row track menu', () => {
     const toggles = [
       ...subMenuOf(items, 'Show...'),
       ...subMenuOf(items, 'Categories'),
-      ...subMenuOf(items, 'Row height').filter(
-        i => !('label' in i && i.label === 'Custom...'),
-      ),
     ]
 
     expect(toggles.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
-    // The dialog opener is the one row that still dismisses.
-    const custom = subMenuOf(items, 'Row height').find(
-      i => 'label' in i && i.label === 'Custom...',
-    )
-    expect(custom && 'onClick' in custom && staysOpenOnClick(custom)).toBe(
-      false,
-    )
-  })
-
-  it.each([
-    [0, 'Squeeze to fit view'],
-    [14, 'Normal'],
-    [8, 'Compact'],
-    [23, 'Custom...'],
-  ])('row height %p checks %p', (rowHeight, expected) => {
-    const items = buildMultiRowTrackMenuItems(makeSelf({ rowHeight }))
-
-    expect(checkedLabel(subMenuOf(items, 'Row height'))).toEqual([expected])
   })
 
   it('offers the legend and category toggles only once colors are keyed', () => {
@@ -440,7 +417,7 @@ describe('multi-row track menu', () => {
           facet: { field: 'group', domain: [] },
         }),
       )
-      expect(labels(items).slice(2, 4)).toEqual([
+      expect(labels(items).slice(1, 3)).toEqual([
         'One row per...',
         'Group by...',
       ])

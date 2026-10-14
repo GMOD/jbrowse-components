@@ -303,7 +303,7 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
           "rows": "sample",
-          "rowHeight": 18,
+          "height": 400,
           "color": {
             "value": "jexl:'rgb('+get(feature,'itemRgb')+')'",
             "scale": "identity",
@@ -359,8 +359,7 @@
             "range": ["#222222", "#bbbbbb"]
           },
           "rowGroups": [{ "match": "^(mom|dad)$", "group": "Parents" }],
-          "facet": "group",
-          "rowHeight": 14
+          "facet": "group"
         }
       ]
     },

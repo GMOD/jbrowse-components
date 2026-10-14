@@ -38,7 +38,6 @@ function makeDisplay(n: number, height: number, rowColor: unknown = BY_GROUP) {
   })
   const { display } = createDisplay()
   display.setRpcData(0, rows(n), ctgA)
-  display.setRowHeight(0)
   display.setHeight(height)
   return display
 }

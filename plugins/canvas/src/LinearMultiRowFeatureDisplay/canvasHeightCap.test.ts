@@ -26,48 +26,21 @@ function rowsOnly(n: number): MultiRowRegionData {
 const BIG_COHORT = 1987
 
 describe('the row stack cannot outgrow the canvas limit', () => {
-  it('caps a pinned row height so the stack still fits a drawable canvas', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
-
-    display.setRowHeight(14)
-
-    // Uncapped this is 27,818 CSS px, i.e. 55,636 device px at dpr 2 against an
-    // 8,192 limit: the backing store clamps while the scissor rect does not.
-    expect(BIG_COHORT * 14).toBeGreaterThan(display.maxCanvasHeight)
-    expect(display.height).toBeCloseTo(display.maxCanvasHeight)
-    expect(display.height * getDpr()).toBeLessThanOrEqual(MAX_CANVAS_DIM_PX)
-  })
-
-  it('leaves a row height that already fits alone', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setRpcData(0, rowsOnly(10), ctgA)
-
-    display.setRowHeight(14)
-
-    expect(display.effectiveRowHeight).toBe(14)
-    expect(display.height).toBe(140)
-  })
-
-  it('caps auto-fit too, since the height slot it divides is drag-resizable', () => {
+  it('caps the height slot the rows divide, since it is drag-resizable', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, rowsOnly(4), ctgA)
-    // Auto-fit divides this slot across the rows, so a big enough one is the
-    // same unbounded canvas by another route.
-    display.setRowHeight(0)
     display.setHeight(MAX_CANVAS_DIM_PX * 4)
 
     expect(display.height).toBeCloseTo(display.maxCanvasHeight)
+    expect(display.height * getDpr()).toBeLessThanOrEqual(MAX_CANVAS_DIM_PX)
   })
 
   it('stalls a drag at the cap rather than growing a canvas that cannot draw', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
-    display.setRowHeight(14)
+    display.setHeight(MAX_CANVAS_DIM_PX * 4)
 
     expect(display.resizeHeight(500)).toBe(0)
     expect(display.height).toBeCloseTo(display.maxCanvasHeight)
@@ -77,7 +50,7 @@ describe('the row stack cannot outgrow the canvas limit', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setRpcData(0, rowsOnly(BIG_COHORT), ctgA)
-    display.setRowHeight(14)
+    display.setHeight(MAX_CANVAS_DIM_PX * 4)
     const capped = display.height
 
     display.resizeHeight(-500)

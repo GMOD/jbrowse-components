@@ -24,6 +24,11 @@ fit ladder in
 menu row is `'Squeeze to fit view'`, a radio mutually exclusive with the fixed
 presets. Fit is the default everywhere.
 
+**No multi-row display sizes its height from its row count.** The track keeps
+its `height` slot, and more rows shrink the rows. A pinned `rowHeight` (MAF,
+the multi-sample variant display) scrolls the rows that do not fit inside that
+height rather than growing it.
+
 `rowHeightConfigSchemaFields()` and `RowHeightMixin()`, both in
 `packages/tree-sidebar/src/rowHeight/`, are the shared spelling. A display
 composes both halves or neither. It owes the mixin `autoRowHeight` and may
@@ -35,9 +40,11 @@ second dialog field.
 `effectiveRowHeight` is the cross-plugin ABI. `applyRowResizeWheel.ts` (core)
 and `TreeDrawingModel` (tree-sidebar `types.ts`) read it by that name off a model
 they were handed, so the duck types stay even though the mixin declares the
-getter. `wiggle/LinearWiggleDisplay` is always-fit and exposes
-`effectiveRowHeight` with no `rowHeight`; `alignments/LinearAlignmentsDisplay`'s
-`rowHeight` is a per-read pitch, an unrelated concept.
+getter. `wiggle/LinearWiggleDisplay` and
+`canvas/LinearMultiRowFeatureDisplay` are always-fit and expose
+`effectiveRowHeight` with no `rowHeight`;
+`alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read pitch, an
+unrelated concept.
 
 ### Sub-pixel fit heights are legitimate
 
@@ -58,10 +65,6 @@ restretch; with a fixed `rowHeight` they keep their size and the drag reveals
 more of them. Rescaling `rowHeight` by the drag ratio locks content to viewport,
 so a taller track could never show an extra row.
 
-**Canvas is the structural exception.** Its `height` getter is derived
-(`nrow * effectiveRowHeight`), so a fixed-mode drag has nothing to write but the
-row height, and `setHeight` re-fixes it at `newHeight / nrow`. Canvas overrides
-`effectiveRowHeight` so the `maxCanvasHeight / nrow` cap lands on the resolved
-height, keeping the `resolveRowHeight` call inside the override. The mark display
-overrides it because its bands are rows only under `rows`.
+The mark display overrides `effectiveRowHeight` because its bands are rows only
+under `rows`.
 
