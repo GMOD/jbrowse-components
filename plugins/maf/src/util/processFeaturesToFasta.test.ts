@@ -500,3 +500,48 @@ test('includeInsertions - insertion trailing the last reference base', () => {
   // Two trailing inserted columns (the `tt`) have no reference base → -1.
   expect(result.colToGenomePos).toEqual([100, 101, 102, 103, -1, -1])
 })
+
+test('includeInsertions - insertions meeting at a block seam both survive', () => {
+  // Block A ends in ref-gap columns where assembly2 inserts TT; block B starts
+  // at the same reference base in ref-gap columns where it inserts GGG.
+  const blockA = new SimpleFeature({
+    uniqueId: 'a',
+    refName: 'chr1',
+    start: 100,
+    end: 104,
+    seq: 'ACGT--',
+    alignments: {
+      assembly1: { chr: 'chr1', srcStart: 100, seq: 'ACGT--', strand: 1 },
+      assembly2: { chr: 'chr2', srcStart: 0, seq: 'ACGTTT', strand: 1 },
+    },
+  })
+  const blockB = new SimpleFeature({
+    uniqueId: 'b',
+    refName: 'chr1',
+    start: 104,
+    end: 108,
+    seq: '---ACGT',
+    alignments: {
+      assembly1: { chr: 'chr1', srcStart: 104, seq: '---ACGT', strand: 1 },
+      assembly2: { chr: 'chr2', srcStart: 6, seq: 'GGGACGT', strand: 1 },
+    },
+  })
+
+  const result = processFeaturesToFasta({
+    features: [blockA, blockB],
+    samples: [
+      { id: 'assembly1', label: 'assembly1' },
+      { id: 'assembly2', label: 'assembly2' },
+    ],
+    includeInsertions: true,
+    showAllLetters: true,
+    regions: [
+      { refName: 'chr1', start: 100, end: 108, assemblyName: 'assembly1' },
+    ],
+  })
+
+  expect(result.rows).toEqual(['acgt-----acgt', 'acgtttgggacgt'])
+  expect(result.colToGenomePos).toEqual([
+    100, 101, 102, 103, -1, -1, -1, -1, -1, 104, 105, 106, 107,
+  ])
+})

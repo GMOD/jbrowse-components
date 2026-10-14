@@ -160,11 +160,11 @@ function expandWithInsertions(
   }
   for (const pos of sortedPositions) {
     let maxLen = 0
-    for (const ins of insertionsAtPosition.get(pos)!) {
-      if (ins.sequence.length > maxLen) {
-        maxLen = ins.sequence.length
-      }
-      insBySampleAndPos[ins.sampleIndex]!.set(pos, ins.sequence)
+    for (const { sampleIndex, sequence } of insertionsAtPosition.get(pos)!) {
+      const atPos = insBySampleAndPos[sampleIndex]!
+      const joined = (atPos.get(pos) ?? '') + sequence
+      atPos.set(pos, joined)
+      maxLen = Math.max(maxLen, joined.length)
     }
     maxLenByPos.set(pos, maxLen)
   }
