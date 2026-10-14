@@ -660,7 +660,9 @@ export function valueRow(
         missingLabel: key.missingLabel,
       },
     )
-    return gaps.find(e => cssColorToABGR(e.color) === color)
+    return gaps.find(
+      e => e.color !== undefined && cssColorToABGR(e.color) === color,
+    )
   }
   return scale.kind === 'threshold'
     ? thresholdKeyEntries(scale.domain, scale.range, scale, key.labels)[

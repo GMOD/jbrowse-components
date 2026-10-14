@@ -25,7 +25,7 @@ const resolved = (written: ColorSetting, origin: number) =>
   resolveWiggleColor(wiggleColorEncoding(written), origin)
 
 test('a threshold past the cuts the shader reads is a notice', () => {
-  const domain = Array.from({ length: 9 }, (_, i) => i + 1)
+  const domain = Array.from({ length: 9 }, (_, i) => String(i + 1))
   expect(wiggleColorNotices(color({ scale: 'threshold', domain }))).toEqual([
     'color.domain: a wiggle threshold reads at most 8 cuts, and the 1 past them draw no band',
   ])

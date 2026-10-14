@@ -75,7 +75,7 @@ function colorRow(
       value: Number.isNaN(colorValue)
         ? row?.label
         : `${toP(colorValue, 4)}${row ? ` (${row.label})` : ''}`,
-      swatch: row ? { color: row.color } : swatch,
+      swatch: row?.color ? { color: row.color } : swatch,
     }
   }
   if (section) {
