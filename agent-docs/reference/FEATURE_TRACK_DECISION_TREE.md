@@ -54,6 +54,10 @@ those name a meaning rather than a shape.
   so no name goes while a body could shrink instead, then grows the bodies back
   into the room the dropped names freed. A `decimated` pack that keeps no name
   hands on to `bodies`.
+- **A body carrying an overlay subfeature label never shrinks**: with
+  `subfeatureLabels: 'overlay'` the floor is 1, so `thinned` has nothing to
+  give and `decimated` packs at full height. Shortened, a SARS-CoV-2 peptide row
+  sat 5.8 px under its 11 px name, which then ran over the rows beside it.
 - The `isoforms` rung bisects the transcripts-per-gene the track can hold. It
   sits above `decimated` because the policy is **names before isoforms**, and
   when even one per gene overflows the rungs below inherit that 1 rather than

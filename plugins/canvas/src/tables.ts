@@ -315,6 +315,7 @@ export async function featureTables(
     autoHeight: heightMode === 'grow',
     showsEveryIsoform: readConfObject(conf, 'geneGlyphMode') === 'all',
     reservesBelowLabelRows: subfeatureLabels === 'below',
+    overlaysSubfeatureLabels: subfeatureLabels === 'overlay',
     fitTargetHeight: trackHeight,
     labelFontSize: fontSize,
   }).fitStage

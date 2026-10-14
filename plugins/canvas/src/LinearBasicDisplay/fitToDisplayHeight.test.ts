@@ -850,6 +850,31 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.renderedShowSubfeatureLabels).toBe(true)
   })
 
+  it('draws an overlay subfeature label only on a body at its full height', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('name')
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
+    display.setHeightMode('fit')
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    const heights = Array.from({ length: 12 }, (_, i) =>
+      Math.round(bodiesH + ((labelsH - bodiesH) * i) / 11),
+    )
+    const levelsAt = () =>
+      heights.map(h => {
+        display.setHeight(h)
+        return display.fitStage
+      })
+    expect(levelsAt().some(s => s.level === 'thinned')).toBe(true)
+
+    setConf(display, 'subfeatureLabels', 'overlay')
+    for (const stage of levelsAt()) {
+      expect(stage.bodyScale).toBe(1)
+      expect(stage.level).not.toBe('thinned')
+    }
+  })
+
   it('drops the below-label rows before squeezing the bodies', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

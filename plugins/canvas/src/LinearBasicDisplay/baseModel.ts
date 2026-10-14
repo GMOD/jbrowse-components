@@ -763,6 +763,14 @@ export default function baseStateModelFactory(
       get reservesBelowLabelRows() {
         return self.effectiveSubfeatureLabels === 'below'
       },
+      /**
+       * #getter
+       * Whether subfeature labels sit on their bodies, which then keep
+       * their height on every rung that draws them.
+       */
+      get overlaysSubfeatureLabels() {
+        return self.effectiveSubfeatureLabels === 'overlay'
+      },
     }))
     .views(fitLadderViews)
     .views(self => {
