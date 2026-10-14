@@ -58,7 +58,7 @@ done < species.tsv
 
 # ── The pairs: hg38 against every ape, then each ape against the next ────────
 # A file A_vs_B holds A as each chain's target and B as its query.
-CACTUS=($(awk '{print $1}' species.tsv))
+mapfile -t CACTUS < <(awk '{print $1}' species.tsv)
 PAIRS=()
 for g in "${CACTUS[@]:1}"; do PAIRS+=("hg38 $g"); done
 for i in $(seq 1 $((${#CACTUS[@]} - 2))); do
