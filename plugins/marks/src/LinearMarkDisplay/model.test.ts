@@ -2430,6 +2430,20 @@ test('hiding a section takes its instances out of the drawn layer and lifts the 
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 
+test('hiding every section leaves the skipped count against what the worker read', () => {
+  const { display } = facetedEnvironment().createDisplay()
+  const data = facetResult([0, 1, 2])
+  display.setRpcData(
+    0,
+    { ...data, layers: [{ ...data.layers[0]!, skipped: 1 }] },
+    REGION,
+  )
+  display.hideGroup('a')
+  display.hideGroup('b')
+  expect(display.skippedFeatures).toMatchObject({ skipped: 1, total: 4 })
+  expect(display.notices).toEqual([])
+})
+
 test('a hidden section leaves the key and the axis the way it leaves the plot', () => {
   const { display } = createTestEnvironment(
     [

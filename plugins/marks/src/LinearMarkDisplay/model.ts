@@ -1473,7 +1473,7 @@ export function stateModelFactory(
             ]
           })
           return skippedFeatures(
-            [...self.rpcDataMap.values()].map(d =>
+            [...self.featurePayloads.values()].map(d =>
               d.layers
                 .map((layer, i) => ({
                   count: layer.count,
