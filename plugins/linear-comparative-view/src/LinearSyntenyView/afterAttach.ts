@@ -266,10 +266,7 @@ async function applyInitSyntenyTracks(
 async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   await withDiagonalizeProgress(self, async opts => {
     const { runDiagonalize } = await import('./util/runDiagonalize.ts')
-    await runDiagonalize(self, {
-      ...opts,
-      anchorRow: self.diagonalizeAnchorRow,
-    })
+    await runDiagonalize(self, opts)
     // only now is the view truly diagonalized — release the `settled` gate. If
     // runDiagonalize threw, withDiagonalizeProgress catches it and this line is
     // skipped, so `settled` stays false and the capture times out loudly instead

@@ -6,9 +6,9 @@
 // unaffected) and past that each level gets a smaller share, floored where a
 // ribbon stops being readable.
 //
-// Shared by `autoScaleLevelHeights` (the "Auto-scale level heights" menu item
-// and the init path) and the launch dialog, so the height a multi-way launch
-// opens with is the same number the menu item would produce.
+// Read by `autoScaleLevelHeights`, which both the "Auto-scale level heights"
+// menu item and the init path call, so a multi-way launch opens at the height
+// the menu item would produce.
 const BAND_BUDGET_PX = 320
 const MIN_LEVEL_HEIGHT_PX = 40
 const DEFAULT_LEVEL_HEIGHT_PX = 100

@@ -44,7 +44,8 @@ function levelStatusCallback(
 // Shared by the menu dialog (UI wrapper) and the init autorun (autoDiagonalize
 // flag).
 //
-// Levels run OUTWARD FROM THE ANCHOR ROW and each result is applied before the
+// Levels run OUTWARD FROM THE ANCHOR ROW (`diagonalizeAnchorRow`, which
+// reconcileLevels keeps on a row) and each result is applied before the
 // next, so a stacked N-way view cascades the diagonal away from the one row
 // whose order is left alone: the worker orders each query chromosome by its
 // best-hit's *index* in referenceRegions, so a level must diagonalize against
@@ -66,10 +67,7 @@ export async function runDiagonalize(
   const { assemblyManager, rpcManager } = getSession(model)
   let totalReversed = 0
   let totalReordered = 0
-  const anchor = Math.min(
-    Math.max(opts.anchorRow ?? 0, 0),
-    model.views.length - 1,
-  )
+  const anchor = model.diagonalizeAnchorRow
   // levels below the anchor, top-down; then levels above it, bottom-up
   const levelIndices = model.levels.map((_, i) => i)
   const order = [

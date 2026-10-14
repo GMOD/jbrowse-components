@@ -86,11 +86,9 @@ const LinearSyntenyRenderArea = observer(function LinearSyntenyRenderArea({
               replaced level cannot inherit the previous one's mounted subtree —
               its canvas (a re-init on a reused element, which is what a WebGPU
               swap chain cannot survive) or its in-flight pointer state (a drag
-              anchor, a hovered contig). Nothing reaches that today: `setViews`
-              is the only action that replaces levels and it replaces the views
-              too, so the Fragment key above already remounts this. `views`
-              otherwise only grows and shrinks at the end, which leaves every
-              surviving row's level where it was.
+              anchor, a hovered contig). `removeRow` replaces an interior
+              level and `reverseRows` reorders them, so a row's level can
+              change while its view survives.
 
               Asserted, not optional-chained: `reconcileLevels` keeps one level
               per gap, so `i > 0` has one, and `LevelSection` reads the same

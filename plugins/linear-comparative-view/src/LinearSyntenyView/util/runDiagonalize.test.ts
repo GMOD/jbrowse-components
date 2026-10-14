@@ -91,6 +91,7 @@ describe('runDiagonalize cascade', () => {
     const cacao = makeView([region('c1', 'cacao'), region('c2', 'cacao')])
     const grape = makeView([region('g1', 'grape'), region('g2', 'grape')])
     const model = {
+      diagonalizeAnchorRow: 0,
       views: [peach, cacao, grape],
       levels: [makeLevel(), makeLevel()],
     }
@@ -133,11 +134,10 @@ describe('runDiagonalize cascade', () => {
     const model = {
       views: [comb, jelly, sponge],
       levels: [makeLevel(), makeLevel()],
+      diagonalizeAnchorRow: 1,
     }
 
-    await runDiagonalize(model as unknown as LinearSyntenyViewModel, {
-      anchorRow: 1,
-    })
+    await runDiagonalize(model as unknown as LinearSyntenyViewModel)
 
     expect(call).toHaveBeenCalledTimes(2)
     // downward first: level 1 orders sponge against the untouched jellyfish row
@@ -159,6 +159,7 @@ describe('runDiagonalize cascade', () => {
     const { call } = setupRpc()
     const seen: RpcStatus[] = []
     const model = {
+      diagonalizeAnchorRow: 0,
       views: [
         makeView([region('p1', 'peach')]),
         makeView([region('c1', 'cacao')]),
@@ -197,6 +198,7 @@ describe('runDiagonalize cascade', () => {
   test('returns undefined for a single-view stack', async () => {
     setupRpc()
     const model = {
+      diagonalizeAnchorRow: 0,
       views: [makeView([region('a1')])],
       levels: [],
     }

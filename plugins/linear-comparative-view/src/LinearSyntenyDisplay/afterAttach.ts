@@ -59,12 +59,12 @@ export function doAfterAttach(
             drawCIGARMatchesOnly: view.drawCIGARMatchesOnly,
             lodTier: self.lodTier,
             regionSignature: self.regionSignature,
-            // Captured as strings HERE, not derived from `displayedRegions`
-            // after the RPC: those are MST nodes and a fetch can outlive the
-            // level it was started from, where reading one throws into an
-            // unawaited promise. `assemblyNames` is the unique set of the
-            // regions' own `assemblyName`s, so this is the same value read
-            // while it is still safe to read.
+            // Captured as strings HERE, not derived from the views after the
+            // RPC: a fetch can outlive the level it was started from, and
+            // reading a dead view throws into an unawaited promise.
+            // `assemblyNames` is the unique set of the regions' own
+            // `assemblyName`s, so this is the same value read while it is
+            // still safe to read.
             queryAssemblyName: v0.assemblyNames[0],
             targetAssemblyName: v1.assemblyNames[0],
             rawQuery: {

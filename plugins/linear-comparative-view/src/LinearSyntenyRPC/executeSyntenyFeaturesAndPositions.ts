@@ -14,6 +14,8 @@ import {
   createAttributeChannels,
   cumBpAtGenomicCoord,
   UNNAMED,
+  clipLargeBlockToWindow,
+  clipSyntenyFeature,
   cumBpInEntry,
   declaredAttributes,
   findRegionEntry,
@@ -28,10 +30,6 @@ import {
   RULER_GRID_ORIGIN,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
-import {
-  clipLargeBlockToWindow,
-  clipSyntenyFeature,
-} from './clipSyntenyFeature.ts'
 import { createOffscreenMateCollector } from './collectOffscreenMates.ts'
 import { flipSyntenyFeature } from './flipSyntenyFeature.ts'
 import { compareDrawOrder, drawTier } from './syntenyDrawOrder.ts'

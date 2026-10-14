@@ -225,7 +225,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * Which genome row "Re-order chromosomes" keeps as it is: the rows
          * below it are ordered against the row above them, and the rows above
-         * it against the row below.
+         * it against the row below. It matters wherever the top row is not the
+         * one whose order means something: `linkage_groups/alg_stack` stacks
+         * six genomes whose linkage groups are the jellyfish row's
+         * chromosomes, and anchored on the top row every row below is ordered
+         * off a comb jelly instead.
          */
         diagonalizeAnchorRow: types.stripDefault(types.number, 0),
         /**
@@ -975,7 +979,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setDiagonalizeAnchorRow(row: number) {
-        self.diagonalizeAnchorRow = row
+        self.diagonalizeAnchorRow = clamp(
+          row,
+          0,
+          Math.max(self.views.length - 1, 0),
+        )
       },
       /**
        * #action

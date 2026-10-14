@@ -247,8 +247,8 @@ function widestEdgePx(c: ProjectedCorners) {
 // Feeds the sub-pixel density fade (`thinWidthFade`) on the stroke branch, which
 // is where its divergence from the shader's per-fragment `perpCoverage` is
 // measured, accepted and parked — synteny's only cross-backend drift, see
-// CROSS_BACKEND_GATE.md and agent-docs/TODO.md. It does NOT decide fill vs
-// stroke; see ribbonMaxPerpWidth for why those came apart.
+// CROSS_BACKEND_GATE.md and ideas/collections/synteny-comparative.md. It does
+// NOT decide fill vs stroke; see ribbonMaxPerpWidth for why those came apart.
 export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
   const slope = (centerlineBottomX(c) - centerlineTopX(c)) / Math.max(height, 1)
   const perpFactor = Math.sqrt(1 + slope * slope)

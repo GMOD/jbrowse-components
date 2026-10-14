@@ -26,12 +26,7 @@ const ReorderChromosomesDialog = observer(function ReorderChromosomesDialog({
           model.setDiagonalizeAnchorRow(row)
         },
       }}
-      run={(opts: DiagonalizeRunOpts) =>
-        runDiagonalize(model, {
-          ...opts,
-          anchorRow: model.diagonalizeAnchorRow,
-        })
-      }
+      run={(opts: DiagonalizeRunOpts) => runDiagonalize(model, opts)}
     />
   )
 })
