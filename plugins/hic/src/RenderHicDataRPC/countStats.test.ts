@@ -73,25 +73,26 @@ describe('hic count statistics', () => {
     })
   })
 
-  // A typed-array sort puts NaN last, so scoring off the raw counts made a
-  // single non-finite value the max. NaN then becomes the color domain's
-  // top, every bin's color maps to NaN and the legend disappears. Both non-finites are reachable from a real file: NaN is
-  // the .hic dense-block "no value" marker, which only the dense parse path
-  // filters, and a tiny normalization divisor yields Infinity.
+  // Scoring off the raw counts made a single non-finite value the max, so
+  // every bin's color mapped to NaN and the legend disappeared. NaN is the
+  // file's no-value marker and gets no instance; an Infinity, from a tiny
+  // normalization divisor, is drawn but not scored.
   test.each([
-    ['NaN', Number.NaN],
-    ['Infinity', Number.POSITIVE_INFINITY],
-    ['-Infinity', Number.NEGATIVE_INFINITY],
-  ])('one %s count does not poison the color scale', async (_name, bad) => {
-    const { maxScore, quantileScore, numContacts } = await statsFor([
-      ...ASCENDING,
-      bad,
-    ])
-    expect(maxScore).toBe(100)
-    expect(quantileScore).toBe(95)
-    // the bad contact is still drawn (as its own bin), only excluded from scoring
-    expect(numContacts).toBe(101)
-  })
+    ['NaN', Number.NaN, 100],
+    ['Infinity', Number.POSITIVE_INFINITY, 101],
+    ['-Infinity', Number.NEGATIVE_INFINITY, 101],
+  ])(
+    'one %s count does not poison the color scale',
+    async (_name, bad, drawn) => {
+      const { maxScore, quantileScore, numContacts } = await statsFor([
+        ...ASCENDING,
+        bad,
+      ])
+      expect(maxScore).toBe(100)
+      expect(quantileScore).toBe(95)
+      expect(numContacts).toBe(drawn)
+    },
+  )
 
   test('all-non-finite counts score zero, so colorScales reads empty', async () => {
     const { maxScore, quantileScore } = await statsFor([

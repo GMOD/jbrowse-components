@@ -6,10 +6,9 @@ import {
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 
 /**
- * The maximum and the nearest-rank `quantile` of the finite counts. A NaN (the
- * `.hic` no-value marker) or an Infinity (a tiny normalization divisor) would
- * otherwise become the color domain and paint every bin wrong. Both are 0
- * when nothing is finite.
+ * The maximum and the nearest-rank `quantile` of the finite counts. An
+ * Infinity, from a tiny normalization divisor, would otherwise become the
+ * color domain and paint every bin wrong. Both are 0 when nothing is finite.
  *
  * An explicit loop, not `filter(Number.isFinite)`, which measured ~25x
  * slower at 4.5M; measure outside Jest, whose transform does not inline

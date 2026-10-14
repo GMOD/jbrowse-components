@@ -54,14 +54,15 @@ export interface HicResultRegion {
 
 export interface HicDataResult {
   /**
-   * Every contact in `hic.slang`'s `HicInstance` layout, the buffer the GPU
-   * takes as-is: its apex-ward corner in pre-rotation space, then its count.
+   * Every contact with a count in `hic.slang`'s `HicInstance` layout, the
+   * buffer the GPU takes as-is: its apex-ward corner in pre-rotation space,
+   * then its count. A NaN count, the file's no-value marker, has no instance.
    */
   instances: Float32Array
   numContacts: number
   /**
-   * Maximum and `quantile` of the finite counts, so a NaN or
-   * Infinity bin cannot poison the color domain. 0 for an empty matrix.
+   * Maximum and `quantile` of the finite counts, so an Infinity bin cannot
+   * poison the color domain. 0 for an empty matrix.
    */
   maxScore: number
   quantileScore: number

@@ -107,10 +107,14 @@ histogram.** The obvious cheaper estimate fails on exactly the property that
 made the percentile necessary: linear buckets over `[min, max]` drop nearly
 every value into the first one and collapse the answer toward zero.
 
-**Both candidates are scored off the finite counts.** NaN is the dense-block "no
-value" marker and a tiny normalization divisor yields Infinity; either one
-reaching the saturation point turns every bin's color into NaN and makes the
-legend silently vanish.
+**A NaN count never becomes an instance.** NaN is the file's "no value" marker,
+which `@gmod/hic` drops only on its dense path. The worker skips it while
+packing, so no painter, hover or statistic sees one; Canvas2D used to paint it in
+the previous bin's color.
+
+**Both candidates are scored off the finite counts.** A tiny normalization
+divisor yields Infinity; reaching the saturation point, it turns every bin's
+color into NaN and makes the legend silently vanish.
 
 **The invisibility cutoff is a boundary between surfaces, not an optimization.**
 The fragment discards below it and the Canvas2D lookup returns nothing, so the
