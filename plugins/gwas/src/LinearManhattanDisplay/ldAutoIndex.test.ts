@@ -1,3 +1,4 @@
+import { getContainingView } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
@@ -7,6 +8,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 interface FetchArgs {
   region: Region
@@ -150,6 +152,54 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     second.setRpcData(1, tied(500), tiedRegion)
     second.setRpcData(0, tied(100), tiedRegion)
     expect(second.topSnp).toBe('ctgA:101')
+  })
+
+  // A region scrolled off screen stays loaded, and counting it held the index
+  // on a contig the view no longer showed, every visible point grey.
+  it('counts only the regions on screen', () => {
+    const { createDisplay } = createTestEnvironment({ marks: LD_MARKS })
+    const { display } = createDisplay()
+    const view = getContainingView(display) as LinearGenomeViewModel
+    const payload = (pos: number, score: number) => ({
+      layers: [manhattanFixture({ x: [pos], y: [score], flatbush: false })],
+      facts: topHitFacts(pos, score),
+    })
+    const region = (refName: string) => ({
+      refName,
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    })
+    display.setRpcData(0, payload(100, 9), region('ctgA'))
+    display.setRpcData(1, payload(500, 3), region('ctgB'))
+    expect(display.topSnp).toBe('ctgA:101')
+
+    view.navTo({ refName: 'ctgB', start: 0, end: 10_000 })
+    expect(display.topSnp).toBe('ctgB:501')
+  })
+
+  // Manhattan's supersession replaced the mark display's, so an export of a
+  // plot with rows passed before the listing that adds and orders them
+  // landed. The listing must not reach the auto-pick, which would write the
+  // top hit over a pinned index.
+  it("keeps the mark display's wait on its row listing, apart from the auto-pick", async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      marks: LD_MARKS,
+      rows: 'source',
+    })
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, method: string, args: FetchArgs) =>
+        method === 'MarkGetRowSources'
+          ? new Promise(() => {})
+          : Promise.resolve(makeResult(args)),
+    )
+    const { display } = createDisplay()
+    display.colorByLdToHit({ refName: 'ctgA', start: 99 })
+
+    await settle(8)
+    expect(display.rowListingSettled).toBe(false)
+    expect(display.dataSuperseded).toBe(true)
+    expect(display.indexSnp).toBe('ctgA:100')
   })
 
   // The top hit used to be read off the points the LD marks drew, which the

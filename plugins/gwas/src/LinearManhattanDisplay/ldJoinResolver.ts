@@ -1,4 +1,4 @@
-import { canonicalizeViewRefName, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import { parseChrBp } from './parseChrBp.ts'
@@ -21,14 +21,18 @@ export async function ldJoinFor(
   region: Region,
   signal: AbortSignal,
 ): Promise<LdJoin | undefined> {
+  const { assemblyManager } = getSession(self)
   const locus = parseChrBp(indexSnp)
-  if (
-    !locus ||
-    canonicalizeViewRefName(self, locus.refName) !== region.refName
-  ) {
+  const refName =
+    locus &&
+    (assemblyManager
+      .get(region.assemblyName)
+      ?.getCanonicalRefName2(locus.refName) ??
+      locus.refName)
+  if (!locus || refName !== region.refName) {
     return undefined
   }
-  const names = await getSession(self).assemblyManager.getRefNameMapForAdapter(
+  const names = await assemblyManager.getRefNameMapForAdapter(
     ldAdapterConfig,
     region.assemblyName,
     { sessionId: getRpcSessionId(self), signal },

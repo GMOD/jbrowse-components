@@ -136,10 +136,12 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The highest-scoring loaded SNP as a 1-based `chr:bp`, the index the
-       * join follows while none is pinned. `GWASAdapter` reports each region's
-       * top hit off the file, so no filter, zoom gate or mark of the plot
-       * moves it.
+       * The highest-scoring SNP loaded for the regions on screen, as a 1-based
+       * `chr:bp`: the index the join follows while none is pinned.
+       * `GWASAdapter` reports each region's top hit off the file, so no
+       * filter, zoom gate or mark of the plot moves it. A region scrolled off
+       * screen stays loaded, and counting it left the index on a contig the
+       * view no longer shows.
        *
        * A tie goes to the lowest region index, then the lowest position,
        * never to arrival order: adopting the index refetches, so a tie broken
@@ -147,16 +149,18 @@ export function stateModelFactory(
        * (`ldAutoIndex.test.ts`).
        */
       get topSnp(): string | undefined {
-        let best: { score: number; start: number; idx: number } | undefined
-        const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
-        for (const idx of indexes) {
-          const hit = readTopHit(self.rpcDataMap.get(idx)!.facts)
-          if (hit && (!best || hit.score > best.score)) {
-            best = { ...hit, idx }
+        const onScreen = new Set(
+          self.trackVisibleRegions.map(b => b.displayedRegionIndex),
+        )
+        let best: { score: number; start: number; refName: string } | undefined
+        for (const idx of [...onScreen].sort((a, b) => a - b)) {
+          const loaded = self.loadedRegions.get(idx)
+          const hit = readTopHit(self.rpcDataMap.get(idx)?.facts)
+          if (loaded && hit && (!best || hit.score > best.score)) {
+            best = { ...hit, refName: loaded.refName }
           }
         }
-        const refName = best && self.host.displayedRegions[best.idx]?.refName
-        return refName ? `${refName}:${best!.start + 1}` : undefined
+        return best ? `${best.refName}:${best.start + 1}` : undefined
       },
       /**
        * #getter
@@ -185,16 +189,23 @@ export function stateModelFactory(
       /**
        * #getter
        * The loaded data was joined under an index other than the top hit, so
-       * adopting it will clear the data and refetch: `MultiRegionDisplayMixin`'s
-       * supersession hook, and the auto-pick's trigger.
+       * the auto-pick adopts it, which clears the data and refetches.
        */
-      get dataSuperseded(): boolean {
+      get indexSuperseded(): boolean {
         return (
           self.joinsLd &&
           !self.indexSnpPinned &&
           this.topSnp !== undefined &&
           this.topSnp !== self.indexSnp
         )
+      },
+      /**
+       * #getter
+       * `MultiRegionDisplayMixin`'s supersession hook, true while the mark
+       * display's row listing is unsettled or an index awaits adoption.
+       */
+      get dataSuperseded(): boolean {
+        return !self.rowListingSettled || this.indexSuperseded
       },
     }))
     .actions(self => ({
@@ -321,7 +332,7 @@ export function stateModelFactory(
           self,
           () => {
             if (
-              self.dataSuperseded &&
+              self.indexSuperseded &&
               self.viewportWithinLoadedData &&
               !self.isLoading
             ) {
