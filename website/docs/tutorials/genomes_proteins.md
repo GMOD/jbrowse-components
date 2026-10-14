@@ -106,13 +106,14 @@ launch button. Click **Clear** to drop it, and choose another:
 
 - **A domain**: click a block on the map's Domains row. The session opens on the
   domain, with the seed alignment of its Pfam family.
-- **A residue**: type a position into the residue box, which Advanced shows
-  while nothing is focused. The structure becomes the PDB entry in which that
-  residue was seen touching DNA, a small molecule or another protein, else the
-  AlphaFold model.
-- **A partner or a ligand**: under Advanced, click **Partners...** or
-  **Ligands...** on the map to list the proteins and small molecules PDB entries
-  show touching this one. Clicking one opens the complex they were seen in.
+- **A residue**: type a position into the **Residue** box, which Advanced shows
+  while nothing is focused. The alignment becomes the Pfam seed of the domain
+  the residue falls in, and the structure the PDB entry in which that residue
+  was seen touching DNA, a small molecule or another protein, else the AlphaFold
+  model.
+- **A partner or a ligand**: under Advanced, click **Partners…** or **Ligands…**
+  on the map to list the proteins and small molecules PDB entries show touching
+  this one. Clicking one opens the complex they were seen in.
 - **A truncation**: under a focused residue, **More about residue** offers to
   open on the residues a stop codon there, or skipping its exon, would remove.
 - **Nothing**: the session opens on the whole gene, the AlphaFold model and an
