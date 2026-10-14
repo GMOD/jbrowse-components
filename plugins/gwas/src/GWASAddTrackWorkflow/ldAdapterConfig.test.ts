@@ -2,17 +2,31 @@ import { buildLdAdapterConfig } from './ldAdapterConfig.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
 
-test('plain .ld URL → in-memory PlinkLDAdapter uri shorthand', () => {
-  expect(buildLdAdapterConfig(uri('http://host/plink.ld'))).toEqual({
+const typeOf = (loc: ReturnType<typeof uri>) => buildLdAdapterConfig(loc).type
+
+test('plain .ld URL → in-memory PlinkLDAdapter', () => {
+  const ld = uri('http://host/plink.ld')
+  expect(buildLdAdapterConfig(ld)).toEqual({
     type: 'PlinkLDAdapter',
-    uri: 'http://host/plink.ld',
+    ldLocation: ld,
   })
 })
 
-test('.gz URL → tabix adapter uri shorthand (preProcessSnapshot derives .tbi)', () => {
-  expect(buildLdAdapterConfig(uri('http://host/plink.ld.gz'))).toEqual({
+test('.gz URL → tabix adapter, deriving the sibling .tbi', () => {
+  const ld = uri('http://host/plink.ld.gz')
+  expect(buildLdAdapterConfig(ld)).toEqual({
     type: 'PlinkLDTabixAdapter',
-    uri: 'http://host/plink.ld.gz',
+    ldLocation: ld,
+    index: { indexType: 'TBI', location: uri('http://host/plink.ld.gz.tbi') },
+  })
+})
+
+// The `uri` shorthand keeps only `uri` and `baseUri`
+test("a URL's internet account stays on the location", () => {
+  const ld = { ...uri('http://host/plink.ld'), internetAccountId: 'acct' }
+  expect(buildLdAdapterConfig(ld)).toEqual({
+    type: 'PlinkLDAdapter',
+    ldLocation: ld,
   })
 })
 
@@ -20,19 +34,15 @@ test('.gz URL → tabix adapter uri shorthand (preProcessSnapshot derives .tbi)'
 // form's own adapter guess matches `\.ld\.b?gz$` — sniffing only `.gz` sent it
 // to the in-memory adapter, which cannot read a bgzipped file at all
 test('.bgz URL → tabix adapter, same as .gz', () => {
-  expect(buildLdAdapterConfig(uri('http://host/plink.ld.bgz'))).toEqual({
-    type: 'PlinkLDTabixAdapter',
-    uri: 'http://host/plink.ld.bgz',
-  })
+  expect(typeOf(uri('http://host/plink.ld.bgz'))).toBe('PlinkLDTabixAdapter')
 })
 
 test('a presigned .gz URL → tabix adapter, its query string ignored', () => {
-  const signed =
-    'https://bucket.s3.amazonaws.com/plink.ld.gz?X-Amz-Signature=ab'
-  expect(buildLdAdapterConfig(uri(signed))).toEqual({
-    type: 'PlinkLDTabixAdapter',
-    uri: signed,
-  })
+  expect(
+    typeOf(
+      uri('https://bucket.s3.amazonaws.com/plink.ld.gz?X-Amz-Signature=ab'),
+    ),
+  ).toBe('PlinkLDTabixAdapter')
 })
 
 test('explicit .csi index location wins and is typed CSI', () => {

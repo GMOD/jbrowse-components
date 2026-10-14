@@ -2,13 +2,25 @@ import { scoreAdapterFields } from '../GWASAdapter/configSchema.ts'
 import { LD_MARKS } from '../LinearManhattanDisplay/ldPlot.ts'
 import {
   buildLdAdapterConfig,
-  deriveTbiLocation,
   isTabixLocation,
-  makeTabixIndex,
   needsExplicitIndex,
+  tabixIndex,
 } from './ldAdapterConfig.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
+
+export function requiredIndexes(
+  gwasLocation: FileLocation | undefined,
+  ldLocation: FileLocation | undefined,
+) {
+  return {
+    gwas: !!gwasLocation && needsExplicitIndex(gwasLocation),
+    ld:
+      !!ldLocation &&
+      isTabixLocation(ldLocation) &&
+      needsExplicitIndex(ldLocation),
+  }
+}
 
 export function canSubmit({
   gwasLocation,
@@ -25,14 +37,14 @@ export function canSubmit({
   trackName: string
   assembly: string | undefined
 }) {
-  const gwasOk =
-    !!gwasLocation && (!needsExplicitIndex(gwasLocation) || !!gwasIndexLocation)
-  const ldOk =
-    !ldLocation ||
-    !isTabixLocation(ldLocation) ||
-    !needsExplicitIndex(ldLocation) ||
-    !!ldIndexLocation
-  return gwasOk && ldOk && trackName.trim().length > 0 && !!assembly
+  const required = requiredIndexes(gwasLocation, ldLocation)
+  return (
+    !!gwasLocation &&
+    (!required.gwas || !!gwasIndexLocation) &&
+    (!required.ld || !!ldIndexLocation) &&
+    trackName.trim().length > 0 &&
+    !!assembly
+  )
 }
 
 export function buildGwasTrackConfig({
@@ -64,9 +76,7 @@ export function buildGwasTrackConfig({
     adapter: {
       type: 'GWASAdapter',
       bedGzLocation: gwasLocation,
-      index: makeTabixIndex(
-        gwasIndexLocation ?? deriveTbiLocation(gwasLocation),
-      ),
+      index: tabixIndex(gwasLocation, gwasIndexLocation),
       ...scoreAdapterFields({ scoreColumn, scoreTransform }),
       ...(ldLocation
         ? { ldAdapter: buildLdAdapterConfig(ldLocation, ldIndexLocation) }

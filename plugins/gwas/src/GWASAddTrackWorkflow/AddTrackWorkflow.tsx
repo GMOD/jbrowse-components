@@ -12,8 +12,8 @@ import {
   DEFAULT_SCORE_COLUMN,
   DEFAULT_SCORE_TRANSFORM,
 } from '../GWASAdapter/configSchema.ts'
-import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
-import { buildGwasTrackConfig, canSubmit } from './util.ts'
+import { isTabixLocation } from './ldAdapterConfig.ts'
+import { buildGwasTrackConfig, canSubmit, requiredIndexes } from './util.ts'
 
 import type {
   AbstractRootModel,
@@ -35,6 +35,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+function indexLabel(file: string, required: boolean) {
+  return `${file} tabix index (.tbi or .csi, ${required ? 'required for uploaded files' : 'optional — defaults to <file>.tbi'})`
+}
+
 const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   model,
 }: {
@@ -54,9 +58,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
 
   const { assembly } = model
   const ldIsTabix = !!ldLocation && isTabixLocation(ldLocation)
-  const gwasIndexRequired = !!gwasLocation && needsExplicitIndex(gwasLocation)
-  const ldIndexRequired =
-    !!ldLocation && ldIsTabix && needsExplicitIndex(ldLocation)
+  const required = requiredIndexes(gwasLocation, ldLocation)
 
   function doSubmit() {
     try {
@@ -103,11 +105,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           setLocation={setGwasLocation}
         />
         <FileSelector
-          name={
-            gwasIndexRequired
-              ? 'GWAS tabix index (.tbi or .csi, required for uploaded files)'
-              : 'GWAS tabix index (.tbi or .csi, optional — defaults to <file>.tbi)'
-          }
+          name={indexLabel('GWAS', required.gwas)}
           location={gwasIndexLocation}
           rootModel={rootModel}
           setLocation={setGwasIndexLocation}
@@ -134,11 +132,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
         />
         {ldIsTabix ? (
           <FileSelector
-            name={
-              ldIndexRequired
-                ? 'LD tabix index (.tbi or .csi, required for uploaded files)'
-                : 'LD tabix index (.tbi or .csi, optional — defaults to <file>.tbi)'
-            }
+            name={indexLabel('LD', required.ld)}
             location={ldIndexLocation}
             rootModel={rootModel}
             setLocation={setLdIndexLocation}

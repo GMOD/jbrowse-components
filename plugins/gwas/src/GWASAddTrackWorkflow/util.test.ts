@@ -174,7 +174,7 @@ test('with LD: adds a LinearManhattanDisplay colored by LD to the index SNP', ()
     type: 'GWASAdapter',
     ldAdapter: {
       type: 'PlinkLDTabixAdapter',
-      uri: 'http://host/p.ld.gz',
+      ldLocation: uri('http://host/p.ld.gz'),
     },
   })
   expect(cfg.displays).toEqual([
