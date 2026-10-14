@@ -20,6 +20,7 @@ which has the why — read that section before changing what it covers.
 - The legend lists what was painted
 - Mixed ploidy: five consumers, one contract
 - The unphased matrix is one column per ALT, not one per site
+- A site split one record per ALT is one site
 - Settings
 - The arrangement is `rows` and `rowColor`, by row name
 - One display, two layouts: `variantLayout`
