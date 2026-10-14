@@ -37,6 +37,27 @@ test('a step making features anew clears the row and the far end before it', () 
   ).toEqual({ y: 'coverage', row: 'lane' })
 })
 
+test('a window keeps its features, so one summary fills y and the row stays', () => {
+  expect(
+    stepChannels([
+      { type: 'pileup' },
+      { type: 'window', ops: [{ op: 'mean', field: 'score', as: 'meth' }] },
+    ]),
+  ).toEqual({ row: 'row', y: 'meth' })
+  expect(
+    stepChannels([
+      { type: 'coverage' },
+      {
+        type: 'window',
+        ops: [
+          { op: 'mean', field: 'coverage' },
+          { op: 'max', field: 'x' },
+        ],
+      },
+    ]),
+  ).toEqual({ y: 'coverage' })
+})
+
 test('a bin writing its edges as a pair fills nothing', () => {
   expect(stepChannels([{ type: 'bin', as: ['a', 'b'] }])).toEqual({})
 })
