@@ -207,3 +207,32 @@ test('one all-vs-all track draws every band of a three-assembly stack', async ()
     `expected a ribbon band per level, got ${images.length}`,
   )
 })
+
+test('a flat spec track list draws every band its track covers', async () => {
+  const config = path.join(
+    __dirname,
+    '../data/comparative/volvox_allvsall.config.json',
+  )
+  const spec = {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        tracks: ['volvox_ava'],
+        views: [
+          { assembly: 'volvox_ins' },
+          { assembly: 'volvox' },
+          { assembly: 'volvox_del' },
+        ],
+      },
+    ],
+  }
+  const specFile = path.join(tmp, 'flat-spec.json')
+  fs.writeFileSync(specFile, JSON.stringify(spec))
+  const svg = await renderRegion({ config, spec: specFile, width: 800 })
+  const images = svg.match(/<image/g) ?? []
+  assert.equal(
+    images.length,
+    2,
+    `expected a ribbon band per level, got ${images.length}`,
+  )
+})
