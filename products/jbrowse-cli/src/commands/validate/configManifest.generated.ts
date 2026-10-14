@@ -3445,10 +3445,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "rowHeight",
-          "type": "number"
-        },
-        {
           "name": "rowProportion",
           "type": "number"
         },

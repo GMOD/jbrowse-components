@@ -5787,16 +5787,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowColor"
           }
         },
-        "rowHeight": {
-          "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "rowProportion": {
           "description": "fraction of the row height each block fills.",
           "default": 1,
@@ -14821,19 +14811,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-                }
-              ]
-            },
             "rowProportion": {
               "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowProportion"
             },
@@ -15017,6 +14994,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
+                }
+              ]
+            },
+            "rowHeight": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
                 }
               ]
             },
