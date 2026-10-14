@@ -1,4 +1,4 @@
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'

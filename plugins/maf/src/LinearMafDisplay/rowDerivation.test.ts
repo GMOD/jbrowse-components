@@ -1,6 +1,6 @@
 import { getLeafNames } from '@jbrowse/tree-sidebar'
 
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'

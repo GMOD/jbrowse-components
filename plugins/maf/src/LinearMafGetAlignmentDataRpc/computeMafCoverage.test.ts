@@ -1,7 +1,7 @@
 import { computeMafCoverage as computeMafCoverageColumnar } from './computeMafCoverage.ts'
-import { packTestWire } from './testWire.ts'
+import { packTestWire } from './mafWire.fixture.ts'
 
-import type { TestWireBlock, TestWireRow } from './testWire.ts'
+import type { TestWireBlock, TestWireRow } from './mafWire.fixture.ts'
 
 // Mismatches ship as parallel typed arrays, so membership is an index scan
 // rather than a deep-equal against an object.
@@ -33,7 +33,7 @@ function block(
 }
 
 // Coverage reads the columnar wire, so every case here goes through the real
-// packer on its way in — see `testWire.ts`.
+// packer on its way in — see `mafWire.fixture.ts`.
 function computeMafCoverage(
   blocks: TestWireBlock[],
   regionStart: number,

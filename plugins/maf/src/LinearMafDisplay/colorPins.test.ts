@@ -1,6 +1,6 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { identitySpans } from '../LinearMafRenderer/identity.ts'
 import { packMafCellColorConfig } from '../LinearMafRenderer/resolveCellColor.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'

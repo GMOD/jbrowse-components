@@ -1,9 +1,7 @@
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
-
-import type { ClusterIdentityMatrixCaller } from './runMafClustering.ts'
 
 // The MAF's own name for its reference, deliberately not the view's assembly
 // (`volvox`) — the case `refAssemblyName` exists for, and the one where the two

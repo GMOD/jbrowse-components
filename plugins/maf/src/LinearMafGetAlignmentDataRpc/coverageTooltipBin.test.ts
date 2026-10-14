@@ -1,9 +1,9 @@
 import { buildCoverageTooltipBin } from '@jbrowse/alignments-core'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
-import { packTestWire } from './testWire.ts'
+import { packTestWire } from './mafWire.fixture.ts'
 
-import type { TestWireBlock } from './testWire.ts'
+import type { TestWireBlock } from './mafWire.fixture.ts'
 
 function block(
   startBp: number,

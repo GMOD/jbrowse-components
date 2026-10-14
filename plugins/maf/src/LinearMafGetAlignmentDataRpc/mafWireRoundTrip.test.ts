@@ -1,8 +1,8 @@
 import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
 import { placeMafRegionData } from '../LinearMafDisplay/placeMafRows.ts'
-import { packTestWire } from './testWire.ts'
+import { packTestWire } from './mafWire.fixture.ts'
 
-import type { TestWireBlock, TestWireRow } from './testWire.ts'
+import type { TestWireBlock, TestWireRow } from './mafWire.fixture.ts'
 
 /**
  * The wire's actual contract, which nothing else pins: `MafWirePacker` followed

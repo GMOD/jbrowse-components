@@ -1,4 +1,4 @@
-import { countNonGapBases, parseLineByLine } from './testFixtures.ts'
+import { countNonGapBases, parseLineByLine } from './taf.fixture.ts'
 
 describe('countNonGapBases', () => {
   test('counts all bases when no gaps', () => {

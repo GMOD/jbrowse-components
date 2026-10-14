@@ -11,12 +11,12 @@ import {
   filterFirstLineInstructions,
   parseRowInstructions,
 } from './rowInstructions.ts'
+import { countNonGapBases, parseLineByLine } from './taf.fixture.ts'
 import {
   finalizeBlock,
   parseBases,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { countNonGapBases, parseLineByLine } from './testFixtures.ts'
 
 // Test the core parsing logic with sample TAF data
 describe('TAF parsing', () => {

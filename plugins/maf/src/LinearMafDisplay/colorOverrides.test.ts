@@ -3,7 +3,7 @@ import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { colorRampStops } from '@jbrowse/core/util/colorRamp'
 import { autorun } from 'mobx'
 
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { identityLut } from '../LinearMafRenderer/identity.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { sourceChromRankColors } from './components/drawSourceChrom.ts'

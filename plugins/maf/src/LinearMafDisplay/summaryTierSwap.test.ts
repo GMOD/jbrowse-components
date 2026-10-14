@@ -1,4 +1,4 @@
-import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 

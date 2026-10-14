@@ -1,5 +1,5 @@
+import { packTestWire } from './mafWire.fixture.ts'
 import { MafWirePacker } from './mafWirePacker.ts'
-import { packTestWire } from './testWire.ts'
 
 const dec = new TextDecoder()
 
