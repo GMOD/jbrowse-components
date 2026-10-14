@@ -1897,21 +1897,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setLaunch(launch?: LaunchInput<InitState>) {
         self.launch = launch
       },
-
-      /**
-       * #method
-       * renders the view to SVG markup, which it returns; saves it through
-       * FileSaver unless `save: false`
-       */
-      // Promise<string> is stated: renderToSvg is typed against this very
-      // model, so an inferred return makes the type reference itself (TS2456)
-      async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-        return exportViewSvg(
-          self as LinearGenomeViewModel,
-          opts,
-          () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
-        )
-      },
     }))
     .actions(self => {
       let cancelLastSlide = () => {}
@@ -2690,6 +2675,41 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
     }))
+    .actions(self => {
+      function layOutAt(width: number) {
+        self.setWidth(width)
+        self.settleCoarseBlocks()
+      }
+      return {
+        /**
+         * #method
+         * renders the view to SVG markup, which it returns; saves it through
+         * FileSaver unless `save: false`. A `viewWidth` lays the view out at
+         * that many pixels for the export, as a window that wide would, and
+         * puts the on-screen width back after.
+         */
+        // Promise<string> is stated: renderToSvg is typed against this very
+        // model, so an inferred return makes the type reference itself (TS2456)
+        async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
+          const { width } = self
+          const { viewWidth = width } = opts
+          if (viewWidth !== width) {
+            layOutAt(viewWidth)
+          }
+          try {
+            return await exportViewSvg(
+              self as LinearGenomeViewModel,
+              opts,
+              () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
+            )
+          } finally {
+            if (viewWidth !== width) {
+              layOutAt(width)
+            }
+          }
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

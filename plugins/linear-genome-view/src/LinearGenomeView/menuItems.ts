@@ -136,6 +136,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           {
             model: self,
             handleClose,
+            chooseWidth: true,
           },
         ])
       },

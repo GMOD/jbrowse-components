@@ -11,6 +11,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
@@ -43,6 +44,10 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, RpcStatus } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
+
+jest.mock('@jbrowse/core/svg/exportViewSvg', () => ({
+  exportViewSvg: jest.fn(),
+}))
 
 // Minimal display state model used as a generic fixture in these LGV unit
 // tests (replaces the removed LinearBareDisplay). Composes the surviving
@@ -642,6 +647,39 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.offsetPx).toEqual(800)
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
   expect(model.offsetPx).toEqual(79600)
+})
+
+test('an export at another width lays the view out there, then puts the screen back', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({ configuration: {} }).setView(
+    LinearGenomeModel.create({
+      id: 'exportWidth',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+  ])
+  model.setNewView(5, 0)
+  const seen: { bpPerPx: number; coarseBpPerPx: number }[] = []
+  jest.mocked(exportViewSvg).mockImplementation(async () => {
+    seen.push({ bpPerPx: model.bpPerPx, coarseBpPerPx: model.coarseBpPerPx })
+    return '<svg/>'
+  })
+  await model.exportSvg({ viewWidth: 2000 })
+  expect(seen).toEqual([{ bpPerPx: 2, coarseBpPerPx: 2 }])
+  expect(model.width).toBe(800)
+  expect(model.bpPerPx).toBe(5)
+  expect(model.coarseBpPerPx).toBe(5)
+
+  jest.mocked(exportViewSvg).mockRejectedValueOnce(new Error('render failed'))
+  await expect(model.exportSvg({ viewWidth: 2000 })).rejects.toThrow(
+    'render failed',
+  )
+  expect(model.width).toBe(800)
+  expect(model.bpPerPx).toBe(5)
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {

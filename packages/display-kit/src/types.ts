@@ -61,6 +61,8 @@ export interface ExportSvgOptions extends ViewExportSvgOptions {
   textHeight?: number
   trackLabels?: TrackLabelMode
   showGridlines?: boolean
+  /** The pixels to lay the view out across, the on-screen width when absent. */
+  viewWidth?: number
 }
 
 /** The text an export's labels draw in, and so the text they measure in. */
