@@ -78,6 +78,7 @@ interface MafMenuSelf
   rowHeight: number
   rowProportion: number
   editableSources: MafSource[]
+  sources: MafSource[]
   sourcesKnown: boolean
   setRowHeight: (n: number) => void
   setFitToHeight: () => void

@@ -1,6 +1,9 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/testWire.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { runMafClustering } from './runMafClustering.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
+
+import type { ClusterIdentityMatrixCaller } from './runMafClustering.ts'
 
 // The MAF's own name for its reference, deliberately not the view's assembly
 // (`volvox`) — the case `refAssemblyName` exists for, and the one where the two
@@ -116,5 +119,38 @@ test('the dendrogram survives the hidden row', () => {
   expect(display.hierarchy && leafNames(display.hierarchy)).toEqual([
     'panTro4',
     'mm10',
+  ])
+})
+
+test('a run clustered with the reference hidden keeps its tree once the row shows', async () => {
+  const display = makeDisplay([REF, 'panTro4', 'mm10'])
+  landRegion(display)
+  display.setShowReferenceRow(false)
+  const call = jest.fn((_session: string, _method: string, args: unknown) => {
+    const { sources } = args as { sources: string[] }
+    expect(sources).toEqual([REF, 'panTro4', 'mm10'])
+    return Promise.resolve({
+      order: [2, 1, 0],
+      tree: `((mm10,panTro4),${REF});`,
+    })
+  })
+  await runMafClustering({
+    model: display,
+    rpcManager: { call },
+    sessionId: 'test',
+    regions: [{ assemblyName: REF, refName: 'chr1', start: 100, end: 104 }],
+    signal: new AbortController().signal,
+    statusCallback: () => {},
+  })
+  expect(display.hierarchy && leafNames(display.hierarchy)).toEqual([
+    'mm10',
+    'panTro4',
+  ])
+
+  display.setShowReferenceRow(true)
+  expect(display.hierarchy && leafNames(display.hierarchy)).toEqual([
+    'mm10',
+    'panTro4',
+    REF,
   ])
 })

@@ -19,7 +19,8 @@ export type ClusterIdentityMatrixCaller =
  */
 export interface MafClusterSelf
   extends IStateTreeNode, ClusterRunModel<MafSource> {
-  sources: MafSource[]
+  clusterableSources: MafSource[]
+  autoClusterReady: boolean
   adapterConfig: Record<string, unknown>
   resolvedByteLimit: () => number | undefined
   setRowOrder: (rows: MafSource[]) => void
@@ -45,7 +46,7 @@ export async function runMafClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const { sources, adapterConfig } = model
+  const { clusterableSources: sources, adapterConfig } = model
   const byteLimit = model.resolvedByteLimit()
   await applyClusterRun({
     model,

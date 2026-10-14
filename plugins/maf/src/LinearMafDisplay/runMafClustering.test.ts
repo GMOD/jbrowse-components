@@ -20,7 +20,7 @@ function src(name: string): MafSource {
 // stands in.
 function makeModel(overrides: Partial<MafClusterSelf> = {}) {
   return {
-    sources: [src('GRCh38'), src('HG00099.1'), src('HG00099.2')],
+    clusterableSources: [src('GRCh38'), src('HG00099.1'), src('HG00099.2')],
     editableSources: [
       src('GRCh38'),
       src('HG00099.1'),
