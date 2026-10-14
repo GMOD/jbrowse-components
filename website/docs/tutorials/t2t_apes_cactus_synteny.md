@@ -53,7 +53,7 @@ nothing to download by hand.
 
 ## Chains between neighbours, from one alignment
 
-A lane needs two things from the file. The chain between hg38 and that ape
+Each lane reads two chains from the file. The chain between hg38 and that ape
 places the lane under the human window, and the chain between that ape and the
 one above it draws the ribbons between them. Twelve pairs cover six apes:
 
@@ -73,8 +73,8 @@ pair and the chimpanzee in the bonobo pair are aligned the same way.
 gzip -dc genomeA_vs_genomeB.chain.gz > pair.chain
 ```
 
-It writes the chain's query (`genomeB`) as each PAF row's first sequence and its
-target (`genomeA`) as the second. A PanSN prefix on each name
+`chain2paf` writes the chain's query (`genomeB`) as each PAF row's first
+sequence and its target (`genomeA`) as the second. A PanSN prefix on each name
 (`genome#haplotype#contig`) tells JBrowse which genome a sequence belongs to, so
 every pair can go into one file:
 
