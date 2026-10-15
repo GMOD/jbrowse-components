@@ -58,12 +58,15 @@ const PluginWarningDialog = observer(function PluginWarningDialog({
       <Alert severity="warning" style={{ width: 800 }}>
         {intro}
         <ul>
-          {reason.map((r, idx) => (
-            <li key={idx}>
-              {pluginDescriptionString(r)} - (
-              {resolvedPluginUrl(r) ?? pluginUrl(r)})
-            </li>
-          ))}
+          {reason.map(r => {
+            const url = resolvedPluginUrl(r) ?? pluginUrl(r)
+            const description = pluginDescriptionString(r)
+            return (
+              <li key={`${description}-${url}`}>
+                {description} - ({url})
+              </li>
+            )
+          })}
         </ul>
         {trust}{' '}
         <Button
