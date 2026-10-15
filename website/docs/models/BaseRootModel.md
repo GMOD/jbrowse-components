@@ -30,6 +30,7 @@ manager. Every JBrowse product's root model composes this one.
 | <span id="volatile-error">**error**</span><br><code>unknown</code> |  |
 | <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
 | <span id="volatile-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |
+| <span id="volatile-detachdisposers">**detachDisposers**</span><br><code>(() =&gt; void)[]</code> | What has to stop the moment the host lets go of this root: everything reaching outside the tree, like an autosave autorun.<br><br>Not `addDisposer`, which fires only on destroy, and destroy follows a task later, once React has let go of the views it still holds (ADR-069). Work left running in that gap acts for the outgoing session. See `detach`. |
 
 ## Actions
 
@@ -37,6 +38,8 @@ manager. Every JBrowse product's root model composes this one.
 | Member | Description |
 | --- | --- |
 | <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  |
+| <span id="action-adddetachdisposer">**addDetachDisposer**</span><br><code>(disposer: () =&gt; void) =&gt; void</code> | Register something that must stop when the host detaches this root. |
+| <span id="action-detach">**detach**</span><br><code>() =&gt; void</code> | Called when the host releases this root. Stops the worker pool and whatever was registered with `addDetachDisposer`, and leaves the tree itself alone.<br><br>The caller destroys the tree on a later task (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in it; plugins rely on those hooks, so the destroy cannot be skipped. ADR-069. |
 | <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot?: any) =&gt; void</code> | Sets the active session. Remaps any legacy display type names (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), drops nodes whose pluggable type this build has no plugin for (see `pruneUnbuildableNodes`), then walks the resulting MST tree to drop open tracks whose config can't hydrate so shared sessions still load when referencing tracks that no longer exist. Both kinds of drop are surfaced to the user via a snackbar. If filtering throws, the previous session is restored. |
 | <span id="action-setdefaultsession">**setDefaultSession**</span><br><code>() =&gt; void</code> | Starts a new session from the config's defaultSession. An `id` in it (a pasted session export carries one) is dropped, since sessions are autosaved by id and each new one would otherwise overwrite the last. |
 | <span id="action-setsessionpath">**setSessionPath**</span><br><code>(path: string) =&gt; void</code> |  |

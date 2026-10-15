@@ -41,15 +41,14 @@ From [HistoryManagementMixin](../historymanagementmixin): <span id="property-his
 | --- | --- |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
 | <span id="volatile-adminmode">**adminMode**</span><br><code>boolean</code> |  |
-| <span id="volatile-detachdisposers">**detachDisposers**</span><br><code>(() =&gt; void)[]</code> | What has to stop the moment the Loader lets go of this root — here, the autosave autorun, which writes to disk over IPC.<br><br>Not `addDisposer`, which fires only on destroy, and the destroy is now a task later than the swap. An autosave left running in that gap writes the *outgoing* session to `sessionPath`, which the replacement has already been loaded from. See `detach`. |
 | <span id="volatile-opennewsessioncallback">**openNewSessionCallback**</span><br><code>(_path: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="volatile-openlinkcallback">**openLinkCallback**</span><br><code>(_link: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="volatile-returntostartscreencallback">**returnToStartScreenCallback**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>5 inherited volatiles from 2 models</summary>
+<summary>6 inherited volatiles from 2 models</summary>
 
-From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>
+From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>, <span id="volatile-detachdisposers">[`detachDisposers`](../baserootmodel#volatile-detachdisposers)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
 
@@ -67,8 +66,6 @@ From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuacti
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-adddetachdisposer">**addDetachDisposer**</span><br><code>(disposer: () =&gt; void) =&gt; void</code> | Register something that must stop when the Loader detaches this root. See the `detachDisposers` volatile for why this is not `addDisposer`. |
-| <span id="action-detach">**detach**</span><br><code>() =&gt; void</code> | Called when the Loader releases this root. Stops everything the root runs outside the tree (the worker pool and the autosave autorun) and leaves the tree itself alone.<br><br>The caller destroys the tree on a later task (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in it; plugins rely on those hooks, so the destroy cannot be skipped. This action stops the outside work immediately, so none of it runs between detach and destroy. ADR-069. |
 | <span id="action-setopennewsessioncallback">**setOpenNewSessionCallback**</span><br><code>(cb: (arg: string) =&gt; Promise&lt;void&gt;) =&gt; void</code> |  |
 | <span id="action-setopenlinkcallback">**setOpenLinkCallback**</span><br><code>(cb: (arg: string) =&gt; Promise&lt;void&gt;) =&gt; void</code> | Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns plugin-manager lifecycle, as with openNewSessionCallback). |
 | <span id="action-setreturntostartscreencallback">**setReturnToStartScreenCallback**</span><br><code>(cb: () =&gt; void) =&gt; void</code> | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle). |
@@ -78,9 +75,9 @@ From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuacti
 | <span id="action-flushsession">**flushSession**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Save now rather than waiting out the autosave's 1s debounce, so the last second of edits survives. Every path that tears the session down — quitting, returning to the start screen — has to call this first; Exit did not, and lost whatever was still inside the debounce window. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>14 inherited actions from 3 models</summary>
+<summary>16 inherited actions from 3 models</summary>
 
-From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
+From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-adddetachdisposer">[`addDetachDisposer`](../baserootmodel#action-adddetachdisposer)</span>, <span id="action-detach">[`detach`](../baserootmodel#action-detach)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
 
 From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span>
 

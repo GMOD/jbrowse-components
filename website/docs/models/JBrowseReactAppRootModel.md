@@ -37,9 +37,9 @@ From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-inter
 | <span id="volatile-pluginsupdatedcallback">**pluginsUpdatedCallback**</span><br><code>((args: PluginsUpdate) =&gt; void) &#124; undefined</code> | host hook for PluginsUpdated, set from createViewState's `onPluginsUpdated`. Undefined means the host didn't ask to handle it. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>6 inherited volatiles from 2 models</summary>
+<summary>7 inherited volatiles from 2 models</summary>
 
-From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-adminmode">[`adminMode`](../baserootmodel#volatile-adminmode)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>
+From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-adminmode">[`adminMode`](../baserootmodel#volatile-adminmode)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span>, <span id="volatile-detachdisposers">[`detachDisposers`](../baserootmodel#volatile-detachdisposers)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
 
@@ -61,9 +61,9 @@ From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuacti
 | <span id="action-setpluginsupdatedcallback">**setPluginsUpdatedCallback**</span><br><code>(callback: (args: PluginsUpdate) =&gt; void) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>14 inherited actions from 3 models</summary>
+<summary>16 inherited actions from 3 models</summary>
 
-From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
+From [BaseRootModel](../baserootmodel): <span id="action-seterror">[`setError`](../baserootmodel#action-seterror)</span>, <span id="action-adddetachdisposer">[`addDetachDisposer`](../baserootmodel#action-adddetachdisposer)</span>, <span id="action-detach">[`detach`](../baserootmodel#action-detach)</span>, <span id="action-setsession">[`setSession`](../baserootmodel#action-setsession)</span>, <span id="action-setdefaultsession">[`setDefaultSession`](../baserootmodel#action-setdefaultsession)</span>, <span id="action-setsessionpath">[`setSessionPath`](../baserootmodel#action-setsessionpath)</span>, <span id="action-renamecurrentsession">[`renameCurrentSession`](../baserootmodel#action-renamecurrentsession)</span>
 
 From [InternetAccountsMixin](../internetaccountsmixin): <span id="action-initializeinternetaccount">[`initializeInternetAccount`](../internetaccountsmixin#action-initializeinternetaccount)</span>, <span id="action-createephemeralinternetaccount">[`createEphemeralInternetAccount`](../internetaccountsmixin#action-createephemeralinternetaccount)</span>, <span id="action-findappropriateinternetaccount">[`findAppropriateInternetAccount`](../internetaccountsmixin#action-findappropriateinternetaccount)</span>
 
