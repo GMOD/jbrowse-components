@@ -2,11 +2,13 @@ import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeSizeMenu } from '@jbrowse/core/ui'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 // the same four columns QuantitativeTrack downloads, and this track renders the
 // wiggle body anyway — a second copy of the writer was one place for the
 // score-missing fallback to drift
 import { bedGraphFormatOptions } from '@jbrowse/plugin-wiggle'
+import FunctionsIcon from '@mui/icons-material/Functions'
 
 import configSchemaF from './configSchema.ts'
 
@@ -93,8 +95,20 @@ export default function GCContentTrackF(pm: PluginManager) {
                 ...superTrackMenuItems(),
                 {
                   label: 'GC parameters',
+                  icon: FunctionsIcon,
                   type: 'subMenu',
                   subMenu: [
+                    ...radioItems(
+                      [
+                        { value: 'content', label: 'GC content' },
+                        { value: 'skew', label: 'GC skew' },
+                      ],
+                      self.gcMode,
+                      mode => {
+                        self.setGCMode(mode)
+                      },
+                    ),
+                    { type: 'divider' },
                     makeSizeMenu({
                       label: 'Window size',
                       title: 'Window',
@@ -134,14 +148,6 @@ export default function GCContentTrackF(pm: PluginManager) {
                       },
                     }),
                   ],
-                },
-                {
-                  label: 'GC skew',
-                  type: 'checkbox',
-                  checked: self.gcMode === 'skew',
-                  onClick: () => {
-                    self.setGCMode(self.gcMode === 'skew' ? 'content' : 'skew')
-                  },
                 },
               ]
             },

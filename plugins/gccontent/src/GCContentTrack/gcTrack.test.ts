@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
@@ -9,6 +10,7 @@ import WigglePlugin from '@jbrowse/plugin-wiggle'
 import GCContentPlugin from '../index.ts'
 import { liftGCSettings } from './liftGCSettings.ts'
 
+import type { MenuItem, RadioMenuItem, SubMenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function makePluginManager() {
@@ -113,12 +115,25 @@ test('a step never outlives a window shrunk below it', async () => {
 
 test('the track menu carries the GC parameters beside the plot', async () => {
   const { track } = await createTrack()
-  const labels = (track.trackMenuItems() as { label?: string }[]).map(
-    i => i.label,
+  const items = track.trackMenuItems() as MenuItem[]
+  expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual(
+    expect.arrayContaining(['GC parameters', 'Y axis...']),
   )
-  expect(labels).toEqual(
-    expect.arrayContaining(['GC parameters', 'GC skew', 'Y axis...']),
-  )
+  expect(items.some(i => 'label' in i && i.label === 'GC skew')).toBe(false)
+})
+
+test('GC parameters opens on a content / skew radio pair that sets the mode', async () => {
+  const { track } = await createTrack()
+  const params = (track.trackMenuItems() as MenuItem[]).find(
+    i => 'label' in i && i.label === 'GC parameters',
+  )!
+  const [content, skew] = resolveSubMenu(params as SubMenuItem)
+  expect([content, skew]).toMatchObject([
+    { type: 'radio', label: 'GC content', checked: true },
+    { type: 'radio', label: 'GC skew', checked: false },
+  ])
+  ;(skew as RadioMenuItem).onClick(track)
+  expect(track.gcMode).toBe('skew')
 })
 
 test("content's axis is the fraction's own [0, 1], skew's follows the data", async () => {

@@ -73,8 +73,9 @@ the diagonal further still.
 
 The scale's top follows the loaded counts, so it moves as you zoom and differs
 between tracks. To compare two tracks, or one region at two zooms, on one scale,
-pin the top in each track's config with
-[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax):
+pin the top with **Color range...**, which writes
+[`color.domainMax`](/docs/config/hiccolor/#slot-domainmax), or in each track's
+config:
 
 ```json
 "displayDefaults": { "color": { "domainMax": 500 } }

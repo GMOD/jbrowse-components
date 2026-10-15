@@ -24,8 +24,8 @@ const gcWiggleConfigSchema = ConfigurationSchema(
  * #config GCContentTrack
  * GC content, or GC skew, of the assembly's sequence, computed as the view
  * moves by a `GCContentAdapter` and drawn by the wiggle display. The adapter
- * holds the window, the step and the mode; the track menu's GC parameters and
- * GC skew write them there. The reference sequence track's menu has "Add GC
+ * holds the window, the step and the mode; the track menu's GC parameters
+ * write them there. The reference sequence track's menu has "Add GC
  * content track", which makes one.
  *
  * #example

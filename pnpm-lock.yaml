@@ -1403,6 +1403,9 @@ importers:
       '@jbrowse/plugin-wiggle':
         specifier: workspace:^
         version: link:../wiggle
+      '@mui/icons-material':
+        specifier: ^9.5.0
+        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
       mobx:
         specifier: ^7.0.6
         version: 7.0.6

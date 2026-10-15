@@ -5,6 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { rampDomain, rampLutOf } from '@jbrowse/core/util/colorRamp'
 import {
   installPrerequisiteFetch,
@@ -199,6 +200,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           scheme: this.colorScheme,
           reverse: this.colorReverse,
         })
+      },
+      /**
+       * #getter
+       * `color.domainMin`, undefined while it follows the counts from 0.
+       */
+      get colorDomainMin(): number | undefined {
+        return this.colorEncoding.domainMin
+      },
+      /**
+       * #getter
+       * `color.domainMax`, undefined while it follows the loaded counts.
+       */
+      get colorDomainMax(): number | undefined {
+        return this.colorEncoding.domainMax
       },
       /**
        * #getter
@@ -502,6 +517,44 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           self,
           ['color', 'domainQuantile'],
           f ? self.saturationQuantile : 1,
+        )
+      },
+      /**
+       * #action
+       * The Color range dialog's ends and quantile; an undefined end follows
+       * the loaded counts.
+       */
+      setColorRange({
+        min,
+        max,
+        quantile,
+      }: {
+        min: number | undefined
+        max: number | undefined
+        quantile: number
+      }) {
+        setConf(self, ['color', 'domainMin'], min)
+        setConf(self, ['color', 'domainMax'], max)
+        setConf(self, ['color', 'domainQuantile'], quantile)
+      },
+      /**
+       * #action
+       * Back to the base config's ends and quantile, so an admin's declared
+       * range survives.
+       */
+      resetColorRange() {
+        const { color } = baseDisplayConfig(self)
+        const base = (
+          typeof color === 'object' && color !== null ? color : {}
+        ) as { domainMin?: number; domainMax?: number; domainQuantile?: number }
+        setConf(self, ['color', 'domainMin'], base.domainMin)
+        setConf(self, ['color', 'domainMax'], base.domainMax)
+        setConf(
+          self,
+          ['color', 'domainQuantile'],
+          base.domainQuantile ??
+            getSlotDefinition(self.configuration.color, 'domainQuantile')
+              .defaultValue,
         )
       },
       /**

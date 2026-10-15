@@ -1,18 +1,25 @@
+import { lazy } from 'react'
+
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { getBpDisplayStr, getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
+import BalanceIcon from '@mui/icons-material/Balance'
+import GradientIcon from '@mui/icons-material/Gradient'
 import GridOnIcon from '@mui/icons-material/GridOn'
-import TuneIcon from '@mui/icons-material/Tune'
 
+import type { ColorRangeHost } from './components/ColorRangeDialog.tsx'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface HicMenuSelf {
+const ColorRangeDialog = lazy(() => import('./components/ColorRangeDialog.tsx'))
+
+interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
   colorScaleType: HicColorScale
   colorFollowsPercentile: boolean
   saturationQuantile: number
@@ -121,10 +128,31 @@ function colorScaleMenuItems(self: HicMenuSelf): MenuItem[] {
       self.colorFollowsPercentile,
       self.setColorFollowsPercentile,
       {
-        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A color.domainMax in the config overrides both.`,
+        helpText: `Saturate the color scale at the ${percentileName(self.saturationQuantile)} percentile of the loaded counts instead of their maximum, so faint off-diagonal contacts read more strongly. A Color range max overrides both.`,
       },
     ),
   ]
+}
+
+// The caption carries only the pinned ends, as the Y axis row's does.
+function colorRangeMenuItem(self: HicMenuSelf): MenuItem {
+  const { colorDomainMin: min, colorDomainMax: max } = self
+  const caption =
+    min === undefined && max === undefined
+      ? ''
+      : ` (${min ?? 'auto'} – ${max ?? 'auto'})`
+  return {
+    label: `Color range${caption}...`,
+    icon: GradientIcon,
+    helpText:
+      'Pin the counts the color ramp spans, or the percentile an open top follows.',
+    onClick: () => {
+      getDialogHost(self).queueDialog(handleClose => [
+        ColorRangeDialog,
+        { model: self, handleClose },
+      ])
+    },
+  }
 }
 
 // The schemes the file offers, ticked by what the loaded matrix carries: a
@@ -136,7 +164,7 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
     ? [
         {
           label: 'Normalization',
-          icon: TuneIcon,
+          icon: BalanceIcon,
           subMenu: radioItems(
             avail.map(norm => ({
               value: norm,
@@ -163,6 +191,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     ...resolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
     colorSchemeMenuItem(self, colorScaleMenuItems(self)),
+    colorRangeMenuItem(self),
     ...normalizationMenuItems(self),
   ]
 }

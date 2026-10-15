@@ -29,8 +29,8 @@ fetches no new data beyond the sequence the browser already reads.
 
 ## GC content vs GC skew
 
-The track menu's **GC skew** checkbox toggles between the two calculations (the
-adapter's initial mode is the
+**GC parameters → GC content** and **GC parameters → GC skew** switch between
+the two calculations (the adapter's initial mode is the
 [`gcMode`](/docs/config/gccontentadapter/#slot-gcmode) slot):
 
 - GC content is the fraction of G+C bases in each window, a value between 0 and
