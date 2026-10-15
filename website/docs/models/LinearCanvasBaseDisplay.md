@@ -267,7 +267,7 @@ From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengr
 | <span id="method-configproblemsof">**configProblemsOf**</span><br><code>(conf: AnyConfigurationModel) =&gt; string[]</code> | The schema's rules, then a `jexl:` color or filter that does not compile. |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  |
-| <span id="method-showsubmenumenuitems">**showSubmenuMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Flattened "Show..." submenu: all checkbox toggles first, then the radio groups (each under its own subHeader). |
+| <span id="method-showsubmenumenuitems">**showSubmenuMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Flattened "Show..." submenu: all checkbox toggles first, then the radio groups (each under its own subHeader), then the legend. |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The feature right-click menu (open details, zoom to, get sequence, highlight scopes, pin/solo/hide, copy). |
 | <span id="method-colorbysubmenuitems">**colorBySubMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The "Color by..." radio choices (solid/strand/attribute). |
 | <span id="method-colormenuitems">**colorMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color-related track menu entries: a single "Color by..." entry whose radios pick the track's own color or a field, and whose "Solid color..." item opens the solid+UTR color picker. |
