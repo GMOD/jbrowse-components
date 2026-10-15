@@ -79,8 +79,10 @@ with an `isoform_id` and a `gene_id` for each transcript:
 # within-gene proportion, so a lone isoform is always 100%
 keep <- edgeR::filterByExpr(cnt, group = coldata$tissue)
 cnt <- cnt[keep, ]
+txinfo <- txinfo[rownames(cnt), ]
 multi <- names(which(table(txinfo$gene_id) > 1))
-cnt <- cnt[txinfo$isoform_id[txinfo$gene_id %in% multi], ]
+txinfo <- txinfo[txinfo$gene_id %in% multi, ]
+cnt <- cnt[txinfo$isoform_id, ]
 
 # rowData has to carry isoform_id and gene_id: satuRn reads each transcript's
 # gene from there, since usage is a share of the gene's reads
