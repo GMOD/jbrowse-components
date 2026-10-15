@@ -66,7 +66,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
         : {
             disabled: true,
             disabledHelpText:
-              'Sashimi arcs are drawn in the coverage band — turn on "Show coverage" first',
+              'Sashimi arcs are drawn in the coverage band — turn on Show... → Coverage first',
           },
     ),
     ...(model.showSashimiArcs

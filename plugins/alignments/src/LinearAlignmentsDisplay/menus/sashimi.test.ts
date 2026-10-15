@@ -45,7 +45,7 @@ describe('sashimi menu', () => {
     const [toggle] = resolveSubMenu(getSashimiMenuItem(model))
     expect(toggle).toMatchObject({
       disabled: true,
-      disabledHelpText: expect.stringContaining('Show coverage'),
+      disabledHelpText: expect.stringContaining('Show... → Coverage'),
     })
   })
 

@@ -718,7 +718,7 @@ export default function stateModelFactory(
               ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
               : self.showPileup
                 ? undefined
-                : 'Turn on "Show pileup" to sort reads'
+                : 'Turn on Show... → Pileup to sort reads'
           },
 
           /**
@@ -3678,7 +3678,8 @@ export default function stateModelFactory(
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, {
               disabled: !self.showPileup,
-              disabledHelpText: 'Turn on "Show pileup" to change read height',
+              disabledHelpText:
+                'Turn on Show... → Pileup to change read height',
             }),
             ...getCoverageMenuItems(self),
             getReadConnectionsMenuItem(self),
