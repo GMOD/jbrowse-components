@@ -135,8 +135,8 @@ A setting the table cannot serve is refused with an error:
 
 - `unit: 'chain'` is refused with an error. Chain mode joins a read to its
   mates on the main thread, which the table does not run.
-- A facet that hides every section is refused, so an empty table always
-  means an empty region.
+- A facet that hides every section holding reads is refused, so an empty
+  table always means an empty region.
 - With no assembly, coloring by the mate's contig takes each contig's name
   hash, where the browser takes the assembly's own contig order.
 
@@ -200,7 +200,7 @@ by `orderedGroups` under the facet's `domain`, each laid out on its own:
 
 - Every table carries a `section` column, the section's label, and `sections`
   lists `key` and `label` in stacking order. Ungrouped, there is one section
-  labelled `''`.
+  labelled `''`, as there is for a faceted region with no reads.
 - A `read` column indexes the joined `reads`, across sections.
 - The read colors and their key pool over the sections, as the display's do,
   so one key serves every section.

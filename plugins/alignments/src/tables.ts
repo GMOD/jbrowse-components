@@ -1035,15 +1035,25 @@ export async function alignmentTables(
     byteLimit,
     statusCallback: () => {},
   }
-  const result = await executeRenderAlignmentData({ pluginManager, args })
-  if ('regionTooLarge' in result) {
-    throw new Error(
-      `${where} needs ${result.bytes} bytes of alignments, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-    )
+  const run = async (facet: typeof args.facet) => {
+    const result = await executeRenderAlignmentData({
+      pluginManager,
+      args: { ...args, facet },
+    })
+    if ('regionTooLarge' in result) {
+      throw new Error(
+        `${where} needs ${result.bytes} bytes of alignments, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
+      )
+    }
+    return result.value
   }
+  const faceted = await run(args.facet)
+  const noReads = !faceted.groups.length
+  // a facet partitions no reads into no sections; the region still has one
+  const fetched = noReads ? await run(undefined) : faceted
   const order = orderedGroups(
-    new Map([[0, result.value]]),
-    new Set<string>(readConfObject(facetNode, 'hidden')),
+    new Map([[0, fetched]]),
+    noReads ? undefined : new Set<string>(readConfObject(facetNode, 'hidden')),
     sectionOrder(facetSetting?.field ?? '', facetSetting?.domain),
   )
   if (!order.length) {
@@ -1051,7 +1061,7 @@ export async function alignmentTables(
       `every section at ${where} is hidden; facet.hidden lists them all`,
     )
   }
-  const dataOf = new Map(result.value.groups.map(g => [g.key, g.data]))
+  const dataOf = new Map(fetched.groups.map(g => [g.key, g.data]))
   const regions = new Map([[0, region]])
   const chained = chain
     ? attachChainFields(

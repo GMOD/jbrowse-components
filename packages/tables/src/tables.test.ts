@@ -661,6 +661,17 @@ test('settings the tables cannot serve are refused, not drawn some other way', a
   ).rejects.toThrow(/every section/)
 })
 
+test('a faceted region with no reads is one empty section, not every section hidden', async () => {
+  const t = await engine.alignments({
+    ...SPLICED,
+    region: { refName: 'ctgA', start: 49900, end: 50001 },
+    display: { facet: { field: 'strand', hidden: ['1', '-1'] } },
+  })
+  expect(t.sections.label).toEqual([''])
+  expect(t.reads.start).toHaveLength(0)
+  expect(t.coverage.depth.every(d => d === 0)).toBe(true)
+})
+
 test('a chain puts a read, its mate and its split segments on one row, joined by a line', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const chained = await engine.alignments({
