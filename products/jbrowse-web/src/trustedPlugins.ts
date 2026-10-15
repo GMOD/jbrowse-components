@@ -1,4 +1,4 @@
-import { maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { resolvedPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetStringArray,
   localStorageRemoveItem,
@@ -28,15 +28,14 @@ function readTrusted() {
 // Records the user's approval of a set of plugins so the warning dialog doesn't
 // reappear for them on this origin after a refresh.
 //
-// maybePluginUrl, so a definition naming no loader records nothing: pluginUrl's
-// miss value is the display string 'unknown url', and writing that into the trust
-// set marked every *other* unloadable definition — a different plugin, from a
-// different origin's link — as already approved. It also cannot be matched back,
-// since nothing loads from it.
+// Keyed by the resolved url, since a relative one names a different file in
+// every config that lists it. A definition naming no loader records nothing:
+// pluginUrl's miss value is the display string 'unknown url', and writing that
+// into the trust set marked every *other* unloadable definition as approved.
 export function rememberPlugins(defs: PluginDefinition[]) {
   const trusted = readTrusted()
   for (const d of defs) {
-    const url = maybePluginUrl(d)
+    const url = resolvedPluginUrl(d)
     if (url !== undefined) {
       trusted.add(url)
     }
@@ -51,7 +50,7 @@ export function rememberPlugins(defs: PluginDefinition[]) {
 export function arePluginsRemembered(defs: PluginDefinition[]) {
   const trusted = readTrusted()
   return defs.every(d => {
-    const url = maybePluginUrl(d)
+    const url = resolvedPluginUrl(d)
     return url !== undefined && trusted.has(url)
   })
 }

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   pluginDescriptionString,
   pluginUrl,
+  resolvedPluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
 import { ConfirmDialog, LabeledCheckbox } from '@jbrowse/core/ui'
 import { Alert, Button } from '@mui/material'
@@ -57,9 +58,10 @@ const PluginWarningDialog = observer(function PluginWarningDialog({
       <Alert severity="warning" style={{ width: 800 }}>
         {intro}
         <ul>
-          {reason.map(r => (
-            <li key={pluginUrl(r)}>
-              {pluginDescriptionString(r)} - ({pluginUrl(r)})
+          {reason.map((r, idx) => (
+            <li key={idx}>
+              {pluginDescriptionString(r)} - (
+              {resolvedPluginUrl(r) ?? pluginUrl(r)})
             </li>
           ))}
         </ul>

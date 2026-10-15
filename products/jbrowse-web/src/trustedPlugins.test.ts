@@ -32,6 +32,16 @@ test('remembers an approved plugin across reads', () => {
   expect(arePluginsRemembered([apollo])).toBe(true)
 })
 
+test('a relative plugin is remembered for the config it resolved against only', () => {
+  const at = (baseUri: string): PluginDefinition => ({
+    name: 'Rel',
+    umdLoc: { uri: 'plugin.js', baseUri },
+  })
+  rememberPlugins([at('https://lab-a.org/config.json')])
+  expect(arePluginsRemembered([at('https://lab-a.org/other.json')])).toBe(true)
+  expect(arePluginsRemembered([at('https://evil.org/config.json')])).toBe(false)
+})
+
 test('all listed plugins must be remembered', () => {
   rememberPlugins([apollo])
   expect(arePluginsRemembered([apollo, other])).toBe(false)

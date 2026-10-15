@@ -243,6 +243,14 @@ describe('checkPlugins with real plugin store', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('judges the prefix on the url the loader would fetch', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ plugins: [] }))
+    const plugins: PluginDefinition[] = [
+      { name: 'Climbs', url: 'https://jbrowse.org/plugins/../demos/x.js' },
+    ]
+    await expect(checkPlugins(plugins)).resolves.toBe(false)
+  })
+
   it('fetches the store when a plugin is not trusted by prefix', async () => {
     fetchMock.mockResponseOnce(JSON.stringify({ plugins: [] }))
     const plugins: PluginDefinition[] = [

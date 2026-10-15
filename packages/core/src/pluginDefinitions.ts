@@ -219,6 +219,30 @@ export function maybePluginUrl(d: PluginDefinition) {
   }
 }
 
+/**
+ * The absolute url PluginLoader fetches the definition from: a `umdLoc` or
+ * `esmLoc` against its own `baseUri`, any other form against the page. Trust
+ * decisions key on this rather than `maybePluginUrl`, under which one relative
+ * `plugin.js` names a different file in every config that lists it.
+ */
+export function resolvedPluginUrl(
+  d: PluginDefinition,
+  pageUri = typeof location === 'undefined' ? undefined : location.href,
+) {
+  const url = maybePluginUrl(d)
+  const base =
+    'umdLoc' in d
+      ? d.umdLoc.baseUri
+      : 'esmLoc' in d
+        ? d.esmLoc.baseUri
+        : pageUri
+  try {
+    return url === undefined ? undefined : new URL(url, base).href
+  } catch {
+    return undefined
+  }
+}
+
 export function pluginUrl(d: PluginDefinition) {
   return maybePluginUrl(d) ?? 'unknown url'
 }

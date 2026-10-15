@@ -1,7 +1,7 @@
 import {
   isStorePluginDefinition,
   maybePluginUrl,
-  pluginUrl,
+  resolvedPluginUrl,
 } from './pluginDefinitions.ts'
 
 import type { PluginDefinition } from './pluginDefinitions.ts'
@@ -84,8 +84,11 @@ function isTrustedUrl(url: string) {
  * exist to prevent on the loader side.
  */
 function isTrustedDefinition(def: PluginDefinition) {
-  const url = maybePluginUrl(def)
-  return url === undefined ? isStorePluginDefinition(def) : isTrustedUrl(url)
+  if (maybePluginUrl(def) === undefined) {
+    return isStorePluginDefinition(def)
+  }
+  const url = resolvedPluginUrl(def)
+  return url !== undefined && isTrustedUrl(url)
 }
 
 // Every url a store entry can resolve to: the top-level fallback plus each
@@ -105,9 +108,10 @@ export function checkPluginsAgainstStore(
     return true
   }
   const storeUrls = new Set(storePlugins.plugins.flatMap(storePluginUrls))
-  return pluginsToCheck.every(
-    p => isTrustedDefinition(p) || storeUrls.has(pluginUrl(p)),
-  )
+  return pluginsToCheck.every(p => {
+    const url = resolvedPluginUrl(p)
+    return isTrustedDefinition(p) || (url !== undefined && storeUrls.has(url))
+  })
 }
 
 export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
