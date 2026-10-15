@@ -82,7 +82,7 @@ haplotypes' walks. The same index pair behind a `BedTabixAdapter` draws only as
 a lane. To skip indexing entirely, [Route 2](#route-2-a-gfa-file) opens a GFA as
 a file.
 
-## Where a segment's coordinates come from
+## Segment coordinates by format
 
 A graph is a set of segments and links, which is all force-directed layout
 needs. Drawing it **as a track of a linear view** also needs each segment's
@@ -570,7 +570,7 @@ an arm is, and the reference-position ramp shows _where_ each segment sits.
 
 <Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry opens. Right: the segments lane's track menu with Display types → Graph boxed, above the force-directed graph the lane turns into." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
-## Which strain takes which path
+## Per-strain paths through each bubble
 
 **Requires the source assemblies.**
 
