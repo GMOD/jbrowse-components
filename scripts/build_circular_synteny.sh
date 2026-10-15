@@ -16,6 +16,7 @@
 #           TARGET=hg38 QUERY=mm39 bash scripts/build_circular_synteny.sh
 #           PIF=https://example.org/my.pif.gz MIN_LENGTH=50000 bash scripts/build_circular_synteny.sh
 #           BASE_URL=https://jbrowse.org/demos/circular_synteny bash scripts/build_circular_synteny.sh
+#           QUERY=panTro6 REGIONS="chr1 chr2 chrX" QUERY_REGIONS="chr1 chr2A chr2B chrX" bash scripts/build_circular_synteny.sh
 #
 set -euo pipefail
 
@@ -36,8 +37,11 @@ MIN_LENGTH="${MIN_LENGTH:-100000}"
 # the density bin, in bp: a whole-genome ring is megabases per pixel, and a
 # bin far below that averages to a value the ring's scale cannot show
 BIN="${BIN:-100000}"
-# whole chromosomes to draw, resolved against both genomes
+# whole chromosomes to draw, resolved against both genomes; QUERY_REGIONS
+# names the query's own where the two name them differently (chimp's chr2A and
+# chr2B)
 REGIONS="${REGIONS:-chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chrX}"
+QUERY_REGIONS="${QUERY_REGIONS:-}"
 # where the finished files will be served from; empty writes bare filenames
 BASE_URL="${BASE_URL:-}"
 
@@ -98,7 +102,7 @@ bgzip -f "$PAIR.genes.gff"
 # Each assembly is its hub's entry with every relative uri made absolute; the
 # RefSeq gene track comes along so a ribbon's endpoints can be opened on a
 # linear view of either genome.
-TARGET="$TARGET" QUERY="$QUERY" HUB="$HUB" PAIR="$PAIR" PIF="$PIF" MIN_LENGTH="$MIN_LENGTH" BASE_URL="$BASE_URL" REGIONS="$REGIONS" python3 - <<'PY'
+TARGET="$TARGET" QUERY="$QUERY" HUB="$HUB" PAIR="$PAIR" PIF="$PIF" MIN_LENGTH="$MIN_LENGTH" BASE_URL="$BASE_URL" REGIONS="$REGIONS" QUERY_REGIONS="$QUERY_REGIONS" python3 - <<'PY'
 import json
 import os
 
@@ -110,6 +114,7 @@ pif = os.environ['PIF']
 min_length = int(os.environ['MIN_LENGTH'])
 base = os.environ['BASE_URL']
 regions = os.environ['REGIONS'].split()
+query_regions = os.environ['QUERY_REGIONS'].split()
 uri_keys = {'uri', 'chromSizes'}
 
 
@@ -183,7 +188,9 @@ config = {
         'views': [{
             'type': 'CircularView',
             'assembly': [target, query],
-            'displayedRegionNames': regions,
+            'displayedRegionNames': (
+                {target: regions, query: query_regions} if query_regions else regions
+            ),
             'height': 780,
             'minAlignmentLength': min_length,
             'tracks': [

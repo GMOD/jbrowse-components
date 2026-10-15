@@ -1,0 +1,286 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "metadata": {
+          "description": "Dec. 2013 (GRCh38/hg38)",
+          "nibPath": "/gbdb/hg38",
+          "organism": "Human",
+          "defaultPos": "chr7:155799529-155812871",
+          "active": 1,
+          "orderKey": 50,
+          "genome": "Human",
+          "scientificName": "Homo sapiens",
+          "htmlPath": "/gbdb/hg38/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)",
+          "taxId": 9606,
+          "id": "hg38",
+          "name": "hg38",
+          "accession": "hg38",
+          "commonName": "Human",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/hg38/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/hg38/minimal.json",
+          "blatDb": "hg38"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_chimp/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "circularRefNames": ["chrM"],
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "panTro6",
+      "displayName": "Chimp (panTro6)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "panTro6-refseq",
+        "metadata": {
+          "description": "Jan. 2018 (Clint_PTRv2/panTro6)",
+          "nibPath": "/gbdb/panTro6",
+          "organism": "Chimp",
+          "defaultPos": "chr7:111311998-111585728",
+          "active": 1,
+          "orderKey": 3325,
+          "genome": "Chimp",
+          "scientificName": "Pan troglodytes",
+          "htmlPath": "/gbdb/panTro6/html/description.html",
+          "hgNearOk": 0,
+          "hgPbOk": 0,
+          "sourceName": "University of Washington",
+          "taxId": 9598,
+          "id": "panTro6",
+          "name": "panTro6",
+          "accession": "panTro6",
+          "commonName": "Chimp",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/panTro6/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/panTro6/minimal.json",
+          "blatDb": "panTro6"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/panTro6/bigZips/panTro6.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/panTro6/panTro6.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_chimp/panTro6.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/panTro6/panTro6.cytoBandIdeo.txt.gz"
+        }
+      },
+      "circularRefNames": ["chrM"],
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38ToPanTro6_liftover",
+      "name": "hg38 to panTro6 liftOver chain",
+      "assemblyNames": ["panTro6", "hg38"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz",
+        "csi": true,
+        "queryAssembly": "panTro6",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38ToPanTro6_gene_density",
+      "name": "Genes per 100 kb",
+      "assemblyNames": ["hg38", "panTro6"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny_chimp/hg38ToPanTro6.genes.gff.density.bw"
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "hg38ToPanTro6_gene_density-LinearWiggleDisplay",
+          "mark": "span",
+          "aggregate": "mean",
+          "color": {
+            "field": "score",
+            "scale": "threshold",
+            "range": ["#e01e26", "#d95f02"]
+          },
+          "height": 40
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "2",
+          "shortLabel": "RefSeq Curated",
+          "track": "ncbiRefSeqCurated",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "panTro6-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
+      "assemblyNames": ["panTro6"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeqCurated.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "2",
+          "shortLabel": "RefSeq Curated",
+          "track": "ncbiRefSeqCurated",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    }
+  ],
+  "defaultSession": {
+    "name": "hg38 and panTro6 on one circle",
+    "views": [
+      {
+        "type": "CircularView",
+        "assembly": ["hg38", "panTro6"],
+        "displayedRegionNames": {
+          "hg38": [
+            "chr1",
+            "chr2",
+            "chr3",
+            "chr4",
+            "chr5",
+            "chr6",
+            "chr7",
+            "chr8",
+            "chr9",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13",
+            "chr14",
+            "chr15",
+            "chr16",
+            "chr17",
+            "chr18",
+            "chr19",
+            "chr20",
+            "chr21",
+            "chr22",
+            "chrX"
+          ],
+          "panTro6": [
+            "chr1",
+            "chr2A",
+            "chr2B",
+            "chr3",
+            "chr4",
+            "chr5",
+            "chr6",
+            "chr7",
+            "chr8",
+            "chr9",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13",
+            "chr14",
+            "chr15",
+            "chr16",
+            "chr17",
+            "chr18",
+            "chr19",
+            "chr20",
+            "chr21",
+            "chr22",
+            "chrX"
+          ]
+        },
+        "height": 780,
+        "minAlignmentLength": 100000,
+        "tracks": [
+          {
+            "trackId": "hg38ToPanTro6_gene_density",
+            "type": "LinearWiggleDisplay",
+            "height": 40
+          },
+          "hg38ToPanTro6_liftover"
+        ]
+      }
+    ]
+  }
+}

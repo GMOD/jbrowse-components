@@ -1,0 +1,57 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "TAIR10",
+      "displayName": "Arabidopsis thaliana (TAIR10)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "TAIR10-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_brassica/TAIR10.fa.gz"
+        }
+      },
+      "refNameColors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    },
+    {
+      "name": "Brapa",
+      "displayName": "Brassica rapa (Chiifu v3.01)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Brapa-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_brassica/Brapa.fa.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "Brapa_to_TAIR10",
+      "name": "Brapa aligned to TAIR10",
+      "assemblyNames": ["Brapa", "TAIR10"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny_brassica/Brapa_to_TAIR10.pif.gz",
+        "csi": true,
+        "queryAssembly": "Brapa",
+        "targetAssembly": "TAIR10"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "TAIR10 and Brapa on one circle",
+    "views": [
+      {
+        "type": "CircularView",
+        "assembly": ["TAIR10", "Brapa"],
+        "height": 780,
+        "tracks": ["Brapa_to_TAIR10"],
+        "minAlignmentLength": 1000
+      }
+    ]
+  }
+}

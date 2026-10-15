@@ -1,0 +1,59 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "CO92",
+      "displayName": "Yersinia pestis CO92",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CO92-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_yersinia/CO92.fa.gz"
+        }
+      }
+    },
+    {
+      "name": "KIM",
+      "displayName": "Yersinia pestis KIM",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "KIM-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny_yersinia/KIM.fa.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "KIM_to_CO92",
+      "name": "KIM aligned to CO92",
+      "assemblyNames": ["KIM", "CO92"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny_yersinia/KIM_to_CO92.pif.gz",
+        "csi": true,
+        "queryAssembly": "KIM",
+        "targetAssembly": "CO92"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "CO92 and KIM on one circle",
+    "views": [
+      {
+        "type": "CircularView",
+        "assembly": ["CO92", "KIM"],
+        "height": 780,
+        "tracks": ["KIM_to_CO92"],
+        "minAlignmentLength": 5000,
+        "color": {
+          "field": "strand"
+        }
+      }
+    ]
+  }
+}
