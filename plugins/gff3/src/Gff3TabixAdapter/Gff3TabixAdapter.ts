@@ -49,8 +49,17 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
       return {
         gff,
         dontRedispatchSet: new Set(this.getConf('dontRedispatch')),
-        lengths: sequenceLengths(await gff.getHeader(opts)),
       }
+    },
+  })
+
+  // the header read is sized from the index, so it can start only once the
+  // index is in; the region read needs the same index and nothing else, so
+  // getFeatures runs the two together
+  private lengths = cachedSetup({
+    setup: async opts => {
+      const { gff } = await this.configure(opts)
+      return sequenceLengths(await gff.getHeader(opts))
     },
   })
 
@@ -79,7 +88,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        const { gff, dontRedispatchSet, lengths } = await this.configure(opts)
+        const { gff, dontRedispatchSet } = await this.configure(opts)
         // The bound exists to reach a record's children, so what disqualifies a
         // record is having none. `ID` answers that exactly — nothing can name a
         // parent that has no name — and @gmod/gff-nostream decides it with the scan
@@ -109,16 +118,24 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           )
         // a feature crossing a circular sequence's origin is indexed from its
         // start near the end, so a query short of the end reads the last base
-        // too, for the part such a feature carries past the origin
-        const length = lengths.get(query.refName)
-        const reads = [read(query)]
-        if (length !== undefined && query.end < length) {
-          reads.push(read({ ...query, start: length - 1, end: length }))
-        }
+        // too, for the part such a feature carries past the origin. That read
+        // needs the length from the header, so it starts when the header
+        // arrives and the query's own read does not wait for it.
+        const tailRead = this.lengths(opts).then(async lengths => {
+          const length = lengths.get(query.refName)
+          return {
+            length,
+            lines:
+              length !== undefined && query.end < length
+                ? await read({ ...query, start: length - 1, end: length })
+                : [],
+          }
+        })
         // the byte offset stays on our own record and is used purely to mint
         // a stable id, so it never pollutes the feature's data
-        const candidates = (await Promise.all(reads)).flatMap(lines =>
-          parseRecordsLazy(lines).map(({ feature, record }) => ({
+        const [lines, tail] = await Promise.all([read(query), tailRead])
+        const candidates = [lines, tail.lines].flatMap(group =>
+          parseRecordsLazy(group).map(({ feature, record }) => ({
             feature,
             uniqueId: `${this.id}-offset-${record.offset}`,
           })),
@@ -126,7 +143,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         for (const { feature, uniqueId } of cutAtOrigin(
           candidates,
           query,
-          length,
+          tail.length,
         )) {
           observer.next(new Gff3Feature(feature, uniqueId))
         }

@@ -1,0 +1,64 @@
+import { firstValueFrom } from 'rxjs'
+import { toArray } from 'rxjs/operators'
+
+import Adapter from './BedTabixAdapter.ts'
+import configSchema from './configSchema.ts'
+
+const reads: { event: 'start' | 'end'; position: number }[] = []
+
+jest.mock('@jbrowse/core/util/io', () => {
+  const actual = jest.requireActual('@jbrowse/core/util/io')
+  return {
+    ...actual,
+    openLocation: (location: unknown) => {
+      const file = actual.openLocation(location)
+      return {
+        read: async (length: number, position: number, opts: unknown) => {
+          reads.push({ event: 'start', position })
+          await new Promise(resolve => setTimeout(resolve, 30))
+          const buf = await file.read(length, position, opts)
+          reads.push({ event: 'end', position })
+          return buf
+        },
+        readFile: (opts: unknown) => file.readFile(opts),
+        stat: () => file.stat(),
+        close: () => file.close(),
+      }
+    },
+  }
+})
+
+// The column names come from the file's leading blocks and the region read
+// needs only the index, so a cold load issues both at once: one round trip,
+// not two. The lines wait for the parser the names build.
+test('the first load reads the names beside the region', async () => {
+  const file = '../../../../test_data/ce11.26way.chrI_subset.bed.gz'
+  const adapter = new Adapter(
+    configSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve(file),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        indexType: 'TBI',
+        location: {
+          localPath: require.resolve(`${file}.tbi`),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  const features = await firstValueFrom(
+    adapter
+      .getFeatures({
+        assemblyName: 'ce11',
+        refName: 'chrI',
+        start: 3003000,
+        end: 3004100,
+      })
+      .pipe(toArray()),
+  )
+  expect(features.length).toBeGreaterThan(0)
+  const [first, second] = reads
+  expect([first!.event, second!.event]).toEqual(['start', 'start'])
+})

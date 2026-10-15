@@ -44,13 +44,20 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
     this.file = vcf
-    const header = await vcf.getHeader({ signal: opts.signal })
-    return {
-      vcf,
-      parser: new VcfParser({ header }),
-      header,
-    }
+    await vcf.getMetadata({ signal: opts.signal })
+    return { vcf }
   }
+
+  // the header read is sized from the index, so it can start only once the
+  // index is in; the region read needs the same index and nothing else, so
+  // getFeatures runs the two together
+  private headerAndParser = cachedSetup({
+    setup: async opts => {
+      const { vcf } = await this.configure(opts)
+      const header = await vcf.getHeader({ signal: opts.signal })
+      return { header, parser: new VcfParser({ header }) }
+    },
+  })
 
   // Index-only compressed-byte estimate (no feature download), used by the
   // single-region feature-fetch RPC to short-circuit an over-budget region
@@ -70,12 +77,11 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
   }
 
   async getHeader(opts?: BaseOptions) {
-    const { header } = await this.configure(opts)
-    return header
+    return (await this.headerAndParser(opts)).header
   }
 
   async getMetadata(opts?: BaseOptions) {
-    const { parser } = await this.configure(opts)
+    const { parser } = await this.headerAndParser(opts)
     return parser.getMetadata()
   }
 
@@ -88,7 +94,8 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       return undefined
     }
 
-    const { vcf, header } = await this.configure(opts)
+    const { vcf } = await this.configure(opts)
+    const { header } = await this.headerAndParser(opts)
     const exportLines: string[] = header.split('\n').filter(Boolean)
 
     await appendVcfLines(exportLines, vcf, regions, opts)
@@ -98,7 +105,8 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { vcf, parser } = await this.configure(opts)
+      const { vcf } = await this.configure(opts)
+      const parser = this.headerAndParser(opts).then(r => r.parser)
       await streamVcfFeatures(
         { vcf, parser, idPrefix: this.id },
         query,
@@ -113,7 +121,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
   // warnings, `MultiSampleVariantGetSources` takes this one so the display can
   // report them.
   async getSourcesAndWarnings(opts?: BaseOptions) {
-    const { parser } = await this.configure(opts)
+    const { parser } = await this.headerAndParser(opts)
     return getSamplesTsvSources({
       location: this.getConf('samplesTsvLocation'),
       names: parser.samples,

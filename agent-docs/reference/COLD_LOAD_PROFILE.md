@@ -52,6 +52,13 @@ out. That work is diffuse (probe `inclusive` over the window):
 track. The remaining move is
 [start-the-fetch-before-react-renders-the-display](../ideas/ready/start-the-fetch-before-react-renders-the-display.md).
 
+The GFF, VCF and BED tabix adapters start the header read (BED: the column
+names) beside the region read once the index is in, since both need only the
+index. Each adapter's `firstLoadReads.test.ts` asserts that two reads are in
+flight before either ends. A GFF with `##sequence-region` pragmas still issues the
+origin-tail read after the header, so it gains no round trip there, and no
+wall-clock figure exists yet.
+
 ## Code-discovery rounds
 
 At 80 ms RTT a cold load found its code in six serial rounds: the HTML,

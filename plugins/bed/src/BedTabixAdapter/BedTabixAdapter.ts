@@ -116,45 +116,75 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       // warms the index under its own status label — getLines would otherwise
       // download it under "Downloading features"
       await this.getMetadata(opts)
-      const names = await this.getNames()
-      const parser = await this.getParser()
       const scoreColumn = readConfObject(this.config, 'scoreColumn')
       const disableGeneHeuristic = readConfObject(
         this.config,
         'disableGeneHeuristic',
       )
-      checkAbortSignal(signal)
-      await downloadStatus('Downloading features', statusCallback, onProgress =>
-        // start/end come from @gmod/tabix rather than being re-derived from
-        // the line: it located the coordinate columns to find these lines at
-        // all, and already applied the index's coordinate offset (-1 for a
-        // 1-based-closed preset) and its no-end-column convention (a single
-        // position becomes start..start+1). refName is likewise the query's
-        // — getLines only calls back for lines whose ref column matches it.
-        this.bed.getLines(query.refName, query.start, query.end, {
-          lineCallback: (line, fileOffset, start, end) => {
-            checkAbortSignal(signal)
-            const splitLine = line.split('\t')
-            observer.next(
-              new SimpleFeature(
-                featureData({
-                  splitLine,
-                  refName: query.refName,
-                  start,
-                  end,
-                  scoreColumn,
-                  parser,
-                  uniqueId: `${this.id}-${fileOffset}`,
-                  names,
-                  disableGeneHeuristic,
-                }),
-              ),
-            )
-          },
-          onProgress,
-          signal,
-        }),
+      // The names come from the file's leading blocks, so they are a read of
+      // their own that the region read does not need: both start now, and
+      // lines that arrive before the parser wait for it.
+      type Row = {
+        splitLine: string[]
+        start: number
+        end: number
+        offset: number
+      }
+      let ready: { names: string[] | undefined; parser: BED } | undefined
+      const early: Row[] = []
+      const emit = (
+        { names, parser }: NonNullable<typeof ready>,
+        { splitLine, start, end, offset }: Row,
+      ) => {
+        observer.next(
+          new SimpleFeature(
+            featureData({
+              splitLine,
+              refName: query.refName,
+              start,
+              end,
+              scoreColumn,
+              parser,
+              uniqueId: `${this.id}-${offset}`,
+              names,
+              disableGeneHeuristic,
+            }),
+          ),
+        )
+      }
+      const loaded = Promise.all([this.getNames(), this.getParser()]).then(
+        ([names, parser]) => {
+          ready = { names, parser }
+          for (const row of early.splice(0)) {
+            emit(ready, row)
+          }
+        },
       )
+      checkAbortSignal(signal)
+      await Promise.all([
+        loaded,
+        downloadStatus('Downloading features', statusCallback, onProgress =>
+          // start/end come from @gmod/tabix rather than being re-derived from
+          // the line: it located the coordinate columns to find these lines at
+          // all, and already applied the index's coordinate offset (-1 for a
+          // 1-based-closed preset) and its no-end-column convention (a single
+          // position becomes start..start+1). refName is likewise the query's
+          // — getLines only calls back for lines whose ref column matches it.
+          this.bed.getLines(query.refName, query.start, query.end, {
+            lineCallback: (line, offset, start, end) => {
+              checkAbortSignal(signal)
+              const row = { splitLine: line.split('\t'), start, end, offset }
+              if (ready) {
+                emit(ready, row)
+              } else {
+                early.push(row)
+              }
+            },
+            onProgress,
+            signal,
+          }),
+        ),
+      ])
       observer.complete()
     }, signal)
   }
