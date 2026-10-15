@@ -167,17 +167,17 @@ export const COVERAGE_BIGWIG: WiggleTablesArgs = {
 }
 
 /** 39 dogs genotyped at 490 SNVs across CYP1A2, a few of them phased. */
-export const DOG_VCF: VariantTablesArgs = {
+export const DOG_VCF = {
   adapterConfig: {
     type: 'VcfTabixAdapter',
     vcfGzLocation: uri('dog10k_cyp1a2_snvs.vcf.gz', DOG10K),
     index: { location: uri('dog10k_cyp1a2_snvs.vcf.gz.tbi', DOG10K) },
   },
   region: { refName: 'chr30', start: 38258000, end: 38265000 },
-}
+} satisfies VariantTablesArgs
 
 /** Dog10K structural variants at AMY2B, each sample's group and breed in a samples file. */
-export const DOG_SV: VariantTablesArgs = {
+export const DOG_SV = {
   adapterConfig: {
     type: 'VcfTabixAdapter',
     vcfGzLocation: uri('dog10k_amy2b_svs.vcf.gz', DOG10K),
@@ -185,7 +185,7 @@ export const DOG_SV: VariantTablesArgs = {
     samplesTsvLocation: uri('dog10k_amy2b_samples.tsv', DOG10K),
   },
   region: { refName: 'chr6', start: 47340000, end: 47420000 },
-}
+} satisfies VariantTablesArgs
 
 /** Three signed BigWigs as one multi-wiggle track, `posneg_rw1` to `3`. */
 export const MULTI_BIGWIG: WiggleTablesArgs = {

@@ -1,6 +1,7 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
@@ -74,9 +75,21 @@ export function registerVariantAdapters(pluginManager: PluginManager) {
   SplitVcfTabixAdapterF(pluginManager)
 }
 
+interface VariantRegion {
+  refName: string
+  start: number
+  end: number
+}
+
 export interface VariantTablesArgs {
   adapterConfig: Record<string, unknown>
-  region: { refName: string; start: number; end: number }
+  /** One region, read as `regions: [region]`. */
+  region?: VariantRegion
+  /**
+   * Several regions read as a view lays them side by side: one set of rows
+   * and one key across them. A record crossing regions is listed in each.
+   */
+  regions?: VariantRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
@@ -87,8 +100,8 @@ export interface VariantTablesArgs {
    */
   display?: Record<string, unknown>
   /**
-   * The most compressed bytes the region may need, refused off the index
-   * before any record is fetched.
+   * The most compressed bytes the regions may need together, refused off the
+   * index before any record is fetched.
    */
   byteLimit?: number
 }
@@ -129,19 +142,26 @@ function legendOf(scales: ColorScale[]) {
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
  * each band's value, label and the rows it spans; and `legend` and `ramps`,
  * the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
- * a reference call draws no cell. For a host that draws them itself, such as
- * R through V8. The adapters must be registered on `pluginManager`
- * (`registerVariantAdapters`).
+ * a reference call draws no cell. Several regions share the rows and the key,
+ * as the display's regions do: a record crossing regions is listed in each,
+ * under one `key`, every `variants` and `cells` row names its `region`'s
+ * index, and `cells.variant` indexes the joined `variants`. For a host that
+ * draws them itself, such as R through V8. The adapters must be registered on
+ * `pluginManager` (`registerVariantAdapters`).
  */
 export async function variantTables(
   pluginManager: PluginManager,
   {
     adapterConfig,
     region,
+    regions = region ? [region] : [],
     display = {},
     byteLimit = DEFAULT_BYTE_LIMIT,
   }: VariantTablesArgs,
 ) {
+  if (regions.length === 0) {
+    throw new Error('variantTables reads a region, or regions')
+  }
   const conf = configSchemaFactory().create({
     ...display,
     type: 'LinearMultiSampleVariantDisplay',
@@ -179,6 +199,16 @@ export async function variantTables(
     sessionId: 'tables',
     adapterConfig,
   })
+  const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
+  const several = regions.length > 1
+  const tooLarge = (bytes: number | undefined) =>
+    new Error(
+      `${regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')} ${several ? 'need' : 'needs'} ${bytes} bytes of variants${several ? ' in total' : ''}, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
+    )
+  const bytes = await totalRegionBytes(adapter, fetchRegions)
+  if (overByteBudget(bytes, byteLimit)) {
+    throw tooLarge(bytes)
+  }
   const sources: ProcessedSource[] = (await adapter.getSources([])).map(
     source => ({ ...source, sampleName: resolveSampleName(source) }),
   )
@@ -186,7 +216,7 @@ export async function variantTables(
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
     adapterConfig,
-    regions: [{ assemblyName: '', ...region }],
+    regions: fetchRegions,
     layout: 'genomic',
     unit,
     color: cellHue.read,
@@ -204,20 +234,20 @@ export async function variantTables(
     filters: filters.length
       ? new SerializableFilterChain({ filters, jexl: pluginManager.jexl })
       : undefined,
-    byteLimit,
     statusCallback: () => {},
   }
   const result = await variantCellData({ pluginManager, args })
   if ('regionTooLarge' in result) {
-    throw new Error(
-      `${region.refName}:${region.start}-${region.end} needs ${result.bytes} bytes of variants, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-    )
+    throw tooLarge(result.bytes)
   }
   const value = result.value
-  const data = value.perRegionCellData[0]
+  const perRegion = regions.flatMap((_, i) => {
+    const data = value.perRegionCellData[i]
+    return data ? [{ region: i, data }] : []
+  })
   const recordOf = new Map(result.records.map(r => [r.id(), r]))
-  const records = (data?.featureInfo ?? []).map(info =>
-    recordOf.get(info.featureId)!,
+  const records = perRegion.flatMap(({ data }) =>
+    data.featureInfo.map(info => recordOf.get(info.featureId)!),
   )
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
@@ -273,6 +303,8 @@ export async function variantTables(
     type: [] as string[],
     color: [] as string[],
     filter: records.map(filterOf),
+    region: [] as number[],
+    key: [] as number[],
   }
   const cells = {
     variant: [] as number[],
@@ -280,10 +312,16 @@ export async function variantTables(
     genotype: [] as string[],
     dosage: [] as (number | null)[],
     color: [] as string[],
+    region: [] as number[],
   }
-  if (data) {
+  const keys = new Map<string, number>()
+  for (const { region: regionIndex, data } of perRegion) {
+    const offset = variants.start.length
     const laneColors = paintFeatureColors(data, cellHue, true)
     data.featureInfo.forEach((info, f) => {
+      if (!keys.has(info.featureId)) {
+        keys.set(info.featureId, keys.size)
+      }
       variants.start.push(data.featurePositions[f * 2]!)
       variants.end.push(data.featurePositions[f * 2 + 1]!)
       variants.id.push(info.featureId)
@@ -292,6 +330,8 @@ export async function variantTables(
       variants.alt.push(info.alt.join(','))
       variants.type.push(info.type)
       variants.color.push(abgrToHex(laneColors[f]!))
+      variants.region.push(regionIndex)
+      variants.key.push(keys.get(info.featureId)!)
     })
     const colors = paintCellColors(data, cellHue, {
       phased: unit === 'haplotype',
@@ -305,7 +345,7 @@ export async function variantTables(
       if (row === undefined) {
         continue
       }
-      cells.variant.push(f)
+      cells.variant.push(offset + f)
       cells.row.push(name)
       cells.genotype.push(
         decodeGenotype(
@@ -324,6 +364,7 @@ export async function variantTables(
         ),
       )
       cells.color.push(abgrToHex(colors[i]!))
+      cells.region.push(regionIndex)
     }
   }
 
@@ -333,7 +374,10 @@ export async function variantTables(
     hasAltWithoutPhaseSet: value.hasAltWithoutPhaseSet,
     hasUnphased: value.hasUnphased,
     hasNoCall: value.hasNoCall,
-    paintedDomain: data ? paintedColorKeys([data], cellHue) : [],
+    paintedDomain: paintedColorKeys(
+      perRegion.map(({ data }) => data),
+      cellHue,
+    ),
     shadeByDosage: shade,
     color: encoding,
     colorSlots: slots,
@@ -355,6 +399,7 @@ export async function variantTables(
       end: banded.bands.map(b => b.end),
     },
     config: fullConfSnapshot(conf),
+    warnings: [] as string[],
   }
 }
 

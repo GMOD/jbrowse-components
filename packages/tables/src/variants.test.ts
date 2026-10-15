@@ -8,6 +8,17 @@ import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
+const without = <A extends { region: unknown }>({ region, ...rest }: A) => rest
+
+/** Each table's rows, as one record per row, for comparing two calls. */
+function rowsOf(table: Record<string, ArrayLike<unknown>>, drop: string[]) {
+  const columns = Object.entries(table).filter(([name]) => !drop.includes(name))
+  const n = columns[0]?.[1].length ?? 0
+  return Array.from({ length: n }, (_, i) =>
+    Object.fromEntries(columns.map(([name, c]) => [name, c[i]])),
+  )
+}
+
 test('a multi-sample VCF comes back as the display paints its genotypes', async () => {
   const t = await engine.variants(DOG_VCF)
   const n = t.variants.start.length
@@ -323,4 +334,58 @@ test('VEP’s CSQ parses under its header’s Format list, one row a consequence
   expect(t.annotations.DISTANCE).toEqual([null, '420'])
   expect(t.annotations.key).toEqual(['CSQ', 'CSQ'])
   expect(Object.keys(t.info)).toEqual(['DP'])
+})
+
+test('variants: an empty first region still gives every row, and the second region’s cells', async () => {
+  const one = await engine.variants(DOG_VCF)
+  const t = await engine.variants({
+    ...without(DOG_VCF),
+    regions: [{ refName: 'chr30', start: 1000, end: 2000 }, DOG_VCF.region],
+  })
+  expect(t.rows).toEqual(one.rows)
+  expect(t.bands).toEqual(one.bands)
+  expect(new Set(t.variants.region)).toEqual(new Set([1]))
+  expect(rowsOf(t.variants, ['region'])).toEqual(
+    rowsOf(one.variants, ['region']),
+  )
+  expect(rowsOf(t.cells, ['region'])).toEqual(rowsOf(one.cells, ['region']))
+  expect(new Set(t.cells.region)).toEqual(new Set([1]))
+  expect(t.warnings).toEqual([])
+
+  const listed = await engine.variants({
+    ...without(DOG_VCF),
+    regions: [DOG_VCF.region],
+  })
+  expect(listed).toEqual(one)
+  expect(one.variants.key).toEqual(one.variants.start.map((_, i) => i))
+})
+
+test('a variant spanning two regions is listed in each under one key, and cells index the joined table', async () => {
+  const one = await engine.variants(DOG_SV)
+  const lengths = one.variants.start.map((s, i) => one.variants.end[i]! - s)
+  const i = lengths.indexOf(Math.max(...lengths))
+  const mid = Math.floor((one.variants.start[i]! + one.variants.end[i]!) / 2)
+  const t = await engine.variants({
+    ...without(DOG_SV),
+    regions: [
+      { ...DOG_SV.region, end: mid },
+      { ...DOG_SV.region, start: mid },
+    ],
+  })
+  const copies = t.variants.id
+    .map((id, k) => k)
+    .filter(k => t.variants.id[k] === one.variants.id[i])
+  expect(copies).toHaveLength(2)
+  expect(copies.map(k => t.variants.region[k])).toEqual([0, 1])
+  expect(t.variants.key[copies[0]!]).toBe(t.variants.key[copies[1]!])
+  expect(new Set(t.variants.key).size).toBe(one.variants.id.length)
+  t.cells.variant.forEach((v, k) => {
+    expect(t.variants.region[v]).toBe(t.cells.region[k])
+  })
+  const genotypes = (table: typeof t, v: number) =>
+    table.cells.genotype.filter((_, k) => table.cells.variant[k] === v)
+  for (const k of copies) {
+    expect(genotypes(t, k)).toEqual(genotypes(one, i))
+  }
+  expect(t.rows).toEqual(one.rows)
 })
