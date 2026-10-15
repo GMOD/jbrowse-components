@@ -171,6 +171,7 @@ translation.
 ## See also
 
 - [](/docs/tutorials/genomes_proteins)
+- [](/docs/tutorials/sickle_cell_variant)
 - [](/docs/urlparams)
 
 ## External links

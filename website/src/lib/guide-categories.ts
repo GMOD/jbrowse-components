@@ -148,6 +148,7 @@ export const TUTORIAL_ORDER = [
   'rnaseq',
   'dtu',
   'tp53_structures',
+  'sickle_cell_variant',
   'gene_prediction_review',
   'gene_density',
   'organelle_map',

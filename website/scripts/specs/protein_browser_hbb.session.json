@@ -1,0 +1,153 @@
+{
+  "name": "Gene explorer: HBB",
+  "views": [
+    {
+      "id": "lgv-HBB",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "hg38",
+        "loc": "chr11:5226890-5227061[rev] chr11:5226537-5226839[rev] chr11:5225558-5225766[rev]",
+        "tracks": [
+          "hg38-ncbiRefSeqSelect",
+          "hg38-clinvarMain",
+          "hg38-alphaMissense"
+        ]
+      }
+    },
+    {
+      "id": "msa-HBB",
+      "type": "MsaView",
+      "connectedViewId": "lgv-HBB",
+      "connectedFeature": {
+        "uniqueId": "NM_000518.5",
+        "type": "mRNA",
+        "refName": "chr11",
+        "start": 5225597,
+        "end": 5227021,
+        "strand": -1,
+        "name": "NM_000518.5",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 5225597,
+            "end": 5225726,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 5226576,
+            "end": 5226799,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 5226929,
+            "end": 5227021,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "P68871",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9606,
+        "geneCandidates": ["HBB", "3043"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLHVDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH"
+      }
+    },
+    {
+      "id": "protein-HBB-2hbs",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "2hbs",
+          "feature": {
+            "uniqueId": "NM_000518.5",
+            "type": "mRNA",
+            "refName": "chr11",
+            "start": 5225597,
+            "end": 5227021,
+            "strand": -1,
+            "name": "NM_000518.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 5225597,
+                "end": 5225726,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 5226576,
+                "end": 5226799,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 5226929,
+                "end": 5227021,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLHVDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH",
+          "connectedViewId": "lgv-HBB",
+          "initialTranscriptResidues": [
+            {
+              "start": 7,
+              "end": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-HBB", "msa-HBB"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-HBB-2hbs"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}
