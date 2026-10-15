@@ -102,7 +102,7 @@ Your own reads load like the track above once three things are in place:
 ## What RNA-seq looks like in the genome browser
 
 Type `chr7:5,567,000-5,570,000` into the location box. The gene there is _ACTB_,
-a compact gene with deep, even read coverage.
+a compact gene with deep read coverage.
 
 The thin teal lines jumping across a gap are spliced alignments, where a read
 maps partly to one exon and partly to the next, skipping the intron between
