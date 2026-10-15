@@ -34,7 +34,7 @@
     "react-dom": ">=19.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^3.0.22",
+    "@gmod/trix": "^3.1.0",
     "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {
