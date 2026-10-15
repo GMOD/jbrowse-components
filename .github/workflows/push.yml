@@ -833,28 +833,19 @@ jobs:
 
   linux_electron_e2e:
     name: Linux Electron E2E Tests
-    # Unlike the Windows job above, this one runs on every branch. Desktop had
-    # no pre-merge coverage at all: the Windows job is main-only, so a desktop
-    # regression could only be found after it had landed. Linux is where that
-    # gap is cheapest to close — no Wine, no signing, and the AppImage is a real
-    # release artifact that nothing else exercises.
+    # Unlike the Windows job above, this one runs on every branch, so a desktop
+    # regression shows up before it lands. `test:e2e:ci` packages the unpacked
+    # Linux app (`--phase app`, no AppImage) and drives it under xvfb.
     #
-    # `test:e2e:ci` is the script that has existed for this all along and that
-    # no workflow ever called. It was not worth calling until recently, and both
-    # reasons had to be fixed before this job could exist:
+    # Two flakes kept this job off until they were fixed:
     #
-    #   - the run opened volvox.fa, which goes through the app's own FASTA
-    #     indexing and hangs about half the time (reproduced: the assembly sits
-    #     at initialized:false with an empty error). It opens the 2bit now.
-    #   - the EDEN.1 search raced the name index that answers it, with no wait
-    #     between them.
+    #   - opening volvox.fa alone went through the app's own FASTA indexing,
+    #     which hangs about half the time. It opens volvox.fa with its .fai,
+    #     which reaches IndexedFastaAdapter directly.
+    #   - the EDEN.1 search raced the name index that answers it.
     #
-    # A job that fails a coin flip on every branch is worse than no job. Five
-    # consecutive green runs locally on the packaged Linux app; the runs that
-    # failed while getting there all failed for one of the two reasons above, or
-    # under deliberate CPU contention. If it does turn out to flake on a runner,
-    # the fallback is the Windows job's `github.ref == 'refs/heads/main'` gate,
-    # which keeps the Linux coverage without blocking anyone's PR.
+    # If it flakes on a runner, the fallback is the Windows job's
+    # `github.ref == 'refs/heads/main'` gate.
     #
     # Typecheck only, for the reason on the Windows job.
     needs: [typecheck]

@@ -502,7 +502,7 @@ export async function countElements(
 }
 
 // Readiness instead of a sleep, off the same signals the web screenshot
-// generator waits on (`packages/browser-test-utils/src/waits.ts`), read through
+// generator waits on (`products/jbrowse-capture/src/waits.ts`), read through
 // executeScript because this harness drives selenium rather than puppeteer:
 //
 // - `data-view-phase=loading` — the view is still waiting on its assembly (or on
@@ -512,8 +512,8 @@ export async function countElements(
 // - a *visible* `loading-overlay` — the idle overlay stays in the DOM at
 //   opacity 0, so it has to be tested for visibility rather than presence.
 // - `data-display-phase=loading` — a display's fetch is still in flight.
-// - a display wrapper still wearing its base test-id: DisplayChrome flips the id
-//   to `<base>-done` on first paint, so anything still on the base id is pending.
+// - `PENDING_DISPLAYS` — a display that has not drawn yet
+//   (`data-display-drawn="false"`).
 //
 // The last two are best-effort, as they are in the web generator: a display in a
 // terminal too-large/error state renders no wrapper and publishes no phase, so

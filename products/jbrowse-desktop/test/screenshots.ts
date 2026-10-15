@@ -876,16 +876,10 @@ async function main(): Promise<void> {
   await procedureFrame(driver, 'desktop-open-genome-steps.png', 1)
   await cleanupUI(driver)
 
-  // Loaded session with the bundled volvox assembly, served over http. This is
-  // Opens the genome the rest of this flow needs (the add-track procedure has
-  // to have something to add a track TO). No longer a frame of the
-  // open-a-genome procedure: that figure is now the two dialog states side by
-  // side, and the volvox view this lands on is what the quickstart's other
-  // figures already show.
+  // Opens the volvox genome the rest of this flow needs: the add-track
+  // procedure has to have something to add a track to. The 2bit is the
+  // shortest path to a painted view.
   console.log('Opening volvox genome...')
-  // the 2bit rather than the FASTA: see openVolvoxGenome on why a pasted
-  // .fa + .fai pair goes through the app's own FASTA indexing, and why that
-  // hangs often enough to fail a figure run
   await openVolvoxWithRetry(
     driver,
     `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.2bit`,

@@ -1,12 +1,13 @@
 # JBrowse Desktop
 
+- **Run it:** `pnpm dev` starts the dev server and opens the Electron window
+  once it is up. `pnpm start` runs the dev server alone.
+- **Package it:** `pnpm package` for the current platform, or
+  `pnpm package:linux`, `package:mac`, `package:win`.
+- **Test it:** `npx jest products/jbrowse-desktop/<file>` for the unit suites;
+  the packaged-app tests are under [Testing](#testing).
+
 ## Development environment
-
-### Developing
-
-While in the jbrowse-desktop directory, you can run `pnpm start` to start a
-development build of JBrowse Desktop. This both starts the development server
-and opens the Electron window when the server is ready.
 
 ### The `jbrowse://` url scheme
 
@@ -25,7 +26,7 @@ The pieces, and where each platform registers the scheme:
 | Renderer builds the session                           | `src/components/usePluginManagerLoad.ts` → `openSpecLink` (`StartScreen/util.tsx`)                                                                            |
 | Same session, pasted instead of linked                | Start screen "Open" menu (`StartScreen/recentSessions/RecentSessionsPanel.tsx`) or File → Session → "Open JBrowse Web link..." (`src/rootModel/rootModel.ts`) |
 | macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                                                                                                                 |
-| Windows registration (`HKCU\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)                                                                                                       |
+| Windows registration (`HKCU\Software\Classes`)        | `scripts/packaging/nsisScript.ts` (NSIS install/uninstall)                                                                                                    |
 | Linux — see the caveat below                          | `scripts/packaging/linux.ts` (`.desktop` `MimeType`, `Exec=AppRun %U`)                                                                                        |
 
 **Linux registers nothing on its own.** We ship a bare AppImage, which doesn't
@@ -119,28 +120,25 @@ uninstall and confirm the extension is no longer claimed.
 
 ### Packaging
 
-You will need some development libraries installed to be able to package the
-application, since native dependencies have to be rebuilt.
-
-#### Linux
-
-To install the development libraries:
+Packaging bundles the webpack build and rebuilds no native module. The repo-wide
+`pnpm install` does build `canvas`, a test dependency, and needs cairo and pango
+when no prebuilt binary matches:
 
 ```sh
-sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-```
-
-`pnpm package:linux` will build and package the application as an AppImage.
-
-#### macOS
-
-To install the development libraries on Mac:
-
-```sh
+# Linux
+sudo apt install -y python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+# macOS
 brew install pkg-config cairo pango libpng jpeg giflib librsvg
 ```
 
-`pnpm package:mac` will build and package the application as a DMG and ZIP.
+#### Linux
+
+`pnpm package:linux` builds an AppImage. It downloads the pinned appimagetool
+and checks its sha256.
+
+#### macOS
+
+`pnpm package:mac` builds a DMG and a ZIP.
 
 For code signing and notarization, set these environment variables:
 
@@ -153,26 +151,9 @@ job notarizes the app and staples the ticket so Gatekeeper validates it offline.
 
 #### Windows
 
-To install the development libraries on Windows:
-
-```pwsh
-# Run in an elevated PowerShell window (i.e. use "Run as administrator")
-# Most of these instructions come from https://github.com/Automattic/node-canvas/wiki/Installation:-Windows#install-manually
-
-npm install --global --production windows-build-tools
-cd C:\
-# If you have 32bit, use this below instead: http://ftp.gnome.org/pub/GNOME/binaries/win32/gtk+/2.24/gtk+-bundle_2.24.10-20120208_win32.zip
-Invoke-WebRequest -Uri http://ftp.gnome.org/pub/GNOME/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip -OutFile .\gtk+-bundle_2.22.1-20101229_win64.zip
-Expand-Archive .\gtk+-bundle_2.22.1-20101229_win64.zip -DestinationPath .\GTK
-Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
-
-# Next part has to be done in the GUI
-# Go to http://sourceforge.net/projects/libjpeg-turbo/files/ and download latest VC (64bit or 32bit) exe (e.g. libjpeg-turbo-2.0.3-vc64.exe)
-# Install to C:\libjpeg-turbo if 32bit or C:\libjpeg-turbo64 if 64bit
-```
-
-`pnpm package:win` will build and package the application as an NSIS installer
-(or portable ZIP if NSIS is not available).
+`pnpm package:win` builds the NSIS installer. It needs `makensis`
+(`apt install nsis`, `brew install makensis`), which cross-compiles the
+installer from Linux or macOS; the release builds it on Linux.
 
 The installer is per-user (installs under `%LOCALAPPDATA%\Programs`, registers
 under `HKCU`, requires no admin/UAC), so electron-updater can apply background
@@ -218,6 +199,15 @@ It signs both files with SignPath's self-signed test certificate, accepts any
 publisher name, and keeps the signed installer as a workflow artifact instead of
 publishing it.
 
-### All platforms
+## Testing
 
-You can also run `pnpm package` to build for the current platform automatically.
+- `pnpm test:e2e` drives a packaged app through the selenium flows in
+  `test/e2e.ts`: open a genome, add a track, search. `test:e2e:ci` packages the
+  unpacked Linux app first and runs them under xvfb, as CI does.
+- `pnpm test:mcp` runs `test/mcpConformance.ts` against Electron on the
+  `pnpm build` output, including every offline snippet on the agent recipes
+  page.
+- `pnpm screenshots` drives a packaged app to write the desktop figures for the
+  website into `website/static/img`.
+- `pnpm check:nsis` compiles the installer script, and `pnpm check:release`
+  checks a release for every platform's update artifacts.
