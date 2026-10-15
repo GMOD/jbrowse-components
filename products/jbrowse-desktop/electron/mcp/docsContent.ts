@@ -10,7 +10,7 @@ import plots from '../../../../website/docs/config_guides/mark_display.md'
 import urlparams from '../../../../website/docs/urlparams.md'
 import { DOC_TOPICS, OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
-import { readDocSection } from './docSections.ts'
+import { readDocSection, withoutSections } from './docSections.ts'
 import typePages from './docs/typeDocs.generated.json'
 import { lookupTypeDoc, typeIndex } from './typeDocs.ts'
 
@@ -30,12 +30,21 @@ const TOPIC_TEXT: Record<DocTopic, string> = {
   automating,
 }
 
+// what the tool serves, which search reads too: searching the raw text
+// pointed agents at a section reading then refused
+const SERVED_TEXT = Object.fromEntries(
+  Object.entries(TOPIC_TEXT).map(([topic, text]) => {
+    const omit = OMITTED_SECTIONS[topic]
+    return [topic, omit ? withoutSections(text, omit) : text]
+  }),
+) as Record<DocTopic, string>
+
 // Every markdown topic and every generated type page, as one flat list for the
 // search. The type pages carry their name separately because a name match is
 // what an agent usually means.
 function searchableDocs() {
   return [
-    ...Object.entries(TOPIC_TEXT).map(([topic, text]) => ({ topic, text })),
+    ...Object.entries(SERVED_TEXT).map(([topic, text]) => ({ topic, text })),
     ...(['models', 'configs'] as const).flatMap(kind =>
       Object.entries(typePages[kind]).map(([name, page]) => ({
         topic: `${kind === 'models' ? 'model' : 'config'}:${name}`,
@@ -55,10 +64,9 @@ export function docsToolResult(
   if (search) {
     return searchDocs(searchableDocs(), search)
   }
-  if (Object.hasOwn(TOPIC_TEXT, topic)) {
-    return readDocSection(TOPIC_TEXT[topic as DocTopic], section, {
+  if (Object.hasOwn(SERVED_TEXT, topic)) {
+    return readDocSection(SERVED_TEXT[topic as DocTopic], section, {
       splitAt: SPLIT_TOPICS[topic],
-      omit: OMITTED_SECTIONS[topic],
     })
   }
   if (topic === 'types') {

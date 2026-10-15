@@ -1,7 +1,11 @@
 import fs from 'node:fs'
 
 import { OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
-import { readDocSection, splitSections } from './docSections.ts'
+import {
+  readDocSection,
+  splitSections,
+  withoutSections,
+} from './docSections.ts'
 
 const doc = `# Title
 
@@ -227,21 +231,17 @@ Summary.
   // 1.8 KB about a client that cannot be the one asking.
   describe('an omitted section', () => {
     it('is gone from the contents, from "all" and from a lookup', () => {
-      const { text } = readDocSection(doc, '', {
-        splitAt: 'Alpha',
-        omit: ['Beta'],
-      })
+      const served = withoutSections(doc, ['Beta'])
+      const { text } = readDocSection(served, '', { splitAt: 'Alpha' })
       expect(text).not.toMatch(/- Beta \(/)
-      expect(readDocSection(doc, 'all', { omit: ['Beta'] }).text).not.toContain(
-        'Beta body.',
-      )
-      expect(readDocSection(doc, 'Beta', { omit: ['Beta'] }).error).toContain(
+      expect(readDocSection(served, 'all').text).not.toContain('Beta body.')
+      expect(readDocSection(served, 'Beta').error).toContain(
         'No section "Beta"',
       )
     })
 
     it('takes its subsections with it', () => {
-      const { text } = readDocSection(doc, 'all', { omit: ['Alpha'] })
+      const { text } = readDocSection(withoutSections(doc, ['Alpha']), 'all')
       expect(text).not.toContain('Alpha body.')
       expect(text).not.toContain('Child body.')
       expect(text).toContain('Beta body.')
@@ -253,15 +253,15 @@ Summary.
 // run_javascript call, so its size is a fixed per-session cost. It was the
 // whole 23 KB guide until the split; the deep dives are now asked for by name.
 describe('the live-model guide as the docs tool serves it', () => {
-  const guide = fs.readFileSync(
-    `${__dirname}/../../../../website/docs/agents_live_model.md`,
-    'utf8',
+  const guide = withoutSections(
+    fs.readFileSync(
+      `${__dirname}/../../../../website/docs/agents_live_model.md`,
+      'utf8',
+    ),
+    OMITTED_SECTIONS['live-model']!,
   )
   const bare = () =>
-    readDocSection(guide, '', {
-      splitAt: SPLIT_TOPICS['live-model'],
-      omit: OMITTED_SECTIONS['live-model'],
-    }).text!
+    readDocSection(guide, '', { splitAt: SPLIT_TOPICS['live-model'] }).text!
 
   it('answers the bare read in under 10000 characters', () => {
     expect(bare().length).toBeLessThanOrEqual(10_000)
@@ -279,16 +279,12 @@ describe('the live-model guide as the docs tool serves it', () => {
 
   it('leaves the browser section out of both the contents and "all"', () => {
     expect(bare()).not.toContain('In a browser')
-    expect(
-      readDocSection(guide, 'all', { omit: OMITTED_SECTIONS['live-model'] })
-        .text,
-    ).not.toContain('## In a browser')
+    expect(readDocSection(guide, 'all').text).not.toContain('## In a browser')
   })
 
   it('still reads a deep dive by name', () => {
     const { text } = readDocSection(guide, 'The model, oriented', {
       splitAt: SPLIT_TOPICS['live-model'],
-      omit: OMITTED_SECTIONS['live-model'],
     })
     expect(text).toContain('view.hideTrack')
   })

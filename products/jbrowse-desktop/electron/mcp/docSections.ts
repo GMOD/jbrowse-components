@@ -100,7 +100,7 @@ function findMembers(sections: DocSection[], name: string) {
   return members(sections).filter(m => normalized(m.name) === wanted)
 }
 
-function withoutSections(markdown: string, omit: readonly string[]) {
+export function withoutSections(markdown: string, omit: readonly string[]) {
   const sections = splitSections(markdown)
   const dropped = new Set<number>()
   for (const heading of omit) {
@@ -157,7 +157,6 @@ export function readDocSection(
   section: string,
   {
     splitAt,
-    omit,
     // A generated type page is four flat lists of members and nothing else, so
     // a `section` naming none of the four headings is an agent asking for a
     // member. A hand-written topic has real headings and its bullets are prose,
@@ -166,15 +165,13 @@ export function readDocSection(
     members: memberFallback = false,
   }: {
     splitAt?: string
-    omit?: readonly string[]
     members?: boolean
   } = {},
 ): BridgeToolResult {
-  const served = omit?.length ? withoutSections(markdown, omit) : markdown
   if (section === 'all') {
-    return { text: served }
+    return { text: markdown }
   }
-  const sections = splitSections(served)
+  const sections = splitSections(markdown)
   if (!section) {
     const marker = splitAt ? findSection(sections, splitAt) : -1
     if (marker !== -1) {
@@ -186,8 +183,8 @@ export function readDocSection(
         text: `${withoutFrontmatter(contract)}\nPass one as "section" to read it, or "all" for the whole guide:\n${tableOfContents(sections, marker + 1)}\n`,
       }
     }
-    if (served.length <= TOC_ABOVE_CHARS) {
-      return { text: served }
+    if (markdown.length <= TOC_ABOVE_CHARS) {
+      return { text: markdown }
     }
     const start = bodyStart(sections)
     const preamble = sections
@@ -195,7 +192,7 @@ export function readDocSection(
       .map(s => s.text)
       .join('')
     return {
-      text: `${withoutFrontmatter(preamble)}\nThis topic is ${served.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections, start)}\n`,
+      text: `${withoutFrontmatter(preamble)}\nThis topic is ${markdown.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections, start)}\n`,
     }
   }
   const index = findSection(sections, section)

@@ -145,6 +145,14 @@ try {
     ),
     found?.text?.slice(0, 200),
   )
+  // the guide's browser section is left out of what the tool serves, so a
+  // search must not send an agent to it
+  const omitted = await client.call('docs', { search: 'ensureRequire' })
+  check(
+    'docs search names no section the tool leaves out',
+    !omitted?.text?.includes('In a browser'),
+    omitted?.text?.slice(0, 200),
+  )
 
   async function run(code: string) {
     return client.callJson('run_javascript', { code })
