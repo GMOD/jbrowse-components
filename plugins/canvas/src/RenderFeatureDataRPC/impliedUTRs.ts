@@ -1,5 +1,7 @@
+import { mergeSpans } from '../shared/mergeSpans.ts'
 import { getSubfeatures, isCDS, isExon, isUTR } from './util.ts'
 
+import type { Span } from '../shared/mergeSpans.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface ImpliedUTR {
@@ -23,14 +25,15 @@ function utrType(strand: number, left: boolean): ImpliedUTR['type'] {
 }
 
 /**
- * The untranslated stretches a coding transcript implies but does not name,
- * decided per side: files often name one UTR and not the other, and a side a
- * UTR row already reaches past the outer CDS bound implies nothing. Where the
- * transcript has exons, each exon's overhang past that bound is untranslated.
- * Where it has none, the transcript's own bounds are the only evidence, and
- * only at the ends: the gaps between CDS pieces are introns. Exons are the
- * authority where they exist, because bounds overhanging the exon union would
- * invent a UTR over untranscribed sequence, which malformed but real GFF does.
+ * The untranslated stretches a coding transcript implies but does not name:
+ * whatever of each exon lies outside the outer CDS bounds and under no UTR row.
+ * Files often name one UTR and not the other, and a GTF's UTR rows leave out
+ * the stop codon its CDS rows also leave out, so a side is filled piece by
+ * piece rather than all or nothing. Where the transcript has no exons, its own
+ * bounds are the only evidence, and only at the ends: the gaps between CDS or
+ * UTR pieces are introns. Exons are the authority where they exist, because
+ * bounds overhanging the exon union would invent a UTR over untranscribed
+ * sequence, which malformed but real GFF does.
  *
  * The feature track draws these as synthesized subfeatures, the multiway
  * synteny lane draws them thin, and the transcript coordinates count them.
@@ -50,34 +53,50 @@ export function impliedUTRs(
   if (codeStart === Infinity) {
     return []
   }
-  const utrs = subs.filter(isUTR)
-  const fillLeft = !utrs.some(u => u.get('start') < codeStart)
-  const fillRight = !utrs.some(u => u.get('end') > codeEnd)
+  const named = mergeSpans(
+    subs.filter(isUTR).map(u => [u.get('start'), u.get('end')] as const),
+  )
   const strand = transcript.get('strand') ?? 0
   const out: ImpliedUTR[] = []
-  const push = (
+  const fill = (
     source: Feature,
     side: ImpliedUTR['side'],
     start: number,
     end: number,
   ) => {
-    out.push({
-      start,
-      end,
-      side,
-      type: utrType(strand, side === 'left'),
-      source,
-    })
+    const pieces: Span[] = []
+    let cursor = start
+    for (const [utrStart, utrEnd] of named) {
+      if (utrStart >= end) {
+        break
+      }
+      if (utrEnd > cursor) {
+        if (utrStart > cursor) {
+          pieces.push([cursor, utrStart])
+        }
+        cursor = utrEnd
+      }
+    }
+    if (cursor < end) {
+      pieces.push([cursor, end])
+    }
+    const atBound = ([s, e]: Span) =>
+      side === 'left' ? s === start : e === end
+    const kept = source === transcript ? pieces.filter(atBound) : pieces
+    const type = utrType(strand, side === 'left')
+    for (const [s, e] of kept) {
+      out.push({ start: s, end: e, side, type, source })
+    }
   }
   const exons = subs.filter(isExon)
   for (const piece of exons.length > 0 ? exons : [transcript]) {
     const start = piece.get('start')
     const end = piece.get('end')
-    if (fillLeft && start < codeStart) {
-      push(piece, 'left', start, Math.min(end, codeStart))
+    if (start < codeStart) {
+      fill(piece, 'left', start, Math.min(end, codeStart))
     }
-    if (fillRight && end > codeEnd) {
-      push(piece, 'right', Math.max(start, codeEnd), end)
+    if (end > codeEnd) {
+      fill(piece, 'right', Math.max(start, codeEnd), end)
     }
   }
   return out

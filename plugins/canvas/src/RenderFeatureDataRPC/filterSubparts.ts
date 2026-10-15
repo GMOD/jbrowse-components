@@ -12,17 +12,20 @@ import type { Feature } from '@jbrowse/core/util'
 function impliedUTRFeatures(parent: Feature, subs: Feature[]) {
   const refName = parent.get('refName')
   const strand = parent.get('strand') ?? 0
-  return impliedUTRs(parent, subs).map(
-    ({ start, end, type, side, source }) =>
-      new SimpleFeature({
-        id:
-          source === parent
-            ? `${parent.id()}-utr-${side}`
-            : `${source.id()}-utr${side === 'right' ? '2' : ''}`,
-        data: { refName, start, end, strand, type },
-        parent,
-      }),
-  )
+  const seen = new Set<string>()
+  return impliedUTRs(parent, subs).map(({ start, end, type, side, source }) => {
+    const base =
+      source === parent
+        ? `${parent.id()}-utr-${side}`
+        : `${source.id()}-utr${side === 'right' ? '2' : ''}`
+    const id = seen.has(base) ? `${base}-${start}` : base
+    seen.add(base)
+    return new SimpleFeature({
+      id,
+      data: { refName, start, end, strand, type },
+      parent,
+    })
+  })
 }
 
 // The slot is one string for the whole track and this runs once per

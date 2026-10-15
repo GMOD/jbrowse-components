@@ -116,3 +116,33 @@ test('a non-coding transcript implies none', () => {
     [],
   )
 })
+
+// GENCODE's GTF leaves the stop codon out of both its CDS and its UTR rows.
+test('a stop codon between the CDS and a named UTR fills as untranslated', () => {
+  expect(
+    spans(
+      transcript([
+        { type: 'five_prime_UTR', start: 100, end: 200 },
+        { type: 'CDS', start: 200, end: 397 },
+        { type: 'three_prime_UTR', start: 400, end: 500 },
+        { type: 'exon', start: 100, end: 500 },
+      ]),
+    ),
+  ).toEqual([[397, 400, 'three_prime_UTR', 'sub3']])
+})
+
+test('a side a UTR row covers only in part fills the rest of it', () => {
+  expect(
+    spans(
+      transcript([
+        { type: 'exon', start: 100, end: 500 },
+        { type: 'five_prime_UTR', start: 150, end: 200 },
+        { type: 'CDS', start: 300, end: 400 },
+        { type: 'three_prime_UTR', start: 400, end: 500 },
+      ]),
+    ),
+  ).toEqual([
+    [100, 150, 'five_prime_UTR', 'sub0'],
+    [200, 300, 'five_prime_UTR', 'sub0'],
+  ])
+})

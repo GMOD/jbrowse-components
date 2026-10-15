@@ -212,3 +212,21 @@ describe('getSubparts implied UTRs', () => {
     ])
   })
 })
+
+test('two implied UTR pieces cut from one exon side take distinct ids', () => {
+  const tx = mockFeature({
+    type: 'mRNA',
+    start: 100,
+    end: 500,
+    subfeatures: [
+      mockFeature({ type: 'exon', start: 100, end: 500 }),
+      mockFeature({ type: 'five_prime_UTR', start: 150, end: 200 }),
+      mockFeature({ type: 'CDS', start: 300, end: 400 }),
+    ],
+  })
+  const ids = getSubparts(tx, mockDisplayConfig())
+    .filter(f => f.get('type') === 'five_prime_UTR')
+    .map(f => f.id())
+  expect(ids).toHaveLength(3)
+  expect(new Set(ids).size).toBe(3)
+})
