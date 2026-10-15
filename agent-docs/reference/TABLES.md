@@ -74,6 +74,27 @@ than the reference does, it names both: `region.refName` for the file and
 `region.originalRefName` for the reference, as the browser's renamed regions
 carry it (ggjbrowse's `reference_chrom`).
 
+**Or it passes the assembly, and the engine renames.** Each region table
+(`alignments`, `features`, `wiggle`, `variants`) and `sequence` take
+`assembly`, an assembly config as a config's `assemblies` entry writes it,
+shorthand included (`{ name, uri, refNameAliases: { uri } }`):
+
+- `@jbrowse/tables` (`src/assembly.ts`) expands it with core's own
+  `expandAssemblyShorthand` and `expandSidecarShorthand`, reads the alias
+  file, and maps every alias to its canonical name with `buildRefNameMaps`,
+  once per assembly.
+- It then renames each region as `renameRegionsIfNeeded` does: `refName` to
+  the name the file's `getRefNames()` lists for that contig, and
+  `originalRefName`, unless given, to the sequence file's.
+- The assembly's sequence stands in for `sequenceAdapter` where the call
+  names none, so a CRAM decodes against it.
+- Each table returns `readAs` (`refName`, `originalRefName`, one per region),
+  the names it read under. A host labels the rows with the name it asked for.
+- `regions` lists the assembly's contigs as its sequence file names them.
+
+Only the requested regions are renamed: a mate's or SA tag's contig keeps the
+file's spelling, as `REFNAME_NAMESPACES.md` describes for the browser.
+
 A setting the table cannot serve is refused with an error:
 
 - `unit: 'chain'` is refused with an error. Chain mode joins a read to its
@@ -196,6 +217,21 @@ BED, GFF3 and GTF plugins, which register adapters and nothing else, and
 registers `FromConfigAdapter` (`@jbrowse/plugin-config/adapters`), so a
 track that writes its features inline in its config reads as a file does.
 
+**A VCF read as features is the plain variant display's table.** A
+`VariantTrack` draws its records with `LinearVariantDisplay`, whose config is
+the feature display's, and that display draws every record. The genotype
+matrix (`variantTables`) drops a site with no called allele
+(`passesSiteThresholds`), so a calls VCF whose FORMAT has no GT, such as a
+somatic SV caller's, has no row in it. For a VCF adapter the engine's
+`features` adds `vcf`, which `variantRecordTables` fills, aligned to
+`features`:
+
+- `records`: `ref`, `alt` and `filter`.
+- `info` and `infoFields`, as `variantTables` gives them.
+- `samples` (`feature`, `sample`, a row per record and sample), with
+  `format`, a column per FORMAT key typed by the INFO rules, and
+  `formatFields`.
+
 `@jbrowse/plugin-wiggle/tables` (`wiggleTables`) does the same for a
 quantitative track. It takes the `LinearWiggleDisplay`'s config and a
 `bpPerPx`, which picks the BigWig zoom level that answers. It runs the
@@ -243,7 +279,8 @@ and paints the cells as the display does (`paintCellColors`,
 `paintFeatureColors`):
 
 - `variants`: each record the display's filters keep (MAF, missingness, the
-  jexl `filter`), with its lane color and its `filter`, the FILTER column
+  jexl `filter`, and at least one called allele, so a VCF with no GT keeps
+  none), with its lane color and its `filter`, the FILTER column
   as the file writes it (`PASS`, or the failed filters joined by `;`), null
   for `.`.
 - `info`: each INFO key's values, a column per key aligned to `variants`,

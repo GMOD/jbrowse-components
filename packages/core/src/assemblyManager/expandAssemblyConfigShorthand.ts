@@ -46,6 +46,35 @@ export function expandAssemblySequence<T>(snap: T): T {
 }
 
 /**
+ * A sidecar sub-schema written as just its file: `{ uri: 'aliases.txt' }`
+ * becomes `{ adapter: { type, uri } }`, with `type` picked from the uri.
+ * baseUri, stamped by addRelativeUris, rides along. An explicit `adapter`
+ * passes through untouched.
+ */
+export function expandSidecarShorthand(
+  snap: Record<string, unknown>,
+  typeFor: (uri: string) => string,
+) {
+  const { uri, baseUri, adapter } = snap
+  if (adapter) {
+    return snap
+  }
+  return {
+    adapter:
+      typeof uri === 'string'
+        ? { type: typeFor(uri), uri, ...(baseUri ? { baseUri } : {}) }
+        : { type: typeFor('') },
+  }
+}
+
+/** The alias adapter an assembly's `refNameAliases` file is read with. */
+export function refNameAliasAdapterType(uri: string) {
+  return /sequence_report\.tsv(\.gz)?$/i.test(uri)
+    ? 'NcbiSequenceReportAliasAdapter'
+    : 'RefNameAliasAdapter'
+}
+
+/**
  * Expand an assembly snapshot's own shorthands into the `sequence` an assembly
  * config declares: {@link expandAssemblySequence}, then the sequence adapter's
  * type guessed from its `uri`.

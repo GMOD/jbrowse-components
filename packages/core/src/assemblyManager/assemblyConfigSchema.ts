@@ -1,5 +1,9 @@
 import { ConfigurationSchema } from '../configuration/index.ts'
-import { expandAssemblyShorthand } from './expandAssemblyConfigShorthand.ts'
+import {
+  expandAssemblyShorthand,
+  expandSidecarShorthand,
+  refNameAliasAdapterType,
+} from './expandAssemblyConfigShorthand.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -8,29 +12,15 @@ export {
   expandAssemblySequence,
   expandAssemblySequenceAdapter,
   expandAssemblyShorthand,
+  expandSidecarShorthand,
+  refNameAliasAdapterType,
 } from './expandAssemblyConfigShorthand.ts'
 
-/**
- * A sidecar sub-schema written as just its file: `'aliases.txt'` or
- * `{ uri: 'aliases.txt' }` becomes `{ adapter: { type, uri } }`, with `type`
- * picked from the uri. baseUri, stamped by addRelativeUris, rides along. An
- * explicit `adapter` passes through untouched.
- */
 function fileAdapterShorthand(typeFor: (uri: string) => string) {
   return {
     shorthand: 'uri',
-    preProcessSnapshot: (snap: Record<string, unknown>) => {
-      const { uri, baseUri, adapter } = snap
-      if (adapter) {
-        return snap
-      }
-      return {
-        adapter:
-          typeof uri === 'string'
-            ? { type: typeFor(uri), uri, ...(baseUri ? { baseUri } : {}) }
-            : { type: typeFor('') },
-      }
-    },
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
+      expandSidecarShorthand(snap, typeFor),
   }
 }
 
@@ -243,11 +233,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
-        fileAdapterShorthand(uri =>
-          /sequence_report\.tsv(\.gz)?$/i.test(uri)
-            ? 'NcbiSequenceReportAliasAdapter'
-            : 'RefNameAliasAdapter',
-        ),
+        fileAdapterShorthand(refNameAliasAdapterType),
       ),
       cytobands: ConfigurationSchema(
         'Cytoband',

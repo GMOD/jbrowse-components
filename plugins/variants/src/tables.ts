@@ -41,6 +41,7 @@ import {
 import { getVariantColorScales } from './LinearMultiSampleVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
+import { fetchVariantFeatures } from './VariantRPC/fetchVariantFeatures.ts'
 import {
   readAltDosages,
   readPhasedAlleleIndicators,
@@ -338,7 +339,7 @@ export async function variantTables(
   })
   return {
     variants,
-    ...infoColumns(records, await vcfHeaderOf(adapter)),
+    ...infoColumns(records, (await vcfHeaderOf(adapter)).info),
     cells,
     rows,
     legend: legendOf(scales),
@@ -363,73 +364,88 @@ function filterOf(record: Feature) {
   return Array.isArray(filter) ? filter.join(';') : (filter ?? null)
 }
 
-interface InfoDeclaration {
+interface FieldDeclaration {
   Number?: unknown
   Type?: unknown
   Description?: unknown
 }
 
-interface VcfHeader {
+interface Declarations {
   declared: string[]
-  meta: Record<string, InfoDeclaration | undefined>
+  meta: Record<string, FieldDeclaration | undefined>
+}
+
+interface VcfHeader {
+  info: Declarations
+  format: Declarations
+  samples: string[]
 }
 
 async function vcfHeaderOf(adapter: object): Promise<VcfHeader> {
   const vcf = adapter as {
     getHeader?: () => Promise<string>
-    getMetadata?: () => Promise<{ INFO?: VcfHeader['meta'] }>
+    getMetadata?: () => Promise<
+      Partial<Record<'INFO' | 'FORMAT', Declarations['meta']>>
+    >
   }
   const header = (await vcf.getHeader?.()) ?? ''
+  const metadata = await vcf.getMetadata?.()
+  const declared = (field: string) =>
+    [...header.matchAll(new RegExp(`^##${field}=<ID=([^,>]+)`, 'gm'))].map(
+      m => m[1]!,
+    )
+  const columns = header
+    .split('\n')
+    .find(line => line.startsWith('#CHROM'))
+    ?.trimEnd()
+    .split('\t')
   return {
-    declared: [...header.matchAll(/^##INFO=<ID=([^,>]+)/gm)].map(m => m[1]!),
-    meta: (await vcf.getMetadata?.())?.INFO ?? {},
+    info: { declared: declared('INFO'), meta: metadata?.INFO ?? {} },
+    format: { declared: declared('FORMAT'), meta: metadata?.FORMAT ?? {} },
+    samples: columns?.slice(9) ?? [],
   }
 }
 
-type InfoValue = true | (string | number | undefined)[] | undefined
+type FieldValue = true | (string | number | undefined)[] | undefined
 
 /**
- * Each INFO key's values, one per record, typed by the key's header line:
- * a flag as a boolean, false where the record lacks it; a `Number=1` key as
- * its value; any other `Number` (`A`, `R`, `G`, `.`, 2) as an array, an
- * entry per value. A record lacking a non-flag key, or giving `.`, has null.
- * The keys are the header's, in its order, then any other a record uses,
- * typed as the VCF spec reserves it, else read as a flag where every use is
- * bare and as a `Number=.` string otherwise. `infoFields` lists each key's
- * declaration.
+ * Each key's values, one per row, typed by the key's header line: a flag as
+ * a boolean, false where the row lacks it; a `Number=1` key as its value; any
+ * other `Number` (`A`, `R`, `G`, `.`, 2) as an array, an entry per value. A
+ * row lacking a non-flag key, or giving `.`, has null. The keys are the
+ * header's, in its order, then any other a row uses, typed as the VCF spec
+ * reserves it, else read as a flag where every use is bare and as a
+ * `Number=.` string otherwise. `fields` lists each key's declaration.
  */
-function infoColumns(
-  records: readonly Feature[],
-  { declared, meta }: VcfHeader,
+function typedColumns(
+  rows: readonly (Record<string, FieldValue> | undefined)[],
+  { declared, meta }: Declarations,
 ) {
-  const infos = records.map(
-    r => r.get('INFO') as Record<string, InfoValue> | undefined,
-  )
   const keys = new Set(declared)
-  for (const info of infos) {
-    for (const key of Object.keys(info ?? {})) {
+  for (const row of rows) {
+    for (const key of Object.keys(row ?? {})) {
       keys.add(key)
     }
   }
-  const infoFields = {
+  const fields = {
     key: [] as string[],
     number: [] as string[],
     type: [] as string[],
     description: [] as string[],
   }
-  const info: Record<string, unknown[]> = {}
+  const columns: Record<string, unknown[]> = {}
   for (const key of keys) {
-    const values = infos.map(i => i?.[key])
+    const values = rows.map(row => row?.[key])
     const declaration = meta[key]
     const bare = values.every(v => v === undefined || v === true)
     const type = String(declaration?.Type ?? (bare ? 'Flag' : 'String'))
     const number = String(declaration?.Number ?? (type === 'Flag' ? 0 : '.'))
     const numeric = type === 'Integer' || type === 'Float'
-    infoFields.key.push(key)
-    infoFields.number.push(number)
-    infoFields.type.push(type)
-    infoFields.description.push(String(declaration?.Description ?? ''))
-    info[key] = values.map(v =>
+    fields.key.push(key)
+    fields.number.push(number)
+    fields.type.push(type)
+    fields.description.push(String(declaration?.Description ?? ''))
+    columns[key] = values.map(v =>
       type === 'Flag' || number === '0'
         ? v !== undefined
         : v === undefined || v === true
@@ -441,7 +457,94 @@ function infoColumns(
               : v.map(x => x ?? '.').join(','),
     )
   }
-  return { info, infoFields }
+  return { columns, fields }
+}
+
+/** Each record's INFO as `typedColumns` types it, `info` and `infoFields`. */
+function infoColumns(records: readonly Feature[], declarations: Declarations) {
+  const { columns, fields } = typedColumns(
+    records.map(r => r.get('INFO') as Record<string, FieldValue> | undefined),
+    declarations,
+  )
+  return { info: columns, infoFields: fields }
+}
+
+/** The adapters a VCF reads through, whose records `variantRecordTables` serves. */
+export const VCF_ADAPTER_TYPES = [
+  'VcfAdapter',
+  'VcfTabixAdapter',
+  'SplitVcfTabixAdapter',
+]
+
+/**
+ * #api
+ * The VCF columns of the records a feature table lists, by its `features.id`,
+ * for a host drawing a VCF as the plain variant display does, which draws
+ * every record, a record calling no genotype included:
+ * - `records`: each one's `ref`, `alt` (its alleles joined by `,`) and
+ *   `filter`, aligned to `ids`.
+ * - `info` and `infoFields`: its INFO, as `variantTables` gives them.
+ * - `samples`: a row per record and sample in header order, `feature` (an
+ *   index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
+ *   to it, typed as INFO is; and `formatFields`, each key's declaration.
+ */
+export async function variantRecordTables(
+  pluginManager: PluginManager,
+  {
+    adapterConfig,
+    regions,
+    ids,
+  }: {
+    adapterConfig: Record<string, unknown>
+    regions: { refName: string; start: number; end: number }[]
+    ids: readonly string[]
+  },
+) {
+  const adapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig,
+  })
+  const fetched = await fetchVariantFeatures(
+    adapter,
+    regions.map(r => ({ assemblyName: '', ...r })),
+    {},
+  )
+  const byId = new Map(fetched.map(f => [f.id(), f]))
+  const records = ids.map(id => {
+    const record = byId.get(id)
+    if (!record) {
+      throw new Error(`no VCF record ${id} in the regions read`)
+    }
+    return record
+  })
+  const header = await vcfHeaderOf(adapter)
+  const samples = { feature: [] as number[], sample: [] as string[] }
+  const sampleValues: (Record<string, FieldValue> | undefined)[] = []
+  records.forEach((record, f) => {
+    const values = record.get('samples') as
+      | Record<string, Record<string, FieldValue>>
+      | undefined
+    for (const sample of header.samples) {
+      samples.feature.push(f)
+      samples.sample.push(sample)
+      sampleValues.push(values?.[sample])
+    }
+  })
+  const format = typedColumns(sampleValues, header.format)
+  return {
+    records: {
+      ref: records.map(r => String(r.get('REF') ?? '')),
+      alt: records.map(r =>
+        ((r.get('ALT') as string[] | undefined) ?? []).join(','),
+      ),
+      filter: records.map(filterOf),
+    },
+    ...infoColumns(records, header.info),
+    samples,
+    format: format.columns,
+    formatFields: format.fields,
+  }
 }
 
 /**

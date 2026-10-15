@@ -20,8 +20,10 @@ import {
 } from '@jbrowse/plugin-linear-comparative-view/tables'
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
 import {
+  VCF_ADAPTER_TYPES,
   registerVariantAdapters,
   variantDensityAlpha,
+  variantRecordTables,
   variantTables,
 } from '@jbrowse/plugin-variants/tables'
 import {
@@ -29,6 +31,9 @@ import {
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
 
+import { assemblyResolver, renameRegions } from './assembly.ts'
+
+import type { AssemblyConfig, TablesRegion } from './assembly.ts'
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
 import type { FeatureTablesArgs } from '@jbrowse/plugin-canvas/tables'
 import type { ContigTablesArgs } from '@jbrowse/plugin-comparative-adapters/tables'
@@ -70,15 +75,24 @@ export type {
   WiggleTables,
   WiggleTablesArgs,
 } from '@jbrowse/plugin-wiggle/tables'
+export type { AssemblyConfig } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
 
 interface RegionArgs {
   adapterConfig: Record<string, unknown>
-  region?: { refName: string }
-  regions?: { refName: string }[]
+  sequenceAdapter?: Record<string, unknown>
+  region?: TablesRegion
+  regions?: TablesRegion[]
 }
+
+/**
+ * A table's args with the assembly its regions are named in: the contig a
+ * region names is read under the file's own alias of it, and the reference
+ * under the sequence's, so a host asks for `chr7` of a BAM spelling it `7`.
+ */
+type WithAssembly<A> = A & { assembly?: AssemblyConfig }
 
 const LISTED_CONTIGS = 20
 
@@ -115,6 +129,29 @@ async function missingContigs(
   )
 }
 
+/**
+ * A feature table, and for a VCF, as `vcf`, the plain variant display's
+ * records under it: their alleles, FILTER, INFO and each sample's FORMAT
+ * values, as `variantRecordTables` gives them, so a calls VCF whose FORMAT has no GT
+ * reads with its columns, which the genotype matrix has no row for.
+ */
+async function featureAndRecordTables(
+  pluginManager: PluginManager,
+  args: FeatureTablesArgs,
+) {
+  const features = await featureTables(pluginManager, args)
+  return {
+    ...features,
+    vcf: VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
+      ? await variantRecordTables(pluginManager, {
+          adapterConfig: args.adapterConfig,
+          regions: args.regions ?? (args.region ? [args.region] : []),
+          ids: features.features.id,
+        })
+      : undefined,
+  }
+}
+
 class TablesPlugin extends Plugin {
   name = 'TablesPlugin'
   install(pluginManager: PluginManager) {
@@ -141,28 +178,79 @@ export function createTablesEngine() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
+  const assemblyOf = assemblyResolver(pluginManager)
+  const named = async <A extends RegionArgs>({
+    assembly,
+    ...args
+  }: WithAssembly<A>) =>
+    assembly
+      ? renameRegions(pluginManager, args, await assemblyOf(assembly))
+      : args
   const onContig = async <A extends RegionArgs, T>(
-    args: A,
+    given: WithAssembly<A>,
     table: (pm: PluginManager, args: A) => Promise<T>,
   ) => {
+    const args = (await named(given)) as A
     const missing = await missingContigs(pluginManager, args)
+    const regions = args.regions ?? (args.region ? [args.region] : [])
     return {
       ...(await table(pluginManager, args)),
       missingContig: missing.find(m => m !== '') ?? '',
       missingContigs: missing,
+      readAs: {
+        refName: regions.map(r => r.refName),
+        originalRefName: regions.map(r => r.originalRefName ?? r.refName),
+      },
     }
   }
   return {
-    alignments: (args: AlignmentTablesArgs) => onContig(args, alignmentTables),
-    features: (args: FeatureTablesArgs) => onContig(args, featureTables),
-    wiggle: (args: WiggleTablesArgs) => onContig(args, wiggleTables),
-    variants: (args: VariantTablesArgs) => onContig(args, variantTables),
+    alignments: (args: WithAssembly<AlignmentTablesArgs>) =>
+      onContig(args, alignmentTables),
+    features: (args: WithAssembly<FeatureTablesArgs>) =>
+      onContig(args, featureAndRecordTables),
+    wiggle: (args: WithAssembly<WiggleTablesArgs>) =>
+      onContig(args, wiggleTables),
+    variants: (args: WithAssembly<VariantTablesArgs>) =>
+      onContig(args, variantTables),
     variantDensityAlpha,
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
     contigs: (args: ContigTablesArgs) => contigTables(pluginManager, args),
     multiway: (args: MultiWayTablesArgs) => multiwayTables(pluginManager, args),
-    sequence: (args: Parameters<typeof referenceSequence>[1]) =>
-      referenceSequence(pluginManager, args),
+    sequence: async ({
+      assembly,
+      ...args
+    }: WithAssembly<{
+      sequenceAdapter?: Record<string, unknown>
+      region: TablesRegion
+    }>) => {
+      const { sequenceAdapter, region } = assembly
+        ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
+        : args
+      if (!sequenceAdapter) {
+        throw new Error(
+          'a sequence reads through a sequenceAdapter, or an assembly with a sequence',
+        )
+      }
+      return referenceSequence(pluginManager, {
+        sequenceAdapter,
+        region: {
+          ...region,
+          refName: region.originalRefName ?? region.refName,
+        },
+      })
+    },
+    /**
+     * The contigs an assembly's sequence lists, named as the sequence file
+     * names them.
+     */
+    regions: async ({ assembly }: { assembly: AssemblyConfig }) => {
+      const { regions } = await assemblyOf(assembly)
+      return {
+        refName: regions.map(r => r.refName),
+        start: regions.map(r => r.start),
+        end: regions.map(r => r.end),
+      }
+    },
   }
 }
