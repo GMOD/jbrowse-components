@@ -57,7 +57,7 @@ track. The remaining move is
 At 80 ms RTT a cold load found its code in six serial rounds: the HTML,
 `main.js`, the Loader group and worker, the re-export registry when the config
 names a plugin, the view's chunks, then the display's.
-`HtmlPreloadPlugin` (`products/jbrowse-web/scripts/config.ts`) names the Loader
+`BootChunksPlugin` (`products/jbrowse-web/scripts/config.ts`) names the Loader
 group and the worker's chunks in the HTML, so they download beside `main.js`.
 Measured 2026-10-08 on `c69bf194f6`, one build with the links stripped or kept,
 medians of 5-9 interleaved cold loads on ada. One BAM track: 1116 ms to 1035 ms
