@@ -51,6 +51,10 @@ const HELD_ASSEMBLIES = new Set(['volvox', 'volvox_random', 'volvox_ins'])
 export interface GeneTrackSpec {
   trackId: string
   assemblyNames: string[]
+  displays?: Record<string, unknown>[]
+  displayDefaults?: Record<string, unknown>
+  /** held as the plain config.json entry a session's `tracks` holds */
+  frozen?: boolean
 }
 
 export type RpcCall = (
@@ -193,6 +197,28 @@ export function createDisplayWithSession({
         ReactComponent: () => null,
       }),
   )
+  // the gene glyph slots a lane reads off its gene track's feature display
+  const basicDisplaySchema = ConfigurationSchema(
+    'LinearBasicDisplay',
+    {
+      transcriptTypes: { type: 'stringArray', defaultValue: ['mRNA'] },
+      canonicalTranscriptField: { type: 'string', defaultValue: 'tag' },
+      canonicalTranscriptTags: { type: 'stringArray', defaultValue: [] },
+    },
+    { explicitIdentifier: 'displayId', explicitlyTyped: true },
+  )
+  pluginManager.addDisplayType(
+    () =>
+      new DisplayType({
+        name: 'LinearBasicDisplay',
+        configSchema: basicDisplaySchema,
+        stateModel: types.model('LinearBasicDisplay', {}),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        retiredTypes: [{ type: 'LinearFeatureDisplay' }],
+        ReactComponent: () => null,
+      }),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
@@ -213,16 +239,14 @@ export function createDisplayWithSession({
     },
     { pluginManager },
   )
-  const geneTrackConf = ({ trackId, assemblyNames }: GeneTrackSpec) =>
-    trackSchema.create(
-      {
-        type: 'FeatureTrack',
-        trackId,
-        assemblyNames,
-        adapter: { type: 'Gff3TabixAdapter' },
-      },
-      { pluginManager },
-    )
+  const geneTrackConf = ({ frozen, ...spec }: GeneTrackSpec) => {
+    const entry = {
+      type: 'FeatureTrack',
+      adapter: { type: 'Gff3TabixAdapter' },
+      ...spec,
+    }
+    return frozen ? entry : trackSchema.create(entry, { pluginManager })
+  }
   const sessionTracks = [syntenyTrack, ...geneTracks.map(geneTrackConf)]
   const connectionInstances = connectionGeneTracks.length
     ? [{ tracks: connectionGeneTracks.map(geneTrackConf) }]

@@ -105,6 +105,34 @@ test('a text expression that does not compile falls back to name-else-ID', () =>
   error.mockRestore()
 })
 
+test.each([true, false])(
+  'a lane fetch ranks isoforms by its gene track’s display settings (frozen: %s)',
+  frozen => {
+    const { display } = createDisplayWithSession({
+      geneTracks: [
+        {
+          trackId: 'volvox_genes',
+          assemblyNames: ['volvox'],
+          frozen,
+          displays: [
+            {
+              type: 'LinearFeatureDisplay',
+              displayId: 'volvox_genes-LinearBasicDisplay',
+              canonicalTranscriptTags: ['Ensembl'],
+            },
+          ],
+          displayDefaults: { transcriptTypes: ['lnc_RNA'] },
+        },
+      ],
+    })
+    expect(display.laneGenesFetchSpecs[0]!.isoforms).toEqual({
+      transcriptTypes: ['lnc_RNA'],
+      canonicalTranscriptField: 'tag',
+      canonicalTranscriptTags: ['Ensembl'],
+    })
+  },
+)
+
 test('the lane fetch is part of loading only until it first lands', () => {
   const display = createDisplay()
   // the harness mounts no canvas; the paint half of loading is the mixin's
