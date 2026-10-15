@@ -7,6 +7,9 @@ import type { TypographyProps } from '@mui/material'
 
 interface Props extends TypographyProps {
   message?: string
+  /** false for a label that stands in for work not yet started, such as an
+   * off-screen view's placeholder, which a capture must not wait on */
+  busy?: boolean
   children?: never
 }
 
@@ -29,10 +32,11 @@ interface Props extends TypographyProps {
 const LoadingEllipses = observer(function LoadingEllipses({
   message,
   variant = 'body2',
+  busy = true,
   ...rest
 }: Props) {
   return (
-    <Typography {...rest} variant={variant} data-busy="true">
+    <Typography {...rest} variant={variant} data-busy={busy || undefined}>
       {message || 'Loading'}
       <LoadingDots />
     </Typography>

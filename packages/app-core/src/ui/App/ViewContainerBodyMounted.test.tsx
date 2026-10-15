@@ -139,3 +139,22 @@ test('showing the tab again puts the wait back', () => {
   expect(queryByTestId(`view-container-${back.id}`)).not.toBeNull()
   expect(back.bodyMounted).toBe(true)
 })
+
+// Until the observer's first report a view mounts no body, and the box it
+// reserves used to be empty for a frame or more on every load
+test('a view the observer has not reported on yet reads Loading, not busy', () => {
+  const realIO = globalThis.IntersectionObserver
+  globalThis.IntersectionObserver = class {
+    observe() {}
+    disconnect() {}
+  } as unknown as typeof IntersectionObserver
+  try {
+    const { back, getByTestId } = setup()
+    const container = getByTestId(`view-container-${back.id}`)
+    expect(container.textContent).toContain('Loading')
+    expect(container.textContent).not.toContain('view body')
+    expect(container.querySelector('[data-busy]')).toBeNull()
+  } finally {
+    globalThis.IntersectionObserver = realIO
+  }
+})

@@ -70,9 +70,6 @@ const preservedExports = [
   // imports it by subpath, and without an entry here tsc has no portable path
   // to write into the plugin's `.d.ts` and fails declaration emit with TS2883.
   '@jbrowse/core/util/unknownSnapshotKeys',
-  // The label every loading state shows, published since 4.x. Its last in-repo
-  // subpath importer, ViewWrapper's fallback, now shows ViewLoadingScreen.
-  '@jbrowse/core/ui/LoadingEllipses',
 ]
 
 // The directories whose import sites decide what @jbrowse/core publishes.

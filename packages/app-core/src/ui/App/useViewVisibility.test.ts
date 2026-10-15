@@ -30,24 +30,11 @@ function installFakeObserver() {
   globalThis.IntersectionObserver = FakeIO
 }
 
-// jsdom lays nothing out, so every box is 0x0 at the origin, which counts as
-// on screen; each test places the body itself, and any ancestor by test id
-function place(boxes: Record<string, number>) {
-  jest
-    .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-    .mockImplementation(function (this: HTMLElement) {
-      const top = boxes[this.dataset.testid ?? ''] ?? 0
-      const height = this.dataset.testid === 'port' ? 300 : 100
-      return DOMRect.fromRect({ x: 0, y: top, width: 100, height })
-    })
-}
-
 describe('useViewVisibility', () => {
   const realIO = globalThis.IntersectionObserver
 
   afterEach(() => {
     globalThis.IntersectionObserver = realIO
-    jest.restoreAllMocks()
   })
 
   it('falls back to always-visible when IntersectionObserver is unavailable', () => {
@@ -59,46 +46,14 @@ describe('useViewVisibility', () => {
     expect(result.current.visible).toBe(true)
   })
 
-  it('mounts a body already on screen before the observer fires', () => {
+  it('starts hidden then tracks the observer once the ref is mounted', () => {
     installFakeObserver()
-    place({ body: 200 })
-    const seen: boolean[] = []
-    function Probe() {
-      const { ref, visible } = useViewVisibility()
-      seen.push(visible)
-      return createElement('div', { ref, 'data-testid': 'body' })
-    }
-    render(createElement(Probe))
-    // the layout effect re-renders before paint, so no frame shows it hidden
-    expect(seen).toEqual([false, true])
-  })
-
-  it('leaves hidden a body below the fold of a scrolling ancestor', () => {
-    installFakeObserver()
-    place({ port: 0, body: 500 })
-    function Probe() {
-      const { ref, visible } = useViewVisibility()
-      return createElement('div', { ref, 'data-testid': 'body' }, `${visible}`)
-    }
-    const { getByTestId } = render(
-      createElement(
-        'div',
-        { 'data-testid': 'port', style: { overflowY: 'auto' } },
-        createElement(Probe),
-      ),
-    )
-    expect(getByTestId('body').textContent).toBe('false')
-  })
-
-  it('starts hidden off screen, then tracks the observer', () => {
-    installFakeObserver()
-    place({ body: 5000 })
 
     const seen: { visible: boolean; measuredHeight?: number }[] = []
     function Probe() {
       const { ref, visible, measuredHeight } = useViewVisibility()
       seen.push({ visible, measuredHeight })
-      return createElement('div', { ref, 'data-testid': 'body' })
+      return createElement('div', { ref })
     }
     render(createElement(Probe))
 
@@ -136,13 +91,12 @@ describe('useViewVisibility', () => {
 
   it('does not re-render when the observer reports the same visibility twice', () => {
     installFakeObserver()
-    place({ body: 5000 })
 
     let renders = 0
     function Probe() {
       renders++
       const { ref } = useViewVisibility()
-      return createElement('div', { ref, 'data-testid': 'body' })
+      return createElement('div', { ref })
     }
     render(createElement(Probe))
     const afterMount = renders

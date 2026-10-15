@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { useFocusOnInteraction, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -57,6 +58,11 @@ function viewPhase(view: AbstractViewModel) {
 }
 
 const useStyles = makeStyles()(theme => ({
+  // ViewLoadingScreen's label and place, which the body shows once mounted
+  pending: {
+    paddingTop: 20,
+    textAlign: 'center',
+  },
   viewContainer: {
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
@@ -206,7 +212,18 @@ const ViewContainer = observer(function ViewContainer({
               : undefined
           }
         >
-          {showBody ? <ViewWrapper view={view} session={session} /> : null}
+          {showBody ? (
+            <ViewWrapper view={view} session={session} />
+          ) : reserveSpace && measuredHeight === undefined ? (
+            // Until the observer first reports, a view that has never been
+            // seen would be an empty box. Not busy: an off-screen view keeps
+            // this for as long as it stays off screen.
+            <LoadingEllipses
+              variant="h6"
+              busy={false}
+              className={classes.pending}
+            />
+          ) : null}
         </div>
       </Paper>
     </Paper>
