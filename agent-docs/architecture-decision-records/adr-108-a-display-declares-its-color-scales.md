@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A display declares the color scales it paints with — `colorScales`, a list of categorical entries or ramp stops on `LegendMixin` — and the legend derives from that list: `DisplayChrome` places it on screen and `renderDisplaySvg` in the export, so a display places no legend and writes no legend component. Every display with a key is on it, and the two synteny views host the same shells off the same members"
+summary: "A display declares the color scales it paints with — `colorScales`, a list of categorical entries or ramp stops on `LegendMixin` — and the legend derives from that list: `DisplayChrome` places it on screen and the exporting view beside the plot, so a display places no legend and writes no legend component. Every display with a key is on it, and the two synteny views host the same shells off the same members"
 ---
 
 # ADR-108: A display declares its color scales
@@ -12,6 +12,9 @@ Accepted (2026-09-09), both passes landed the same day. Amended 2026-09-24
 `DisplayStatusChromeBase` mounts `ChromeLegend`, not `DisplayChromeBase`, so a
 display rendering the status chrome without a rendering backend gets the key
 by composing `LegendMixin`; the arc displays that did so are gone (ADR-163).
+Amended 2026-10-14: the exported key is the exporting view's. Every export sets
+each key in a gutter right of the plot, sized after the data lands from the keys
+that exist, and `svgLegendWidth` and the key floated over the plot are gone.
 Extends
 [ADR-094](adr-094-color-cardinality-is-one-channel-not-four-shapes.md): the
 four cardinalities of the color channel resolve, for a legend, to two scales.
@@ -48,14 +51,13 @@ once per display already, so the scale is what that resolution returns.
   `legendSpec`, `dismissedLegendSections` / `dismissLegendSection` (re-showing
   clears them; the variants override is gone), an optional `focusLegendEntry`
   action for the rows of a scale declaring `focusesRows` (a scale coloring
-  features or cells renders inert text beside it), and `svgLegendWidth()` for a
-  display that reserves
-  an export gutter (HiC, LD).
-- **Placement is the chrome's.** `DisplayChromeBase` mounts `ChromeLegend` for
-  any model `isLegendHost` recognises, and `renderDisplaySvg` appends `SvgLegend`
-  inside `SvgChrome` — at the right edge over the plot, or beside it when the
-  display reserved the gutter. A display's component and `renderSvg.tsx` place
-  nothing.
+  features or cells renders inert text beside it).
+- **Placement is the chrome's and the exporting view's.** `DisplayChromeBase`
+  mounts `ChromeLegend` for any model `isLegendHost` recognises. In an export the
+  view draws `SvgLegend` for each track beside its row, in a right gutter it
+  sizes with `svgLegendGutterWidth` once the tracks have rendered, so a track
+  with no key reserves nothing; the stacked exports and the dotplot share it. A
+  display's component and `renderSvg.tsx` place nothing.
 - **Where color is resolved in the worker from data, the payload carries the
   scale table** and the getter reads it off the loaded regions (multi-row's
   color classes, the mark display's categories and ramps, Manhattan's field

@@ -189,7 +189,7 @@ export function svgColorLegendWidth(
 
 // Shared SVG color key: one translucent row per entry — a swatch and a label,
 // or a ramp bar with its domain ends — right-aligned within `canvasWidth`, or
-// at `x` when the caller places it (the LGV export's legend gutter). A <g>, so
+// at `x` when the caller places it (an export's legend gutter). A <g>, so
 // an on-screen SVG overlay and the export share one renderer.
 //
 // `maxHeight` (the display height) caps the box: entries past what fits

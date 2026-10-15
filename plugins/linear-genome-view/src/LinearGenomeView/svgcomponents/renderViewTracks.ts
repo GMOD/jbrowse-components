@@ -117,7 +117,6 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   const tracksHeight = totalHeight(tracks, trackLabels, textHeight)
   const keyed = tracks.map(
     track =>
-      !opts.plotOnly &&
       !track.displays[0]!.regionTooLarge &&
       svgLegendGutterWidth(track.displays[0]!, theme, Infinity) > 0,
   )

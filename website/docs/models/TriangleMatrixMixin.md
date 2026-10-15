@@ -37,7 +37,6 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-svglegendwidth">**svgLegendWidth**</span><br><code>() =&gt; number</code> | The export parks the key beside the matrix, which fills its band. |
 | <span id="method-celltoscreen">**cellToScreen**</span><br><code>(x: number, y: number) =&gt; { x: number; y: number; }</code> | Pre-rotation cell coordinates to display px. |
 | <span id="method-screentocell">**screenToCell**</span><br><code>(x: number, y: number) =&gt; { x: number; y: number; }</code> | The exact inverse of `cellToScreen`. |
 

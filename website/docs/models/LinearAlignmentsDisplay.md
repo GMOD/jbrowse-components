@@ -382,7 +382,7 @@ From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengr
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>10 inherited methods from 4 models</summary>
+<summary>9 inherited methods from 4 models</summary>
 
 From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
@@ -390,7 +390,7 @@ From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-reg
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [LegendMixin](../legendmixin): <span id="method-svglegendwidth">[`svgLegendWidth`](../legendmixin#method-svglegendwidth)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
+From [LegendMixin](../legendmixin): <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
 </details>
 

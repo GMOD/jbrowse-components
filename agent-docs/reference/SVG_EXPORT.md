@@ -25,6 +25,9 @@ minimized track, and `notifySkippedSvgTracks` names it.
   interfaces `extends SvgExportable`, so a missing field fails the build.
 - Render empty naturally. Never gate a body on data size: it wrongly drops a
   legitimate empty render.
+- A body draws no key. The exporting view sets each display's `SvgLegend` in a
+  gutter right of the plot, which `renderViewTracks` sizes after the renders
+  from the keys that exist, so a figure with no key has no empty strip.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
 (`view.trackWidthPx`, 2px narrower). Reusing the on-screen width clips the last
@@ -38,7 +41,7 @@ the export dialog picks a theme the session need not be showing. A model input
 built from the theme gets a twin taking the palette (`renderStateIn`,
 `colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
 palette into the getter's output re-copies model logic into the export. The
-shell's legend draws `legendSpecIn(palette)`, so a display whose key takes
+exported key draws `legendSpecIn(palette)`, so a display whose key takes
 colors from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
 MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the
 circular view's own key (`CircularView.legendSpecIn`) reads each ring's

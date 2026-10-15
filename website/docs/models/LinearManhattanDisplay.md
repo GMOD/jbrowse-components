@@ -126,11 +126,11 @@ From [RowHeightMixin](../rowheightmixin): <span id="getter-rowheight">[`rowHeigh
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>22 inherited methods from 6 models</summary>
+<summary>21 inherited methods from 6 models</summary>
 
 From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-plotrequest">[`plotRequest`](../linearmarkdisplay#method-plotrequest)</span>, <span id="method-rpcprops">[`rpcProps`](../linearmarkdisplay#method-rpcprops)</span>, <span id="method-floatinglabels">[`floatingLabels`](../linearmarkdisplay#method-floatinglabels)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../linearmarkdisplay#method-configproblemsof)</span>, <span id="method-liftmarkplot">[`liftMarkPlot`](../linearmarkdisplay#method-liftmarkplot)</span>
 
-From [LegendMixin](../legendmixin): <span id="method-svglegendwidth">[`svgLegendWidth`](../legendmixin#method-svglegendwidth)</span>, <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
+From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
 From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 

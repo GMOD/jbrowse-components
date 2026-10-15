@@ -267,9 +267,9 @@ From [FetchMixin](../fetchmixin): <span id="getter-isloading">[`isLoading`](../f
 | <span id="method-summaryhoverinfo">**summaryHoverInfo**</span><br><code>(rowIndex: number, x: number) =&gt; MafSummaryRecord &#124; undefined</code> | The summary record whose bar is drawn at canvas x `x` on display row `rowIndex`, or undefined: the hover on the summary tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited methods from 5 models</summary>
+<summary>15 inherited methods from 5 models</summary>
 
-From [LegendMixin](../legendmixin): <span id="method-svglegendwidth">[`svgLegendWidth`](../legendmixin#method-svglegendwidth)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
+From [LegendMixin](../legendmixin): <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`expandRows`](../treesidebarmixin#method-expandrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-dealtrowcolorsfor">[`dealtRowColorsFor`](../treesidebarmixin#method-dealtrowcolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
 

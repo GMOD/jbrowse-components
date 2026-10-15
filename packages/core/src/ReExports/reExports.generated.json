@@ -1405,7 +1405,6 @@
         "JexlFilterDialog",
         "LAUNCH_LABEL",
         "LEGEND_ROW_HEIGHT",
-        "LEGEND_SVG_GUTTER_WIDTH",
         "LEGEND_SWATCH",
         "LabeledCheckbox",
         "LegendSwatchGlyph",
@@ -2106,9 +2105,9 @@
       "package": "@jbrowse/core",
       "names": [
         "LEGEND_ROW_HEIGHT",
-        "LEGEND_SVG_GUTTER_WIDTH",
         "LEGEND_SWATCH",
-        "default"
+        "default",
+        "svgColorLegendWidth"
       ],
       "worker": "real"
     },
@@ -4523,8 +4522,7 @@
       "names": [
         "default",
         "legendCheckboxItem",
-        "legendMixinSlots",
-        "svgLegendGutterWidth"
+        "legendMixinSlots"
       ],
       "worker": "real"
     },
@@ -4624,7 +4622,8 @@
         "SvgLegend",
         "SvgPinnedHighlight",
         "SvgYAxis",
-        "renderDisplaySvg"
+        "renderDisplaySvg",
+        "svgLegendGutterWidth"
       ],
       "worker": "stub",
       "uiVia": [
@@ -4813,8 +4812,7 @@
     "@jbrowse/display-kit/types": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "VIEW_TRACK_LABEL_MODES",
-        "svgLegendAreaReserved"
+        "VIEW_TRACK_LABEL_MODES"
       ],
       "worker": "real"
     },
