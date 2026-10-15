@@ -35,6 +35,32 @@ release tag publishes it with the rest. Its npm tarball carries
 
 ## The contract
 
+> A table is the region's records in tidy form: every per-record field the
+> file states is a column, every per-base field the display decodes is its
+> own long table, and the display's decisions (row, color, section, fade)
+> ride along as extra columns. JBrowse chooses what it adds, never which of
+> the file's fields a host sees, and a host never re-parses a string the
+> engine already parsed.
+
+What follows from it:
+
+- **No projection argument.** A table never takes a list of fields. CIGAR,
+  `seq`, `qual`, MD, MM and ML stay out, since they are per-base and the
+  engine decodes them into `gaps`, `mismatches`, `modifications` and
+  `qualities`.
+- **BAM and CRAM tags are the one exception, for now.** They arrive when
+  binary transport makes them free, or when someone asks for one.
+- **A GFF has no header**, so its attribute columns are the keys the
+  region's records use; a host binding regions fills a missing column with
+  NA, as it does for INFO.
+- **A whole file is the same table with no region:** `fileRegions` lists the
+  regions, `byteLimit` still applies, and `rowLimit` refuses a read whose
+  largest table passes it.
+- **A host flattens a name collision with a prefix:** ggjbrowse writes
+  `info_type` and `attr_type`.
+- **VEP's `CSQ` and SnpEff's `ANN` parse into `annotations`**, and their
+  raw strings leave `info`.
+
 Each table lives in the plugin whose code computes it, exported on a subpath:
 `@jbrowse/plugin-alignments/tables` (`alignmentTables`,
 `registerAlignmentsAdapters`), and `@jbrowse/plugin-sequence/adapters` for the
@@ -45,7 +71,14 @@ mismatch's `frequency` is its base's count over the depth there, not the
 worker's `mismatchFrequencies`, which is a display fade zeroed below a
 depth-dependent threshold. A region over `byteLimit` (200 MB of compressed
 alignments by default) is refused off the index with an error naming the
-size, since a host holds the whole table in memory.
+size, since a host holds the whole table in memory. A read's `id` is the
+record's own `feature.id()`, built from the worker's read keys, the same in
+every call; `read` indexes `reads` within one call, and a read's `name` is
+shared by its mates and supplementary segments. The coverage band's tables
+stop at the region's ends: the worker counts depth wherever its reads reach,
+which past the region is a partial count. A band the display's `show*` slot
+hides (`showCoverage`, `showPileup`, `showMismatches`,
+`showInterbaseIndicators`, `showSashimiArcs`) comes back as empty tables.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
 `missingContig` to each table: where the region's contig is not one the file
 lists, the tables come back empty, as the browser draws such a track, and
@@ -208,6 +241,20 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   `glyph` gives the px sizes they draw at.
 - `labels`, each name, description and transcript label the display shows at
   this zoom, placed by its rule, with `position` in bp.
+- A gene's marks (`rects`, `lines`, `chevrons`, `arrows`, `aminoAcids`) name
+  the transcript they draw in `subfeature`, an index into `subfeatures`, -1
+  for a feature's own mark. The worker stamps each child's primitives with
+  the child's ordinal, which `featureTables` matches to the child's entry.
+- `attributes` and `subfeatureAttributes`, the fields the file states for
+  each feature and transcript, a column per key aligned to them, and
+  `attributeFields`, each key's `type`, `number` and `description`
+  (`featureAttributeTables`). A GFF3's column-9 keys come as the file writes
+  them (`Gff3Feature.fileAttributes`), so `ID` and `Name` sit beside the
+  table's own `id` and `name` rather than lowercased onto them, each a
+  `String`, a list where the spec lets the key list several or a record
+  does. A BED or BigBed takes its autoSql's types (`getAutoSqlFields`). Keys
+  JBrowse gives a feature or decodes into its glyph (`start`, `blockSizes`)
+  stay out.
 - `legend` and `legendTitle`, the color field's key (`featureColorKey`, the
   display's own), and `ramps`, a ramp's color bar.
 
@@ -228,6 +275,8 @@ somatic SV caller's, has no row in it. For a VCF adapter the engine's
 
 - `records`: `ref`, `alt` and `filter`.
 - `info` and `infoFields`, as `variantTables` gives them.
+- `annotations` and `annotationFields`, as `variantTables` gives them,
+  keyed by `feature`.
 - `samples` (`feature`, `sample`, a row per record and sample), with
   `format`, a column per FORMAT key typed by the INFO rules, and
   `formatFields`.
@@ -314,6 +363,13 @@ strings and flags in one text column.
   never shadows `start`, `type` or `color`. A host that flattens the two
   names a collision its own way: ggjbrowse prefixes the INFO column
   `info_`.
+- **A consequence key parses into `annotations`** where its header line
+  names its fields (VEP's `Format: Allele|Consequence|...`, SnpEff's
+  `'Allele | Annotation | ...'`): a row per record and consequence,
+  `variant` naming the record, `key` the INFO key, then a column per field
+  in the header's order, each text, as the header types none, and null
+  where empty. `annotationFields` lists each key's fields, and the key
+  leaves `info` (`consequenceTables`).
 
 The table does not apply the display's density fade, which depends on zoom,
 and does not order the rows by the `rows` arrangement. A categorical `color`
@@ -353,6 +409,19 @@ downstream canary is for.
 ## The bare-host bundle
 
 `pnpm build:bundle` writes `dist/jbrowse-tables.js`, one IIFE with no imports.
+`jbrowse.<table>(argsJson)` resolves to JSON and leaves the tables' numbers
+in `jbrowseBytes`, a Uint8Array, until the next call (`src/wire.ts`):
+
+- **Numbers cross as bytes.** A column crosses as `$i32` where JSON would
+  read as integers in R, else `$f64`, booleans as `$lgl`, each null as R's
+  NA, so a column keeps the type it had over JSON alone.
+- **Text that repeats crosses as codes** (`$dict`), each row an index into
+  `levels`; text that seldom repeats stays a JSON array.
+- **A nested column crosses as `$list`**, its rows' lengths and values each
+  a column of their own, so no host guesses a matrix from rows that share a
+  length.
+- R's V8 hands a Uint8Array back as a raw vector: 8 MB in about 3 ms, where
+  jsonlite parses numbers at 50-70 ms a MB.
 `src/bareHost.ts` installs what the readers need of `fetch`, `TextDecoder`,
 `URL`, `Headers`, `AbortController`, `Intl` and the timers, and answers every byte
 range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
