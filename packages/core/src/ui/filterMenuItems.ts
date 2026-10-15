@@ -83,41 +83,20 @@ export function undoItems(items: Reversibles, priority?: number): MenuItem[] {
 
 export interface FilterMenuOpts {
   /**
-   * The display's narrowings, declared once (see {@link Reversible}). Supplying
-   * this derives `activeCount`, `recoveryItems` and `onClear` together, so the
-   * count in the label, the rows inside the submenu and what "Clear all filters"
-   * actually clears cannot disagree. Prefer it to spelling the three out.
+   * The display's narrowings, declared once (see {@link Reversible}). The count
+   * in the label, the undo rows inside the submenu and what "Clear all filters"
+   * clears all derive from it, so they cannot disagree. Count a narrowing when
+   * its value is not its **no-op** value, which is not always its config
+   * default: the alignments flag masks default non-zero and are the
+   * no-filtering state.
    */
-  narrowings?: Reversibles
-  /**
-   * How many independent filters are narrowing the view right now, so the label
-   * can say that something is hiding data. Count a filter when its value is not
-   * its **no-op** value, which is not always its config default: the LD
-   * display's `minorAlleleFrequencyFilter` ships at 0.1 and is genuinely
-   * dropping variants, while the alignments flag masks default non-zero and are
-   * the no-filtering state, so they count only when edited away from it.
-   *
-   * This is usually the only affordance telling the user a filter is silently
-   * hiding rows — nothing else in the track chrome says so.
-   *
-   * Ignored when `narrowings` is given.
-   */
-  activeCount?: number
+  narrowings: Reversibles
   /** Opens the display's filter dialog, where it has a single one. */
   onEdit?: () => void
   /** Controls that belong inside the submenu (inline sliders, further dialogs). */
   subItems?: MenuItem[]
-  /**
-   * Recovery rows offered alongside "Clear all filters" once something is
-   * filtering — the canvas display's "Show N hidden features", for one.
-   */
-  recoveryItems?: MenuItem[]
-  /** Turn every filter off. Offered only while `activeCount` is non-zero. */
-  onClear?: () => void
   /** Rides the top-level row; see the canvas display's RECOVERY_PRIORITY. */
   priority?: number
-  /** Label for the dialog opener inside the submenu. */
-  editLabel?: string
 }
 
 /**
@@ -138,44 +117,39 @@ export interface FilterMenuOpts {
  */
 export function filterMenuItems({
   narrowings,
-  activeCount: explicitCount = 0,
   onEdit,
   subItems = [],
-  recoveryItems: explicitRecovery = [],
-  onClear: explicitClear,
   priority,
-  editLabel = 'Edit filters...',
 }: FilterMenuOpts): MenuItem[] {
-  // One declaration drives all three, or the caller supplies them separately —
-  // the pre-`Reversible` shape, kept for the displays that haven't adopted it.
-  const count = narrowings ? activeCount(narrowings) : explicitCount
-  const recoveryItems = narrowings ? undoItems(narrowings) : explicitRecovery
-  const onClear = narrowings
-    ? () => {
-        clearAll(narrowings)
-      }
-    : explicitClear
+  const count = activeCount(narrowings)
   const label = count > 0 ? `Filter by... (${count})` : 'Filter by...'
   const editItem: MenuItem[] = onEdit
     ? [
         {
-          label: editLabel,
+          label: 'Edit filters...',
           icon: FilterAltIcon,
           onClick: onEdit,
         },
       ]
     : []
   const clearItem: MenuItem[] =
-    onClear && count > 0
+    count > 0
       ? [
           {
             label: 'Clear all filters',
             icon: FilterAltOffIcon,
-            onClick: onClear,
+            onClick: () => {
+              clearAll(narrowings)
+            },
           },
         ]
       : []
-  const rows = [...editItem, ...subItems, ...recoveryItems, ...clearItem]
+  const rows = [
+    ...editItem,
+    ...subItems,
+    ...undoItems(narrowings),
+    ...clearItem,
+  ]
   if (!rows.length) {
     return []
   }
