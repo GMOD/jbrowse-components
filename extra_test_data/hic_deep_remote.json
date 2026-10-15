@@ -13,6 +13,12 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "hg19_aliases.txt"
+        }
       }
     }
   ],
