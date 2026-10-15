@@ -61,7 +61,7 @@ export class BootChunksPlugin {
 
   apply(compiler: webpack.Compiler) {
     const { ConcatSource } = compiler.webpack.sources
-    compiler.hooks.compilation.tap(name, compilation => {
+    compiler.hooks.thisCompilation.tap(name, compilation => {
       const entryFiles = () =>
         new Set(
           [...compilation.entrypoints.values()].flatMap(e => e.getFiles()),
