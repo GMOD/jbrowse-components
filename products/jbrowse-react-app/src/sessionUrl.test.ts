@@ -90,6 +90,6 @@ test('a decoded session can be restored via the session option', async () => {
   // the config's defaultSession is untouched, so File > New session still
   // returns to the app's own starting state rather than the restored one
   second.setDefaultSession()
-  expect(second.session.name).toMatch(/^declarative /)
+  expect(second.session.name).toBe('declarative')
   expect(second.session.views).toHaveLength(0)
 })

@@ -65,7 +65,7 @@ test('export session with alignments and gff tracks', async () => {
   expect(blob.options.type).toBe('text/plain;charset=utf-8')
 
   const content = JSON.parse(blob.content[0])
-  // Remove dynamic session name for snapshot stability (contains timestamp)
+  // the name comes from the config, not from the export under test
   delete content.session.name
   expect(content).toMatchSnapshot()
 }, 40000)

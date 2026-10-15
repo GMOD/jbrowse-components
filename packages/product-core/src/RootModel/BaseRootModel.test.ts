@@ -66,6 +66,7 @@ function makeRootType() {
         rpc: RpcManager.configSchema,
       }),
       assemblies: types.array(assemblyConfigSchema),
+      defaultSession: types.frozen<Record<string, unknown>>({}),
     }),
     sessionModelType: types
       .model('TestSession', {
@@ -97,6 +98,19 @@ const goodView = { id: 'v1', type: 'TestView', bpPerPx: 1 }
 // registered view type, numeric prop given a string: pruneUnbuildableNodes keeps
 // it, MST refuses it
 const badView = { id: 'v1', type: 'TestView', bpPerPx: 'not a number' }
+
+test('a new session keeps the default session name as it is', () => {
+  const root = makeRootType().create({
+    jbrowse: {
+      configuration: {},
+      assemblies: [],
+      defaultSession: { name: 'Curated', views: [] },
+    },
+  })
+  root.setDefaultSession()
+  root.setDefaultSession()
+  expect(root.session.name).toBe('Curated')
+})
 
 test('swaps in a new session', () => {
   const root = makeRoot()

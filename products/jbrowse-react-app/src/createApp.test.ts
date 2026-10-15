@@ -214,7 +214,7 @@ test('setSession with nothing returns to the launch views', async () => {
   await controller.setSession()
 
   const { session } = controller.viewState
-  expect(session.name).toMatch(/^launch /)
+  expect(session.name).toBe('launch')
   expect(session.views).toHaveLength(1)
   expect(session.views[0]!.type).toBe('LinearGenomeView')
 
