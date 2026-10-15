@@ -101,6 +101,30 @@ from the config rather than restating its defaults. The engine also serves the c
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
+**Every table returns `config` and every alignments mark its color.**
+
+- `config` is the display's whole resolved config, every slot under
+  JBrowse's own name, defaults included (`fullConfSnapshot`), from
+  `alignments`, `features`, `wiggle` and `variants` alike.
+- `alignmentTables` adds a `color` column, off the palette, to
+  `mismatches`, `gaps`, `insertions`, `clips`, `coverage`, `alleleCoverage`,
+  `interbaseCoverage`, `indicators` and `junctions`. It resolves a base
+  through `effectiveBaseColors`, so under a `modifications` or `bisulfite`
+  layer every base is the muted grey.
+- `baseLegend` (empty while the bases are muted), `junctionLegend` (the
+  sashimi band's own strand key, over the junctions shown) and
+  `interbaseLegend` come back as `legend` does, each with its title, keying
+  only what the tables paint.
+- `junctions` has `shown`, true where the count reaches `minSashimiScore`
+  and the motif passes `showNonCanonicalJunctions` (the browser keeps a
+  junction whose motif it never read), `arcHeight`
+  (`sashimiArcHeightFraction`) and `strokeWidth` (`sashimiStrokeWidth`, in
+  px). `alleleCoverage` has `shown`, true where the allele's share of the
+  depth reaches `coverageSnpMinFrequency`, the coverageSnp shader's test.
+- `readPitch` gives `featureHeight` and the gap below a read
+  (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
+  squeezes the pitch to the track's height, which is the host's.
+
 **A table takes the display's own config and answers what the display draws
 with it.** `alignmentTables` takes `display`, the `LinearAlignmentsDisplay`
 config as a track's `displays` entry writes it, resolves it through the
@@ -153,8 +177,9 @@ worker ships it: `insertions` (position, length, sequence, read), `clips`
 (position, length, `soft` or `hard`, read) and `junctions`, the skips merged
 as the sashimi band merges them (start, end, supporting-read count, strand off
 the reads' tags or the splice motif, and the motif where the region's sequence
-covers both ends), every junction down to a single read, since the display's
-`minSashimiScore` and `showNonCanonicalJunctions` are the host's to apply. `alignmentColors` names the
+covers both ends), every junction down to a single read, with `shown`
+marking the ones the display's `minSashimiScore` and
+`showNonCanonicalJunctions` keep. `alignmentColors` names the
 insertion, soft-clip and hard-clip colors beside the rest. A mismatch, gap,
 insertion or clip carries `fade`, the worker's own frequency byte: its share
 of the depth at its site, zeroed below the display's depth-dependent

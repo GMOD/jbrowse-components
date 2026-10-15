@@ -17,7 +17,7 @@ import {
   readModCovSegments,
   readSnpSegments,
 } from '@jbrowse/alignments-core'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
@@ -67,6 +67,7 @@ import {
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
 import { orderedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   baseQualitySpanAcrossGroups,
   presentMapqs,
@@ -84,12 +85,20 @@ import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
+import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
 import {
   BASE_QUALITY_UNAVAILABLE,
   qualityAbgr,
 } from './features/perBaseQuality/colors.ts'
+import {
+  sashimiArcHeightFraction,
+  sashimiStrokeWidth,
+} from './features/sashimi/bandFeed.ts'
 import { mergeJunctions } from './features/sashimi/junctions.ts'
-import { spliceMotifLabel } from './features/sashimi/motif.ts'
+import {
+  isNonCanonicalSpliceMotif,
+  spliceMotifLabel,
+} from './features/sashimi/motif.ts'
 import { arcSlotCategory, buildArcColorPalette } from './shaders/palettes.ts'
 import { CONNECTING_LINE_ALPHA } from './shaders/slang/connectingLine.consts.generated.ts'
 import { GAP_SKIP } from './shaders/slang/gap.consts.generated.ts'
@@ -106,6 +115,7 @@ import {
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
+import { paintsModifications } from './shared/colorSchemes.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
@@ -115,6 +125,7 @@ import {
   colorRampScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  sashimiLegendItems,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
 import {
@@ -133,9 +144,11 @@ import type {
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
+import type { ColorPalette } from './shaders/colors.ts'
 import type {
   ArcColorField,
   BaseLayer,
+  InterbaseTypeName,
   ModificationColorBy,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -269,6 +282,65 @@ function alleleFrequencies(d: WorkerPileupData) {
     const depth = d.coverageDepths[bin] ?? 0
     return depth > 0 ? Math.min(1, counts.get(key(i))! / depth) : 0
   })
+}
+
+const BASES = ['A', 'C', 'G', 'T', 'N'] as const
+
+const INTERBASE_LABELS: Record<InterbaseTypeName, string> = {
+  insertion: 'Insertion',
+  softclip: 'Soft clip',
+  hardclip: 'Hard clip',
+}
+
+/**
+ * The colors the display paints its per-base and coverage marks in, off its
+ * palette: each base through `effectiveBaseColors`, so a modifications or
+ * bisulfite layer mutes them, the interbase histogram in its band variants,
+ * and a junction in its transcript strand's.
+ */
+function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
+  const muted = paintsModifications(baseLayer)
+  const bases = effectiveBaseColors({
+    colors: palette,
+    showModifications: muted,
+  })
+  const hex = normalizedRgbToHex
+  return {
+    muted,
+    base: Object.fromEntries(BASES.map(b => [b, hex(bases[b])])) as Record<
+      string,
+      string
+    >,
+    gap: { skip: hex(palette.colorSkip), deletion: hex(palette.colorDeletion) },
+    insertion: hex(palette.colorInsertion),
+    clip: {
+      soft: hex(palette.colorSoftclip),
+      hard: hex(palette.colorHardclip),
+    },
+    coverage: hex(palette.colorCoverage),
+    interbase: {
+      insertion: hex(palette.colorInsertionIndicator),
+      softclip: hex(palette.colorSoftclipIndicator),
+      hardclip: hex(palette.colorHardclipIndicator),
+    } as Record<InterbaseTypeName, string>,
+    junction: (strand: number) =>
+      hex(
+        strand === 1
+          ? palette.colorFwdStrand
+          : strand === -1
+            ? palette.colorRevStrand
+            : palette.colorPairLR,
+      ),
+  }
+}
+
+type MarkColors = ReturnType<typeof markColors>
+
+/** What the display hides of the coverage band's stacks and the sashimi arcs. */
+interface MarkThresholds {
+  coverageSnpMinFrequency: number
+  minSashimiScore: number
+  showNonCanonicalJunctions: boolean
 }
 
 function positionIn(refNames: readonly string[]): RefNamePosition {
@@ -469,17 +541,24 @@ function modifications(d: WorkerPileupData) {
  * state's share, with the color and opacity it paints in. `from` and `to` are
  * fractions of the position's depth, which `depth` gives.
  */
-function coverageStacks(d: WorkerPileupData) {
+function coverageStacks(
+  d: WorkerPileupData,
+  paint: MarkColors,
+  minFrequency: number,
+) {
   const depthOf = (relDepth: number) => relDepth * d.coverageMaxDepth
   const alleles = readSnpSegments(d.snpPackedBuffer)
   const modifications = readModCovSegments(d.modCovPackedBuffer)
+  const base = alleles.map(a => 'ACGTN'[a.colorType - 1] ?? 'N')
   return {
     alleleCoverage: {
       position: alleles.map(a => a.position),
-      base: alleles.map(a => 'ACGTN'[a.colorType - 1] ?? 'N'),
+      base,
       from: alleles.map(a => a.yOffset),
       to: alleles.map(a => a.yOffset + a.height),
       depth: alleles.map(a => depthOf(a.relDepth)),
+      color: base.map(b => paint.base[b]!),
+      shown: alleles.map(a => a.height >= minFrequency),
     },
     modificationCoverage: {
       position: modifications.map(m => m.position),
@@ -500,22 +579,26 @@ function coverageStacks(d: WorkerPileupData) {
  * read. `indicators` are the positions where those events pass the display's
  * share of the local depth, each with its most common `type`.
  */
-function interbaseStacks(d: WorkerPileupData) {
+function interbaseStacks(d: WorkerPileupData, paint: MarkColors) {
   const segments = readInterbaseSegments(d.interbasePackedBuffer)
   const reads = (fraction: number) => Math.round(fraction * d.interbaseMaxCount)
   const n = segments.count
+  const type = Array.from({ length: n }, (_, i) =>
+    interbaseTypeName(segments.colorType(i)),
+  )
+  const indicatorType = Array.from(d.indicatorTypes, interbaseTypeName)
   return {
     interbaseCoverage: {
       position: Array.from({ length: n }, (_, i) => segments.position(i)),
-      type: Array.from({ length: n }, (_, i) =>
-        interbaseTypeName(segments.colorType(i)),
-      ),
+      type,
       from: Array.from({ length: n }, (_, i) => reads(segments.stackStart(i))),
       to: Array.from({ length: n }, (_, i) => reads(segments.stackEnd(i))),
+      color: type.map(t => paint.interbase[t]),
     },
     indicators: {
       position: d.indicatorPositions,
-      type: Array.from(d.indicatorTypes, interbaseTypeName),
+      type: indicatorType,
+      color: indicatorType.map(t => paint.interbase[t]),
     },
   }
 }
@@ -535,13 +618,14 @@ function fades(bytes: Uint8Array) {
  * reader kept it, its sequence; a clip with its length and whether the clipped
  * bases are in the file (`soft`) or not (`hard`).
  */
-function interbase(d: WorkerPileupData) {
+function interbase(d: WorkerPileupData, paint: MarkColors) {
   const insertions = {
     position: [] as number[],
     length: [] as number[],
     sequence: [] as string[],
     read: [] as number[],
     fade: [] as number[],
+    color: [] as string[],
   }
   const clips = {
     position: [] as number[],
@@ -549,6 +633,7 @@ function interbase(d: WorkerPileupData) {
     type: [] as string[],
     read: [] as number[],
     fade: [] as number[],
+    color: [] as string[],
   }
   for (let i = 0; i < d.interbasePositions.length; i++) {
     const type = d.interbaseTypes[i]!
@@ -559,12 +644,15 @@ function interbase(d: WorkerPileupData) {
       insertions.sequence.push(d.interbaseSequences[i] ?? '')
       insertions.read.push(d.interbaseReadIndices[i]!)
       insertions.fade.push(fade)
+      insertions.color.push(paint.insertion)
     } else {
       clips.position.push(d.interbasePositions[i]!)
       clips.length.push(d.interbaseLengths[i]!)
-      clips.type.push(type === INTERBASE_SOFTCLIP ? 'soft' : 'hard')
+      const soft = type === INTERBASE_SOFTCLIP
+      clips.type.push(soft ? 'soft' : 'hard')
       clips.read.push(d.interbaseReadIndices[i]!)
       clips.fade.push(fade)
+      clips.color.push(soft ? paint.clip.soft : paint.clip.hard)
     }
   }
   return { insertions, clips }
@@ -575,9 +663,17 @@ function interbase(d: WorkerPileupData) {
  * merges them: each once, with its supporting-read count, the strand its
  * reads' tags or its splice motif give it (0 where neither says), and the
  * motif where the reference was read. Every junction, down to a single
- * read; the display hides those under its `minSashimiScore`.
+ * read, with `shown` false where the display's `minSashimiScore` or
+ * `showNonCanonicalJunctions` hides it; a junction whose motif was never read
+ * stays shown, as the display keeps it. `arcHeight` is the apex as a fraction
+ * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
  */
-function junctions(d: WorkerPileupData, refName: string) {
+function junctions(
+  d: WorkerPileupData,
+  refName: string,
+  paint: MarkColors,
+  thresholds: MarkThresholds,
+) {
   const merged = [
     ...mergeJunctions([{ refName, data: d }], {
       minSashimiScore: 0,
@@ -590,6 +686,17 @@ function junctions(d: WorkerPileupData, refName: string) {
     count: merged.map(j => j.count),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
+    color: merged.map(j => paint.junction(j.strand)),
+    shown: merged.map(
+      j =>
+        j.count >= thresholds.minSashimiScore &&
+        (thresholds.showNonCanonicalJunctions ||
+          !isNonCanonicalSpliceMotif(j.motif)),
+    ),
+    arcHeight: merged.map(j =>
+      sashimiArcHeightFraction(Math.abs(j.end - j.start)),
+    ),
+    strokeWidth: merged.map(j => sashimiStrokeWidth(j.count)),
   }
 }
 
@@ -803,9 +910,15 @@ function sectionTables(
   colors: { color: string[]; category: string[] },
   region: { refName: string; start: number; end: number },
   plainRead: string,
+  paint: MarkColors,
+  thresholds: MarkThresholds,
 ) {
   const [readStart, readEnd] = pairs(d.readPositions)
   const [gapStart, gapEnd] = pairs(d.gapPositions)
+  const mismatchBase = Array.from(d.mismatchBases, b => BASE_OF_CODE[b] ?? 'N')
+  const gapType = Array.from(d.gapTypes, t =>
+    t === GAP_SKIP ? ('skip' as const) : ('deletion' as const),
+  )
   return {
     reads: {
       id: Array.from(readStart, (_, i) => readIdAt(d, i) ?? ''),
@@ -826,24 +939,26 @@ function sectionTables(
     },
     mismatches: {
       position: d.mismatchPositions,
-      base: Array.from(d.mismatchBases, b => BASE_OF_CODE[b] ?? 'N'),
+      base: mismatchBase,
       read: d.mismatchReadIndices,
       frequency: alleleFrequencies(d),
       fade: fades(d.mismatchFrequencies),
       quality: d.mismatchQuals,
+      color: mismatchBase.map(b => paint.base[b]!),
     },
     gaps: {
       start: gapStart,
       end: gapEnd,
-      type: Array.from(d.gapTypes, t => (t === GAP_SKIP ? 'skip' : 'deletion')),
+      type: gapType,
       read: d.gapReadIndices,
       fade: fades(d.gapFrequencies),
+      color: gapType.map(t => paint.gap[t]),
     },
-    ...interbase(d),
+    ...interbase(d, paint),
     modifications: modifications(d),
     qualities: qualities(d, plainRead),
-    ...coverageBand(d, region),
-    junctions: junctions(d, region.refName),
+    ...coverageBand(d, region, paint, thresholds.coverageSnpMinFrequency),
+    junctions: junctions(d, region.refName, paint, thresholds),
   }
 }
 
@@ -856,6 +971,8 @@ function sectionTables(
 function coverageBand(
   d: WorkerPileupData,
   region: { start: number; end: number },
+  paint: MarkColors,
+  snpMinFrequency: number,
 ) {
   const bin = d.coverageBinSize
   const first = Math.max(
@@ -873,7 +990,10 @@ function coverageBand(
   const binStart = (i: number) => d.coverageStartPos + i * bin
   const inside = (position: number) =>
     position >= region.start && position < region.end
-  const stacks = { ...coverageStacks(d), ...interbaseStacks(d) }
+  const stacks = {
+    ...coverageStacks(d, paint, snpMinFrequency),
+    ...interbaseStacks(d, paint),
+  }
   return {
     coverage: {
       start: bins.map(i => Math.max(region.start, binStart(i))),
@@ -881,6 +1001,7 @@ function coverageBand(
       depth: bins.map(i => d.coverageDepths[i]!),
       forward: bins.map(i => d.coverageFwdDepths[i]!),
       reverse: bins.map(i => d.coverageRevDepths[i]!),
+      color: bins.map(() => paint.coverage),
     },
     alleleCoverage: rowsWhere(stacks.alleleCoverage, inside),
     modificationCoverage: rowsWhere(stacks.modificationCoverage, inside),
@@ -1118,6 +1239,15 @@ export async function alignmentTables(
         )
       : undefined,
   )
+  const paint = markColors(colors.palette, baseLayer)
+  const thresholds: MarkThresholds = {
+    coverageSnpMinFrequency: readConfObject(conf, 'coverageSnpMinFrequency'),
+    minSashimiScore: readConfObject(conf, 'minSashimiScore'),
+    showNonCanonicalJunctions: readConfObject(
+      conf,
+      'showNonCanonicalJunctions',
+    ),
+  }
   const connections = readConnectionTables(
     conf,
     new Map(
@@ -1130,31 +1260,35 @@ export async function alignmentTables(
     region,
     colors,
   )
-  return {
-    ...drawnBands(
-      conf,
-      joinSections(
-        order.map(({ key, label }) => ({
-          label,
-          tables: {
-            ...chainTables(
-              chain ? laidByGroup.get(key) : undefined,
-              normalizedRgbToHex(colors.palette.colorConnectingLine),
-              normalizedRgbToHex(colors.palette.colorOverlap),
-            ),
-            ...sectionTables(
-              dataFor(key),
-              laidByGroup.get(key)!.readYs,
-              colors.sections.get(key)!,
-              region,
-              normalizedRgbToHex(colors.palette.readCategoryColors.plain),
-            ),
-            ...connections.bySection.get(key)!,
-          },
-        })),
-        tables => tables.reads.start.length,
-      ),
+  const tables = drawnBands(
+    conf,
+    joinSections(
+      order.map(({ key, label }) => ({
+        label,
+        tables: {
+          ...chainTables(
+            chain ? laidByGroup.get(key) : undefined,
+            normalizedRgbToHex(colors.palette.colorConnectingLine),
+            normalizedRgbToHex(colors.palette.colorOverlap),
+          ),
+          ...sectionTables(
+            dataFor(key),
+            laidByGroup.get(key)!.readYs,
+            colors.sections.get(key)!,
+            region,
+            normalizedRgbToHex(colors.palette.readCategoryColors.plain),
+            paint,
+            thresholds,
+          ),
+          ...connections.bySection.get(key)!,
+        },
+      })),
+      tables => tables.reads.start.length,
     ),
+  )
+  return {
+    ...tables,
+    ...markLegends(tables, paint),
     sections: {
       key: order.map(g => g.key),
       label: order.map(g => g.label),
@@ -1187,6 +1321,64 @@ export async function alignmentTables(
     settings: Object.fromEntries(
       COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),
     ) as Record<(typeof COMPOSING_SLOTS)[number], unknown>,
+    readPitch: {
+      featureHeight,
+      featureSpacing: featureSpacingForHeight(featureHeight),
+    },
+    config: fullConfSnapshot(conf),
+  }
+}
+
+/**
+ * The keys of the marks the reads' own `legend` leaves out, each over what the
+ * tables paint: the bases (none while a modifications layer mutes them), the
+ * junction strands of the junctions shown, as the sashimi band keys them, and
+ * the interbase histogram's events.
+ */
+function markLegends(
+  tables: {
+    mismatches: { base: string[] }
+    alleleCoverage: { base: string[] }
+    junctions: { strand: number[]; shown: boolean[] }
+    interbaseCoverage: { type: InterbaseTypeName[] }
+    indicators: { type: InterbaseTypeName[] }
+  },
+  paint: MarkColors,
+) {
+  const bases = new Set([
+    ...tables.mismatches.base,
+    ...tables.alleleCoverage.base,
+  ])
+  const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
+  const junctionKey = sashimiLegendItems(
+    new Set(
+      tables.junctions.strand.filter((_, i) => tables.junctions.shown[i]),
+    ),
+    resolvePalette().alignmentFill,
+  )
+  const events = new Set([
+    ...tables.interbaseCoverage.type,
+    ...tables.indicators.type,
+  ])
+  const keyedEvents = (
+    Object.keys(INTERBASE_LABELS) as InterbaseTypeName[]
+  ).filter(t => events.has(t))
+  return {
+    baseLegend: {
+      label: keyedBases.map(b => b as string),
+      color: keyedBases.map(b => paint.base[b]!),
+    },
+    baseLegendTitle: 'Base',
+    junctionLegend: {
+      label: junctionKey.map(item => item.label),
+      color: junctionKey.map(item => cssColorToHex(item.color!)),
+    },
+    junctionLegendTitle: 'Splice junctions',
+    interbaseLegend: {
+      label: keyedEvents.map(t => INTERBASE_LABELS[t]),
+      color: keyedEvents.map(t => paint.interbase[t]),
+    },
+    interbaseLegendTitle: 'Insertions and clips',
   }
 }
 

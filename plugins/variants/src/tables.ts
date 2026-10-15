@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -354,6 +354,7 @@ export async function variantTables(
       start: banded.bands.map(b => b.start),
       end: banded.bands.map(b => b.end),
     },
+    config: fullConfSnapshot(conf),
   }
 }
 

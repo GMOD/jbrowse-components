@@ -1,12 +1,18 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { cssColorToHex } from '@jbrowse/core/util/colorBits'
+
 import { alignmentColors, createTablesEngine } from './index.ts'
 import {
   BAM,
   CRAM,
+  DOG_VCF,
+  GFF3,
   LONG_READS,
   METHYLATED,
   OVERLAP,
   PAIRED_INVERSION,
   READ_GROUPS,
+  SIGNED_BIGWIG,
   SPLICED,
 } from './volvox.fixture.ts'
 
@@ -858,6 +864,152 @@ test('an arc’s stroke widens with the reads behind it, as the band strokes it'
     )
   }
   expect(Math.max(...arcs.width)).toBeLessThanOrEqual(8)
+})
+
+test('every mark carries the color the display paints it, keyed beside the reads', async () => {
+  const t = await engine.alignments(SPLICED)
+  const colors = alignmentColors()
+  for (const name of [
+    'mismatches',
+    'gaps',
+    'insertions',
+    'clips',
+    'coverage',
+    'alleleCoverage',
+    'interbaseCoverage',
+    'indicators',
+    'junctions',
+  ] as const) {
+    const table = t[name] as Record<string, ArrayLike<unknown>>
+    expect(table.color).toHaveLength(Object.values(table)[0]!.length)
+  }
+  t.mismatches.base.forEach((b, i) => {
+    expect(t.mismatches.color[i]).toBe(cssColorToHex(colors.bases[b]!))
+  })
+  t.gaps.type.forEach((type, i) => {
+    expect(t.gaps.color[i]).toBe(
+      cssColorToHex(type === 'skip' ? colors.skip : colors.deletion),
+    )
+  })
+  expect(new Set(t.coverage.color)).toEqual(
+    new Set([cssColorToHex(colors.coverage)]),
+  )
+  expect(new Set(t.junctions.color)).toEqual(
+    new Set([cssColorToHex(colors.forward)]),
+  )
+  expect(t.baseLegendTitle).toBe('Base')
+  expect(t.baseLegend.label).toEqual(
+    ['A', 'C', 'G', 'T', 'N'].filter(
+      b => t.mismatches.base.includes(b) || t.alleleCoverage.base.includes(b),
+    ),
+  )
+  t.baseLegend.label.forEach((b, i) => {
+    expect(t.baseLegend.color[i]).toBe(cssColorToHex(colors.bases[b]!))
+  })
+  expect(t.junctionLegend).toEqual({
+    label: ['Forward transcript strand'],
+    color: [cssColorToHex(colors.forward)],
+  })
+  expect(new Set(t.interbaseLegend.color)).toEqual(
+    new Set(t.interbaseCoverage.color),
+  )
+  expect(t.readPitch).toEqual({ featureHeight: 7, featureSpacing: 1 })
+  const thin = await engine.alignments({
+    ...SPLICED,
+    display: { featureHeight: 3 },
+  })
+  expect(thin.readPitch).toEqual({ featureHeight: 3, featureSpacing: 0 })
+})
+
+test('a modifications layer mutes every base, and the base key goes empty', async () => {
+  const muted = cssColorToHex(resolvePalette().mutedSnpBase)
+  for (const field of ['modifications', 'bisulfite']) {
+    const t = await engine.alignments({
+      ...METHYLATED,
+      display: { baseColor: { field } },
+    })
+    expect(t.mismatches.color.length).toBeGreaterThan(0)
+    expect(new Set(t.mismatches.color)).toEqual(new Set([muted]))
+    expect(new Set(t.alleleCoverage.color)).toEqual(new Set([muted]))
+    expect(t.baseLegend).toEqual({ label: [], color: [] })
+  }
+  const plain = await engine.alignments(METHYLATED)
+  expect(plain.mismatches.color).not.toContain(muted)
+  expect(plain.baseLegend.label.length).toBeGreaterThan(0)
+})
+
+test('a junction says whether the display shows it, its arc height and its stroke', async () => {
+  const all = await engine.alignments(SPLICED)
+  const { count } = all.junctions
+  expect(all.junctions.shown.every(Boolean)).toBe(true)
+  const floor = Math.max(...count)
+  const t = await engine.alignments({
+    ...SPLICED,
+    display: { minSashimiScore: floor },
+  })
+  expect(t.junctions.count).toEqual(count)
+  expect(t.junctions.shown).toEqual(count.map(c => c >= floor))
+  expect(t.junctions.shown).toContain(false)
+  const hidden = await engine.alignments({
+    ...SPLICED,
+    display: { showNonCanonicalJunctions: false },
+  })
+  expect(hidden.junctions.shown).toEqual(
+    all.junctions.motif.map(m => m !== 'non-canonical'),
+  )
+  const sashimiArcHeightFraction = (span: number) =>
+    0.3 +
+    0.65 *
+      Math.min(1, Math.max(0, Math.log(span / 50) / Math.log(100_000 / 50)))
+  all.junctions.start.forEach((start, i) => {
+    const span = all.junctions.end[i]! - start
+    expect(all.junctions.arcHeight[i]).toBeCloseTo(
+      sashimiArcHeightFraction(span),
+      12,
+    )
+    expect(all.junctions.strokeWidth[i]).toBeCloseTo(
+      Math.min(16, Math.max(1, Math.log(count[i]! + 1))),
+      12,
+    )
+  })
+})
+
+test('an allele segment is shown where its share of the depth reaches coverageSnpMinFrequency', async () => {
+  const all = await engine.alignments(BAM)
+  expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)
+  const t = await engine.alignments({
+    ...BAM,
+    display: { coverageSnpMinFrequency: 0.5 },
+  })
+  expect(t.alleleCoverage.shown).toEqual(
+    t.alleleCoverage.from.map(
+      (from, i) => t.alleleCoverage.to[i]! - from >= 0.5,
+    ),
+  )
+  expect(t.alleleCoverage.shown).toContain(true)
+  expect(t.alleleCoverage.shown).toContain(false)
+})
+
+test('config is the display’s resolved config, the slots the call set and the defaults it left', async () => {
+  const t = await engine.alignments({
+    ...BAM,
+    display: { minSashimiScore: 5, color: { field: 'strand' } },
+  })
+  expect(t.config.minSashimiScore).toBe(5)
+  expect((t.config.color as { field: string }).field).toBe('strand')
+  expect(t.config.coverageHeight).toBe(45)
+  expect(t.config.showCoverage).toBe(true)
+  expect(t.settings.minSashimiScore).toBe(5)
+  const display = { height: 150 }
+  const others = [
+    [await engine.features({ ...GFF3, display }), 'heightMode', 'fit'],
+    [await engine.wiggle({ ...SIGNED_BIGWIG, display }), 'resolution', 1],
+    [await engine.variants({ ...DOG_VCF, display }), 'showTree', true],
+  ] as const
+  for (const [tables, slot, value] of others) {
+    expect(tables.config.height).toBe(150)
+    expect(tables.config[slot]).toBe(value)
+  }
 })
 
 test('a region of the reference reads as its bases', async () => {

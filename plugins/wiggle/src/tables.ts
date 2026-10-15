@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import {
   abgrToHex,
@@ -438,6 +438,7 @@ export async function wiggleTables(
     origin,
     rowLayout,
     height: readConfObject(conf, 'height'),
+    config: fullConfSnapshot(conf),
   }
 }
 

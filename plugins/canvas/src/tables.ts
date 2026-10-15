@@ -552,6 +552,7 @@ export async function featureTables(
       sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },
     bpPerPx,
+    config: fullConfSnapshot(conf),
   }
 }
 
