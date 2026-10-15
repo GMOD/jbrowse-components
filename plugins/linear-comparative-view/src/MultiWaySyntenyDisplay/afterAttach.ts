@@ -412,7 +412,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       })
       return {
         key: spec.key,
-        genes: laneGeneFeatures(features, spec.canonical),
+        genes: laneGeneFeatures(features, spec.isoforms),
       }
     },
     empty: spec => ({ key: spec.key, genes: [] }),

@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
+import { GENE_GLYPH_DEFAULTS } from '@jbrowse/plugin-canvas'
 
 import {
   LaneGene,
@@ -7,7 +8,7 @@ import {
   geneGlyphShape,
   annotatedSpans,
   laneGeneFeatures,
-  trackCanonicalTranscripts,
+  laneIsoformSettings,
 } from './geneGlyph.ts'
 
 import type { Span } from './layoutMultiWay.ts'
@@ -229,7 +230,10 @@ test('geneGlyphShape draws the transcript a canonical tag names over a longer on
   })
   expect(geneGlyphShape(gene).transcript.id()).toBe('select')
   expect(
-    geneGlyphShape(gene, { field: 'tag', tags: ['nothing'] }).transcript.id(),
+    geneGlyphShape(gene, {
+      ...laneIsoformSettings(),
+      canonicalTranscriptTags: ['nothing'],
+    }).transcript.id(),
   ).toBe('long')
 })
 
@@ -529,19 +533,33 @@ test('geneGlyphShape draws the representative transcript’s own UTRs', () => {
   })
 })
 
-test('a lane ranks isoforms by the tags its gene track’s display names', () => {
+test('a lane ranks isoforms by what its gene track’s feature display reads', () => {
+  const settings = (entry: Record<string, unknown>) =>
+    laneIsoformSettings({ trackId: 't', type: 'FeatureTrack', ...entry })
   expect(
-    trackCanonicalTranscripts({
-      trackId: 't',
-      type: 'FeatureTrack',
+    settings({
       displays: [
         { type: 'LinearBasicDisplay', canonicalTranscriptTags: ['Ensembl'] },
       ],
-    }),
-  ).toEqual({ field: 'tag', tags: ['Ensembl'] })
-  expect(trackCanonicalTranscripts(undefined)).toEqual(
-    DEFAULT_CANONICAL_TRANSCRIPTS,
-  )
+    }).canonicalTranscriptTags,
+  ).toEqual(['Ensembl'])
+  expect(
+    settings({ displayDefaults: { transcriptTypes: ['lnc_RNA'] } })
+      .transcriptTypes,
+  ).toEqual(['lnc_RNA'])
+  expect(
+    settings({
+      displayDefaults: { canonicalTranscriptField: 'note' },
+      displays: [
+        { type: 'LinearBasicDisplay', canonicalTranscriptField: 'tag' },
+      ],
+    }).canonicalTranscriptField,
+  ).toBe('tag')
+  expect(laneIsoformSettings()).toEqual({
+    transcriptTypes: GENE_GLYPH_DEFAULTS.transcriptTypes,
+    canonicalTranscriptField: DEFAULT_CANONICAL_TRANSCRIPTS.field,
+    canonicalTranscriptTags: DEFAULT_CANONICAL_TRANSCRIPTS.tags,
+  })
 })
 
 test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {
@@ -567,7 +585,9 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
     type: 'pseudogene',
   })
   expect(
-    laneGeneFeatures([region, gene, pseudo]).map(g => g.feature.id()),
+    laneGeneFeatures([region, gene, pseudo], laneIsoformSettings()).map(g =>
+      g.feature.id(),
+    ),
   ).toEqual(['g', 'p'])
   const mrna = new SimpleFeature({
     uniqueId: 'm',
@@ -576,9 +596,11 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
     end: 40,
     type: 'mRNA',
   })
-  expect(laneGeneFeatures([region, mrna]).map(g => g.feature.id())).toEqual([
-    'm',
-  ])
+  expect(
+    laneGeneFeatures([region, mrna], laneIsoformSettings()).map(g =>
+      g.feature.id(),
+    ),
+  ).toEqual(['m'])
 })
 
 test('lane genes arriving once per static block draw once', () => {
@@ -590,7 +612,12 @@ test('lane genes arriving once per static block draw once', () => {
       end: 1100,
       type: 'gene',
     })
-  expect(laneGeneFeatures([gene('g1'), gene('g1'), gene('g2')])).toHaveLength(2)
+  expect(
+    laneGeneFeatures(
+      [gene('g1'), gene('g1'), gene('g2')],
+      laneIsoformSettings(),
+    ),
+  ).toHaveLength(2)
 })
 
 describe('a placement box beside the lane annotation', () => {

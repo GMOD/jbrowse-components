@@ -151,7 +151,7 @@ function render(gene: SimpleFeature, geneGlyphMode: 'all' | 'longestCoding') {
       canon: (refName: string) => refName,
       placements: new Map(),
     } as unknown as Lane,
-    genes: [new LaneGene(gene)],
+    genes: [new LaneGene(gene, config)],
     glyphHeight: HEIGHT,
     width: 1000,
     colors: { genes: fills, boxes: fills, stroke: '#222', divider: '#ccc' },

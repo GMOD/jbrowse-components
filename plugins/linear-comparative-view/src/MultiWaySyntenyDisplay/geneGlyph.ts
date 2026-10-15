@@ -1,7 +1,5 @@
 import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
-import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import {
-  GENE_GLYPH_DEFAULTS,
   featureType,
   getSubfeatures,
   impliedUTRs,
@@ -9,21 +7,21 @@ import {
   isExon,
   isUTR,
   mergeSpans,
+  pickDisplayConfig,
   representativeIsoform,
 } from '@jbrowse/plugin-canvas'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
-import type { GlyphSpan } from '@jbrowse/plugin-canvas'
+import type { GlyphSpan, IsoformSettings } from '@jbrowse/plugin-canvas'
 
 // an NCBI-style GFF3's `region` row would otherwise paint the lane end to end
 const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])
 
 export function laneGeneFeatures(
   features: Feature[],
-  canonical?: CanonicalTranscripts,
+  isoforms: IsoformSettings,
 ) {
   const unique = dedupe(features, f => f.id())
   // lowercased as the feature track admits, or a GFF3 `Gene` is no gene here
@@ -31,45 +29,37 @@ export function laneGeneFeatures(
   const genes = unique.filter(f => typeOf(f).endsWith('gene'))
   return (
     genes.length ? genes : unique.filter(f => !CONTAINER_TYPES.has(typeOf(f)))
-  ).map(feature => new LaneGene(feature, canonical))
+  ).map(feature => new LaneGene(feature, isoforms))
 }
 
 /**
- * The tags the track's own feature display ranks isoforms by, so the lane
- * draws the transcript that track draws.
+ * What the gene track's own feature display ranks isoforms by, read as that
+ * display reads it, so the lane draws the transcript that track draws.
  */
-export function trackCanonicalTranscripts(
-  entry: TrackConfigEntry | undefined,
-): CanonicalTranscripts {
+export function laneIsoformSettings(entry?: TrackConfigEntry): IsoformSettings {
   const displays = Array.isArray(entry?.displays)
     ? (entry.displays as Record<string, unknown>[])
     : []
-  const display = displays.find(
-    d =>
-      d.canonicalTranscriptField !== undefined ||
-      d.canonicalTranscriptTags !== undefined,
-  )
-  return {
-    field:
-      typeof display?.canonicalTranscriptField === 'string'
-        ? display.canonicalTranscriptField
-        : DEFAULT_CANONICAL_TRANSCRIPTS.field,
-    tags: Array.isArray(display?.canonicalTranscriptTags)
-      ? display.canonicalTranscriptTags.map(String)
-      : DEFAULT_CANONICAL_TRANSCRIPTS.tags,
-  }
+  const { transcriptTypes, canonicalTranscriptField, canonicalTranscriptTags } =
+    pickDisplayConfig({
+      ...(entry?.displayDefaults as Record<string, unknown> | undefined),
+      ...displays.find(d => d.type === 'LinearBasicDisplay'),
+    })
+  return { transcriptTypes, canonicalTranscriptField, canonicalTranscriptTags }
 }
+
+const DEFAULT_ISOFORM_SETTINGS = laneIsoformSettings()
 
 export class LaneGene {
   private resolved?: GeneGlyphShape
 
   constructor(
     readonly feature: Feature,
-    readonly canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
+    readonly isoforms: IsoformSettings = DEFAULT_ISOFORM_SETTINGS,
   ) {}
 
   get shape() {
-    this.resolved ??= geneGlyphShape(this.feature, this.canonical)
+    this.resolved ??= geneGlyphShape(this.feature, this.isoforms)
     return this.resolved
   }
 
@@ -131,8 +121,6 @@ function subtractIntervals(
   return out
 }
 
-// A gene draws its representative transcript, as the feature track's
-// `longestCoding` does: a union of every isoform's exons is no molecule.
 export interface GeneGlyphShape {
   // the representative isoform, or the gene where no child is a transcript
   transcript: Feature
@@ -147,14 +135,9 @@ function spanOf(f: Feature): GlyphSpan {
 
 export function geneGlyphShape(
   feature: Feature,
-  canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
+  isoforms: IsoformSettings = DEFAULT_ISOFORM_SETTINGS,
 ): GeneGlyphShape {
-  const transcript =
-    representativeIsoform(feature, {
-      transcriptTypes: GENE_GLYPH_DEFAULTS.transcriptTypes,
-      canonicalTranscriptField: canonical.field,
-      canonicalTranscriptTags: [...canonical.tags],
-    }) ?? feature
+  const transcript = representativeIsoform(feature, isoforms) ?? feature
   const subs = getSubfeatures(transcript)
   const cds = subs.filter(isCDS).map(spanOf)
   if (cds.length) {

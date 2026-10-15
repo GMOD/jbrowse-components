@@ -38,6 +38,7 @@ import {
   geneGlyphGeometry,
   geneGlyphShape,
   laneGeneFeatures,
+  laneIsoformSettings,
 } from '../src/MultiWaySyntenyDisplay/geneGlyph.ts'
 import {
   decideLaneFrames,
@@ -255,6 +256,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
         (await features(adapter, { ...region, refName, assemblyName: a })).map(
           f => new SimpleFeature(f.toJSON()),
         ),
+        laneIsoformSettings(),
       )
       geneCache.set(key, genes)
     }
@@ -339,8 +341,8 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
         geneCount++
         const span = lane.spanOf(
           gene.feature.get('refName'),
-          gene.feature.get('start'),
-          gene.feature.get('end'),
+          gene.drawn.get('start'),
+          gene.drawn.get('end'),
         )
         if (
           span &&

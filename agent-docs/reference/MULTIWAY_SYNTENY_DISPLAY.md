@@ -83,8 +83,9 @@ cost is linear in lanes.
   orientation is its gene's own strand. A star source indexes its anchor alone
   and gets no such fetch.
 - **A lane gene draws its representative transcript**, the one the feature
-  track's `longestCoding` draws (`representativeIsoform`), ranked by the gene
-  track's own canonical tags. A union of every isoform's exons is no molecule
+  track's `longestCoding` draws (`representativeIsoform`), ranked by the
+  transcript types and canonical tags the gene track's own feature display
+  reads (`laneIsoformSettings`). A union of every isoform's exons is no molecule
   (`geneGlyphMode.ts`). The lane places introns, the arrow, the label and the
   placement claim on that transcript's extent, and draws nothing for a
   childless transcript beside it, an `lnc_RNA` the feature track draws on its

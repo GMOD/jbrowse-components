@@ -27,12 +27,12 @@ function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
   )
 }
 
-type IsoformConfig = Pick<
+export type IsoformSettings = Pick<
   DisplayConfig,
   'transcriptTypes' | 'canonicalTranscriptField' | 'canonicalTranscriptTags'
 >
 
-function transcriptTypeSet(config: IsoformConfig) {
+function transcriptTypeSet(config: IsoformSettings) {
   return new Set(config.transcriptTypes.map(t => t.toLowerCase()))
 }
 
@@ -46,7 +46,7 @@ function getIsoforms(
 
 // Scored once per child: the ranking reads these for every gene that stacks
 // more than one child, not only for the ones `longestCoding` collapses.
-function scoreIsoforms(features: Feature[], config: IsoformConfig) {
+function scoreIsoforms(features: Feature[], config: IsoformSettings) {
   const score = isoformScorer(featureIsoformReader, {
     field: config.canonicalTranscriptField,
     tags: config.canonicalTranscriptTags,
@@ -66,7 +66,10 @@ function rankIsoforms(isoforms: Feature[], scores: Scores) {
  * The isoform `longestCoding` draws for a gene, or undefined where no child is
  * a transcript and the gene is its own.
  */
-export function representativeIsoform(feature: Feature, config: IsoformConfig) {
+export function representativeIsoform(
+  feature: Feature,
+  config: IsoformSettings,
+) {
   const transcriptTypes = transcriptTypeSet(config)
   const isoforms = getSubfeatures(feature).filter(sub =>
     isIsoform(sub, transcriptTypes),

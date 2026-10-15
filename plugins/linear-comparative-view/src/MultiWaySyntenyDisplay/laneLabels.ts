@@ -64,7 +64,7 @@ function drawnNames(
   for (const { feature, drawn } of genes) {
     const label = labelOf(feature)
     const span = lane.spanOf(
-      drawn.get('refName'),
+      feature.get('refName'),
       drawn.get('start'),
       drawn.get('end'),
     )

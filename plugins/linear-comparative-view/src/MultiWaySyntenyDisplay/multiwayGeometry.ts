@@ -915,7 +915,7 @@ function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   const onRef = new Map<string, { spans: Span[]; drawn: DrawnGene[] }>()
   for (const d of drawn) {
     const transcript = d.gene.drawn
-    const ref = lane.canon(transcript.get('refName'))
+    const ref = lane.canon(d.gene.feature.get('refName'))
     const genes = onRef.get(ref) ?? { spans: [], drawn: [] }
     genes.spans.push([transcript.get('start'), transcript.get('end')])
     genes.drawn.push(d)
@@ -1027,7 +1027,7 @@ export function buildLaneCells({
   for (const gene of genes) {
     const transcript = gene.drawn
     const span = lane.spanOf(
-      transcript.get('refName'),
+      gene.feature.get('refName'),
       transcript.get('start'),
       transcript.get('end'),
     )
@@ -1073,11 +1073,12 @@ export function buildLaneCells({
         stroke,
       )
     }
-    const { drawn: transcript } = gene
+    const name = getFeatureName(feature)
+    const transcriptName = getFeatureName(gene.drawn)
     const label = lines(
-      getFeatureName(feature),
-      transcript === feature ? undefined : getFeatureName(transcript),
-      locOn(lane, refName, transcript.get('start'), transcript.get('end')),
+      name,
+      transcriptName === name ? undefined : transcriptName,
+      locOn(lane, refName, feature.get('start'), feature.get('end')),
     )
     for (const [x1, x2] of pieces) {
       glyphs.hits.push({
