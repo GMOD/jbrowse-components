@@ -10,9 +10,7 @@ import {
 import {
   addDisposer,
   getParent,
-  getSnapshot,
   isAlive,
-  isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
@@ -26,14 +24,11 @@ import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
 import { invokeIpc } from './ipc.ts'
 
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
 import type { Track } from '@jbrowse/text-indexing-core'
-import type { indexType } from '@jbrowse/text-indexing/util'
 
 // The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
 // model; this is the slice it reaches for. One typed contract in place of the
@@ -42,7 +37,6 @@ import type { indexType } from '@jbrowse/text-indexing/util'
 export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
-    aggregateTextSearchAdapters: AggregateEntry[]
   }
   session: SessionWithDrawerWidgets & { trackBasesById: Map<string, Track> }
   updateTrackBase: (trackConf: {
@@ -65,7 +59,6 @@ interface TrackTextIndexing {
   exclude: string[]
   assemblies: string[]
   tracks: string[] // trackIds
-  indexType: indexType
 }
 
 export interface TextJobsEntry {
@@ -106,39 +99,6 @@ function indexedTrackConf(
   }
 }
 
-type TextSearchConf = ReturnType<typeof createTextSearchConf>
-type AggregateEntry = AnyConfigurationModel | TextSearchConf
-
-// an assembly's aggregate index is the trix covering it alone, whoever wrote
-// it, so a re-index replaces a CLI-built one as well as its own last run
-function isAggregateIndexOf(entry: AggregateEntry, assemblyName: string) {
-  const { type, assemblyNames } = (
-    isStateTreeNode(entry) ? getSnapshot(entry) : entry
-  ) as Partial<TextSearchConf>
-  return (
-    type === 'TrixTextSearchAdapter' &&
-    assemblyNames?.length === 1 &&
-    assemblyNames[0] === assemblyName
-  )
-}
-
-function addAggregateTextSearchConf(
-  adapters: AggregateEntry[],
-  { assemblyName, outLocation }: { assemblyName: string; outLocation: string },
-) {
-  const trixConf = createTextSearchConf(
-    `${assemblyName}-index`,
-    [assemblyName],
-    outLocation,
-  )
-  const foundIdx = adapters.findIndex(x => isAggregateIndexOf(x, assemblyName))
-  if (foundIdx === -1) {
-    adapters.push(trixConf)
-  } else {
-    adapters[foundIdx] = trixConf
-  }
-}
-
 // the byte counts behind the fraction: a percentage alone doesn't say whether
 // the rest is seconds or minutes
 function statusText(status: RpcStatus) {
@@ -160,7 +120,7 @@ function statusText(status: RpcStatus) {
  * Desktop text-indexing job queue: tracks the running job with its progress and
  * status message, plus the list of queued indexing jobs.
  */
-export default function jobsModelFactory(_pluginManager: PluginManager) {
+export default function jobsModelFactory() {
   return types
     .model('JobsManager', {})
     .volatile(() => ({
@@ -209,12 +169,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        */
       get session() {
         return this.root.session
-      },
-      /**
-       * #getter
-       */
-      get aggregateTextSearchAdapters() {
-        return this.root.jbrowse.aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -307,7 +261,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           exclude,
           attributes,
           assemblies,
-          indexType,
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const controller = new AbortController()
@@ -338,51 +291,36 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             tracks: trackConfigs,
             policy: { attributes, exclude },
             assemblies,
-            indexType,
             outLocation,
             signal: controller.signal,
             statusCallback: status => {
               this.reportStatus(entry.name, status)
             },
           })
-          if (indexType === 'perTrack') {
-            // iterate the configs that were actually indexed, not the raw
-            // requested trackIds: a track filtered out for an unsupported
-            // adapter (or since-deleted) must not get a "success" notice and a
-            // textSearchAdapter config pointing at an .ix that was never written
-            for (const { trackId } of trackConfigs) {
-              // re-found now, not the pre-RPC trackConfigs entry: indexing ran
-              // for minutes, and writing that stale copy back would revert any
-              // edit made to the track while it was indexing
-              const current = self.session.trackBasesById.get(trackId)
-              // and the notice goes with the write. A track deleted during the
-              // minutes the run took gets no textSearchAdapter, so reporting it
-              // as indexed named a track that is gone and an .ix nothing points
-              // at.
-              if (current) {
-                self.root.updateTrackBase(
-                  indexedTrackConf(current, {
-                    assemblies,
-                    attributes,
-                    exclude,
-                    outLocation,
-                  }),
-                )
-                session.notify(
-                  `Successfully indexed track with trackId: ${trackId}`,
-                  'success',
-                )
-              }
-            }
-          } else {
-            for (const assemblyName of assemblies) {
-              addAggregateTextSearchConf(self.aggregateTextSearchAdapters, {
-                assemblyName,
-                outLocation,
-              })
-
+          // iterate the configs that were actually indexed, not the raw
+          // requested trackIds: a track filtered out for an unsupported
+          // adapter (or since-deleted) must not get a "success" notice and a
+          // textSearchAdapter config pointing at an .ix that was never written
+          for (const { trackId } of trackConfigs) {
+            // re-found now, not the pre-RPC trackConfigs entry: indexing ran
+            // for minutes, and writing that stale copy back would revert any
+            // edit made to the track while it was indexing
+            const current = self.session.trackBasesById.get(trackId)
+            // and the notice goes with the write. A track deleted during the
+            // minutes the run took gets no textSearchAdapter, so reporting it
+            // as indexed named a track that is gone and an .ix nothing points
+            // at.
+            if (current) {
+              self.root.updateTrackBase(
+                indexedTrackConf(current, {
+                  assemblies,
+                  attributes,
+                  exclude,
+                  outLocation,
+                }),
+              )
               session.notify(
-                `Successfully indexed assembly: ${assemblyName}`,
+                `Successfully indexed track with trackId: ${trackId}`,
                 'success',
               )
             }

@@ -81,7 +81,6 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                           defaultFeatureTypesToExclude,
                         assemblies: assemblyNames,
                         tracks: [trackId],
-                        indexType: 'perTrack',
                       },
                       // jobs are keyed by name; trackId is unique so two tracks
                       // sharing a display name won't collide

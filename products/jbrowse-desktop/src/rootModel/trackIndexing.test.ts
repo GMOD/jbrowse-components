@@ -93,7 +93,6 @@ async function runIndexJob(
       exclude: [],
       assemblies: ['volvox'],
       tracks: [trackId],
-      indexType: 'perTrack',
     },
   })
   await jest.advanceTimersByTimeAsync(QUEUE_DELAY_MS)

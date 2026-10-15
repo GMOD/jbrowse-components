@@ -6,7 +6,6 @@ import jobsModelFactory from './indexJobsModel.ts'
 import type { JobState } from '../../../plugins/jobs-management/src/JobsListWidget/jobModel.ts'
 import type { JobInput } from '../../../plugins/jobs-management/src/JobsListWidget/model.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 import type { Track } from '@jbrowse/text-indexing-core'
 
@@ -22,8 +21,7 @@ jest.mock('./ipc.ts', () => ({
 }))
 jest.mock('node:fs', () => ({ mkdirSync: jest.fn() }))
 
-const pluginManager = {} as PluginManager
-const JobsManager = jobsModelFactory(pluginManager)
+const JobsManager = jobsModelFactory()
 
 // Every method of the widget this model drives. Naming them against the
 // plugin's published JobsListModel is what keeps the fake below honest: rename
@@ -87,7 +85,6 @@ function makeEntry(overrides: Partial<TextJobsEntry> = {}): TextJobsEntry {
       exclude: ['CDS', 'exon'],
       assemblies: ['volvox'],
       tracks: ['t1'],
-      indexType: 'perTrack',
     },
     ...overrides,
   }
@@ -115,7 +112,6 @@ function setup({
       return new Map(tracks.map(t => [t.trackId, t]))
     },
   }
-  const aggregateTextSearchAdapters: Record<string, unknown>[] = []
 
   // replace-by-index, not a mutation of the found entry, so this fake
   // exercises the identity change the hydration cache (ADR-031) needs to see
@@ -131,7 +127,6 @@ function setup({
     .volatile(() => ({
       jbrowse: {
         rpcManager: { call },
-        aggregateTextSearchAdapters,
       },
       session,
       updateTrackBase,
@@ -143,7 +138,6 @@ function setup({
     jobsManager: root.jobsManager,
     widget,
     session,
-    aggregateTextSearchAdapters,
     call,
   }
 }
@@ -270,43 +264,6 @@ test('a track deleted while the run was going gets no success notice', async () 
 
   expect(session.notify).not.toHaveBeenCalled()
   expect(session.notifyError).not.toHaveBeenCalled()
-})
-
-test("an aggregate run replaces its assembly's index and no other", async () => {
-  const { jobsManager, aggregateTextSearchAdapters } = setup()
-  const trix = (assemblyNames: string[], localPath: string) => ({
-    type: 'TrixTextSearchAdapter',
-    assemblyNames,
-    ixFilePath: { localPath, locationType: 'LocalPathLocation' },
-  })
-  const both = trix(['volvox', 'other'], 'both.ix')
-  const other = trix(['other'], 'other.ix')
-  aggregateTextSearchAdapters.push(
-    trix(['volvox'], 'trix/volvox.ix'),
-    both,
-    other,
-  )
-
-  jobsManager.queueJob(
-    makeEntry({
-      indexingParams: {
-        ...makeEntry().indexingParams,
-        indexType: 'aggregate',
-      },
-    }),
-  )
-  await jobsManager.runJob()
-
-  expect(aggregateTextSearchAdapters).toEqual([
-    expect.objectContaining({
-      assemblyNames: ['volvox'],
-      ixFilePath: expect.objectContaining({
-        localPath: expect.stringMatching(/volvox-index\.ix$/),
-      }),
-    }),
-    both,
-    other,
-  ])
 })
 
 test('a job naming a since-deleted track is dequeued, not left stuck', async () => {

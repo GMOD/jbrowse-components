@@ -22,7 +22,6 @@ interface RootWithJobsManager {
       indexingParams: IndexingAttr & {
         assemblies: string[]
         tracks: string[]
-        indexType: 'perTrack' | 'aggregate'
       }
     }) => void
   }
@@ -45,7 +44,6 @@ function doTextIndexTrack({
       ...attr,
       assemblies: [assembly],
       tracks: [trackId],
-      indexType: 'perTrack',
     },
     // jobs are keyed by name; trackId is unique so two tracks sharing a
     // display name won't collide

@@ -157,7 +157,7 @@ export default function rootModelFactory({
     assemblyConfigSchema,
   })
   const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
-  const JobsManager = jobsModelFactory(pluginManager)
+  const JobsManager = jobsModelFactory()
   return (
     types
       .compose(
