@@ -104,8 +104,8 @@ pixel whatever the display's density, so the two capture routes and every
 machine agree), `open` (recovery path that works with no session or a broken
 renderer; waits for the new session identity before answering; bare form lists
 recent sessions), and `docs` (`live-model`, `recipes`, `hosted-data`,
-`session-spec`, `automating`, plus `model:<Name>` / `config:<Name>` for every
-documented type, compact pages `pnpm autogen` writes to
+`session-spec`, `plots`, `automating`, plus `model:<Name>` / `config:<Name>` for
+every documented type, compact pages `pnpm autogen` writes to
 `docs/typeDocs.generated.json` from the same pass as the website reference —
 bundled at build time, readable while the app is closed; a long topic answers
 with its headings and takes a `section`, and `live-model` — the one every agent

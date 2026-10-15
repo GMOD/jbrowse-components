@@ -136,6 +136,15 @@ it('every served topic names a file that is there', () => {
   }
 })
 
+// the description is the only topic list an agent sees before calling docs
+it('the docs tool description names every served topic', () => {
+  const { description } = MCP_TOOLS.find(t => t.name === 'docs')!
+  const unnamed = Object.keys(DOC_TOPICS).filter(
+    topic => !description.includes(`"${topic}"`),
+  )
+  expect(unnamed).toEqual([])
+})
+
 // The guide is what "read docs topic live-model FIRST" asks for, and it is
 // 22 KB, so it is served as a contract plus a table of contents of the deep
 // dives rather than whole or as headings alone. The headings the split and the
