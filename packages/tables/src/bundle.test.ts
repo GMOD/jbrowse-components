@@ -63,7 +63,10 @@ let code: string
 
 // what a host reads off the wire, its nested columns arrays again
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const read = (wire: string) => fromWire(JSON.parse(wire)) as any
+const read = (wire: string) =>
+  fromWire(JSON.parse(wire), sandbox.jbrowseBytes as Uint8Array) as any
+
+let sandbox: Record<string, unknown>
 
 beforeAll(() => {
   const out = path.join(mkdtempSync(path.join(tmpdir(), 'tables-')), 'b.js')
@@ -73,7 +76,7 @@ beforeAll(() => {
     { env: { ...process.env, MINIFY: '0' } },
   )
   code = readFileSync(out, 'utf8')
-  const sandbox: Record<string, unknown> = { jbrowseHost: { readRange } }
+  sandbox = { jbrowseHost: { readRange } }
   vm.createContext(sandbox)
   vm.runInContext('delete globalThis.Intl', sandbox)
   vm.runInContext(code, sandbox)
@@ -160,22 +163,36 @@ test.each([
     expect(bareVariants).toEqual(directVariants)
     expect(bare.cells).toEqual(direct.cells)
     expect(bare.legend).toEqual(direct.legend)
-    expect(bare.info).toEqual(JSON.parse(JSON.stringify(direct.info)))
+    expect(bare.info).toEqual(direct.info)
   },
 )
 
-test('a nested column crosses as its rows’ lengths and values, whatever lengths they share', async () => {
+test('numbers cross as bytes, repeated text as codes, and a nested column as its rows’ lengths and values', async () => {
   const wire = JSON.parse(await jbrowse.variants(JSON.stringify(DOG_VCF)))
+  const bytes = sandbox.jbrowseBytes as Uint8Array
   const direct = await createTablesEngine().variants(DOG_VCF)
+  const kind = (column: object) => Object.keys(column)[0]
+  expect(kind(wire.variants.start)).toBe('$i32')
+  expect(kind(wire.info.BaseQRankSum)).toBe('$f64')
+  expect(kind(wire.info.POSITIVE_TRAIN_SITE)).toBe('$lgl')
+  expect(kind(wire.cells.genotype)).toBe('$dict')
+  expect(Array.isArray(wire.variants.id)).toBe(true)
+  expect(fromWire(wire.variants.start, bytes)).toEqual(direct.variants.start)
+  // a missing value crosses as NA and reads back null
+  expect(direct.info.BaseQRankSum).toContain(null)
+  expect(fromWire(wire.info.BaseQRankSum, bytes)).toEqual(
+    direct.info.BaseQRankSum,
+  )
+  expect(fromWire(wire.cells.genotype, bytes)).toEqual(direct.cells.genotype)
   const ac = direct.info.AC as (number[] | null)[]
   expect(ac.some(v => v?.length === 2)).toBe(true)
-  expect(wire.info.AC).toEqual({
-    $list: {
-      lengths: ac.map(v => v?.length ?? -1),
-      values: ac.flatMap(v => v ?? []),
-    },
-  })
-  expect(wire.info.AN).toEqual(direct.info.AN)
+  expect(kind(wire.info.AC)).toBe('$list')
+  expect(fromWire(wire.info.AC.$list.lengths, bytes)).toEqual(
+    ac.map(v => v?.length ?? -1),
+  )
+  expect(fromWire(wire.info.AC, bytes)).toEqual(ac)
+  // only text and the tables' shape are left to parse
+  expect(JSON.stringify(wire).length).toBeLessThan(bytes.length)
 })
 
 test('the bundle reads a file under its alias through an assembly, in a bare host', async () => {

@@ -4,9 +4,14 @@ import { alignmentColors, createTablesEngine } from './index.ts'
 import { toWire } from './wire.ts'
 
 // The bundle's interface to a bare host: `jbrowse.<table>(argsJson)` resolves
-// to the tables as `toWire` writes them.
+// to the tables' JSON as `toWire` writes it, and leaves their bytes in
+// `jbrowseBytes`, a Uint8Array, until the next call.
 
-const send = (value: unknown) => JSON.stringify(toWire(value))
+const send = (value: unknown) => {
+  const { json, bytes } = toWire(value)
+  ;(globalThis as Record<string, unknown>).jbrowseBytes = bytes
+  return json
+}
 
 const engine = createTablesEngine()
 
