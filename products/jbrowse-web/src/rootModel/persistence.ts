@@ -327,6 +327,12 @@ function configSnapshotForReload(self: WebRootModel) {
 // reload restores it. Also triggers reloadPluginManager when pluginsUpdated
 // flips.
 //
+// The reload rides on this autorun, after the write, on purpose. The
+// replacement app writes nothing until its plugins load, so a page refresh in
+// that window restores whatever this wrote last; requested anywhere earlier,
+// that is the session without the plugin just installed. The throttle also
+// folds the plugin store's remove-then-add update into one reload.
+//
 // The reload is requested whether or not that write worked, and deliberately:
 // what the replacement app restores from is the snapshot handed to the callback
 // (reloadSessionLoader presets it as the new loader's sessionSource), not the
