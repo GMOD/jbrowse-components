@@ -19,10 +19,60 @@
       * {
         overscroll-behavior-x: none;
       }
+      /* the app's first frame in the default light theme, painted before any
+         script runs; src/bootShell.ts removes it when the app renders */
+      #boot-shell {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+      }
+      .no-boot-shell #boot-shell {
+        display: none;
+      }
+      .boot-shell-header {
+        height: 48px;
+        background: #0d233f;
+        box-shadow:
+          0 2px 4px -1px rgba(0, 0, 0, 0.2),
+          0 4px 5px 0 rgba(0, 0, 0, 0.14),
+          0 1px 10px 0 rgba(0, 0, 0, 0.12);
+      }
+      .boot-shell-view {
+        margin: 2px;
+        padding: 28px 4px 4px;
+        border-radius: 4px;
+        background: #4f1545;
+        box-shadow:
+          0 7px 8px -4px rgba(0, 0, 0, 0.2),
+          0 12px 17px 2px rgba(0, 0, 0, 0.14),
+          0 5px 22px 4px rgba(0, 0, 0, 0.12);
+      }
+      .boot-shell-view > div {
+        height: 68px;
+        border-radius: 4px;
+        background: #fff;
+      }
     </style>
+    <script>
+      try {
+        var name = localStorage.getItem('themeName')
+        var mode = localStorage.getItem('themeMode')
+        if (
+          (name && name !== 'default') ||
+          (mode && mode !== 'light') ||
+          localStorage.getItem('themeModeOverride') === 'dark'
+        ) {
+          document.documentElement.classList.add('no-boot-shell')
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="boot-shell" aria-hidden="true">
+      <div class="boot-shell-header"></div>
+      <div class="boot-shell-view"><div></div></div>
+    </div>
     <div id="root"></div>
     <!--
       This HTML file is a template.

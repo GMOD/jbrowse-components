@@ -1,8 +1,10 @@
 import { CircularProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useBootShell } from '../bootShell.ts'
+
 const Loading = observer(function Loading() {
-  return (
+  return useBootShell() ? null : (
     <CircularProgress
       disableShrink
       style={{
