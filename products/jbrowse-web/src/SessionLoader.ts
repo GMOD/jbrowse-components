@@ -29,9 +29,8 @@ import {
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { RELOAD_LOCK_WAIT_MS, claimSessionId } from './sessionLock.ts'
-import { arePluginsRemembered } from './trustedPlugins.ts'
+import { arePluginsTrusted } from './trustedPlugins.ts'
 import {
-  checkPlugins,
   fromUrlSafeB64,
   readConf,
   readSessionFromDynamo,
@@ -561,16 +560,11 @@ const SessionLoader = types
           dropVendoredPlugins(snap.sessionPlugins ?? []),
           (self.runtimePlugins ?? []).map(r => r.definition),
         )
-        // cheap local checks first: checkPlugins hits the plugin store over the
-        // network for any plugin not on a trusted host, and it throws when the
-        // store is unreachable. That throw lands in the catch below and replaces
-        // the session with an error — so a store outage must not be able to eat
-        // an already-trusted session (the plugin-install reload path, which
-        // always passes userAcceptedConfirmation, is the common case)
+        // the plugin-install reload path always passes
+        // userAcceptedConfirmation, so a store outage cannot eat it
         if (
           userAcceptedConfirmation ||
-          arePluginsRemembered(sessionPlugins) ||
-          (await checkPlugins(sessionPlugins))
+          (await arePluginsTrusted(sessionPlugins))
         ) {
           const { records, failures } = await loadPluginRecords(sessionPlugins)
           self.addPluginLoadFailures(failures)
@@ -613,16 +607,7 @@ const SessionLoader = types
         // one (jbrowse.org demos do) needs a needless "trust this plugin" click.
         const configPlugins = dropVendoredPlugins(config.plugins ?? [])
         const isCrossOrigin = configUri.origin !== window.location.origin
-        // cheap local check first, for the same reason as loadSession:
-        // checkPlugins fetches the plugin store and THROWS when it is
-        // unreachable, and that throw becomes a configError — a dead app. An
-        // already-remembered plugin must not be able to die that way just
-        // because the store is down.
-        if (
-          isCrossOrigin &&
-          !arePluginsRemembered(configPlugins) &&
-          !(await checkPlugins(configPlugins))
-        ) {
+        if (isCrossOrigin && !(await arePluginsTrusted(configPlugins))) {
           self.setSessionTriaged({
             snap: config,
             origin: 'config',

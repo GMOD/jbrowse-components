@@ -5,6 +5,8 @@ import {
   localStorageSetJSON,
 } from '@jbrowse/core/util'
 
+import { checkPlugins } from './util.ts'
+
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 // Persisted "Yes, I trust it" decisions from the cross-origin plugin warning
@@ -53,6 +55,16 @@ export function arePluginsRemembered(defs: PluginDefinition[]) {
     const url = resolvedPluginUrl(d)
     return url !== undefined && trusted.has(url)
   })
+}
+
+/**
+ * Whether the plugins may load without asking: remembered here, or vouched for
+ * by checkPlugins. The local check goes first because checkPlugins fetches the
+ * plugin store and throws when it is unreachable, and an already-remembered
+ * plugin must not fail its load because the store is down.
+ */
+export async function arePluginsTrusted(defs: PluginDefinition[]) {
+  return arePluginsRemembered(defs) || checkPlugins(defs)
 }
 
 // Revokes every remembered plugin approval on this origin. No UI reaches this —
