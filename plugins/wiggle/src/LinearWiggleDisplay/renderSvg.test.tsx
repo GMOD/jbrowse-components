@@ -1,5 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
@@ -306,31 +307,26 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     ).not.toContain('stroke="#0008"')
   })
 
-  it('draws the overlay color key only when it applies', async () => {
-    const shown = render(
-      await renderSvg(
-        makeModel({ isOverlay: true, ...withKey(true) }, { showLabels: false }),
-      ),
-    )
-    expect(shown).toContain('>a</text>')
-    const dismissed = render(
-      await renderSvg(
-        makeModel(
-          { isOverlay: true, ...withKey(false) },
-          { showLabels: false },
-        ),
-      ),
-    )
-    // overlay draws no row labels, so with the key off there is no 'a' anywhere
-    expect(dismissed).not.toContain('>a</text>')
+  // The exporting view draws the key beside the plot through `SvgLegend`, so
+  // the overlay's own export carries none, and draws no row labels either
+  it('leaves the overlay color key to the view, which draws it only when shown', async () => {
+    const overlay = (showLegend: boolean) =>
+      makeModel(
+        { isOverlay: true, ...withKey(showLegend) },
+        { showLabels: false },
+      )
+    const keyOf = (showLegend: boolean) =>
+      render(<SvgLegend model={overlay(showLegend)} width={800} height={100} />)
+    expect(render(await renderSvg(overlay(true)))).not.toContain('>a</text>')
+    expect(keyOf(true)).toContain('>a</text>')
+    expect(keyOf(false)).not.toContain('>a</text>')
   })
 
-  // The caption and the key are pinned to the content's right edge and both
-  // draw from y=0, so a density track whose rows carry their own colors —
-  // which is exactly when a short-rowed track gets BOTH — used to print the
-  // key on top of the score range. The caption is the shell's, for a scale
-  // that rules no band, and the shell starts the key below it.
-  it('stacks the color key below the score caption rather than over it', async () => {
+  // The caption is pinned to the content's right edge from y=0, where a key
+  // floated over the plot used to print on top of it whenever a short-rowed
+  // density track's rows carried their own colors. The key now sits beside the
+  // plot, so the caption has the corner to itself.
+  it('keeps the score caption in the corner and no key over it', async () => {
     const html = render(
       await renderSvg(
         makeModel({
@@ -341,7 +337,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
       ),
     )
     expect(html).toContain('[0, 10]')
-    expect(html).toContain('<g transform="translate(0 16)">')
+    expect(html).not.toContain('color-legend')
   })
 
   // Shared with the on-screen path so an exported figure matches the track.

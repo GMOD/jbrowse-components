@@ -217,8 +217,8 @@ test('export svg of synteny with gridlines', async () => {
   })
 }, 45000)
 
-// a ramp mode floats its key over the band, so an export taken in one has to
-// carry it — otherwise the figure has no key to its ribbon colors
+// a ramp mode keys its ribbon colors, so an export taken in one carries the key
+// beside the first band — otherwise the figure has no key to its colors
 test('export svg of synteny bakes in the color-by legend', async () => {
   await mockConsoleWarn(async () => {
     const { findByTestId, findAllByText, findByText, view } = await createView({

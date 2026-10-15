@@ -332,10 +332,14 @@ test('draws the tracks, the header and the ruler at the reserved size', async ()
   expect(svg.textContent).toContain('volvox')
   expect(svg.textContent).toContain('ctgA')
 
-  // width is the view plus both gutters — a figure narrower than
-  // `view.width + margin * 2` is one whose wiggle y-axis is clipped
+  // width is the view, both margins and the key's gutter (its 10px inset and
+  // its paper) — a figure narrower than `view.width + margin * 2` is one whose
+  // wiggle y-axis is clipped
   const width = Number(svg.getAttribute('width'))
-  expect(width).toBe(VIEW_WIDTH + 100)
+  const keyPaper = svg.querySelector('[data-testid="color-legend"] rect')!
+  expect(width).toBe(
+    VIEW_WIDTH + 100 + 10 + Number(keyPaper.getAttribute('width')),
+  )
   // and the box the hook reports is the box it drew, which is what a host
   // reserves space with
   expect(text('size')).toBe(`${width}x${svg.getAttribute('height')}`)

@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { RowKeys, buildRowTable } from '@jbrowse/render-core/marks'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
@@ -278,16 +279,17 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
 
   // The group stripe is the only thing carrying row identity once the rows are
   // too short to write their names, so the key naming its colors has to reach
-  // the exported figure too.
-  it('carries the row-group key into the export', async () => {
+  // the exported figure too, beside the plot where the view draws it.
+  it('exports the row-group key', () => {
     const html = renderResult(
-      await renderSvg(
-        makeModel({
+      <SvgLegend
+        model={makeModel({
           showLegend: true,
           legendSpec: legendSpecOf([rowColorKey]),
-        }),
-        {},
-      ),
+        })}
+        width={800}
+        height={100}
+      />,
     )
     expect(html).toContain('>Village dog</text>')
     expect(html).toContain('>Wolf</text>')
@@ -298,10 +300,10 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
 
   // With both vocabularies present each gets its heading, so a reader can tell
   // which axis a swatch is about.
-  it('titles both sections when the feature key and the group key coexist', async () => {
+  it('titles both sections when the feature key and the group key coexist', () => {
     const html = renderResult(
-      await renderSvg(
-        makeModel({
+      <SvgLegend
+        model={makeModel({
           showLegend: true,
           legendSpec: legendSpecOf([
             {
@@ -312,9 +314,10 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
             },
             rowColorKey,
           ]),
-        }),
-        {},
-      ),
+        })}
+        width={800}
+        height={100}
+      />,
     )
     expect(html).toContain('>Feature colors</text>')
     expect(html).toContain('>Group</text>')
