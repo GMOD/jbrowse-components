@@ -1,0 +1,66 @@
+{
+  "id": "bgzf-pool-bam",
+  "measured": "2026-10-15",
+  "source": {
+    "kind": "jb2bench",
+    "from": "results/bgzfpool.json",
+    "repro": "In ~/src/jb2bench, per agent-docs/reference/bgzfpool-linux-runbook.md: build jbrowse-web twice from one tree, once unmodified and once with sharedBgzfWorkerPool() returning Promise.resolve(undefined), serve them on :8010 and :8011, then `node --experimental-strip-types scripts/bgzfpool/endtoend.ts 7`. Headless Chrome on an i9-12900K, jbrowse-components 36cccd4ca2.",
+    "notes": "Five non-overlapping 19 kb pans on chr22_mask per page load, seven reps alternated ABBA. The two time columns are medians over every pan; the speedup is the median of per-pair ratios, so it is typed rather than derived from them. Blob workers were 4/0 on every track. Every row ran with 0.77-1.11 cores of another user's work on the 24-thread box, over jb2bench's 0.5-core gate, kept by the owner's call."
+  },
+  "columns": [
+    { "key": "track", "label": "track" },
+    { "key": "inProcessMs", "label": "in process", "format": "ms" },
+    { "key": "pooledMs", "label": "pooled", "format": "ms" },
+    { "key": "speedup", "label": "paired speedup", "format": "x" }
+  ],
+  "rows": [
+    {
+      "values": {
+        "track": "20x short read",
+        "inProcessMs": 597,
+        "pooledMs": 597,
+        "speedup": 1.0
+      }
+    },
+    {
+      "values": {
+        "track": "200x short read",
+        "inProcessMs": 558,
+        "pooledMs": 594,
+        "speedup": 1.02
+      }
+    },
+    {
+      "values": {
+        "track": "1000x short read",
+        "inProcessMs": 714,
+        "pooledMs": 649,
+        "speedup": 1.1
+      }
+    },
+    {
+      "values": {
+        "track": "20x long read",
+        "inProcessMs": 598,
+        "pooledMs": 598,
+        "speedup": 1.01
+      }
+    },
+    {
+      "values": {
+        "track": "200x long read",
+        "inProcessMs": 580,
+        "pooledMs": 561,
+        "speedup": 1.01
+      }
+    },
+    {
+      "values": {
+        "track": "1000x long read",
+        "inProcessMs": 1277,
+        "pooledMs": 1185,
+        "speedup": 1.09
+      }
+    }
+  ]
+}

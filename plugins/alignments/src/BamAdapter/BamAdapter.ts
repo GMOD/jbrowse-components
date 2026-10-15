@@ -244,11 +244,11 @@ export default class BamAdapter extends BamAdapterBase<BamAdapterConfig> {
           // bounding the sum; see cacheBudgets
           cacheBudget: decompressedBytesBudget,
           // Inflate this file's BGZF blocks across a worker pool instead of on
-          // this thread; measured 1.95x end to end on a 22-view pan/zoom over
-          // 1000x long-read data, same records returned. Shared with the nine
-          // tabix adapters — see bgzfWorkerPool for why it is one pool per JS
-          // context, why the import inside it has to be dynamic, and why it
-          // degrades to inflating in process rather than throwing.
+          // this thread; what it is worth is in reference/BGZF_WORKER_POOL.md.
+          // Shared with the nine tabix adapters — see bgzfWorkerPool for why it
+          // is one pool per JS context, why the import inside it has to be
+          // dynamic, and why it degrades to inflating in process rather than
+          // throwing.
           bgzfWorkerPool: sharedBgzfWorkerPool(),
         }),
       }

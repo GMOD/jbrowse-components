@@ -52,8 +52,26 @@ inflates through libdeflate compiled to wasm, at parity with native `zlib` and
 which is `sharedBgzfWorkerPool()` —
 [four workers](https://github.com/GMOD/bgzf-filehandle/blob/main/docs/worker-pool.md#four-workers-is-not-the-ceiling),
 one pool per JS context, wired into `BamAdapter` and every `TabixIndexedFile`
-site. On BAM it is worth **1.95x** end to end, over a 22-view pan and zoom
-across 1000x long-read data with both arms returning the same 38,246 records.
+site. On BAM a pan through jbrowse-web gains
+1.00-1.10x<!--m:bgzf-pool-bam.speedup.range-->, measured against a build whose
+pool is off:
+
+<!-- BEGIN GENERATED MEASUREMENT bgzf-pool-bam -->
+
+| track            | in process | pooled | paired speedup |
+| ---------------- | ---------- | ------ | -------------- |
+| 20x short read   | 597ms      | 597ms  | 1.00x          |
+| 200x short read  | 558ms      | 594ms  | 1.02x          |
+| 1000x short read | 714ms      | 649ms  | 1.10x          |
+| 20x long read    | 598ms      | 598ms  | 1.01x          |
+| 200x long read   | 580ms      | 561ms  | 1.01x          |
+| 1000x long read  | 1277ms     | 1185ms | 1.09x          |
+
+<!-- END GENERATED MEASUREMENT bgzf-pool-bam -->
+
+These pans follow each other within 600 ms of the last fetch, so
+`FetchVisibleRegions` coalesces them, and that wait rather than the inflate is
+most of every row under 1000x.
 
 Tabix, measured on a 213 MB slice of 1000 Genomes over `chr1`, with the same
 pool, headless Chrome, real HTTP with range requests and arms interleaved:
