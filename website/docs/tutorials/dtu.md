@@ -136,8 +136,10 @@ reads those keys:
 import csv
 import gzip
 
+# satuRn writes NA for a transcript it could not fit
 stats = {r['isoform_id']: r
-         for r in csv.DictReader(open('results.tsv'), delimiter='\t')}
+         for r in csv.DictReader(open('results.tsv'), delimiter='\t')
+         if 'NA' not in (r['dIF'], r['regular_FDR'])}
 
 genes = {}
 called = {}
