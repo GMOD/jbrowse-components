@@ -170,6 +170,20 @@ test('renameQuickstart accepts the name it already has', async () => {
   expect(await invoke('listQuickstarts')).toEqual(['same'])
 })
 
+// a hard link stands in for a case-insensitive disk, where `HG38.json` opens
+// `hg38.json` itself
+test('renameQuickstart does not take its own file for a conflict', async () => {
+  await invoke('addToQuickstartList', writeSessionFile('s.jbrowse'), 'hg38')
+  fs.linkSync(
+    getQuickstartPath(paths, 'hg38'),
+    getQuickstartPath(paths, 'HG38'),
+  )
+
+  await expect(
+    invoke('renameQuickstart', 'hg38', 'HG38'),
+  ).resolves.toBeUndefined()
+})
+
 describe('deleteQuickstart', () => {
   test('leaves a gravestone for one that shipped with the app', async () => {
     const [legacy] = LEGACY_QUICKSTARTS

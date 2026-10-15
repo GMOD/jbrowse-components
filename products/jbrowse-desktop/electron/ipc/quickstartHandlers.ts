@@ -8,7 +8,8 @@ import { ipcHandle } from './channels.ts'
 import type { AppPaths } from '../paths.ts'
 import type { SessionSnap } from './channelTypes.ts'
 
-const { readFile, copyFile, readdir, rename, unlink, writeFile } = fs.promises
+const { readFile, copyFile, readdir, rename, stat, unlink, writeFile } =
+  fs.promises
 
 async function readQuickstart(quickstartPath: string): Promise<SessionSnap> {
   try {
@@ -25,6 +26,13 @@ async function readQuickstart(quickstartPath: string): Promise<SessionSnap> {
 // Node reads as a dotfile with no extension at all (`path.extname('.json')` is
 // `''`). listQuickstarts drops it, and the quickstart is gone with nothing in the
 // UI that could name it again. Refuse the name instead of losing the file.
+// On a case-insensitive disk (macOS, Windows) `HG38.json` is `hg38.json`, so a
+// rename that only changes case finds its own source at the target
+async function isSameFile(a: string, b: string) {
+  const [sa, sb] = await Promise.all([stat(a), stat(b)])
+  return sa.dev === sb.dev && sa.ino === sb.ino
+}
+
 function assertQuickstartName(name: string) {
   if (!name.trim()) {
     throw new Error('A quickstart name cannot be blank')
@@ -84,15 +92,16 @@ export function registerQuickstartHandlers(paths: AppPaths) {
     if (oldName === newName) {
       return
     }
+    const source = getQuickstartPath(paths, oldName)
     const target = getQuickstartPath(paths, newName)
     // rename(2) replaces the destination silently, which is the one thing
     // addToQuickstartList goes out of its way to avoid (COPYFILE_EXCL): renaming
     // onto an existing name would destroy it with no way back. The dialog checks
     // this too, but against the list it loaded, so the check has to be here as
     // well — a race narrows to an error rather than to a lost quickstart.
-    if (fs.existsSync(target)) {
+    if (fs.existsSync(target) && !(await isSameFile(source, target))) {
       throw new Error(`A quickstart named "${newName}" already exists`)
     }
-    await rename(getQuickstartPath(paths, oldName), target)
+    await rename(source, target)
   })
 }
