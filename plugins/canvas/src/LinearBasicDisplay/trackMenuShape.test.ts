@@ -176,9 +176,9 @@ describe('canvas track menu shape', () => {
     const show = subMenuOf(display.trackMenuItems(), 'Show...')
 
     expect(show.map(labelOf)).toEqual([
-      'Show outline',
-      'Show only genes',
-      'Show chevrons',
+      'Outline',
+      'Only genes',
+      'Chevrons',
       'Labels',
       'Auto',
       'Name + description',

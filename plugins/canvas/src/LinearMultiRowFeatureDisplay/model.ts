@@ -617,7 +617,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * Overrides `LegendMixin`'s: an identity key merely waiting for data
-       * must not take the way back to the "Show legend" toggle with it.
+       * must not take the way back to the "Legend" toggle with it.
        */
       get hasLegendKey() {
         return self.colorScales.length > 0 || self.identityLegend.length > 0

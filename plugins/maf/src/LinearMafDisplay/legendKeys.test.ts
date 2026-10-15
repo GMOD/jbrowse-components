@@ -145,7 +145,7 @@ describe('the color key is dismissible, like every other row display', () => {
 
   it('offers the shared row where a key exists', () => {
     const display = heatmapDisplay()
-    expect(rows(display.trackMenuItems())).toContain('Show legend')
+    expect(rows(display.trackMenuItems())).toContain('Legend')
     expect(display.showLegend).toBe(true)
     display.setShowLegend(false)
     expect(display.showLegend).toBe(false)
@@ -154,7 +154,7 @@ describe('the color key is dismissible, like every other row display', () => {
   it('offers nothing in bases mode, which has no key to show', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     expect(display.colorScales).toEqual([])
-    expect(rows(display.trackMenuItems())).not.toContain('Show legend')
+    expect(rows(display.trackMenuItems())).not.toContain('Legend')
   })
 
   it('the heatmap key is one scale named for the rendering', () => {

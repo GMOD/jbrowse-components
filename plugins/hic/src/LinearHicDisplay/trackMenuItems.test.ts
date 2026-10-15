@@ -74,11 +74,12 @@ describe('hic track menu shape', () => {
     const items = buildHicTrackMenuItems(makeSelf())
     const rows = [
       ...subMenuOf(items, 'Show...'),
+      ...subMenuOf(items, 'Layout'),
       ...subMenuOf(items, 'Color scheme'),
       ...subMenuOf(items, 'Normalization'),
     ].filter(i => i.type === 'radio' || i.type === 'checkbox')
 
-    // 3 visibility checkboxes + 12 schemes + 2 scale toggles + 3
+    // 3 visibility and layout checkboxes + 12 schemes + 2 scale toggles + 3
     // normalizations, so the assertion below can't pass by finding no rows
     expect(rows.length).toBe(20)
     expect(rows.map(i => [labelOf(i), staysOpenOnClick(i)])).toEqual(
@@ -160,11 +161,12 @@ describe('hic track menu shape', () => {
     )
     expect(items.map(labelOf)).toEqual([
       'Show...',
+      'Layout',
       'Color scheme',
       'Color range...',
     ])
     expect(subMenuOf(items, 'Show...').map(labelOf)).not.toContain(
-      'Show resolution controls',
+      'Resolution controls',
     )
 
     expect(

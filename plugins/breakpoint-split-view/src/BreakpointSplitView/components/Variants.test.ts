@@ -41,7 +41,7 @@ function context(reversed = false) {
   } as unknown as OverlayContext
 }
 
-test('a junction inside one row follows "Show intra-view links"', () => {
+test('a junction inside one row follows "Intra-view links"', () => {
   expect(variantPaths(context(), true)).toHaveLength(1)
   expect(variantPaths(context(), false)).toHaveLength(0)
 })

@@ -27,7 +27,7 @@ import { getStrokeProps } from '@jbrowse/core/util'
  *
  * Not a per-caller argument because the threshold is the pixel rule this
  * component already owns. Exported so a menu row can say why the grid is absent
- * (see the "Show row separators" toggle).
+ * (see the "Row separators" toggle).
  */
 export const MIN_SEPARATOR_ROW_PX = 4
 

@@ -35,9 +35,7 @@ describe('the color key', () => {
       return show && 'subMenu' in show ? resolveSubMenu(show) : []
     }
     const legendItem = () =>
-      showItems().find(
-        (i: MenuItem) => 'label' in i && i.label === 'Show legend',
-      )
+      showItems().find((i: MenuItem) => 'label' in i && i.label === 'Legend')
 
     expect(legendItem()).toBeUndefined()
 

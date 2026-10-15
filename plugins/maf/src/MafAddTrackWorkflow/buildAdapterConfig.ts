@@ -34,7 +34,7 @@ function bedTabixSummary(summaryLoc: FileLocation | undefined) {
 
 /**
  * The CDS reading frames every format takes the same way: a `BigBedAdapter`
- * over a UCSC `multiz<N>wayFrames.bb`. It is what the "Show CDS frames"
+ * over a UCSC `multiz<N>wayFrames.bb`. It is what the "CDS frames"
  * overlay, the codon row coloring and the codon conservation band are all
  * gated on, and until now the form offered no way to supply it — so a track
  * added through the UI could never reach any of the three, whatever file the

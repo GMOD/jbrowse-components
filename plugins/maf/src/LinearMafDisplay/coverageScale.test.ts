@@ -100,7 +100,7 @@ test('the interbase toggle greys out with the band hidden', () => {
   const row = display
     .trackMenuItems()
     .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i]))
-    .find(i => 'label' in i && i.label === 'Show interbase indicators')
+    .find(i => 'label' in i && i.label === 'Interbase indicators')
   expect(row && 'disabled' in row && row.disabled).toBe(true)
 })
 

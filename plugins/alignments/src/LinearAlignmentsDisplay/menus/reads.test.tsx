@@ -97,9 +97,9 @@ test('renders as an unbroken list of menu rows', () => {
 test('the toggles fire against the model', () => {
   const model = makeModel()
   const { getByText } = renderRows(subMenuOf(model))
-  fireEvent.click(getByText('Show legend'))
-  fireEvent.click(getByText('Show mismatches'))
-  fireEvent.click(getByText('Show coverage'))
+  fireEvent.click(getByText('Legend'))
+  fireEvent.click(getByText('Mismatches'))
+  fireEvent.click(getByText('Coverage'))
   expect(model.setShowLegend).toHaveBeenCalledWith(true)
   expect(model.setShowMismatches).toHaveBeenCalledWith(false)
   expect(model.setShowCoverage).toHaveBeenCalledWith(false)
@@ -123,7 +123,7 @@ test('the row cap is not here', () => {
 
 function interbaseRow(showCoverage: boolean) {
   return subMenuOf(makeModel({ showCoverage })).find(
-    r => 'label' in r && r.label === 'Show interbase indicators',
+    r => 'label' in r && r.label === 'Interbase indicators',
   )
 }
 
@@ -134,14 +134,14 @@ function interbaseRow(showCoverage: boolean) {
 test('the interbase toggle follows the coverage band', () => {
   expect(interbaseRow(false)).toMatchObject({
     disabled: true,
-    disabledHelpText: expect.stringContaining('Show coverage'),
+    disabledHelpText: expect.stringContaining('Coverage'),
   })
   expect(interbaseRow(true)).toMatchObject({ disabled: false })
 })
 
 function softClipRow(unit: AlignmentsUnit) {
   return subMenuOf(makeModel({ unit })).find(
-    r => 'label' in r && r.label === 'Show soft clipping',
+    r => 'label' in r && r.label === 'Soft clipping',
   )
 }
 

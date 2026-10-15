@@ -743,7 +743,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether the per-species CDS frame strip draws: an annotation adapter
-         * is configured and "Show CDS frames" is on. Codon view gates
+         * is configured and "CDS frames" is on. Codon view gates
          * separately on `framesInUse`.
          */
         get annotationsActive(): boolean {
@@ -2220,7 +2220,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether this display has a color key, as opposed to whether one is
-         * drawn now: the question "Show legend" is offered on. Bases key
+         * drawn now: the question "Legend" is offered on. Bases key
          * nothing; every other rendering keys what it paints.
          *
          * Overrides `LegendMixin`'s, whose scale reads decline on an

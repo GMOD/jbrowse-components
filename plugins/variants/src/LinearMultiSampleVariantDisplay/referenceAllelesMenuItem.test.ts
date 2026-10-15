@@ -14,14 +14,14 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function referenceItem(items: MenuItem[]) {
   const show = items.find(i => 'label' in i && i.label === 'Show...')
   const subMenu = show && 'subMenu' in show ? resolveSubMenu(show) : []
-  return subMenu.find(i => 'label' in i && i.label === 'Show reference alleles')
+  return subMenu.find(i => 'label' in i && i.label === 'Reference alleles')
 }
 
 test('the genomic layout offers the reference-alleles checkbox', () => {
   const { display } = createTestEnvironment().createDisplay()
   const item = referenceItem(display.trackMenuItems())
   if (!item || !('type' in item) || item.type !== 'checkbox') {
-    throw new Error('no "Show reference alleles" checkbox in "Show..."')
+    throw new Error('no "Reference alleles" checkbox in "Show..."')
   }
   // 'skip' is the slot default, so it starts unchecked
   expect(item.checked).toBe(false)

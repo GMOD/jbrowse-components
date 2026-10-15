@@ -125,21 +125,21 @@ describe('the color key waits for a painting to key', () => {
 
   // The data gates the draw, never the toggle: a track waiting on its first
   // fetch must not lose the menu row that turns the key back on.
-  it('keeps the "Show legend" toggle while nothing is painted', () => {
+  it('keeps the "Legend" toggle while nothing is painted', () => {
     const { display } = createTestEnvironment({
       displayConfig: IDENTITY,
     }).createDisplay()
 
     expect(display.legendSpec.sections).toHaveLength(0)
     expect(display.hasLegendKey).toBe(true)
-    expect(menuLabels(display)).toContain('Show legend')
+    expect(menuLabels(display)).toContain('Legend')
   })
 
   it('offers no toggle on a track that declares no key at all', () => {
     const { display } = createTestEnvironment().createDisplay()
 
     expect(display.hasLegendKey).toBe(false)
-    expect(menuLabels(display)).not.toContain('Show legend')
+    expect(menuLabels(display)).not.toContain('Legend')
   })
 
   it('is empty over a contig that came back with no features', () => {

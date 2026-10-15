@@ -13,7 +13,7 @@ export type AdmissionConfig = Pick<
 >
 
 // Core's gene-like rule keeps an Ensembl `ncRNA_gene` or a bare `tRNA`; the
-// configured types and a prokaryote's top-level CDS join it. "Show only genes"
+// configured types and a prokaryote's top-level CDS join it. "Only genes"
 // admits by it, and these names claim the fit height first.
 export function geneTypeTest(
   config: Pick<DisplayConfig, 'transcriptTypes' | 'containerTypes'>,

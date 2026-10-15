@@ -24,10 +24,10 @@ function showSubmenu(items: MenuItem[]) {
 
 function tooltipItem(items: MenuItem[]) {
   const item = showSubmenu(items).find(
-    i => 'label' in i && i.label === 'Show tooltips',
+    i => 'label' in i && i.label === 'Tooltips',
   )
   if (!item || !('type' in item) || item.type !== 'checkbox') {
-    throw new Error('no "Show tooltips" checkbox in the "Show..." submenu')
+    throw new Error('no "Tooltips" checkbox in the "Show..." submenu')
   }
   return item
 }

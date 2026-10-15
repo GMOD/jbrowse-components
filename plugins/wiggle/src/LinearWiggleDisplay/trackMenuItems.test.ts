@@ -79,10 +79,10 @@ describe('the wiggle display Clustering submenu', () => {
       'Cluster rows by score...',
     ])
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
-      'Show tree',
+      'Tree',
       'Tree branch lengths',
-      'Show row separators',
-      'Show row labels',
+      'Row separators',
+      'Row labels',
     ])
   })
 
@@ -97,7 +97,7 @@ describe('the wiggle display Clustering submenu', () => {
     expect(display.hierarchy).toBeUndefined()
     expect(
       labels(subMenuOf(display.trackMenuItems(), 'Show...')),
-    ).not.toContain('Show tree')
+    ).not.toContain('Tree')
   })
 
   it('keeps the tree controls once a clustered row mode comes back', () => {
@@ -109,7 +109,7 @@ describe('the wiggle display Clustering submenu', () => {
 
     expect(display.hierarchy).toBeDefined()
     expect(labels(subMenuOf(display.trackMenuItems(), 'Show...'))).toContain(
-      'Show tree',
+      'Tree',
     )
   })
 
@@ -239,7 +239,7 @@ describe('the wiggle display track menu', () => {
       const items = display.trackMenuItems()
       return (
         labels(items).includes('Show...') &&
-        labels(subMenuOf(items, 'Show...')).includes('Show legend')
+        labels(subMenuOf(items, 'Show...')).includes('Legend')
       )
     }
 

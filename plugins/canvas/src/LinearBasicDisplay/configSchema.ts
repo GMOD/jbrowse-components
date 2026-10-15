@@ -60,7 +60,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       /**
        * #slot
        * Draw only gene-like top-level features, dropping everything else the
-       * file carries — the config form of the track menu's "Show only genes".
+       * file carries — the config form of the track menu's "Only genes".
        */
       showOnlyGenes: {
         type: 'boolean',

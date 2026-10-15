@@ -781,7 +781,7 @@ describe('collectRenderData density-fade eligibility', () => {
 })
 
 describe('collectRenderData gene stamp', () => {
-  it('stamps the types "Show only genes" keeps, and no others', () => {
+  it('stamps the types "Only genes" keeps, and no others', () => {
     const stamped = (type: string, configured: string[] = []) =>
       collect(boxLayout(mockFeature({ type, id: 'f', start: 0, end: 10 })), {
         config: mockDisplayConfig({ transcriptTypes: configured }),

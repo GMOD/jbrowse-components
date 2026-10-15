@@ -280,7 +280,7 @@ export interface FlatbushItem extends HitItemBase {
   // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
-  // A type "Show only genes" keeps, whose name claims the fit height first.
+  // A type "Only genes" keeps, whose name claims the fit height first.
   // Absent in fixtures predating the field.
   gene?: boolean
   // Whether "Collapse introns" has a gap to close here. Decided in the worker

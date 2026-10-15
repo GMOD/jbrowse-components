@@ -1,4 +1,6 @@
-import { variantShowSubmenuItems } from './multiSampleVariantMenuItems.ts'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
+import { variantTrackMenuItems } from './multiSampleVariantMenuItems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 test('the layout is a fetch input, and columns spend no band on the lane', () => {
@@ -21,14 +23,20 @@ test('the layout is a fetch input, and columns spend no band on the lane', () =>
   expect(display.drawsInsertionMarkers).toBe(false)
 })
 
-test('Show as genotype matrix switches the layout both ways', () => {
+test('Layout → Genotype matrix switches the layout both ways', () => {
   const { display } = createTestEnvironment().createDisplay()
   const matrixItem = () => {
-    const item = variantShowSubmenuItems(display).find(
-      i => 'label' in i && i.label === 'Show as genotype matrix',
+    const layout = variantTrackMenuItems(display).find(
+      i => 'label' in i && i.label === 'Layout',
     )
+    const item =
+      layout && 'subMenu' in layout
+        ? resolveSubMenu(layout).find(
+            i => 'label' in i && i.label === 'Genotype matrix',
+          )
+        : undefined
     if (!item || !('checked' in item) || !('onClick' in item)) {
-      throw new Error('no "Show as genotype matrix" checkbox')
+      throw new Error('no "Genotype matrix" checkbox')
     }
     return item
   }

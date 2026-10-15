@@ -314,7 +314,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             ...lodMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, {
               disabled: !self.showPileup,
-              disabledHelpText: `Turn on "Show alignments" to change ${self.featureNoun} height`,
+              disabledHelpText: `Turn on "Show... → Alignments" to change ${self.featureNoun} height`,
             }),
           ] satisfies MenuItem[]
         },

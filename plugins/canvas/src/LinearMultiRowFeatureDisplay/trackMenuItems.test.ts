@@ -158,10 +158,10 @@ describe('multi-row track menu', () => {
     ])
     expect(items.every(i => 'icon' in i && i.icon)).toBe(true)
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
-      'Show tree',
+      'Tree',
       'Tree branch lengths',
-      'Show row labels',
-      'Show row separators',
+      'Row labels',
+      'Row separators',
     ])
   })
 
@@ -178,13 +178,13 @@ describe('multi-row track menu', () => {
         i =>
           'label' in i &&
           typeof i.label === 'string' &&
-          i.label.startsWith('Show row separators'),
+          i.label.startsWith('Row separators'),
       )
 
     expect(sub(2)).toMatchObject({
-      label: 'Show row separators — needs rows 4px or taller',
+      label: 'Row separators — needs rows 4px or taller',
     })
-    expect(sub(14)).toMatchObject({ label: 'Show row separators' })
+    expect(sub(14)).toMatchObject({ label: 'Row separators' })
   })
 
   it('keeps the tree controls in one place, not one copy per submenu', () => {
@@ -221,9 +221,7 @@ describe('multi-row track menu', () => {
   it('offers the legend and category toggles only once colors are keyed', () => {
     const withoutLegend = buildMultiRowTrackMenuItems(makeSelf())
     expect(labels(withoutLegend)).not.toContain('Categories')
-    expect(labels(subMenuOf(withoutLegend, 'Show...'))).not.toContain(
-      'Show legend',
-    )
+    expect(labels(subMenuOf(withoutLegend, 'Show...'))).not.toContain('Legend')
 
     const withLegend = buildMultiRowTrackMenuItems(
       makeSelf({
@@ -231,14 +229,14 @@ describe('multi-row track menu', () => {
       }),
     )
     expect(labels(withLegend)).toContain('Categories')
-    expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Show legend')
+    expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Legend')
   })
 
   // The row color key is drawn under the same `showLegend` slot but is not a
   // category vocabulary, so it contributes no "Categories" submenu — and its
-  // ordinary track has an empty colorLegend, so gating "Show legend" on
+  // ordinary track has an empty colorLegend, so gating "Legend" on
   // colorLegend alone makes the legend's own "x" a one-way door.
-  it('offers "Show legend" for the row color key with no color key at all', () => {
+  it('offers "Legend" for the row color key with no color key at all', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
         colorLegend: [],
@@ -246,7 +244,7 @@ describe('multi-row track menu', () => {
       }),
     )
 
-    expect(labels(subMenuOf(items, 'Show...'))).toContain('Show legend')
+    expect(labels(subMenuOf(items, 'Show...'))).toContain('Legend')
     expect(labels(items)).not.toContain('Categories')
   })
 

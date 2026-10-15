@@ -15,7 +15,7 @@
 /**
  * #menuBuilder withHint | a row label carrying an aside that is only sometimes there
  *
- * `withHint('Show row separators', tooShort ? 'needs rows 4px or taller' :
+ * `withHint('Row separators', tooShort ? 'needs rows 4px or taller' :
  * undefined)`.
  *
  * The rows that want this are the ones that can be on, correctly on, and doing
@@ -30,7 +30,7 @@
  * has no reason to hover, since from the tick it looks like it already works.
  *
  * AN EM DASH, NOT PARENTHESES. Two of these labels already end in a
- * parenthetical of their own ("Show conservation (% identity)", "Codon changes
+ * parenthetical of their own ("Conservation (% identity)", "Codon changes
  * (amino acids)"), and a second pair straight after the first reads as a typo.
  * It also keeps the aside distinct from the ` - ` that names a permanent half of
  * a label ("Square view - average bp per pixel").

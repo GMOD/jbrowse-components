@@ -134,7 +134,7 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * Whether the display has a key at all. The "Show legend" row is offered
+       * Whether the display has a key at all. The "Legend" row is offered
        * only when it does. Overridable for a display whose key is only waiting
        * for data: a scale that stays empty until a region lands must not remove
        * the toggle in the meantime.

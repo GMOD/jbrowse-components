@@ -57,7 +57,7 @@ function disabledHintOn(items: MenuItem[], label: string) {
   return undefined
 }
 
-const BAND_ROWS = ['Show coverage', 'Show conservation (% identity)']
+const BAND_ROWS = ['Coverage', 'Conservation (% identity)']
 const HINT = 'zoom in past the summary tier'
 
 describe('the band toggles say when the summary tier has overridden them', () => {
@@ -212,7 +212,7 @@ describe('the Color by rows say when the X-Y plot draws one color', () => {
 // deep alignment, and that failure is soft by design — nothing else on screen
 // changes. Silence there is indistinguishable from "this region has no CDS".
 describe('the CDS strip says when its read was declined as too large', () => {
-  const STRIP = 'Show CDS frames'
+  const STRIP = 'CDS frames'
 
   it('is quiet while the frames are being read', () => {
     const { display } = framesEnv().createDisplay()

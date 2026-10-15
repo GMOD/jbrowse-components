@@ -51,10 +51,15 @@ function subMenuOf(items: MenuItem[], label: string) {
 // No filter rows: the values come out of a file already thinned by whatever
 // wrote it, and there are no genotypes here to filter. The rows that were here
 // (MAF / HWE / call rate / jexl) went with the genotype path.
-test('the menu is metric, scheme and show', () => {
+test('the menu is metric, scheme, show and layout', () => {
   const items = buildLDTrackMenuItems(makeSelf())
 
-  expect(labels(items)).toEqual(['LD metric', 'Color scheme', 'Show...'])
+  expect(labels(items)).toEqual([
+    'LD metric',
+    'Color scheme',
+    'Show...',
+    'Layout',
+  ])
   expect(labels(subMenuOf(items, 'LD metric')!)).toEqual([
     'R² (squared correlation)',
     "D' (normalized D)",
@@ -122,13 +127,14 @@ test('the metric help says the values are read from the file', () => {
   expect(help.join(' ')).not.toMatch(/composite|estimated|Weir/i)
 })
 
-test('the Show menu carries every visibility and layout toggle', () => {
-  expect(
-    labels(subMenuOf(buildLDTrackMenuItems(makeSelf()), 'Show...')!),
-  ).toEqual([
-    'Show legend',
-    'Show variant labels',
-    'Show vertical guides on hover',
+test('Show carries the visibility toggles, legend last, and Layout the rest', () => {
+  const items = buildLDTrackMenuItems(makeSelf())
+  expect(labels(subMenuOf(items, 'Show...')!)).toEqual([
+    'Variant labels',
+    'Vertical guides on hover',
+    'Legend',
+  ])
+  expect(labels(subMenuOf(items, 'Layout')!)).toEqual([
     'Fit to display height',
     'Size cells by genomic distance',
   ])

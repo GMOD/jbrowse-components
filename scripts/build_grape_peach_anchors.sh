@@ -117,7 +117,7 @@ for sp in grape peach; do
   jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP"
 done
 
-# Per-genome gene tracks, so "Show only genes" has something to draw
+# Per-genome gene tracks, so "Only genes" has something to draw
 for sp in grape peach; do
   if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
     gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"

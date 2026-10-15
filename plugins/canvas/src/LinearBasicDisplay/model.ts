@@ -274,7 +274,7 @@ export default function stateModelFactory(
       const superContextMenuItems = self.contextMenuItems
       const superFeatureNarrowings = self.featureNarrowings
       return {
-        // "Show only genes" is a worker-side admission filter, so it is one
+        // "Only genes" is a worker-side admission filter, so it is one
         // of this display's narrowings; otherwise the track menu never offers
         // "Clear filters".
         featureNarrowings() {
