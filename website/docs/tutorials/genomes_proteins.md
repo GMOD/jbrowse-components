@@ -67,8 +67,8 @@ cancer, where the protein contacts DNA. Open the
   hotspot R248**.
 - Tick **Advanced**. The **Structure** box shows the entry the chip picked,
   3KMD, the DNA-binding core of p53 bound to DNA.
-- Set **Colour** to **AlphaMissense pathogenicity**, which paints each residue
-  by how damaging AlphaMissense predicts a substitution there to be.
+- Set **Color** to **AlphaMissense pathogenicity**, which paints each residue by
+  how damaging AlphaMissense predicts a substitution there to be.
 - Click **Open in JBrowse ↗**.
 
 Typing a gene into the search box and pressing **Search** opens the same card
@@ -121,7 +121,7 @@ launch button. Click **Clear** to drop it, and choose another:
   otherwise NCBI's ortholog set or the protein's UniRef50 cluster.
 
 **Structure** under Advanced overrides the pick with any AlphaFold or PDB entry,
-and **Colour** also offers ClinVar pathogenic variants and, on an AlphaFold
+and **Color** also offers ClinVar pathogenic variants and, on an AlphaFold
 model, AlphaFold confidence (pLDDT). The page URL holds the gene, the focus and
 the structure, so
 [?gene=TP53&ref=9606&residue=248&structure=3kmd](https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&structure=3kmd)
