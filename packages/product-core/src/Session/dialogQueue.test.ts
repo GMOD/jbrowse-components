@@ -71,3 +71,17 @@ test('dismissing a dialog that has no close handler, or whose handler leaves it 
   session.removeActiveDialog()
   expect(session.DialogComponent).toBeUndefined()
 })
+
+function AsyncClose(_props: { onClose: () => Promise<void> }) {
+  return null
+}
+
+test('queueDialog checks the props against the component it queues', () => {
+  const session = makeSession()
+  // @ts-expect-error a synchronous onClose where the dialog awaits one
+  session.queueDialog(() => [AsyncClose, { onClose: () => {} }])
+  // @ts-expect-error a required prop missing
+  session.queueDialog(() => [AsyncClose, {}])
+  session.queueDialog(() => [AsyncClose, { onClose: async () => {} }])
+  expect(session.queueOfDialogs).toHaveLength(3)
+})

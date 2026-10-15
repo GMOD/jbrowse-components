@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import {
   JBrowseModelF,
   RootAppMenuMixin,
@@ -29,11 +27,6 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
 import type { AbstractWebRootModel } from '@jbrowse/web-core'
-
-// lazy for the same reason web and desktop do it: the dialog is reached through
-// session.queueDialog, which Suspense-wraps whatever it is handed, so there is
-// no reason for its MUI form controls to sit in the root model's eager graph
-const PreferencesDialog = lazy(() => import('./PreferencesDialogReExport.tsx'))
 
 /**
  * What a host needs to rebuild the app after its plugin set changed: the
@@ -200,9 +193,7 @@ export default function RootModel({
             },
             {
               label: 'Tools',
-              menuItems: () => [
-                preferencesMenuItem(pluginManager, PreferencesDialog),
-              ],
+              menuItems: () => [preferencesMenuItem(pluginManager)],
             },
           ],
           self.mutableMenuActions,

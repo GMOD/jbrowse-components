@@ -186,3 +186,23 @@ test('nothing is written for a session with no path to write to', async () => {
 
   expect(saveCount()).toBe(0)
 })
+
+// OpenSequenceDialog's Cancel calls onClose() and chains .catch on the result,
+// so a synchronous onClose here made every Cancel throw a TypeError
+test('Open genome cancels through a promise and closes the dialog', async () => {
+  const root = createRootModel()
+  const item = root
+    .menus()
+    .find(m => m.label === 'File')!
+    .menuItems()
+    .find(m => 'label' in m && m.label === 'Open genome...')
+  if (!item || !('onClick' in item)) {
+    throw new Error('no clickable Open genome item')
+  }
+  item.onClick()
+  const { onClose } = root.session!.DialogProps as {
+    onClose: () => Promise<void>
+  }
+  await expect(onClose()).resolves.toBeUndefined()
+  expect(root.session!.DialogComponent).toBeUndefined()
+})

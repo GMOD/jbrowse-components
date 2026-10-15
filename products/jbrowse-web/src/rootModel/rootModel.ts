@@ -60,9 +60,6 @@ import type {
 const SetDefaultSession = lazy(
   () => import('../components/SetDefaultSession.tsx'),
 )
-const PreferencesDialog = lazy(
-  () => import('../components/PreferencesDialog.tsx'),
-)
 
 interface SessionDbHost {
   sessionDB?: SessionDBHandle
@@ -588,7 +585,7 @@ export default function RootModel({
                 },
               },
 
-              preferencesMenuItem(pluginManager, PreferencesDialog),
+              preferencesMenuItem(pluginManager),
             ],
           },
         ]

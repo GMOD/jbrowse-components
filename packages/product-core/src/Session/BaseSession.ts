@@ -27,10 +27,7 @@ import type {
 } from '@jbrowse/core/util'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-
-type DoneCallback = (
-  doneCallback: () => void,
-) => [DialogComponentType, Record<string, unknown>]
+import type React from 'react'
 
 function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
@@ -443,12 +440,16 @@ export function BaseSessionModel<
       /**
        * #action
        */
-      queueDialog(doneCallback: DoneCallback) {
+      queueDialog<T extends DialogComponentType>(
+        callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
+      ) {
         // its own entry, not the head: a late second call must not close the
         // dialog queued behind it
-        const entry = doneCallback(() => {
-          this.removeDialog(entry)
-        })
+        const entry: [DialogComponentType, Record<string, unknown>] = callback(
+          () => {
+            this.removeDialog(entry)
+          },
+        )
         self.queueOfDialogs = [...self.queueOfDialogs, entry]
       },
       /**

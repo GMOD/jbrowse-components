@@ -9,6 +9,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
+import { asAbstractSession } from '../siblingCast.ts'
 import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -18,8 +19,10 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { DialogComponentType } from '@jbrowse/core/util'
-import type { TrackActionView } from '@jbrowse/core/util/types'
+import type {
+  AbstractSessionModel,
+  TrackActionView,
+} from '@jbrowse/core/util/types'
 
 const AboutDialog = lazy(() => import('../ui/AboutDialog.tsx'))
 
@@ -152,17 +155,11 @@ export function trackActionItems<C extends { trackId: string }>({
   ]
 }
 
-export interface SessionWithDialog {
-  queueDialog: (
-    cb: (done: () => void) => [DialogComponentType, Record<string, unknown>],
-  ) => void
-}
-
 type TrackConfig = AnyConfigurationModel | Record<string, unknown>
 
 /** "About track" menu item, shared by every product's track menu */
 export function aboutTrackMenuItem(
-  session: SessionWithDialog,
+  session: AbstractSessionModel,
   config: TrackConfig,
 ): MenuItem {
   return {
@@ -181,7 +178,7 @@ export function aboutTrackMenuItem(
  * flattened track menu (About + raw actions) for the hierarchical track selector
  */
 export function trackListMenuItems(
-  session: SessionWithDialog,
+  session: AbstractSessionModel,
   config: TrackConfig,
   actions: MenuItem[],
 ): MenuItem[] {
@@ -193,7 +190,7 @@ export function trackListMenuItems(
  * in-view track label menu
  */
 export function trackActionMenuItems(
-  session: SessionWithDialog,
+  session: AbstractSessionModel,
   config: TrackConfig,
   actions: MenuItem[],
 ): MenuItem[] {
@@ -212,7 +209,7 @@ export function trackActionMenuItems(
   ]
 }
 
-interface SessionWithGetTrackActions extends SessionWithDialog {
+interface SessionWithGetTrackActions {
   getTrackActions(config: AnyTrackConfig, view?: TrackActionView): MenuItem[]
 }
 
@@ -231,6 +228,7 @@ interface SessionWithGetTrackActions extends SessionWithDialog {
 export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuItemsSessionMixin', {}).views(s => {
     const self = s as typeof s & SessionWithGetTrackActions
+    const session = asAbstractSession(self)
     return {
       /**
        * #method
@@ -242,11 +240,11 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
       ): MenuItem[] {
         return [
           ...trackListMenuItems(
-            self,
+            session,
             config,
             self.getTrackActions(config, view),
           ),
-          ...pluginExtraTrackItems(pluginManager, self, config, view),
+          ...pluginExtraTrackItems(pluginManager, session, config, view),
         ]
       },
       /**
@@ -260,9 +258,9 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
         config: BaseTrackConfig
         view?: TrackActionView
       }): MenuItem[] {
-        return trackActionMenuItems(self, config, [
+        return trackActionMenuItems(session, config, [
           ...self.getTrackActions(config, view),
-          ...pluginExtraTrackItems(pluginManager, self, config, view),
+          ...pluginExtraTrackItems(pluginManager, session, config, view),
         ])
       },
     }

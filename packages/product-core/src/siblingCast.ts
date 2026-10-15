@@ -1,5 +1,6 @@
 import type { BaseRootModel } from './RootModel/BaseRootModel.ts'
 import type { BaseSession } from './Session/BaseSession.ts'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 /**
  * `types.compose` can't thread the types of sibling mixins into one another, so
@@ -17,4 +18,12 @@ export function asSession<S>(self: S): S & BaseSession {
 
 export function asRoot<S>(self: S): S & BaseRootModel {
   return self as S & BaseRootModel
+}
+
+/**
+ * A session mixin's `self` as the whole session, for handing to something
+ * declared over `AbstractSessionModel` (a dialog, a plugin extension point).
+ */
+export function asAbstractSession(self: unknown) {
+  return self as AbstractSessionModel
 }

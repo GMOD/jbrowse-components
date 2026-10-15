@@ -46,22 +46,23 @@ import makeWorkerInstance from '../makeWorkerInstance.ts'
 import type { SessionSnap } from '../../electron/ipc/channelTypes.ts'
 import type { AppRootModel, SessionModelFactory } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { DialogComponentType } from '@jbrowse/core/util/types'
+import type { AnyConfiguration } from '@jbrowse/core/configuration'
+import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
+import type {
+  AbstractSessionModel,
+  DialogComponentType,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   BaseRootModel,
-  BaseSession,
   SessionWithSessionTracks,
 } from '@jbrowse/product-core'
+import type React from 'react'
 
 // lazies. A dialog reached through session.queueDialog can always be one:
 // DialogQueue Suspense-wraps whatever it is handed. OpenSequenceDialog was the
 // last one named directly here, which put AddGenomePane and the assembly-config
 // builders in the root model — as eager a module as this app has.
-const PreferencesDialog = lazy(
-  () => import('../components/PreferencesDialog.tsx'),
-)
 const OpenSequenceDialog = lazy(
   () => import('../components/OpenSequenceDialog.tsx'),
 )
@@ -71,19 +72,21 @@ const ExportToWebDialog = lazy(
 const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
 // Add a whole batch of assemblies, or none of it. Every name is checked before
-// anything is added because jbrowse.addAssemblyConf throws on a duplicate, and a
-// loop that added as it went would open the genomes before the collision, drop
-// the ones after it, and report one error for all three.
+// anything is added because jbrowse.addAssemblyConf throws on a name or alias it
+// already holds, and a loop that added as it went would open the genomes before
+// the collision, drop the ones after it, and report one error for all three.
 function addAssemblyConfs(
   jbrowse: {
-    assemblyNames: string[]
-    addAssemblyConf: (conf: AnyConfigurationModel) => unknown
+    assemblies: { name: string; aliases: string[] }[]
+    addAssemblyConf: (conf: AnyConfiguration) => unknown
   },
-  confs: AnyConfigurationModel[],
+  confs: AssemblyConf[],
 ) {
   const taken = confs
-    .map(conf => String(conf.name))
-    .filter(name => jbrowse.assemblyNames.includes(name))
+    .map(conf => conf.name)
+    .filter(name =>
+      jbrowse.assemblies.some(a => a.name === name || a.aliases.includes(name)),
+    )
   if (taken.length) {
     throw new Error(
       `An assembly is already open under ${taken.length > 1 ? 'these names' : 'this name'}: ${taken.join(', ')}. Rename and try again.`,
@@ -103,8 +106,7 @@ function getSaveSession(model: BaseRootModel): SessionSnap {
 }
 
 // Every menu action that can throw reports the same way: logged for the devtools
-// console, then surfaced in the session's notification area. Structurally typed
-// so both `self.session` and a BaseSession-narrowed one pass without a cast.
+// console, then surfaced in the session's notification area.
 function reportError(
   session:
     | { notifyError: (message: string, error: unknown) => void }
@@ -117,26 +119,15 @@ function reportError(
 
 // Four of the menu items below open a dialog, and each needs the same two things
 // first: `self.session` narrowed to the type that carries queueDialog, and a
-// guard, since a root can be between sessions. The guard is what kept differing
-// between them — "Open assembly manager" asserted rather than checked, so a
-// click with no session would have thrown out of the menu handler.
-//
-// `build` returns what BaseSession.queueDialog takes, a component plus loose
-// props, rather than tying the props to the component with a generic. The
-// generic is what a helper here invites and it does not hold: these props do not
-// typecheck against their own components (the assembly manager and the web
-// export want an AbstractSessionModel where this has the narrower BaseSession,
-// and the sequence dialog's onClose is declared over AssemblyConf rather than
-// AnyConfigurationModel), so it would only move those mismatches out of the
-// session layer and into this file.
-function queueSessionDialog(
+// guard, since a root can be between sessions.
+function queueSessionDialog<T extends DialogComponentType>(
   maybeSession: unknown,
   build: (
-    session: BaseSession,
+    session: AbstractSessionModel,
     doneCallback: () => void,
-  ) => [DialogComponentType, Record<string, unknown>],
+  ) => [T, React.ComponentProps<T>],
 ) {
-  const session = maybeSession as BaseSession | undefined
+  const session = maybeSession as AbstractSessionModel | undefined
   if (session) {
     session.queueDialog(doneCallback => build(session, doneCallback))
   }
@@ -396,7 +387,7 @@ export default function rootModelFactory({
                           // genomes still in it. Catching would report the
                           // failure to a snackbar and close over work that has
                           // nowhere left to go.
-                          onClose: (confs?: AnyConfigurationModel[]) => {
+                          onClose: async (confs?: AssemblyConf[]) => {
                             if (confs) {
                               addAssemblyConfs(self.jbrowse, confs)
                             }
@@ -540,7 +531,7 @@ export default function rootModelFactory({
                   redoMenuItem(self.history),
                   { type: 'divider' },
                   pluginStoreMenuItem(),
-                  preferencesMenuItem(pluginManager, PreferencesDialog),
+                  preferencesMenuItem(pluginManager),
                   {
                     label: 'Open assembly manager',
                     icon: DNA,

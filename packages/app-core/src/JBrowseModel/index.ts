@@ -110,7 +110,7 @@ export function JBrowseModelF({
       /**
        * #action
        */
-      addAssemblyConf(conf: AnyConfigurationModel) {
+      addAssemblyConf(conf: AnyConfiguration) {
         const { name } = conf
         if (!name) {
           throw new Error('Can\'t add assembly with no "name"')

@@ -66,19 +66,16 @@ describe('openConnectionMenuItem', () => {
 })
 
 describe('preferencesMenuItem', () => {
-  it('queues the supplied dialog with the session + pluginManager', () => {
-    const Dialog = () => null
+  it('queues the preferences dialog with the session + pluginManager', () => {
     const pluginManager = { id: 'pm' } as unknown as PluginManager
     const queueDialog = jest.fn()
-    const item = preferencesMenuItem(pluginManager, Dialog)
+    const item = preferencesMenuItem(pluginManager)
     const session = { queueDialog }
     clickOf(item)(session)
     const [[cb]] = queueDialog.mock.calls
     const handleClose = jest.fn()
-    expect(cb(handleClose)).toEqual([
-      Dialog,
-      { session, pluginManager, handleClose },
-    ])
+    const [, props] = cb(handleClose)
+    expect(props).toEqual({ session, pluginManager, handleClose })
   })
 })
 

@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { asSession } from '../siblingCast.ts'
+import { asAbstractSession } from '../siblingCast.ts'
 import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
 import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
@@ -23,7 +23,7 @@ import type { TrackActionView } from '@jbrowse/core/util/types'
  */
 export function TrackMenuSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuSessionMixin', {}).views(s => {
-    const self = asSession(s)
+    const self = asAbstractSession(s)
     return {
       /**
        * #method

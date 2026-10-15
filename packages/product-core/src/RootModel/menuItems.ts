@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import { Cable } from '@jbrowse/core/ui/Icons'
 import AddIcon from '@mui/icons-material/Add'
 import ExtensionIcon from '@mui/icons-material/Extension'
@@ -10,13 +12,15 @@ import UndoIcon from '@mui/icons-material/Undo'
 
 import { getShareableSessionSnapshot } from '../Session/index.ts'
 
+import type { PreferencesDialogSession } from '../ui/PreferencesDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractSessionModel,
-  DialogComponentType,
   SessionWithWidgets,
 } from '@jbrowse/core/util'
+
+const PreferencesDialog = lazy(() => import('../ui/PreferencesDialog.tsx'))
 
 // the renderer binds the active session into each onClick (see AppToolbar's
 // wrapMenuItems), so these handlers receive it as their argument
@@ -118,17 +122,11 @@ export function pluginStoreMenuItem(): MenuItem {
   }
 }
 
-// the dialog component differs per product, so it is passed in rather than
-// imported; typing it as DialogComponentType lets queueDialog accept it with no
-// cast (the inline call sites needed `as BaseSession` to reach queueDialog)
-export function preferencesMenuItem(
-  pluginManager: PluginManager,
-  PreferencesDialog: DialogComponentType,
-): MenuItem {
+export function preferencesMenuItem(pluginManager: PluginManager): MenuItem {
   return {
     label: 'Preferences',
     icon: SettingsIcon,
-    onClick: (session: AbstractSessionModel) => {
+    onClick: (session: AbstractSessionModel & PreferencesDialogSession) => {
       session.queueDialog(handleClose => [
         PreferencesDialog,
         { session, pluginManager, handleClose },
