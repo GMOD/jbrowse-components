@@ -62,7 +62,9 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
         with:
           working-directory: ${{ matrix.repo }}
-          extra-packages: any::testthat
+          extra-packages: |
+            any::testthat
+            any::yaml
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           package_json_file: jbrowse-components/package.json
