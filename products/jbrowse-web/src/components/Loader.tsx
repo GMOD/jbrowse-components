@@ -5,18 +5,13 @@ import { useState } from 'react'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { setTypeChecking } from '@jbrowse/mobx-state-tree'
-import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { markCrashedSession } from '../crashedSession.ts'
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
 import factoryReset from '../factoryReset.ts'
-import {
-  permanentPluginSafeMode,
-  readPermanentPlugins,
-  reloadInSafeMode,
-} from '../permanentPlugins.ts'
 import Renderer from './Renderer.tsx'
+import SafeModeButton from './SafeModeButton.tsx'
 import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 
 // MST skips run-time type-checking in production builds, where a config or
@@ -66,25 +61,8 @@ const LoaderWrapper = observer(function LoaderWrapper({
           {...props}
           resetButtonText="Reset Session"
           onFactoryReset={factoryReset}
-          // A permanent plugin loads on every visit, so one that crashes the
-          // app leaves the user here with no way back to the menu that would
-          // switch it off. Offered ahead of Reset Session, which throws away
-          // the session instead — and only when there is a list to skip and it
-          // isn't already being skipped.
-          extraActions={
-            !permanentPluginSafeMode() &&
-            readPermanentPlugins().some(p => !p.disabled) ? (
-              <Button
-                color="secondary"
-                variant="contained"
-                onClick={() => {
-                  reloadInSafeMode()
-                }}
-              >
-                Reload without permanent plugins
-              </Button>
-            ) : null
-          }
+          // ahead of Reset Session, which throws away the session instead
+          extraActions={<SafeModeButton />}
         />
       )}
     >

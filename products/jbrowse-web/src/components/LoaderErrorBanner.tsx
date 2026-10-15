@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 
 import factoryReset from '../factoryReset.ts'
 import NoConfigMessage from './NoConfigMessage.tsx'
+import SafeModeButton from './SafeModeButton.tsx'
 
 const LoaderErrorBanner = observer(function LoaderErrorBanner({
   error,
@@ -37,10 +38,10 @@ const LoaderErrorBanner = observer(function LoaderErrorBanner({
     <div>
       <h1>JBrowse Error</h1>
       <ErrorBanner error={error} />
-      {/* the only way out of this screen: it renders instead of the app, so
-      there is no menu to reach. Reloading as-is just fails the same way when
-      the cause is in the URL (a bad ?config=, a session= that won't load), so
-      the escape hatch is the bare url */}
+      {/* the ways out of this screen: it renders instead of the app, so there
+      is no menu to reach, and reloading as-is fails the same way when the cause
+      is in the URL or a permanent plugin */}
+      <SafeModeButton style={{ margin: 20 }} />
       <Button
         variant="contained"
         style={{ margin: 20 }}
