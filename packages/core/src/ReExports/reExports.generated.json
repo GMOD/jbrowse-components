@@ -1258,7 +1258,8 @@
         "measureRegionBytes",
         "measuredBytes",
         "measurementPartial",
-        "overByteBudget"
+        "overByteBudget",
+        "totalRegionBytes"
       ],
       "worker": "real"
     },

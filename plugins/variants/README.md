@@ -58,13 +58,16 @@ record, with its genotype, its `dosage` and the fill the display paints it;
 `rows` and stacks them in `facet`'s bands, each with its label and band;
 `bands`, each band's value, label and the rows it spans; and `legend` and
 `ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the
-default, a reference call draws no cell. For a host that draws them itself, such
-as R through V8. The adapters must be registered on `pluginManager`
+default, a reference call draws no cell. Several regions share the rows and the
+key, as the display's regions do: a record crossing regions is listed in each,
+under one `key`, every `variants` and `cells` row names its `region`'s index,
+and `cells.variant` indexes the joined `variants`. For a host that draws them
+itself, such as R through V8. The adapters must be registered on `pluginManager`
 (`registerVariantAdapters`).
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, display, byteLimit, }: VariantTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

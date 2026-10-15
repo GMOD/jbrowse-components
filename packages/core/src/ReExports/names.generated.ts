@@ -177,7 +177,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/pluginDefinitions': ['dedupePlugins', 'desktopVendoredPluginNames', 'dropVendoredPlugins', 'holdsPlugin', 'holdsPluginVersion', 'isESMPluginDefinition', 'isPluginUrl', 'isStorePluginDefinition', 'isUMDPluginDefinition', 'maybePluginUrl', 'pluginDefinitionMetadata', 'pluginDescriptionString', 'pluginLabel', 'pluginName', 'pluginUrl', 'pluginsNotIn', 'resolvedPluginUrl', 'samePlugin', 'storePluginName', 'vendoredPluginNames'],
   '@jbrowse/core/PluginLoader': ['default', 'preloadUMDBundles', 'workerScriptLoadMessage'],
   '@jbrowse/core/PluginManager': ['corePluginRecords', 'default', 'pluggableElementTypeGroups', 'pluggableStateModelGroup', 'wrappedComponent'],
-  '@jbrowse/core/rpc/byteBudget': ['adapterByteLimit', 'isRegionRefused', 'isRegionTooLargeError', 'largestRegionBytes', 'measureRegionBytes', 'measuredBytes', 'measurementPartial', 'overByteBudget'],
+  '@jbrowse/core/rpc/byteBudget': ['adapterByteLimit', 'isRegionRefused', 'isRegionTooLargeError', 'largestRegionBytes', 'measureRegionBytes', 'measuredBytes', 'measurementPartial', 'overByteBudget', 'totalRegionBytes'],
   '@jbrowse/core/rpc/RpcManager': ['default'],
   '@jbrowse/core/rpc/RpcRegistry': [],
   '@jbrowse/core/rpc/WebWorkerRpcDriver': ['default'],
