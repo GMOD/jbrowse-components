@@ -455,42 +455,6 @@
       ]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "ecoli_minigraph_paths",
-      "name": "minigraph graph: per-strain path through each bubble",
-      "assemblyNames": ["K12"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "ecoli_minigraph_paths.bed.gz"
-      },
-      "displays": [
-        {
-          "type": "LinearMultiRowFeatureDisplay",
-          "rows": {
-            "field": "strain",
-            "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
-          },
-          "color": {
-            "scale": "identity",
-            "domain": [
-              "rgb(204,204,204)",
-              "rgb(192,0,192)",
-              "rgb(128,128,128)",
-              "rgb(0,154,138)",
-              "rgb(191,170,64)"
-            ],
-            "labels": [
-              "reference path",
-              "insertion",
-              "deletion",
-              "same length, different path",
-              "no call"
-            ]
-          }
-        }
-      ]
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "ecoli_minigraph_alleles",
       "name": "minigraph graph: allele inventory (from the rGFA alone)",

@@ -458,27 +458,9 @@ in_cactus gfatools view -R "${REF}#1#chr:1445000-1474500" -r 1 \
 gfa-to-tabix ecoli_minigraph.rgfa --layout contig -o ecoli_minigraph
 
 # What the graph holds, read out of those two indexes alone: one row per allele,
-# anchored on the reference. Unlike the per-strain paths below it needs no
-# assemblies, which is what makes it the fallback for someone else's rGFA.
+# anchored on the reference. It needs no assemblies, so it works on someone
+# else's rGFA.
 gfa-to-tabix alleles ecoli_minigraph
-
-# Each strain's actual path through every bubble of that graph, one row per
-# (bubble x strain). The segments/links indexes above say what the graph
-# contains; this says which strain takes what, which the rGFA tags alone cannot
-# (SR is build order, not sample). minigraph recomputes the walks by aligning the
-# assemblies back to the graph, so it works on a graph carrying no P/W lines.
-# Reference first: its path through a bubble IS the reference allele.
-PATHS_ORDER="$REF"
-for strain in $STRAINS; do
-  [ "$strain" = "$REF" ] || PATHS_ORDER="$PATHS_ORDER $strain"
-done
-CALLS=()
-for strain in $PATHS_ORDER; do
-  in_cactus minigraph -cxasm --call "-t$(getconf _NPROCESSORS_ONLN)" \
-    /data/ecoli_minigraph.rgfa "/data/$strain.pansn.fa" >"$strain.call.bed"
-  CALLS+=("$strain.call.bed")
-done
-gfa-to-tabix paths -o ecoli_minigraph_paths "${CALLS[@]}"
 
 # ── Set up JBrowse ────────────────────────────────────────────────────────────
 APP=jbrowse2
@@ -665,51 +647,6 @@ cat > rgfa_track.json <<'JSON'
 }
 JSON
 jb add-track-json rgfa_track.json --update --out "$APP"
-
-# The same graph read per strain rather than per segment: one row per strain,
-# each block that strain's allele at one bubble, spanning the reference it
-# replaces. The class colors are in the file (itemRgb), so an identity scale
-# just names them; the allele's size is the BED's name, which the hover shows.
-cp ecoli_minigraph_paths.bed.gz ecoli_minigraph_paths.bed.gz.tbi "$APP/"
-cat > paths_track.json <<JSON
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_minigraph_paths",
-  "name": "minigraph graph: per-strain path through each bubble",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_minigraph_paths.bed.gz"
-  },
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "rows": {
-        "field": "strain",
-        "domain": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
-      },
-      "color": {
-        "scale": "identity",
-        "domain": [
-          "rgb(204,204,204)",
-          "rgb(192,0,192)",
-          "rgb(128,128,128)",
-          "rgb(0,154,138)",
-          "rgb(191,170,64)"
-        ],
-        "labels": [
-          "reference path",
-          "insertion",
-          "deletion",
-          "same length, different path",
-          "no call"
-        ]
-      }
-    }
-  ]
-}
-JSON
-jb add-track-json paths_track.json --update --out "$APP"
 
 # The same variation read out of the graph alone, with no assemblies re-mapped:
 # one feature per allele rather than one row per strain. An AlignmentsTrack over

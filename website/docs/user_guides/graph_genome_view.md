@@ -570,116 +570,14 @@ an arm is, and the reference-position ramp shows _where_ each segment sits.
 
 <Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry opens. Right: the segments lane's track menu with Display types → Graph boxed, above the force-directed graph the lane turns into." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
-## Per-strain paths through each bubble
-
-**Requires the source assemblies.**
-
-The `.segs.bed.gz` and `.links.bed.gz` indexes record what the graph contains.
-Which strains have each segment is not in them, because rGFA's `SR` tag is build
-order, not sample. minigraph can recompute the walks by aligning each assembly
-back to the graph (`minigraph -cxasm --call`). The call writes one line per
-bubble per sample, with the path that sample takes and its length.
-[`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix#paths) projects the
-call files of every strain into one tabix-indexed BED, with a row per bubble per
-strain:
-
-```bash
-for s in K12 Sakai CFT073 NCTC86 IAI39; do
-  minigraph -cxasm --call -t8 ecoli_minigraph.rgfa $s.pansn.fa > $s.call.bed
-done
-gfa-to-tabix paths -o ecoli_minigraph_paths \
-  K12.call.bed Sakai.call.bed CFT073.call.bed NCTC86.call.bed IAI39.call.bed
-```
-
-The reference goes first, because its path through a bubble is the reference
-allele that the other strains are scored against. Load the result with one row
-per strain:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "ecoli_minigraph_paths",
-  "name": "minigraph graph: per-strain path through each bubble",
-  "uri": "ecoli_minigraph_paths.bed.gz",
-  "assemblyNames": ["K12"],
-  "displays": [
-    {
-      "type": "LinearMultiRowFeatureDisplay",
-      "rows": {
-        "field": "strain",
-        "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
-      },
-      "color": {
-        "scale": "identity",
-        "domain": [
-          "rgb(204,204,204)",
-          "rgb(192,0,192)",
-          "rgb(128,128,128)",
-          "rgb(0,154,138)",
-          "rgb(191,170,64)"
-        ],
-        "labels": [
-          "reference path",
-          "insertion",
-          "deletion",
-          "same length, different path",
-          "no call"
-        ]
-      }
-    }
-  ]
-}
-```
-
-- `rows` puts each strain in a separate row, `domain` in the order given
-- `color` names the class colors the BED carries in its itemRgb column
-- A block spans the reference its allele replaces, so a 100 kb insertion and a 1
-  bp one draw the same width. The popup gives the size: `name` is the signed
-  `delta`, the strain's `pathLen` minus K12's `refLen`.
-  [Alleles from the rGFA alone](#when-all-you-have-is-the-graph) draws each
-  allele at its size.
-- `delta` is a net change. A strain that drops one segment of a bubble and gains
-  a longer one reads as a small insertion; the `path` column in the popup lists
-  the segments it actually takes
-
-A row covers only the bubbles under it. `--call` emits a record per bubble and
-nothing between bubbles, so over 200 kb of this graph the bubbles cover about a
-tenth of the frame and a row is mostly blank. Read a row as marks at the sites
-that vary. The [](/docs/user_guides/maf_track) is the per-base lane.
-
-Each row also describes that bubble across all the strains. The popup shows
-those columns. A jexl expression over them, set from **Edit filters** on the
-track's default display, narrows the track to the sites you want. The multi-row
-display has no filter setting.
-
-| Column    | What it is                                     | Use it for                                                                     |
-| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| `alleles` | distinct paths anyone actually takes here      | `jexl:feature.alleles>2` cuts to the multi-allelic sites                       |
-| `nonRef`  | how many strains leave the reference path      | `jexl:feature.nonRef==1` finds the singletons, `==4` the sites K12 alone lacks |
-| `strand`  | the orientation the strain's contig aligned in | `jexl:feature.strand==-1` selects inverted alleles                             |
-
-Most bubbles here are biallelic. A tail of bubbles has a different allele in all
-five strains, and those are the hypervariable loci at the end of the
-allele-frequency spectrum. `strand` picks out inversions, which on this graph
-are all IAI39's and fall in long contiguous runs. **Clustering → Cluster rows by
-similarity** reorders the rows by which alleles each strain has. On five strains
-the clustering is a sanity check. On a few hundred haplotypes it is the
-analysis.
-
-`gfatools bubble` reports **top-level** bubbles only. On this graph they never
-overlap, so one flat lane per strain is complete. The lane loses variation
-nested _inside_ a bubble, so a 113 kb allele is one block. The
-[variants projection](/docs/tutorials/pangenome_ecoli#pangenome-variants-projection)
-includes that nested tier.
-
 ## Alleles from the rGFA alone {#when-all-you-have-is-the-graph}
 
-Someone else's rGFA usually arrives without the assemblies it was built from, so
-the re-mapping above is not possible. The two indexes still record every allele
-in the graph, because each L-line row records both of its endpoints in full. A
-link between two backbone segments that leaves a coordinate _gap_ is a deletion.
-A link from the backbone into a rank>0 segment enters an allele, and the
-allele's length is the total of the segments it walks before rejoining.
+Someone else's rGFA usually arrives without the assemblies it was built from.
+The two indexes still record every allele in the graph, because each L-line row
+records both of its endpoints in full. A link between two backbone segments that
+leaves a coordinate _gap_ is a deletion. A link from the backbone into a rank>0
+segment enters an allele, and the allele's length is the total of the segments
+it walks before rejoining.
 [`gfa-to-tabix alleles`](https://github.com/GMOD/gfa-to-tabix#alleles) does that
 walk and needs only the two files, indexed with `--layout contig`:
 
@@ -728,8 +626,10 @@ This route cannot tell you which assemblies have an allele. `discoveryRank` and
 `firstSeenIn` name the **first** assembly to contribute a segment, because
 minigraph collapses shared sequence. An allele that four strains share is
 credited to whichever strain was added first. Rank records build order, so a
-high rank does not mean the earlier assemblies lacked the sequence. Use the
-per-strain route when you have the assemblies.
+high rank does not mean the earlier assemblies lacked the sequence. With the
+assemblies,
+[per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence) in
+the E. coli tutorial shows which strains carry each stretch of a graph.
 
 ## See also
 

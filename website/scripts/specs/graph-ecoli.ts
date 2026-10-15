@@ -1502,30 +1502,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // NO FIGURE for the per-strain paths track (`ecoli_minigraph_paths`), which
-  // graph_genome_view.md still documents and the demo still hosts. Retired
-  // after three passes; the last verdict was "align this more with the look and
-  // feel of deletions with linearmafdisplay ... if that is not possible we can
-  // skip perhaps ... could consider deleting".
-  //
-  // It is not possible from this file. A MAF row reads as a lane because every
-  // aligned column is painted; `minigraph --call` emits a record per BUBBLE and
-  // nothing between them, so the lane is only as continuous as the bubble
-  // decomposition. Over the 200 kb the figure used, the 20 bubbles cover 24,840
-  // bp -- 12% of the frame, and the rest is white. Measured every window in the
-  // graph before giving up: the densest 200 kb reaches 64% and the densest
-  // 50 kb 91%, but both get there from one 40-44 kb bubble filling most of the
-  // frame, which is the "five stacked full-width boxes read as a bar chart"
-  // failure the previous pass widened the window to escape. Dense and
-  // many-event are opposite directions here.
-  //
-  // Filling the gaps would mean emitting inter-bubble reference rows from
-  // `gfa-to-tabix paths` -- and doing that honestly needs each sample's
-  // per-bubble contig coordinates chained across the gap, since "no bubble
-  // here" is a statement about the graph and not evidence that a given sample
-  // aligned there. That is a rebuild and a re-upload of the hosted demo BED,
-  // and it was declined.
-
   // The linear -> graph direction of the round trip: the segments lane turned
   // into the graph from its own track menu. Two frames, because the menu is
   // reachable only through the UI: the cascade with the rows the actions take
