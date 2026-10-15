@@ -30,5 +30,5 @@ float4 fs_main(FillVsOut fragIn) : SV_Target {
   // blend at their own y, so the ribbon's edges continue past both ends and
   // the polygon bounds them there too. vertCoverage is what ends the ribbon.
   float t = fragIn.localPos.y / u.height;
-  return strokeFs(fragIn, straightBlend(t), 1.0, u.height, u);
+  return strokeFs(fragIn, t, 1.0, u.height, u);
 }

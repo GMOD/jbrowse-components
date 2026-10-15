@@ -31,6 +31,6 @@ FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(FillVsOut fragIn) : SV_Target {
   float t = curveParamAtY(fragIn.localPos.y, u);
-  return strokeFs(fragIn, curveBlend(t), sBlendDeriv(t),
+  return strokeFs(fragIn, sBlend(t), sBlendDeriv(t),
                   u.height * yCurveDeriv(t), u);
 }

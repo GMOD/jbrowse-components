@@ -301,14 +301,6 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
 // shader-only, since Canvas2D never inverts the curve.
 public float sBlend(float t)      { return t * t * (3.0 - 2.0 * t); }
 public float sBlendDeriv(float t) { return 6.0 * t * (1.0 - t); }
-
-// The X-blend at `t` as (top corner's weight, bottom corner's weight), each
-// computed directly. As `1 - s` the top weight would carry `s`'s own rounding
-// near t = 1, about 6e-8, which a top corner 5e7 px off screen turns into 3 px
-// of error on an edge the curve holds vertical there. sBlend is symmetric, so
-// `sBlend(1 - t)` is that weight with nothing cancelled.
-public float2 straightBlend(float t) { return float2(1.0 - t, t); }
-public float2 curveBlend(float t)    { return float2(sBlend(1.0 - t), sBlend(t)); }
 public float yCurve(float t)      { return 1.5 * t * (1.0 - t) + t * t * t; }
 public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 
@@ -367,9 +359,9 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
 // ribbon, shared by both fill passes so the drift-prone per-edge slope formula
 // (the boundary-fuzz fix documented in perpCoverage) lives in ONE place. `s` is
-// the X-blend weights and `sd = ds/dt`, `dydt = dy/dt` give each edge its own
-// dx/dy: straight mode passes straightBlend(t), sd=1, dydt=h (linear y); curve
-// mode passes curveBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t).
+// the X-blend value and `sd = ds/dt`, `dydt = dy/dt` give each edge its own
+// dx/dy: straight mode passes s=t, sd=1, dydt=h (linear y); curve mode passes
+// s=sBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t).
 struct FillEdges {
   float edge0;
   float edge1;
@@ -377,8 +369,8 @@ struct FillEdges {
   float pf1;
 };
 
-FillEdges fillEdges(float4 c, float2 blend, float sd, float dydt) {
-  float2 e = ribbonEdges(c, blend);
+FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
+  float2 e = ribbonEdges(c, s);
   // Each edge's own dx/dy: its total travel scaled by this point's ds/dy.
   float2 slope = ribbonEdgeDeltas(c) * (sd / abs(dydt));
   FillEdges o;
@@ -492,9 +484,8 @@ public static const float STROKE_ALPHA = 0.4;
 // gets no extra pad at all and the per-segment saving in syntenyFillCurve is
 // untouched.
 // SYNC: mirrored by `padExtra` in syntenyFillPad.test.ts.
-public float thinRibbonPad(
-    float perpFactor, float4 c, float2 blend0, float2 blend1) {
-  float2 w = ribbonWidths(c, blend0, blend1);
+public float thinRibbonPad(float perpFactor, float4 c, float s0, float s1) {
+  float2 w = ribbonWidths(c, s0, s1);
   float wMin = w.x * w.y < 0.0 ? 0.0 : min(abs(w.x), abs(w.y));
   return max(perpFactor * 0.5 - 0.5 * wMin, 0.0);
 }
@@ -515,11 +506,11 @@ public float thinRibbonPad(
 // at |x| ~ 4000px is ~1e-4.
 static const float PAD_SLACK_PX = 0.25;
 
-// The two ribbon edges at an X-blend, ordered left/right — they swap on a
+// The two ribbon edges at X-blend `s`, ordered left/right — they swap on a
 // crossed "bowtie" ribbon, which is why the geometry sorts them here rather than
-// assuming an order.
-public float2 edgeSpan(float4 c, float2 blend) {
-  float2 e = ribbonEdges(c, blend);
+// assuming an order. Straight mode passes s=t, curve mode s=sBlend(t).
+public float2 edgeSpan(float4 c, float s) {
+  float2 e = ribbonEdges(c, s);
   return float2(min(e.x, e.y), max(e.x, e.y));
 }
 
@@ -575,18 +566,17 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
   o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
 }
 
-// The entire fill fragment. `blend` is the pass's X-blend at this fragment,
-// `sd` its ds/dt and `dydt` its dy/dt (straight: straightBlend(t), 1, height;
-// curve: curveBlend(t), sBlendDeriv(t), height·yCurveDeriv(t)). fillEdges turns those into each
+// The entire fill fragment. `s` is the pass's X-blend at this fragment, `sd`
+// its ds/dt and `dydt` its dy/dt (straight: t, 1, height; curve: sBlend(t),
+// sBlendDeriv(t), height·yCurveDeriv(t)). fillEdges turns those into each
 // edge's own X and foreshortening.
 //
 // BASE ribbons and CIGAR indel tiles run the identical analytic per-edge AA, so
 // both trace the smooth bezier edges with antialiased rather than stair-stepped
 // sides. The ONLY thing the kind decides here is how much of the density
 // width-fade applies, which thinWidthFade answers inside perpCoverage.
-public float4 fillFs(
-    FillVsOut i, float2 blend, float sd, float dydt, Uniforms u) {
-  FillEdges e = fillEdges(i.corners, blend, sd, dydt);
+public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
+  FillEdges e = fillEdges(i.corners, s, sd, dydt);
   float aaHalf = aaHalfPx(u.devicePixelRatio);
   float coverage =
     perpCoverage(i.localPos.x, e.edge0, e.edge1, e.pf0, e.pf1, i.kind,
@@ -612,9 +602,8 @@ public float4 fillFs(
 //
 // Both edges in one pass over the ribbon geometry: no per-edge tessellation, no
 // chord normals, and 48 verts/instance in curve mode instead of 192.
-public float4 strokeFs(
-    FillVsOut i, float2 blend, float sd, float dydt, Uniforms u) {
-  FillEdges e = fillEdges(i.corners, blend, sd, dydt);
+public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
+  FillEdges e = fillEdges(i.corners, s, sd, dydt);
   // True perpendicular distance to each edge (see perpCoverage — dividing by
   // the edge's own foreshortening is what makes 1.0 mean one on-screen pixel at
   // every slope).
@@ -689,10 +678,10 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   // it modelled the quad as spanning exactly [y(t0), y(t1)] — and now models the
   // rows the shader actually emits.
   float dy = 1.0 / u.height;
-  float2 blendTop = straightBlend(-dy);
-  float2 blendBot = straightBlend(1.0 + dy);
+  float sTop = -dy;
+  float sBot = 1.0 + dy;
   // Ordered left/right, so a crossed ribbon still gets a forward-facing quad.
-  float2 span = edgeSpan(c, isTop ? blendTop : blendBot);
+  float2 span = edgeSpan(c, isTop ? sTop : sBot);
 
   // Perpendicular pad (in horizontal pixels). Accommodates:
   //   (1) the AA ramp's perpendicular half-pixel: perpFactor·0.5.
@@ -713,7 +702,7 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   float slope = max(abs(d.x), abs(d.y)) / u.height;
   float perpFactor = sqrt(1.0 + slope * slope);
   float pad = perpFactor * (0.5 + extraPerpPx)
-            + thinRibbonPad(perpFactor, c, blendTop, blendBot) + PAD_SLACK_PX;
+            + thinRibbonPad(perpFactor, c, sTop, sBot) + PAD_SLACK_PX;
 
   fillVsEmit(o,
              isRight ? span.y + pad : span.x - pad,
@@ -740,9 +729,9 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
   float t1 = float(seg + 1u) * invN;
   float t = isTop ? t0 : t1;
 
-  float2 blend0 = curveBlend(t0);
-  float2 blend1 = curveBlend(t1);
-  float2 span = edgeSpan(c, isTop ? blend0 : blend1);
+  float s0 = sBlend(t0);
+  float s1 = sBlend(t1);
+  float2 span = edgeSpan(c, isTop ? s0 : s1);
   float y = u.height * yCurve(t);
 
   // The straight pass extrapolates its rows' blend to match their ±1px AA
@@ -794,8 +783,7 @@ public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
   float perpFactor = sqrt(1.0 + segSlope * segSlope);
   float bulgeX = maxEdgeDx * invN * invN * 0.75;
   float pad = perpFactor * (0.5 + extraPerpPx)
-            + thinRibbonPad(perpFactor, c, blend0, blend1) + bulgeX
-            + PAD_SLACK_PX;
+            + thinRibbonPad(perpFactor, c, s0, s1) + bulgeX + PAD_SLACK_PX;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.
@@ -845,9 +833,9 @@ public float vertCoverage(float yLocal, float h, float aaHalf) {
 // edge, and the two quantities derived from it.
 // ---------------------------------------------------------------------------
 
-// The two ribbon edges at an X-blend (top weight, bottom weight), as (edge0,
-// edge1) and NOT sorted — they swap on a crossed "bowtie" ribbon, which is what
-// edgeSpan's min/max is for.
+// The two ribbon edges at X-blend `s`, as (edge0, edge1) and NOT sorted — they
+// swap on a crossed "bowtie" ribbon, which is what edgeSpan's min/max is for.
+// Straight mode passes s=t, curve mode s=sBlend(t).
 //
 // Edge 0 runs x1 -> x4, edge 1 runs x2 -> x3. That pairing used to be written
 // twice — here for the vertex polygon and again inside fillEdges for the
@@ -857,22 +845,24 @@ public float vertCoverage(float yLocal, float h, float aaHalf) {
 // fillEdges, so it assumes the agreement instead of checking it. Stating the
 // pairing once removes the question.
 //
-// Two products rather than `lerp`, which drivers evaluate as `a + s*(b - a)`:
-// with one corner 1e7 px off screen, `b - a` rounds at that magnitude and
-// adding `a` back cancels to pixels of error on the visible end. Weighted, each
-// corner's term is only as large as its share of the result.
-float2 ribbonEdges(float4 c, float2 blend) {
-  return float2(c.x * blend.x + c.w * blend.y, c.y * blend.x + c.z * blend.y);
+// The lerp loses x precision with a corner 1e7 px off screen, and that was
+// declined as invisible: the error lives only where the edge is near
+// horizontal, and the perpendicular coverage divides it by the slope. A real-GPU
+// capture of a separately weighted blend against this one differed by 1/255 in
+// a dozen pixels (ADR-067).
+float2 ribbonEdges(float4 c, float s) {
+  return float2(lerp(c.x, c.w, s), lerp(c.y, c.z, s));
 }
 
 // Each edge's total top-to-bottom travel in x: (x4-x1, x3-x2). Taken as the
 // difference of the two endpoints ribbonEdges itself reports, which is exact
-// and keeps the pairing above the only place a corner is matched to an edge.
+// (lerp at s=1 minus lerp at s=0) and keeps the pairing above the only place a
+// corner is matched to an edge.
 float2 ribbonEdgeDeltas(float4 c) {
-  return ribbonEdges(c, float2(0.0, 1.0)) - ribbonEdges(c, float2(1.0, 0.0));
+  return ribbonEdges(c, 1.0) - ribbonEdges(c, 0.0);
 }
 
-// The ribbon's SIGNED horizontal width at two X-blends, as (w(blend0), w(blend1)).
+// The ribbon's SIGNED horizontal width at two X-blend values, as (w(s0), w(s1)).
 // Signed on purpose — opposite signs mean the edges cross, so the width passes
 // through zero somewhere between, which is the bowtie case thinRibbonPad has to
 // pad for. Width is edge1 - edge0 = lerp(x2-x1, x3-x4, s), affine in s, so these
@@ -883,9 +873,9 @@ float2 ribbonEdgeDeltas(float4 c) {
 // pixel beyond each end (s slightly outside [0,1]); a curve segment sees only
 // its own slice. Reading the whole ribbon for both under-padded the first and
 // over-padded the second.
-float2 ribbonWidths(float4 c, float2 blend0, float2 blend1) {
-  float2 a = ribbonEdges(c, blend0);
-  float2 b = ribbonEdges(c, blend1);
+float2 ribbonWidths(float4 c, float s0, float s1) {
+  float2 a = ribbonEdges(c, s0);
+  float2 b = ribbonEdges(c, s1);
   return float2(a.y - a.x, b.y - b.x);
 }
 

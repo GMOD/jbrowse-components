@@ -52,17 +52,20 @@ so anything on screen is within a few thousand px of the base — worst case
 ~5×10⁻⁴ px.
 
 That bound is per coordinate, and it reaches the screen only if the shader
-builds visible geometry from the near corner. Two shaders didn't, and both
-were measured in the compiled float32 (slangc's C++ target) on a segment with
-one end on screen:
+builds visible geometry from the near corner.
 
 - **The capsule quad** (dotplot, linked reads, the line-centre plots) placed
-  corners at centre ± half-length: 0.6 px off at 1 px/bp over 10 Mbp, 2.7 px at
-  50 px/bp over 1 Mbp, and the round cap read 0 or 2 px where the truth was 0.3.
-  `capsule.slang`'s `segmentCorner` now hangs each corner off its own endpoint.
-- **Synteny's curve edges** blended `a + s(b − a)` with `s = sBlend(t)` rounding
-  near 1: 4.9 px with a top corner 5×10⁷ px away. `curveBlend` computes the top
-  weight as `sBlend(1 − t)` and the edge as a weighted sum; both are exact there.
+  corners at centre ± half-length. In the compiled float32 (slangc's C++
+  target) that put the visible end 0.6 px off at 1 px/bp over 10 Mbp and 2.7 px
+  at 50 px/bp over 1 Mbp; on a real GPU at 50 px/bp a 10 Mbp dotplot line sat
+  28 px from Canvas2D's and a 50 Mbp one 100 px, and an 8 Mbp linked-read
+  connector started 6 px late. `capsule.slang`'s `segmentCorner` now hangs each
+  corner off its own endpoint, and all three match Canvas2D within a pixel.
+- **Synteny's curve edges** lose x the same way through `lerp` with a corner
+  5×10⁷ px off, about 5 px. That x error exists only where the edge runs near
+  horizontal, and perpendicular coverage divides it by the slope, so it reaches
+  the screen as under 0.04 px. A real-GPU capture of a separately weighted blend
+  against the lerp differed by 1/255 in a dozen pixels; the lerp stays.
 
 What remains is the far corner's own bp→px rounding, which tilts a segment
 passing through the view with both ends off screen: 0.2 px over 10 Mbp at
