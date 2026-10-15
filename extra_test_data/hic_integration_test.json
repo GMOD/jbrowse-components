@@ -3,23 +3,8 @@
     {
       "name": "hg19",
       "aliases": ["GRCh37"],
-      "sequence": {
-        "trackId": "hg19_seq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "hg19.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "RefNameAliasAdapter",
-          "uri": "hg19_aliases.txt"
-        }
-      }
+      "uri": "hg19.chrom.sizes",
+      "refNameAliases": { "uri": "hg19_aliases.txt" }
     }
   ],
   "tracks": [
