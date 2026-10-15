@@ -61,7 +61,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
     'Default',
     'Consequence impact',
     'SV type',
-    'Attribute...',
+    'Field...',
     'Solid color...',
   ])
 

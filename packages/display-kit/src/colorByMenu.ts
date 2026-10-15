@@ -77,13 +77,14 @@ export function colorFieldRows(
     pickDefaultColor: () => void
     pickSolidColor: () => void
     openColorByAttributeDialog?: () => void
+    colorFieldNoun?: string
     colorByField: (field: string) => void
     setShowLegend: (show: boolean) => void
   },
   presets: ColorPreset[],
 ): MenuItem[] {
   const presetPaints = presets.some(p => p.checked)
-  const { openColorByAttributeDialog } = self
+  const { openColorByAttributeDialog, colorFieldNoun = 'attribute' } = self
   return [
     {
       label: 'Default',
@@ -105,7 +106,7 @@ export function colorFieldRows(
     ...(openColorByAttributeDialog
       ? [
           {
-            label: 'Attribute...',
+            label: `${capitalizeFirst(colorFieldNoun)}...`,
             type: 'radio' as const,
             checked: self.colorByMode === 'attribute' && !presetPaints,
             keepMenuOpen: false,

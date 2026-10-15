@@ -42,8 +42,11 @@ export function sourceLabels(roots: string[]) {
       BUILD_DIRS,
     )) {
       const txt = readFileSync(file, 'utf8')
+      // Any length, so a one-character literal (`{ value: '1', label: '1 hop' }`)
+      // closes on its own quote rather than pairing with the next label's
+      // opening one and swallowing it; `add` drops the short ones.
       for (const m of txt.matchAll(
-        /(['"`])((?:(?!\1)[^\\\r\n]|\\.){2,90})\1/g,
+        /(['"`])((?:(?!\1)[^\\\r\n]|\\.){0,90})\1/g,
       )) {
         add(m[2]!)
       }

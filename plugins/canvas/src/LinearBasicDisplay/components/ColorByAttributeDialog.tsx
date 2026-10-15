@@ -16,6 +16,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
 }: {
   model: AttributeScanModel & {
     colorByAttribute: string
+    colorFieldNoun?: string
     colorByField: (field: string) => void
     openPlotDialog: (seed?: Plot) => void
   }
@@ -27,7 +28,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   return (
     <SubmitDialog
       open
-      title="Color by attribute"
+      title={`Color by ${model.colorFieldNoun ?? 'attribute'}`}
       submitText="Apply"
       submitDisabled={!trimmed}
       onCancel={() => {
@@ -53,8 +54,8 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
       }
     >
       <Typography variant="body2" gutterBottom>
-        Each value of the attribute paints one palette color, and the track
-        draws a key saying which.
+        Each value of the {model.colorFieldNoun ?? 'attribute'} paints one
+        palette color, and the track draws a key saying which.
       </Typography>
       <AttributeFieldInput
         model={model}

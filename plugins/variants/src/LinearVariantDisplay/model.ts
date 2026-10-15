@@ -118,6 +118,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * What Color by calls a record's named value: a VCF has fields, as the
+       * multi-sample display's menu says, where a GFF has attributes.
+       */
+      get colorFieldNoun() {
+        return 'field'
+      },
+      /**
+       * #getter
        */
       get featureWidgetType() {
         return VARIANT_FEATURE_WIDGET

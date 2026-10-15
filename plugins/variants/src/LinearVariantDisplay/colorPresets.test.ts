@@ -54,7 +54,7 @@ test('Consequence impact paints the impact field through its preset', () => {
   expect(display.colorKeyTitle).toBe('Consequence impact')
 })
 
-// Read as an ordinary attribute, a preset ticked Attribute... and offered a
+// Read as an ordinary field, a preset ticked Field... and offered a
 // pin that does nothing.
 test.each(['Consequence impact', 'SV type'])(
   '%s ticks its own row and nothing else',
@@ -91,4 +91,12 @@ test('Default parks the preset under none', () => {
   expect(checked(colorByRows(display))).toEqual(['Default'])
   expect(display.rpcProps().displayConfig.color.field).toBe('impact')
   expect(display.colorEncoding).toBeUndefined()
+})
+
+test('a VCF names its picked value a field, as the multi-sample menu does', () => {
+  const labels = colorByRows(createDisplay()).map(i =>
+    'label' in i ? i.label : undefined,
+  )
+  expect(labels).toContain('Field...')
+  expect(labels).not.toContain('Attribute...')
 })

@@ -89,6 +89,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-colorsbysvtype">**colorsBySvType**</span><br><code>boolean</code> |  |
 | <span id="getter-colorbyattribute">**colorByAttribute**</span><br><code>string</code> | The attribute the Attribute dialog opens on, '' under the impact or SV type preset, each of which has its own row. |
 | <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | Names what the track holds in every menu row, chip and indicator, so a variant track says "Variant height" and "Showing 3 variants" rather than "feature". The context menu's per-hit noun still comes from the annotation's own type where it has one. |
+| <span id="getter-colorfieldnoun">**colorFieldNoun**</span><br><code>string</code> | What Color by calls a record's named value: a VCF has fields, as the multi-sample display's menu says, where a GFF has attributes. |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
