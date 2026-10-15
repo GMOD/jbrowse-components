@@ -1,4 +1,10 @@
-import { elideRegions, elisionMask, fitLayout, ringAt } from './fitLayout.ts'
+import {
+  elideRegions,
+  elisionMask,
+  fitLayout,
+  labelPaddingAt,
+  ringAt,
+} from './fitLayout.ts'
 import {
   assemblyBandPx,
   labelOffsetPx,
@@ -113,6 +119,27 @@ test('the padding holds the labels drawn at the fit and no more', () => {
   expect(fit.paddingPx).toBe(
     maxLabelGutterPx(drawn(fit, regions).elided.map(regionLabelText)),
   )
+})
+
+// zoomed in, the two long names draw as themselves, and the padding they need
+// is past the fit's
+test('a zoom that un-elides a long label pads for it', () => {
+  const regions = [
+    ...Array.from({ length: 20 }, (_, i) => region(`chr${i + 1}`, 100_000_000)),
+    region('verylongcontigname_1', 12_000_000),
+    region('verylongcontigname_2', 12_000_000),
+  ]
+  const fit = fitLayout(input(regions, 600))
+  const mask = elisionMask(regions, fit.bpPerPx! / 4, 6)
+  expect(mask).not.toContain('1')
+  const zoomed = labelPaddingAt(input(regions, 600), mask)
+  expect(zoomed).toBe(
+    Math.min(
+      maxLabelGutterPx(elideRegions(regions, mask).map(regionLabelText)),
+      600 / 4,
+    ),
+  )
+  expect(zoomed).toBeGreaterThan(fit.paddingPx)
 })
 
 // a seeded sweep over region sets whose elision lands anywhere, including on a

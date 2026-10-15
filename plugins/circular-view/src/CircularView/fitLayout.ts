@@ -106,22 +106,19 @@ export interface FitLayout {
   paddingPx: number
 }
 
-/**
- * The circle that fills the box: its scale and radius, and the padding the
- * view keeps at every zoom. A pure function of the regions and the box, so
- * nothing reads back a value derived from itself.
- *
- * At any one scale the rest follows: the regions elide, `ringAt` closes the
- * ring, and the padding holds the labels drawn there, measured as if every
- * one radiated outward, up to half the half-box, past which a label is
- * clipped rather than the circle crushed. The radius and the labels both
- * shrink as the scale grows, so the fit is the least scale whose circle and
- * padding fit the box, found by bisection; at a jump in the gap count it
- * takes the side that fits. Most steps elide what the last one did, so each
- * elision is measured once.
- */
-export function fitLayout(input: FitInput): FitLayout {
-  const { regions, width, height, spacingPx, minVisibleWidth } = input
+function boxPaddingPx({ width, height, paddingPx }: FitInput) {
+  const halfBox = Math.min(width, height) / 2
+  return Math.min(
+    paddingPx,
+    Math.max(minPaddingPx, halfBox * maxPaddingFraction),
+  )
+}
+
+// What the circle draws under one elision mask: its gap units, and the padding
+// its labels reach, measured as if every one radiated outward, up to half the
+// half-box. Each mask is measured once.
+function drawnAtMask(input: FitInput) {
+  const { regions, width, height } = input
   const halfBox = Math.min(width, height) / 2
   const totalBp = sum(regions.map(r => r.end - r.start))
   const genomeBand =
@@ -136,12 +133,9 @@ export function fitLayout(input: FitInput): FitLayout {
           }),
         ]
       : []
-  const boxPadding = Math.min(
-    input.paddingPx,
-    Math.max(minPaddingPx, halfBox * maxPaddingFraction),
-  )
+  const boxPadding = boxPaddingPx(input)
   const byMask = new Map<string, { units: number; paddingPx: number }>()
-  const drawnAt = (mask: string) => {
+  return (mask: string) => {
     let drawn = byMask.get(mask)
     if (!drawn) {
       const elided = elideRegions(regions, mask)
@@ -161,6 +155,35 @@ export function fitLayout(input: FitInput): FitLayout {
     }
     return drawn
   }
+}
+
+/**
+ * The padding the labels drawn under `mask` reach, as `fitLayout` measures it
+ * at the fit: what a zoom that un-elides a longer label needs past the fit's.
+ */
+export function labelPaddingAt(input: FitInput, mask: string) {
+  return drawnAtMask(input)(mask).paddingPx
+}
+
+/**
+ * The circle that fills the box: its scale and radius, and the padding its
+ * labels need there. A pure function of the regions and the box, so
+ * nothing reads back a value derived from itself.
+ *
+ * At any one scale the rest follows: the regions elide, `ringAt` closes the
+ * ring, and the padding holds the labels drawn there, measured as if every
+ * one radiated outward, up to half the half-box, past which a label is
+ * clipped rather than the circle crushed. The radius and the labels both
+ * shrink as the scale grows, so the fit is the least scale whose circle and
+ * padding fit the box, found by bisection; at a jump in the gap count it
+ * takes the side that fits. Most steps elide what the last one did, so each
+ * elision is measured once.
+ */
+export function fitLayout(input: FitInput): FitLayout {
+  const { regions, width, height, spacingPx, minVisibleWidth } = input
+  const halfBox = Math.min(width, height) / 2
+  const totalBp = sum(regions.map(r => r.end - r.start))
+  const drawnAt = drawnAtMask(input)
   const layoutAt = (bpPerPx: number) => {
     const { units, paddingPx } = drawnAt(
       elisionMask(regions, bpPerPx, minVisibleWidth),
@@ -172,7 +195,7 @@ export function fitLayout(input: FitInput): FitLayout {
     }
   }
   if (totalBp <= 0) {
-    return { bpPerPx: undefined, radiusPx: 0, paddingPx: boxPadding }
+    return { bpPerPx: undefined, radiusPx: 0, paddingPx: boxPaddingPx(input) }
   }
   const fits = (bpPerPx: number) => {
     const { radiusPx, paddingPx } = layoutAt(bpPerPx)

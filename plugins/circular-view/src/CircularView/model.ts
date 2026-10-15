@@ -84,6 +84,7 @@ import {
   elideRegions,
   elisionMask,
   fitLayout,
+  labelPaddingAt,
   maxBpPerPxFor,
   ringAt,
 } from './fitLayout.ts'
@@ -99,7 +100,7 @@ import type {
   ChordLayerDisplay,
   PointerTarget,
 } from '../chords/shapes.ts'
-import type { FitLayout } from './fitLayout.ts'
+import type { FitInput, FitLayout } from './fitLayout.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -558,7 +559,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * box — see `fitLayout`
        */
       get fitLayout(): FitLayout {
-        return fitLayout({
+        return fitLayout(this.fitInput)
+      },
+      /**
+       * #getter
+       * what `fitLayout` measures the circle from
+       */
+      get fitInput(): FitInput {
+        return {
           regions: this.circleRegions,
           width: self.width,
           height: self.height,
@@ -567,7 +575,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           minVisibleWidth: self.minVisibleWidth,
           minimumRadiusPx: self.minimumRadiusPx,
           calloutPx: this.namesFeaturesOutside ? calloutGutterPx : 0,
-        })
+        }
       },
       /**
        * #getter
@@ -583,11 +591,15 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * `paddingPx`, capped at a share of a small box and floored at what the
-       * labels drawn at the fit reach, so a label is never drawn at a negative
-       * x and clipped by the box
+       * labels drawn at the fit or at this zoom reach, so a label a zoom
+       * un-elides is not clipped by the figure. The circle's centre on screen
+       * does not move with it
        */
       get effectivePaddingPx() {
-        return this.fitLayout.paddingPx
+        return Math.max(
+          this.fitLayout.paddingPx,
+          labelPaddingAt(this.fitInput, this.elisionMask),
+        )
       },
       /**
        * #getter

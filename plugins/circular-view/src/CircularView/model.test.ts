@@ -383,6 +383,26 @@ test('short labels leave the padding free to shrink', () => {
   expect(view.effectivePaddingPx).toBeLessThan(view.paddingPx)
 })
 
+// at the fit the two long names elide into one short label; a zoom that draws
+// them grows the padding for them, and the circle stays where it was on screen
+test('a zoom that un-elides a long label pads for it in place', () => {
+  const regions = [
+    ...Array.from({ length: 20 }, (_, i) => region(`chr${i + 1}`, 100_000_000)),
+    region('verylongcontigname_1', 12_000_000),
+    region('verylongcontigname_2', 12_000_000),
+  ]
+  const view = createView({ regions, width: 600, height: 600 })
+  const fitPadding = view.effectivePaddingPx
+  expect(view.elisionMask).toContain('1')
+  view.zoomToPoint(view.bpPerPx / 4, 0, 0)
+  expect(view.elisionMask).not.toContain('1')
+  expect(view.effectivePaddingPx).toBe(
+    Math.min(maxLabelGutterPx(regions.map(r => r.refName)), 600 / 4),
+  )
+  expect(view.effectivePaddingPx).toBeGreaterThan(fitPadding)
+  expect(view.circleCenterXY).toEqual([300, 300])
+})
+
 function openView(snapshot: Record<string, unknown>) {
   const pluginManager = new PluginManager()
   pluginManager.createPluggableElements()
