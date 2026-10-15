@@ -42,5 +42,7 @@ const engine = createTablesEngine()
   multiway: async (args: string) =>
     JSON.stringify(plain(await engine.multiway(JSON.parse(args)))),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
+  regions: async (args: string) =>
+    JSON.stringify(await engine.regions(JSON.parse(args))),
   alignmentColors: () => JSON.stringify(alignmentColors()),
 }

@@ -6,10 +6,11 @@ import {
   readFileSync,
   readSync,
   statSync,
+  writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 
 import { parse } from 'acorn'
@@ -55,6 +56,7 @@ let jbrowse: {
   dotplot: (args: string) => Promise<string>
   contigs: (args: string) => Promise<string>
   multiway: (args: string) => Promise<string>
+  regions: (args: string) => Promise<string>
 }
 let code: string
 
@@ -155,6 +157,39 @@ test.each([
     expect(bare.legend).toEqual(direct.legend)
   },
 )
+
+test('the bundle reads a file under its alias through an assembly, in a bare host', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'tables-'))
+  const aliases = path.join(dir, 'aliases.txt')
+  writeFileSync(aliases, 'ctgA\tcontigA\nctgB\tcontigB\n')
+  const volvox = (file: string) =>
+    pathToFileURL(path.resolve('test_data/volvox', file)).href
+  const assembly = {
+    name: 'volvox',
+    uri: volvox('volvox.fa'),
+    refNameAliases: { uri: pathToFileURL(aliases).href },
+  }
+  const args = {
+    adapterConfig: {
+      type: 'BamAdapter',
+      bamLocation: { uri: volvox('volvox-sorted-altname.bam') },
+      index: { location: { uri: volvox('volvox-sorted-altname.bam.bai') } },
+    },
+    region: BAM.region,
+    assembly,
+  }
+  const bare = JSON.parse(await jbrowse.alignments(JSON.stringify(args)))
+  expect(bare.readAs).toEqual({
+    refName: ['contigA'],
+    originalRefName: ['ctgA'],
+  })
+  expect(bare.reads.start).toEqual(
+    Array.from((await createTablesEngine().alignments(BAM)).reads.start),
+  )
+  expect(
+    JSON.parse(await jbrowse.regions(JSON.stringify({ assembly }))),
+  ).toEqual({ refName: ['ctgA', 'ctgB'], start: [0, 0], end: [50001, 6079] })
+})
 
 test('the bundle answers a PAF as the engine does, in a bare host', async () => {
   const bare = JSON.parse(await jbrowse.synteny(JSON.stringify(INV_INDELS)))
