@@ -49,7 +49,7 @@ export {
 export { type RingCell } from './rings/ringMarks.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
 export type { CircularViewCommands } from './CircularView/types.ts'
-export type { FitLayout } from './CircularView/fitLayout.ts'
+export type { FitInput, FitLayout } from './CircularView/fitLayout.ts'
 export type { ChordCell, ChordLayerFrame } from './chords/chordMarks.ts'
 export type { ChordBackend, ChordPassView } from './chords/chordPass.ts'
 export type { AxisSlice, ChordAxis } from './chords/chordStage.ts'

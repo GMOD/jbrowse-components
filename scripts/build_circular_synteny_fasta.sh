@@ -23,9 +23,9 @@ set -euo pipefail
 
 OUTDIR="${1:-circular_synteny_fasta_build}"
 : "${NAME1:?NAME1 names the first genome}"
-: "${FASTA1:?FASTA1 is the first genome's FASTA, a URL or a path}"
+: "${FASTA1:?FASTA1 is the FASTA of the first genome, a URL or a path}"
 : "${NAME2:?NAME2 names the second genome}"
-: "${FASTA2:?FASTA2 is the second genome's FASTA, a URL or a path}"
+: "${FASTA2:?FASTA2 is the FASTA of the second genome, a URL or a path}"
 # minimap2's assembly preset: asm5 for strains of one species, asm10 or asm20
 # as the pair diverges
 PRESET="${PRESET:-asm5}"

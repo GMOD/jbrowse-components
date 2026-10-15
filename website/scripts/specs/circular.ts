@@ -58,6 +58,14 @@ function circularSyntenyView(
   })
 }
 
+// Three more pairs, each from its own demo: hg38 and panTro6 through the
+// hosted liftOver chain (scripts/build_circular_synteny.sh with
+// QUERY=panTro6), and two pairs aligned from their FASTAs by
+// scripts/build_circular_synteny_fasta.sh.
+const demoConfig = (name: string) =>
+  encodeURIComponent(`https://jbrowse.org/demos/${name}/config.json`)
+const HUMAN_AUTOSOMES = Array.from({ length: 22 }, (_, i) => `chr${i + 1}`)
+
 const circularSyntenyReady = {
   readySelector: displayPainted('circular-chord-display'),
   readyTimeout: 180000,
@@ -276,9 +284,8 @@ export const circularSpecs: ScreenshotSpec[] = [
         leader: true,
         // the overlay resolves no chord anchor, so the pill points at the
         // path's own box; the id is the PIF row's index and the perspective it
-        // was reached from — the human one, since the circle lists that
-        // genome's regions first and the ribbon dedupe keeps the first of the
-        // two — stable while the file is
+        // was reached from — the human one, since the ribbon fetch reads the
+        // circle's first genome — stable while the file is
         anchor: { selector: 'path[data-testid="ribbon-28-t-hg38"]' },
         dx: 200,
         dy: 140,
@@ -286,5 +293,98 @@ export const circularSpecs: ScreenshotSpec[] = [
     ],
     viewportWidth: 1000,
     viewportHeight: 900,
+  },
+  // Human and chimpanzee by strand. Human chr2 runs to chimp 2A and 2B, the
+  // fusion; the reverse bundles inside chimp chr4, chr5, chr12 and chr15-17
+  // are the pericentric inversions of Yunis and Prakash (1982).
+  {
+    mode: 'url',
+    name: 'circular_synteny/chimp_strand',
+    url: sessionSpec(demoConfig('circular_synteny_chimp'), {
+      views: [
+        {
+          type: 'CircularView',
+          assembly: ['hg38', 'panTro6'],
+          displayedRegionNames: {
+            hg38: [...HUMAN_AUTOSOMES, 'chrX'],
+            panTro6: [
+              'chr1',
+              'chr2A',
+              'chr2B',
+              ...HUMAN_AUTOSOMES.slice(2),
+              'chrX',
+            ],
+          },
+          height: 780,
+          minAlignmentLength: 100000,
+          color: { field: 'strand' },
+          showLegend: true,
+          tracks: ['hg38ToPanTro6_liftover'],
+        },
+      ],
+    }),
+    ...circularSyntenyReady,
+  },
+
+  // Two plague strains, one chromosome each, colored by strand: the blocks
+  // that cross the circle are the rearrangements between CO92 and KIM (Deng
+  // et al. 2002), and the plasmids KIM's assembly lacks stand unjoined.
+  {
+    mode: 'url',
+    name: 'circular_synteny/yersinia',
+    url: sessionSpec(demoConfig('circular_synteny_yersinia'), {
+      views: [
+        {
+          type: 'CircularView',
+          assembly: ['CO92', 'KIM'],
+          height: 780,
+          minAlignmentLength: 5000,
+          color: { field: 'strand' },
+          showLegend: true,
+          tracks: ['KIM_to_CO92'],
+        },
+      ],
+    }),
+    ...circularSyntenyReady,
+  },
+
+  // Arabidopsis chromosome 4 against the whole B. rapa genome: its blocks
+  // land on three B. rapa chromosomes, the whole-genome triplication (Wang et
+  // al. 2011), and the B. rapa ideogram is painted only where they do.
+  {
+    mode: 'url',
+    name: 'circular_synteny/brassica_triplication',
+    url: sessionSpec(demoConfig('circular_synteny_brassica'), {
+      views: [
+        {
+          type: 'CircularView',
+          assembly: ['TAIR10', 'Brapa'],
+          displayedRegionNames: { TAIR10: ['Chr4'] },
+          height: 780,
+          minAlignmentLength: 1000,
+          tracks: ['Brapa_to_TAIR10'],
+        },
+      ],
+    }),
+    ...circularSyntenyReady,
+  },
+
+  // The whole of both genomes: the B. rapa ideogram as a mosaic of the five
+  // Arabidopsis chromosomes' colors.
+  {
+    mode: 'url',
+    name: 'circular_synteny/brassica_mosaic',
+    url: sessionSpec(demoConfig('circular_synteny_brassica'), {
+      views: [
+        {
+          type: 'CircularView',
+          assembly: ['TAIR10', 'Brapa'],
+          height: 780,
+          minAlignmentLength: 1000,
+          tracks: ['Brapa_to_TAIR10'],
+        },
+      ],
+    }),
+    ...circularSyntenyReady,
   },
 ]

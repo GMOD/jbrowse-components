@@ -125,6 +125,34 @@ Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
 opens its details. Ribbons and chords draw on the GPU, so a circle holding tens
 of thousands of them still turns and zooms without a pause.
 
+### Karyotype changes on other pairs
+
+Each circle below opens from its own demo config. The human and chimpanzee one
+reads the hosted UCSC liftOver chain, built by
+`scripts/build_circular_synteny.sh` with `QUERY=panTro6`. The other two start
+from nothing but two FASTA files: `scripts/build_circular_synteny_fasta.sh`
+aligns them with minimap2 and indexes the result with `jbrowse make-pif`.
+
+<Figure src="/img/circular_synteny/chimp_strand.png" caption="Human and chimpanzee colored by strand. Human chr2 runs to chimp chr2A and chr2B, the fusion that made it, and the reverse bundles inside chimp chr4, chr5 and chr12 are pericentric inversions (Yunis and Prakash 1982)." />
+
+<Figure src="/img/circular_synteny/yersinia.png" caption="Two strains of the plague bacterium, Yersinia pestis CO92 and KIM, one chromosome each, colored by strand. The blocks that cross the circle are the rearrangements between the strains (Deng et al. 2002); CO92's pCD1 and pPCP1 have no partner in KIM's assembly." />
+
+<Figure src="/img/circular_synteny/brassica_triplication.png" caption="Arabidopsis chromosome 4 against the whole Brassica rapa genome. Its blocks land on three B. rapa chromosomes, the whole-genome triplication in the Brassica lineage (Wang et al. 2011), and the B. rapa ideogram is painted only where they do." />
+
+<Figure src="/img/circular_synteny/brassica_mosaic.png" caption="Both whole genomes: the B. rapa ideogram as a mosaic of the five Arabidopsis chromosomes' colors." />
+
+Citations:
+
+- Yunis JJ, Prakash O (1982). The origin of man: a chromosomal pictorial legacy.
+  _Science_ 215:1525–1530.
+  [doi:10.1126/science.7063861](https://doi.org/10.1126/science.7063861)
+- Deng W et al. (2002). Genome sequence of _Yersinia pestis_ KIM. _J Bacteriol_
+  184:4601–4611.
+  [doi:10.1128/JB.184.16.4601-4611.2002](https://doi.org/10.1128/JB.184.16.4601-4611.2002)
+- Wang X et al. (2011). The genome of the mesopolyploid crop species _Brassica
+  rapa_. _Nat Genet_ 43:1035–1039.
+  [doi:10.1038/ng.919](https://doi.org/10.1038/ng.919)
+
 ## Interacting with chords
 
 - **Hover** a chord to highlight it and see the variant it represents
