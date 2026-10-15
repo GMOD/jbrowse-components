@@ -206,3 +206,18 @@ test('Open genome cancels through a promise and closes the dialog', async () => 
   await expect(onClose()).resolves.toBeUndefined()
   expect(root.session!.DialogComponent).toBeUndefined()
 })
+
+// the plugin store's add and remove drop setPluginsUpdated's promise, so a
+// reload that fails has to say so itself
+test('a plugin reload that fails is reported on the session it left open', async () => {
+  const root = createRootModel()
+  root.setOpenNewSessionCallback(async () => {
+    throw new Error('plugin reload failed')
+  })
+
+  await root.setPluginsUpdated()
+
+  expect(root.session!.snackbarMessages.map(m => m.message)).toEqual([
+    'Error: plugin reload failed',
+  ])
+})

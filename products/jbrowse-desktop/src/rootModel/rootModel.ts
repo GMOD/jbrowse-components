@@ -304,11 +304,19 @@ export default function rootModelFactory({
         async setPluginsUpdated() {
           // openNewSessionCallback reloads from sessionPath; with no path there
           // is nothing to reload from (loadSession('') would throw)
-          if (self.sessionPath) {
-            if (self.session) {
+          const { session, sessionPath } = self
+          if (!sessionPath) {
+            return
+          }
+          // reported here: the plugin store's add and remove drop this promise,
+          // and a reload that fails leaves this session open to report it
+          try {
+            if (session) {
               await self.saveSession(getSaveSession(self))
             }
-            await self.openNewSessionCallback(self.sessionPath)
+            await self.openNewSessionCallback(sessionPath)
+          } catch (e) {
+            reportError(session, e)
           }
         },
         /**
