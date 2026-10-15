@@ -1,5 +1,10 @@
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
-import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
+import {
+  TRACK_MENU_PRIORITY,
+  radioItems,
+  toggleItem,
+  withHint,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -27,11 +32,6 @@ import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { PlotDisplay } from '@jbrowse/display-kit/plotMenu'
-
-// Every menu level sorts by `priority` and the sort is stable, so this pins
-// the recovery rows below whatever a subclass appends and above "Display
-// types" at -1000.
-const RECOVERY_PRIORITY = -100
 
 // Rows come from core's `radioItems`, so every radio keeps the menu
 // open on click; a hand-rolled copy is how the Gene glyph submenu came to
@@ -113,7 +113,7 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
 }
 
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
-  return undoItems(self.featureMarks(), RECOVERY_PRIORITY)
+  return undoItems(self.featureMarks(), TRACK_MENU_PRIORITY.recovery)
 }
 
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
@@ -204,7 +204,7 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
     onEdit: () => {
       self.openFilterDialog()
     },
-    priority: RECOVERY_PRIORITY,
+    priority: TRACK_MENU_PRIORITY.recovery,
   })
 }
 

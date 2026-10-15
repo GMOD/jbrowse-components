@@ -95,7 +95,7 @@ export interface FilterMenuOpts {
   onEdit?: () => void
   /** Controls that belong inside the submenu (inline sliders, further dialogs). */
   subItems?: MenuItem[]
-  /** Rides the top-level row; see the canvas display's RECOVERY_PRIORITY. */
+  /** Rides the top-level row, `TRACK_MENU_PRIORITY.recovery` on the canvas display. */
   priority?: number
 }
 

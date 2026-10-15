@@ -1,3 +1,5 @@
+import { subMenuIfAny } from './MenuTypes.ts'
+
 import type { MenuItem } from './MenuTypes.ts'
 import type { SvgIconComponent } from '@mui/icons-material'
 
@@ -23,17 +25,12 @@ export function launchTargetsMenuItem<T>({
   entryLabel: (entry: T) => string
   onSelect: (entry: T) => () => void
 }): MenuItem[] {
-  return entries.length
-    ? [
-        {
-          label,
-          icon,
-          type: 'subMenu',
-          subMenu: entries.map(entry => ({
-            label: entryLabel(entry),
-            onClick: onSelect(entry),
-          })),
-        },
-      ]
-    : []
+  return subMenuIfAny({
+    label,
+    icon,
+    subMenu: entries.map(entry => ({
+      label: entryLabel(entry),
+      onClick: onSelect(entry),
+    })),
+  })
 }

@@ -16,6 +16,7 @@ import {
 } from '../../data_adapters/adapterSessionRefcount.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { adapterByteLimit } from '../../rpc/byteBudget.ts'
+import { TRACK_MENU_PRIORITY } from '../../ui/MenuTypes.ts'
 import {
   getContainingView,
   getDialogHost,
@@ -550,7 +551,7 @@ export function createBaseTrackModel(
         return {
           label: 'Save track data',
           icon: Save,
-          priority: 998,
+          priority: TRACK_MENU_PRIORITY.saveTrackData,
           onClick: () => {
             getDialogHost(self).queueDialog(handleClose => [
               SaveTrackDataDlg,
@@ -577,7 +578,7 @@ export function createBaseTrackModel(
                 {
                   type: 'subMenu' as const,
                   label: 'Display types',
-                  priority: -1000,
+                  priority: TRACK_MENU_PRIORITY.displayTypes,
                   subMenu: compatDisp.map(d => {
                     const displayType = pm.getDisplayType(d.type)
                     return {

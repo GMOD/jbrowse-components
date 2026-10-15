@@ -1,3 +1,4 @@
+import { TRACK_MENU_PRIORITY } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { asAbstractSession } from '../siblingCast.ts'
@@ -52,7 +53,10 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
           // priority mirrors the full TrackMenuItemsSessionMixin so "About
           // track" sorts to the top of the in-view label menu consistently
           // across embedded and full products
-          { ...aboutTrackMenuItem(self, config), priority: 1002 },
+          {
+            ...aboutTrackMenuItem(self, config),
+            priority: TRACK_MENU_PRIORITY.aboutTrack,
+          },
           ...pluginExtraTrackItems(pluginManager, self, config, view),
         ]
       },

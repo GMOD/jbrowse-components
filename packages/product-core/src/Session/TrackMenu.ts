@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { InfoIcon } from '@jbrowse/core/ui/Icons'
+import { TRACK_MENU_PRIORITY } from '@jbrowse/core/ui/menuItems'
 import { namesTemporaryAssembly } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -197,15 +198,18 @@ export function trackActionMenuItems(
   return [
     {
       ...aboutTrackMenuItem(session, config),
-      priority: 1002,
+      priority: TRACK_MENU_PRIORITY.aboutTrack,
     },
     {
       type: 'subMenu' as const,
       label: 'Track actions',
-      priority: 1001,
+      priority: TRACK_MENU_PRIORITY.trackActions,
       subMenu: actions,
     },
-    { type: 'divider' as const },
+    {
+      type: 'divider' as const,
+      priority: TRACK_MENU_PRIORITY.trackActionsDivider,
+    },
   ]
 }
 

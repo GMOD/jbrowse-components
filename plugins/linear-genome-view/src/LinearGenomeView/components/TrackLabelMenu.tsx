@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { TRACK_MENU_PRIORITY, subMenuIfAny } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import LowPriorityIcon from '@mui/icons-material/LowPriority'
@@ -39,21 +40,16 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
       }) ?? []
 
     return [
-      ...(orderSubMenu.length
-        ? [
-            {
-              label: 'Track order',
-              icon: LowPriorityIcon,
-              type: 'subMenu' as const,
-              priority: 1000,
-              subMenu: orderSubMenu,
-            },
-          ]
-        : []),
+      ...subMenuIfAny({
+        label: 'Track order',
+        icon: LowPriorityIcon,
+        priority: TRACK_MENU_PRIORITY.trackOrder,
+        subMenu: orderSubMenu,
+      }),
       ...sessionItems,
       track.saveTrackDataMenuItem,
       ...track.trackMenuItems(),
-    ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+    ]
   }
 
   return (

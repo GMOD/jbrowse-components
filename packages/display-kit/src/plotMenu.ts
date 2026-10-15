@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { TRACK_MENU_PRIORITY } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import TuneIcon from '@mui/icons-material/Tune'
@@ -33,7 +34,7 @@ export function editPlotMenuItems(display: PlotDisplay): MenuItem[] {
           label: 'Advanced',
           icon: TuneIcon,
           type: 'subMenu',
-          priority: -999,
+          priority: TRACK_MENU_PRIORITY.advanced,
           subMenu: [
             {
               label: 'Edit plot...',

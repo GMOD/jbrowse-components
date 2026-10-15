@@ -114,6 +114,29 @@ export interface SubMenuItem extends BaseMenuItem {
   subMenu: MenuItem[] | (() => MenuItem[])
 }
 
+/**
+ * Where a track menu's shared rows sort, higher first. A display's own rows sit
+ * at 0, between the track's actions above and the recovery, Advanced and
+ * Display types rows below.
+ */
+export const TRACK_MENU_PRIORITY = {
+  aboutTrack: 1002,
+  trackActions: 1001,
+  trackOrder: 1000,
+  saveTrackData: 998,
+  trackActionsDivider: 997,
+  recovery: -100,
+  advanced: -999,
+  displayTypes: -1000,
+} as const
+
+/** The submenu as a one-row list, or no row while it has nothing to hold. */
+export function subMenuIfAny(
+  item: BaseMenuItem & { subMenu: MenuItem[] },
+): MenuItem[] {
+  return item.subMenu.length ? [{ ...item, type: 'subMenu' }] : []
+}
+
 export function resolveSubMenu(item: SubMenuItem) {
   return typeof item.subMenu === 'function' ? item.subMenu() : item.subMenu
 }

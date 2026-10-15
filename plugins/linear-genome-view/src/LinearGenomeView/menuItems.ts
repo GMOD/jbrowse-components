@@ -2,7 +2,7 @@ import {
   Highlighter,
   TrackSelector as TrackSelectorIcon,
 } from '@jbrowse/core/ui/Icons'
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems, subMenuIfAny } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   assembleLocStrings,
@@ -426,17 +426,12 @@ export function buildRubberBandMenuItems(
         }
       },
     },
-    ...(launch.length
-      ? [
-          {
-            label: 'Launch',
-            icon: LaunchIcon,
-            type: 'subMenu' as const,
-            priority: -1000,
-            subMenu: launch,
-          },
-        ]
-      : []),
+    ...subMenuIfAny({
+      label: 'Launch',
+      icon: LaunchIcon,
+      priority: -1000,
+      subMenu: launch,
+    }),
   ]
 }
 
