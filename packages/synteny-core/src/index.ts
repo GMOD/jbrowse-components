@@ -152,6 +152,8 @@ export {
   opacityMenuItem,
   reorderChromosomesMenuItem,
 } from './settingsMenuItems.ts'
+export { trackSubMenuItem } from './trackSubMenuItem.ts'
+export type { MenuTrack } from './trackSubMenuItem.ts'
 export {
   FADE_AUTO_MIN_FEATURES,
   FADE_WIDE_BLOCK_PX,

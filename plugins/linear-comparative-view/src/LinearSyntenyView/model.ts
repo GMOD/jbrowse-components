@@ -64,6 +64,7 @@ import {
   removeRowMenuItems,
   rowMenuItems,
   rowViewMenuItems,
+  syntenyTracksMenuItems,
 } from './menus.ts'
 import { sharedFit } from './sharedFit.ts'
 import { liftLegacySyntenyView } from './util/liftViewLevelTracks.ts'
@@ -1227,7 +1228,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #method
          * The header's view-options menu: the zoom actions, the row coupling,
-         * what varies with the stack under "Rows", then Export SVG. Every
+         * what varies with the stack under "Rows", each synteny track's menu
+         * under "Tracks", then Export SVG. Every
          * render setting is in `SyntenySettingsMenu` instead.
          * `ViewOptionsMenuButton` passes the "Show..." submenu as
          * `extraSubMenus`, since the search box prefs are React state.
@@ -1280,6 +1282,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ...rowMenuItems(self),
               ],
             },
+            ...syntenyTracksMenuItems(self),
             ...extraSubMenus,
             ...(self.hiddenFeatureCount > 0
               ? [

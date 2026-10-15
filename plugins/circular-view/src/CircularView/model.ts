@@ -8,7 +8,6 @@ import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import {
   clamp,
-  coarseStripHTML,
   getDialogHost,
   getSession,
   isSessionModelWithWidgets,
@@ -19,7 +18,6 @@ import {
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   getConfAssemblyNamesOrNone,
-  getTrackName,
   hideTrackGeneric,
   isSameAssemblyName,
   normalizeTrackInit,
@@ -62,6 +60,7 @@ import {
   minLengthMenuItem,
   opacityMenuItem,
   reorderChromosomesMenuItem,
+  trackSubMenuItem,
   ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
@@ -1727,21 +1726,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * on the circle has nowhere else to go
        */
       tracksMenuItem(): MenuItem {
-        const session = getSession(self)
         return {
           label: 'Tracks',
           type: 'subMenu',
-          subMenu: self.tracks.map(track => ({
-            label: coarseStripHTML(getTrackName(track.configuration, session)),
-            type: 'subMenu' as const,
-            subMenu: [
-              ...(session.getTrackActionMenuItems?.({
-                config: track.configuration,
-                view: self,
-              }) ?? []),
-              ...track.trackMenuItems(),
-            ],
-          })),
+          subMenu: self.tracks.map(track => trackSubMenuItem(self, track)),
         }
       },
     }))

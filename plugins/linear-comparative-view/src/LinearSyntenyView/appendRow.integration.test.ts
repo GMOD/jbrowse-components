@@ -4,6 +4,7 @@ import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 type WebSession = ReturnType<typeof createTestSession>
 
@@ -293,5 +294,42 @@ test('the header menu opens the same six rows at any row count', async () => {
     'Follow',
     'Rows',
     'Export SVG',
+  ])
+})
+
+const labelsOf = (items: MenuItem[]) =>
+  items.map(item => ('label' in item ? item.label : item.type))
+
+function subMenuNamed(items: MenuItem[], label: string) {
+  const found = items.find(i => 'label' in i && i.label === label)
+  if (!found || !('subMenu' in found)) {
+    throw new Error(`no "${label}" submenu`)
+  }
+  return resolveSubMenu(found)
+}
+
+test('the header Tracks menu holds each shown synteny track menu, per row pair', async () => {
+  const { view } = await openStack(3)
+  expect(labelsOf(view.headerMenuItems())).not.toContain('Tracks')
+
+  await view.launchTrack('synteny0', 0)
+  await view.launchTrack('synteny1', 1)
+  const tracks = subMenuNamed(view.headerMenuItems(), 'Tracks')
+  expect(labelsOf(tracks)).toEqual([
+    'volvox0 → volvox1',
+    'synteny0',
+    'volvox1 → volvox2',
+    'synteny1',
+  ])
+  const trackMenu = labelsOf(subMenuNamed(tracks, 'synteny1'))
+  expect(trackMenu[0]).toBe('About track')
+  expect(trackMenu).toContain('Track actions')
+})
+
+test('one row pair lists its tracks with no subheader', async () => {
+  const { view } = await openStack(2)
+  await view.launchTrack('synteny0', 0)
+  expect(labelsOf(subMenuNamed(view.headerMenuItems(), 'Tracks'))).toEqual([
+    'synteny0',
   ])
 })

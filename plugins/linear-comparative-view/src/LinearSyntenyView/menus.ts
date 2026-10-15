@@ -1,5 +1,6 @@
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { radioItems, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
+import { trackSubMenuItem } from '@jbrowse/synteny-core'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -7,7 +8,9 @@ import RemoveIcon from '@mui/icons-material/Remove'
 
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { LodTier } from '@jbrowse/synteny-core'
+import type { TrackActionView } from '@jbrowse/core/util/types'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { LodTier, MenuTrack } from '@jbrowse/synteny-core'
 
 // The sections of the LinearSyntenyView header menu. Each returns [] when it
 // does not apply, and takes the structural slice it reads rather than the whole
@@ -199,6 +202,28 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
       ...model.views[idx]!.menuItems(),
     ],
   }))
+}
+
+interface TracksMenuModel {
+  views: { assemblyNames: string[] }[]
+  levels: (TrackActionView & IAnyStateTreeNode & { tracks: MenuTrack[] })[]
+}
+
+/**
+ * Each synteny track's own menu. A ribbon band draws no track label to hang
+ * one off, so the header menu lists them, under one subheader per pair of rows
+ * once there is more than one pair.
+ */
+export function syntenyTracksMenuItems(model: TracksMenuModel): MenuItem[] {
+  const labels = rowLabels(model.views)
+  const { levels } = model
+  const subMenu = levels.flatMap((level, idx) => {
+    const items = level.tracks.map(track => trackSubMenuItem(level, track))
+    return levels.length > 1
+      ? withSubHeader(`${labels[idx]} → ${labels[idx + 1]}`, items)
+      : items
+  })
+  return subMenu.length > 0 ? [{ label: 'Tracks', subMenu }] : []
 }
 
 // the same per-row menus for the app's view menu, which has no "Rows" group
