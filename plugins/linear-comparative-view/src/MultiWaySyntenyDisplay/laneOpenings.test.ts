@@ -151,6 +151,7 @@ function stackOf(
     ),
     rowFrames,
     axisSpanOf: (_ref, start, end) => anchorSpan(start, end),
+    axisSpansOf: (_ref, start, end) => [anchorSpan(start, end)],
     anchorRegionSpans: [anchorSpan(WINDOW_START, WINDOW_END)],
     anchorBpPerPx: UNIT_BP / WIDTH,
     contigOf: () => ({ start: 0, end: 300_000_000 }),

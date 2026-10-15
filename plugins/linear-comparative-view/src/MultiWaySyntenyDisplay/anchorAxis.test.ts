@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { axisSpan, displayedRegionSpans } from './anchorAxis.ts'
+import { axisSpan, axisSpans, displayedRegionSpans } from './anchorAxis.ts'
 import { createDisplay } from './testEnv.ts'
 
 // The harness displays ctgA:0..1000 and nothing else.
@@ -68,4 +68,25 @@ test('each displayed region spans what axisSpan maps the whole region to', () =>
       axisSpan(view, r.refName, r.start, r.end, 40),
     ),
   )
+})
+
+test('an interval across two displayed regions of one refName opens a gap at the seam', () => {
+  const view = createDisplay().lgv
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 400 },
+    {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 600,
+      end: 1000,
+      reversed: true,
+    },
+  ])
+  const spans = axisSpans(view, 'ctgA', 300, 700)
+  const seam = axisSpan(view, 'ctgA', 399, 400)![1]
+  expect(spans).toHaveLength(2)
+  expect(spans[0]![1]).toBe(seam)
+  // the reversed region reads right to left from its end at the seam
+  expect(spans[1]![0]).toBeGreaterThan(spans[1]![1])
+  expect(Math.max(...spans[1]!)).toBeLessThanOrEqual(seam + 400 / view.bpPerPx)
 })

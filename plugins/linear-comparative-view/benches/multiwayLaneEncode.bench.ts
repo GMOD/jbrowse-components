@@ -136,6 +136,7 @@ const stack = buildLanes({
   anchorSpans: new Map(groups.map(g => [g.key, [0, WIDTH] as const])),
   rowFrames: new Map(lanes.map(lane => [lane, frame])),
   axisSpanOf: () => undefined,
+  axisSpansOf: () => [],
   anchorRegionSpans: [[0, WIDTH]],
   anchorBpPerPx: SPAN_BP / WIDTH,
   contigOf: () => undefined,

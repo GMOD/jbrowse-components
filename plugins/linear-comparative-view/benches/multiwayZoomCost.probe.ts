@@ -271,6 +271,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
       anchorSpans,
       rowFrames,
       axisSpanOf: (_r, s, e) => [pxOf(s), pxOf(e)],
+      axisSpansOf: (_r, s, e) => [[pxOf(s), pxOf(e)]],
       anchorRegionSpans: [[0, WIDTH]],
       anchorBpPerPx: 1,
       contigOf: () => undefined,

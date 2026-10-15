@@ -180,6 +180,7 @@ export interface BuildLanesOpts {
   anchorSpans: Map<string, Span>
   rowFrames: Map<string, RowFrame | undefined>
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
+  axisSpansOf: (refName: string, start: number, end: number) => Span[]
   anchorRegionSpans: Span[]
   anchorBpPerPx: number
   /** takes a canonical refName */
@@ -214,6 +215,7 @@ export function buildLanes({
   anchorSpans,
   rowFrames,
   axisSpanOf,
+  axisSpansOf,
   anchorRegionSpans,
   anchorBpPerPx,
   contigOf,
@@ -293,10 +295,8 @@ export function buildLanes({
                 ? frameSpan(frame, start, end, width)
                 : undefined,
         spansOf: isAnchor
-          ? (refName: string, start: number, end: number) => {
-              const span = axisSpanOf(canon(refName), start, end)
-              return span ? [span] : []
-            }
+          ? (refName: string, start: number, end: number) =>
+              axisSpansOf(canon(refName), start, end)
           : (refName: string, start: number, end: number) =>
               frame && canon(refName) === frameRefName
                 ? frameSpans(frame, start, end, width)

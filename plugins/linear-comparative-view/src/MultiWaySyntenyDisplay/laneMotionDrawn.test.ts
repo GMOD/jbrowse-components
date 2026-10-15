@@ -444,6 +444,7 @@ test('a ribbon the old frame drew wide is kept for a move that starts magnified'
           ['cacao', cacao],
         ]),
         axisSpanOf: () => undefined,
+        axisSpansOf: () => [],
         anchorRegionSpans: [],
         anchorBpPerPx: 1,
         contigOf: () => undefined,

@@ -93,6 +93,7 @@ import { NO_OPS, lanePairKey } from './alignmentOps.ts'
 import {
   axisPlacement,
   axisSpan,
+  axisSpans,
   axisTickXs,
   displayedRegionSpans,
 } from './anchorAxis.ts'
@@ -2088,6 +2089,8 @@ export function stateModelFactory(
           rowFrames: self.rowFrames,
           axisSpanOf: (refName, start, end) =>
             axisSpan(view, refName, start, end, self.renderOriginPx),
+          axisSpansOf: (refName, start, end) =>
+            axisSpans(view, refName, start, end, self.renderOriginPx),
           anchorRegionSpans: displayedRegionSpans(view, self.renderOriginPx),
           anchorBpPerPx: view.bpPerPx,
           contigOf: (assemblyName, refName) => {

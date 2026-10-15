@@ -133,6 +133,10 @@ function stack({
       ['cacao', cacao],
     ]),
     axisSpanOf,
+    axisSpansOf: (refName: string, start: number, end: number) => {
+      const span = axisSpanOf(refName, start, end)
+      return span ? [span] : []
+    },
     anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf,

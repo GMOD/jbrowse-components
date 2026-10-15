@@ -1,4 +1,4 @@
-import { clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
+import { bpToPx, clipToDisplayedRegions } from '@jbrowse/core/util/Base1DUtils'
 
 import type { AnchorCoord } from './laneDecision.ts'
 import type { Span } from './layoutMultiWay.ts'
@@ -46,6 +46,31 @@ export function axisSpan(
 ): Span | undefined {
   const placement = axisPlacement(view, refName, start, end)
   return placement && [placement.x1 - originPx, placement.x2 - originPx]
+}
+
+/**
+ * One span per displayed region the interval meets, so it opens a gap at the
+ * seam between two regions of one refName rather than bridging it
+ */
+export function axisSpans(
+  view: LinearGenomeViewModel,
+  refName: string,
+  start: number,
+  end: number,
+  originPx = view.offsetPx,
+): Span[] {
+  const out: Span[] = []
+  view.displayedRegions.forEach((region, displayedRegionIndex) => {
+    const s = Math.max(start, region.start)
+    const e = Math.min(end, region.end)
+    if (region.refName === refName && s <= e) {
+      const px = (coord: number) =>
+        bpToPx({ refName, coord, displayedRegionIndex, self: view })!.offsetPx -
+        originPx
+      out.push([px(s), px(e)])
+    }
+  })
+  return out
 }
 
 export function displayedRegionSpans(

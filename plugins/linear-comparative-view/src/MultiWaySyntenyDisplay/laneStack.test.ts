@@ -82,6 +82,10 @@ function stack(overrides: Partial<BuildLanesOpts> = {}) {
     ),
     rowFrames: new Map([['peach', peachFrame]]),
     axisSpanOf,
+    axisSpansOf: (refName: string, start: number, end: number) => {
+      const span = axisSpanOf(refName, start, end)
+      return span ? [span] : []
+    },
     anchorBpPerPx: 1,
     anchorRegionSpans: [axisSpanOf('chr1', 0, 1000)!],
     contigOf: () => undefined,
@@ -99,6 +103,15 @@ test('the anchor lane is the top one, on the view axis rather than a frame', () 
   expect(lanes[0]!.frame).toBeUndefined()
   expect(lanes[1]!.frame).toBe(peachFrame)
   expect(lanes[0]!.glyphTop).toBeLessThan(lanes[1]!.glyphTop)
+})
+
+test('the anchor lane cuts an interval where the view shows it in pieces', () => {
+  const pieces: Span[] = [
+    [0, 100],
+    [100, 150],
+  ]
+  const [anchor] = stack({ axisSpansOf: () => pieces }).lanes
+  expect(anchor!.spansOf('chr1', 0, 500)).toEqual(pieces)
 })
 
 test('each lane places the groups in its own coordinates', () => {

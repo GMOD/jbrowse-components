@@ -604,6 +604,10 @@ export async function multiwayTables(
     rowFrames,
     axisSpanOf: (refName, start, end) =>
       place.placement(refName, start, end)?.span,
+    axisSpansOf: (refName, start, end) => {
+      const span = place.placement(refName, start, end)?.span
+      return span ? [span] : []
+    },
     anchorRegionSpans: anchorRegionSpans(axis),
     anchorBpPerPx: axis.bpPerPx,
     contigOf: () => undefined,
