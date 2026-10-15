@@ -11,6 +11,7 @@ import path from 'node:path'
 import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
+import { BRIDGE_TIMEOUT_MS } from '../electron/mcp/budgets.ts'
 import { defaultSocketPath } from '../electron/mcp/socketPath.ts'
 
 import type { ChildProcess } from 'node:child_process'
@@ -161,17 +162,34 @@ export interface JsonRpcResponse {
   error?: { message: string }
 }
 
+// past the stdio server's own wait on the bridge, so this fires only for an
+// answer that is never coming
+const RPC_CEILING_MS = BRIDGE_TIMEOUT_MS + 30_000
+
 export function startMcpClient() {
   const child = spawn('node', [path.join(desktopRoot, 'build/mcpServer.js')], {
     stdio: ['pipe', 'pipe', 'inherit'],
   })
   // matched by id, not in order: a cancelled request is answered by nobody, and
   // a queue would then hand its slot to the next call's answer
-  const waiters = new Map<number, (r: JsonRpcResponse) => void>()
+  const waiters = new Map<
+    number,
+    { resolve: (r: JsonRpcResponse) => void; reject: (e: Error) => void }
+  >()
   readline.createInterface({ input: child.stdout! }).on('line', line => {
     const response = JSON.parse(line) as JsonRpcResponse
-    waiters.get(response.id)?.(response)
+    waiters.get(response.id)?.resolve(response)
     waiters.delete(response.id)
+  })
+  // a server that died answers nothing, and the job would otherwise sit out
+  // its whole CI timeout
+  child.on('exit', code => {
+    for (const [id, waiter] of waiters) {
+      waiter.reject(
+        new Error(`mcpServer exited (${code}) with call ${id} pending`),
+      )
+    }
+    waiters.clear()
   })
   let nextId = 0
   function send(method: string, params: Record<string, unknown>) {
@@ -188,7 +206,24 @@ export function startMcpClient() {
   }
   async function rpc(method: string, params: Record<string, unknown>) {
     const id = send(method, params)
-    return new Promise<JsonRpcResponse>(resolve => waiters.set(id, resolve))
+    return new Promise<JsonRpcResponse>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        waiters.delete(id)
+        reject(
+          new Error(`${method} ${id} got no answer in ${RPC_CEILING_MS}ms`),
+        )
+      }, RPC_CEILING_MS)
+      waiters.set(id, {
+        resolve: r => {
+          clearTimeout(timer)
+          resolve(r)
+        },
+        reject: e => {
+          clearTimeout(timer)
+          reject(e)
+        },
+      })
+    })
   }
   async function callAll(name: string, args: Record<string, unknown> = {}) {
     const response = await rpc('tools/call', { name, arguments: args })

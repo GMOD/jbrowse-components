@@ -31,14 +31,21 @@ export interface EvalTask {
 export type TaskSet = 'dev' | 'heldout' | 'tutorials' | 'all'
 export type Surface = 'desktop' | 'web'
 
+// a mistyped --filter selected nothing, and the run reported 0/0 passed
 export function selectTasks(set: TaskSet, filter = '', surface: Surface) {
-  return TASKS.filter(
+  const tasks = TASKS.filter(
     t =>
       (set === 'all' ||
         set === (t.tutorial ? 'tutorials' : t.heldOut ? 'heldout' : 'dev')) &&
       (surface === 'desktop' || t.desktopOnly !== true) &&
       t.name.includes(filter),
   )
+  if (tasks.length === 0) {
+    throw new Error(
+      `no ${surface} task in the ${set} set has "${filter}" in its name`,
+    )
+  }
+  return tasks
 }
 
 export const BASELINE_SPEC = `

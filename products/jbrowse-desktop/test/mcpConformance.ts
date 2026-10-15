@@ -20,6 +20,10 @@ import { openVolvox, repoRoot, volvoxConfig } from './mcpHarness.ts'
 
 const attach = process.argv.includes('--attach')
 
+// the page has well over this many offline js fences; the floor only has to
+// tell "ran them" from "found none"
+const MIN_RECIPES_RUN = 10
+
 function recipeFences() {
   const page = fs.readFileSync(
     path.join(repoRoot, 'website/docs/agents_recipes.md'),
@@ -160,10 +164,10 @@ try {
 
   // Factored out because a check that loads a spec of its own REPLACES the
   // session, and every check after it reads the two tracks at ctgA:1-30,000.
-  const openConformanceSession = () =>
+  const openVolvoxSession = (sessionName: string) =>
     run(`
     return jb.loadSessionSpec({
-      sessionName: 'MCP conformance',
+      sessionName: ${JSON.stringify(sessionName)},
       views: [
         {
           type: 'LinearGenomeView',
@@ -176,7 +180,7 @@ try {
         },
       ],
     }, ${SETTLE_MS})`)
-  const loaded = await openConformanceSession()
+  const loaded = await openVolvoxSession('MCP conformance')
   const actions = await client.call('docs', {
     topic: 'model:LinearGenomeView',
     section: 'Actions',
@@ -384,7 +388,7 @@ try {
     ].some((n: { message: string }) => n.message.includes('colorSchem')),
     strayKey,
   )
-  await openConformanceSession()
+  await openVolvoxSession('MCP conformance')
 
   const variants = await run(`
     const feats = await jb.getFeatures({
@@ -611,27 +615,13 @@ try {
   // (`throwOnExportErrors`), so the export fence failed on the previous
   // recipe's subject. Fences under one heading still share a session: those do
   // build on each other.
-  const openRecipeSession = () =>
-    run(`
-    return jb.loadSessionSpec({
-      sessionName: 'recipes',
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-30,000',
-          tracks: [
-            { trackId: 'gff3tabix_genes', height: 140 },
-            { trackId: 'volvox_test_vcf', height: 100 },
-          ],
-        },
-      ],
-    }, ${SETTLE_MS})`)
   let openedFor: string | undefined
+  let recipesRun = 0
   for (const { heading, code } of recipeFences()) {
     if (!code.includes('hg38') && !code.includes('https://')) {
+      recipesRun += 1
       if (openedFor !== heading) {
-        await openRecipeSession()
+        await openVolvoxSession('recipes')
         openedFor = heading
       }
       // An error TOAST fails the recipe as surely as a throw does. The page
@@ -661,6 +651,13 @@ try {
       check(`recipe runs: ${heading}`, outcome === '', outcome)
     }
   }
+  // a fence renamed out of ```js, or every one naming hg38, would leave the
+  // loop above with nothing to run and the page's promise checked by nothing
+  check(
+    'the recipes page has offline fences to run',
+    recipesRun >= MIN_RECIPES_RUN,
+    recipesRun,
+  )
 
   console.log(process.exitCode ? 'FAILED' : 'PASSED')
 } finally {
