@@ -14,7 +14,8 @@ A region's features, or several regions', as the feature display
 tables: each top-level feature on the
 row the display's layout gives it, the boxes, intron lines, chevrons and
 strand arrows its glyph draws, its transcripts, the labels the display
-shows beside it at this zoom, and the color key, a ramp's as `ramps`
+shows beside it at this zoom, the residues it writes over a zoomed-in CDS,
+and the color key, a ramp's as `ramps`
 (`rampKeyOf`). For a host that draws them itself, such as R through V8. The
 adapters must be registered on `pluginManager`.
 
@@ -30,9 +31,16 @@ size. A feature the packer could not place within its 10000 px row ceiling
 is left out of every table and counted in `truncated`; the legend keys what
 the worker painted, such a feature included, as the browser's key does.
 
+Under a `facet` the display packs a section per value, each under its
+`sectionLabelHeight` chip row, and `sections` lists them in stacking order:
+`key`, `label`, and `top` and `height` in px, the chip row included.
+Ungrouped, there is one section, labelled `''`, from 0 to `height`. Each
+feature names its section's `label`. A section `facet.hidden` lists leaves
+every table.
+
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByCDS, byteLimit, }: FeatureTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, bpPerPx, colorByCDS, aminoAcids, geneticCodeId, byteLimit, }: FeatureTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)
