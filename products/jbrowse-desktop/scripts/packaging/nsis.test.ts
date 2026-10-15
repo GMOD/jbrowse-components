@@ -166,6 +166,18 @@ test('the install is per-user, so background updates need no UAC', () => {
   expect(script()).not.toMatch(/WriteRegStr HKLM|WriteRegDWORD HKLM/)
 })
 
+// electron-updater runs an update with no /D, so a folder chosen on the
+// directory page has to come back from the registry or the update installs a
+// second copy in the default one
+test('an update installs into the folder the user chose', () => {
+  const key =
+    '"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\JBrowse 2" "InstallLocation"'
+  expect(script()).toContain(`InstallDirRegKey HKCU ${key}`)
+  expect(script().split('Section "Uninstall"')[0]).toContain(
+    `WriteRegStr HKCU ${key} "$INSTDIR"`,
+  )
+})
+
 // electron-updater applies an update by running this installer silently with
 // --force-run (autoUpdater's quitAndInstall(true, true)). Without the relaunch
 // the user's app disappears mid-session and does not come back.

@@ -78,6 +78,10 @@ OutFile "${outputExe}"
 ; updates silently instead of raising a UAC prompt on every update. Location and
 ; registry hive (HKCU) mirror electron-builder's default per-user NSIS target.
 InstallDir "$LOCALAPPDATA\\Programs\\${productName}"
+; The directory page lets a user install elsewhere, and electron-updater runs
+; an update with no /D, so without this the update landed in the default folder
+; beside the first install and left the shortcuts and the opt-out file behind.
+InstallDirRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "InstallLocation"
 RequestExecutionLevel user
 
 !define MUI_ICON "${iconPath}"
@@ -152,6 +156,7 @@ Section "${productName}" SecApp
   WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "DisplayIcon" "$INSTDIR\\${appName}.exe"
   WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "Publisher" "JBrowse Team"
   WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "DisplayVersion" "${version}"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "InstallLocation" "$INSTDIR"
 
   ; Register the ${protocol}:// url scheme, so an "open in Desktop" link
   ; on a web page launches this install. macOS gets this from Info.plist and
