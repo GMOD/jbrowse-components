@@ -26,15 +26,17 @@ covers its pixels alone. For a host that draws the cells at its own scale.
 
 A region of a multi-sample VCF as the multi-sample variant display fetches,
 filters and paints it, as tables: `variants`, each record the display keeps,
-with its lane color; `cells`, each sample's (or under `unit: 'haplotype'` each
-haplotype's) cell at each record, with its genotype, its `dosage` and the fill
-the display paints it; `rows`, the rows the cells name, top to bottom as the
-display arranges them by `rows` and stacks them in `facet`'s bands, each with
-its label and band; `bands`, each band's value, label and the rows it spans; and
-`legend` and `ramps`, the key the display shows. Under
-`referenceDrawingMode: 'skip'`, the default, a reference call draws no cell. For
-a host that draws them itself, such as R through V8. The adapters must be
-registered on `pluginManager` (`registerVariantAdapters`).
+with its lane color and its `filter`; `info`, each INFO key's values aligned to
+`variants`, and `infoFields`, the header's declaration of each key; `cells`,
+each sample's (or under `unit: 'haplotype'` each haplotype's) cell at each
+record, with its genotype, its `dosage` and the fill the display paints it;
+`rows`, the rows the cells name, top to bottom as the display arranges them by
+`rows` and stacks them in `facet`'s bands, each with its label and band;
+`bands`, each band's value, label and the rows it spans; and `legend` and
+`ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the
+default, a reference call draws no cell. For a host that draws them itself, such
+as R through V8. The adapters must be registered on `pluginManager`
+(`registerVariantAdapters`).
 
 ```js
 // type signature
