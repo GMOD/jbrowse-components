@@ -87,8 +87,8 @@ transcript:
 - **The gene**, its coding exons back to back with the introns cut out, read 5′
   to 3′, above ClinVar's variants and AlphaMissense's scores
 - **The alignment**, the seed alignment of the Pfam family R248 falls in, P53,
-  with _TP53_'s own row linked to the gene. The launch button's tooltip names
-  the alignment before you click.
+  opened on the columns around R248, with _TP53_'s own row linked to the gene.
+  The launch button's tooltip names the alignment before you click.
 - **The structure**, 3KMD in [Mol\*](https://molstar.org/), with R248 selected
 
 Hover a codon in the gene view and its residue lights up on the structure and
@@ -97,7 +97,7 @@ lights up in turn. [g2p_mapper](https://github.com/cmdcolin/g2p_mapper) maps
 each position through the transcript's coding sequence, so introns, UTRs and
 residues the structure does not cover highlight nothing.
 
-<Figure caption="TP53 as the protein browser launches it on R248: the coding exons above ClinVar and AlphaMissense, the P53 family's Pfam seed alignment under them, and 3KMD beside, four copies of the DNA-binding core on DNA, colored by AlphaMissense. The cores are red and their outer loops pale. R248 is magenta in each copy where it reaches into the DNA, and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
+<Figure caption="TP53 as the protein browser launches it on R248: the coding exons above ClinVar and AlphaMissense, the P53 family's Pfam seed alignment under them, opened on R248's column, where an arginine runs down nearly every row, and 3KMD beside, four copies of the DNA-binding core on DNA, colored by AlphaMissense. The cores are red and their outer loops pale. R248 is magenta in each copy where it reaches into the DNA, and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
 
 ## Changing what the TP53 session opens on
 
