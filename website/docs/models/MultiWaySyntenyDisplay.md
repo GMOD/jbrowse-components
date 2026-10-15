@@ -157,6 +157,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-stackgeometry">**stackGeometry**</span><br><code>LaneGeometry</code> | every lane's band, the anchor's first |
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> |  |
 | <span id="getter-lanegenetracks">**laneGeneTracks**</span><br><code>Map&lt;string, AnyTrackConfig&gt;</code> | keyed by each lane's own spelling, not by `laneKey` |
+| <span id="getter-lanegenetrackentries">**laneGeneTrackEntries**</span><br><code>Map&lt;string, TrackConfigEntry&gt;</code> | each lane's gene track config as a hydrated track reads it, so a frozen entry's `displayDefaults` and retired display types count |
 | <span id="getter-lanegeneadapters">**laneGeneAdapters**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
 | <span id="getter-scrollviewportheight">**scrollViewportHeight**</span><br><code>number</code> |  |
 | <span id="getter-anchorplacements">**anchorPlacements**</span><br><code>Map&lt;string, AxisPlacement&gt;</code> | in view px before the scroll offset; a flipped view gives x1 > x2 |

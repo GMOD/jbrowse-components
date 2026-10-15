@@ -88,10 +88,7 @@ export type {
   DisplayMode,
 } from './RenderFeatureDataRPC/renderConfig.ts'
 // A display drawing single records lays them out with the gene half at these.
-export {
-  GENE_GLYPH_DEFAULTS,
-  pickDisplayConfig,
-} from './RenderFeatureDataRPC/renderConfig.ts'
+export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'
 export type {
   FeatureDataResult,
   FlatbushItem,

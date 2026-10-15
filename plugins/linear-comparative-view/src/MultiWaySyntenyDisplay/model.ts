@@ -4,7 +4,10 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import {
+  BaseDisplay,
+  preprocessTrackConfigSnapshot,
+} from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
@@ -48,7 +51,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -243,7 +246,10 @@ import type {
   RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
-import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+import type {
+  AnyTrackConfig,
+  TrackConfigEntry,
+} from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
@@ -1423,6 +1429,32 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * each lane's gene track config as a hydrated track reads it, so a
+       * frozen entry's `displayDefaults` and retired display types count
+       */
+      get laneGeneTrackEntries() {
+        const { pluginManager } = getEnv(self)
+        const out = new Map<string, TrackConfigEntry>()
+        for (const [lane, track] of self.laneGeneTracks) {
+          const entry = toTrackConfigEntry(track)
+          try {
+            out.set(
+              lane,
+              isStateTreeNode(track)
+                ? entry
+                : (preprocessTrackConfigSnapshot(
+                    pluginManager,
+                    entry,
+                  ) as TrackConfigEntry),
+            )
+          } catch {
+            out.set(lane, entry)
+          }
+        }
+        return out
+      },
       /** #getter */
       get laneGeneAdapters() {
         const out = new Map<string, Record<string, unknown>>()
@@ -1873,14 +1905,13 @@ export function stateModelFactory(
     .views(self => ({
       /** #getter */
       get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
-        const tracks = self.laneGeneTracks
+        const tracks = self.laneGeneTrackEntries
         const adapters = self.laneGeneAdapters
         const specs: LaneGenesFetchSpec[] = []
         for (const [assemblyName, { regions }] of self.laneWindows) {
           const adapter = adapters.get(assemblyName)
           if (adapter) {
-            const track = tracks.get(assemblyName)
-            const entry = track ? toTrackConfigEntry(track) : undefined
+            const entry = tracks.get(assemblyName)
             const isoforms = laneIsoformSettings(entry)
             const source = entry
               ? `${entry.trackId}|${JSON.stringify(isoforms)}`

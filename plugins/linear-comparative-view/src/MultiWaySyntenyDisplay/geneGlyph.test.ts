@@ -534,27 +534,22 @@ test('geneGlyphShape draws the representative transcript’s own UTRs', () => {
 })
 
 test('a lane ranks isoforms by what its gene track’s feature display reads', () => {
-  const settings = (entry: Record<string, unknown>) =>
-    laneIsoformSettings({ trackId: 't', type: 'FeatureTrack', ...entry })
+  const settings = (display: Record<string, unknown>) =>
+    laneIsoformSettings({
+      trackId: 't',
+      type: 'FeatureTrack',
+      displays: [{ type: 'LinearBasicDisplay', ...display }],
+    })
   expect(
-    settings({
-      displays: [
-        { type: 'LinearBasicDisplay', canonicalTranscriptTags: ['Ensembl'] },
-      ],
-    }).canonicalTranscriptTags,
+    settings({ canonicalTranscriptTags: ['Ensembl'] }).canonicalTranscriptTags,
   ).toEqual(['Ensembl'])
-  expect(
-    settings({ displayDefaults: { transcriptTypes: ['lnc_RNA'] } })
-      .transcriptTypes,
-  ).toEqual(['lnc_RNA'])
-  expect(
-    settings({
-      displayDefaults: { canonicalTranscriptField: 'note' },
-      displays: [
-        { type: 'LinearBasicDisplay', canonicalTranscriptField: 'tag' },
-      ],
-    }).canonicalTranscriptField,
-  ).toBe('tag')
+  expect(settings({ transcriptTypes: ['lnc_RNA'] }).transcriptTypes).toEqual([
+    'lnc_RNA',
+  ])
+  // a frozen entry is unchecked, so a malformed slot falls back
+  expect(settings({ transcriptTypes: 'mRNA' }).transcriptTypes).toEqual(
+    GENE_GLYPH_DEFAULTS.transcriptTypes,
+  )
   expect(laneIsoformSettings()).toEqual({
     transcriptTypes: GENE_GLYPH_DEFAULTS.transcriptTypes,
     canonicalTranscriptField: DEFAULT_CANONICAL_TRANSCRIPTS.field,

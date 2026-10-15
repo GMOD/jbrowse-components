@@ -6,8 +6,8 @@ import {
   isCDS,
   isExon,
   isUTR,
+  GENE_GLYPH_DEFAULTS,
   mergeSpans,
-  pickDisplayConfig,
   representativeIsoform,
 } from '@jbrowse/plugin-canvas'
 
@@ -35,20 +35,36 @@ export function laneGeneFeatures(
   ).map(feature => new LaneGene(feature, isoforms))
 }
 
+function strings(value: unknown, fallback: string[]) {
+  return Array.isArray(value) && value.every(v => typeof v === 'string')
+    ? value
+    : fallback
+}
+
 /**
- * What the gene track's own feature display ranks isoforms by, read as that
- * display reads it, so the lane draws the transcript that track draws.
+ * What the gene track's own feature display ranks isoforms by, so the lane
+ * draws the transcript that track draws. Takes a preprocessed entry, whose
+ * `displayDefaults` and retired display types are already folded in.
  */
 export function laneIsoformSettings(entry?: TrackConfigEntry): IsoformSettings {
   const displays = Array.isArray(entry?.displays)
     ? (entry.displays as Record<string, unknown>[])
     : []
-  const { transcriptTypes, canonicalTranscriptField, canonicalTranscriptTags } =
-    pickDisplayConfig({
-      ...(entry?.displayDefaults as Record<string, unknown> | undefined),
-      ...displays.find(d => d.type === 'LinearBasicDisplay'),
-    })
-  return { transcriptTypes, canonicalTranscriptField, canonicalTranscriptTags }
+  const display = displays.find(d => d.type === 'LinearBasicDisplay')
+  return {
+    transcriptTypes: strings(
+      display?.transcriptTypes,
+      GENE_GLYPH_DEFAULTS.transcriptTypes,
+    ),
+    canonicalTranscriptField:
+      typeof display?.canonicalTranscriptField === 'string'
+        ? display.canonicalTranscriptField
+        : GENE_GLYPH_DEFAULTS.canonicalTranscriptField,
+    canonicalTranscriptTags: strings(
+      display?.canonicalTranscriptTags,
+      GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
+    ),
+  }
 }
 
 const DEFAULT_ISOFORM_SETTINGS = laneIsoformSettings()
