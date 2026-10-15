@@ -1,9 +1,40 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 // No IntersectionObserver (jsdom/SSR): start (and stay) visible, the
 // pre-lazy-mount behavior, so tests and non-browser environments are unchanged.
 function intersectionObserverAvailable() {
   return typeof window !== 'undefined' && 'IntersectionObserver' in window
+}
+
+/**
+ * Whether the body is on screen as the observer's first callback would report
+ * it: inside the viewport and inside every ancestor that clips, edges
+ * included.
+ */
+function onScreen(node: Element) {
+  const clip = {
+    top: 0,
+    left: 0,
+    bottom: window.innerHeight,
+    right: window.innerWidth,
+  }
+  for (let el = node.parentElement; el; el = el.parentElement) {
+    const { overflowX, overflowY } = getComputedStyle(el)
+    if (/auto|scroll|hidden|clip/.test(`${overflowX} ${overflowY}`)) {
+      const r = el.getBoundingClientRect()
+      clip.top = Math.max(clip.top, r.top)
+      clip.left = Math.max(clip.left, r.left)
+      clip.bottom = Math.min(clip.bottom, r.bottom)
+      clip.right = Math.min(clip.right, r.right)
+    }
+  }
+  const r = node.getBoundingClientRect()
+  return (
+    r.top <= clip.bottom &&
+    r.bottom >= clip.top &&
+    r.left <= clip.right &&
+    r.right >= clip.left
+  )
 }
 
 interface Visibility {
@@ -41,13 +72,23 @@ interface Visibility {
  * other fixes that were measured and eliminated.
  *
  * Starts hidden so a cold load with N crammed views doesn't mount them all at
- * once; the observer's first callback mounts only what's near the viewport.
+ * once. The first layout mounts what is on screen before anything paints, and
+ * the observer tracks it from there: waiting for the observer's first callback
+ * instead left every view an empty box for a frame or more, ~100 ms on a cold
+ * load with the main thread busy.
  */
 export function useViewVisibility() {
   const ref = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<Visibility>(() => ({
     visible: !intersectionObserverAvailable(),
   }))
+
+  useLayoutEffect(() => {
+    const node = ref.current
+    if (node && intersectionObserverAvailable() && onScreen(node)) {
+      setState(prev => (prev.visible ? prev : { ...prev, visible: true }))
+    }
+  }, [])
 
   // Toggle `visible` as the body scrolls in/out of the viewport (root: null),
   // and record the height it had on the way out.
