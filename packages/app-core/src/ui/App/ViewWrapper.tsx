@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
+import { ViewLoadingScreen } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -36,8 +36,12 @@ const ViewComponent = observer(function ViewComponent({
         // readiness signal a capture waits on is silent while the body is a
         // spinner. It shows up when a view type is clicked into existence
         // rather than loaded with the session — its chunk is fetched only then
-        // — which is exactly the second frame of a launch-dialog figure.
-        <LoadingEllipses variant="h6" data-view-component-pending="true" />
+        // — which is exactly the second frame of a launch-dialog figure. The
+        // same screen as the view's own loading state, so a body that goes
+        // from one to the other does not jump.
+        <div data-view-component-pending="true">
+          <ViewLoadingScreen />
+        </div>
       }
     >
       <ReactComponent model={view} session={session} />
