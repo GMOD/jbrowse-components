@@ -132,6 +132,8 @@ export default [
   '@jbrowse/core/assemblyManager',
   '@jbrowse/core/assemblyManager/assembly',
   '@jbrowse/core/assemblyManager/assemblyConfigSchema',
+  '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand',
+  '@jbrowse/core/assemblyManager/refNameMaps',
   '@jbrowse/core/BaseFeatureWidget',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes',

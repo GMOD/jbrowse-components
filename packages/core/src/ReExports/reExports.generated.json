@@ -732,7 +732,30 @@
         "default",
         "expandAssemblySequence",
         "expandAssemblySequenceAdapter",
-        "expandAssemblyShorthand"
+        "expandAssemblyShorthand",
+        "expandSidecarShorthand",
+        "refNameAliasAdapterType"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand": {
+      "package": "@jbrowse/core",
+      "names": [
+        "expandAssemblySequence",
+        "expandAssemblySequenceAdapter",
+        "expandAssemblyShorthand",
+        "expandSidecarShorthand",
+        "refNameAliasAdapterType",
+        "referenceSequenceTrackId"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/assemblyManager/refNameMaps": {
+      "package": "@jbrowse/core",
+      "names": [
+        "buildRefNameMaps",
+        "checkRefName",
+        "groupNamesByCanonicalRefName"
       ],
       "worker": "real"
     },

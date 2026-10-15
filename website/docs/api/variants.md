@@ -22,6 +22,25 @@ scale.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
 
+## variantRecordTables
+
+The VCF columns of the records a feature table lists, by its `features.id`,
+for a host drawing a VCF as the plain variant display does, which draws
+every record, a record calling no genotype included:
+- `records`: each one's `ref`, `alt` (its alleles joined by `,`) and
+  `filter`, aligned to `ids`.
+- `info` and `infoFields`: its INFO, as `variantTables` gives them.
+- `samples`: a row per record and sample in header order, `feature` (an
+  index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
+  to it, typed as INFO is; and `formatFields`, each key's declaration.
+
+```js
+// type signature
+(pluginManager: PluginManager, { adapterConfig, regions, ids, }: { adapterConfig: Record<string, unknown>; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<{ samples: { feature: number[]; sample: string[]; }; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
+
 ## variantTables
 
 A region of a multi-sample VCF as the multi-sample variant display fetches,

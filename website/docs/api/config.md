@@ -10,7 +10,8 @@ import these from a plugin.
 ## registerConfigAdapters
 
 Registers `FromConfigAdapter`, whose features a track config writes inline,
-on a plugin manager that wants it without the configuration editor, as a
+and the alias adapters an assembly's `refNameAliases` reads through, on a
+plugin manager that wants them without the configuration editor, as a
 headless host does.
 
 ```js
