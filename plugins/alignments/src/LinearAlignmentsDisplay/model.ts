@@ -3669,7 +3669,6 @@ export default function stateModelFactory(
                       },
                     },
             }),
-            ...editPlotMenuItems(self),
             getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),
@@ -3684,6 +3683,7 @@ export default function stateModelFactory(
             ...getCoverageMenuItems(self),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
+            ...editPlotMenuItems(self),
           ] satisfies MenuItem[]
         },
 

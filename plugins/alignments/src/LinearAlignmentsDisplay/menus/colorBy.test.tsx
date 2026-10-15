@@ -340,12 +340,10 @@ describe('color by modifications menu', () => {
   })
 
   // The threshold is the shared makeSizeMenu row, so assert through its props.
-  test('the threshold slider commits a non-default value inline, and resets', () => {
+  test('the threshold slider sits inline in Modifications, commits a non-default value, and resets', () => {
     const model = makeModModel(['m', 'h'])
     model.baseLayer = { type: 'modifications' }
-    const item = subMenuOf(byLabel(model, 'Probability threshold')).find(
-      i => 'render' in i,
-    )
+    const item = byLabel(model, 'Probability threshold')
     if (!item || !('render' in item)) {
       throw new Error('no threshold slider')
     }

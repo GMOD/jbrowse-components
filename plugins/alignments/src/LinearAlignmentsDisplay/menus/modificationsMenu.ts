@@ -15,8 +15,8 @@ import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-// The MM/ML modification color scheme: two mode radios and three refinement
-// submenus. Split from colorBy.ts because everything below shares one writer
+// The MM/ML modification color scheme: two mode radios, two refinement
+// submenus and a threshold slider. Split from colorBy.ts because everything below shares one writer
 // (`patchMods`) and one slot shape that nothing else in the color menu touches;
 // reference-based bisulfite is its sibling, not its parent, and lives in
 // bisulfiteMenu.ts.
@@ -102,11 +102,11 @@ function setModTypeShown(
   })
 }
 
-// The "Modifications" submenu: two mode radios then the refinement submenus.
+// The "Modifications" submenu: two mode radios then the refinements.
 // Each refinement shows only when it bites — the type filter when >1 type is
 // detected, cytosine context when the data is cytosine methylation. Threshold
 // gates only the by-type view (two-color uses a fixed 50% cutoff; the fill
-// paints every cytosine), which its caption states.
+// paints every cytosine), which the 2-color radio states.
 //
 // All three are revealed only once this scheme is the active one, like
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
@@ -148,34 +148,28 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
               },
             ]
           : []),
-        {
+        // Inline, not a submenu: one slider among a few rows costs less than
+        // a fourth menu level. The 2-color radio's help says it ignores this.
+        makeSizeMenu({
           label: 'Probability threshold',
-          helpText:
-            'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
-          subMenu: [
-            makeSizeMenu({
-              label: 'threshold',
-              title: 'Hide calls under',
-              min: 0,
-              max: 100,
-              step: 1,
-              format: n => `${n}%`,
-              // tier-1: the threshold reaches the worker's extractModifications
-              // via rpcProps, so commit on release, not every intermediate
-              // pixel.
-              commitOnRelease: true,
-              getValue: () => model.modificationThreshold,
-              isDefault:
-                model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
-              onChange: v => {
-                patchMods(model, { threshold: v })
-              },
-              onReset: () => {
-                patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
-              },
-            }),
-          ],
-        },
+          title: 'Hide calls under',
+          min: 0,
+          max: 100,
+          step: 1,
+          format: n => `${n}%`,
+          // tier-1: the threshold reaches the worker's extractModifications
+          // via rpcProps, so commit on release, not every intermediate pixel.
+          commitOnRelease: true,
+          getValue: () => model.modificationThreshold,
+          isDefault:
+            model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD,
+          onChange: v => {
+            patchMods(model, { threshold: v })
+          },
+          onReset: () => {
+            patchMods(model, { threshold: DEFAULT_MODIFICATION_THRESHOLD })
+          },
+        }),
         ...(hasCytosineMeth(model)
           ? [
               {

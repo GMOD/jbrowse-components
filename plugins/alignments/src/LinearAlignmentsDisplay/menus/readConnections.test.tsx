@@ -67,12 +67,27 @@ function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
   )
 }
 
-function bandOptionsSubMenu(model: ReturnType<typeof makeModel>) {
-  const item = resolveSubMenu(getReadConnectionsMenuItem(model)).find(
-    i => 'label' in i && i.label === 'Arc / read cloud band options',
+const BAND_ROWS = [
+  'Draw arcs below coverage band',
+  'Show ordinary pairs',
+  'Show off-screen mate connections',
+  'Show inter-chromosomal pairs',
+  'Min reads at a breakpoint',
+  'Arc line width',
+]
+
+function topLabels(model: ReturnType<typeof makeModel>) {
+  return resolveSubMenu(getReadConnectionsMenuItem(model)).map(i =>
+    'label' in i ? i.label : undefined,
   )
-  if (!item || !('subMenu' in item)) {
-    throw new Error('no band options submenu')
+}
+
+function bandRow(model: ReturnType<typeof makeModel>, label: string) {
+  const item = resolveSubMenu(getReadConnectionsMenuItem(model)).find(
+    i => 'label' in i && i.label === label,
+  )
+  if (!item || !('disabled' in item)) {
+    throw new Error(`no band row ${label}`)
   }
   return item
 }
@@ -137,21 +152,29 @@ describe('read connections menu', () => {
   })
 })
 
-describe('read-connection band options submenu is disabled until an overlay is active', () => {
-  test('disabled with a help tooltip when no overlay is active', () => {
-    const model = makeModel()
-    const submenu = bandOptionsSubMenu(model)
-    expect(submenu.disabled).toBe(true)
-    expect(submenu.disabledHelpText).toBeTruthy()
-    // items stay defined (discoverable) even while the submenu is disabled
-    expect(findByLabel(model, 'Draw arcs below coverage band')).toBeDefined()
-    expect(findByLabel(model, 'Show off-screen mate connections')).toBeDefined()
+describe('the arc / read cloud band rows', () => {
+  test('sit directly in Read connections under their heading', () => {
+    const labels = topLabels(makeModel())
+    const heading = labels.indexOf('Arc / read cloud band')
+    expect(heading).toBeGreaterThan(-1)
+    expect(labels.slice(heading + 1)).toEqual(BAND_ROWS)
   })
 
-  test('enabled and functional when arcs are on', () => {
+  test('are disabled with a help tooltip when no overlay is active', () => {
+    const model = makeModel()
+    for (const label of BAND_ROWS) {
+      const row = bandRow(model, label)
+      expect(row.disabled).toBe(true)
+      expect(row.disabledHelpText).toBeTruthy()
+    }
+  })
+
+  test('are enabled and functional when arcs are on', () => {
     const model = makeModel()
     model.readConnections = 'arc'
-    expect(bandOptionsSubMenu(model).disabled).toBe(false)
+    for (const label of BAND_ROWS) {
+      expect(bandRow(model, label).disabled).toBe(false)
+    }
     checkboxByLabel(model, 'Draw arcs below coverage band').onClick()
     expect(model.readConnectionsDown).toBe(true)
   })
@@ -173,9 +196,8 @@ test('every toggle keeps the menu open', () => {
 // renderer and the SVG export read the width, and nothing in the UI wrote one.
 describe('arc line width row', () => {
   function lineWidthRow(model: ReturnType<typeof makeModel>) {
-    const row = resolveSubMenu(bandOptionsSubMenu(model)).find(
-      i => 'label' in i && i.label === 'Line width',
-    )
+    const item = bandRow(model, 'Arc line width')
+    const row = 'subMenu' in item ? resolveSubMenu(item)[0] : undefined
     if (row?.type !== 'custom') {
       throw new Error('no line width slider row')
     }
@@ -195,11 +217,5 @@ describe('arc line width row', () => {
     fireEvent.change(input, { target: { value: 3 } })
 
     expect(model.readConnectionsLineWidth).toBe(3)
-  })
-
-  test('the row lives with the other band options, so it is gated with them', () => {
-    const model = makeModel()
-    expect(bandOptionsSubMenu(model).disabled).toBe(true)
-    expect(lineWidthRow(model)).toBeDefined()
   })
 })
