@@ -113,12 +113,16 @@ Two changes answer it:
   (`src/bootShell.ts`). A stored theme or mode other than default light hides
   it, since an `extraThemes` palette is unknown before the config. A first
   version drew bare colored bars and read as a page that had failed halfway.
-- **The app's own first frames match it.** A view on screen mounts its body
-  in the first layout instead of after the IntersectionObserver's first
-  callback, which had left every view an empty box for ~100 ms
-  (`useViewVisibility`). The Suspense fallback for a view's component is the
-  same `ViewLoadingScreen` the view shows next, and a view still resolving its
+- **The app's own first frames match it.** Until the IntersectionObserver
+  first reports, a view mounts no body, and the box it reserves had been empty
+  for ~100 ms on a cold load; it now shows the loading label, not marked busy
+  (`ViewContainer`). The Suspense fallback for a view's component is the same
+  `ViewLoadingScreen` the view shows next, and a view still resolving its
   assembly reads blank rather than "Untitled view".
+- Declined: mounting an on-screen view's body in the first layout instead of
+  waiting for the observer. It drew the cold BAM track at 737 ms against
+  598 ms without it, and a second visit at 658 ms against 484 ms (4 cores, six
+  interleaved rounds).
 - Declined: preloading Roboto and copying its `@font-face` into the HTML so the
   shell draws in it. It held the first paint back ~80 ms (68-76 ms against
   132-172 ms, five films per arm) to avoid a glyph swap inside the shell that
