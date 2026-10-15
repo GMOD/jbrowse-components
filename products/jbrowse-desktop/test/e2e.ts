@@ -8,6 +8,7 @@ import {
   REPO_ROOT,
   assertNoErrorBanners,
   cleanupUI,
+  countElements,
   clearInput,
   createDriver,
   delay,
@@ -245,7 +246,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   await delay(5000)
 
   // Check for any error messages
-  const errors = await driver.findElements(By.css('.MuiAlert-standardError'))
+  const errors =
+    (await countElements(driver, '.MuiAlert-standardError')) > 0
+      ? await driver.findElements(By.css('.MuiAlert-standardError'))
+      : []
   console.log(`    DEBUG: Found ${errors.length} error alerts`)
   for (const error of errors) {
     const text = await error.getText()
@@ -253,11 +257,11 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   }
 
   // Check if dialog is still open
-  const dialogs = await driver.findElements(By.css('.MuiDialog-root'))
-  console.log(`    DEBUG: ${dialogs.length} dialogs still open after Submit`)
+  const openDialogs = await countElements(driver, '.MuiDialog-root')
+  console.log(`    DEBUG: ${openDialogs} dialogs still open after Submit`)
 
   // Close any remaining dialogs
-  if (dialogs.length > 0) {
+  if (openDialogs > 0) {
     console.log('    DEBUG: Pressing Escape to close dialogs...')
     await driver.actions().sendKeys(Key.ESCAPE).perform()
     await delay(1000)

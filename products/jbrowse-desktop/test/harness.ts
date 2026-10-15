@@ -292,12 +292,12 @@ export async function assertNoErrorBanners(
   driver: WebDriver,
   context: string,
 ): Promise<void> {
+  if ((await countElements(driver, '[data-testid="reload_button"]')) === 0) {
+    return
+  }
   const banners = await driver.findElements(
     By.css('[data-testid="reload_button"]'),
   )
-  if (!banners.length) {
-    return
-  }
   const texts = await Promise.all(
     banners.map(async b => {
       const container = await b.findElement(By.xpath('./ancestor::*[3]'))
