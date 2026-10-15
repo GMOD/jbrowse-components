@@ -3,7 +3,9 @@ import { Component, useState } from 'react'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { act, render } from '@testing-library/react'
+import { renderToStaticMarkup } from 'react-dom/server'
 
 import { useBootShell } from './bootShell.ts'
 
@@ -164,9 +166,36 @@ describe("index.html's theme check", () => {
   })
 })
 
-test('a stored non-default theme leaves the spinner, since the shell is hidden', async () => {
+test('a stored non-default theme draws the spinner and drops the hidden shell', async () => {
   document.documentElement.classList.add('no-boot-shell')
   const { getByText } = render(<Hold />)
   await flush()
   expect(getByText('spinner')).toBeTruthy()
+  expect(shell()).toBeNull()
+})
+
+test("the shell's logo is LogoFull in white", () => {
+  const html = fs.readFileSync(
+    path.join(__dirname, '../public/index.html'),
+    'utf8',
+  )
+  const parse = (markup: string, selector: string) => {
+    const el = new DOMParser()
+      .parseFromString(markup, 'text/html')
+      .querySelector(selector)!
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+    const blank: Node[] = []
+    while (walker.nextNode()) {
+      if (!walker.currentNode.textContent?.trim()) {
+        blank.push(walker.currentNode)
+      }
+    }
+    for (const node of blank) {
+      node.parentNode?.removeChild(node)
+    }
+    return el.outerHTML
+  }
+  expect(parse(html, '.boot-shell-header > svg')).toBe(
+    parse(renderToStaticMarkup(<LogoFull variant="white" />), 'svg'),
+  )
 })

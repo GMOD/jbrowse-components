@@ -1,4 +1,4 @@
-import { BootChunksPlugin } from '../../../config/webpack/config/bootChunksPlugin.ts'
+import { BootAssetsPlugin } from '../../../config/webpack/config/bootAssetsPlugin.ts'
 import { genBuildInfo } from './genBuildInfo.ts'
 
 import type { Configuration } from 'webpack'
@@ -19,7 +19,9 @@ export default function webpackConfig(config: Configuration) {
     ...config,
     plugins: [
       ...(config.plugins ?? []),
-      new BootChunksPlugin(bootChunkOrigins),
+      new BootAssetsPlugin(bootChunkOrigins, {
+        fonts: ['roboto-latin-400-normal'],
+      }),
     ],
   }
 }

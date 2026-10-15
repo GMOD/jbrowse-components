@@ -2,11 +2,14 @@ import { useLayoutEffect, useState } from 'react'
 
 let holds = 0
 
-function shownShell() {
-  const el = document.getElementById('boot-shell')
-  return el && !document.documentElement.classList.contains('no-boot-shell')
-    ? el
-    : undefined
+const shell = () => document.getElementById('boot-shell')
+
+function holdable() {
+  const hidden = document.documentElement.classList.contains('no-boot-shell')
+  if (hidden) {
+    shell()?.remove()
+  }
+  return !hidden && shell() !== null
 }
 
 /**
@@ -14,10 +17,11 @@ function shownShell() {
  * shell stays up while any loading state holds it and goes in the commit that
  * unmounts the last one, whatever replaced it: the app, an error banner, or a
  * throw that tore the tree down. The release waits a microtask so a loading
- * state that hands over to another in the same commit keeps it.
+ * state that hands over to another in the same commit keeps it. A shell the
+ * stored theme hid goes at the first loading state.
  */
 export function useBootShell() {
-  const [held] = useState(() => shownShell() !== undefined)
+  const [held] = useState(holdable)
   useLayoutEffect(() => {
     if (!held) {
       return
@@ -27,7 +31,7 @@ export function useBootShell() {
       holds--
       queueMicrotask(() => {
         if (holds === 0) {
-          document.getElementById('boot-shell')?.remove()
+          shell()?.remove()
         }
       })
     }

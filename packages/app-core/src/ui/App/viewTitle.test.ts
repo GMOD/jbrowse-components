@@ -34,6 +34,30 @@ describe('viewTitle', () => {
     )
   })
 
+  it('reads blank while the view is still resolving its assembly', () => {
+    expect(
+      viewTitle({ assemblyNames: [], initialized: false }, getDisplayName),
+    ).toBe('')
+  })
+
+  it('reads Untitled view behind an import form', () => {
+    expect(
+      viewTitle(
+        { assemblyNames: [], initialized: false, showImportForm: true },
+        getDisplayName,
+      ),
+    ).toBe('Untitled view')
+  })
+
+  it('reads Untitled view once its init has failed', () => {
+    expect(
+      viewTitle(
+        { assemblyNames: [], initialized: false, error: new Error('x') },
+        getDisplayName,
+      ),
+    ).toBe('Untitled view')
+  })
+
   it('annotates a minimized view', () => {
     expect(
       viewTitle({ assemblyNames: ['volvox'], minimized: true }, getDisplayName),

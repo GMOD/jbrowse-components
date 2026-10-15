@@ -7,7 +7,7 @@ export interface ChunkOrigin {
   request?: string
 }
 
-const name = 'BootChunksPlugin'
+const name = 'BootAssetsPlugin'
 
 /**
  * V8 compiles every function of a script carrying this first line eagerly, on
@@ -19,17 +19,23 @@ const name = 'BootChunksPlugin'
 const COMPILE_HINT = '//# allFunctionsCalledOnLoad\n'
 
 /**
- * The chunks every cold load runs: the entry's, and those behind the named
- * sites. The HTML preloads the latter, so they download beside the entry
- * script instead of a round trip after it has run (webpack's own
- * `webpackPreload` cannot do this for a child of the entry chunk), and every
- * one of them is marked for eager compilation.
+ * What every cold load uses before it can draw: the entry's chunks, the chunks
+ * behind the named sites, and the named font files those chunks' CSS declares.
+ *
+ * The HTML preloads the chunks, so they download beside the entry script
+ * instead of a round trip after it has run (webpack's own `webpackPreload`
+ * cannot do this for a child of the entry chunk), and every one is marked for
+ * eager compilation. Each named font's `@font-face` is copied into the HTML and
+ * the file preloaded, so markup painted before any script, such as the boot
+ * shell, draws in the face the app will.
  */
-export class BootChunksPlugin {
+export class BootAssetsPlugin {
   origins: ChunkOrigin[]
+  fonts: string[]
 
-  constructor(origins: ChunkOrigin[]) {
+  constructor(origins: ChunkOrigin[], { fonts }: { fonts: string[] }) {
     this.origins = origins
+    this.fonts = fonts
   }
 
   originFiles(compilation: webpack.Compilation) {
@@ -57,6 +63,39 @@ export class BootChunksPlugin {
       }
     }
     return files
+  }
+
+  /** Each named font's `@font-face` rules, urls resolved from the HTML */
+  fontFaces(
+    compilation: webpack.Compilation,
+    cssFiles: string[],
+    publicPath: string,
+  ) {
+    const faces: string[] = []
+    const files = new Set<string>()
+    for (const font of this.fonts) {
+      const found = cssFiles.flatMap(cssFile => {
+        const css = compilation.getAsset(cssFile)!.source.source().toString()
+        return (css.match(/@font-face\s*{[^}]*}/g) ?? [])
+          .filter(face => face.includes(`/${font}.`))
+          .map(face =>
+            face.replace(/url\(([^)]+)\)/g, (_, url: string) => {
+              const file = new URL(url, `file:///${cssFile}`).pathname.slice(1)
+              if (file.endsWith('.woff2')) {
+                files.add(file)
+              }
+              return `url(${publicPath}${file})`
+            }),
+          )
+      })
+      if (!found.length) {
+        compilation.errors.push(
+          new webpack.WebpackError(`${name}: no @font-face for ${font}`),
+        )
+      }
+      faces.push(...found)
+    }
+    return { faces, files }
   }
 
   apply(compiler: webpack.Compiler) {
@@ -92,14 +131,29 @@ export class BootChunksPlugin {
         compilation,
       ).alterAssetTagGroups.tap(name, data => {
         const loaded = entryFiles()
+        const preload = (href: string, as: string) =>
+          HtmlWebpackPlugin.createHtmlTagObject('link', {
+            rel: 'preload',
+            as,
+            href,
+            ...(as === 'font' ? { type: 'font/woff2', crossorigin: '' } : {}),
+          })
+        const { faces, files } = this.fontFaces(
+          compilation,
+          [...bootFiles].filter(f => f.endsWith('.css')),
+          data.publicPath,
+        )
+        data.headTags.push(
+          HtmlWebpackPlugin.createHtmlTagObject('style', {}, faces.join('\n')),
+          ...[...files].map(f => preload(data.publicPath + f, 'font')),
+        )
         for (const file of bootFiles) {
           if (!loaded.has(file) && /\.(js|css)$/.test(file)) {
             data.headTags.push(
-              HtmlWebpackPlugin.createHtmlTagObject('link', {
-                rel: 'preload',
-                as: file.endsWith('.css') ? 'style' : 'script',
-                href: data.publicPath + file,
-              }),
+              preload(
+                data.publicPath + file,
+                file.endsWith('.css') ? 'style' : 'script',
+              ),
             )
           }
         }
