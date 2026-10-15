@@ -26,7 +26,10 @@ export function laneGeneFeatures(
   const unique = dedupe(features, f => f.id())
   // lowercased as the feature track admits, or a GFF3 `Gene` is no gene here
   const typeOf = (f: Feature) => featureType(f).toLowerCase()
-  const genes = unique.filter(f => typeOf(f).endsWith('gene'))
+  // a gene may sit under an operon or another grouping row
+  const genesIn = (f: Feature): Feature[] =>
+    typeOf(f).endsWith('gene') ? [f] : getSubfeatures(f).flatMap(genesIn)
+  const genes = unique.flatMap(genesIn)
   return (
     genes.length ? genes : unique.filter(f => !CONTAINER_TYPES.has(typeOf(f)))
   ).map(feature => new LaneGene(feature, isoforms))

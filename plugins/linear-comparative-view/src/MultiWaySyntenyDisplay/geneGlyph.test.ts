@@ -603,6 +603,38 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
   ).toEqual(['m'])
 })
 
+test('laneGeneFeatures finds the genes an operon groups, beside top-level ones', () => {
+  const gene = (uniqueId: string, start: number) => ({
+    uniqueId,
+    refName: 'chr1',
+    start,
+    end: start + 10,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: `${uniqueId}-cds`,
+        refName: 'chr1',
+        start,
+        end: start + 10,
+        type: 'CDS',
+      },
+    ],
+  })
+  const operon = new SimpleFeature({
+    uniqueId: 'op',
+    refName: 'chr1',
+    start: 0,
+    end: 40,
+    type: 'operon',
+    subfeatures: [gene('a', 0), gene('b', 20)],
+  })
+  const lone = new SimpleFeature(gene('c', 60))
+  const ids = (features: SimpleFeature[]) =>
+    laneGeneFeatures(features, laneIsoformSettings()).map(g => g.feature.id())
+  expect(ids([operon, lone])).toEqual(['a', 'b', 'c'])
+  expect(ids([operon])).toEqual(['a', 'b'])
+})
+
 test('lane genes arriving once per static block draw once', () => {
   const gene = (uniqueId: string) =>
     new SimpleFeature({
