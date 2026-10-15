@@ -5,7 +5,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
-  solidColorItem,
+  colorFieldRows,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   hiddenGroupsItems,
@@ -63,14 +63,6 @@ interface ShowSubmenuSelf extends HiddenGroupsModel {
   setShowLegend: (value: boolean) => void
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
-}
-
-interface ColorMenuSelf {
-  colorByMode: string
-  pickSolidColor: () => void
-  openColorByAttributeDialog: () => void
-  pickDefaultColor: () => void
-  colorByField: (field: string) => void
 }
 
 interface FeatureHeightSelf extends HeightModeMenuModel {
@@ -159,45 +151,16 @@ export function inertLabelHint<T extends string>(
         : fitHint
 }
 
-export function defaultColorItem(self: ColorMenuSelf): MenuItem {
-  return {
-    label: 'Default',
-    type: 'radio' as const,
-    checked: self.colorByMode === 'default',
-    onClick: () => {
-      self.pickDefaultColor()
-    },
-  }
-}
-
-export function solidColorMenuItem(self: ColorMenuSelf): MenuItem {
-  return solidColorItem(self.colorByMode === 'solid', () => {
-    self.pickSolidColor()
-  })
-}
-
-export function colorBySubMenuItems(self: ColorMenuSelf): MenuItem[] {
-  return [
-    defaultColorItem(self),
+export function colorBySubMenuItems(
+  self: Parameters<typeof colorFieldRows>[0],
+): MenuItem[] {
+  return colorFieldRows(self, [
     {
       label: 'Strand',
-      type: 'radio' as const,
+      field: STRAND_FIELD,
       checked: self.colorByMode === 'strand',
-      onClick: () => {
-        self.colorByField(STRAND_FIELD)
-      },
     },
-    {
-      label: 'Attribute...',
-      type: 'radio' as const,
-      checked: self.colorByMode === 'attribute',
-      keepMenuOpen: false,
-      onClick: () => {
-        self.openColorByAttributeDialog()
-      },
-    },
-    solidColorMenuItem(self),
-  ]
+  ])
 }
 
 // Worded with the generic "feature" rather than `featureNoun`: "Variant

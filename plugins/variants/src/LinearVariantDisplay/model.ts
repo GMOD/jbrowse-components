@@ -1,7 +1,7 @@
 import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
-import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
+import { colorFieldRows } from '@jbrowse/display-kit/colorByMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading
@@ -134,51 +134,18 @@ export default function stateModelFactory(
       // which leaves `this` undefined (as `isGeneLike`,
       // pluginFacingDisplayApi.test.ts).
       colorBySubMenuItems() {
-        const preset = self.colorsByConsequenceImpact || self.colorsBySvType
-        return [
-          {
-            label: 'Default',
-            type: 'radio' as const,
-            checked: self.colorByMode === 'default' && !preset,
-            onClick: () => {
-              if (preset) {
-                self.setColorValue(undefined)
-              } else {
-                self.pickDefaultColor()
-              }
-            },
-          },
+        return colorFieldRows(self, [
           {
             label: 'Consequence impact',
-            type: 'radio' as const,
+            field: IMPACT_FIELD,
             checked: self.colorsByConsequenceImpact,
-            onClick: () => {
-              self.setShowLegend(true)
-              self.colorByField(IMPACT_FIELD)
-            },
           },
           {
             label: 'SV type',
-            type: 'radio' as const,
+            field: SV_TYPE_FIELD,
             checked: self.colorsBySvType,
-            onClick: () => {
-              self.setShowLegend(true)
-              self.colorByField(SV_TYPE_FIELD)
-            },
           },
-          {
-            label: 'Attribute...',
-            type: 'radio' as const,
-            checked: self.colorByMode === 'attribute' && !preset,
-            keepMenuOpen: false,
-            onClick: () => {
-              self.openColorByAttributeDialog()
-            },
-          },
-          solidColorItem(self.colorByMode === 'solid', () => {
-            self.pickSolidColor()
-          }),
-        ]
+        ])
       },
     }))
     .actions(self => {

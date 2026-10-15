@@ -185,7 +185,7 @@ function trackModel({
     setShowLegend: () => {},
     hasLegendKey,
     geneColorField,
-    setGeneColorBy: (field: string) => {
+    colorByField: (field: string) => {
       calls.push(`gene color ${field}`)
     },
     geneSolidColor,

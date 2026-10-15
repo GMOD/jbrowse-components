@@ -85,7 +85,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
   geneColorField: string
-  setGeneColorBy: (field: string) => void
+  colorByField: (field: string) => void
   geneSolidColor: string | undefined
   pickDefaultGeneColor: () => void
   pickGeneSolidColor: () => void
@@ -307,7 +307,7 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
       },
     },
     ...radioItems(fields, field, value => {
-      model.setGeneColorBy(value)
+      model.colorByField(value)
     }),
     solidColorItem(field === '' && model.geneSolidColor !== undefined, () => {
       model.pickGeneSolidColor()

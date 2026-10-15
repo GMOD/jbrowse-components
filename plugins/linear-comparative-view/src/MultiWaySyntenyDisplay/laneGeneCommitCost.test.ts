@@ -184,7 +184,7 @@ test('a color setting repacks every lane', async () => {
   const { display, cells, stop } = await stackWithGenes()
   const before = glyphCellsOf(cells())
 
-  display.setGeneColorBy('cluster')
+  display.colorByField('cluster')
   expect(changedKeys(before, glyphCellsOf(cells())).length).toBe(before.size)
   stop()
 })

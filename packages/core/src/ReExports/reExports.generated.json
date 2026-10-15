@@ -4119,6 +4119,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "colorByMenuItem",
+        "colorFieldRows",
         "colorSchemeMenuItem",
         "solidColorItem"
       ],

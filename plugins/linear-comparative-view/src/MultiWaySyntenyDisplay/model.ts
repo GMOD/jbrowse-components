@@ -34,6 +34,7 @@ import {
   isSameAssemblyName,
   openAssemblyInLinearView,
 } from '@jbrowse/core/util/tracks'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
@@ -42,7 +43,6 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorForField,
-  colorForValue,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
@@ -355,6 +355,7 @@ export function stateModelFactory(
       TrackHeightMixin(),
       GlobalFetchMixin(),
       LegendMixin(),
+      ColorWritesMixin(),
       LodTierInfoMixin(),
       types.model({
         /** #property */
@@ -2489,46 +2490,15 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * `''` paints by `color.value`
-       */
-      setGeneColorBy(field: string) {
-        setConf(
-          self,
-          'color',
-          colorForField(self.geneColorSettings.color, field),
-        )
-      },
-      /**
-       * #action
-       * Paints the constant, a field staying under `scale: 'none'` for the way
-       * back; undefined returns to the config's own color.
-       */
-      setGeneSolidColor(color: string | undefined) {
-        setConf(
-          self,
-          'color',
-          colorForValue(self.geneColorSettings.color, color),
-        )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
        * Color by's Default: no field and no constant, so the config's own
        * color paints, a `jexl:` expression included
        */
       pickDefaultGeneColor() {
-        const { color } = self.geneColorSettings
-        setConf(
-          self,
-          'color',
-          colorForField(
-            self.geneSolidColor === undefined
-              ? color
-              : { ...color, value: undefined },
-            '',
-          ),
-        )
+        if (self.geneSolidColor === undefined) {
+          self.colorByField('')
+        } else {
+          self.setColorValue(undefined)
+        }
       },
       /**
        * #action
@@ -2537,7 +2507,7 @@ export function stateModelFactory(
        */
       pickGeneSolidColor() {
         if (self.geneColorField !== '' && self.geneSolidColor !== undefined) {
-          self.setGeneColorBy('')
+          self.colorByField('')
         }
         getSession(self).queueDialog(handleClose => [
           SolidColorDialog,
@@ -2546,10 +2516,10 @@ export function stateModelFactory(
             color: self.geneSolidColor ?? featureDefaultColor,
             written: self.geneColorSettings.color.value,
             onChange: (color: string) => {
-              self.setGeneSolidColor(color)
+              self.setColorValue(color)
             },
             onReset: () => {
-              self.setGeneSolidColor(undefined)
+              self.setColorValue(undefined)
             },
             handleClose,
           },

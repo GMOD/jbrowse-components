@@ -126,7 +126,7 @@ From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengr
 | Member | Description |
 | --- | --- |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The shared feature menu plus, on a breakend record, the row that opens the split view for it, and beside a pileup the row that sorts its reads at the variant. |
-| <span id="method-colorbysubmenuitems">**colorBySubMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; ({ label: string; type: "radio"; checked: boolean; onClic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; ({ label: string; type: "radio"; checked: boolean; onClick: () =&gt; void; keepMenuOpen?: undefined; } &#124; { label: string; type: "radio"; checked: boolean; keepMenuOpen: boolean; onClick: () =&gt; void; })[]</code></pre></dialog></span> | The Color by entries without the base's Strand radio, plus one-click consequence impact (SnpEff ANN / VEP CSQ) and SV type presets. |
+| <span id="method-colorbysubmenuitems">**colorBySubMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The Color by entries without the base's Strand radio, plus one-click consequence impact (SnpEff ANN / VEP CSQ) and SV type presets. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>36 inherited methods from 6 models</summary>

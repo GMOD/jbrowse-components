@@ -59,6 +59,62 @@ export function solidColorItem(checked: boolean, onClick: () => void) {
   }
 }
 
+/** A field a Color by menu offers by name, ticked while it paints. */
+export interface ColorPreset {
+  label: string
+  field: string
+  checked: boolean
+}
+
+/**
+ * A feature display's fill block: Default, a radio per preset field, a field
+ * picked in a dialog, and Solid color. Picking a preset shows its key.
+ */
+export function colorFieldRows(
+  self: {
+    colorByMode: 'default' | 'solid' | 'attribute' | (string & {})
+    pickDefaultColor: () => void
+    pickSolidColor: () => void
+    openColorByAttributeDialog: () => void
+    colorByField: (field: string) => void
+    setShowLegend: (show: boolean) => void
+  },
+  presets: ColorPreset[],
+): MenuItem[] {
+  const presetPaints = presets.some(p => p.checked)
+  return [
+    {
+      label: 'Default',
+      type: 'radio',
+      checked: self.colorByMode === 'default',
+      onClick: () => {
+        self.pickDefaultColor()
+      },
+    },
+    ...presets.map(({ label, field, checked }): MenuItem => ({
+      label,
+      type: 'radio',
+      checked,
+      onClick: () => {
+        self.setShowLegend(true)
+        self.colorByField(field)
+      },
+    })),
+    {
+      label: 'Attribute...',
+      type: 'radio',
+      checked: self.colorByMode === 'attribute' && !presetPaints,
+      keepMenuOpen: false,
+      onClick: () => {
+        self.openColorByAttributeDialog()
+      },
+    },
+    solidColorItem(self.colorByMode === 'solid', () => {
+      self.pickSolidColor()
+    }),
+  ]
+}
+
 /**
  * A ramp's Color scheme submenu: a radio per named scheme with the painted one
  * ticked, none where the ramp is not a named scheme, then `extraItems`, the

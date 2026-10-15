@@ -451,7 +451,7 @@ test('cluster paints a gene by the group it carries', () => {
     namedGene('g1', 'atpA', 120, 280),
     namedGene('g2', 'atpB', 500, 600),
   ])
-  display.setGeneColorBy('cluster')
+  display.colorByField('cluster')
   expect(display.geneColorField).toBe('cluster')
   const field = categoricalField('cluster')
   expect(anchorGeneFills(display)).toEqual([
@@ -467,7 +467,7 @@ test('cluster paints a gene by the group it carries', () => {
 test('Default keeps the field, and the field keeps its order', () => {
   const display = createDisplay()
   setConf(display, 'color', { value: 'red', field: 'name', domain: ['atpA'] })
-  display.setGeneColorBy('')
+  display.colorByField('')
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
@@ -475,14 +475,14 @@ test('Default keeps the field, and the field keeps its order', () => {
     scale: 'none',
     domain: ['atpA'],
   })
-  display.setGeneColorBy('name')
+  display.colorByField('name')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: 'name',
     scale: undefined,
     domain: ['atpA'],
   })
-  display.setGeneColorBy('strand')
+  display.colorByField('strand')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'red',
     field: 'strand',
@@ -502,7 +502,7 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
     scale: 'none',
   })
   expect(session.queuedDialogs).toHaveLength(1)
-  display.setGeneSolidColor('teal')
+  display.setColorValue('teal')
   expect(display.geneSolidColor).toBe('teal')
   display.pickDefaultGeneColor()
   expect(display.geneSolidColor).toBeUndefined()
@@ -514,7 +514,7 @@ test('Solid color... over a painting field paints the pick', () => {
   const { display } = createDisplayWithSession()
   setConf(display, 'color', { field: 'strand' })
   display.pickGeneSolidColor()
-  display.setGeneSolidColor('teal')
+  display.setColorValue('teal')
   expect(display.geneColorField).toBe('')
   expect(display.geneColorSettings.color).toMatchObject({
     value: 'teal',
@@ -536,7 +536,7 @@ test('gene names the hash puts on one color each take their own', () => {
     namedGene('g2', 'snRNA', 400, 600),
     namedGene('g3', 'TEC', 700, 900),
   ])
-  display.setGeneColorBy('name')
+  display.colorByField('name')
   const fills = anchorGeneFills(display).map(([, css]) => css)
   expect(fills).toHaveLength(3)
   expect(new Set(fills).size).toBe(3)
