@@ -9,6 +9,7 @@
 import {
   cropTo,
   documentRect,
+  errorAfterSettle,
   isMeasured,
   isRect,
   mergeSettles,
@@ -148,5 +149,28 @@ describe('mergeSettles', () => {
   it('keeps the first when the second failed or never ran', () => {
     expect(mergeSettles(first, { error: 'timed out' })).toBe(first)
     expect(mergeSettles(first, undefined)).toBe(first)
+  })
+})
+
+// a failed measure or capture came after the settle had spent these, so an
+// error answer without them lost them for good
+describe('errorAfterSettle', () => {
+  it('carries what the settle delivered once', () => {
+    const { error } = errorAfterSettle('nothing on the page matches "x"', {
+      result: {
+        settled: true,
+        notifications: [{ level: 'error', message: 'track failed' }],
+        pageErrors: [],
+      },
+    })
+    expect(error).toBe(
+      'nothing on the page matches "x"\nnotifications: [{"level":"error","message":"track failed"}]',
+    )
+  })
+
+  it('is the bare error after a settle that itself failed', () => {
+    expect(errorAfterSettle('no window', { error: 'timed out' })).toEqual({
+      error: 'no window',
+    })
   })
 })

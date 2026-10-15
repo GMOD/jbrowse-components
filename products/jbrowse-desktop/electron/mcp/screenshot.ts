@@ -174,6 +174,25 @@ export function mergeSettles(
   return { result: { ...after, ...Object.fromEntries(joined) } }
 }
 
+/**
+ * The answer for a screenshot that fails after its settle. The settle spent the
+ * session's toasts and drained the page's errors, so the error carries them or
+ * no answer ever does.
+ */
+export function errorAfterSettle(
+  error: string,
+  settled: BridgeToolResult,
+): BridgeToolResult {
+  const fields = resultFields(settled.result)
+  const carried = DELIVERED_ONCE.flatMap(key => {
+    const list = fields[key]
+    return Array.isArray(list) && list.length > 0
+      ? [`${key}: ${JSON.stringify(list)}`]
+      : []
+  })
+  return { error: [error, ...carried].join('\n') }
+}
+
 // capturePage sees the viewport and nothing past it, and a session taller than
 // the window is the common case in every filmed take. The document is no help:
 // a column inside the app scrolls, so the document is always the window's
@@ -228,7 +247,7 @@ async function captureFullPage(
     const bounds = { x: 0, y: 0, ...content }
     const crop = await cropRect(args, bounds, true, relay)
     if (crop.error !== undefined) {
-      return { error: crop.error }
+      return errorAfterSettle(crop.error, settled)
     }
     const clip = crop.rect ?? bounds
     const shot = (await dbg.sendCommand('Page.captureScreenshot', {
@@ -318,7 +337,7 @@ export function createScreenshotTool({
     )
     const win = getWindow()
     if (!win) {
-      return { error: 'JBrowse Desktop has no window open' }
+      return errorAfterSettle('JBrowse Desktop has no window open', settled)
     }
     // a crashed page has no view to capture, and the settle already says why
     if (win.webContents.isCrashed()) {
@@ -339,7 +358,7 @@ export function createScreenshotTool({
     const fullPage = args.fullPage === true && !devtools
     const crop = fullPage ? {} : await cropRect(args, viewport, false, relay)
     if (crop.error !== undefined) {
-      return { error: crop.error }
+      return errorAfterSettle(crop.error, settled)
     }
     // An occluded window composites nothing new, and capturePage then answers
     // with whatever frame it last had: three captures across two navigations
@@ -354,7 +373,7 @@ export function createScreenshotTool({
         )
       : await captureViewport(contents, crop.rect, width, scale)
     if ('error' in captured) {
-      return captured
+      return errorAfterSettle(captured.error, settled)
     }
     const settle = mergeSettles(settled, captured.settle)
     const paint = (painted.result ?? {}) as {
