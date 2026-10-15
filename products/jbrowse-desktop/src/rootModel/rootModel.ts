@@ -185,17 +185,6 @@ export default function rootModelFactory({
       .volatile(() => ({
         version: packageJSON.version,
         adminMode: true,
-        /**
-         * #volatile
-         * What has to stop the moment the Loader lets go of this root — here,
-         * the autosave autorun, which writes to disk over IPC.
-         *
-         * Not `addDisposer`, which fires only on destroy, and the destroy is
-         * now a task later than the swap. An autosave left running in that gap
-         * writes the *outgoing* session to `sessionPath`, which the replacement
-         * has already been loaded from. See `detach`.
-         */
-        detachDisposers: [] as (() => void)[],
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')
         },
@@ -207,36 +196,6 @@ export default function rootModelFactory({
         },
       }))
       .actions(self => ({
-        /**
-         * #action
-         * Register something that must stop when the Loader detaches this root.
-         * See the `detachDisposers` volatile for why this is not `addDisposer`.
-         */
-        addDetachDisposer(disposer: () => void) {
-          self.detachDisposers.push(disposer)
-        },
-        /**
-         * #action
-         * Called when the Loader releases this root. Stops everything the root
-         * runs outside the tree (the worker pool and the autosave autorun) and
-         * leaves the tree itself alone.
-         *
-         * The caller destroys the tree on a later task
-         * (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in
-         * it; plugins rely on those hooks, so the destroy cannot be skipped.
-         * This action stops the outside work immediately, so none of it runs
-         * between detach and destroy. ADR-069.
-         */
-        detach() {
-          // rpcManager is a plain object on a volatile, so MST teardown never
-          // reached it
-          self.rpcManager.destroy()
-          const disposers = self.detachDisposers
-          self.detachDisposers = []
-          for (const disposer of disposers) {
-            disposer()
-          }
-        },
         /**
          * #action
          */

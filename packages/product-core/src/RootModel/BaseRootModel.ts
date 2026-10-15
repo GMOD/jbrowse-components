@@ -111,6 +111,17 @@ export function BaseRootModelFactory({
        * #volatile
        */
       pluginManager,
+      /**
+       * #volatile
+       * What has to stop the moment the host lets go of this root: everything
+       * reaching outside the tree, like an autosave autorun.
+       *
+       * Not `addDisposer`, which fires only on destroy, and destroy follows a
+       * task later, once React has let go of the views it still holds (ADR-069).
+       * Work left running in that gap acts for the outgoing session. See
+       * `detach`.
+       */
+      detachDisposers: [] as (() => void)[],
     }))
     .actions(self => ({
       /**
@@ -118,6 +129,34 @@ export function BaseRootModelFactory({
        */
       setError(error: unknown) {
         self.error = error
+      },
+      /**
+       * #action
+       * Register something that must stop when the host detaches this root.
+       */
+      addDetachDisposer(disposer: () => void) {
+        self.detachDisposers.push(disposer)
+      },
+      /**
+       * #action
+       * Called when the host releases this root. Stops the worker pool and
+       * whatever was registered with `addDetachDisposer`, and leaves the tree
+       * itself alone.
+       *
+       * The caller destroys the tree on a later task
+       * (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in
+       * it; plugins rely on those hooks, so the destroy cannot be skipped.
+       * ADR-069.
+       */
+      detach() {
+        // rpcManager is a plain object on a volatile, so MST teardown never
+        // reaches it
+        self.rpcManager.destroy()
+        const disposers = self.detachDisposers
+        self.detachDisposers = []
+        for (const disposer of disposers) {
+          disposer()
+        }
       },
       /**
        * #action

@@ -200,21 +200,6 @@ export default function RootModel({
       savedSessionMetadata: undefined as SessionMetadata[] | undefined,
       /**
        * #volatile
-       * What has to stop the moment the React host lets go of this root — the
-       * `beforeunload` listener and the autoruns that write to sessionStorage
-       * and IndexedDB, i.e. everything reaching outside the tree.
-       *
-       * Deliberately not `addDisposer`, which fires only on destroy, because
-       * destroy is what this root cannot do at detach time: React is still
-       * holding its views and widgets in the outgoing props of the same
-       * passive-effect flush. The destroy follows on a later task, so an
-       * `addDisposer` here would run late rather than never — but "the moment
-       * the host lets go" is the contract these want. See `detach` and
-       * SessionLoader's disposePluginManager.
-       */
-      detachDisposers: [] as (() => void)[],
-      /**
-       * #volatile
        */
       reloadPluginManagerCallback: (
         _configSnapshot: Record<string, unknown>,
@@ -309,38 +294,6 @@ export default function RootModel({
         } else {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           setupSessionDB(model)
-        }
-      },
-      /**
-       * #action
-       * Register something that must stop when the React host detaches this
-       * root. See the `detachDisposers` volatile for why this is not
-       * `addDisposer`.
-       */
-      addDetachDisposer(disposer: () => void) {
-        self.detachDisposers.push(disposer)
-      },
-      /**
-       * #action
-       * Called when the React host releases this root. Stops everything the
-       * root runs outside the tree (the worker pool, the `beforeunload`
-       * listener, the sessionStorage and IndexedDB autoruns) and leaves the
-       * tree itself alone.
-       *
-       * The caller destroys the tree on a later task
-       * (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in
-       * it; plugins rely on those hooks, so the destroy cannot be skipped.
-       * This action stops the outside work immediately, so none of it runs
-       * between detach and destroy. ADR-069.
-       */
-      detach() {
-        // rpcManager is a plain object on a volatile, so MST teardown never
-        // reached it and the pool outlived every plugin install
-        self.rpcManager.destroy()
-        const disposers = self.detachDisposers
-        self.detachDisposers = []
-        for (const disposer of disposers) {
-          disposer()
         }
       },
       /**
