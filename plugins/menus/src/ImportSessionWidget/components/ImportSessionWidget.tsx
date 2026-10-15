@@ -6,6 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { parseSessionFile } from '../parseSessionFile.ts'
 import ImportError from './ImportError.tsx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -43,23 +44,9 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
                   rejectedFiles[0]!.errors.map(e => e.message).join(', '),
                 )
               }
-              const sessionText = await acceptedFiles[0]!.text()
-              const parsed: unknown = JSON.parse(sessionText)
-              if (!parsed || typeof parsed !== 'object') {
-                throw new Error('File does not contain a JSON object')
-              }
-              // session exports wrap the session under a top-level "session"
-              // key; fall back to treating the whole object as the session
-              const session = 'session' in parsed ? parsed.session : parsed
-              if (!session || typeof session !== 'object') {
-                throw new Error(
-                  'No session found in file. Expected a JBrowse session export (a JSON file with a top-level "session" key).',
-                )
-              }
+              const session = parseSessionFile(await acceptedFiles[0]!.text())
               await getEnv(model).pluginManager.preloadSessionTypes(session)
-              getSession(model).setSession?.(
-                session as { name: string; [key: string]: unknown },
-              )
+              getSession(model).setSession?.(session)
             } catch (e) {
               console.error(e)
               setError(e)
