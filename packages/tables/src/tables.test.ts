@@ -862,3 +862,18 @@ test('a region over the byte limit is refused before any read is fetched', async
     /over the 1000-byte limit/,
   )
 })
+
+test('a region over the span limit is refused before any read is fetched', async () => {
+  await expect(engine.alignments({ ...BAM, spanLimit: 100 })).rejects.toThrow(
+    /spans \d+ bp of alignments, over the 100-bp limit/,
+  )
+  const [whole] = (
+    await engine.fileRegions({ adapterConfig: BAM.adapterConfig })
+  ).refName
+  await expect(
+    engine.alignments({
+      ...BAM,
+      region: { refName: whole!, start: 0, end: 2 ** 31 - 1 },
+    }),
+  ).rejects.toThrow(/over the 10000000-bp limit/)
+})

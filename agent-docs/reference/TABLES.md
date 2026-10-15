@@ -54,8 +54,8 @@ What follows from it:
   region's records use; a host binding regions fills a missing column with
   NA, as it does for INFO.
 - **A whole file is the same table with no region:** `fileRegions` lists the
-  regions, `byteLimit` still applies, and `rowLimit` refuses a read whose
-  largest table passes it.
+  regions, `byteLimit` and alignments' `spanLimit` still apply, and
+  `rowLimit` refuses a read whose largest table passes it.
 - **A host flattens a name collision with a prefix:** ggjbrowse writes
   `info_type` and `attr_type`.
 - **VEP's `CSQ` and SnpEff's `ANN` parse into `annotations`**, and their
@@ -71,7 +71,10 @@ mismatch's `frequency` is its base's count over the depth there, not the
 worker's `mismatchFrequencies`, which is a display fade zeroed below a
 depth-dependent threshold. A region over `byteLimit` (200 MB of compressed
 alignments by default) is refused off the index with an error naming the
-size, since a host holds the whole table in memory. A read's `id` is the
+size, since a host holds the whole table in memory. A region spanning over
+`spanLimit` (10 Mb by default) is refused before anything is fetched: the
+coverage band holds every base of the span, so a sparse file read across a
+whole contig needs memory its compressed size doesn't show. A read's `id` is the
 record's own `feature.id()`, built from the worker's read keys, the same in
 every call; `read` indexes `reads` within one call, and a read's `name` is
 shared by its mates and supplementary segments. The coverage band's tables

@@ -213,9 +213,17 @@ export interface AlignmentTablesArgs {
    * table in memory, where the browser draws it in pieces.
    */
   byteLimit?: number
+  /**
+   * The most bp the region may span, refused before anything is fetched.
+   * The coverage band holds every base of the span in memory whatever the
+   * file holds, so a sparse file read across a whole contig is bounded here
+   * rather than by `byteLimit`. 10 Mb by default.
+   */
+  spanLimit?: number
 }
 
 const DEFAULT_BYTE_LIMIT = 200_000_000
+const DEFAULT_SPAN_LIMIT = 10_000_000
 
 const BASE_OF_CODE: Record<number, string> = {
   65: 'A',
@@ -981,8 +989,16 @@ export async function alignmentTables(
     display = {},
     refNames,
     byteLimit = DEFAULT_BYTE_LIMIT,
+    spanLimit = DEFAULT_SPAN_LIMIT,
   }: AlignmentTablesArgs,
 ) {
+  const where = `${region.refName}:${region.start}-${region.end}`
+  const span = region.end - region.start
+  if (span > spanLimit) {
+    throw new Error(
+      `${where} spans ${span} bp of alignments, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
+    )
+  }
   const conf: DisplayConf = displayConfigSchemaFactory(pluginManager).create({
     ...display,
     type: 'LinearAlignmentsDisplay',
@@ -1020,7 +1036,6 @@ export async function alignmentTables(
     statusCallback: () => {},
   }
   const result = await executeRenderAlignmentData({ pluginManager, args })
-  const where = `${region.refName}:${region.start}-${region.end}`
   if ('regionTooLarge' in result) {
     throw new Error(
       `${where} needs ${result.bytes} bytes of alignments, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
