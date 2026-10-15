@@ -25,6 +25,38 @@ async function sessionNameFor(
   return pluginManager.rootModel!.session!.name
 }
 
+// `?extendSession=true&sessionTracks=[…]` opened the configured default
+// session with the tracks dropped and no diagnostic
+test('a default session gets the link’s sessionTracks', async () => {
+  const pluginManager = await createPluginManager(
+    {
+      configSnapshot: {
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          disableAnalytics: true,
+        },
+        defaultSession: { name: 'Curated' },
+      },
+      sessionSource: { type: 'default' },
+      defaultSessionTracks: [
+        {
+          trackId: 'url_track',
+          type: 'FeatureTrack',
+          name: 'URL track',
+          assemblyNames: ['volvox'],
+          adapter: { type: 'FromConfigAdapter', features: [] },
+        },
+      ],
+      initialTimestamp: 0,
+    },
+    () => {},
+  )
+  const session = pluginManager.rootModel!.session as unknown as {
+    sessionTracks: { trackId: string }[]
+  }
+  expect(session.sessionTracks.map(t => t.trackId)).toEqual(['url_track'])
+})
+
 describe('a spec session', () => {
   const spec = { sessionName: 'From the spec', views: [] }
 

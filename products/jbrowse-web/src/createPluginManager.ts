@@ -1,4 +1,5 @@
 import {
+  addSessionTracks,
   loadSessionSpec,
   preloadAppFrame,
   preloadAppShell,
@@ -49,6 +50,7 @@ export interface PluginManagerSource {
   // the URL-param subset of the LGV launch spec; derived from InitState rather
   // than restated so a new field can't go missing on the way through
   readonly defaultSessionViewInit?: Partial<InitState>
+  readonly defaultSessionTracks?: Record<string, unknown>[]
 }
 
 function asPluginRecord({ plugin: P, definition }: PluginRecord) {
@@ -254,7 +256,12 @@ function initSession(
   pluginManager: PluginManager,
   model: PluginManagerSource,
 ) {
-  const { sessionSource, sessionName, defaultSessionViewInit } = model
+  const {
+    sessionSource,
+    sessionName,
+    defaultSessionViewInit,
+    defaultSessionTracks = [],
+  } = model
   try {
     if (sessionSource?.type === 'error') {
       throw sessionSource.error
@@ -281,6 +288,7 @@ function initSession(
       )
     } else {
       rootModel.setDefaultSession()
+      addSessionTracks(rootModel.session, defaultSessionTracks)
       if (defaultSessionViewInit) {
         applyDefaultSessionViewInit(rootModel.session, defaultSessionViewInit)
       }

@@ -347,6 +347,14 @@ const SessionLoader = types
         ? init
         : undefined
     },
+    /**
+     * #getter
+     * `&sessionTracks=` to add to the configured defaultSession, so that
+     * `&tracks=` on the same link can name them
+     */
+    get defaultSessionTracks() {
+      return self.extendDefaultSession ? self.sessionTracksParsed : []
+    },
   }))
   .actions(self => ({
     /**
