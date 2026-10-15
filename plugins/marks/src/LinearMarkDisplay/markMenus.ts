@@ -11,9 +11,8 @@ import {
 } from '@jbrowse/display-kit/groupByMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import {
-  clusteringMenuItem,
   resetRowOrderMenuItems,
-  rowArrangementMenuItem,
+  rowOrderMenuItems,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
   sortRowsHereMenuItem,
@@ -44,23 +43,23 @@ const ROW_HEIGHT_PRESETS: RowHeightPreset[] = [
 function rowsMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   return [
     rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
-    rowArrangementMenuItem(self, { ready: self.editableSources.length > 0 }),
-    ...resetRowOrderMenuItems(self),
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by similarity...',
-        disabled: self.valueMarkIndex === -1,
-        disabledHelpText: 'No bar or point mark draws at this zoom',
-        onClick: () => {
-          getDialogHost(self).queueDialog(handleClose => [
-            MarkClusterDialog,
-            { model: self, handleClose },
-          ])
+    ...rowOrderMenuItems(self, {
+      arrangement: { ready: self.editableSources.length > 0 },
+      cluster: {
+        runItem: {
+          label: 'Cluster rows by similarity...',
+          disabled: self.valueMarkIndex === -1,
+          disabledHelpText: 'No bar or point mark draws at this zoom',
+          onClick: () => {
+            getDialogHost(self).queueDialog(handleClose => [
+              MarkClusterDialog,
+              { model: self, handleClose },
+            ])
+          },
         },
+        rowCount: self.clusterableSources.length,
       },
-      self.clusterableSources.length,
-    ),
+    }),
   ]
 }
 

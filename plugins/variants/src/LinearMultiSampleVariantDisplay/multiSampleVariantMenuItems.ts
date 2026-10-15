@@ -14,9 +14,8 @@ import {
 } from '@jbrowse/display-kit/colorByMenu'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
-  clusteringMenuItem,
   resetRowOrderMenuItems,
-  rowArrangementMenuItem,
+  rowOrderMenuItems,
   rowColorChoiceLabel,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
@@ -430,38 +429,29 @@ export function variantTrackMenuItems(
         }),
       ],
     }),
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by genotype...',
-        // Off the sample list, not `loaded`: the samples arrive on their own RPC
-        // (`MultiSampleVariantGetSources`), which neither waits for the cell data
-        // nor is waited on by it. Keyed on the cell data, the row blamed the
-        // cohort for a sample list that had not landed yet, and called a genuinely
-        // single-sample track still-loading forever. Below that, the row count
-        // is `clusteringMenuItem`'s gate.
-        disabled: !self.adapterSamples,
-        disabledHelpText: 'Loading samples...',
-        onClick: () => {
-          getDialogHost(self).queueDialog(handleClose => [
-            ClusterDialog,
-            {
-              model: self,
-              handleClose,
-            },
-          ])
-        },
+    ...rowOrderMenuItems(self, {
+      arrangement: {
+        ready: self.clusteringReady && !!self.adapterSamples?.length,
       },
-      self.sources.length,
-    ),
-    rowArrangementMenuItem(self, {
-      ready: self.clusteringReady && !!self.adapterSamples?.length,
+      cluster: {
+        runItem: {
+          label: 'Cluster rows by genotype...',
+          // Off the sample list, not `loaded`: the samples arrive on their own
+          // RPC (`MultiSampleVariantGetSources`), which neither waits for the
+          // cell data nor is waited on by it. Below that, the row count is
+          // `clusteringMenuItem`'s gate.
+          disabled: !self.adapterSamples,
+          disabledHelpText: 'Loading samples...',
+          onClick: () => {
+            getDialogHost(self).queueDialog(handleClose => [
+              ClusterDialog,
+              { model: self, handleClose },
+            ])
+          },
+        },
+        rowCount: self.sources.length,
+      },
     }),
-    // Three things write this display's row order — a clustering run, the
-    // arrangement dialog, and the right-click "Sort by genotype" below — and
-    // until now the only way back from any of them was the dialog's own reset,
-    // which is a strange place to look for the undo of a right-click.
-    ...resetRowOrderMenuItems(self),
   ]
 }
 

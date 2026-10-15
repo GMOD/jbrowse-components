@@ -32,9 +32,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   ContextMenuMixin,
   TreeSidebarMixin,
-  clusteringMenuItem,
   resetRowOrderMenuItems,
-  rowArrangementMenuItem,
+  rowOrderMenuItems,
   setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
@@ -857,28 +856,6 @@ export default function stateModelFactory(
         ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
-          // a row order exists only once the sources are on rows
-          ...(self.isRowLayout
-            ? [
-                clusteringMenuItem(
-                  self,
-                  {
-                    label: 'Cluster rows by score...',
-                    onClick: () => {
-                      getDialogHost(self).queueDialog(handleClose => [
-                        WiggleClusterDialog,
-                        {
-                          model: self,
-                          handleClose,
-                        },
-                      ])
-                    },
-                  },
-                  self.clusterableSources.length,
-                ),
-                ...resetRowOrderMenuItems(self),
-              ]
-            : []),
           ...makeResolutionSubMenu(self),
           makeScoreAxisMenuItem(
             self,
@@ -886,19 +863,34 @@ export default function stateModelFactory(
           ),
           ...makeShowSubMenu(showItems),
           ...makeMarkSizeMenuItems(self),
-          // `ready: true`: a swatch waits for no row list, and a gate would grey
-          // out the only color route on a plain BigWig until a fetch lands
-          rowArrangementMenuItem(self, {
-            ready: true,
-            onOpen: () => {
-              getDialogHost(self).queueDialog(handleClose => [
-                SetColorDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
+          ...rowOrderMenuItems(self, {
+            // `ready: true`: a swatch waits for no row list, and a gate would
+            // grey out the only color route on a plain BigWig until a fetch
+            // lands
+            arrangement: {
+              ready: true,
+              onOpen: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  SetColorDialog,
+                  { model: self, handleClose },
+                ])
+              },
             },
+            // a row order exists only once the sources are on rows
+            cluster: self.isRowLayout
+              ? {
+                  runItem: {
+                    label: 'Cluster rows by score...',
+                    onClick: () => {
+                      getDialogHost(self).queueDialog(handleClose => [
+                        WiggleClusterDialog,
+                        { model: self, handleClose },
+                      ])
+                    },
+                  },
+                  rowCount: self.clusterableSources.length,
+                }
+              : undefined,
           }),
           ...editPlotMenuItems(self),
         ]

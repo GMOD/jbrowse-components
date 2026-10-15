@@ -110,7 +110,10 @@ export {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from './treeSidebarConfigSchemaFields.ts'
-export { rowArrangementMenuItem } from './rowArrangementMenuItem.ts'
+export {
+  rowArrangementMenuItem,
+  rowOrderMenuItems,
+} from './rowArrangementMenuItem.ts'
 export { RowHeightMixin } from './rowHeight/RowHeightMixin.ts'
 export { rowHeightConfigSchemaFields } from './rowHeight/rowHeightConfigSchemaFields.ts'
 export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'

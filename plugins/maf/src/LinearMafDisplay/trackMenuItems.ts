@@ -17,9 +17,7 @@ import {
   colorSchemeMenuItem,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
-  clusteringMenuItem,
-  resetRowOrderMenuItems,
-  rowArrangementMenuItem,
+  rowOrderMenuItems,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
   treeSidebarShowMenuItems,
@@ -116,7 +114,7 @@ interface MafMenuSelf
   rowFocus?: readonly string[]
   setRowFocus: (names?: readonly string[]) => void
   setScrollTop: (scrollTop: number) => void
-  // `resetRowOrderMenuItems` gates on the first and calls the second.
+  // `rowOrderMenuItems` gates its reset on the first and calls the second.
   rowArrangementIsCustom: boolean
   resetRowArrangement: () => void
 }
@@ -269,24 +267,24 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     plotTypeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
     ...getCoverageMenuItems(self),
-    rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by identity...',
-        // `sources` is the post-filter list, so one row is as often a clade
-        // focused to one species as a track still loading.
-        disabled: !self.sourcesKnown,
-        disabledHelpText: 'Loading rows...',
-        onClick: () => {
-          getDialogHost(self).queueDialog(handleClose => [
-            MafClusterDialog,
-            { model: self, handleClose },
-          ])
+    ...rowOrderMenuItems(self, {
+      arrangement: { ready: !!self.editableSources.length },
+      cluster: {
+        runItem: {
+          label: 'Cluster rows by identity...',
+          // `sources` is the post-filter list, so one row is as often a clade
+          // focused to one species as a track still loading.
+          disabled: !self.sourcesKnown,
+          disabledHelpText: 'Loading rows...',
+          onClick: () => {
+            getDialogHost(self).queueDialog(handleClose => [
+              MafClusterDialog,
+              { model: self, handleClose },
+            ])
+          },
         },
+        rowCount: self.sources.length,
       },
-      self.sources.length,
-    ),
-    ...resetRowOrderMenuItems(self),
+    }),
   ]
 }

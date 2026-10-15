@@ -162,7 +162,7 @@ export function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
     : []
 }
 
-interface RowOrderMenuModel {
+export interface RowOrderMenuModel {
   rowArrangementIsCustom: boolean
   resetRowArrangement: () => void
 }
@@ -251,7 +251,7 @@ export function clusterProvenanceMenuItems(
     : []
 }
 
-interface ClusteringMenuModel
+export interface ClusteringMenuModel
   extends ClusterProvenanceMenuModel, RowFocusMenuModel {}
 
 // A run row the display has already disabled passes through with its own text:

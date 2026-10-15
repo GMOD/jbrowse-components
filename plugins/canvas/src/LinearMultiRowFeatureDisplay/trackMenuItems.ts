@@ -7,9 +7,7 @@ import { getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
-  clusteringMenuItem,
-  resetRowOrderMenuItems,
-  rowArrangementMenuItem,
+  rowOrderMenuItems,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
   treeSidebarShowMenuItems,
@@ -185,22 +183,20 @@ export function buildMultiRowTrackMenuItems(
     ...rowsFieldMenuItems(self),
     ...groupByMenuItems(self),
     ...categoriesMenuItems(self),
-    rowArrangementMenuItem(self, { ready: !!self.editableSources.length }),
-    // Top-level, since clustering is only one of the three things writing
-    // `rows.domain`.
-    ...resetRowOrderMenuItems(self),
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by similarity...',
-        onClick: () => {
-          getDialogHost(self).queueDialog(handleClose => [
-            MultiRowClusterDialog,
-            { model: self, handleClose },
-          ])
+    ...rowOrderMenuItems(self, {
+      arrangement: { ready: !!self.editableSources.length },
+      cluster: {
+        runItem: {
+          label: 'Cluster rows by similarity...',
+          onClick: () => {
+            getDialogHost(self).queueDialog(handleClose => [
+              MultiRowClusterDialog,
+              { model: self, handleClose },
+            ])
+          },
         },
+        rowCount: self.clusterableSources.length,
       },
-      self.clusterableSources.length,
-    ),
+    }),
   ]
 }
