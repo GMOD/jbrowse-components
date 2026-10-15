@@ -7,6 +7,30 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## featureAttributeTables
+
+The fields the file states for the features and transcripts a feature
+table lists, by its `features.id` and `subfeatures.id`: `attributes` and
+`subfeatureAttributes`, each key a column aligned to them, null where a
+record lacks it, and `attributeFields`, each key's `type`, `number` and
+`description`. A GFF3 keeps its column-9 keys as written (`ID`, `Name`,
+`Parent`), each a `String`, beside `source`, `score` and `phase`; a BED or
+BigBed declares its columns' types in its autoSql, where the parser reads
+them so. A key the file does not
+declare (a GFF3 has no header) is typed off its values, and its columns are
+the keys the region's records use. A key takes a list a record (`number`
+`.`) where the spec lets it list several (a GFF3's `Parent`, `Alias`,
+`Note`, `Dbxref` and `Ontology_term`, an autoSql array) or a record lists
+several. The keys JBrowse gives a feature (`start`, `type`, ...) or decodes
+into its glyph (`blockSizes`, ...) stay out.
+
+```js
+// type signature
+(pluginManager: PluginManager, { adapterConfig, regions, ids, subfeatureIds, }: { adapterConfig: Record<string, unknown>; regions: TablesRegion[]; ids: readonly string[]; subfeatureIds: readonly string[]; }) => Promise<{ attributes: Record<string, unknown[]>; subfeatureAttributes: Record<string, unknown[]>; attributeFields: { key: string[]; type: string[]; number: string[]; description: string[]; }; }>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)
+
 ## featureTables
 
 A region's features, or several regions', as the feature display

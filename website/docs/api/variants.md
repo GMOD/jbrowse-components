@@ -33,10 +33,12 @@ every record, a record calling no genotype included:
 - `samples`: a row per record and sample in header order, `feature` (an
   index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
   to it, typed as INFO is; and `formatFields`, each key's declaration.
+- `annotations` and `annotationFields`: its ANN or CSQ consequences, as
+  `variantTables` gives them, `feature` an index into `ids`.
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, regions, ids, }: { adapterConfig: Record<string, unknown>; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<{ samples: { feature: number[]; sample: string[]; }; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, regions, ids, }: { adapterConfig: Record<…>; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -47,7 +49,9 @@ A region of a multi-sample VCF as the multi-sample variant display fetches,
 filters and paints it, as tables: `variants`, each record the display
 keeps, with its lane color and its `filter`; `info`, each INFO key's
 values aligned to `variants`, and `infoFields`, the header's declaration
-of each key; `cells`, each sample's (or under
+of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
+consequences, a row per record and consequence, which then leave `info`
+(`consequenceTables`); `cells`, each sample's (or under
 `unit: 'haplotype'` each haplotype's) cell at each record, with its
 genotype, its `dosage` and the fill the display paints it; `rows`, the
 rows the cells name, top to bottom as the display arranges them by `rows`
