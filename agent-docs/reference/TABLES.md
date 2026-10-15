@@ -165,12 +165,36 @@ file's spelling, as `REFNAME_NAMESPACES.md` describes for the browser.
 
 A setting the table cannot serve is refused with an error:
 
-- `unit: 'chain'` is refused with an error. Chain mode joins a read to its
-  mates on the main thread, which the table does not run.
 - A facet that hides every section holding reads is refused, so an empty
   table always means an empty region.
 - With no assembly, coloring by the mate's contig takes each contig's name
   hash, where the browser takes the assembly's own contig order.
+
+**Several regions read as one view.** `alignmentTables` and
+`variantTables` take `regions`, as the feature and wiggle tables do, and read
+`region` as `regions: [region]`:
+
+- Every index and key column (`region`, `read`, `variant`, `key`, `row`) is
+  a 0-based int32. A call with one region names region 0 in every row.
+- A read crossing regions is listed in each, under one `key` and on one
+  `row`, from the display's multi-region layout (`buildLaidOutPileupMap`).
+  A per-read table's `read` points at that region's copy.
+- The engine clips each coverage table to its region, and `coverageScale`
+  pools every region into one depth axis.
+- `sections` is the union over the regions, in stacking order.
+- `junctions` merge once over the regions (`mergeJunctions`), with
+  `refName`, and `startRegion` and `endRegion` naming the region holding
+  each foot, -1 where none does.
+- An arc is listed once, under the region holding its near foot, with
+  `startRegion` and `endRegion`. A tick or a chain's line is listed in each
+  region whose reads give it.
+- `variants` lists a record once per region it falls in, under one `key`,
+  and `cells.variant` indexes the joined table. `rows` and `bands` are one
+  set for every region.
+- `spanLimit` and `byteLimit` apply to the regions' sum.
+- `warnings` names each setting the layout drops without an error, such as
+  a column sort with no `pos`, a sort across contigs or held by no region
+  with reads, and a sort or `showSoftClipping` under `unit: 'chain'`.
 
 Beside the reads come the marks the display draws on them, each as the
 worker ships it: `insertions` (position, length, sequence, read), `clips`
