@@ -35,17 +35,15 @@ const DeleteOldSessionsDialog = observer(function DeleteOldSessionsDialog({
       submitDisabled={matched.length === 0}
       onCancel={onClose}
       onSubmit={() => {
-        session
+        void session
           .deleteSavedSessions(matched.map(m => m.id))
-          .then(() => {
-            session.notify(
-              `${matched.length} session${matched.length === 1 ? '' : 's'} deleted`,
-              'success',
-            )
-          })
-          .catch((e: unknown) => {
-            console.error(e)
-            session.notifyError(`${e}`, e)
+          .then(deleted => {
+            if (deleted) {
+              session.notify(
+                `${deleted} session${deleted === 1 ? '' : 's'} deleted`,
+                'success',
+              )
+            }
           })
         onClose()
       }}

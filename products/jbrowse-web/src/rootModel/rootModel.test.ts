@@ -482,7 +482,7 @@ describe('deleteSavedSessions', () => {
     root.setSession({ name: 'testSession' })
     const session = root.session!
 
-    await root.deleteSavedSessions([session.id])
+    await expect(root.deleteSavedSessions([session.id])).resolves.toBe(0)
 
     expect(session.snackbarMessages).toHaveLength(0)
   })
@@ -493,7 +493,7 @@ describe('deleteSavedSessions', () => {
     const root = getRootModel().create(mainThreadConfig)
     root.setSession({ name: 'testSession' })
 
-    await expect(root.deleteSavedSessions([])).resolves.toBeUndefined()
+    await expect(root.deleteSavedSessions([])).resolves.toBe(0)
   })
 })
 

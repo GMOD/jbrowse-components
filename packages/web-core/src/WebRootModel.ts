@@ -80,7 +80,7 @@ export interface AbstractWebRootModel extends AppRootModel {
 export interface AbstractWebSessionDbRootModel {
   readonly savedSessionMetadata: SessionMetadata[] | undefined
   deleteSavedSession(id: string): Promise<void>
-  deleteSavedSessions(ids: string[]): Promise<void>
+  deleteSavedSessions(ids: string[]): Promise<number>
   setSavedSessionFavorite(id: string, favorite: boolean): Promise<void>
   renameSavedSession(id: string, name: string): Promise<void>
   activateSession(id: string): Promise<void>

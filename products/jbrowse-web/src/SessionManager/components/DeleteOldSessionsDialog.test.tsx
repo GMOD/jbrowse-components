@@ -23,12 +23,13 @@ function meta(id: string, daysAgo: number, favorite = false): SessionMetadata {
 }
 
 function setup(savedSessionMetadata: SessionMetadata[]) {
-  const deleteSavedSessions = jest.fn().mockResolvedValue(undefined)
+  const deleteSavedSessions = jest.fn().mockResolvedValue(1)
+  const notify = jest.fn()
   const session = {
     id: 'open',
     savedSessionMetadata,
     deleteSavedSessions,
-    notify: jest.fn(),
+    notify,
     notifyError: jest.fn(),
   } as unknown as SessionModel
   const onClose = jest.fn()
@@ -37,7 +38,7 @@ function setup(savedSessionMetadata: SessionMetadata[]) {
       <DeleteOldSessionsDialog session={session} onClose={onClose} />
     </ThemeProvider>,
   )
-  return { ...utils, deleteSavedSessions, onClose }
+  return { ...utils, deleteSavedSessions, notify, onClose }
 }
 
 // the old control was a single unconfirmed click that deleted an unstated
@@ -77,6 +78,16 @@ test('never offers a favorite or the open session', () => {
   fireEvent.click(getByText('Delete'))
 
   expect(deleteSavedSessions).toHaveBeenCalledWith(['plain'])
+})
+
+test('reports success only for what was deleted', async () => {
+  const { getByText, deleteSavedSessions, notify } = setup([meta('plain', 400)])
+  deleteSavedSessions.mockResolvedValueOnce(0)
+
+  fireEvent.click(getByText('Delete'))
+  await deleteSavedSessions.mock.results[0]!.value
+
+  expect(notify).not.toHaveBeenCalled()
 })
 
 test('cannot be submitted when nothing matches', () => {

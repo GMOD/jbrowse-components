@@ -406,17 +406,21 @@ export default function RootModel({
        * something else refreshes the list.
        *
        * The open session is skipped rather than reported on, since a bulk
-       * delete is not aimed at any one row (see deleteSavedSession).
+       * delete is not aimed at any one row (see deleteSavedSession). Resolves
+       * to the number deleted: 0 when the transaction failed, which has
+       * already been reported.
        */
       async deleteSavedSessions(ids: string[]) {
         const toDelete = ids.filter(id => !isOpenSession(self, id))
-        if (!toDelete.length) {
-          return
+        let deleted = 0
+        if (toDelete.length) {
+          await withSessionDB(self, async sessionDB => {
+            await deleteSessionRows(sessionDB, toDelete)
+            deleted = toDelete.length
+            await self.fetchSessionMetadata()
+          })
         }
-        await withSessionDB(self, async sessionDB => {
-          await deleteSessionRows(sessionDB, toDelete)
-          await self.fetchSessionMetadata()
-        })
+        return deleted
       },
       /**
        * #action
