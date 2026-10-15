@@ -1221,6 +1221,7 @@
         "pluginName",
         "pluginUrl",
         "pluginsNotIn",
+        "resolvedPluginUrl",
         "samePlugin",
         "storePluginName",
         "vendoredPluginNames"

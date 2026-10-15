@@ -174,7 +174,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/pluggableElementTypes/ViewType': ['default'],
   '@jbrowse/core/pluggableElementTypes/WidgetType': ['default'],
   '@jbrowse/core/Plugin': ['default'],
-  '@jbrowse/core/pluginDefinitions': ['dedupePlugins', 'desktopVendoredPluginNames', 'dropVendoredPlugins', 'holdsPlugin', 'holdsPluginVersion', 'isESMPluginDefinition', 'isPluginUrl', 'isStorePluginDefinition', 'isUMDPluginDefinition', 'maybePluginUrl', 'pluginDefinitionMetadata', 'pluginDescriptionString', 'pluginLabel', 'pluginName', 'pluginUrl', 'pluginsNotIn', 'samePlugin', 'storePluginName', 'vendoredPluginNames'],
+  '@jbrowse/core/pluginDefinitions': ['dedupePlugins', 'desktopVendoredPluginNames', 'dropVendoredPlugins', 'holdsPlugin', 'holdsPluginVersion', 'isESMPluginDefinition', 'isPluginUrl', 'isStorePluginDefinition', 'isUMDPluginDefinition', 'maybePluginUrl', 'pluginDefinitionMetadata', 'pluginDescriptionString', 'pluginLabel', 'pluginName', 'pluginUrl', 'pluginsNotIn', 'resolvedPluginUrl', 'samePlugin', 'storePluginName', 'vendoredPluginNames'],
   '@jbrowse/core/PluginLoader': ['default', 'preloadUMDBundles', 'workerScriptLoadMessage'],
   '@jbrowse/core/PluginManager': ['corePluginRecords', 'default', 'pluggableElementTypeGroups', 'pluggableStateModelGroup', 'wrappedComponent'],
   '@jbrowse/core/rpc/byteBudget': ['adapterByteLimit', 'isRegionRefused', 'isRegionTooLargeError', 'largestRegionBytes', 'measureRegionBytes', 'measuredBytes', 'measurementPartial', 'overByteBudget'],

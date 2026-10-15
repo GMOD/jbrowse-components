@@ -44,7 +44,7 @@ From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="property-viewids
 | Member | Description |
 | --- | --- |
 | <span id="volatile-permanentplugins">**permanentPlugins**</span><br><code>PermanentPluginEntry[]</code> | the plugins installed for this config on this browser, mirrored from localStorage.<br><br>Volatile rather than a view over storage, because a view is a MobX computed and this one would read no observable: it would compute once inside the plugin store's `observer` and cache the list forever. And volatile rather than a property, because the list belongs to the browser rather than to this session — sharing or exporting a session must not carry it. |
-| <span id="volatile-permanentpluginssafemode">**permanentPluginsSafeMode**</span><br><code>{ reason: SafeModeReason; suspects: string[]; } &#124; undefined</code> | why this load skipped the list, or undefined when it loaded them, decided once at boot |
+| <span id="volatile-permanentpluginssafemode">**permanentPluginsSafeMode**</span><br><code>{ reason: SafeModeReason; suspects: string[]; } &#124; undefined</code> | why this load skipped the list, or undefined when it loaded them, decided once at boot, so a session from the plugin-install rebuild reads the same answer |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>12 inherited volatiles from 6 models</summary>
