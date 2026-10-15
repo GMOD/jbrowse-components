@@ -214,6 +214,10 @@ export function startMcpBridge({
   // socket at once (Claude Desktop beside Claude Code) both have a call 5, and
   // a cancel from one would otherwise abort the other's.
   const relayForRequest = new Map<string, number>()
+  // A call still waiting for the page to listen has no relay yet, so a cancel
+  // landing then marks it here and the call answers instead of sending code
+  // nobody is waiting for.
+  const awaitingPage = new Map<string, { cancelled: boolean }>()
 
   async function relayToRenderer(
     tool: string,
@@ -234,7 +238,21 @@ export function startMcpBridge({
     // Answering fast beats sending into the void: a push to a page that has not
     // subscribed is discarded silently, so proceeding anyway would buy nothing
     // and cost the whole relay timeout. The caller can retry cheaply.
-    const ready = await awaitListening(Math.min(timeoutMs, READY_WAIT_MS))
+    const pending = { cancelled: false }
+    if (requestId !== undefined) {
+      awaitingPage.set(requestId, pending)
+    }
+    let ready
+    try {
+      ready = await awaitListening(Math.min(timeoutMs, READY_WAIT_MS))
+    } finally {
+      if (requestId !== undefined) {
+        awaitingPage.delete(requestId)
+      }
+    }
+    if (pending.cancelled) {
+      return { error: `"${tool}" was cancelled before it was sent` }
+    }
     // a crash while waiting wakes the wait, and there is no page to send to
     if (crashed) {
       return { error: crashed }
@@ -276,13 +294,16 @@ export function startMcpBridge({
   // which is what `sibling` means.
   function cancelTool(args: Record<string, unknown>, caller: Caller) {
     const requestId = typeof args.id === 'number' ? args.id : undefined
-    const relay =
-      requestId === undefined
-        ? undefined
-        : relayForRequest.get(caller.sibling(requestId))
-    return relay === undefined
-      ? Promise.resolve({ result: { cancelled: false } })
-      : relayToRenderer('cancel', { id: relay }, 5000)
+    const call = requestId === undefined ? undefined : caller.sibling(requestId)
+    const relay = call === undefined ? undefined : relayForRequest.get(call)
+    if (relay !== undefined) {
+      return relayToRenderer('cancel', { id: relay }, 5000)
+    }
+    const pending = call === undefined ? undefined : awaitingPage.get(call)
+    if (pending) {
+      pending.cancelled = true
+    }
+    return Promise.resolve({ result: { cancelled: pending !== undefined } })
   }
 
   async function listRecentSessions(): Promise<BridgeToolResult> {
@@ -468,6 +489,11 @@ export function startMcpBridge({
       for (const [call, relay] of relayForRequest) {
         if (call.startsWith(`${connection}:`)) {
           relayToRenderer('cancel', { id: relay }, 5000).catch(console.error)
+        }
+      }
+      for (const [call, pending] of awaitingPage) {
+        if (call.startsWith(`${connection}:`)) {
+          pending.cancelled = true
         }
       }
     })

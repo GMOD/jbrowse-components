@@ -169,6 +169,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     // the last thing the bridge pushed at the renderer, which is what a relayed
     // tool call and a cancel both look like from here
     lastPush: () => pushed.at(-1)!.payload,
+    pushedTools: () => pushed.map(p => p.payload.tool),
   }
 }
 
@@ -577,6 +578,25 @@ describe('cancel', () => {
       tool: 'cancel',
       args: { id: relayId },
     })
+  })
+
+  // the page can be between loads for up to READY_WAIT_MS: an Esc then has to
+  // stop the call, not leave it to run once the page comes back
+  it('stops a call still waiting for the page to listen', async () => {
+    const b = bridge()
+    const c = b.connect()
+    await settle()
+    const answered = c.send(5, 'run_javascript', { code: 'x' })
+    await settle()
+    expect(await c.send(6, 'cancel', { id: 5 })).toEqual({
+      id: 6,
+      result: { cancelled: true },
+    })
+    b.ready({ install: 'first', phase: 'session' })
+    expect(await answered).toMatchObject({
+      error: expect.stringContaining('cancelled before it was sent'),
+    })
+    expect(b.pushedTools()).not.toContain('run_javascript')
   })
 
   it('says so when nothing of that id is running', async () => {
