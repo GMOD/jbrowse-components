@@ -1,5 +1,7 @@
 import { getAttribute, getAttributes } from '@gmod/gff-nostream'
 
+import { fileAttributes } from './fileAttributes.ts'
+
 import type { LazyGffFeature } from '@gmod/gff-nostream'
 import type {
   Feature,
@@ -91,6 +93,11 @@ export class Gff3Feature implements Feature {
 
   public id() {
     return this.uniqueId
+  }
+
+  /** The feature's column 9 keyed as the file writes it (`fileAttributes`). */
+  public fileAttributes() {
+    return fileAttributes(this.data.attributeString)
   }
 
   public parent() {

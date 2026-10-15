@@ -1,4 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -51,6 +52,7 @@ import { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 import { executeRenderFeatureData } from './RenderFeatureDataRPC/executeRenderFeatureData.ts'
 import { labelFontSize } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
+import { ROOT_CHILD_ORDINAL } from './RenderFeatureDataRPC/rpcTypes.ts'
 import {
   shouldRenderPeptideBackground,
   shouldRenderPeptideText,
@@ -62,9 +64,11 @@ import type {
   FeatureDataResult,
   FlatbushItem,
   SectionStamp,
+  SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Feature } from '@jbrowse/core/util'
 
 interface TablesRegion {
   refName: string
@@ -156,6 +160,32 @@ function placedFeatures(
   }
 }
 
+/**
+ * The transcript a gene's primitive draws, as a row of `subfeatures`, -1 for a
+ * feature's own: the worker stamps each child's primitives with the child's
+ * ordinal, as it stamps the child's own entry, the first in its range.
+ */
+function subfeatureLookup(
+  d: FeatureDataResult,
+  subfeatures: readonly SubfeatureInfo[],
+) {
+  const index = new Map<string, number>()
+  subfeatures.forEach((s, i) => {
+    const key = `${s.parentFeatureId}\t${s.childOrdinal}`
+    if (s.childOrdinal !== undefined && !index.has(key)) {
+      index.set(key, i)
+    }
+  })
+  return (laneFeatureIndex: number, ordinal: number | undefined) =>
+    ordinal === undefined || ordinal === ROOT_CHILD_ORDINAL
+      ? -1
+      : (index.get(
+          `${d.flatbushItems[laneFeatureIndex]!.featureId}\t${ordinal}`,
+        ) ?? -1)
+}
+
+type SubfeatureOf = ReturnType<typeof subfeatureLookup>
+
 type PlacedFeatures = ReturnType<typeof placedFeatures>
 
 /**
@@ -166,6 +196,7 @@ type PlacedFeatures = ReturnType<typeof placedFeatures>
 function aminoAcidTable(
   d: FeatureDataResult,
   rows: PlacedFeatures,
+  subfeatureOf: SubfeatureOf,
   region: { start: number; end: number },
   widthPx: number,
   bpPerPx: number,
@@ -203,6 +234,7 @@ function aminoAcidTable(
     y: items.map(aa => peptideBaselinePx(aa, cells.get(aa)?.size ?? 0)),
     color: items.map(aa => cssColorToHex(peptideFill(aa))),
     feature: items.map(aa => rows.feature(aa.flatbushIdx)),
+    subfeature: items.map(aa => subfeatureOf(aa.flatbushIdx, aa.childOrdinal)),
   }
 }
 
@@ -220,6 +252,7 @@ function chevrons(
   lines: readonly number[],
   rows: PlacedFeatures,
   bpPerPx: number,
+  subfeatureOf: SubfeatureOf,
 ) {
   const out = {
     position: [] as number[],
@@ -227,6 +260,7 @@ function chevrons(
     direction: [] as number[],
     color: [] as string[],
     feature: [] as number[],
+    subfeature: [] as number[],
   }
   for (const i of lines) {
     const direction = d.lineDirections[i]!
@@ -240,6 +274,9 @@ function chevrons(
         out.direction.push(direction)
         out.color.push(abgrToHex(d.lineColors[i]!))
         out.feature.push(rows.feature(d.lineFeatureIndices[i]!))
+        out.subfeature.push(
+          subfeatureOf(d.lineFeatureIndices[i]!, d.lineChildOrdinals[i]),
+        )
       }
     }
   }
@@ -250,7 +287,12 @@ function chevrons(
  * The strand arrows off feature ends where the display draws them: a feature
  * narrower on screen than `arrowDraws` allows gets none.
  */
-function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
+function arrows(
+  d: FeatureDataResult,
+  rows: PlacedFeatures,
+  bpPerPx: number,
+  subfeatureOf: SubfeatureOf,
+) {
   const out = {
     position: [] as number[],
     y: [] as number[],
@@ -258,6 +300,7 @@ function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
     headHalfHeight: [] as number[],
     color: [] as string[],
     feature: [] as number[],
+    subfeature: [] as number[],
   }
   for (const i of rows.keep(d.arrowFeatureIndices)) {
     if (arrowDraws(d.arrowWidthsBp[i]! / bpPerPx, d.arrowGene[i] === 1)) {
@@ -267,6 +310,9 @@ function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
       out.headHalfHeight.push(arrowHeadHalfHeightPx(d.arrowHeights[i]!))
       out.color.push(abgrToHex(d.arrowColors[i]!))
       out.feature.push(rows.feature(d.arrowFeatureIndices[i]!))
+      out.subfeature.push(
+        subfeatureOf(d.arrowFeatureIndices[i]!, d.arrowChildOrdinals[i]),
+      )
     }
   }
   return out
@@ -542,6 +588,7 @@ export function laidOutTables(
     featureIndex.has(s.parentFeatureId),
   )
   const subfeatureIndex = new Map(subfeatures.map((s, i) => [s.featureId, i]))
+  const subfeatureOf = subfeatureLookup(d, subfeatures)
   const labels = {
     text: [] as string[],
     kind: [] as string[],
@@ -615,6 +662,9 @@ export function laidOutTables(
       height: take(d.rectHeights, rects),
       color: take(d.rectColors, rects).map(abgrToHex),
       feature: take(d.rectFeatureIndices, rects).map(rows.feature),
+      subfeature: rects.map(i =>
+        subfeatureOf(d.rectFeatureIndices[i]!, d.rectChildOrdinals[i]),
+      ),
     },
     lines: {
       start: lines.map(i => d.linePositions[i * 2]!),
@@ -622,10 +672,19 @@ export function laidOutTables(
       y: take(d.lineYs, lines),
       color: take(d.lineColors, lines).map(abgrToHex),
       feature: take(d.lineFeatureIndices, lines).map(rows.feature),
+      subfeature: lines.map(i =>
+        subfeatureOf(d.lineFeatureIndices[i]!, d.lineChildOrdinals[i]),
+      ),
     },
-    chevrons: chevrons(d, hideChevrons ? [] : lines, rows, bpPerPx),
-    arrows: arrows(d, rows, bpPerPx),
-    aminoAcids: aminoAcidTable(d, rows, region, widthPx, bpPerPx),
+    chevrons: chevrons(
+      d,
+      hideChevrons ? [] : lines,
+      rows,
+      bpPerPx,
+      subfeatureOf,
+    ),
+    arrows: arrows(d, rows, bpPerPx, subfeatureOf),
+    aminoAcids: aminoAcidTable(d, rows, subfeatureOf, region, widthPx, bpPerPx),
     labels,
     height: items.reduce((max, item) => Math.max(max, item.bottomPx), 0),
     /** Features the packer could not place, which no table lists. */
@@ -661,8 +720,8 @@ function joinRegionTables(parts: RegionTables[]) {
         if (table.feature) {
           table.feature = table.feature.map(f => (f as number) + features)
         }
-        if (name === 'labels') {
-          table.subfeature = table.subfeature!.map(s =>
+        if (table.subfeature) {
+          table.subfeature = table.subfeature.map(s =>
             (s as number) < 0 ? s : (s as number) + subfeatures,
           )
         }
@@ -691,6 +750,142 @@ function joinRegionTables(parts: RegionTables[]) {
     ...tables,
     height: Math.max(0, ...parts.map(part => part.height)),
     truncated: parts.reduce((sum, part) => sum + part.truncated, 0),
+  }
+}
+
+/**
+ * The keys JBrowse gives a feature itself, or decodes into the glyph's marks,
+ * rather than reading as one of the file's fields.
+ */
+const JBROWSE_KEYS = new Set([
+  'refName',
+  'start',
+  'end',
+  'strand',
+  'type',
+  'name',
+  'id',
+  'uniqueId',
+  'parentId',
+  'subfeatures',
+  'blockCount',
+  'blockSizes',
+  'blockStarts',
+  'chromStarts',
+])
+
+type FileValue = string | number | boolean | null | undefined
+
+/**
+ * A feature's fields as its file states them. A GFF3 feature's are its source,
+ * score and phase, then column 9 keyed as the file writes it, where a key
+ * repeating one of those three replaces it. Any other feature's are its
+ * serialized form less the keys JBrowse gives it.
+ */
+function fileFields(feature: Feature) {
+  const gff = feature as Feature & {
+    fileAttributes?: () => Record<string, string[]>
+  }
+  if (gff.fileAttributes) {
+    return {
+      source: feature.get('source') as FileValue,
+      score: feature.get('score') as FileValue,
+      phase: feature.get('phase') as FileValue,
+      ...gff.fileAttributes(),
+    }
+  }
+  const fields: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(feature.toJSON())) {
+    if (!JBROWSE_KEYS.has(key)) {
+      fields[key] = value
+    }
+  }
+  return fields
+}
+
+/**
+ * Each key's values over `rows`, a column per key in the order the rows first
+ * give them, null where a row lacks the key. A key every row gives at most one
+ * value is a plain column; one a row gives several is a column of arrays.
+ */
+function fieldColumns(rows: readonly (Record<string, unknown> | undefined)[]) {
+  const keys = new Set<string>()
+  for (const row of rows) {
+    for (const [key, value] of Object.entries(row ?? {})) {
+      if (value !== undefined) {
+        keys.add(key)
+      }
+    }
+  }
+  const columns: Record<string, unknown[]> = {}
+  for (const key of keys) {
+    const values = rows.map(row => {
+      const v = row?.[key]
+      return v === undefined || v === '' ? null : v
+    })
+    const nested = values.some(v => Array.isArray(v) && v.length > 1)
+    columns[key] = values.map(v =>
+      nested
+        ? v === null || Array.isArray(v)
+          ? v
+          : [v]
+        : Array.isArray(v)
+          ? (v[0] ?? null)
+          : v,
+    )
+  }
+  return columns
+}
+
+/**
+ * #api
+ * The fields the file states for the features and transcripts a feature
+ * table lists, by its `features.id` and `subfeatures.id`: each key a column
+ * aligned to them, null where a record lacks it. A GFF3 keeps its column-9
+ * keys as written (`ID`, `Name`, `Parent`), beside `source`, `score` and
+ * `phase`; a GFF has no header, so the columns are the keys the region's
+ * records use. The keys JBrowse gives a feature (`start`, `type`, ...) or
+ * decodes into its glyph (`blockSizes`, ...) stay out.
+ */
+export async function featureAttributeTables(
+  pluginManager: PluginManager,
+  {
+    adapterConfig,
+    regions,
+    ids,
+    subfeatureIds,
+  }: {
+    adapterConfig: Record<string, unknown>
+    regions: TablesRegion[]
+    ids: readonly string[]
+    subfeatureIds: readonly string[]
+  },
+) {
+  const adapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig,
+  })
+  const byId = new Map<string, Feature>()
+  const walk = (feature: Feature) => {
+    byId.set(feature.id(), feature)
+    for (const child of feature.children?.() ?? []) {
+      walk(child)
+    }
+  }
+  for (const feature of await adapter.getFeaturesInMultipleRegionsArray(
+    regions.map(r => ({ assemblyName: '', ...r })),
+    {},
+  )) {
+    walk(feature)
+  }
+  const fieldsOf = (id: string) => {
+    const feature = byId.get(id)
+    return feature && fileFields(feature)
+  }
+  return {
+    attributes: fieldColumns(ids.map(fieldsOf)),
+    subfeatureAttributes: fieldColumns(subfeatureIds.map(fieldsOf)),
   }
 }
 

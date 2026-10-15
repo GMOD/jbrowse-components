@@ -107,4 +107,18 @@ describe('Gff3Feature', () => {
     const eagerChild = eager(GENE).children!()![0]!.toJSON()
     expect(lazyChild.parentId).toBe(eagerChild.parentId)
   })
+
+  it('keys its file attributes as the file writes them, every value a list', () => {
+    const [f] = parseLinesLazy([
+      'ctgA\tx\tgene\t1\t9\t.\t+\t.\tID=g1;Name=EDEN;Dbxref=a:1,b%2C2;start=4;note=x%3By',
+    ])
+    expect(new Gff3Feature(f!, 'test-0').fileAttributes()).toEqual({
+      ID: ['g1'],
+      Name: ['EDEN'],
+      Dbxref: ['a:1', 'b,2'],
+      start: ['4'],
+      note: ['x;y'],
+    })
+    expect(lazy(GENE).get('id')).toBe('gene1')
+  })
 })

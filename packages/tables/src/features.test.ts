@@ -105,6 +105,58 @@ test('a transcript label names its transcript and the gene it belongs to', async
   expect(Math.min(...t.labels.feature)).toBeGreaterThanOrEqual(0)
 })
 
+test('a gene’s boxes, lines and arrows name the transcript they draw', async () => {
+  const t = await engine.features({ ...GFF3, display: GROW })
+  const eden = t.subfeatures.name.flatMap((name, s) =>
+    name.startsWith('EDEN.') ? [s] : [],
+  )
+  expect(eden.length).toBe(3)
+  for (const table of [t.rects, t.lines, t.arrows]) {
+    table.subfeature.forEach((s, i) => {
+      if (s >= 0) {
+        expect(t.subfeatures.feature[s]).toBe(table.feature[i])
+      }
+    })
+  }
+  t.rects.subfeature.forEach((s, i) => {
+    if (s >= 0) {
+      expect(t.rects.start[i]).toBeGreaterThanOrEqual(t.subfeatures.start[s]!)
+      expect(t.rects.end[i]).toBeLessThanOrEqual(t.subfeatures.end[s]!)
+      expect(t.rects.top[i]).toBeGreaterThanOrEqual(t.subfeatures.top[s]!)
+      expect(t.rects.top[i]).toBeLessThan(t.subfeatures.bottom[s]!)
+    }
+  })
+  for (const s of eden) {
+    expect(t.rects.subfeature.filter(x => x === s).length).toBeGreaterThan(1)
+  }
+  // EDEN.3 starts later than its siblings, so its first exon is its own
+  const late = eden.find(s => t.subfeatures.start[s] === 1299)!
+  const boxes = t.rects.start.filter((_, i) => t.rects.subfeature[i] === late)
+  expect(Math.min(...boxes)).toBe(1299)
+})
+
+test('the file’s fields come keyed as the file writes them, beside the table’s own', async () => {
+  const t = await engine.features({ ...GFF3, display: GROW })
+  const eden = t.features.name.indexOf('EDEN')
+  expect(t.attributes.ID![eden]).toBe('EDEN')
+  expect(t.attributes.Name![eden]).toBe('EDEN')
+  expect(t.attributes.Note![eden]).toBe('protein kinase')
+  expect(t.attributes.source![eden]).toBe('example')
+  expect(t.features.id[eden]).not.toBe('EDEN')
+  for (const column of Object.values(t.attributes)) {
+    expect(column).toHaveLength(t.features.id.length)
+  }
+  const transcript = t.subfeatures.name.indexOf('EDEN.2')
+  expect(t.subfeatureAttributes.ID![transcript]).toBe('EDEN.2')
+  expect(t.subfeatureAttributes.Parent![transcript]).toBe('EDEN')
+  expect(t.subfeatureAttributes.Index![transcript]).toBe('1')
+  const contig = t.features.type.indexOf('contig')
+  expect(t.attributes.multivalue![contig]).toEqual(['val1', 'val2', 'val3'])
+  expect(t.attributes.multivalue![eden]).toBeNull()
+  expect(t.attributes).not.toHaveProperty('id')
+  expect(t.attributes).not.toHaveProperty('start')
+})
+
 test('the default fit gives up what the browser gives up to fit the track', async () => {
   const label = (t: { labels: { text: string[] } }) =>
     t.labels.text.includes('EDEN')

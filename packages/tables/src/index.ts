@@ -7,7 +7,10 @@ import {
   registerAlignmentsAdapters,
 } from '@jbrowse/plugin-alignments/tables'
 import BedPlugin from '@jbrowse/plugin-bed'
-import { featureTables } from '@jbrowse/plugin-canvas/tables'
+import {
+  featureAttributeTables,
+  featureTables,
+} from '@jbrowse/plugin-canvas/tables'
 import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
 import { registerConfigAdapters } from '@jbrowse/plugin-config/adapters'
 import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
@@ -140,12 +143,22 @@ async function featureAndRecordTables(
   args: FeatureTablesArgs,
 ) {
   const features = await featureTables(pluginManager, args)
+  const regions = args.regions ?? (args.region ? [args.region] : [])
+  const vcf = VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
   return {
     ...features,
-    vcf: VCF_ADAPTER_TYPES.includes(String(args.adapterConfig.type))
+    ...(vcf
+      ? { attributes: {}, subfeatureAttributes: {} }
+      : await featureAttributeTables(pluginManager, {
+          adapterConfig: args.adapterConfig,
+          regions,
+          ids: features.features.id,
+          subfeatureIds: features.subfeatures.id,
+        })),
+    vcf: vcf
       ? await variantRecordTables(pluginManager, {
           adapterConfig: args.adapterConfig,
-          regions: args.regions ?? (args.region ? [args.region] : []),
+          regions,
           ids: features.features.id,
         })
       : undefined,

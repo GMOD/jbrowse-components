@@ -12,6 +12,7 @@ import {
   interbaseEdgePx,
   labelFont,
   pairDirectionOfNum,
+  readIdAt,
   readInterbaseSegments,
   readModCovSegments,
   readSnpSegments,
@@ -784,7 +785,9 @@ function chainLaidOut(
 /**
  * One section's reads as the alignments display draws them, as columns. Every
  * coordinate is 0-based genomic; `read` in the other tables is a 0-based index
- * into `reads`.
+ * into `reads`, which holds within one call. A read's `id` is the record's own
+ * (`feature.id()`), the same in every call, where its `name` is shared by its
+ * mate and its supplementary segments.
  */
 function sectionTables(
   d: WorkerPileupData,
@@ -797,6 +800,7 @@ function sectionTables(
   const [gapStart, gapEnd] = pairs(d.gapPositions)
   return {
     reads: {
+      id: Array.from(readStart, (_, i) => readIdAt(d, i) ?? ''),
       start: readStart,
       end: readEnd,
       row: Array.from(readYs),

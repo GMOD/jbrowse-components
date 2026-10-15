@@ -43,6 +43,27 @@ test('a BAM region comes back as the display lays it out', async () => {
   expect(Math.max(...coverage.depth)).toBeGreaterThan(20)
 })
 
+test('a read’s id is its record’s: one per read where mates share a name, and the same in another call', async () => {
+  const pairs = (await engine.alignments(PAIRED_INVERSION)).reads
+  expect(new Set(pairs.name).size).toBeLessThan(pairs.name.length)
+  expect(new Set(pairs.id).size).toBe(pairs.id.length)
+  const { reads } = await engine.alignments(BAM)
+  expect(new Set(reads.id).size).toBe(reads.id.length)
+  const record = (t: typeof reads, i: number) =>
+    `${t.name[i]} ${t.start[i]} ${t.end[i]}`
+  const recordOf = new Map(reads.id.map((id, i) => [id, record(reads, i)]))
+  const later = (
+    await engine.alignments({ ...BAM, region: { ...BAM.region, start: 3000 } })
+  ).reads
+  const shared = later.id.flatMap((id, i) =>
+    recordOf.has(id) ? [[recordOf.get(id), record(later, i)]] : [],
+  )
+  expect(shared.length).toBeGreaterThan(100)
+  for (const [before, after] of shared) {
+    expect(after).toBe(before)
+  }
+})
+
 test('a CRAM gives the tables its BAM gives', async () => {
   const [bam, cram] = await Promise.all([
     engine.alignments(BAM),
