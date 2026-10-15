@@ -77,12 +77,17 @@ in an injected-link experiment, so three levers remain:
   and ready by 36 ms (62 ms at 200 ms RTT). The adapter depends on the config,
   so the real fix is starting the assembly load when the config arrives, not a
   static link.
-- **The re-export registry.** Its 37 chunks are requested ~90 ms after the
-  config arrives, once the Loader group has evaluated; `earlyStart.ts` could
-  start the import when the prefetched config text names a plugin.
-- **The plugin store manifest.** On a hub, config, `plugin-store/v2/plugins.json`
-  (181 ms, 2.75 KB, `no-cache`), each plugin's entry and its chunks are four
-  serial rounds.
+- **The re-export registry.** Its 37 chunks are requested ~90 ms after a local
+  config arrives, once the Loader group has evaluated. Declined: starting the
+  registry, the store manifest, the bundle preloads and the worker hint from
+  `earlyStart.ts` when the prefetched config is parsed. On the hg38 hub it
+  drew at 1228 ms against 1193 ms (six interleaved rounds, 80 ms RTT, 4
+  cores): a remote config arrives after the Loader has evaluated, so the
+  store manifest already went out ~30 ms after it.
+- **The plugin store manifest.** On a hub, config, `plugin-store/v2/plugins.json`,
+  each plugin's entry and its chunks are four serial rounds. The manifest was
+  `no-cache` and cost an edge-to-S3 round trip (115-170 ms to first byte); it
+  has been edge-cached since 2026-10-14 (jbrowse-plugin-list ADR 0010).
 
 ## Repeat visits
 
@@ -148,8 +153,17 @@ The hub still shows its shell for about 0.45 s while its runtime plugins load,
 none of which its default session uses. It names four, but `MafViewer` is in
 `vendoredPluginNames` and never loads, so the cost is Hubs, Protein3d and
 MsaView plus the re-export registry. Stripping the `plugins` list from a copy of
-the config moved first paint from 1248 ms to 892 ms at 80 ms RTT. The same config inlines 1.32 MB of UCSC description HTML,
-2.47 MB raw and 427 KB as served, against 48 KB without it.
+the config moved first paint from 1248 ms to 892 ms at 80 ms RTT. The same
+config inlines 1.32 MB of UCSC description HTML, 2.47 MB raw and 427 KB as
+served, against 48 KB without it.
+
+The hub's cold path is round trips, not bytes: the remote config (~340 ms),
+then the store manifest, each plugin's entry and its chunks (~650-700 ms), then
+the assembly files and the gene track's index (~960 ms), then two serial reads
+of the GFF, the first 256 KB and then the region (ready ~1.16 s). Protein3d
+1.9.0 cut its boot closure from 265 KB to 50 KB minified; the hub's cold first
+paint did not move (1198 ms against 1196 ms with 1.8.0), and repeat visits got
+30-40 ms faster.
 
 ## Deep windows
 
