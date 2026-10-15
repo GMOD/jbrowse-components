@@ -449,6 +449,11 @@ JBrowse Desktop.
 - [](/docs/config_guides/grouping_and_ordering)
 - [](/docs/jbrowse_anywidget)
 
+## External links
+
+- [Selection scans (Drosophila DGRP) in R](https://github.com/GMOD/ggjbrowse/blob/main/docs/tutorials/population_genomics.md),
+  the same analysis written for ggjbrowse
+
 ## Citations
 
 - Bhatia et al. (2013).

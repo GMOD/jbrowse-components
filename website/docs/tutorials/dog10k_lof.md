@@ -358,6 +358,11 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)
 
+## External links
+
+- [A loss-of-function allele across breeds (Dog10K) in R](https://github.com/GMOD/ggjbrowse/blob/main/docs/tutorials/dog10k_lof.md),
+  the same analysis written for ggjbrowse
+
 ## Citations
 
 - Meadows et al. (2023).

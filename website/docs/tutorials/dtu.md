@@ -360,6 +360,11 @@ the local copy to open your own run.
 - [](/docs/config_guides/jexl)
 - [](/docs/tutorials/rnaseq)
 
+## External links
+
+- [Differential transcript usage in R](https://github.com/GMOD/ggjbrowse/blob/main/docs/tutorials/dtu.md),
+  the same analysis written for ggjbrowse
+
 ## Citations
 
 - Gilis J, Vitting-Seerup K, Van den Berge K, Clement L.

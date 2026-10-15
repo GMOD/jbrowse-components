@@ -355,6 +355,8 @@ set **rows before** and **rows after** to 500 for a 1,001-CpG average, then type
 ## External links
 
 - [modkit documentation](https://nanoporetech.github.io/modkit/)
+- [Methylation (long-read) in R](https://github.com/GMOD/ggjbrowse/blob/main/docs/tutorials/methylation.md),
+  the same analysis written for ggjbrowse
 
 [^dmr]:
     To compare two samples, run `modkit dmr` on their per-sample pileups and

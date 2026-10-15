@@ -346,3 +346,8 @@ The alignment step downloads a full WGBS run, so allow time and disk.
 - [](/docs/tutorials/methylation)
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/alignments_track)
+
+## External links
+
+- [Methylation (bisulfite) in R](https://github.com/GMOD/ggjbrowse/blob/main/docs/tutorials/bisulfite.md),
+  the same analysis written for ggjbrowse
