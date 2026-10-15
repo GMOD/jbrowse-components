@@ -115,7 +115,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated --track hg19-clinvarMain \
   --loc chr1:1,020,000-1,040,000 --width 1200 --out hub_tracks.png
 ```
 
-![NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub](https://jbrowse.org/jb2-figures/jbrowse-img/hub_tracks.710f15087c73.png)
+![NCBI RefSeq genes and ClinVar variants at the start of hg19 chromosome 1, both named by trackId from the hosted hg19 hub](https://jbrowse.org/jb2-figures/jbrowse-img/hub_tracks.1e73af491229.png)
 
 Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
 `--track` fills that in for you: `--track ncbiRefSeqCurated` resolves to
@@ -278,7 +278,7 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
-![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.c07258907d0a.png)
+![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.97b01f164f3d.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
@@ -537,7 +537,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
-![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.9fd733b27cd0.png)
+![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.d124e359fca4.png)
 
 ### Hi-C tracks
 
