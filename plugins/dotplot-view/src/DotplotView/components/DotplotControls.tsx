@@ -5,9 +5,11 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ColorBySelector } from '@jbrowse/synteny-core'
+import {
+  ColorBySelector,
+  reorderChromosomesMenuItem,
+} from '@jbrowse/synteny-core'
 import MoreVert from '@mui/icons-material/MoreVert'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
@@ -117,21 +119,15 @@ const DotplotControls = observer(function DotplotControls({
             },
             helpText: 'Zooms out to show every assembly whole.',
           },
-          {
-            label: 'Re-order chromosomes',
-            icon: ShuffleIcon,
-            onClick: () => {
-              session.queueDialog(handleClose => [
-                ReorderChromosomesDialog,
-                {
-                  handleClose,
-                  model,
-                },
-              ])
-            },
-            helpText:
-              'Reorders and reorients chromosomes so the alignments fall along the diagonal, making rearrangements, inversions and translocations stand out.',
-          },
+          reorderChromosomesMenuItem(() => {
+            session.queueDialog(handleClose => [
+              ReorderChromosomesDialog,
+              {
+                handleClose,
+                model,
+              },
+            ])
+          }),
           toggleItem(
             'Lock aspect ratio (same bp/px)',
             model.lockAspectRatio,

@@ -1,6 +1,7 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
+import ShuffleIcon from '@mui/icons-material/Shuffle'
 
 import {
   DEFAULT_MIN_ALIGNMENT_LENGTH,
@@ -63,6 +64,21 @@ export function identityFadeMenuItem(model: {
         'Fade each ribbon by its sequence identity, whatever the color mode.',
     },
   )
+}
+
+/**
+ * #api
+ * The Re-order chromosomes row every comparative view offers; `open` queues
+ * that view's own dialog.
+ */
+export function reorderChromosomesMenuItem(open: () => void): MenuItem {
+  return {
+    label: 'Re-order chromosomes...',
+    icon: ShuffleIcon,
+    onClick: open,
+    helpText:
+      'Reorders and reorients chromosomes so the alignments fall along the diagonal, making rearrangements, inversions and translocations stand out.',
+  }
 }
 
 /**

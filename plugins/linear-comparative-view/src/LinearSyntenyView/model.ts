@@ -37,12 +37,12 @@ import {
   collectTrackWarnings,
   getSyntenyTracks,
   releaseTemporaryAssemblies,
+  reorderChromosomesMenuItem,
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import ViewStreamIcon from '@mui/icons-material/ViewStream'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -1265,19 +1265,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     self.reverseRows()
                   },
                 },
-                {
-                  label: 'Re-order chromosomes',
-                  onClick: () => {
-                    getDialogHost(self).queueDialog(handleClose => [
-                      ReorderChromosomesDialog,
-                      {
-                        handleClose,
-                        model: self as LinearSyntenyViewModel,
-                      },
-                    ])
-                  },
-                  icon: ShuffleIcon,
-                },
+                reorderChromosomesMenuItem(() => {
+                  getDialogHost(self).queueDialog(handleClose => [
+                    ReorderChromosomesDialog,
+                    {
+                      handleClose,
+                      model: self as LinearSyntenyViewModel,
+                    },
+                  ])
+                }),
                 ...autoScaleMenuItems(self),
                 ...compactViewsMenuItems(self),
                 { type: 'subHeader', label: 'Row menus' },

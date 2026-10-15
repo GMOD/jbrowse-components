@@ -150,6 +150,7 @@ export {
   identityFadeMenuItem,
   minLengthMenuItem,
   opacityMenuItem,
+  reorderChromosomesMenuItem,
 } from './settingsMenuItems.ts'
 export {
   FADE_AUTO_MIN_FEATURES,

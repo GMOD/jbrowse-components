@@ -61,6 +61,7 @@ import {
   isSyntenyTrack,
   minLengthMenuItem,
   opacityMenuItem,
+  reorderChromosomesMenuItem,
   ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
@@ -69,7 +70,6 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { autorun } from 'mobx'
 
 import { ChordPass } from '../chords/chordPass.ts'
@@ -1800,13 +1800,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           },
           ...(self.canDiagonalize
             ? [
-                {
-                  label: 'Re-order chromosomes',
-                  icon: ShuffleIcon,
-                  onClick: () => {
-                    self.openReorderChromosomesDialog()
-                  },
-                },
+                reorderChromosomesMenuItem(() => {
+                  self.openReorderChromosomesDialog()
+                }),
               ]
             : []),
           ...(self.chordSyntenyDisplays.length > 0

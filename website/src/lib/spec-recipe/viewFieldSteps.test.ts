@@ -80,10 +80,10 @@ test('the anchor row is named as the reorder dialog lists it', () => {
   const path = (row: number) =>
     stepPaths('diagonalizeAnchorRow', row, 'LinearSyntenyView', settings)
   expect(path(1)).toEqual([
-    'Synteny view header → View options → Rows → Re-order chromosomes → Row to keep as it is → b',
+    'Synteny view header → View options → Rows → Re-order chromosomes... → Row to keep as it is → b',
   ])
   expect(path(2)).toEqual([
-    'Synteny view header → View options → Rows → Re-order chromosomes → Row to keep as it is → a (row 3)',
+    'Synteny view header → View options → Rows → Re-order chromosomes... → Row to keep as it is → a (row 3)',
   ])
   expect(path(3)).toEqual([])
 })

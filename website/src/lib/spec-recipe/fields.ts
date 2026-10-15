@@ -1964,7 +1964,7 @@ const TRACK_LABELS: Record<string, string> = {
 }
 
 // Both views run the same reorder — runDiagonalize, behind the identical
-// 'Re-order chromosomes' item — but reach it from different headers: the synteny
+// 'Re-order chromosomes...' item — but reach it from different headers: the synteny
 // view's is in headerMenuItems' "Rows" group, under the "View options" button
 // (ViewOptionsMenuButton), and the dotplot's is in the overflow menu in
 // DotplotControls. The init flag runs it once as the view opens rather than
@@ -1974,15 +1974,15 @@ const TRACK_LABELS: Record<string, string> = {
 // its answer a reader would not predict from the other two.
 const DIAGONALIZE_MENUS: Record<string, { path: string; note: string }> = {
   LinearSyntenyView: {
-    path: 'Synteny view header → View options → Rows → Re-order chromosomes',
+    path: 'Synteny view header → View options → Rows → Re-order chromosomes...',
     note: 'Reorders and flips each row so the best-hit blocks line up on a diagonal.',
   },
   DotplotView: {
-    path: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
+    path: 'Dotplot header → the ⋮ menu → Re-order chromosomes...',
     note: 'Reorders and flips the vertical axis so the best-hit blocks line up on a diagonal.',
   },
   CircularView: {
-    path: 'View menu → Re-order chromosomes',
+    path: 'View menu → Re-order chromosomes...',
     note: "Orders the second genome's chromosomes to follow the first's and lays that genome out mirrored, so the ribbons run between neighboring arcs instead of crossing the middle. Offered on a two-genome circle carrying a synteny track and nowhere else.",
   },
 }
