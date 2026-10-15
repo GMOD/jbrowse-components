@@ -46,8 +46,8 @@ services, per gene, when you open a session.
   https://www.ebi.ac.uk/interpro/
 - PDBe-KB, the protein browser's partner and ligand lists:
   https://www.ebi.ac.uk/pdbe/pdbe-kb/
-- UCSC's 100-vertebrate alignment, translated, for a human gene opened with no
-  focus: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz100way/
+- UniRef, the cluster a protein with no NCBI orthologs is aligned with:
+  https://www.uniprot.org/help/uniref
 - NCBI's ortholog report, the rows of an ortholog alignment:
   https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
 - NCBI's Conserved Domain Database, the alignment's domain overlay:
@@ -117,8 +117,9 @@ launch button. Click **Clear** to drop it, and choose another:
 - **A truncation**: under a focused residue, **More about residue** offers to
   open on the residues a stop codon there, or skipping its exon, would remove.
 - **Nothing**: the session opens on the whole gene, the AlphaFold model and an
-  alignment of orthologs: UCSC's 100-vertebrate alignment for most human genes,
-  otherwise NCBI's ortholog set or the protein's UniRef50 cluster.
+  alignment of the gene's orthologs from NCBI, one per species, built in the
+  browser when the session opens. NCBI lists orthologs for vertebrates and
+  insects; any other protein gets its UniRef50 cluster instead.
 
 **Structure** under Advanced overrides the pick with any AlphaFold or PDB entry,
 and **Color** also offers ClinVar pathogenic variants and, on an AlphaFold
