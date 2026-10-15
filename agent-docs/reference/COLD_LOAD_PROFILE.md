@@ -106,11 +106,23 @@ that reveal. Layout shift was nil (CLS 0.001).
 
 Two changes answer it:
 
-- **`index.html` paints the app's first frame** (`#boot-shell`: the header bar
-  and a view box) before any script runs. `Loading` holds the shell instead of
-  drawing a spinner, and the shell goes in the commit that unmounts the last
-  `Loading` (`src/bootShell.ts`). A stored theme or mode other than default
-  light hides it, since an `extraThemes` palette is unknown before the config.
+- **`index.html` paints the app's first frame** (`#boot-shell`: the menus,
+  the logo, a view box with its icons and an animated "Loading") before any
+  script runs. `Loading` holds the shell instead of drawing a spinner, and the
+  shell goes in the commit that unmounts the last `Loading`
+  (`src/bootShell.ts`). A stored theme or mode other than default light hides
+  it, since an `extraThemes` palette is unknown before the config. A first
+  version drew bare colored bars and read as a page that had failed halfway.
+- **The app's own first frames match it.** A view on screen mounts its body
+  in the first layout instead of after the IntersectionObserver's first
+  callback, which had left every view an empty box for ~100 ms
+  (`useViewVisibility`). The Suspense fallback for a view's component is the
+  same `ViewLoadingScreen` the view shows next, and a view still resolving its
+  assembly reads blank rather than "Untitled view".
+- Declined: preloading Roboto and copying its `@font-face` into the HTML so the
+  shell draws in it. It held the first paint back ~80 ms (68-76 ms against
+  132-172 ms, five films per arm) to avoid a glyph swap inside the shell that
+  is barely visible.
 - **V8 compiles the boot chunks eagerly.** `BootChunksPlugin` puts
   `//# allFunctionsCalledOnLoad` at the top of the entry and the preloaded
   chunks, so V8 compiles them on a background thread while they download.
