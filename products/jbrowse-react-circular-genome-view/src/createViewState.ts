@@ -233,7 +233,7 @@ export default async function createViewState(
         aggregateTextSearchAdapters,
       },
       session: opts.defaultSession ?? {
-        name: `New session ${new Date().toLocaleString()}`,
+        name: 'New session',
         view: {
           id: 'circularView',
           type: 'CircularView',

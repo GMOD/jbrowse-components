@@ -288,7 +288,7 @@ function finishCreateViewState(
       height,
       drawerViewHeight,
       session: withPageBaseUri(defaultSession) ?? {
-        name: `New session ${new Date().toLocaleString()}`,
+        name: 'New session',
         view: {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',
