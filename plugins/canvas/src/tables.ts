@@ -1,7 +1,10 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
+import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
@@ -16,6 +19,11 @@ import {
 import { resolveMapColors } from './LinearBasicDisplay/components/resolveRegionColors.ts'
 import configSchemaFactory from './LinearBasicDisplay/configSchema.ts'
 import { featureColorKey } from './LinearBasicDisplay/derivedColorKey.ts'
+import {
+  facetField,
+  featureGroupSections,
+  sectionIdsOf,
+} from './LinearBasicDisplay/facet.ts'
 import {
   fitLadderViews,
   fitLadderVolatiles,
@@ -53,6 +61,7 @@ import type { LabelRenderContext } from './LinearBasicDisplay/components/labelPo
 import type {
   FeatureDataResult,
   FlatbushItem,
+  SectionStamp,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -80,7 +89,7 @@ export interface FeatureTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it: `color`,
    * `displayMode`, `showLabels`, `geneGlyphMode`, `subfeatureLabels`,
-   * `filter`, `showOnlyGenes`, `featureHeight` and the rest of a
+   * `filter`, `showOnlyGenes`, `featureHeight`, `facet` and the rest of a
    * `LinearBasicDisplay`'s slots. Unset draws the default display.
    */
   display?: Record<string, unknown>
@@ -113,18 +122,26 @@ const DEFAULT_BYTE_LIMIT = 200_000_000
 // table row a million px up is no row: those features and their primitives
 // leave every table. `row` maps a lane's feature index to its row in the
 // `features` table, -1 for one left out.
-function placedFeatures(d: FeatureDataResult) {
+// A feature of a hidden section is unplaced by choice, so `truncated` leaves
+// it out.
+function placedFeatures(
+  d: FeatureDataResult,
+  isHidden: (item: FlatbushItem) => boolean,
+) {
   const items: FlatbushItem[] = []
   const row: number[] = []
+  let truncated = 0
   for (const item of d.flatbushItems) {
     row.push(isPlacedRow(item.topPx) ? items.length : -1)
     if (isPlacedRow(item.topPx)) {
       items.push(item)
+    } else if (!isHidden(item)) {
+      truncated++
     }
   }
   return {
     items,
-    truncated: d.flatbushItems.length - items.length,
+    truncated,
     featureIndex: new Map(items.map((item, i) => [item.featureId, i])),
     keep: (featureIndices: Uint32Array) => {
       const keep: number[] = []
@@ -278,6 +295,13 @@ function arrows(d: FeatureDataResult, rows: PlacedFeatures, bpPerPx: number) {
  * size. A feature the packer could not place within its 10000 px row ceiling
  * is left out of every table and counted in `truncated`; the legend keys what
  * the worker painted, such a feature included, as the browser's key does.
+ *
+ * Under a `facet` the display packs a section per value, each under its
+ * `sectionLabelHeight` chip row, and `sections` lists them in stacking order:
+ * `key`, `label`, and `top` and `height` in px, the chip row included.
+ * Ungrouped, there is one section, labelled `''`, from 0 to `height`. Each
+ * feature names its section's `label`. A section `facet.hidden` lists leaves
+ * every table.
  */
 export async function featureTables(
   pluginManager: PluginManager,
@@ -306,6 +330,16 @@ export async function featureTables(
   const subfeatureLabels = collapsed
     ? 'none'
     : readConfObject(conf, 'subfeatureLabels')
+  const facet = facetSettingOf({
+    field: readConfObject(conf, ['facet', 'field']),
+    domain: readConfObject(conf, ['facet', 'domain']),
+  })
+  const hiddenGroupKeys = new Set<string>(
+    facet ? readConfObject(conf, ['facet', 'hidden']) : [],
+  )
+  const sectionOf = facet ? sectionIdsOf(facet) : undefined
+  const isHidden = (item: SectionStamp) =>
+    !!sectionOf && hiddenGroupKeys.has(sectionOf(item).key)
   const raws = await Promise.all(
     regions.map(async r => {
       const result = await executeRenderFeatureData({
@@ -318,6 +352,9 @@ export async function featureTables(
           displayConfig: {
             ...pickDisplayConfig(fullConfSnapshot(conf)),
             subfeatureLabels,
+            ...(facet === undefined || facet.field === STRAND_FIELD
+              ? {}
+              : { facetField: facet.field }),
           },
           geneGlyphMode: resolvedGeneGlyphMode(
             readConfObject(conf, 'geneGlyphMode'),
@@ -372,13 +409,13 @@ export async function featureTables(
       displayMode,
       pinnedFeatureIds: new Set(),
       expandedGeneIds: new Set(),
-      facet: undefined,
-      hiddenGroupKeys: new Set(),
+      facet,
+      hiddenGroupKeys,
       geneNamesOnly: visibility.geneNamesOnly,
     },
     showLabels: visibility.showLabels,
     effectiveShowDescriptions: visibility.showDescriptions,
-    facet: undefined,
+    facet,
     fitMeasureFeatureIds:
       heightMode === 'grow'
         ? undefined
@@ -394,14 +431,24 @@ export async function featureTables(
   const laid =
     stage.scale === 1
       ? stage.layout
-      : scaleLaidOutData(stage.layout, stage.scale)
+      : scaleLaidOutData(
+          stage.layout,
+          stage.scale,
+          facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+        )
   const palette = resolvePalette()
   const colors = featureColorViews({
     conf: { color: conf.color },
     rpcDataMap: new Map(raws.map((raw, i) => [i, raw])),
   })
   const resolved = resolveMapColors(laid, palette, colors.fieldPalette)
-  const scales = featureColorKey(colors, raws)
+  const scales = featureColorKey(colors, raws, {
+    isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
+    order:
+      facet && facet.field === colors.categoricalColorField?.field
+        ? scale => ({ ...facetField(facet), label: scale.label })
+        : undefined,
+  })
   const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
   const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
@@ -412,18 +459,35 @@ export async function featureTables(
     fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
     colors: labelColors(palette),
   }
-  return {
-    ...joinRegionTables(
-      regions.map((r, i) =>
-        laidOutTables(resolved.get(i)!, {
-          region: r,
-          widthPx: widthsPx[i]!,
-          bpPerPx,
-          hideChevrons,
-          labels,
-        }),
-      ),
+  const joined = joinRegionTables(
+    regions.map((r, i) =>
+      laidOutTables(resolved.get(i)!, {
+        region: r,
+        widthPx: widthsPx[i]!,
+        bpPerPx,
+        hideChevrons,
+        labels,
+        sectionOf,
+        isHidden,
+      }),
     ),
+  )
+  const sections = facet
+    ? featureGroupSections(resolved, facet, GROUP_LABEL_HEIGHT)
+    : [{ key: '', label: '', top: 0, height: joined.height }]
+  if (items.length > 0 && items.every(isHidden)) {
+    throw new Error(
+      `every section at ${regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')} is hidden; facet.hidden lists them all`,
+    )
+  }
+  return {
+    ...joined,
+    sections: {
+      key: sections.map(s => s.key),
+      label: sections.map(s => s.label),
+      top: sections.map(s => s.top),
+      height: sections.map(s => s.height),
+    },
     legend: {
       label: entries.map(e => e.label),
       color: entries.map(e => cssColorToHex(e.color!)),
@@ -439,6 +503,7 @@ export async function featureTables(
       chevronHeight: CHEVRON_H_PX,
       aminoAcidFont: PEPTIDE_FONT_FAMILY,
       aminoAcidHalo: cssColorToHex(PEPTIDE_HALO_COLOR),
+      sectionLabelHeight: facet ? GROUP_LABEL_HEIGHT : 0,
     },
     bpPerPx,
   }
@@ -447,8 +512,9 @@ export async function featureTables(
 /**
  * One laid-out region as tables, every `feature` column an index into
  * `features`: the features the packer placed, their boxes, lines, chevrons,
- * arrows and transcripts, and the labels `labels` says render. Pure in `d`,
- * so a test stands a region up without an adapter.
+ * arrows and transcripts, and the labels `labels` says render, each feature
+ * naming the label `sectionOf` gives it. Pure in `d`, so a test stands a
+ * region up without an adapter.
  */
 export function laidOutTables(
   d: FeatureDataResult,
@@ -458,15 +524,19 @@ export function laidOutTables(
     bpPerPx,
     hideChevrons,
     labels: labelContext,
+    sectionOf,
+    isHidden = () => false,
   }: {
     region: { start: number; end: number }
     widthPx: number
     bpPerPx: number
     hideChevrons: boolean
     labels: LabelRenderContext
+    sectionOf?: (item: FlatbushItem) => { label: string }
+    isHidden?: (item: FlatbushItem) => boolean
   },
 ) {
-  const rows = placedFeatures(d)
+  const rows = placedFeatures(d, isHidden)
   const { items, featureIndex } = rows
   const subfeatures = d.subfeatureInfos.filter(s =>
     featureIndex.has(s.parentFeatureId),
@@ -526,6 +596,7 @@ export function laidOutTables(
       top: items.map(item => item.topPx),
       bottom: items.map(item => item.bottomPx),
       gene: items.map(item => !!item.gene),
+      section: items.map(item => sectionOf?.(item).label ?? ''),
     },
     subfeatures: {
       id: subfeatures.map(s => s.featureId),

@@ -189,3 +189,74 @@ test('a zoomed-in CDS carries its residues, lettered once a codon fits them', as
   expect((await at(2)).aminoAcids.start).toEqual([])
   expect((await at(0.1, false)).aminoAcids.start).toEqual([])
 })
+
+test('the display’s facet packs a section per value, each under its chip row', async () => {
+  const plain = await engine.features({ ...GFF3, display: GROW })
+  expect(plain.sections).toEqual({
+    key: [''],
+    label: [''],
+    top: [0],
+    height: [plain.height],
+  })
+  expect(new Set(plain.features.section)).toEqual(new Set(['']))
+  expect(plain.glyph.sectionLabelHeight).toBe(0)
+
+  const t = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet: 'strand' },
+  })
+  const chip = t.glyph.sectionLabelHeight
+  expect(chip).toBeGreaterThan(0)
+  expect(t.sections.label.length).toBeGreaterThan(1)
+  expect(t.features.id.length).toBe(plain.features.id.length)
+  t.sections.label.forEach((label, s) => {
+    const top = t.sections.top[s]!
+    const bottom = top + t.sections.height[s]!
+    t.features.section.forEach((section, i) => {
+      if (section === label) {
+        expect(t.features.top[i]).toBeGreaterThanOrEqual(top + chip)
+        expect(t.features.bottom[i]).toBeLessThanOrEqual(bottom + 1e-3)
+      }
+    })
+    if (s > 0) {
+      expect(top).toBe(t.sections.top[s - 1]! + t.sections.height[s - 1]!)
+    }
+  })
+  t.features.strand.forEach((strand, i) => {
+    const same = t.features.strand.indexOf(strand)
+    expect(t.features.section[i]).toBe(t.features.section[same])
+  })
+
+  const [first, second] = t.sections.key
+  const reordered = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet: { field: 'strand', domain: [second!, first!] } },
+  })
+  expect(reordered.sections.key.slice(0, 2)).toEqual([second, first])
+
+  const hidden = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet: { field: 'strand', hidden: [first!] } },
+  })
+  expect(hidden.sections.key).not.toContain(first)
+  expect(hidden.truncated).toBe(0)
+  expect(hidden.features.id.length).toBeLessThan(t.features.id.length)
+  await expect(
+    engine.features({
+      ...GFF3,
+      display: { ...GROW, facet: { field: 'strand', hidden: t.sections.key } },
+    }),
+  ).rejects.toThrow(/every section/)
+})
+
+test('a facet on a feature field stamps each feature with its value', async () => {
+  const t = await engine.features({
+    ...GFF3,
+    display: { ...GROW, facet: 'type' },
+  })
+  expect(t.sections.label.length).toBeGreaterThan(1)
+  t.features.type.forEach((type, i) => {
+    const same = t.features.type.indexOf(type)
+    expect(t.features.section[i]).toBe(t.features.section[same])
+  })
+})
