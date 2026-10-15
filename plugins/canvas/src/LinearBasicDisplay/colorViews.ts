@@ -1,7 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
 
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -12,6 +11,7 @@ export interface ColorHost {
   conf: Instance<LinearCanvasBaseDisplayConfigModel>
   colorField: string | undefined
   colorSetting: ColorSetting
+  solidColor: string | undefined
 }
 
 export function colorViews(self: ColorHost) {
@@ -37,33 +37,7 @@ export function colorViews(self: ColorHost) {
     // Raw slot rather than getConf: a jexl color evaluated without a feature
     // throws, and a jexl string is no CSS color anyway.
     get featureColor() {
-      return this.solidColor ?? featureDefaultColor
-    },
-
-    /**
-     * #getter
-     * The constant `color.value` holds, painting or kept beside a field;
-     * undefined where it holds none or a `jexl:` expression.
-     */
-    get solidColor(): string | undefined {
-      const raw = self.conf.color.value
-      return raw !== undefined && !isJexl(raw) ? raw : undefined
-    },
-
-    /**
-     * #getter
-     * The Color by radio that is ticked: a field, else a constant, else the
-     * track's own color.
-     */
-    get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
-      const field = self.colorField
-      return field === undefined
-        ? this.solidColor === undefined
-          ? 'default'
-          : 'solid'
-        : field === STRAND_FIELD
-          ? 'strand'
-          : 'attribute'
+      return self.solidColor ?? featureDefaultColor
     },
 
     /**

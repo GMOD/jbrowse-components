@@ -68,20 +68,22 @@ export interface ColorPreset {
 
 /**
  * A feature display's fill block: Default, a radio per preset field, a field
- * picked in a dialog, and Solid color. Picking a preset shows its key.
+ * picked in a dialog where the display has one, and Solid color. Picking a
+ * preset shows its key.
  */
 export function colorFieldRows(
   self: {
     colorByMode: 'default' | 'solid' | 'attribute' | (string & {})
     pickDefaultColor: () => void
     pickSolidColor: () => void
-    openColorByAttributeDialog: () => void
+    openColorByAttributeDialog?: () => void
     colorByField: (field: string) => void
     setShowLegend: (show: boolean) => void
   },
   presets: ColorPreset[],
 ): MenuItem[] {
   const presetPaints = presets.some(p => p.checked)
+  const { openColorByAttributeDialog } = self
   return [
     {
       label: 'Default',
@@ -100,15 +102,19 @@ export function colorFieldRows(
         self.colorByField(field)
       },
     })),
-    {
-      label: 'Attribute...',
-      type: 'radio',
-      checked: self.colorByMode === 'attribute' && !presetPaints,
-      keepMenuOpen: false,
-      onClick: () => {
-        self.openColorByAttributeDialog()
-      },
-    },
+    ...(openColorByAttributeDialog
+      ? [
+          {
+            label: 'Attribute...',
+            type: 'radio' as const,
+            checked: self.colorByMode === 'attribute' && !presetPaints,
+            keepMenuOpen: false,
+            onClick: () => {
+              openColorByAttributeDialog()
+            },
+          },
+        ]
+      : []),
     solidColorItem(self.colorByMode === 'solid', () => {
       self.pickSolidColor()
     }),

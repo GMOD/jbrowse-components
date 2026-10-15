@@ -5,6 +5,10 @@ import { checkboxItem, radioItems, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import {
+  colorByMenuItem,
+  colorFieldRows,
+} from '@jbrowse/display-kit/colorByMenu'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
   rowOrderMenuItems,
@@ -60,6 +64,11 @@ interface MultiRowMenuSelf
   rowFocus?: readonly string[]
   rowArrangementIsCustom: boolean
   rowTree?: string
+  colorField: string | undefined
+  colorByMode: 'default' | 'solid' | 'strand' | 'attribute'
+  colorByField: (field: string) => void
+  pickDefaultColor: () => void
+  pickSolidColor: () => void
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowRowSeparators: (f: boolean) => void
@@ -151,6 +160,32 @@ function rowsFieldMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
+// A radio per attribute the loaded features carry, the painting field kept
+// among them while no feature carries it.
+function colorByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
+  const current = self.colorField
+  const fields =
+    current === undefined || self.rowsFieldCandidates.includes(current)
+      ? self.rowsFieldCandidates
+      : [...self.rowsFieldCandidates, current]
+  return [
+    colorByMenuItem({
+      blocks: [
+        {
+          rows: colorFieldRows(
+            self,
+            fields.map(field => ({
+              label: field,
+              field,
+              checked: current === field,
+            })),
+          ),
+        },
+      ],
+    }),
+  ]
+}
+
 // The facet's own field stays a radio while no row carries it, so a config's
 // `facet: 'group'` reads checked before the rows load.
 function groupByMenuItems(self: MultiRowMenuSelf): MenuItem[] {
@@ -182,6 +217,7 @@ export function buildMultiRowTrackMenuItems(
     ...makeShowSubMenu(showMenuItems(self)),
     ...rowsFieldMenuItems(self),
     ...groupByMenuItems(self),
+    ...colorByMenuItems(self),
     ...categoriesMenuItems(self),
     ...rowOrderMenuItems(self, {
       arrangement: { ready: !!self.editableSources.length },

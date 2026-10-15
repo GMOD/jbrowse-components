@@ -73,6 +73,11 @@ function makeSelf(
     dealtRowColorsFor: () => new Map(),
     setRowHeight: () => {},
     setFitToHeight: () => {},
+    colorField: undefined as string | undefined,
+    colorByMode: 'default' as const,
+    colorByField: () => {},
+    pickDefaultColor: () => {},
+    pickSolidColor: () => {},
     ...overrides,
   }
   // Derived rather than defaulted, so a case overriding `hiddenCategories` or
@@ -113,11 +118,41 @@ function checkedLabel(items: MenuItem[]) {
 }
 
 describe('multi-row track menu', () => {
+  it('colors by each attribute the features carry, keeping a painting field none carries', () => {
+    const picked: string[] = []
+    const items = buildMultiRowTrackMenuItems(
+      makeSelf({
+        rowsFieldCandidates: ['name', 'type'],
+        colorField: 'score',
+        colorByMode: 'attribute',
+        colorByField: field => {
+          picked.push(field)
+        },
+      }),
+    )
+    const rows = subMenuOf(items, 'Color by...')
+    expect(labels(rows)).toEqual([
+      'Default',
+      'name',
+      'type',
+      'score',
+      'Solid color...',
+    ])
+    expect(checkedLabel(rows)).toEqual(['score'])
+    const type = rows.find(i => 'label' in i && i.label === 'type')
+    if (!type || !('onClick' in type)) {
+      throw new Error('expected the type row')
+    }
+    type.onClick()
+    expect(picked).toEqual(['type'])
+  })
+
   it('groups the visibility toggles under Show... and icons every row', () => {
     const items = buildMultiRowTrackMenuItems(makeSelf())
 
     expect(labels(items)).toEqual([
       'Show...',
+      'Color by...',
       'Edit colors/arrangement...',
       'Clustering',
     ])

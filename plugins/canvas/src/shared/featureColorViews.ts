@@ -1,8 +1,12 @@
-import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
+import {
+  STRAND_FIELD,
+  dealKeyColors,
+} from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { withPreset } from '@jbrowse/core/util/colorScale'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
 import { rampGapScales } from '@jbrowse/core/util/thresholdScale'
@@ -160,6 +164,32 @@ export function featureColorViews(self: FeatureColorHost) {
     get colorField(): string | undefined {
       const current = this.colorEncoding
       return typeof current === 'object' ? current.field : undefined
+    },
+
+    /**
+     * #getter
+     * The constant `color.value` holds, painting or kept beside a field;
+     * undefined where it holds none or a `jexl:` expression.
+     */
+    get solidColor(): string | undefined {
+      const raw = self.conf.color.value
+      return raw !== undefined && !isJexl(raw) ? raw : undefined
+    },
+
+    /**
+     * #getter
+     * The Color by radio that is ticked: a field, else a constant, else the
+     * track's own color.
+     */
+    get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
+      const field = this.colorField
+      return field === undefined
+        ? this.solidColor === undefined
+          ? 'default'
+          : 'solid'
+        : field === STRAND_FIELD
+          ? 'strand'
+          : 'attribute'
     },
 
     /**

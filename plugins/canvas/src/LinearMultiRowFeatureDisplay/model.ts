@@ -5,13 +5,16 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { carryGroupDomain } from '@jbrowse/core/util/groupKeys'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
@@ -129,6 +132,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       LegendMixin(),
+      ColorWritesMixin(),
       TreeSidebarMixin(),
       ContextMenuMixin<MultiRowContextMenuInfo>(),
       StoredHoverMixin<MultiRowHit>(
@@ -240,6 +244,45 @@ export default function stateModelFactory(
       },
     }))
     .views(featureColorViews)
+    .actions(self => ({
+      /**
+       * #action
+       * Color by's Default: no field and no constant, so the config's own
+       * color paints
+       */
+      pickDefaultColor() {
+        if (self.solidColor === undefined) {
+          self.colorByField('')
+        } else {
+          self.setColorValue(undefined)
+        }
+      },
+      /**
+       * #action
+       * Color by's Solid color...: paints the constant kept beside a field,
+       * where there is one, and opens the picker
+       */
+      pickSolidColor() {
+        if (self.colorField !== undefined && self.solidColor !== undefined) {
+          self.colorByField('')
+        }
+        getSession(self).queueDialog(handleClose => [
+          SolidColorDialog,
+          {
+            label: 'Feature color',
+            color: self.solidColor ?? featureDefaultColor,
+            written: self.writtenColor.value,
+            onChange: (color: string) => {
+              self.setColorValue(color)
+            },
+            onReset: () => {
+              self.setColorValue(undefined)
+            },
+            handleClose,
+          },
+        ])
+      },
+    }))
     .views(self => ({
       /**
        * #getter
