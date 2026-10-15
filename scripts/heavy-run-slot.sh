@@ -18,7 +18,10 @@ slots=${JB_HEAVY_SLOTS:-2}
 case $slots in
   '' | *[!0-9]*) exec "$@" ;;
 esac
-if [ "$slots" -eq 0 ] || [ -z "${CLAUDECODE:-}" ] || ! command -v flock >/dev/null
+# A command that already holds a slot runs its gated children inside it: two
+# agents each holding one of two slots and waiting for a second would deadlock.
+if [ "$slots" -eq 0 ] || [ -z "${CLAUDECODE:-}" ] || ! command -v flock >/dev/null ||
+  [ -n "${JB_HEAVY_SLOT:-}" ]
 then
   exec "$@"
 fi
