@@ -28,12 +28,12 @@ import {
   hideAllWidgets,
   hideSnackbars,
   isHeadless,
-  killProcesses,
   openMenu,
   openMenuItem,
   openVolvoxGenome,
   startChromedriver,
   startStaticServer,
+  teardown,
   waitForAppReady,
   waitForSession,
   waitForStableSession,
@@ -43,6 +43,8 @@ import { PROCEDURES, composeProcedure, optimizePng } from './procedures.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = resolve(__dirname, '../../../website/static/img')
+// Fixed, unlike e2e's, because the urls typed into the dialogs are in the
+// figures. A second run on the machine fails to bind rather than sharing them.
 const DATA_PORT = 9444
 const BLAT_PORT = 9445
 const ISPCR_PORT = 9446
@@ -107,18 +109,11 @@ async function logViewport(driver: WebDriver, name: string): Promise<void> {
 // piece is skipped if it never started, so it is safe to call at any point.
 async function shutdown(code: number): Promise<never> {
   console.log('\nCleaning up...')
-  if (driver) {
-    try {
-      await driver.quit()
-    } catch (e) {
-      console.warn('WARN: driver.quit() failed during cleanup:', e)
-    }
-  }
-  chromedriverProcess?.kill('SIGKILL')
-  dataServer?.close()
-  blatServer?.close()
-  ispcrServer?.close()
-  await killProcesses()
+  await teardown({
+    driver,
+    chromedriver: chromedriverProcess,
+    servers: [dataServer, blatServer, ispcrServer],
+  })
   console.log('Done.')
   process.exit(code)
 }
@@ -830,9 +825,6 @@ async function main(): Promise<void> {
   if (!existsSync(OUT_DIR)) {
     mkdirSync(OUT_DIR, { recursive: true })
   }
-
-  console.log('Cleaning up leftover processes...')
-  await killProcesses()
 
   console.log(`Serving ${REPO_ROOT} on http://localhost:${DATA_PORT}...`)
   dataServer = await startStaticServer(REPO_ROOT, DATA_PORT)

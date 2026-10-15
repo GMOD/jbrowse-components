@@ -15,7 +15,8 @@ import {
   findByText,
   flushBrowserLogs,
   isHeadless,
-  killProcesses,
+  teardown,
+  withTimeout,
   openMenuItem,
   openVolvoxGenome,
   startChromedriver,
@@ -26,7 +27,10 @@ import {
   waitForIndexingToFinish,
 } from './harness.ts'
 
-const DATA_PORT = 9444
+import type { AddressInfo } from 'net'
+
+// a free port, so two runs on one machine never share a data server
+let dataPort = 0
 
 let chromedriverProcess: ChildProcess | null = null
 let dataServer: http.Server | null = null
@@ -41,30 +45,10 @@ interface TestResult {
 
 const results: TestResult[] = []
 
-// A chromedriver call can block forever rather than erroring — `driver.actions()`
-// did exactly that on Windows against a dialog that would not dismiss, and with
-// nothing bounding the await the job ran to GitHub's 6-hour limit instead of
-// reporting. Every test gets a ceiling so a hang fails one test, not the run.
+// a hang fails one test, not the run
 const TEST_TIMEOUT_MS = 300_000
-// The post-failure diagnostics and the final quit talk to the same driver that
-// just hung, so they get a short ceiling of their own.
+// the post-failure diagnostics talk to the driver that just hung
 const CLEANUP_TIMEOUT_MS = 30_000
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  name: string,
-  ms = TEST_TIMEOUT_MS,
-): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const ceiling = new Promise<never>((_resolve, reject) => {
-    timer = setTimeout(() => {
-      reject(new Error(`${name} timed out after ${ms} ms`))
-    }, ms)
-  })
-  return Promise.race([promise, ceiling]).finally(() => {
-    clearTimeout(timer)
-  })
-}
 
 async function runTest(
   name: string,
@@ -82,6 +66,7 @@ async function runTest(
         await fn(d)
       })(),
       name,
+      TEST_TIMEOUT_MS,
     )
     const duration = Date.now() - start
     results.push({ name, passed: true, duration })
@@ -133,8 +118,8 @@ async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
   // The screenshot flow still sends the 2bit — it wants the shortest path to a
   // painted view, not coverage of this one.
   await openVolvoxGenome(driver, [
-    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
-    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa.fai`,
+    `http://127.0.0.1:${dataPort}/test_data/volvox/volvox.fa`,
+    `http://127.0.0.1:${dataPort}/test_data/volvox/volvox.fa.fai`,
   ])
 }
 
@@ -147,77 +132,52 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   // Wait for menu backdrop to disappear before interacting with dialog
   console.log('    DEBUG: Waiting for menu backdrop to disappear...')
   await waitForBackdropsToDisappear(driver)
-  await delay(1000)
 
-  // The "Add a track" dialog should appear
   console.log('    DEBUG: Waiting for Add track dialog...')
   await findByText(driver, 'Add a track', 10000)
-  console.log('    DEBUG: Add track dialog is open, pausing for observation...')
-  await delay(3000)
 
-  // Click URL toggles to switch from file to URL mode
-  console.log('    DEBUG: Looking for URL toggle buttons...')
-  const urlToggleButtons = await driver.findElements(
-    By.xpath("//button[contains(., 'URL')]"),
+  // The main-file selector opens in URL mode, since there is no location yet
+  const urlInput = await driver.wait(
+    until.elementLocated(By.css('[data-testid="urlInput"]')),
+    10000,
   )
-  console.log(`    DEBUG: Found ${urlToggleButtons.length} URL toggle buttons`)
-
-  // Click first URL toggle (for GFF file) - use JavaScript click to bypass any backdrop issues
-  if (urlToggleButtons.length >= 1) {
-    console.log('    DEBUG: Clicking first URL toggle...')
-    await driver.executeScript('arguments[0].click();', urlToggleButtons[0])
-    await delay(1000)
-  }
-
-  // Find URL inputs
-  const urlInputs = await driver.findElements(
-    By.css('[data-testid="urlInput"]'),
-  )
-  console.log(`    DEBUG: Found ${urlInputs.length} URL inputs after toggle`)
-
-  if (urlInputs.length >= 1) {
-    const gffPath = `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.sort.gff3.gz`
-    console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
-    await urlInputs[0]!.sendKeys(gffPath)
-    await delay(1000)
-  }
+  const gffPath = `http://127.0.0.1:${dataPort}/test_data/volvox/volvox.sort.gff3.gz`
+  console.log(`    DEBUG: Entering GFF URL: ${gffPath}`)
+  await urlInput.sendKeys(gffPath)
 
   // The index is NOT typed. The widget probes for the sibling index and fills
   // the field in itself, and UrlChooser is uncontrolled (`defaultValue`), so
   // `sendKeys` APPENDS to what it found: the track went in pointing at
   // `...gff3.gz.tbi` concatenated with itself, 404'd, and this test still passed
-  // because the only thing it asserted was that the search worked. Leaving the
-  // field alone is both the correct input and coverage of the probe.
-  console.log('    DEBUG: Leaving the index field to the widget probe')
+  // because the only thing it asserted was that the search worked. Waiting for
+  // the probe's answer is both the correct input and coverage of the probe.
+  console.log('    DEBUG: Waiting for the index probe to fill the index field')
+  await driver.wait(
+    () =>
+      driver.executeScript<boolean>(
+        `return [...document.querySelectorAll('[data-testid="urlInput"]')].some(i => i.value.endsWith('.gff3.gz.tbi'))`,
+      ),
+    10000,
+    'the index probe never filled in volvox.sort.gff3.gz.tbi',
+  )
 
-  console.log('    DEBUG: Pausing before Next to observe dialog state...')
-  await delay(3000)
-
-  // Click Next button to go to step 2 (uses data-testid="addTrackNextButton")
-  console.log('    DEBUG: Looking for Next button...')
+  console.log('    DEBUG: Clicking Next...')
   const nextButton = await driver.wait(
     until.elementLocated(By.css('[data-testid="addTrackNextButton"]')),
     5000,
   )
   await driver.executeScript('arguments[0].scrollIntoView(true);', nextButton)
-  await delay(500)
-  console.log('    DEBUG: Clicking Next...')
   await driver.executeScript('arguments[0].click();', nextButton)
 
-  await delay(2000)
-
-  // Check what assembly is selected on step 2
-  const assemblySelects = await driver.findElements(
-    By.css(
-      '[data-testid="annotationTrackAssembly"], select, [role="combobox"]',
-    ),
+  // step 2 is the same button relabelled
+  await driver.wait(
+    () =>
+      driver.executeScript<boolean>(
+        `return document.querySelector('[data-testid="addTrackNextButton"]')?.textContent.trim() === 'Add'`,
+      ),
+    10000,
+    'the add-track wizard never reached its Add step',
   )
-  console.log(
-    `    DEBUG: Found ${assemblySelects.length} potential assembly selectors`,
-  )
-
-  console.log('    DEBUG: Pausing to observe step 2...')
-  await delay(3000)
 
   // Click Add button to finish the wizard (same data-testid, now shows "Add")
   console.log('    DEBUG: Looking for Add button...')
@@ -226,7 +186,6 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     5000,
   )
   await driver.executeScript('arguments[0].scrollIntoView(true);', addButton)
-  await delay(500)
   // Armed before the click for the same reason the wait below is placed here:
   // the job is queued synchronously on it, and a volvox index is short enough
   // that anything sampling afterwards can miss the whole determinate stretch.
@@ -241,9 +200,6 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Waiting for name indexing to finish...')
   await waitForIndexingToFinish(driver)
   await assertJobBarWentDeterminate(driver)
-
-  console.log('    DEBUG: Waiting after Submit...')
-  await delay(5000)
 
   // Check for any error messages
   const errors =
@@ -266,9 +222,6 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     await driver.actions().sendKeys(Key.ESCAPE).perform()
     await delay(1000)
   }
-
-  console.log('    DEBUG: Pausing to observe track list...')
-  await delay(5000)
 
   // Flush browser logs to see any track loading errors
   console.log('    DEBUG: Browser logs after track add:')
@@ -298,13 +251,14 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
     console.log(`    DEBUG: Typing EDEN.1 (attempt ${attempt})...`)
     await clearInput(driver, searchInput)
     await searchInput.sendKeys('EDEN.1')
-    await delay(4000) // let the search run and the dropdown render
     // via executeScript, not findElements: a findElements that matches nothing
     // waits out the 30s implicit timeout, which is most of this loop's budget
-    found = await driver.executeScript<number>(
-      `return document.evaluate(arguments[0], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength`,
-      EDEN_XPATH,
-    )
+    const count = () =>
+      driver.executeScript<number>(
+        `return document.evaluate(arguments[0], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength`,
+        EDEN_XPATH,
+      )
+    found = await driver.wait(count, 5000).catch(() => 0)
     console.log(`    DEBUG: ${found} EDEN suggestion(s)`)
   }
   if (!found) {
@@ -344,12 +298,9 @@ async function main(): Promise<void> {
   }
   console.log('App binary exists: yes')
 
-  // Clean up any leftover processes from previous runs
-  console.log('Cleaning up leftover processes...')
-  await killProcesses()
-
-  console.log(`Serving ${REPO_ROOT} on http://localhost:${DATA_PORT}...`)
-  dataServer = await startStaticServer(REPO_ROOT, DATA_PORT)
+  dataServer = await startStaticServer(REPO_ROOT, 0)
+  dataPort = (dataServer.address() as AddressInfo).port
+  console.log(`Serving ${REPO_ROOT} on http://127.0.0.1:${dataPort}`)
 
   console.log('Starting ChromeDriver...')
   chromedriverProcess = await startChromedriver()
@@ -382,37 +333,21 @@ async function main(): Promise<void> {
   console.log(`  Tests: ${passed} passed, ${failed} failed`)
   console.log(`${'─'.repeat(50)}\n`)
 
-  // Cleanup
   console.log('\nCleaning up...')
-  if (driver) {
-    try {
-      await withTimeout(driver.quit(), 'driver.quit', CLEANUP_TIMEOUT_MS)
-    } catch (e) {
-      console.warn('WARN: driver.quit() failed during cleanup:', e)
-    }
-  }
-  if (chromedriverProcess) {
-    chromedriverProcess.kill('SIGKILL')
-  }
-  dataServer?.close()
-  await killProcesses()
-
+  await teardown({
+    driver,
+    chromedriver: chromedriverProcess,
+    servers: [dataServer],
+  })
   process.exit(failed > 0 ? 1 : 0)
 }
 
 main().catch(async e => {
   console.error('Fatal error:', e)
-  if (driver) {
-    try {
-      await withTimeout(driver.quit(), 'driver.quit', CLEANUP_TIMEOUT_MS)
-    } catch (err) {
-      console.warn('WARN: driver.quit() failed after fatal error:', err)
-    }
-  }
-  if (chromedriverProcess) {
-    chromedriverProcess.kill('SIGKILL')
-  }
-  dataServer?.close()
-  await killProcesses()
+  await teardown({
+    driver,
+    chromedriver: chromedriverProcess,
+    servers: [dataServer],
+  })
   process.exit(1)
 })

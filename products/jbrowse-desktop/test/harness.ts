@@ -1,7 +1,8 @@
-import { ChildProcess, execSync, spawn } from 'child_process'
+import { ChildProcess, execSync, spawn, spawnSync } from 'child_process'
 import { chmodSync, mkdtempSync, writeFileSync } from 'fs'
 import http from 'http'
 import { createRequire } from 'module'
+import net from 'net'
 import { tmpdir } from 'os'
 import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
@@ -13,6 +14,7 @@ import handler from 'serve-handler'
 import { packagedApp } from '../scripts/packaging/config.ts'
 
 import type { Platform } from '../scripts/packaging/config.ts'
+import type { AddressInfo } from 'net'
 
 const require = createRequire(import.meta.url)
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -41,7 +43,6 @@ function appBinary() {
 
 export const APP_BINARY = appBinary()
 
-const CHROMEDRIVER_PORT = 9515
 const electronChromedriverDir = dirname(
   require.resolve('electron-chromedriver/package.json'),
 )
@@ -54,31 +55,56 @@ const CHROMEDRIVER_PATH = join(
 export const delay = (ms: number) =>
   new Promise(resolve => setTimeout(resolve, ms))
 
-export async function startChromedriver(): Promise<ChildProcess> {
+// A port nothing holds right now. Two runs on one machine (two worktrees)
+// shared the fixed 9515: the second chromedriver failed to bind, the start
+// timeout resolved anyway, and that run drove the first one's app.
+export function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
-    console.log(`  Launching: ${CHROMEDRIVER_PATH}`)
-    const proc = spawn(CHROMEDRIVER_PATH, [`--port=${CHROMEDRIVER_PORT}`], {
-      stdio: ['pipe', 'pipe', 'pipe'],
+    const server = net.createServer()
+    server.on('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address() as AddressInfo
+      server.close(() => {
+        resolve(port)
+      })
     })
+  })
+}
+
+let chromedriverPort: number | undefined
+
+export async function startChromedriver(): Promise<ChildProcess> {
+  const port = await freePort()
+  console.log(`  Launching: ${CHROMEDRIVER_PATH} on port ${port}`)
+  const proc = spawn(CHROMEDRIVER_PATH, [`--port=${port}`], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+  })
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`ChromeDriver did not start on port ${port} in 15s`))
+    }, 15_000)
     proc.on('error', err => {
-      console.error('  ChromeDriver spawn error:', err)
+      clearTimeout(timer)
       reject(err)
+    })
+    proc.on('exit', code => {
+      clearTimeout(timer)
+      reject(new Error(`ChromeDriver exited (${code}) before it started`))
     })
     proc.stdout?.on('data', data => {
       const output = data.toString()
       console.log('  ChromeDriver stdout:', output.trim())
       if (output.includes('was started successfully')) {
-        resolve(proc)
+        clearTimeout(timer)
+        resolve()
       }
     })
     proc.stderr?.on('data', data => {
       console.log('  ChromeDriver stderr:', data.toString().trim())
     })
-    // Fallback timeout - give it more time to start
-    setTimeout(() => {
-      resolve(proc)
-    }, 5000)
   })
+  chromedriverPort = port
+  return proc
 }
 
 // Launching the app *with a file argument* (the `jbrowse-desktop config.json`
@@ -105,6 +131,10 @@ function writeLaunchWrapper(launchFile: string) {
   return wrapper
 }
 
+// The profile directory of every app this run launched: unique per launch, so a
+// match on it can only be ours.
+const profiles: string[] = []
+
 export async function createDriver({
   launchFile,
 }: { launchFile?: string } = {}): Promise<WebDriver> {
@@ -124,10 +154,13 @@ export async function createDriver({
   // It also would not explain the one 845x763 run that happened with this
   // profile in place: the viewport was 555px narrower than the window with the
   // height correct, which is docked DevTools, not a window size.
+  const profile = mkdtempSync(join(tmpdir(), 'jbrowse-desktop-test-'))
+  // also what stopOwnProcesses finds this run's app by
+  profiles.push(profile)
   const chromeArgs = [
     '--no-sandbox',
     '--disable-extensions',
-    `--user-data-dir=${mkdtempSync(join(tmpdir(), 'jbrowse-desktop-test-'))}`,
+    `--user-data-dir=${profile}`,
   ]
   if (isHeadless) {
     chromeArgs.push(
@@ -150,7 +183,7 @@ export async function createDriver({
   prefs.setLevel(logging.Type.BROWSER, logging.Level.ALL)
 
   const driver = await new Builder()
-    .usingServer(`http://localhost:${CHROMEDRIVER_PORT}`)
+    .usingServer(`http://localhost:${chromedriverPort}`)
     .withCapabilities({
       'goog:chromeOptions': {
         binary: launchFile ? writeLaunchWrapper(launchFile) : APP_BINARY,
@@ -878,34 +911,78 @@ export async function openVolvoxGenome(
   )
 }
 
-// Kill leftover chromedriver / electron processes from an earlier run.
-//
-// The patterns are deliberately narrow. `pkill -f jbrowse-desktop` matches any
-// command line mentioning the product — a `pnpm start`, a packaging build, this
-// harness's own wrapper shell — which in a shared checkout kills someone else's
-// work, and `pkill -f chromedriver` even matched the `sh -c` running it and
-// SIGTERMed itself (the source of a permanent "process cleanup failed" warning).
-// The `[c]` form keeps the pattern from matching its own command line; the
-// unpacked path keeps it to the app this harness launches.
-const KILL_PATTERNS = [
-  '[c]hromedriver',
-  'unpacked/[j]browse-desktop-linux-x64/jbrowse-desktop',
-]
-
-export async function killProcesses(): Promise<void> {
+// Stops what this run started and nothing else: chromedriver by its pid, and
+// the app by the profile directory only this run's launches carry. A pattern
+// on the binary or on "chromedriver" stopped every other run on the machine,
+// another worktree's e2e or a figure sweep included.
+export async function stopOwnProcesses(
+  chromedriver: ChildProcess | null,
+): Promise<void> {
   try {
     if (isWindows) {
-      execSync('taskkill /F /IM chromedriver.exe 2>nul', { stdio: 'ignore' })
-      execSync('taskkill /F /IM "jbrowse-desktop.exe" 2>nul', {
-        stdio: 'ignore',
-      })
+      if (chromedriver?.pid) {
+        execSync(`taskkill /T /F /PID ${chromedriver.pid} 2>nul`, {
+          stdio: 'ignore',
+        })
+      }
     } else {
-      for (const pattern of KILL_PATTERNS) {
-        execSync(`pkill -f "${pattern}" || true`, { stdio: 'ignore' })
+      chromedriver?.kill('SIGKILL')
+      // no shell in between: `sh -c "pkill -f <pattern>"` carries the pattern
+      // on its own command line and kills itself
+      for (const profile of profiles) {
+        spawnSync('pkill', ['-KILL', '-f', '--', `--user-data-dir=${profile}`])
       }
     }
   } catch (e) {
     console.warn('    WARN: process cleanup failed:', e)
   }
   await delay(1000)
+}
+
+// A chromedriver call can block forever rather than erroring: `driver.actions()`
+// did that on Windows against a dialog that would not dismiss, and the job ran
+// to GitHub's 6-hour limit. Anything that talks to the driver gets a ceiling.
+export function withTimeout<T>(
+  promise: Promise<T>,
+  name: string,
+  ms: number,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const ceiling = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${name} timed out after ${ms} ms`))
+    }, ms)
+  })
+  return Promise.race([promise, ceiling]).finally(() => {
+    clearTimeout(timer)
+  })
+}
+
+// The quit talks to a driver that may be the thing that hung
+const QUIT_TIMEOUT_MS = 30_000
+
+/**
+ * One teardown for every runner and every exit, normal or fatal: each piece is
+ * skipped if it never started.
+ */
+export async function teardown({
+  driver,
+  chromedriver,
+  servers,
+}: {
+  driver: WebDriver | null
+  chromedriver: ChildProcess | null
+  servers: (http.Server | null)[]
+}): Promise<void> {
+  if (driver) {
+    try {
+      await withTimeout(driver.quit(), 'driver.quit', QUIT_TIMEOUT_MS)
+    } catch (e) {
+      console.warn('WARN: driver.quit() failed during cleanup:', e)
+    }
+  }
+  for (const server of servers) {
+    server?.close()
+  }
+  await stopOwnProcesses(chromedriver)
 }
