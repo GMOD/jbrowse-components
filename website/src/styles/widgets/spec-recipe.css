@@ -81,18 +81,8 @@
   .spec-note {
     margin: 0.5rem 0;
   }
-  .spec-fallback {
-    margin: 0 0 0.75rem;
-  }
-  .spec-opens + .spec-fallback {
-    margin: 0.5rem 0 0;
-  }
-  .spec-fallback summary {
-    cursor: pointer;
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-    font-weight: 400;
-    margin: 0;
+  .spec-example-links {
+    margin: 0.5rem 0 1rem;
   }
   .spec-open {
     margin: 0 0 0.5rem;
@@ -111,6 +101,9 @@
     padding: 0.45rem 0.9rem;
     border: 1px solid var(--color-accent);
     border-radius: 6px;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
     color: var(--color-accent);
     font-size: 0.95rem;
     font-weight: 600;
@@ -196,12 +189,6 @@
   }
   /* a link a reader copies whole, so it wraps clear of the Copy button and
      shows only its first lines */
-  .spec-url pre {
-    max-height: 7.5rem;
-    white-space: pre-wrap;
-    word-break: break-all;
-    padding-right: 4.5rem;
-  }
   .spec-step-title {
     display: block;
   }

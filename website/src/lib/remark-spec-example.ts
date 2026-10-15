@@ -3,7 +3,7 @@ import { visit } from 'unist-util-visit'
 import { toProtocolUrl } from '../../../products/jbrowse-desktop/electron/launchTarget.ts'
 import { CODE_BASE, retargetCodeBase } from './code-base.ts'
 import { escapeAttr } from './inline-html.ts'
-import { DESKTOP_LINK_MIN_VERSION } from './spec-recipe/html.ts'
+import { desktopLinkHtml } from './desktop-link.ts'
 import { withSessionName } from './spec-recipe/recipe.ts'
 
 import type { Code, Root } from 'mdast'
@@ -69,9 +69,10 @@ const remarkSpecExample: Plugin<[], Root> = () => {
         // strip our markers so Shiki doesn't try to interpret them as its own
         // meta (line highlights etc.)
         node.meta = null
+        const desktopWebUrl = withSessionName(url, undefined)
         parent.children.splice(index + 1, 0, {
           type: 'html',
-          value: `<p><a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">Try this example live ↗</a> · <a href="${escapeAttr(toProtocolUrl(withSessionName(url, undefined)))}">Open it in JBrowse Desktop ↗</a> (${DESKTOP_LINK_MIN_VERSION}+)</p>`,
+          value: `<div class="spec-example-links"><a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">Try this example live ↗</a> · ${desktopLinkHtml({ webUrl: desktopWebUrl, desktopUrl: toProtocolUrl(desktopWebUrl), label: 'Open it in JBrowse Desktop ↗' })}</div>`,
         })
       }
     })

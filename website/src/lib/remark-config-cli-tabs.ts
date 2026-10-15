@@ -8,7 +8,7 @@ import { deriveSessionUrl, namesInSession } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 import { deriveTrackLinks } from './derive-track-url.ts'
 import { escapeAttr } from './inline-html.ts'
-import { DESKTOP_LINK_MIN_VERSION } from './spec-recipe/html.ts'
+import { desktopLinkHtml } from './desktop-link.ts'
 
 import type {
   Code,
@@ -117,7 +117,7 @@ function liveTab(noun: string, webUrl: string, desktopUrl?: string): Tab {
           `<p><a href="${escapeAttr(webUrl)}" target="_blank" rel="noopener">Open this ${noun} in JBrowse Web ↗</a></p>`,
           ...(desktopUrl
             ? [
-                `<p><a href="${escapeAttr(desktopUrl)}">Open this ${noun} in JBrowse Desktop ↗</a> (${DESKTOP_LINK_MIN_VERSION}+)</p>`,
+                `<div>${desktopLinkHtml({ webUrl, desktopUrl, label: `Open this ${noun} in JBrowse Desktop ↗` })}</div>`,
               ]
             : []),
         ].join('\n'),

@@ -21,11 +21,11 @@ test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')
 })
 
-test('the dialog has one Steps tab, and the Desktop fallback sits by the buttons', () => {
+test('the dialog has one Steps tab, and the Desktop popover sits by the buttons', () => {
   const html = recipeDialogHtml(recipe, 'd')
   expect(html.match(/<ol class="spec-steps">/g)).toHaveLength(1)
   expect(html).not.toContain('data-tab-kind="web"')
-  expect(html.indexOf('Desktop link does nothing?')).toBeLessThan(
+  expect(html.indexOf('class="desktop-link-pop"')).toBeLessThan(
     html.indexOf('class="spec-tabs"'),
   )
 })

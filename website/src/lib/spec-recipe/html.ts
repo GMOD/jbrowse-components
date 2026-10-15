@@ -1,12 +1,8 @@
+import { desktopLinkHtml } from '../desktop-link.ts'
 import { escapeAttr } from '../inline-html.ts'
 
 import type { AgentRecipe } from './agent.ts'
 import type { Recipe, RecipeStep } from './recipe.ts'
-
-// First Desktop release carrying the jbrowse:// handler + "Open JBrowse Web
-// link...". The docs deploy independently of a Desktop release, so this text
-// has to stay true before one ships — update it if the target release moves.
-export const DESKTOP_LINK_MIN_VERSION = 'JBrowse Desktop 5.0'
 
 // Docs markdown is rendered to an HTML string (src/lib/markdown.ts), not to
 // Astro components, so this emits a plain <dialog> a small script in
@@ -69,17 +65,19 @@ function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
   ].join('')
 }
 
-// The Desktop link is a jbrowse:// url, which does nothing without a Desktop
-// that registers the protocol.
-function desktopFallback(recipe: Recipe): string {
-  return [
-    '<details class="spec-fallback"><summary>Desktop link does nothing?</summary>',
-    note(
-      `It needs <strong>${DESKTOP_LINK_MIN_VERSION}+</strong>. Or paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):`,
-    ),
-    copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
-    '</details>',
-  ].join('')
+function desktopLink(
+  recipe: Recipe,
+  id: string,
+  label: string,
+  className?: string,
+) {
+  return desktopLinkHtml({
+    webUrl: recipe.desktopWebUrl,
+    desktopUrl: recipe.desktopUrl,
+    label,
+    className,
+    id: `${id}-desktop`,
+  })
 }
 
 interface Panel {
@@ -103,14 +101,14 @@ function assembliesNote(assemblies: string[]): string {
 // doesn't apply (a notebook snippet for a synteny view) simply isn't in it —
 // tab and panel positions stay in step with each other automatically, which
 // index-per-panel markup could not guarantee.
-function panels(recipe: Recipe, inlineOpens = false): Panel[] {
+function panels(recipe: Recipe, id: string, inlineOpens = false): Panel[] {
   return [
     {
       label: 'Steps',
       kind: 'desktop',
       body: [
         inlineOpens
-          ? `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · <a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>${desktopFallback(recipe)}`
+          ? `<div class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · ${desktopLink(recipe, id, 'Open this view in JBrowse Desktop ↗')}</div>`
           : '',
         note(
           'The short route: open the view in JBrowse Web, where <strong>File → Open track...</strong> adds your own files beside its hosted genome and tracks.',
@@ -246,13 +244,12 @@ function dialogHtml(id: string, body: string): string {
 
 // Opening the finished view comes first, since most readers want only that;
 // the tabs below are the ways to rebuild it from their own data.
-function opensHtml(recipe: Recipe, slow: boolean): string {
+function opensHtml(recipe: Recipe, slow: boolean, id: string): string {
   return [
     '<div class="spec-opens">',
     `<a class="spec-open-btn spec-open-primary" href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open in JBrowse Web ↗</a>`,
-    `<a class="spec-open-btn" href="${escapeAttr(recipe.desktopUrl)}">Open in JBrowse Desktop ↗</a>`,
+    desktopLink(recipe, id, 'Open in JBrowse Desktop ↗', 'spec-open-btn'),
     '</div>',
-    desktopFallback(recipe),
     slow
       ? '<p class="spec-rebuild-lead">This session loads a large dataset and takes a while to open.</p>'
       : '',
@@ -265,7 +262,10 @@ export function recipeDialogHtml(
   id: string,
   slow = false,
 ): string {
-  return dialogHtml(id, opensHtml(recipe, slow) + tabsHtml(id, panels(recipe)))
+  return dialogHtml(
+    id,
+    opensHtml(recipe, slow, id) + tabsHtml(id, panels(recipe, id)),
+  )
 }
 
 export interface RecipeFrame {
@@ -289,7 +289,7 @@ export function framesDialogHtml(
         [
           `<input type="radio" name="${id}-frame" id="${id}-f${i}" class="spec-frame-input"${i === shown ? ' checked' : ''}/>`,
           `<label for="${id}-f${i}" class="spec-frame-label">${escapeAttr(label)}</label>`,
-          `<div class="spec-frame">${opensHtml(recipe, slow)}${tabsHtml(`${id}-f${i}`, panels(recipe))}</div>`,
+          `<div class="spec-frame">${opensHtml(recipe, slow, `${id}-f${i}`)}${tabsHtml(`${id}-f${i}`, panels(recipe, `${id}-f${i}`))}</div>`,
         ].join(''),
       ),
       '</div>',
@@ -334,7 +334,7 @@ export function videoRecipeDialogHtml(
         : []),
     ].join(''),
   }
-  return dialogHtml(id, tabsHtml(id, [walkthrough, ...panels(recipe, true)]))
+  return dialogHtml(id, tabsHtml(id, [walkthrough, ...panels(recipe, id, true)]))
 }
 
 // a "steps/recipe" glyph (lucide clipboard-list). The label beside it carries

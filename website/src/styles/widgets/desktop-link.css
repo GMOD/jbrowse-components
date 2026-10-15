@@ -1,0 +1,46 @@
+/* The "open in JBrowse Desktop" control and its popover. Markup:
+   lib/desktop-link.ts. The popover is native (`popover`), so it centers in the
+   top layer and closes on Escape or a click outside with no script; the Copy
+   button is components/CodeCopy.astro's. */
+@layer widget {
+  .desktop-link-trigger {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-accent);
+    font: inherit;
+    cursor: pointer;
+  }
+  .desktop-link-trigger:hover {
+    text-decoration: underline;
+  }
+  .desktop-link-pop {
+    width: min(34rem, calc(100vw - 2rem));
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 400;
+    font-style: normal;
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.25);
+  }
+  .desktop-link-pop::backdrop {
+    background: rgb(0 0 0 / 0.2);
+  }
+  .desktop-link-open {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .desktop-link-pop p {
+    margin: 0.6rem 0;
+  }
+  .desktop-link-copy pre {
+    margin: 0;
+    max-height: 7.5rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    padding-right: 4.5rem;
+  }
+}
