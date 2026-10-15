@@ -693,7 +693,7 @@ const POINT_SIZE_MENUS: Record<string, string> = {
 // One toggle, one place, on every display with a dendrogram sidebar
 // (tree-sidebar's `treeSidebarShowMenuItems`): it reveals the dendrogram alone
 // and the row labels have their own row beneath it.
-const TREE_SIDEBAR_TOGGLE = 'Show tree'
+const TREE_SIDEBAR_TOGGLE = 'Tree'
 const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMafDisplay',
   'LinearMultiRowFeatureDisplay',
@@ -893,7 +893,7 @@ const SORT_NOTES: Record<string, string> = {
   tag: CENTRE_LINE_NOTE,
 }
 
-// 'Show legend' and 'Show coverage' are spelled identically in the alignments
+// 'Legend' and 'Coverage' are spelled identically in the alignments
 // display's Show submenu (menus/reads.ts) and the synteny display's
 // (LGVSyntenyDisplay/menus.ts), so these only have to say which displays have
 // the submenu at all.
@@ -991,7 +991,7 @@ const heightMenu = (noun: string, displayType?: string) =>
 // The canvas display's two flat radio groups, both imported. Both recipes are
 // gated on the display type because both field names mean a different menu
 // elsewhere — the alignments display has its own displayMode, and showLabels on
-// an LD display is a 'Show variant labels' checkbox.
+// an LD display is a 'Variant labels' checkbox.
 const DISPLAY_MODES: Record<string, string> = Object.fromEntries(
   DISPLAY_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
@@ -1344,7 +1344,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showResolutionControls: (value, { displayType }) =>
     typeof value === 'boolean' && isHicOnlyField(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Show resolution controls (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Resolution controls (${value ? 'checked' : 'unchecked'})`,
           note: 'Puts a binsize dropdown in the track overlay, which is how a chosen resolution gets baked into a screenshot.',
         }
       : undefined,
@@ -1370,15 +1370,15 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   // Not Hi-C-only: LinearHicDisplay and the two LD displays all declare it, and
-  // all three get the label from the one shared squashToHeightCheckboxItem
-  // helper, so the path is the same for each. Gated on a resolved display type
+  // all three list the one shared squashToHeightCheckboxItem in a Layout
+  // submenu, so the path is the same for each. Gated on a resolved display type
   // rather than by name, since the name alone does not settle which it is.
   squashToHeight: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     SQUASH_TO_HEIGHT_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Fit to display height (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Layout → Fit to display height (${value ? 'checked' : 'unchecked'})`,
           note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
         }
       : undefined,
@@ -1386,7 +1386,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (value === 'genomic' || value === 'columns') && displayType
       ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
         ? {
-            path: `${TRACK_MENU} → Show... → Show as genotype matrix`,
+            path: `${TRACK_MENU} → Layout → Genotype matrix`,
             note:
               value === 'columns'
                 ? 'Checked: one equal-width column per variant.'
@@ -1394,7 +1394,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           }
         : displayType === 'LDTrackDisplay'
           ? {
-              path: `${TRACK_MENU} → Show... → Size cells by genomic distance`,
+              path: `${TRACK_MENU} → Layout → Size cells by genomic distance`,
               note:
                 value === 'genomic'
                   ? 'Checked: cells sized by the genomic distance between SNPs.'
@@ -1416,7 +1416,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Show row separators (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Row separators (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   // Which attribute becomes the rows. The submenu's options are discovered from
@@ -1488,7 +1488,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showRowLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Show row labels (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Row labels (${value ? 'checked' : 'unchecked'})`,
           note: value
             ? undefined
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
@@ -1508,8 +1508,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Show variant lane (${checked(value)})`,
-          note: 'Draws the variants at their genomic positions in a lane above the genotype rows. Offered only while "Show as genotype matrix" is unchecked.',
+          path: `${TRACK_MENU} → Show... → Variant lane (${checked(value)})`,
+          note: 'Draws the variants at their genomic positions in a lane above the genotype rows. Offered only while "Layout → Genotype matrix" is unchecked.',
         }
       : undefined,
   featureHighlights: (value, { displayType, noun }) =>
@@ -1597,7 +1597,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     displayType &&
     SHOW_LEGEND_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Show... → Show legend (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Legend (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   showCoverage: (value, { displayType }) =>
@@ -1606,7 +1606,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     (SHOW_SUBMENU_DISPLAYS.has(displayType) ||
       displayType === 'LinearMafDisplay')
       ? {
-          path: `${TRACK_MENU} → Show... → Show coverage (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Coverage (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   collapseGroupRows: (value, { displayType }) =>
@@ -1633,7 +1633,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   showGeneLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Show gene labels (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Gene labels (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   hideSelfAlignments: (value, { displayType }) =>
@@ -1651,21 +1651,21 @@ export const trackFields: Record<string, FieldRecipe> = {
   rowIdentityAutoZoom: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${MAF_COLOR_BY} → Show bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Bases when zoomed in (${value ? 'checked' : 'unchecked'})`,
           note: 'Qualifies identity, as the heatmap or the X-Y plot, and does nothing under the other colorings.',
         }
       : undefined,
   showConservation: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Show conservation (% identity) (${value ? 'checked' : 'unchecked'})`,
+          path: `${TRACK_MENU} → Show... → Conservation (% identity) (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   conservationMode: (value, { displayType }) => {
     const label = CONSERVATION_MODES.find(([v]) => v === value)?.[1]
     return label && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Show... → Conservation resolution → ${label}`,
+          path: `${TRACK_MENU} → Conservation resolution → ${label}`,
           note: 'Offered only on a track with a mafFrames annotation adapter, since a per-codon reading needs a reading frame.',
         }
       : undefined
@@ -1763,7 +1763,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   sashimiArcsMode: fromTable('Sashimi arcs → Arc placement', SASHIMI_PLACEMENT),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
   showSoftClipping: checkbox(
-    'Show... → Show soft clipping',
+    'Show... → Soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
   showBezierConnections: checkbox(
@@ -1771,12 +1771,12 @@ export const trackFields: Record<string, FieldRecipe> = {
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
   filterBy: readCategoryPath,
-  // Sits directly under "Show coverage" in the alignments "Show..." submenu
+  // Sits directly under "Coverage" in the alignments "Show..." submenu
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a
   // 30x pileup is a solid mass and only the curve carries the comparison.
   showPileup: checkbox(
-    'Show... → Show pileup',
+    'Show... → Pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
   // A radio list of five fractions rather than a number entry
@@ -1804,7 +1804,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
   showMismatches: checkbox(
-    'Show... → Show mismatches',
+    'Show... → Mismatches',
     'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
   ),
   // A 'draw'/'skip' enum behind a checkbox, so it can't use `checkbox()` (which
@@ -1813,18 +1813,18 @@ export const trackFields: Record<string, FieldRecipe> = {
   referenceDrawingMode: value =>
     typeof value === 'string'
       ? {
-          path: `${TRACK_MENU} → Show reference alleles (${
+          path: `${TRACK_MENU} → Show... → Reference alleles (${
             value === 'skip' ? 'unchecked' : 'checked'
           })`,
           note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
         }
       : undefined,
-  showOnlyGenes: checkbox('Show only genes'),
-  // Three sibling checkboxes at the top of the reference-sequence track menu
+  showOnlyGenes: checkbox('Show... → Only genes'),
+  // Three sibling checkboxes in the reference-sequence track's Show... submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
-  showForward: checkbox('Show forward'),
-  showReverse: checkbox('Show reverse'),
-  showTranslation: checkbox('Show translation'),
+  showForward: checkbox('Show... → Forward'),
+  showReverse: checkbox('Show... → Reverse'),
+  showTranslation: checkbox('Show... → Translation'),
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
   // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
   // and shown only while the arcs are.
@@ -2069,7 +2069,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showIntraviewLinks: (value, { viewType }) =>
     typeof value === 'boolean' && viewType === 'BreakpointSplitView'
       ? {
-          path: `View menu → Show... → Show intra-view links (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Intra-view links (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   minAlignmentLength: (value, { viewType }) => {
@@ -2167,7 +2167,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     }
     const path = settingsPath(viewType, 'Gridlines')
     return viewType === 'LinearGenomeView'
-      ? { path: `View menu → Show... → Show guidelines (${checked(value)})` }
+      ? { path: `View menu → Show... → Guidelines (${checked(value)})` }
       : viewType === 'DotplotView' && path
         ? { path: `${path} (${checked(value)})` }
         : undefined
@@ -2256,7 +2256,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   showCenterLine: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Show center line (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Center line (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   trackLabels: value => {
@@ -2268,13 +2268,13 @@ export const viewFields: Record<string, FieldRecipe> = {
   colorByCDS: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Show CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → CDS reading frame colors (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   showAminoAcids: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Show amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
+          path: `View menu → Show... → Amino acids when zoomed in (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   // The checkbox carries the placeholder's visibility, so it reads the inverse
@@ -2283,7 +2283,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   hideNoTracksActive: value =>
     typeof value === 'boolean'
       ? {
-          path: `View menu → Show... → Show no tracks active button (${value ? 'unchecked' : 'checked'})`,
+          path: `View menu → Show... → No tracks active button (${value ? 'unchecked' : 'checked'})`,
         }
       : undefined,
   drawCurves: (value, { viewType }) => {

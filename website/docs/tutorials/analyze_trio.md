@@ -90,7 +90,7 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
 
 In the track menu, choose **Display types → Multi-sample variant display** (the
 [multi-sample variant display](/docs/user_guides/multivariant_track)), then
-check **Show... → Show as genotype matrix**.
+check **Layout → Genotype matrix**.
 
 <Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
@@ -222,9 +222,8 @@ through the centromere, because hap-ibd joins the markers on either side of it.
 To line the painted blocks up with the genotypes underneath:
 
 - Drag the painting's track label above the VCF's.
-- Uncheck **Show... → Show as genotype matrix** on the VCF track, so the
-  **phased multi-sample variant display** draws each genotype at its genomic
-  position.
+- Uncheck **Layout → Genotype matrix** on the VCF track, so the **phased
+  multi-sample variant display** draws each genotype at its genomic position.
 - To show one parent's two rows only, as the figures below do, set the
   painting's `rows.kept` to those names, for example
   `["Father hap1", "Father hap2"]`.

@@ -165,8 +165,8 @@ each. On hg38 at
   maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
 - Drag the H9 hap2 lane's label to the top of the stack, beside hg38
 - Pick **Color by... → Strand**, under **Ribbons**
-- Turn off **Show... → Show gene labels**, since the RefSeq track above names
-  the genes
+- Turn off **Show... → Gene labels**, since the RefSeq track above names the
+  genes
 
 <Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1. Its partner hap1 and the other three haplotypes run red throughout." />
 

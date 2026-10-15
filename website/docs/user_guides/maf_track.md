@@ -54,10 +54,10 @@ them is refused.
 
 ## Conservation and per-row identity
 
-The **Show conservation (% identity)** band plots, at each reference base, the
-fraction of aligned species whose base matches the reference, a quick read of
-which regions are conserved versus divergent. It is computed from the alignment
-itself, so no extra files are needed.
+The **Show... → Conservation (% identity)** band plots, at each reference base,
+the fraction of aligned species whose base matches the reference, a quick read
+of which regions are conserved versus divergent. It is computed from the
+alignment itself, so no extra files are needed.
 
 The **Color by...** menu breaks the same signal out per species, so you can see
 _which_ genomes diverge in a region:
@@ -87,8 +87,8 @@ per rank.
 
 The heatmap and the X-Y plot draw only while you are zoomed out past base level,
 where individual bases are no longer legible, and zooming in swaps them back for
-the ordinary base coloring; uncheck **Show bases when zoomed in** to keep the
-plot on at every zoom level.
+the ordinary base coloring; uncheck **Show... → Bases when zoomed in** to keep
+the plot on at every zoom level.
 
 The heatmap works on large alignments: with all ~470 species of the UCSC hg38
 470-way shown at once, the heatmap gives a per-base conservation view across the
@@ -115,17 +115,17 @@ alignment with no extra data to fetch.
 
 ## Inversions (strand flips)
 
-**Show inversions (strand flips)** overlays a diagonal hatch on any block that
-aligns inverted relative to its own source chromosome's consensus orientation.
-Each block is compared to its scaffold's consensus, so an arbitrarily-oriented
-scaffold reads as collinear and only a genuine intra-scaffold strand flip is
-marked. It is an overlay, so it composes on top of the base, codon, or per-row
-identity rendering.
+**Show... → Inversions (strand flips)** overlays a diagonal hatch on any block
+that aligns inverted relative to its own source chromosome's consensus
+orientation. Each block is compared to its scaffold's consensus, so an
+arbitrarily-oriented scaffold reads as collinear and only a genuine
+intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
+the base, codon, or per-row identity rendering.
 
 ## Codon (amino-acid) view
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
-on the display), two coding-aware options appear. **Show CDS frames** (off by
+on the display), two coding-aware options appear. **CDS frames** (off by
 default, under **Show...**) draws a thin reading-frame-colored strip on each
 species' row, marking the coding exons projected onto that species so the gene
 structure reads vertically across the whole alignment. It is a strip drawn over
@@ -225,8 +225,8 @@ the species row has its own gene track where the session has one.
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree.
 
-- **Show... → Show tree** toggles the dendrogram and **Show row labels** the
-  species names, and **Tree branch lengths** draws the tree to scale.
+- **Show... → Tree** toggles the dendrogram and **Row labels** the species
+  names, and **Tree branch lengths** draws the tree to scale.
 - **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its

@@ -76,8 +76,8 @@ which bins each row covers at all.
 After a run, rows are reordered so similar rows sit together and a dendrogram is
 drawn in the sidebar.
 
-- **Show... → Show tree** toggles the dendrogram. It stays disabled until
-  clustering has been run; the row labels have their own toggle beside it.
+- **Show... → Tree** toggles the dendrogram. It stays disabled until clustering
+  has been run; the row labels have their own toggle beside it.
 - **Show... → Tree branch lengths** draws the tree with branch lengths, so the
   horizontal extent of each branch reflects distance.
 - Click any internal node to filter the track down to that subtree. Click it

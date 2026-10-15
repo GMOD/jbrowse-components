@@ -191,7 +191,7 @@ gene.
 
 **Group by... → First-of-pair strand** applies a `facet`, one section per group,
 each with a coverage histogram from only that group's reads, forward and reverse
-on one autoscaled axis. Turning off **Show... → Show pileup** leaves the two
+on one autoscaled axis. Turning off **Show... → Pileup** leaves the two
 histograms alone.
 
 On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type

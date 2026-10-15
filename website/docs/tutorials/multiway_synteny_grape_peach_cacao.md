@@ -399,8 +399,8 @@ the genome.
 
 - `rows.domain` pins the lanes it names to the top; the rest follow
   densest-first, so the order holds across a pan
-- With **Show... → Show ribbons across gaps** off, a sparse lane mid-stack cuts
-  every chain running through it
+- With **Show... → Ribbons across gaps** off, a sparse lane mid-stack cuts every
+  chain running through it
 
 ### Zooming the lanes to a few genes
 

@@ -13,7 +13,7 @@
 //
 // Two shapes, because the separator lands in two places:
 //   BETWEEN two spans   `Launch` -> `Linear read vs ref`
-//   INSIDE one span     **Show... > Show coverage**
+//   INSIDE one span     **Show... > Coverage**
 //
 // The inside-one-span form is restricted to **bold**, never backticks, which is
 // what keeps jexl comparisons (`feature.score > 7.3`) and shell redirects
@@ -43,7 +43,7 @@ const RULES = [
     what: 'menu path between two labels',
   },
   {
-    // **Show... > Show coverage**. Bold only — see the note above.
+    // **Show... > Coverage**. Bold only — see the note above.
     re: /\*\*[^*]*\s(?:->|>|▸)\s[^*]*\*\*/,
     what: 'menu path inside one bold label',
   },

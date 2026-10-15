@@ -41,7 +41,7 @@ open so you can step repeatedly. Stepping applies a persistent offset from the
 auto-selected level, so resolution still tracks your zoom, just shifted.
 **Reset** returns to auto.
 
-<Figure caption="Show → Show legend and Show → Show resolution controls, both off by default. The overlay gives the color scale with its endpoints and a binsize dropdown, which is how a chosen resolution gets pinned into an exported figure." src="/img/hic/overlay_controls.png" />
+<Figure caption="Show... → Legend and Show... → Resolution controls, both off by default. The overlay gives the color scale with its endpoints and a binsize dropdown, which is how a chosen resolution gets pinned into an exported figure." src="/img/hic/overlay_controls.png" />
 
 ## Adjusting the color scale
 
@@ -139,7 +139,7 @@ corner.
 ## Fitting the triangle to the track height
 
 The triangle's natural height is half the view width, so on a wide view it is
-taller than the track and the lower half is cut off. **Show → Fit to display
+taller than the track and the lower half is cut off. **Layout → Fit to display
 height** squashes it vertically to whatever height the track is dragged to,
 trading square bins for seeing the whole triangle.
 

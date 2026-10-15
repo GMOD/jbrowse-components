@@ -13,9 +13,9 @@ sized, or filtered.
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 
 A coverage bar that is part red means that fraction of reads have a mismatch
-there. The track menu's **Show coverage** and **Show pileup** toggles turn
-either panel off independently: coverage-only is compact for surveying depth
-across many samples, and pileup-only gives the reads the vertical space.
+there. The track menu's **Show... → Coverage** and **Show... → Pileup** toggles
+turn either panel off independently: coverage-only is compact for surveying
+depth across many samples, and pileup-only gives the reads the vertical space.
 
 ## Sorting reads
 
@@ -211,13 +211,12 @@ reads sit on one haplotype; see
 [phasing heterozygous SVs](/docs/user_guides/sv_visualization#phasing-heterozygous-svs).
 
 Each section's coverage band is built from only the reads grouped into that
-section. Group by **Strand** and turn off **Show... → Show pileup** for a
-forward and a reverse histogram on a shared scale, each colored by the
-mismatches in that strand's reads. On a strand-specific paired-end library group
-by **First-of-pair strand** instead, since there the transcript strand is which
-mate the read is; the
-[RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that.
-Long-read cDNA is the clearest case, since the reads are oriented to the
+section. Group by **Strand** and turn off **Show... → Pileup** for a forward and
+a reverse histogram on a shared scale, each colored by the mismatches in that
+strand's reads. On a strand-specific paired-end library group by **First-of-pair
+strand** instead, since there the transcript strand is which mate the read is;
+the [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows
+that. Long-read cDNA is the clearest case, since the reads are oriented to the
 transcript.
 
 <Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band holds the coverage over the gene it groups, and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
@@ -296,7 +295,7 @@ structural-variant breakpoint.
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw, so its clip indicator appears black.
 
-<Figure caption="Enabling 'Show soft clipping' (top) and the result (bottom): reads terminating at a deletion breakpoint expose their unaligned bases." src="/img/alignments_soft_clipped_menu.png" />
+<Figure caption="Enabling 'Soft clipping' (top) and the result (bottom): reads terminating at a deletion breakpoint expose their unaligned bases." src="/img/alignments_soft_clipped_menu.png" />
 
 ## Filtering reads
 

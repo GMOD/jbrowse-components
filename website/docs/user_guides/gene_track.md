@@ -62,8 +62,8 @@ Track-menu toggles:
 
 - Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
 - Show subfeature labels - each transcript's name on its row
-- Show chevrons - strand chevrons along the intron lines (on by default)
-- Show only genes - hides non-gene features
+- Show... → Chevrons - strand chevrons along the intron lines (on by default)
+- Show... → Only genes - hides non-gene features
 - Group by... - opens a dialog. _Strand_ packs the forward-strand features into
   one labelled section above the reverse-strand ones, unstranded features last,
   so convergent and divergent neighbours read apart. _Attribute_ takes a feature
@@ -166,13 +166,13 @@ menu reorders a facet written this way.
 
 ## Color by CDS
 
-**Show... → Show CDS reading frame colors**, in the linear genome view's
-hamburger menu, tints each CDS segment by the frame it is read in, so one color
-is one frame across the view. Frame is constant within a segment, so a color
-change across a junction is a frame shift. The setting applies to every gene
-track in the view, and JBrowse remembers it across sessions.
+**Show... → CDS reading frame colors**, in the linear genome view's hamburger
+menu, tints each CDS segment by the frame it is read in, so one color is one
+frame across the view. Frame is constant within a segment, so a color change
+across a junction is a frame shift. The setting applies to every gene track in
+the view, and JBrowse remembers it across sessions.
 
-<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Show CDS reading frame colors' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'CDS reading frame colors' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 
@@ -203,8 +203,8 @@ configuration behind that figure and the pipeline that writes the attributes.
 The track draws the translated protein on coding features by default. Zooming
 in, the amino acids first appear as alternating per-codon shading, then at
 roughly base-pair resolution as single-letter code over each codon, in register
-with the reference sequence track. Turn off **Show amino acids when zoomed in**,
-in the view menu's **Show...** submenu, to keep the view from fetching the
+with the reference sequence track. Turn off **Amino acids when zoomed in**, in
+the view menu's **Show...** submenu, to keep the view from fetching the
 reference.
 
 The translation follows the transcript's strand and CDS phase, splitting codons

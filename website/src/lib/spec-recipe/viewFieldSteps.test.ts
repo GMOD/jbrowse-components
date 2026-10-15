@@ -52,7 +52,7 @@ test('the legend toggle of the circular view is in its view menu', () => {
 
 test('guidelines are a Show... row on the genome view and a Gridlines row on the dotplot', () => {
   expect(stepPaths('showGridlines', false, 'LinearGenomeView')).toEqual([
-    'View menu → Show... → Show guidelines (unchecked)',
+    'View menu → Show... → Guidelines (unchecked)',
   ])
   expect(stepPaths('showGridlines', false, 'DotplotView')).toEqual([
     'Dotplot display settings (the sliders button in the view header) → Gridlines (unchecked)',

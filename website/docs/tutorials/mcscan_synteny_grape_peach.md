@@ -236,9 +236,9 @@ name needs the full `displays` array:
 
 ## A single gene pair up close {#what-an-anchor-looks-like-up-close}
 
-Zoom to one block with both gene tracks on and set to **Show only genes**.
+Zoom to one block with both gene tracks on and set to **Show... → Only genes**.
 
-<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line, spanning the two genes it pairs; genes without a ribbon have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
+<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Only genes. Each ribbon is one .anchors line, spanning the two genes it pairs; genes without a ribbon have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
 MCScan anchors only the pairs it could call confidently, so most genes have no
 ribbon.

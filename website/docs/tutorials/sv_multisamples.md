@@ -193,8 +193,8 @@ Open three samples' alignments, one per genotype: HG00113 homozygous alt,
 HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
 comparable:
 
-- Turn the pileup off with **Show... → Show pileup** in the track menu, since at
-  this width the coverage curve shows the difference.
+- Turn the pileup off with **Show... → Pileup** in the track menu, since at this
+  width the coverage curve shows the difference.
 - Share one axis from **Coverage axis... → Share axis with**, ticking the other
   two tracks, so the samples compare by height.
 

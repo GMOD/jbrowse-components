@@ -304,13 +304,13 @@ The chromosome names along the scale bar are clickable. The menu holds:
 
 Four layout controls sit in the view's hamburger menu and the header bar.
 
-### Show ideogram
+### Ideogram
 
 When the assembly has
 [cytobands](/docs/config_guides/assemblies#configuring-cytoband-ideograms), the
 overview bar draws the chromosome as a banded ideogram with the centromere
-marked. **Show ideogram** toggles it, on by default and remembered for later
-sessions.
+marked. **Show... → Ideogram** toggles it, on by default and remembered for
+later sessions.
 
 The entry is absent unless the view shows a whole chromosome, since a sub-region
 gives an arbitrary slice of bands.

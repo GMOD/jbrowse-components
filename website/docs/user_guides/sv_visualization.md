@@ -29,8 +29,8 @@ A structural variant leaves three kinds of mark in an alignments track:
   is soft-clipped. The
   [insertion and clipping indicators](/docs/user_guides/alignments_track#insertion-and-clipping-indicators)
   flag a cluster of them above the coverage row before you zoom to the pileup,
-  and [Show soft clipping](/docs/user_guides/alignments_track#soft-clipping)
-  draws the clipped bases.
+  and [soft clipping](/docs/user_guides/alignments_track#soft-clipping) draws
+  the clipped bases.
 - **Reads whose two halves land apart.** In a paired-end library that is a pair
   with an unexpected insert size or orientation. In a long-read library one read
   spans the breakpoint and splits into a primary and a supplementary alignment,

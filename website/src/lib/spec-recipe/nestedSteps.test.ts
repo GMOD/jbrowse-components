@@ -24,7 +24,7 @@ const twoTracks = recipeOf({
 test("a track's settings sit under the step that adds it", () => {
   const adds = twoTracks.steps.filter(s => s.example?.includes('“'))
   expect(adds.map(s => s.substeps?.map(sub => sub.title))).toEqual([
-    [expect.stringContaining('Show soft clipping')],
+    [expect.stringContaining('Soft clipping')],
     undefined,
   ])
 })

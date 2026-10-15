@@ -268,15 +268,15 @@ export const trioSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    clicksOpen: 'the track menu at its Show... submenu',
+    clicksOpen: 'the track menu at its Layout submenu',
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Show...', 'Show as genotype matrix']),
+      ...menuCascade(['Layout', 'Genotype matrix']),
     ],
     annotations: [
       {
         type: 'box',
-        anchor: { text: 'Show as genotype matrix' },
+        anchor: { text: 'Genotype matrix' },
       },
     ],
   },

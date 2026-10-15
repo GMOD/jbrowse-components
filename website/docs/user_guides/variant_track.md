@@ -19,9 +19,9 @@ In a linear genome view, the track menu's **Display types** switches between:
 
 - **Variant display**, the default, covered on this page
 - **Multi-sample variant display** draws one row per sample, each variant at its
-  genomic position, or, with **Show... → Show as genotype matrix**, in
-  equal-width columns so shared haplotypes and runs of homozygosity show
-  whatever the spacing. See the
+  genomic position, or, with **Layout → Genotype matrix**, in equal-width
+  columns so shared haplotypes and runs of homozygosity show whatever the
+  spacing. See the
   [multi-sample variant guide](/docs/user_guides/multivariant_track)
 - **Marks** draws the variants as the marks you configure, and over an SV VCF
   joins each breakend to its mate with nothing configured. See

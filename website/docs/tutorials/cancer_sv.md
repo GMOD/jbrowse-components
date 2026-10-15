@@ -140,8 +140,8 @@ Open the SV calls and the tumor and normal read tracks at
 aligner left unaligned, because every read crossing the junction continues on
 another chromosome. The matched normal is clean.
 
-- **Show... → Show soft clipping** in the track menu draws the clipped ends,
-  which are off by default.
+- **Show... → Soft clipping** in the track menu draws the clipped ends, which
+  are off by default.
 - **Sort by... → Split reads first** lifts the reads that continue on another
   chromosome to the top of the pileup.
 - **Force load** approves the download when the track asks first because the

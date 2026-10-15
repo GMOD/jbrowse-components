@@ -51,8 +51,8 @@ export async function openMultiSampleVariantDisplay({
   fireEvent.click(await findByText('Multi-sample variant display', ...opts))
   if (displayType === 'matrix') {
     fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await findByText('Show...', ...opts))
-    fireEvent.click(await findByText('Show as genotype matrix', ...opts))
+    fireEvent.click(await findByText('Layout', ...opts))
+    fireEvent.click(await findByText('Genotype matrix', ...opts))
   }
 
   return { ...result, info }

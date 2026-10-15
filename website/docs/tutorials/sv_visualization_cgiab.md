@@ -686,8 +686,8 @@ deletion.
 
 Open **NCBI RefSeq genes (hg38)** from the hosted config and the tumor PacBio
 HiFi reads, then set **Read height → Compact** and **Sort by... → Base pair** in
-the reads' track menu and center the deletion. **Show... → Show center line** in
-the view menu helps line up the breakpoint.
+the reads' track menu and center the deletion. **Show... → Center line** in the
+view menu helps line up the breakpoint.
 
 <Figure caption="Tumor PacBio HiFi reads at compact height, sorted by base pair with the deletion centered, over the gene annotations. The deletion removes two CUZD1 exons." src="/img/sv_cgiab/deletion_linear_view.png" />
 

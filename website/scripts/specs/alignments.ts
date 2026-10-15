@@ -377,7 +377,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   },
 
   // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."
-  // submenu with "Show soft clipping" boxed — soft clipping is NOT yet enabled,
+  // submenu with "Soft clipping" boxed — soft clipping is NOT yet enabled,
   // so the reads render normally (clipped bases hidden). Bottom frame clicks the
   // item, enabling soft clipping and closing the menu, so it teaches cause→effect
   // (stage 1 must be the not-yet-enabled state, stage 2 the result with
@@ -410,13 +410,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Show...', 'Show soft clipping']),
+          ...menuCascade(['Show...', 'Soft clipping']),
         ],
-        // box both the parent "Show..." submenu and the "Show soft clipping"
+        // box both the parent "Show..." submenu and the "Soft clipping"
         // item it opens (reviewer asked to also circle "Show...")
         annotations: [
           { type: 'box', anchor: { text: 'Show...' } },
-          { type: 'box', anchor: { text: 'Show soft clipping' } },
+          { type: 'box', anchor: { text: 'Soft clipping' } },
         ],
       },
       {
@@ -424,11 +424,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         // row keeps the menu open, so Escape dismisses it for the result
         // frame.
         actions: [
-          { type: 'click', text: 'Show soft clipping' },
+          { type: 'click', text: 'Soft clipping' },
           // two levels to dismiss: the "Show..." submenu, then the track menu
           { type: 'press', key: 'Escape' },
           { type: 'press', key: 'Escape' },
-          { type: 'waitForText', text: 'Show soft clipping', hidden: true },
+          { type: 'waitForText', text: 'Soft clipping', hidden: true },
           { type: 'waitForText', text: 'Show...', hidden: true },
           // the track menu icon keeps focus after the menu closes, so its
           // "Track settings" tooltip stays up; a click on empty page below the

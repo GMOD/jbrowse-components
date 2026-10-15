@@ -161,12 +161,12 @@ mean copy number, with `labels` naming each interval in the key:
 
 <Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by the interval the caller's log2 ratio falls in. Recurrent events read as vertical stripes through the stack, under the same cohort's gain/loss frequency." />
 
-**Show... → Show legend** keys the colors actually present, and the
-**Categories** submenu beside it hides individual categories, so you can drop
-the states or classes you aren't reading and leave the rest painted. The submenu
-counts what is hidden and offers **Show all categories** to put them back.
-`color.domain` sets the order those rows read in — the values it lists first,
-the rest sorted — the same word and rule `domain` orders the track's rows by.
+**Show... → Legend** keys the colors actually present, and the **Categories**
+submenu beside it hides individual categories, so you can drop the states or
+classes you aren't reading and leave the rest painted. The submenu counts what
+is hidden and offers **Show all categories** to put them back. `color.domain`
+sets the order those rows read in — the values it lists first, the rest sorted —
+the same word and rule `domain` orders the track's rows by.
 
 You can also pick a color for single rows under **Color rows by → Each row** in
 **Edit colors/arrangement...**, which writes each as a `rowColor` entry and
@@ -230,8 +230,8 @@ Bands carry a group by position, which stays readable over many groups where
 colors alone blur together, so a long list of groups reads best faceted, with
 the colors as the second cue.
 
-**Show... → Show tree** toggles the dendrogram once one has been computed, and
-**Show... → Show row labels** the labels beside it, which are useful with no
+**Show... → Tree** toggles the dendrogram once one has been computed, and
+**Show... → Row labels** the labels beside it, which are useful with no
 clustering run.
 
 A row with a color of its own, from
