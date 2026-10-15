@@ -568,6 +568,21 @@ test('a cancelled call is not answered, and the app is told to abort it', async 
   }
   server.send({ id: 2, method: 'ping' })
   expect((await server.next()).id).toBe(2)
+
+  // the briefing rode the answer that was dropped, so the next call carries it
+  server.send({
+    id: 3,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  while (seen.filter(r => r.tool === 'run_javascript').length < 2) {
+    await settle()
+  }
+  answer()
+  const next = await server.next()
+  expect(
+    next.result?.content?.filter(c => c.text?.startsWith(GUIDANCE_PREFIX)),
+  ).toHaveLength(1)
   bridge.close()
 })
 

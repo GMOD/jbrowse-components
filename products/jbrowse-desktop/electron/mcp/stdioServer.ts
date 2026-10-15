@@ -395,13 +395,17 @@ export function runMcpStdioServer({
         } else {
           const needsBrief =
             name === 'run_javascript' && !briefed && !instructionsAlreadyShown
-          briefed ||= needsBrief
           const outcome = await callBridge(name, args, bridgeCall => {
             bridgeCallOf.set(id, bridgeCall)
           }).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),
           }))
           const result = toolCallContent(outcome)
+          // only once an answer carrying it is written: respond drops a
+          // cancelled one, briefing and all
+          if (needsBrief && !cancelled.has(id)) {
+            briefed = true
+          }
           respond(id, { result: needsBrief ? brief(result) : result })
         }
         break
