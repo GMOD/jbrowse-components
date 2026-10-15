@@ -202,12 +202,12 @@ function trackModel({
   return { model, calls }
 }
 
-test('the track menu is Show, Color by and Lanes', () => {
+test('the track menu is Color by, Lanes and Show', () => {
   const { model } = trackModel()
   expect(labelsOf(multiWayTrackMenuItems(model))).toEqual([
-    'Show...',
     'Color by...',
     'Lanes',
+    'Show...',
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
     'Show lane ticks',
@@ -237,7 +237,7 @@ test('Color by offers the synteny view modes a lane stack paints', () => {
 
 test('Color by heads the gene modes and the ribbon modes', () => {
   const { model, calls } = trackModel()
-  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[1])
+  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[0])
   expect(labelsOf(colorBy)).toEqual([
     'Genes',
     'Default',
@@ -268,7 +268,7 @@ test('Color by heads the gene modes and the ribbon modes', () => {
 
 // The Genes block of Color by..., between its header and the Ribbons one
 function genesOf(model: Parameters<typeof multiWayTrackMenuItems>[0]) {
-  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[1])
+  const colorBy = subMenuOf(multiWayTrackMenuItems(model)[0])
   return colorBy.slice(1, labelsOf(colorBy).indexOf('Ribbons'))
 }
 

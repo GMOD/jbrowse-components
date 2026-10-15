@@ -386,7 +386,6 @@ export function lanesMenuItem(model: MultiWayMenuModel) {
 
 export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
-    ...makeShowSubMenu(showSubMenuItems(model)),
     colorByMenuItem({
       blocks: [
         { header: 'Genes', rows: geneColorMenuItems(model) },
@@ -394,5 +393,6 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
       ],
     }),
     lanesMenuItem(model),
+    ...makeShowSubMenu(showSubMenuItems(model)),
   ]
 }
