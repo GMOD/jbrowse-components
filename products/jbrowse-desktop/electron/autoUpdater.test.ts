@@ -363,3 +363,28 @@ test('a dev run can be pointed at a feed, and is not by default', () => {
   setup(on)
   expect(on.forceDevUpdateConfig).toBe(true)
 })
+
+test('a second update-available while the first offer is open asks once', async () => {
+  const autoUpdater = fakeUpdater()
+  setup(autoUpdater)
+  let answer = (_: number) => {}
+  showMessageBox.mockReturnValueOnce(
+    new Promise(resolve => {
+      answer = response => {
+        resolve({ response, checkboxChecked: false })
+      }
+    }),
+  )
+
+  autoUpdater.fire('update-available', '4.3.1')
+  autoUpdater.fire('update-available', '4.3.1')
+  await flush()
+  expect(titles()).toEqual(['Found updates'])
+
+  answer(1)
+  await flush()
+  click(1)
+  autoUpdater.fire('update-available', '4.3.1')
+  await flush()
+  expect(titles()).toEqual(['Found updates', 'Found updates'])
+})

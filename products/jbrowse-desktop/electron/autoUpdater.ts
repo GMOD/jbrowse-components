@@ -236,8 +236,19 @@ export function setupAutoUpdater({
   // requests and an error log before falling back to the full download
   autoUpdater.disableDifferentialDownload = true
 
+  // A manual check fires this again while the startup offer is still on screen
+  // or its download is running; one offer at a time.
+  let offering = false
   autoUpdater.on('update-available', info => {
-    offerUpdate(autoUpdater, getProgressBar, info.version).catch(logError)
+    if (offering) {
+      return
+    }
+    offering = true
+    offerUpdate(autoUpdater, getProgressBar, info.version)
+      .catch(logError)
+      .finally(() => {
+        offering = false
+      })
   })
 
   // A quarter-gigabyte over a slow link is minutes in which the only thing that
