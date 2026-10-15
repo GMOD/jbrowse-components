@@ -23,6 +23,15 @@ export function relayBudget(innerMs: number) {
 // answers with what it printed instead of a bare relay timeout.
 export const CODE_TIMEOUT_DEFAULT_MS = 120_000
 export const CODE_TIMEOUT_MAX_MS = 150_000
+const CODE_TIMEOUT_MIN_MS = 1000
+
+// The deadline a run_javascript call runs under. One clamp for both halves:
+// the bridge budgeted a negative timeoutMs as given and answered "did not
+// answer in time" at once, while the renderer ran the code for its 1s floor.
+export function codeTimeout(requested: unknown) {
+  const ms = typeof requested === 'number' ? requested : CODE_TIMEOUT_DEFAULT_MS
+  return Math.min(Math.max(ms, CODE_TIMEOUT_MIN_MS), CODE_TIMEOUT_MAX_MS)
+}
 
 // A relay with nothing else to go on. Not derived: it bounds a call whose inner
 // work declares no deadline of its own (measure, paint, a bare wait_ready).

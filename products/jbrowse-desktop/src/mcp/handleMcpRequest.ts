@@ -7,10 +7,7 @@ import {
   waitReady,
 } from '@jbrowse/app-core'
 
-import {
-  CODE_TIMEOUT_DEFAULT_MS,
-  CODE_TIMEOUT_MAX_MS,
-} from '../../electron/mcp/budgets.ts'
+import { codeTimeout } from '../../electron/mcp/budgets.ts'
 import { drainPageErrors } from './pageErrors.ts'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
@@ -164,11 +161,6 @@ function compileCode(code: string) {
   }
 }
 
-function clampTimeout(requested: unknown) {
-  const ms = typeof requested === 'number' ? requested : CODE_TIMEOUT_DEFAULT_MS
-  return Math.min(Math.max(ms, 1000), CODE_TIMEOUT_MAX_MS)
-}
-
 function haltReason(signal: AbortSignal) {
   return signal.reason instanceof CodeHalted
     ? signal.reason
@@ -273,7 +265,7 @@ async function evaluateWith(
     throw new Error('run_javascript needs code (an async function body)')
   }
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
-  const timeoutMs = clampTimeout(args.timeoutMs)
+  const timeoutMs = codeTimeout(args.timeoutMs)
   const jb = createJbApi(pluginManager, {
     onNotifications: messages => {
       consumedByCode.push(...messages)

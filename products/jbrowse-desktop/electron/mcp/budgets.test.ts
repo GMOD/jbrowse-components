@@ -17,6 +17,7 @@ import {
   SCREENSHOT_WAIT_MAX_MS,
   SCREENSHOT_WAIT_MS,
   relayBudget,
+  codeTimeout,
 } from './budgets.ts'
 
 // Every socket call the bridge can be legitimately working on, and how long the
@@ -50,5 +51,20 @@ describe('the deadlines nest', () => {
     )
     expect(CODE_TIMEOUT_DEFAULT_MS).toBeLessThanOrEqual(CODE_TIMEOUT_MAX_MS)
     expect(SCREENSHOT_WAIT_MS).toBeLessThanOrEqual(SCREENSHOT_WAIT_MAX_MS)
+  })
+})
+
+// the bridge and the renderer each clamped on their own, and a negative
+// timeoutMs gave the bridge a relay budget already spent
+describe('codeTimeout', () => {
+  it('holds a request between the floor and the cap', () => {
+    expect(codeTimeout(-20_000)).toBe(1000)
+    expect(codeTimeout(10 * CODE_TIMEOUT_MAX_MS)).toBe(CODE_TIMEOUT_MAX_MS)
+    expect(codeTimeout(5000)).toBe(5000)
+  })
+
+  it('takes the default for anything not a number', () => {
+    expect(codeTimeout(undefined)).toBe(CODE_TIMEOUT_DEFAULT_MS)
+    expect(codeTimeout('5000')).toBe(CODE_TIMEOUT_DEFAULT_MS)
   })
 })

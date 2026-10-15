@@ -6,11 +6,10 @@ import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
 import { readRecentSessions } from '../recentSessions.ts'
 import {
-  CODE_TIMEOUT_DEFAULT_MS,
-  CODE_TIMEOUT_MAX_MS,
   OPEN_SETTLE_MS,
   OPEN_WAIT_MS,
   RENDERER_TIMEOUT_MS,
+  codeTimeout,
   relayBudget,
 } from './budgets.ts'
 import { hostedConfigUrl } from './hostedConfig.ts'
@@ -422,14 +421,7 @@ export function startMcpBridge({
   // budgeted past the code's own deadline, so the renderer's answer (the error
   // with the console output so far) wins over the relay's silence
   function codeRelayBudget(args: Record<string, unknown>) {
-    return relayBudget(
-      Math.min(
-        typeof args.timeoutMs === 'number'
-          ? args.timeoutMs
-          : CODE_TIMEOUT_DEFAULT_MS,
-        CODE_TIMEOUT_MAX_MS,
-      ),
-    )
+    return relayBudget(codeTimeout(args.timeoutMs))
   }
 
   // One table, so `handledBy` routes rather than being read and then switched
