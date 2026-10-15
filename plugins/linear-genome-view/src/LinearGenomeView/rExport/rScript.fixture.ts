@@ -52,8 +52,15 @@ export function track(
     displayType,
     adapter: located(t.adapter),
     display,
-    reference: path.join(VOLVOX, 'volvox.fa'),
   }
+}
+
+/** The volvox assembly as a loaded config holds it: a 2bit, and inline aliases naming ctgA `contigA` as some files do. */
+export function volvoxAssembly() {
+  const config = JSON.parse(
+    readFileSync(path.join(VOLVOX, 'config.json'), 'utf8'),
+  ) as { assemblies: Record<string, unknown>[] }
+  return located(config.assemblies[0]!)
 }
 
 /**

@@ -2,7 +2,13 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { configTracks, hasR, runCases, track } from './rScript.fixture.ts'
+import {
+  configTracks,
+  hasR,
+  runCases,
+  track,
+  volvoxAssembly,
+} from './rScript.fixture.ts'
 import { exportTracksToR } from './rScript.ts'
 
 import type { RCase } from './rScript.fixture.ts'
@@ -40,6 +46,7 @@ function register(
     script: exportTracksToR({
       tracks,
       regions,
+      assembly: volvoxAssembly(),
       out,
       bpPerPx: bpPerPxOf(regions),
     }).script!,
@@ -56,10 +63,7 @@ const stack = register(
     track('volvox_alignments', 'LinearAlignmentsDisplay'),
     track('volvox_cram_alignments_ctga', 'LinearAlignmentsDisplay'),
     track('volvox_filtered_vcf', 'LinearVariantDisplay'),
-    {
-      ...track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
-      refNames: { ctgA: 'contigA' },
-    },
+    track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
   ],
   `nrow(gff3tabix_genes$features) > 0, nrow(volvox_microarray$bins) > 0,
   nrow(volvox_alignments$reads) > 0, nrow(volvox_cram_alignments_ctga$reads) > 0,
@@ -101,14 +105,9 @@ const twoRegions = register(
 
 const aliased = register(
   'aliased',
-  [
-    {
-      ...track('volvox_alignments', 'LinearAlignmentsDisplay'),
-      refNames: { chrA: 'ctgA' },
-    },
-  ],
-  'nrow(volvox_alignments$reads) > 0',
-  [{ refName: 'chrA', start: 1000, end: 9000 }],
+  [track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay')],
+  `nrow(volvox_test_vcf$cells) > 0,
+  identical(unique(volvox_test_vcf$variants$chrom), "ctgA")`,
 )
 
 const READ_NAME = 'ctgA_1405_1888_3:0:0_5:0:0_21c4'

@@ -1,5 +1,10 @@
-import { track } from './rScript.fixture.ts'
-import { exportTracksToR, locusOf, rValue } from './rScript.ts'
+import { track, volvoxAssembly } from './rScript.fixture.ts'
+import {
+  assemblyArgument,
+  exportTracksToR,
+  locusOf,
+  rValue,
+} from './rScript.ts'
 
 const ONE = [{ refName: 'ctgA', start: 1000, end: 9000 }]
 const TWO = [
@@ -43,7 +48,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   expect(script).toContain(
     'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.8.1"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.9.0"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')
@@ -87,19 +92,58 @@ test('several regions are one vector of loci, which the readers draw end to end'
   expect(script).toContain('locus <- c("ctgA:1,001-4,000", "ctgA:6,001-9,000")')
 })
 
-test('a file spelling the contig another way reads under its own name', () => {
+test('every reader takes the view’s assembly, which names each contig as each file spells it', () => {
   const script = scriptOf({
-    regions: [{ refName: 'chrA', start: 1000, end: 9000 }],
+    regions: ONE,
+    assembly: volvoxAssembly(),
     tracks: [
-      {
-        ...track('volvox_alignments', 'LinearAlignmentsDisplay'),
-        refNames: { chrA: 'ctgA' },
-      },
+      track('volvox_alignments', 'LinearAlignmentsDisplay'),
+      track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
     ],
   })
-  expect(script).toContain('locus <- "chrA:1,001-9,000"')
+  expect(script).toContain('locus <- "ctgA:1,001-9,000"')
   expect(script).toMatch(
-    /"ctgA:1,001-9,000",\n.*\n {2}reference_chrom = "chrA"/,
+    /\nassembly <- list\(name = "volvox", sequence = list\(adapter = list\(type = "TwoBitAdapter", twoBitLocation = list\(uri = ".*volvox\.2bit"\)\)\), refNameAliases = list\(adapter = list\(type = "FromConfigAdapter", .*aliases = c\("A", "contigA"\)/,
+  )
+  expect(script.match(/\n {2}assembly = assembly/g)).toHaveLength(2)
+  expect(script).not.toMatch(/reference(_chrom)? =/)
+})
+
+test('an assembly ggjbrowse builds from its files’ paths reads as jbrowse_assembly()', () => {
+  const value = (snapshot: Record<string, unknown>) => {
+    const a = assemblyArgument(snapshot)
+    return 'value' in a ? a.value : a.skipped
+  }
+  expect(
+    value({
+      name: 'hg19',
+      uri: '/data/hg19.fa.gz',
+      refNameAliases: { uri: '/data/hg19_aliases.txt' },
+    }),
+  ).toBe(
+    'jbrowse_assembly("/data/hg19.fa.gz", "/data/hg19_aliases.txt", name = "hg19")',
+  )
+  const fasta = (faiLocation: Record<string, unknown>) =>
+    value({
+      name: 'g',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'g-seq',
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation: { uri: '/data/g.fa' },
+          faiLocation,
+        },
+      },
+    })
+  expect(fasta({ uri: '/data/g.fa.fai' })).toBe(
+    'jbrowse_assembly("/data/g.fa", name = "g")',
+  )
+  expect(fasta({ uri: '/index/g.fai' })).toContain(
+    'faiLocation = list(uri = "/index/g.fai")',
+  )
+  expect(value({ name: 'g', uri: 'blob:http://host/1' })).toContain(
+    'opened in the browser',
   )
 })
 

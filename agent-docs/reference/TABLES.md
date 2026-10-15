@@ -105,7 +105,7 @@ linear tag or MAPQ ramp, base quality) comes back in `ramps`.
 A host has no assembly manager, so where a file spells a contig another way
 than the reference does, it names both: `region.refName` for the file and
 `region.originalRefName` for the reference, as the browser's renamed regions
-carry it (ggjbrowse's `reference_chrom`).
+carry it.
 
 **Or it passes the assembly, and the engine renames.** Each region table
 (`alignments`, `features`, `wiggle`, `variants`) and `sequence` take

@@ -1,3 +1,8 @@
+import {
+  expandAssemblySequence,
+  expandSidecarShorthand,
+  refNameAliasAdapterType,
+} from '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand'
 import { resolveUri } from '@jbrowse/core/util'
 
 /** A view's region, 0-based half-open, on the assembly's canonical contig. */
@@ -17,10 +22,6 @@ export interface RExportTrack {
   /** The display's resolved sizing, which a feature track exports so the figure drops what the view drops. */
   heightMode?: unknown
   height?: unknown
-  /** The assembly's FASTA or 2bit, for a CRAM and a read with no MD tag. */
-  reference?: string
-  /** Canonical refName to the name the track's file spells it with, where they differ. */
-  refNames?: Record<string, string>
 }
 
 /**
@@ -77,7 +78,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.8.1'
+export const GGJBROWSE_VERSION = '0.9.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
@@ -277,6 +278,114 @@ function fileArgument(
     : { file: rValue(located), uris }
 }
 
+/**
+ * Each sequence adapter `jbrowse_assembly()` builds from a path, by the
+ * extension ggjbrowse reads it off, and the index each takes beside it.
+ */
+const SEQUENCE_ADAPTERS: Record<
+  string,
+  { slot: string; ext: RegExp; beside: Record<string, string> }
+> = {
+  TwoBitAdapter: { slot: 'twoBitLocation', ext: /\.2bit$/, beside: {} },
+  BgzipFastaAdapter: {
+    slot: 'fastaLocation',
+    ext: /\.gz$/,
+    beside: { faiLocation: '.fai', gziLocation: '.gzi' },
+  },
+  IndexedFastaAdapter: {
+    slot: 'fastaLocation',
+    ext: /^(?!.*\.(2bit|gz)$)/,
+    beside: { faiLocation: '.fai' },
+  },
+}
+
+/** The path of a sequence adapter `jbrowse_assembly()` rebuilds from that path alone. */
+function plainSequence(adapter: Record<string, unknown>) {
+  const { type, uri, baseUri, ...slots } = adapter
+  if (type === undefined && typeof uri === 'string') {
+    return Object.keys(slots).length
+      ? undefined
+      : locationPath({ uri, baseUri })
+  }
+  const known = SEQUENCE_ADAPTERS[String(type)]
+  const file = known && uri === undefined && locationPath(slots[known.slot])
+  return file &&
+    known.ext.test(file.replace(/\?.*$/, '').toLowerCase()) &&
+    Object.entries(slots).every(
+      ([k, v]) =>
+        k === known.slot ||
+        (known.beside[k] !== undefined &&
+          locationPath(v) === `${file}${known.beside[k]}`),
+    )
+    ? file
+    : undefined
+}
+
+/** The path of an alias adapter ggjbrowse reads as that path alone. */
+function plainAliases(adapter: Record<string, unknown>) {
+  const { type, uri, baseUri, location, ...rest } = adapter
+  const file =
+    typeof uri === 'string'
+      ? locationPath({ uri, baseUri })
+      : locationPath(location)
+  return file &&
+    Object.keys(rest).length === 0 &&
+    type === refNameAliasAdapterType(file)
+    ? file
+    : undefined
+}
+
+/**
+ * The view's assembly as the R value every reader takes: `jbrowse_assembly()`
+ * of its sequence and alias files where ggjbrowse builds the same config from
+ * their paths, and otherwise the config itself, its locations paths R opens.
+ */
+export function assemblyArgument(
+  snapshot: Record<string, unknown>,
+): { value: string } | { skipped: string } {
+  const config = expandAssemblySequence(snapshot)
+  const name = String(config.name)
+  const sequence = withoutUnset(
+    (config.sequence as { adapter?: unknown } | undefined)?.adapter,
+  ) as Record<string, unknown> | undefined
+  if (!sequence) {
+    return { skipped: 'the assembly names no sequence' }
+  }
+  const aliasConfig = config.refNameAliases as
+    | Record<string, unknown>
+    | undefined
+  const aliases = aliasConfig
+    ? (withoutUnset(
+        expandSidecarShorthand(aliasConfig, refNameAliasAdapterType).adapter,
+      ) as Record<string, unknown>)
+    : undefined
+  const uris: string[] = []
+  const located = {
+    name,
+    sequence: { adapter: openable(sequence, uris) },
+    ...(aliases
+      ? { refNameAliases: { adapter: openable(aliases, uris) } }
+      : {}),
+  }
+  if (uris.some(u => u.startsWith('blob:'))) {
+    return {
+      skipped:
+        'the assembly reads a file opened in the browser, which R cannot reach',
+    }
+  }
+  const sequenceFile = plainSequence(sequence)
+  const aliasFile = aliases && plainAliases(aliases)
+  return sequenceFile && (!aliases || aliasFile)
+    ? {
+        value: `jbrowse_assembly(${[
+          rStr(sequenceFile),
+          ...(aliasFile ? [rStr(aliasFile)] : []),
+          `name = ${rStr(name)}`,
+        ].join(', ')})`,
+      }
+    : { value: rValue(located) }
+}
+
 /** A region as JBrowse's location box writes it, 1-based and inclusive. */
 export function locusOf(refName: string, start: number, end: number) {
   const n = (x: number) => Math.round(x).toLocaleString('en-US')
@@ -291,7 +400,7 @@ function lociLiteral(loci: readonly string[]) {
 
 /** An R-safe name per track id, unique within the script. */
 function trackNames(tracks: readonly RExportTrack[]) {
-  const taken = new Set<string>(['locus', 'width', 'fig'])
+  const taken = new Set<string>(['locus', 'width', 'assembly', 'fig'])
   return tracks.map(track => {
     let base = track.trackId
       .replaceAll(/[^a-zA-Z0-9]/g, '_')
@@ -333,12 +442,15 @@ function settingNotes(track: RExportTrack) {
 export function exportTracksToR({
   tracks,
   regions,
+  assembly: assemblySnapshot,
   bpPerPx,
   out = 'figure.png',
   notes: viewNotes = [],
 }: {
   tracks: readonly RExportTrack[]
   regions: readonly Region[]
+  /** The view's assembly config as written, which names its sequence and its contigs' aliases. */
+  assembly?: Record<string, unknown>
   /** The view's zoom, which decides what a feature or quantitative display shows. */
   bpPerPx?: number
   out?: string
@@ -346,6 +458,12 @@ export function exportTracksToR({
   notes?: readonly string[]
 }) {
   const notes = [...viewNotes]
+  const assembly = assemblySnapshot && assemblyArgument(assemblySnapshot)
+  if (assembly && 'skipped' in assembly) {
+    notes.push(`assembly: ${assembly.skipped}`)
+  }
+  const assemblyValue =
+    assembly && 'value' in assembly ? assembly.value : undefined
   const loci = regions.map(r => locusOf(r.refName, r.start, r.end))
   const totalBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const viewPx = bpPerPx ? Math.round(totalBp / bpPerPx) : undefined
@@ -367,15 +485,6 @@ export function exportTracksToR({
       notes.push(`${track.trackName}: ${source.skipped}`)
       return
     }
-    const aliases = track.refNames ?? {}
-    const aliased = regions.some(r => aliases[r.refName] !== undefined)
-    const region = aliased
-      ? lociLiteral(
-          regions.map(r =>
-            locusOf(aliases[r.refName] ?? r.refName, r.start, r.end),
-          ),
-        )
-      : 'locus'
     const { heightMode, height } = track
     const display =
       reader.call === 'jbrowse_features'
@@ -385,19 +494,14 @@ export function exportTracksToR({
             ...(height === undefined ? {} : { height }),
           }
         : track.display
-    const reference =
-      reader.call === 'jbrowse_alignments' ? track.reference : undefined
     const width =
       viewPx !== undefined &&
       (reader.call === 'jbrowse_features' || reader.call === 'jbrowse_wiggle')
     const args = [
-      ...(reference ? [`reference = ${rStr(reference)}`] : []),
-      ...(reference && aliased
-        ? [`reference_chrom = ${lociLiteral(regions.map(r => r.refName))}`]
-        : []),
-      ...(source.index ? [`index = ${rStr(source.index)}`] : []),
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),
       ...(width ? ['width = width'] : []),
+      ...(assemblyValue ? ['assembly = assembly'] : []),
+      ...(source.index ? [`index = ${rStr(source.index)}`] : []),
     ]
     const name = names[i]!
     if (width) {
@@ -407,7 +511,7 @@ export function exportTracksToR({
       [
         `# ${track.trackName}`,
         `${name} <- ${reader.call}(${source.file},`,
-        `  ${[region, ...args].join(',\n  ')})`,
+        `  ${['locus', ...args].join(',\n  ')})`,
       ].join('\n'),
     )
     drawn.push(name)
@@ -454,6 +558,13 @@ export function exportTracksToR({
     'library(ggjbrowse)',
     '',
     `locus <- ${lociLiteral(loci)}`,
+    ...(assemblyValue
+      ? [
+          "# The view's assembly: the reference every reader reads against, and",
+          '# the aliases that name each contig as each file spells it.',
+          `assembly <- ${assemblyValue}`,
+        ]
+      : []),
     ...(widthReaders.length
       ? [
           "# The view's pixels across its regions. A smaller number lays the tracks",

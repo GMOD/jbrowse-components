@@ -26,7 +26,7 @@ from the view menu (`menuItems.ts`):
   reader (`READERS`), writes the file argument, the regions and the
   display's settings, and assembles the script.
 - `exportLinearView.ts`: reads the live view (regions on screen, each track's
-  first display, adapter, the assembly's reference, refName aliases) and
+  first display, adapter, and the view's assembly config as written) and
   downloads the script.
 
 | Display                           | Reader               | Adapters                                         |
@@ -75,9 +75,12 @@ track) land in the script header.
   The figure then drops the labels and isoforms the browser drops to fit the
   track, and a reader who wants every label changes one word to `grow`.
   ggjbrowse's own default is `grow`.
-- **The reader asks a file for a contig in the file's own spelling.** Where a
-  track's refName aliases differ, its reader gets its own loci in the file's
-  spelling, and an alignments reader `reference_chrom` in the assembly's.
+- **Every reader takes the view's assembly**, written once as `assembly <- …`
+  under `locus`: `jbrowse_assembly()` of its sequence and alias files where
+  ggjbrowse builds the same config from their paths, else the config as an R
+  list. The engine reads each file under that file's spelling of a contig, so
+  every reader takes the view's canonical `locus`, and a CRAM decodes against
+  the assembly's sequence.
 - **`width` is the view's pixels** (`bp / bpPerPx`), so a feature or
   quantitative track resolves its labels, chevrons and BigWig zoom level as
   the view did. The script sets it once, as `width <- N` under `locus`, so a

@@ -1,13 +1,8 @@
-import {
-  fullConfSnapshot,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { exportTracksToR, locationPath } from './rScript.ts'
+import { exportTracksToR } from './rScript.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { RExportTrack, Region } from './rScript.ts'
@@ -47,35 +42,18 @@ function viewRegions(view: LinearGenomeViewModel): Region[] {
   return [...byRegion.values()]
 }
 
-function referenceOf(view: LinearGenomeViewModel) {
+/** The view's assembly config as written. */
+function assemblyOf(view: LinearGenomeViewModel) {
   const name = view.assemblyNames[0]
-  const assembly = name ? getSession(view).assemblyManager.get(name) : undefined
-  const sequence = assembly
-    ? (getConf(assembly, ['sequence', 'adapter']) as Record<string, unknown>)
+  const configuration = name
+    ? getSession(view).assemblyManager.get(name)?.configuration
     : undefined
-  return (
-    locationPath(sequence?.fastaLocation) ??
-    locationPath(sequence?.twoBitLocation) ??
-    locationPath(sequence?.uri)
-  )
+  return configuration
+    ? (getSnapshot(configuration) as Record<string, unknown>)
+    : undefined
 }
 
-async function refNamesOf(view: LinearGenomeViewModel, track: Track) {
-  try {
-    const map = await getSession(view).assemblyManager.getRefNameMapForAdapter(
-      readConfObject(trackConf(track), 'adapter'),
-      view.assemblyNames[0],
-      { sessionId: getRpcSessionId(track) },
-    )
-    const differing = Object.entries(map).filter(([k, v]) => k !== v)
-    return differing.length ? Object.fromEntries(differing) : undefined
-  } catch {
-    return undefined
-  }
-}
-
-async function tracksOf(view: LinearGenomeViewModel) {
-  const reference = referenceOf(view)
+function tracksOf(view: LinearGenomeViewModel) {
   const tracks: RExportTrack[] = []
   for (const track of view.tracks) {
     const display = track.displays[0]
@@ -97,8 +75,6 @@ async function tracksOf(view: LinearGenomeViewModel) {
         display: written,
         heightMode,
         height,
-        reference,
-        refNames: await refNamesOf(view, track),
       })
     }
   }
@@ -106,13 +82,11 @@ async function tracksOf(view: LinearGenomeViewModel) {
 }
 
 /** The R script that redraws the tracks open in the view, over its visible regions. */
-export async function exportLinearViewToR(
-  view: LinearGenomeViewModel,
-  out?: string,
-) {
+export function exportLinearViewToR(view: LinearGenomeViewModel, out?: string) {
   return exportTracksToR({
-    tracks: await tracksOf(view),
+    tracks: tracksOf(view),
     regions: viewRegions(view),
+    assembly: assemblyOf(view),
     bpPerPx: view.bpPerPx,
     out,
     notes: view.displayedRegions.some(r => r.reversed)
@@ -126,7 +100,7 @@ export async function downloadRScript(view: LinearGenomeViewModel) {
   const session = getSession(view)
   try {
     const { saveAs } = await import('@jbrowse/core/util/FileSaver')
-    const { script, notes } = await exportLinearViewToR(view)
+    const { script, notes } = exportLinearViewToR(view)
     if (!script) {
       session.notify(
         `No open track has an R export. ${notes.join('; ')}`,
