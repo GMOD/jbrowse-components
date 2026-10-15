@@ -137,6 +137,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       fields: await this.getMetadata(opts),
     }
   }
+  /** Each column the file's autoSql declares, with its type and comment. */
+  async getAutoSqlFields(opts?: BaseOptions) {
+    const { parser } = await this.configure(opts)
+    return parser.autoSql.fields
+  }
+
   async getMetadata(opts?: BaseOptions) {
     const { parser } = await this.configure(opts)
     const { fields } = parser.autoSql

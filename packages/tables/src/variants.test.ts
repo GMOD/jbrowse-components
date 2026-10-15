@@ -1,5 +1,7 @@
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { createTablesEngine } from './index.ts'
 import { DOG_SV, DOG_VCF } from './volvox.fixture.ts'
@@ -242,4 +244,83 @@ test('a record the display filters out takes its FILTER and INFO with it', async
   for (const column of Object.values(t.info)) {
     expect(column).toHaveLength(22)
   }
+})
+
+const volvoxVcf = (file: string) =>
+  pathToFileURL(path.resolve('test_data/volvox', file)).href
+
+test('SnpEff’s ANN parses into a row per record and consequence, out of INFO', async () => {
+  const args = {
+    adapterConfig: {
+      type: 'VcfTabixAdapter',
+      vcfGzLocation: { uri: volvoxVcf('volvox.test.vcf.gz') },
+      index: { location: { uri: volvoxVcf('volvox.test.vcf.gz.tbi') } },
+    },
+    region: { refName: 'contigA', start: 0, end: 50000 },
+    bpPerPx: 50,
+  }
+  const t = await engine.features(args)
+  const { annotations, annotationFields } = t.vcf!
+  expect(annotationFields.field.slice(0, 4)).toEqual([
+    'Allele',
+    'Annotation',
+    'Annotation_Impact',
+    'Gene_Name',
+  ])
+  expect(annotationFields.field).toContain('AA.pos / AA.length')
+  expect(new Set(annotationFields.key)).toEqual(new Set(['ANN']))
+  expect(t.vcf!.info).not.toHaveProperty('ANN')
+  expect(t.vcf!.infoFields.key).not.toContain('ANN')
+  const first = t.features.start.indexOf(2999)
+  const index = annotations.feature as number[]
+  const rows = index.flatMap((f, i) => (f === first ? [i] : []))
+  expect(rows.length).toBe(1)
+  const at = (field: string) => annotations[field]![rows[0]!]
+  expect(at('Annotation')).toBe('stop_gained')
+  expect(at('Annotation_Impact')).toBe('HIGH')
+  expect(at('Gene_Name')).toBe('GENEA')
+  expect(at('AA.pos / AA.length')).toBeNull()
+  for (const column of Object.values(annotations)) {
+    expect(column).toHaveLength(index.length)
+  }
+})
+
+test('VEP’s CSQ parses under its header’s Format list, one row a consequence', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'csq-'))
+  const vcf = path.join(dir, 'vep.vcf')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL|Feature|DISTANCE">',
+      '##INFO=<ID=DP,Number=1,Type=Integer,Description="Depth">',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1',
+      'ctgA\t100\t.\tA\tG\t50\tPASS\tDP=9;CSQ=G|missense_variant|MODERATE|GENE1|T1|,G|upstream_gene_variant|MODIFIER|GENE2|T2|420\tGT\t0/1',
+      'ctgA\t200\t.\tC\tT\t50\tPASS\tDP=4\tGT\t1/1',
+    ].join('\n'),
+  )
+  const t = await engine.variants({
+    adapterConfig: {
+      type: 'VcfAdapter',
+      vcfLocation: { uri: pathToFileURL(vcf).href },
+    },
+    region: { refName: 'ctgA', start: 0, end: 1000 },
+  })
+  expect(t.annotationFields.field).toEqual([
+    'Allele',
+    'Consequence',
+    'IMPACT',
+    'SYMBOL',
+    'Feature',
+    'DISTANCE',
+  ])
+  expect(t.annotations.variant).toEqual([0, 0])
+  expect(t.annotations.Consequence).toEqual([
+    'missense_variant',
+    'upstream_gene_variant',
+  ])
+  expect(t.annotations.DISTANCE).toEqual([null, '420'])
+  expect(t.annotations.key).toEqual(['CSQ', 'CSQ'])
+  expect(Object.keys(t.info)).toEqual(['DP'])
 })

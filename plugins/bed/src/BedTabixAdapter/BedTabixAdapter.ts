@@ -76,6 +76,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     this.bed.clearChunkCache()
   }
 
+  /** Each column the parser reads, as its autoSql or the header declares it. */
+  public async getAutoSqlFields() {
+    return (await this.getParser()).autoSql.fields
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
     return downloadStatus(
       'Downloading index',

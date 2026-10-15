@@ -47,6 +47,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
     return bucketBedLines(buffer, opts?.statusCallback)
   }
 
+  /** Each column the parser reads, as its autoSql or the header declares it. */
+  public async getAutoSqlFields() {
+    return (await this.getParser()).autoSql.fields
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
     const { features } = await this.loadData(opts)
     return Object.keys(features)

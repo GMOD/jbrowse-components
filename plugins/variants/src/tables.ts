@@ -120,7 +120,9 @@ function legendOf(scales: ColorScale[]) {
  * filters and paints it, as tables: `variants`, each record the display
  * keeps, with its lane color and its `filter`; `info`, each INFO key's
  * values aligned to `variants`, and `infoFields`, the header's declaration
- * of each key; `cells`, each sample's (or under
+ * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
+ * consequences, a row per record and consequence, which then leave `info`
+ * (`consequenceTables`); `cells`, each sample's (or under
  * `unit: 'haplotype'` each haplotype's) cell at each record, with its
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
  * rows the cells name, top to bottom as the display arranges them by `rows`
@@ -339,7 +341,7 @@ export async function variantTables(
   })
   return {
     variants,
-    ...infoColumns(records, (await vcfHeaderOf(adapter)).info),
+    ...infoColumns(records, (await vcfHeaderOf(adapter)).info, 'variant'),
     cells,
     rows,
     legend: legendOf(scales),
@@ -460,13 +462,101 @@ function typedColumns(
   return { columns, fields }
 }
 
-/** Each record's INFO as `typedColumns` types it, `info` and `infoFields`. */
-function infoColumns(records: readonly Feature[], declarations: Declarations) {
+/**
+ * Each record's INFO as `typedColumns` types it, `info` and `infoFields`, less
+ * the consequence keys `consequenceTables` parses into `annotations`, each row
+ * naming its record's index under `index`.
+ */
+function infoColumns(
+  records: readonly Feature[],
+  declarations: Declarations,
+  index: 'variant' | 'feature',
+) {
+  const consequences = consequenceTables(records, declarations, index)
+  const parsed = new Set(consequences.annotationFields.key)
   const { columns, fields } = typedColumns(
-    records.map(r => r.get('INFO') as Record<string, FieldValue> | undefined),
-    declarations,
+    records.map(r => {
+      const info = r.get('INFO') as Record<string, FieldValue> | undefined
+      return info && parsed.size
+        ? Object.fromEntries(
+            Object.entries(info).filter(([key]) => !parsed.has(key)),
+          )
+        : info
+    }),
+    {
+      declared: declarations.declared.filter(key => !parsed.has(key)),
+      meta: declarations.meta,
+    },
   )
-  return { info: columns, infoFields: fields }
+  return { info: columns, infoFields: fields, ...consequences }
+}
+
+/** The INFO keys SnpEff (ANN) and VEP (CSQ) write a record's consequences under. */
+const CONSEQUENCE_KEYS = ['ANN', 'CSQ']
+
+/**
+ * The fields a consequence key's header line names: VEP's after `Format:`,
+ * SnpEff's after the description's colon, each `|`-separated.
+ */
+function consequenceFieldNames(description: string) {
+  const at = description.indexOf('Format:')
+  return description
+    .slice(at >= 0 ? at + 'Format:'.length : description.indexOf(':') + 1)
+    .replaceAll(/^[\s"']+|[\s"']+$/g, '')
+    .split('|')
+    .map(name => name.trim())
+}
+
+/**
+ * Each record's ANN or CSQ consequences as a table, a row per record and
+ * consequence: `index` names the record, `key` the INFO key, then a column per
+ * field the key's header line names, in its order, each value as the record
+ * writes it and null where empty. The header names the fields and types none,
+ * so every one is text. `annotationFields` lists each key's fields. A key whose
+ * header line names no fields stays in INFO.
+ */
+function consequenceTables(
+  records: readonly Feature[],
+  { meta }: Declarations,
+  index: 'variant' | 'feature',
+) {
+  const rows: number[] = []
+  const keys: string[] = []
+  const columns: Record<string, (string | null)[]> = {}
+  const annotationFields = { key: [] as string[], field: [] as string[] }
+  for (const key of CONSEQUENCE_KEYS) {
+    const names = consequenceFieldNames(String(meta[key]?.Description ?? ''))
+    if (names.length < 2) {
+      continue
+    }
+    for (const name of names) {
+      columns[name] ??= rows.map(() => null)
+      annotationFields.key.push(key)
+      annotationFields.field.push(name)
+    }
+    records.forEach((record, r) => {
+      const info = record.get('INFO') as Record<string, unknown> | undefined
+      const entries = info?.[key]
+      for (const entry of Array.isArray(entries) ? entries : []) {
+        if (typeof entry === 'string' && entry !== '') {
+          const parts = entry.split('|')
+          rows.push(r)
+          keys.push(key)
+          for (const column of Object.values(columns)) {
+            column.push(null)
+          }
+          names.forEach((name, i) => {
+            const value = parts[i]?.trim()
+            columns[name]![rows.length - 1] = value ? value : null
+          })
+        }
+      }
+    })
+  }
+  return {
+    annotations: { [index]: rows, key: keys, ...columns },
+    annotationFields,
+  }
 }
 
 /** The adapters a VCF reads through, whose records `variantRecordTables` serves. */
@@ -487,6 +577,8 @@ export const VCF_ADAPTER_TYPES = [
  * - `samples`: a row per record and sample in header order, `feature` (an
  *   index into `ids`) and `sample`; `format`, a column per FORMAT key aligned
  *   to it, typed as INFO is; and `formatFields`, each key's declaration.
+ * - `annotations` and `annotationFields`: its ANN or CSQ consequences, as
+ *   `variantTables` gives them, `feature` an index into `ids`.
  */
 export async function variantRecordTables(
   pluginManager: PluginManager,
@@ -540,7 +632,7 @@ export async function variantRecordTables(
       ),
       filter: records.map(filterOf),
     },
-    ...infoColumns(records, header.info),
+    ...infoColumns(records, header.info, 'feature'),
     samples,
     format: format.columns,
     formatFields: format.fields,

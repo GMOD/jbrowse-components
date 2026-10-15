@@ -91,6 +91,46 @@ interface RegionArgs {
 }
 
 /**
+ * A read's most rows in any one table: past it the read is refused rather
+ * than answered, naming the table. A host sets it on a read of a whole file
+ * (`fileRegions`), where nothing else bounds the rows.
+ */
+interface RowLimit {
+  rowLimit?: number
+}
+
+/**
+ * The end a whole contig reads to where the file states no length: the most
+ * an int32 holds, which each reader clamps to what its index addresses.
+ */
+const WHOLE_CONTIG_END = 2 ** 31 - 1
+
+/** The longest column of each table in `result`, a table being an object of arrays. */
+function tableRows(result: object, path = ''): [string, number][] {
+  return Object.entries(result).flatMap(([name, value]) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return []
+    }
+    const columns = Object.values(value as object).filter(
+      c => Array.isArray(c) || ArrayBuffer.isView(c),
+    ) as ArrayLike<unknown>[]
+    return columns.length
+      ? [[`${path}${name}`, Math.max(...columns.map(c => c.length))]]
+      : tableRows(value as object, `${path}${name}.`)
+  })
+}
+
+function refuseOverRows(result: object, rowLimit: number | undefined) {
+  for (const [name, rows] of tableRows(result)) {
+    if (rowLimit !== undefined && rows > rowLimit) {
+      throw new Error(
+        `the file gives ${rows} rows of ${name}, over the ${rowLimit}-row limit for a read with no region; pass a region`,
+      )
+    }
+  }
+}
+
+/**
  * A table's args with the assembly its regions are named in: the contig a
  * region names is read under the file's own alias of it, and the reference
  * under the sequence's, so a host asks for `chr7` of a BAM spelling it `7`.
@@ -148,7 +188,11 @@ async function featureAndRecordTables(
   return {
     ...features,
     ...(vcf
-      ? { attributes: {}, subfeatureAttributes: {} }
+      ? {
+          attributes: {},
+          subfeatureAttributes: {},
+          attributeFields: { key: [], type: [], number: [], description: [] },
+        }
       : await featureAttributeTables(pluginManager, {
           adapterConfig: args.adapterConfig,
           regions,
@@ -199,15 +243,17 @@ export function createTablesEngine() {
     assembly
       ? renameRegions(pluginManager, args, await assemblyOf(assembly))
       : args
-  const onContig = async <A extends RegionArgs, T>(
-    given: WithAssembly<A>,
+  const onContig = async <A extends RegionArgs, T extends object>(
+    { rowLimit, ...given }: WithAssembly<A> & RowLimit,
     table: (pm: PluginManager, args: A) => Promise<T>,
   ) => {
-    const args = (await named(given)) as A
+    const args = (await named(given as WithAssembly<A>)) as A
     const missing = await missingContigs(pluginManager, args)
     const regions = args.regions ?? (args.region ? [args.region] : [])
+    const tables = await table(pluginManager, args)
+    refuseOverRows(tables, rowLimit)
     return {
-      ...(await table(pluginManager, args)),
+      ...tables,
       missingContig: missing.find(m => m !== '') ?? '',
       missingContigs: missing,
       readAs: {
@@ -217,14 +263,42 @@ export function createTablesEngine() {
     }
   }
   return {
-    alignments: (args: WithAssembly<AlignmentTablesArgs>) =>
+    alignments: (args: WithAssembly<AlignmentTablesArgs> & RowLimit) =>
       onContig(args, alignmentTables),
-    features: (args: WithAssembly<FeatureTablesArgs>) =>
+    features: (args: WithAssembly<FeatureTablesArgs> & RowLimit) =>
       onContig(args, featureAndRecordTables),
-    wiggle: (args: WithAssembly<WiggleTablesArgs>) =>
+    wiggle: (args: WithAssembly<WiggleTablesArgs> & RowLimit) =>
       onContig(args, wiggleTables),
-    variants: (args: WithAssembly<VariantTablesArgs>) =>
+    variants: (args: WithAssembly<VariantTablesArgs> & RowLimit) =>
       onContig(args, variantTables),
+    /**
+     * Each contig a file lists, from 0 to the end of the contig: the regions
+     * a read of the whole file reads, under the file's own spelling. The end
+     * is the most an int32 holds, which each reader clamps to what its index
+     * addresses, since most files state no contig lengths.
+     */
+    fileRegions: async ({
+      adapterConfig,
+    }: {
+      adapterConfig: Record<string, unknown>
+    }) => {
+      const { dataAdapter } = await getAdapter(
+        pluginManager,
+        'tables',
+        adapterConfig,
+      )
+      const refName: string[] =
+        'getRefNames' in dataAdapter
+          ? await (
+              dataAdapter as { getRefNames: () => Promise<string[]> }
+            ).getRefNames()
+          : []
+      return {
+        refName,
+        start: refName.map(() => 0),
+        end: refName.map(() => WHOLE_CONTIG_END),
+      }
+    },
     variantDensityAlpha,
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),

@@ -3,7 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { createTablesEngine } from './index.ts'
-import { BIGBED, GFF3 } from './volvox.fixture.ts'
+import { BIGBED, DOG_VCF, GFF3 } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -140,7 +140,7 @@ test('the fileâ€™s fields come keyed as the file writes them, beside the tableâ€
   const eden = t.features.name.indexOf('EDEN')
   expect(t.attributes.ID![eden]).toBe('EDEN')
   expect(t.attributes.Name![eden]).toBe('EDEN')
-  expect(t.attributes.Note![eden]).toBe('protein kinase')
+  expect(t.attributes.Note![eden]).toEqual(['protein kinase'])
   expect(t.attributes.source![eden]).toBe('example')
   expect(t.features.id[eden]).not.toBe('EDEN')
   for (const column of Object.values(t.attributes)) {
@@ -148,13 +148,42 @@ test('the fileâ€™s fields come keyed as the file writes them, beside the tableâ€
   }
   const transcript = t.subfeatures.name.indexOf('EDEN.2')
   expect(t.subfeatureAttributes.ID![transcript]).toBe('EDEN.2')
-  expect(t.subfeatureAttributes.Parent![transcript]).toBe('EDEN')
+  expect(t.subfeatureAttributes.Parent![transcript]).toEqual(['EDEN'])
   expect(t.subfeatureAttributes.Index![transcript]).toBe('1')
   const contig = t.features.type.indexOf('contig')
   expect(t.attributes.multivalue![contig]).toEqual(['val1', 'val2', 'val3'])
   expect(t.attributes.multivalue![eden]).toBeNull()
   expect(t.attributes).not.toHaveProperty('id')
   expect(t.attributes).not.toHaveProperty('start')
+  // a GFF3 declares nothing, so each key is text, a list where the spec or a
+  // record lists several
+  const declared = (key: string) => {
+    const i = t.attributeFields.key.indexOf(key)
+    return `${t.attributeFields.type[i]} ${t.attributeFields.number[i]}`
+  }
+  expect(declared('ID')).toBe('String 1')
+  expect(declared('Index')).toBe('String 1')
+  expect(declared('Parent')).toBe('String .')
+  expect(declared('multivalue')).toBe('String .')
+  expect(declared('score')).toBe('Float 1')
+})
+
+test('a BigBedâ€™s fields take the types its autoSql declares', async () => {
+  const t = await engine.features({ ...BIGBED, display: GROW })
+  const fields = t.attributeFields
+  const declared = Object.fromEntries(
+    fields.key.map((key, i) => [key, `${fields.type[i]} ${fields.number[i]}`]),
+  )
+  expect(declared).toMatchObject({ score: 'Integer 1', reserved: 'String 1' })
+  expect(fields.description[fields.key.indexOf('geneName')]).toBe('Gene name')
+  expect(fields.key).not.toContain('chromStarts')
+  for (const [key, type] of Object.entries(declared)) {
+    if (type.startsWith('Integer')) {
+      for (const v of t.attributes[key]!) {
+        expect(v === null || Number.isInteger(v)).toBe(true)
+      }
+    }
+  }
 })
 
 test('the default fit gives up what the browser gives up to fit the track', async () => {
@@ -350,4 +379,44 @@ test('features a config writes inline lay out as the same features in a file do'
   expect(fromConfig.rects).toEqual(fromFile.rects)
   expect(fromConfig.labels).toEqual(fromFile.labels)
   expect(fromConfig.missingContig).toBe('')
+})
+
+test('a whole file reads as every contig it lists, each to its end', async () => {
+  const { adapterConfig } = GFF3
+  const whole = await engine.fileRegions({ adapterConfig })
+  expect(whole.refName).toEqual(['ctgA', 'ctgB'])
+  const regions = whole.refName.map((refName, i) => ({
+    refName,
+    start: whole.start[i]!,
+    end: whole.end[i]!,
+  }))
+  const t = await engine.features({
+    adapterConfig,
+    regions,
+    bpPerPx: 1e6,
+    display: GROW,
+  })
+  const one = await engine.features({
+    ...GFF3,
+    region: { refName: 'ctgB', start: 0, end: 6079 },
+    display: GROW,
+  })
+  const onB = t.features.region.flatMap((r, i) => (r === 1 ? [i] : []))
+  expect(onB.map(i => t.features.name[i])).toEqual(one.features.name)
+  expect(t.features.region.filter(r => r === 0).length).toBeGreaterThan(20)
+})
+
+test('a read past its row limit is refused, naming the table to read a region of', async () => {
+  const { adapterConfig } = DOG_VCF
+  const whole = await engine.fileRegions({ adapterConfig })
+  const region = { refName: whole.refName[0]!, start: 0, end: whole.end[0]! }
+  const cells = (await engine.variants({ adapterConfig, region })).cells
+  await expect(
+    engine.variants({ adapterConfig, region, rowLimit: cells.row.length - 1 }),
+  ).rejects.toThrow(
+    `the file gives ${cells.row.length} rows of cells, over the ${cells.row.length - 1}-row limit for a read with no region; pass a region`,
+  )
+  await expect(
+    engine.variants({ adapterConfig, region, rowLimit: cells.row.length }),
+  ).resolves.toBeDefined()
 })

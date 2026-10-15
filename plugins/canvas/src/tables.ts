@@ -774,7 +774,63 @@ const JBROWSE_KEYS = new Set([
   'chromStarts',
 ])
 
-type FileValue = string | number | boolean | null | undefined
+/**
+ * A field's declaration: `type` (`Integer`, `Float`, `String` or `Flag`),
+ * `number` (`1` for one value a record, `.` for a list), and `description`,
+ * as a VCF header declares an INFO key.
+ */
+interface FieldDeclaration {
+  type: string
+  number: string
+  description: string
+}
+
+/** GFF3's own columns beside column 9. */
+const GFF3_COLUMNS: Record<string, FieldDeclaration> = {
+  source: { type: 'String', number: '1', description: 'GFF3 column 2' },
+  score: { type: 'Float', number: '1', description: 'GFF3 column 6' },
+  phase: { type: 'Integer', number: '1', description: 'GFF3 column 8' },
+}
+
+/** The attributes the GFF3 spec says may hold several values. */
+const GFF3_LISTS = new Set([
+  'Parent',
+  'Alias',
+  'Note',
+  'Dbxref',
+  'Ontology_term',
+])
+
+const AUTOSQL_INTEGERS = new Set([
+  'int',
+  'uint',
+  'short',
+  'ushort',
+  'byte',
+  'ubyte',
+])
+const AUTOSQL_FLOATS = new Set(['float', 'double', 'bigint'])
+
+interface AutoSqlField {
+  type: string
+  name: string
+  comment: string
+  size?: number | string
+}
+
+function autoSqlDeclaration(field: AutoSqlField): FieldDeclaration {
+  return {
+    type: AUTOSQL_INTEGERS.has(field.type)
+      ? 'Integer'
+      : AUTOSQL_FLOATS.has(field.type)
+        ? 'Float'
+        : 'String',
+    number: field.size !== undefined && field.type !== 'char' ? '.' : '1',
+    description: field.comment,
+  }
+}
+
+type Fields = Record<string, unknown>
 
 /**
  * A feature's fields as its file states them. A GFF3 feature's are its source,
@@ -782,19 +838,19 @@ type FileValue = string | number | boolean | null | undefined
  * repeating one of those three replaces it. Any other feature's are its
  * serialized form less the keys JBrowse gives it.
  */
-function fileFields(feature: Feature) {
+function fileFields(feature: Feature): Fields {
   const gff = feature as Feature & {
     fileAttributes?: () => Record<string, string[]>
   }
   if (gff.fileAttributes) {
     return {
-      source: feature.get('source') as FileValue,
-      score: feature.get('score') as FileValue,
-      phase: feature.get('phase') as FileValue,
+      source: feature.get('source'),
+      score: feature.get('score'),
+      phase: feature.get('phase'),
       ...gff.fileAttributes(),
     }
   }
-  const fields: Record<string, unknown> = {}
+  const fields: Fields = {}
   for (const [key, value] of Object.entries(feature.toJSON())) {
     if (!JBROWSE_KEYS.has(key)) {
       fields[key] = value
@@ -803,36 +859,86 @@ function fileFields(feature: Feature) {
   return fields
 }
 
+const isMissing = (v: unknown) => v === undefined || v === null || v === ''
+
 /**
- * Each key's values over `rows`, a column per key in the order the rows first
- * give them, null where a row lacks the key. A key every row gives at most one
- * value is a plain column; one a row gives several is a column of arrays.
+ * Each key the rows give, declared: as `declared` names it (a GFF3's own
+ * columns, a BED's autoSql), else typed off its values, `.` where the GFF3
+ * spec lets it list several or a row gives several, and `String` where any
+ * value is text. A declared number the parser reads as text, as a BED's
+ * `reserved` column reads as an itemRgb, is text.
  */
-function fieldColumns(rows: readonly (Record<string, unknown> | undefined)[]) {
-  const keys = new Set<string>()
+function declare(
+  rows: readonly (Fields | undefined)[],
+  declared: Record<string, FieldDeclaration>,
+) {
+  const out = new Map<string, FieldDeclaration>()
+  const values = new Map<string, unknown[]>()
   for (const row of rows) {
     for (const [key, value] of Object.entries(row ?? {})) {
-      if (value !== undefined) {
-        keys.add(key)
+      if (!isMissing(value)) {
+        const seen = values.get(key) ?? []
+        seen.push(value)
+        values.set(key, seen)
       }
     }
   }
-  const columns: Record<string, unknown[]> = {}
-  for (const key of keys) {
-    const values = rows.map(row => {
-      const v = row?.[key]
-      return v === undefined || v === '' ? null : v
-    })
-    const nested = values.some(v => Array.isArray(v) && v.length > 1)
-    columns[key] = values.map(v =>
-      nested
-        ? v === null || Array.isArray(v)
-          ? v
-          : [v]
-        : Array.isArray(v)
-          ? (v[0] ?? null)
-          : v,
+  for (const [key, seen] of values) {
+    const flat = seen.flatMap(v => (Array.isArray(v) ? v : [v]))
+    const numbers = flat.every(v => typeof v === 'number')
+    const declaration = declared[key]
+    out.set(
+      key,
+      declaration
+        ? {
+            ...declaration,
+            type:
+              declaration.type === 'String' || numbers
+                ? declaration.type
+                : 'String',
+          }
+        : {
+            type: flat.every(v => typeof v === 'boolean')
+              ? 'Flag'
+              : flat.every(v => typeof v === 'number')
+                ? flat.every(v => Number.isInteger(v))
+                  ? 'Integer'
+                  : 'Float'
+                : 'String',
+            number:
+              GFF3_LISTS.has(key) ||
+              seen.some(v => Array.isArray(v) && v.length > 1)
+                ? '.'
+                : '1',
+            description: '',
+          },
     )
+  }
+  return out
+}
+
+/**
+ * Each declared key's values over `rows`, a column per key aligned to them,
+ * null where a row lacks the key: one value a row under `number` 1, a list a
+ * row under any other.
+ */
+function fieldColumns(
+  rows: readonly (Fields | undefined)[],
+  declarations: ReadonlyMap<string, FieldDeclaration>,
+) {
+  const columns: Record<string, unknown[]> = {}
+  for (const [key, { number }] of declarations) {
+    columns[key] = rows.map(row => {
+      const v = row?.[key]
+      const list = isMissing(v) ? [] : Array.isArray(v) ? v : [v]
+      return number === '1'
+        ? list.length
+          ? list[0]
+          : null
+        : list.length
+          ? list.map(x => (isMissing(x) ? null : x))
+          : null
+    })
   }
   return columns
 }
@@ -840,12 +946,19 @@ function fieldColumns(rows: readonly (Record<string, unknown> | undefined)[]) {
 /**
  * #api
  * The fields the file states for the features and transcripts a feature
- * table lists, by its `features.id` and `subfeatures.id`: each key a column
- * aligned to them, null where a record lacks it. A GFF3 keeps its column-9
- * keys as written (`ID`, `Name`, `Parent`), beside `source`, `score` and
- * `phase`; a GFF has no header, so the columns are the keys the region's
- * records use. The keys JBrowse gives a feature (`start`, `type`, ...) or
- * decodes into its glyph (`blockSizes`, ...) stay out.
+ * table lists, by its `features.id` and `subfeatures.id`: `attributes` and
+ * `subfeatureAttributes`, each key a column aligned to them, null where a
+ * record lacks it, and `attributeFields`, each key's `type`, `number` and
+ * `description`. A GFF3 keeps its column-9 keys as written (`ID`, `Name`,
+ * `Parent`), each a `String`, beside `source`, `score` and `phase`; a BED or
+ * BigBed declares its columns' types in its autoSql, where the parser reads
+ * them so. A key the file does not
+ * declare (a GFF3 has no header) is typed off its values, and its columns are
+ * the keys the region's records use. A key takes a list a record (`number`
+ * `.`) where the spec lets it list several (a GFF3's `Parent`, `Alias`,
+ * `Note`, `Dbxref` and `Ontology_term`, an autoSql array) or a record lists
+ * several. The keys JBrowse gives a feature (`start`, `type`, ...) or decodes
+ * into its glyph (`blockSizes`, ...) stay out.
  */
 export async function featureAttributeTables(
   pluginManager: PluginManager,
@@ -879,13 +992,34 @@ export async function featureAttributeTables(
   )) {
     walk(feature)
   }
+  const autoSql = adapter as {
+    getAutoSqlFields?: () => Promise<AutoSqlField[]>
+  }
+  const declared: Record<string, FieldDeclaration> = {
+    ...GFF3_COLUMNS,
+    ...Object.fromEntries(
+      ((await autoSql.getAutoSqlFields?.()) ?? []).map(f => [
+        f.name,
+        autoSqlDeclaration(f),
+      ]),
+    ),
+  }
   const fieldsOf = (id: string) => {
     const feature = byId.get(id)
     return feature && fileFields(feature)
   }
+  const rows = ids.map(fieldsOf)
+  const subRows = subfeatureIds.map(fieldsOf)
+  const declarations = declare([...rows, ...subRows], declared)
   return {
-    attributes: fieldColumns(ids.map(fieldsOf)),
-    subfeatureAttributes: fieldColumns(subfeatureIds.map(fieldsOf)),
+    attributes: fieldColumns(rows, declarations),
+    subfeatureAttributes: fieldColumns(subRows, declarations),
+    attributeFields: {
+      key: [...declarations.keys()],
+      type: [...declarations.values()].map(d => d.type),
+      number: [...declarations.values()].map(d => d.number),
+      description: [...declarations.values()].map(d => d.description),
+    },
   }
 }
 
