@@ -443,6 +443,18 @@ second. Undefined for any other field, and while that assembly loads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
 
+## reorderChromosomesMenuItem
+
+The Re-order chromosomes row every comparative view offers; `open` queues
+that view's own dialog.
+
+```js
+// type signature
+(open: () => void) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
+
 ## resolveNumericMode
 
 How a numeric field paints under `paint`: a preset measurement through its
@@ -496,3 +508,17 @@ The color object that paints by `field`, written over `current`: display-kit's
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
+
+## trackSubMenuItem
+
+One track's menu as a submenu named for the track: the session's track
+actions (About track, Settings) beside the track's own items; the menu orders
+them by priority. A linear view hangs this off the track label; a view that draws no label
+puts it in its own menu. `view` is whatever shows and launches the track.
+
+```js
+// type signature
+(view: TrackActionView & IAnyStateTreeNode, track: MenuTrack) => MenuItem
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackSubMenuItem.ts)
