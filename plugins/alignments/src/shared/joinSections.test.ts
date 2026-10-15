@@ -10,8 +10,8 @@ test('sections join with read indices offset across them', () => {
   })
   const joined = joinSections(
     [
-      { label: 'a', tables: section(3, [0, 2]) },
-      { label: 'b', tables: section(2, [1]) },
+      { columns: { section: 'a', region: 0 }, tables: section(3, [0, 2]) },
+      { columns: { section: 'b', region: 1 }, tables: section(2, [1]) },
     ],
     t => t.reads.start.length,
   )
@@ -19,6 +19,7 @@ test('sections join with read indices offset across them', () => {
   expect(joined.marks.position).toEqual([0, 2, 1])
   expect(joined.marks.section).toEqual(['a', 'a', 'b'])
   expect(joined.reads.section).toEqual(['a', 'a', 'a', 'b', 'b'])
+  expect(joined.reads.region).toEqual([0, 0, 0, 1, 1])
 })
 
 test('a section of hundreds of thousands of rows joins', () => {
@@ -26,7 +27,7 @@ test('a section of hundreds of thousands of rows joins', () => {
   const joined = joinSections(
     [
       {
-        label: '',
+        columns: { section: '' },
         tables: {
           reads: { start: new Float64Array(n), read: new Uint32Array(n) },
         },

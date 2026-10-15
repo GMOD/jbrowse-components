@@ -750,6 +750,36 @@ function sortForRegions(
   return commonRefName === sortColumn.refName ? sortColumn : undefined
 }
 
+function regionHolds(region: RegionBounds | undefined, pos: number) {
+  return region !== undefined && region.start <= pos && region.end > pos
+}
+
+/**
+ * The sort `buildLaidOutPileupMap` applies to these regions, or undefined
+ * where it drops `sortColumn`: the regions holding reads span several
+ * refNames or another refName than the sort's, or, with reads in several
+ * regions, none of those holds the sort position.
+ */
+export function appliedPileupSort({
+  dataMap,
+  sortColumn,
+  regions,
+}: Pick<PileupLayoutArgs, 'dataMap' | 'sortColumn' | 'regions'>) {
+  const withReads = [...dataMap]
+    .filter(([, data]) => data.readKeys.length > 0)
+    .map(([idx]) => idx)
+  if (withReads.length === 0) {
+    return sortColumn
+  }
+  const activeSort = sortForRegions(sortColumn, withReads, regions)
+  return !activeSort ||
+    !regions ||
+    withReads.length === 1 ||
+    withReads.some(idx => regionHolds(regions.get(idx), activeSort.pos))
+    ? activeSort
+    : undefined
+}
+
 interface ReadExtent {
   start: number
   end: number
@@ -915,12 +945,10 @@ export function computeMultiRegionLayout({
   let placementOrder = orderedIds
   let sortApplied = false
   if (activeSort && regions) {
-    const sortPos = activeSort.pos
     // The region — and thus the data arrays — containing the sort position.
-    const sortEntry = entries.find(([idx]) => {
-      const r = regions.get(idx)
-      return r !== undefined && r.start <= sortPos && r.end > sortPos
-    })
+    const sortEntry = entries.find(([idx]) =>
+      regionHolds(regions.get(idx), activeSort.pos),
+    )
     if (sortEntry) {
       const [, sData] = sortEntry
       // `rest` is dropped: this path already holds every read in dedup order

@@ -20,6 +20,7 @@ import {
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import {
@@ -66,7 +67,10 @@ import {
   applyReadColorsByGroup,
   collectAcrossGroups,
 } from './LinearAlignmentsDisplay/groupLayout.ts'
-import { orderedGroups } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+import {
+  buildRawDataByGroup,
+  orderedGroups,
+} from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   baseQualitySpanAcrossGroups,
@@ -75,12 +79,19 @@ import {
 import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { intronAlpha } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
-import { buildLaidOutPileupMap } from './RenderAlignmentDataRPC/sortLayout.ts'
+import {
+  appliedPileupSort,
+  buildLaidOutPileupMap,
+} from './RenderAlignmentDataRPC/sortLayout.ts'
 import {
   ARC_COLOR_INTERCHROM,
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
 import { arcStrokeScale } from './features/arcs/arcLineWidth.ts'
+import {
+  arcsToRegionResult,
+  regionIndexOf,
+} from './features/arcs/arcRegions.ts'
 import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
@@ -132,6 +143,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
   interbaseTypeName,
+  isLayoutOrder,
 } from './shared/types.ts'
 import { getColorForModification } from './util.ts'
 
@@ -139,17 +151,22 @@ import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { ReadConnectionsMode } from './LinearAlignmentsDisplay/constants.ts'
+import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
+import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
+import type { RegionJunctions } from './features/sashimi/junctions.ts'
 import type { ColorPalette } from './shaders/colors.ts'
 import type {
   ArcColorField,
   BaseLayer,
   InterbaseTypeName,
+  LayoutOrder,
   ModificationColorBy,
+  SortColumn,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -188,21 +205,30 @@ export function registerAlignmentsAdapters(pluginManager: PluginManager) {
   CramAdapterF(pluginManager)
 }
 
+export interface AlignmentRegion {
+  refName: string
+  start: number
+  end: number
+  /**
+   * The contig's name in the reference, where the file spells it another
+   * way (`1` in the BAM, `chr1` in the FASTA): what a read with no MD tag
+   * is compared against, as the browser's `originalRefName` is.
+   */
+  originalRefName?: string
+}
+
 export interface AlignmentTablesArgs {
   adapterConfig: Record<string, unknown>
   /** The assembly's sequence adapter, for CRAM and for reads without MD. */
   sequenceAdapter?: Record<string, unknown>
-  region: {
-    refName: string
-    start: number
-    end: number
-    /**
-     * The contig's name in the reference, where the file spells it another
-     * way (`1` in the BAM, `chr1` in the FASTA): what a read with no MD tag
-     * is compared against, as the browser's `originalRefName` is.
-     */
-    originalRefName?: string
-  }
+  /** One region, read as `regions: [region]`. */
+  region?: AlignmentRegion
+  /**
+   * Several regions read as a view lays them side by side: one pileup layout
+   * across them, so a read crossing regions keeps its row, one depth axis and
+   * one key. Each table's rows name their region's index.
+   */
+  regions?: AlignmentRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `color`, `filter`,
@@ -221,13 +247,14 @@ export interface AlignmentTablesArgs {
    */
   refNames?: readonly string[]
   /**
-   * The most compressed bytes the region may need, refused off the index
-   * before any read is fetched. 200 MB by default; a host holds the whole
-   * table in memory, where the browser draws it in pieces.
+   * The most compressed bytes the regions may need together, refused off the
+   * index before any read is fetched. 200 MB by default; a host holds the
+   * whole table in memory, where the browser draws it in pieces.
    */
   byteLimit?: number
   /**
-   * The most bp the region may span, refused before anything is fetched.
+   * The most bp the regions may span together, refused before anything is
+   * fetched.
    * The coverage band holds every base of the span in memory whatever the
    * file holds, so a sparse file read across a whole contig is bounded here
    * rather than by `byteLimit`. 10 Mb by default.
@@ -376,7 +403,7 @@ function baseLayerFor(conf: DisplayConf) {
 function colorReads(
   node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
-  laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
+  laidByGroup: ReadonlyMap<string, ReadonlyMap<number, LaidOutPileupData>>,
   readColorOpts: { chainMode?: boolean; framesChainStrand?: boolean },
   facet: { field: string; domain?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
@@ -386,9 +413,14 @@ function colorReads(
   const colorBy = colorByOf(encoding)
   const band = pinnedInsertSizeBand(encoding)
   const byGroup = new Map(
-    [...laidByGroup].map(([key, laid]) => [
+    [...laidByGroup].map(([key, map]) => [
       key,
-      new Map([[0, band ? { ...laid, insertSizeStats: band } : laid]]),
+      new Map(
+        [...map].map(([idx, laid]) => [
+          idx,
+          band ? { ...laid, insertSizeStats: band } : laid,
+        ]),
+      ),
     ]),
   )
   const bakedScale = isBakedScheme(colorBy)
@@ -409,24 +441,28 @@ function colorReads(
     declared: writtenReadCategoryColors(setting.value, encoding),
   })
   const sections = new Map(
-    [...colored].map(([key, map]) => {
-      const data = map.get(0)!
-      const category: string[] = Array.from(
-        data.readColorCategories,
-        i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
-      )
-      const color = category.map((_, i) =>
-        cssColorToHex(
-          readColorFromCategoryIndex(
-            data.readColorCategories[i]!,
-            i,
-            data,
-            palette,
-          ),
-        ),
-      )
-      return [key, { color, category }]
-    }),
+    [...colored].map(([key, map]) => [
+      key,
+      new Map(
+        [...map].map(([idx, data]) => {
+          const category: string[] = Array.from(
+            data.readColorCategories,
+            i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
+          )
+          const color = category.map((_, i) =>
+            cssColorToHex(
+              readColorFromCategoryIndex(
+                data.readColorCategories[i]!,
+                i,
+                data,
+                palette,
+              ),
+            ),
+          )
+          return [idx, { color, category }]
+        }),
+      ),
+    ]),
   )
   const declared = declaredReadLabels(encoding, labels ?? [])
   const presentTagValues = !isBakedScheme(colorBy)
@@ -448,7 +484,9 @@ function colorReads(
       d => d.modificationTypes,
     ),
     presentCategories: new Set(
-      [...sections.values()].flatMap(s => s.category) as ReadColorCategory[],
+      [...sections.values()].flatMap(map =>
+        [...map.values()].flatMap(s => s.category),
+      ) as ReadColorCategory[],
     ),
     palette,
     presentTagValues,
@@ -667,19 +705,35 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * `showNonCanonicalJunctions` hides it; a junction whose motif was never read
  * stays shown, as the display keeps it. `arcHeight` is the apex as a fraction
  * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
+ * A junction the reads of several regions show is merged once, as the
+ * sashimi band merges it, and `startRegion` and `endRegion` name the region
+ * holding each foot, -1 where none does.
  */
 function junctions(
-  d: WorkerPileupData,
-  refName: string,
+  perRegion: RegionJunctions[],
+  regionInfos: RegionInfo[],
   paint: MarkColors,
   thresholds: MarkThresholds,
 ) {
+  const contigOrder = new Map<string, number>()
+  for (const { refName } of regionInfos) {
+    if (!contigOrder.has(refName)) {
+      contigOrder.set(refName, contigOrder.size)
+    }
+  }
   const merged = [
-    ...mergeJunctions([{ refName, data: d }], {
+    ...mergeJunctions(perRegion, {
       minSashimiScore: 0,
       showNonCanonicalJunctions: true,
     }).values(),
-  ].sort((a, b) => a.start - b.start || a.end - b.end)
+  ].sort(
+    (a, b) =>
+      contigOrder.get(a.refName)! - contigOrder.get(b.refName)! ||
+      a.start - b.start ||
+      a.end - b.end,
+  )
+  const footRegion = (refName: string, bp: number) =>
+    regionIndexOf(regionInfos, refName, bp) ?? -1
   return {
     start: merged.map(j => j.start),
     end: merged.map(j => j.end),
@@ -697,68 +751,106 @@ function junctions(
       sashimiArcHeightFraction(Math.abs(j.end - j.start)),
     ),
     strokeWidth: merged.map(j => sashimiStrokeWidth(j.count)),
+    refName: merged.map(j => j.refName),
+    startRegion: merged.map(j => footRegion(j.refName, j.start)),
+    endRegion: merged.map(j => footRegion(j.refName, j.end)),
   }
 }
 
 const ARC_SHAPE_NAMES = ['arc', 'flat', 'flatSplit', 'unplaced'] as const
 const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
 
-/** One section's arcs and interchromosomal ticks, in the band's paint. */
-function sectionConnections(
+interface ArcPaint {
+  slotColor: string[]
+  colorField: ArcColorField
+  widthOf: (support: number) => number
+}
+
+/** Arcs as the band paints them, each foot naming the region holding it. */
+function arcRows(
   a: ArcsUploadData,
-  {
-    slotColor,
-    colorField,
-    widthOf,
-  }: {
-    slotColor: string[]
-    colorField: ArcColorField
-    widthOf: (support: number) => number
-  },
+  { slotColor, colorField, widthOf }: ArcPaint,
+  footRegions: (start: number, end: number) => [number, number],
 ) {
   const n = a.numArcs
+  const start = Array.from(a.arcX1.subarray(0, n))
+  const end = Array.from(a.arcX2.subarray(0, n))
   const shape = Array.from(a.arcShapeTypes.subarray(0, n))
   const colorSlot = Array.from(a.arcColorTypes.subarray(0, n), arcColorSlot)
   const support = Array.from(a.arcSupport.subarray(0, n))
-  const ticks = a.numArcLines
+  const feet = start.map((s, i) => footRegions(s, end[i]!))
   return {
-    arcs: {
-      start: a.arcX1.subarray(0, n),
-      end: a.arcX2.subarray(0, n),
-      shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
-      category: colorSlot.map(c => arcSlotCategory(c, colorField)),
-      color: colorSlot.map(c => slotColor[c]!),
-      opacity: shape.map(arcOpacity),
-      y: a.arcYBp.subarray(0, n),
-      span: a.arcSpanBp.subarray(0, n),
-      support,
-      width: support.map(widthOf),
-    },
+    start,
+    end,
+    shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
+    category: colorSlot.map(c => arcSlotCategory(c, colorField)),
+    color: colorSlot.map(c => slotColor[c]!),
+    opacity: shape.map(arcOpacity),
+    y: Array.from(a.arcYBp.subarray(0, n)),
+    span: Array.from(a.arcSpanBp.subarray(0, n)),
+    support,
+    width: support.map(widthOf),
+    startRegion: feet.map(f => f[0]),
+    endRegion: feet.map(f => f[1]),
+  }
+}
+
+/**
+ * One section's arcs and interchromosomal ticks in one region, in the band's
+ * paint: the arcs the region draws, then those whose near foot it holds and
+ * whose far foot another region holds, which the display draws across both.
+ */
+function sectionConnections(
+  own: ArcsUploadData,
+  crossing: CrossRegionArc[],
+  ownFeet: (start: number, end: number) => [number, number],
+  paint: ArcPaint,
+) {
+  const ownArcs = arcRows(own, paint, ownFeet)
+  const crossArcs = arcRows(arcsToRegionResult(crossing, []), paint, () => [
+    -1, -1,
+  ])
+  crossing.forEach((arc, i) => {
+    crossArcs.startRegion[i] = arc.p1RegionIndex
+    crossArcs.endRegion[i] = arc.p2RegionIndex
+  })
+  const ticks = own.numArcLines
+  return {
+    arcs: Object.fromEntries(
+      Object.entries(ownArcs).map(([name, column]) => [
+        name,
+        [...column, ...crossArcs[name as keyof typeof crossArcs]],
+      ]),
+    ) as typeof ownArcs,
     arcTicks: {
-      position: a.arcLinePositions.subarray(0, ticks),
-      support: a.arcLineSupport.subarray(0, ticks),
-      partners: a.arcLinePartnerRefNames
+      position: own.arcLinePositions.subarray(0, ticks),
+      support: own.arcLineSupport.subarray(0, ticks),
+      partners: own.arcLinePartnerRefNames
         .slice(0, ticks)
         .map(names => names.join(',')),
-      color: new Array<string>(ticks).fill(slotColor[ARC_COLOR_INTERCHROM]!),
-      width: Array.from(a.arcLineSupport.subarray(0, ticks), widthOf),
+      color: new Array<string>(ticks).fill(
+        paint.slotColor[ARC_COLOR_INTERCHROM]!,
+      ),
+      width: Array.from(own.arcLineSupport.subarray(0, ticks), paint.widthOf),
     },
   }
 }
 
 /**
  * The read-connection band the display draws under `readConnections`, from
- * the display's own arc pass over every section at once: each section's
- * mate-pair and split-read arcs, or the read cloud's bars, in the colors and
- * stroke widths the band paints them, its interchromosomal ticks, and the
- * band's key. `y` is where the band plots a connection, in bp: an arc's
- * genomic radius, or the read cloud's |TLEN| jittered as the display jitters
- * it so coincident pairs separate; `span` is the distance itself.
+ * the display's own arc pass over every section and region at once: each
+ * section's mate-pair and split-read arcs, or the read cloud's bars, in the
+ * colors and stroke widths the band paints them, its interchromosomal ticks,
+ * and the band's key. `y` is where the band plots a connection, in bp: an
+ * arc's genomic radius, or the read cloud's |TLEN| jittered as the display
+ * jitters it so coincident pairs separate; `span` is the distance itself. An
+ * arc is listed once, under the region holding its near foot, else its far
+ * one, else the first its span crosses.
  */
 function readConnectionTables(
   conf: DisplayConf,
-  dataByGroup: ReadonlyMap<string, WorkerPileupData>,
-  region: AlignmentTablesArgs['region'],
+  dataByGroup: ReadonlyMap<string, ReadonlyMap<number, WorkerPileupData>>,
+  regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
 ) {
   const mode: ReadConnectionsMode = readConfObject(conf, 'readConnections')
@@ -767,15 +859,12 @@ function readConnectionTables(
     readConfObject(conf.arcColor, 'field'),
     colors.readField,
   )
-  const regionInfo = { ...region, displayedRegionIndex: 0 }
   const result =
     mode === 'off'
       ? undefined
       : computeArcsByGroup(
-          new Map(
-            [...dataByGroup].map(([key, data]) => [key, new Map([[0, data]])]),
-          ),
-          { loaded: [regionInfo], displayed: [regionInfo] },
+          new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
+          { loaded: regionInfos, displayed: regionInfos },
           {
             colorField,
             cloud,
@@ -806,12 +895,26 @@ function readConnectionTables(
       DPR_PAST_THE_ANTIALIASING_FLOOR,
     )
   const paint = { slotColor, colorField, widthOf }
+  const footRegion = (refName: string, bp: number) =>
+    regionIndexOf(regionInfos, refName, bp) ?? -1
   const bySection = new Map(
     [...dataByGroup.keys()].map(key => [
       key,
-      sectionConnections(
-        result?.byGroup.get(key)?.get(0) ?? emptyArcsUploadData(),
-        paint,
+      new Map(
+        regionInfos.map(({ refName }, i) => [
+          i,
+          sectionConnections(
+            result?.byGroup.get(key)?.get(i) ?? emptyArcsUploadData(),
+            (result?.crossRegionByGroup.get(key) ?? []).filter(
+              arc => arc.p1RegionIndex === i,
+            ),
+            (start, end) => [
+              footRegion(refName, start),
+              footRegion(refName, end),
+            ],
+            paint,
+          ),
+        ]),
       ),
     ]),
   )
@@ -885,30 +988,20 @@ function chainTables(
 }
 
 /**
- * Every lane's chain-laid reads with the strand frames the colors read: the
- * display settles which way "same strand" points across every chain on
- * screen, so the lanes go through together.
- */
-function chainLaidOut(
-  laidByGroup: Map<string, Map<number, LaidOutPileupData>>,
-  framed: boolean,
-) {
-  const out = applyChainStrandFrames(laidByGroup, true, framed)
-  return new Map([...out].map(([key, map]) => [key, map.get(0)!]))
-}
-
-/**
- * One section's reads as the alignments display draws them, as columns. Every
- * coordinate is 0-based genomic; `read` in the other tables is a 0-based index
- * into `reads`, which holds within one call. A read's `id` is the record's own
- * (`feature.id()`), the same in every call, where its `name` is shared by its
- * mate and its supplementary segments.
+ * One section's reads in one region as the alignments display draws them, as
+ * columns. Every coordinate is 0-based genomic; `read` in the other tables is
+ * a 0-based index into `reads`, which holds within one call. A read's `id` is
+ * the record's own (`feature.id()`), the same in every call, where its `name`
+ * is shared by its mate and its supplementary segments, and `key` is the
+ * read's integer identity within the call, shared by its copies in other
+ * regions.
  */
 function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
   colors: { color: string[]; category: string[] },
-  region: { refName: string; start: number; end: number },
+  region: { start: number; end: number },
+  keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
   plainRead: string,
   paint: MarkColors,
   thresholds: MarkThresholds,
@@ -936,6 +1029,7 @@ function sectionTables(
       ),
       color: colors.color,
       category: colors.category,
+      key: Array.from(d.readKeys, keyOf),
     },
     mismatches: {
       position: d.mismatchPositions,
@@ -958,7 +1052,6 @@ function sectionTables(
     modifications: modifications(d),
     qualities: qualities(d, plainRead),
     ...coverageBand(d, region, paint, thresholds.coverageSnpMinFrequency),
-    junctions: junctions(d, region.refName, paint, thresholds),
   }
 }
 
@@ -1028,19 +1121,21 @@ function rowsWhere<T extends { position: ArrayLike<number> }>(
 
 /**
  * The coverage band's depth axis as the display autoscales it: every shown
- * section's visible depths under `scales.y`'s quantile, rules and bounds,
- * nice-rounded, with a log scale floored at one read, and the ticks the
- * display labels it with at its height.
+ * section's visible depths in every region under `scales.y`'s quantile, rules
+ * and bounds, nice-rounded, with a log scale floored at one read, and the
+ * ticks the display labels it with at its height.
  */
 function coverageScale(
   conf: DisplayConf,
-  sections: WorkerPileupData[],
-  region: { start: number; end: number },
+  sections: {
+    data: WorkerPileupData
+    region: { start: number; end: number }
+  }[],
 ) {
   const scale = conf.scales.y
   const type: string = readConfObject(scale, 'type')
   const zero: boolean = readConfObject(scale, 'zero')
-  const entries = sections.map(data => ({
+  const entries = sections.map(({ data, region }) => ({
     visStart: Math.floor(region.start),
     visEnd: Math.ceil(region.end),
     data,
@@ -1089,17 +1184,21 @@ function coverageScale(
 
 /**
  * #api
- * A region's reads as the alignments display fetches, filters, lays out and
- * colors them, as tables: the worker's reads, mismatches, gaps, insertions,
- * clips, modifications, per-base qualities, coverage and splice junctions,
- * each read on the row the display's
- * pileup layout gives it and in the color the display's `color` object paints
- * it, with the key the display shows: `legend`, and `ramps`, its color bars
- * (`rampKeyOf`). Under a `facet` each section lays out
- * on its own, every row names its `section`, and `sections` lists them in
- * stacking order; ungrouped, there is one section, labelled `''`. For a host
- * that draws them itself, such as R through V8. The adapters must be
- * registered on `pluginManager` (`registerAlignmentsAdapters`).
+ * A region's reads, or several regions', as the alignments display fetches,
+ * filters, lays out and colors them, as tables: the worker's reads,
+ * mismatches, gaps, insertions, clips, modifications, per-base qualities,
+ * coverage and splice junctions, each read on the row the display's pileup
+ * layout gives it and in the color the display's `color` object paints it,
+ * with the key the display shows: `legend`, and `ramps`, its color bars
+ * (`rampKeyOf`). Under a `facet` each section lays out on its own, every row
+ * names its `section`, and `sections` lists them in stacking order;
+ * ungrouped, there is one section, labelled `''`. Several regions lay out as
+ * the display lays out a view's regions, on one set of rows: a read crossing
+ * regions is listed in each, under one `key` and on one `row`, and every row
+ * names its `region`'s index. `warnings` names what the config asked for
+ * that the tables dropped. For a host that draws them itself, such as R
+ * through V8. The adapters must be registered on `pluginManager`
+ * (`registerAlignmentsAdapters`).
  */
 export async function alignmentTables(
   pluginManager: PluginManager,
@@ -1107,18 +1206,39 @@ export async function alignmentTables(
     adapterConfig,
     sequenceAdapter,
     region,
+    regions = region ? [region] : [],
     display = {},
     refNames,
     byteLimit = DEFAULT_BYTE_LIMIT,
     spanLimit = DEFAULT_SPAN_LIMIT,
   }: AlignmentTablesArgs,
 ) {
-  const where = `${region.refName}:${region.start}-${region.end}`
-  const span = region.end - region.start
+  if (regions.length === 0) {
+    throw new Error('alignmentTables reads a region, or regions')
+  }
+  const where = regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(', ')
+  const several = regions.length > 1
+  const inTotal = several ? ' in total' : ''
+  const span = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   if (span > spanLimit) {
     throw new Error(
-      `${where} spans ${span} bp of alignments, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
+      `${where} ${several ? 'span' : 'spans'} ${span} bp of alignments${inTotal}, over the ${spanLimit}-bp limit; read a smaller region or raise spanLimit`,
     )
+  }
+  const tooLarge = (bytes: number | undefined) =>
+    new Error(
+      `${where} ${several ? 'need' : 'needs'} ${bytes} bytes of alignments${inTotal}, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
+    )
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig,
+    sequenceAdapter,
+  })
+  const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
+  const bytes = await totalRegionBytes(dataAdapter, fetchRegions)
+  if (overByteBudget(bytes, byteLimit)) {
+    throw tooLarge(bytes)
   }
   const conf: DisplayConf = displayConfigSchemaFactory(pluginManager).create({
     ...display,
@@ -1129,14 +1249,15 @@ export async function alignmentTables(
   const baseLayer = baseLayerFor(conf)
   const { layoutOrder, sortColumn } = sortOf(
     conf.sort,
-    refName => (refName === region.originalRefName ? region.refName : refName),
-    region.refName,
+    refName =>
+      regions.find(r => r.originalRefName === refName)?.refName ?? refName,
+    regions[0]!.refName,
   )
   const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
   const chain = readConfObject(conf, 'unit') === 'chain'
   const featureHeight: number = readConfObject(conf, 'featureHeight')
-  const showSoftClipping: boolean =
-    !chain && readConfObject(conf, 'showSoftClipping')
+  const softClippingAsked: boolean = readConfObject(conf, 'showSoftClipping')
+  const showSoftClipping = !chain && softClippingAsked
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
@@ -1146,35 +1267,41 @@ export async function alignmentTables(
     sessionId: 'tables',
     adapterConfig,
     sequenceAdapter,
-    regions: [{ assemblyName: '', ...region }],
+    regions: fetchRegions,
     filterBy: readFilterOf(conf.filter),
     colorBy,
     baseLayer,
     sortTag: chain ? undefined : sortTag,
     facet: workerFacet(facetSetting, chain ? 'chain' : 'read'),
     showSoftClipping,
-    byteLimit,
     statusCallback: () => {},
   }
-  const run = async (facet: typeof args.facet) => {
-    const result = await executeRenderAlignmentData({
-      pluginManager,
-      args: { ...args, facet },
-    })
-    if ('regionTooLarge' in result) {
-      throw new Error(
-        `${where} needs ${result.bytes} bytes of alignments, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
-      )
-    }
-    return result.value
-  }
+  // the worker reads one region a call
+  const run = (facet: typeof args.facet) =>
+    Promise.all(
+      fetchRegions.map(async r => {
+        const result = await executeRenderAlignmentData({
+          pluginManager,
+          args: { ...args, regions: [r], facet },
+        })
+        if ('regionTooLarge' in result) {
+          throw tooLarge(result.bytes)
+        }
+        return result.value
+      }),
+    )
   const faceted = await run(args.facet)
-  const noReads = !faceted.groups.length
-  // a facet partitions no reads into no sections; the region still has one
-  const fetched = noReads ? await run(undefined) : faceted
+  const noReads = faceted.every(f => !f.groups.length)
+  // a facet partitions no reads into no sections; the regions still have one
+  const fetched = new Map(
+    (noReads ? await run(undefined) : faceted).map((f, i) => [i, f]),
+  )
+  const hidden = noReads
+    ? undefined
+    : new Set<string>(readConfObject(facetNode, 'hidden'))
   const order = orderedGroups(
-    new Map([[0, fetched]]),
-    noReads ? undefined : new Set<string>(readConfObject(facetNode, 'hidden')),
+    fetched,
+    hidden,
     sectionOrder(facetSetting?.field ?? '', facetSetting?.domain),
   )
   if (!order.length) {
@@ -1182,41 +1309,48 @@ export async function alignmentTables(
       `every section at ${where} is hidden; facet.hidden lists them all`,
     )
   }
-  const dataOf = new Map(fetched.groups.map(g => [g.key, g.data]))
-  const regions = new Map([[0, region]])
-  const chained = chain
-    ? attachChainFields(
-        new Map(
-          order.map(({ key }) => [key, new Map([[0, dataOf.get(key)!]])]),
-        ),
-      )
-    : undefined
-  const dataFor = (key: string) =>
-    chained ? chained.get(key)!.get(0)! : dataOf.get(key)!
+  const rawByGroup = buildRawDataByGroup(fetched, hidden)
+  const sectionData = new Map(
+    order.map(({ key }) => [key, rawByGroup.get(key)!]),
+  )
+  const regionBounds = new Map(regions.map((r, i) => [i, r]))
+  const regionInfos: RegionInfo[] = regions.map((r, i) => ({
+    refName: r.refName,
+    start: r.start,
+    end: r.end,
+    displayedRegionIndex: i,
+  }))
+  const chained = chain ? attachChainFields(sectionData) : undefined
+  const dataFor = (key: string, idx: number) =>
+    chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
   const framesChainStrand = framesUnpairedChainStrand(
     bodyColorScheme(colorBy, baseLayer),
     chain,
   )
   const laidByGroup = chain
-    ? chainLaidOut(
+    ? applyChainStrandFrames(
         new Map(
           order.map(({ key }) => [
             key,
-            buildLaidOutChainMap({ dataMap: chained!.get(key)!, regions }),
+            buildLaidOutChainMap({
+              dataMap: chained!.get(key)!,
+              regions: regionBounds,
+            }),
           ]),
         ),
+        true,
         framesChainStrand,
       )
     : new Map(
         order.map(({ key }) => [
           key,
           buildLaidOutPileupMap({
-            dataMap: new Map([[0, dataOf.get(key)!]]),
+            dataMap: sectionData.get(key)!,
             sortColumn,
             layoutOrder,
             showSoftClipping,
-            regions,
-          }).get(0)!,
+            regions: regionBounds,
+          }),
         ]),
       )
   const colors = colorReads(
@@ -1226,17 +1360,7 @@ export async function alignmentTables(
     chain ? { chainMode: true, framesChainStrand } : {},
     facetSetting,
     colorBy.type === 'mateRefName'
-      ? positionIn(
-          refNames ??
-            (await (
-              await getFeatureAdapterOrThrow({
-                pluginManager,
-                sessionId: 'tables',
-                adapterConfig,
-                sequenceAdapter,
-              })
-            ).getRefNames()),
-        )
+      ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
       : undefined,
   )
   const paint = markColors(colors.palette, baseLayer)
@@ -1248,44 +1372,91 @@ export async function alignmentTables(
       'showNonCanonicalJunctions',
     ),
   }
+  const band = colors.insertSizeBand
   const connections = readConnectionTables(
     conf,
     new Map(
-      order.map(({ key }) => {
-        const data = dataOf.get(key)!
-        const band = colors.insertSizeBand
-        return [key, band ? { ...data, insertSizeStats: band } : data]
-      }),
+      order.map(({ key }) => [
+        key,
+        new Map(
+          [...sectionData.get(key)!].map(([idx, data]) => [
+            idx,
+            band ? { ...data, insertSizeStats: band } : data,
+          ]),
+        ),
+      ]),
     ),
-    region,
+    regionInfos,
     colors,
   )
-  const tables = drawnBands(
-    conf,
-    joinSections(
+  const keys = new Map<WorkerPileupData['readKeys'][number], number>()
+  const keyOf = (readKey: WorkerPileupData['readKeys'][number]) => {
+    let key = keys.get(readKey)
+    if (key === undefined) {
+      key = keys.size
+      keys.set(readKey, key)
+    }
+    return key
+  }
+  const plainRead = normalizedRgbToHex(colors.palette.readCategoryColors.plain)
+  const pileups = regions.flatMap((r, i) =>
+    order.flatMap(({ key, label }) => {
+      const laid = laidByGroup.get(key)!.get(i)
+      return laid
+        ? [
+            {
+              columns: { section: label, region: i },
+              tables: {
+                ...chainTables(
+                  chain ? laid : undefined,
+                  normalizedRgbToHex(colors.palette.colorConnectingLine),
+                  normalizedRgbToHex(colors.palette.colorOverlap),
+                ),
+                ...sectionTables(
+                  dataFor(key, i),
+                  laid.readYs,
+                  colors.sections.get(key)!.get(i)!,
+                  r,
+                  keyOf,
+                  plainRead,
+                  paint,
+                  thresholds,
+                ),
+              },
+            },
+          ]
+        : []
+    }),
+  )
+  const tables = drawnBands(conf, {
+    ...joinSections(pileups, t => t.reads.start.length),
+    ...joinSections(
+      regions.flatMap((_, i) =>
+        order.map(({ key, label }) => ({
+          columns: { section: label, region: i },
+          tables: connections.bySection.get(key)!.get(i)!,
+        })),
+      ),
+      () => 0,
+    ),
+    ...joinSections(
       order.map(({ key, label }) => ({
-        label,
+        columns: { section: label },
         tables: {
-          ...chainTables(
-            chain ? laidByGroup.get(key) : undefined,
-            normalizedRgbToHex(colors.palette.colorConnectingLine),
-            normalizedRgbToHex(colors.palette.colorOverlap),
-          ),
-          ...sectionTables(
-            dataFor(key),
-            laidByGroup.get(key)!.readYs,
-            colors.sections.get(key)!,
-            region,
-            normalizedRgbToHex(colors.palette.readCategoryColors.plain),
+          junctions: junctions(
+            [...sectionData.get(key)!].map(([i, data]) => ({
+              refName: regions[i]!.refName,
+              data,
+            })),
+            regionInfos,
             paint,
             thresholds,
           ),
-          ...connections.bySection.get(key)!,
         },
       })),
-      tables => tables.reads.start.length,
+      () => 0,
     ),
-  )
+  })
   return {
     ...tables,
     ...markLegends(tables, paint),
@@ -1301,8 +1472,12 @@ export async function alignmentTables(
     arcSpanMax: connections.arcSpanMax,
     coverageScale: coverageScale(
       conf,
-      order.map(({ key }) => dataOf.get(key)!),
-      region,
+      order.flatMap(({ key }) =>
+        [...sectionData.get(key)!].map(([i, data]) => ({
+          data,
+          region: regions[i]!,
+        })),
+      ),
     ),
     glyph: {
       intronAlpha: intronAlpha(featureHeight),
@@ -1326,7 +1501,76 @@ export async function alignmentTables(
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
     config: fullConfSnapshot(conf),
+    warnings: layoutWarnings({
+      sortType: readConfObject(conf.sort, 'type'),
+      sortColumn,
+      layoutOrder,
+      chain,
+      softClippingAsked,
+      sections: order.map(({ key }) => sectionData.get(key)!),
+      regions: regionBounds,
+    }),
   }
+}
+
+/**
+ * What the layout drops of the display's `sort` and `showSoftClipping`
+ * without saying so, in words a host can show: a column sort with no `pos`,
+ * a sort the regions' contigs or reads leave nowhere to apply, and under
+ * `unit: 'chain'` any sort or soft clipping, as chains lay out by chain.
+ */
+function layoutWarnings({
+  sortType,
+  sortColumn,
+  layoutOrder,
+  chain,
+  softClippingAsked,
+  sections,
+  regions,
+}: {
+  sortType: string
+  sortColumn: SortColumn | undefined
+  layoutOrder: LayoutOrder
+  chain: boolean
+  softClippingAsked: boolean
+  sections: ReadonlyMap<number, WorkerPileupData>[]
+  regions: ReadonlyMap<number, RegionBounds>
+}) {
+  const warnings = new Set<string>()
+  if (!isLayoutOrder(sortType) && !sortColumn) {
+    warnings.add(`the sort by ${sortType} names no pos, so it is dropped`)
+  }
+  if (chain) {
+    if (sortColumn || layoutOrder !== 'position') {
+      warnings.add(
+        `under unit 'chain' the reads lay out by chain, so the sort by ${sortType} is dropped`,
+      )
+    }
+    if (softClippingAsked) {
+      warnings.add(
+        `under unit 'chain' the reads lay out by chain, so showSoftClipping is dropped`,
+      )
+    }
+    return [...warnings]
+  }
+  for (const dataMap of sections) {
+    if (sortColumn && !appliedPileupSort({ dataMap, sortColumn, regions })) {
+      const withReads = [...dataMap]
+        .filter(([, d]) => d.readKeys.length > 0)
+        .map(([i]) => regions.get(i)!)
+      const contigs = [...new Set(withReads.map(r => r.refName))]
+      const why =
+        contigs.length > 1
+          ? `the regions with reads span several contigs (${contigs.join(', ')})`
+          : contigs[0] !== sortColumn.refName
+            ? `no region with reads is on ${sortColumn.refName}`
+            : `no region with reads holds position ${sortColumn.pos}`
+      warnings.add(
+        `the sort by ${sortColumn.type} at ${sortColumn.refName}:${sortColumn.pos} is dropped: ${why}, so the reads lay out by position`,
+      )
+    }
+  }
+  return [...warnings]
 }
 
 /**

@@ -23,7 +23,7 @@ const sequenceAdapter = {
 }
 const region = { refName: 'ctgA', start: 1000, end: 6000 }
 
-export const BAM: AlignmentTablesArgs = {
+export const BAM = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('volvox-sorted.bam'),
@@ -31,10 +31,10 @@ export const BAM: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region,
-}
+} satisfies AlignmentTablesArgs
 
 /** Reads in two read groups, `RG:Z:4` and `RG:Z:5`. */
-export const READ_GROUPS: AlignmentTablesArgs = {
+export const READ_GROUPS = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('volvox-rg.bam'),
@@ -42,9 +42,9 @@ export const READ_GROUPS: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 0, end: 50000 },
-}
+} satisfies AlignmentTablesArgs
 
-export const SPLICED: AlignmentTablesArgs = {
+export const SPLICED = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('spliced.bam'),
@@ -52,9 +52,20 @@ export const SPLICED: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 400, end: 1300 },
-}
+} satisfies AlignmentTablesArgs
 
-export const PAIRED_INVERSION: AlignmentTablesArgs = {
+/** wgsim's simulated short reads, over ctgA and ctgB. */
+export const WGSIM = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('wgsim_short_reads.bam'),
+    index: { location: uri('wgsim_short_reads.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 1000, end: 2000 },
+} satisfies AlignmentTablesArgs
+
+export const PAIRED_INVERSION = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('volvox-simple-inv-paired.bam'),
@@ -65,10 +76,10 @@ export const PAIRED_INVERSION: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 18000, end: 32000 },
-}
+} satisfies AlignmentTablesArgs
 
 /** A mate pair and a split read, each with its two pieces overlapping. */
-export const OVERLAP: AlignmentTablesArgs = {
+export const OVERLAP = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('volvox-overlap.bam'),
@@ -76,9 +87,9 @@ export const OVERLAP: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 900, end: 2600 },
-}
+} satisfies AlignmentTablesArgs
 
-export const LONG_READS: AlignmentTablesArgs = {
+export const LONG_READS = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('volvox-long-reads-sv.bam'),
@@ -86,10 +97,10 @@ export const LONG_READS: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region: { refName: 'ctgA', start: 1000, end: 20000 },
-}
+} satisfies AlignmentTablesArgs
 
 /** Seven ONT reads over a clip of hg38 chr20, with 5mC calls. */
-export const METHYLATED: AlignmentTablesArgs = {
+export const METHYLATED = {
   adapterConfig: {
     type: 'BamAdapter',
     bamLocation: uri('methylation_clip.bam', METHYLATION),
@@ -104,9 +115,9 @@ export const METHYLATED: AlignmentTablesArgs = {
     faiLocation: uri('hg38_clip.fa.fai', METHYLATION),
   },
   region: { refName: '20', start: 10000, end: 20000 },
-}
+} satisfies AlignmentTablesArgs
 
-export const CRAM: AlignmentTablesArgs = {
+export const CRAM = {
   adapterConfig: {
     type: 'CramAdapter',
     cramLocation: uri('volvox-sorted.cram'),
@@ -114,7 +125,7 @@ export const CRAM: AlignmentTablesArgs = {
   },
   sequenceAdapter,
   region,
-}
+} satisfies AlignmentTablesArgs
 
 /** volvox's genes, mRNAs, exons and CDS over the whole contig, at 50 bp/px. */
 export const GFF3 = {

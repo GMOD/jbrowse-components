@@ -1,25 +1,29 @@
 type Columns = Record<string, ArrayLike<unknown>>
 
-type Joined<T extends Record<string, Columns>> = {
+type Joined<
+  T extends Record<string, Columns>,
+  C extends Record<string, unknown>,
+> = {
   [K in keyof T]: {
-    [C in keyof T[K]]: T[K][C] extends ArrayLike<infer V> ? V[] : never
-  } & { section: string[] }
+    [P in keyof T[K]]: T[K][P] extends ArrayLike<infer V> ? V[] : never
+  } & { [P in keyof C]: C[P][] }
 }
 
 /**
- * The sections' tables as one set, each row naming its `section` and each
- * `read` column offset to index the joined `reads`. Appends a value at a time:
- * spreading a column into `push` overflows the call stack past ~125k rows.
+ * The parts' tables as one set, each row taking its part's `columns` (its
+ * `section`, its `region`) and each `read` column offset to index the joined
+ * `reads`. Appends a value at a time: spreading a column into `push`
+ * overflows the call stack past ~125k rows.
  */
-export function joinSections<T extends Record<string, Columns>>(
-  sections: { label: string; tables: T }[],
-  readCount: (tables: T) => number,
-) {
+export function joinSections<
+  T extends Record<string, Columns>,
+  C extends Record<string, unknown>,
+>(parts: { columns: C; tables: T }[], readCount: (tables: T) => number) {
   const joined: Record<string, Record<string, unknown[]>> = {}
   let readOffset = 0
-  for (const { label, tables } of sections) {
+  for (const { columns, tables } of parts) {
     for (const [name, table] of Object.entries(tables)) {
-      const out = (joined[name] ??= { section: [] })
+      const out = (joined[name] ??= {})
       let rows = 0
       for (const [column, values] of Object.entries(table)) {
         const into = (out[column] ??= [])
@@ -29,12 +33,14 @@ export function joinSections<T extends Record<string, Columns>>(
           into.push(offset ? (values[i] as number) + offset : values[i])
         }
       }
-      const section = out.section!
-      for (let i = 0; i < rows; i++) {
-        section.push(label)
+      for (const [column, value] of Object.entries(columns)) {
+        const into = (out[column] ??= [])
+        for (let i = 0; i < rows; i++) {
+          into.push(value)
+        }
       }
     }
     readOffset += readCount(tables)
   }
-  return joined as Joined<T>
+  return joined as Joined<T, C>
 }

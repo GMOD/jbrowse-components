@@ -72,6 +72,26 @@ export function largestRegionBytes(perRegion: (number | undefined)[]) {
   return largest
 }
 
+/**
+ * The regions' index-only byte estimates summed, for a reader that holds
+ * every region at once; undefined, never 0, when no region could be measured.
+ */
+export async function totalRegionBytes(
+  dataAdapter: ByteMeasurableAdapter,
+  regions: AugmentedRegion[],
+  opts?: { signal?: AbortSignal; statusCallback?: StatusCallback },
+) {
+  let total: number | undefined
+  for (const bytes of await Promise.all(
+    regions.map(region => dataAdapter.getRegionByteSize([region], opts)),
+  )) {
+    if (bytes !== undefined) {
+      total = (total ?? 0) + bytes
+    }
+  }
+  return total
+}
+
 /** A non-positive declared limit means "no opinion" (htsget reports 0). */
 export function adapterByteLimit(declared: unknown, fallback: number) {
   return typeof declared === 'number' && declared > 0 ? declared : fallback
