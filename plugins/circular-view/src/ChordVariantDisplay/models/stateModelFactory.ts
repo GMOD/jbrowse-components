@@ -4,7 +4,8 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
+import { getEnv, getSession, openFeatureWidget } from '@jbrowse/core/util'
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   abgrAlpha,
   cssColorToABGR,
@@ -20,11 +21,18 @@ import {
   derivedColorScale,
   everyRowPaints,
 } from '@jbrowse/core/util/legendCandidates'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
+import {
+  colorByMenuItem,
+  solidColorItem,
+} from '@jbrowse/display-kit/colorByMenu'
 import {
   colorEncodingOf,
   colorFieldOf,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -37,12 +45,14 @@ import { chordLabel } from '../../chords/chordLabel.ts'
 import { axisX, chordEndsAt, figurePoint } from '../../chords/chordStage.ts'
 import { DIMMED_OPACITY } from '../../chords/shaders/chordStage.generated.ts'
 import { shapePath } from '../../chords/shapePath.ts'
+import { CHORD_DEFAULT_COLOR } from './chordColorConfigSchema.ts'
 
 import type { ExportSvgOptions } from '../../CircularView/model.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { ChordLanes } from '../../chords/chordStage.ts'
 import type { ChordShape } from '../../chords/shapes.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
@@ -82,6 +92,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     .compose(
       'ChordVariantDisplay',
       BaseChordDisplay(),
+      ColorWritesMixin(),
       types.model({
         /**
          * #property
@@ -505,6 +516,99 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       async renderSvg(_opts: ExportSvgOptions & { theme?: ThemeOptions }) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the constant `color.value` holds as written, undefined for none or a
+       * `jexl:` one
+       */
+      get solidColor(): string | undefined {
+        const { value } = self.writtenColor
+        return typeof value === 'string' && !isJexl(value) ? value : undefined
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Color by's Default: no field and no constant, so the config's own
+       * color paints, a `jexl:` expression included
+       */
+      pickDefaultColor() {
+        if (self.solidColor === undefined) {
+          self.colorByField('')
+        } else {
+          self.setColorValue(undefined)
+        }
+      },
+      /**
+       * #action
+       * Color by's Solid color...: paints the constant kept beside a field,
+       * where there is one, and opens the picker
+       */
+      pickSolidColor() {
+        if (self.paintedColorField && self.solidColor !== undefined) {
+          self.colorByField('')
+        }
+        getSession(self).queueDialog(handleClose => [
+          SolidColorDialog,
+          {
+            label: 'Chord color',
+            color: self.solidColor ?? CHORD_DEFAULT_COLOR,
+            written: self.writtenColor.value,
+            onChange: (color: string) => {
+              self.setColorValue(color)
+            },
+            onReset: () => {
+              self.setColorValue(undefined)
+            },
+            handleClose,
+          },
+        ])
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Color by... and Advanced → Edit plot..., which the circular view
+       * shows under its Tracks menu
+       */
+      trackMenuItems(): MenuItem[] {
+        const field = self.paintedColorField?.field
+        return [
+          colorByMenuItem({
+            blocks: [
+              {
+                rows: [
+                  {
+                    label: 'Default',
+                    type: 'radio',
+                    checked: !field && self.solidColor === undefined,
+                    onClick: () => {
+                      self.pickDefaultColor()
+                    },
+                  },
+                  {
+                    label: 'SV type',
+                    type: 'radio',
+                    checked: field === SV_TYPE_FIELD,
+                    onClick: () => {
+                      self.colorByField(SV_TYPE_FIELD)
+                    },
+                  },
+                  solidColorItem(
+                    !field && self.solidColor !== undefined,
+                    () => {
+                      self.pickSolidColor()
+                    },
+                  ),
+                ],
+              },
+            ],
+          }),
+          ...editPlotMenuItems(self),
+        ]
       },
     }))
 }

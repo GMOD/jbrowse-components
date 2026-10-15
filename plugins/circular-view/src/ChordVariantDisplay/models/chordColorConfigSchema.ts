@@ -9,6 +9,8 @@ import {
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+export const CHORD_DEFAULT_COLOR = 'rgba(255,133,0,0.32)'
+
 /**
  * #config ChordColor
  * #category display
@@ -32,7 +34,7 @@ export const chordColorConfigSchema = ConfigurationSchema(
      */
     value: {
       type: 'color',
-      defaultValue: 'rgba(255,133,0,0.32)',
+      defaultValue: CHORD_DEFAULT_COLOR,
       description: 'CSS color or jexl callback for every chord',
       contextVariable: ['feature'],
     },

@@ -34,9 +34,9 @@ on the display:
 | Multi-way synteny                    | `rows`, `color`, `ribbonColor`, `laneLayers`                                        |
 | Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`     |
 
-The circular view's chord display has a plot too, `color`, and no Edit plot row
-in its track menu; code reads and writes it through the display's `plot`, as
-[the live model guide](/docs/agents_live_model) describes.
+The circular view's chord variant display has a plot too, `color`; its Edit plot
+row is under the view menu's Tracks entry, since a track on the circle has no
+label to hang a menu off.
 
 The Config reference link opens the display's page in the
 [config reference](/docs/config_guide), which spells out each setting's members.

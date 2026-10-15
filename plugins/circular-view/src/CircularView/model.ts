@@ -1740,7 +1740,7 @@ function stateModelFactory(pluginManager: PluginManager) {
                 view: self,
               }) ?? []),
               ...track.trackMenuItems(),
-            ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+            ],
           })),
         }
       },

@@ -5,6 +5,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import type { CircularViewModel } from '../../CircularView/model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 function sliceFor(
@@ -278,4 +279,66 @@ test('a mate on a contig the file holds no record on still finds its slice', asy
   expect(display.features).toHaveLength(1)
   expect(sliceFor(display, undefined, 'A')?.region.refName).toBe('ctgA')
   expect(sliceFor(display, undefined, 'B')?.region.refName).toBe('ctgB')
+}, 20000)
+
+function subMenuOf(item: MenuItem | undefined): MenuItem[] {
+  return item && 'subMenu' in item && Array.isArray(item.subMenu)
+    ? item.subMenu
+    : []
+}
+
+const labelOf = (item: MenuItem) => ('label' in item ? item.label : undefined)
+
+function colorByRows(display: { trackMenuItems: () => MenuItem[] }) {
+  return subMenuOf(
+    display.trackMenuItems().find(i => labelOf(i) === 'Color by...'),
+  )
+}
+
+function clickRow(rows: MenuItem[], label: string) {
+  const found = rows.find(r => labelOf(r) === label)
+  if (!found || !('onClick' in found)) {
+    throw new Error(`no ${label} row`)
+  }
+  found.onClick()
+}
+
+const ticked = (rows: MenuItem[]) =>
+  rows.filter(r => 'checked' in r && r.checked).map(labelOf)
+
+test('the track menu picks the chord color through Color by', async () => {
+  const { session, display } = await setup()
+  expect(ticked(colorByRows(display))).toEqual(['Default'])
+
+  clickRow(colorByRows(display), 'SV type')
+  expect(display.writtenColor).toEqual({ field: 'svType' })
+  expect(ticked(colorByRows(display))).toEqual(['SV type'])
+
+  clickRow(colorByRows(display), 'Solid color...')
+  expect(session.DialogProps?.label).toBe('Chord color')
+  ;(session.DialogProps?.onChange as (c: string) => void)('#123456')
+  expect(display.writtenColor).toEqual({
+    field: 'svType',
+    scale: 'none',
+    value: '#123456',
+  })
+  expect(display.legendColor).toBe('#123456')
+  expect(ticked(colorByRows(display))).toEqual(['Solid color...'])
+
+  clickRow(colorByRows(display), 'Default')
+  expect(display.writtenColor).toEqual({ field: 'svType', scale: 'none' })
+  expect(display.legendColor).toBe('rgba(255,133,0,0.32)')
+  expect(ticked(colorByRows(display))).toEqual(['Default'])
+}, 20000)
+
+test("the view's Tracks menu carries the display's Color by and Edit plot", async () => {
+  const { view } = await setup()
+  const [trackItem] = subMenuOf(view.tracksMenuItem())
+  const rows = subMenuOf(trackItem)
+  expect(rows.map(labelOf)).toEqual(
+    expect.arrayContaining(['Color by...', 'Advanced']),
+  )
+  expect(
+    subMenuOf(rows.find(i => labelOf(i) === 'Advanced')).map(labelOf),
+  ).toEqual(['Edit plot...'])
 }, 20000)
