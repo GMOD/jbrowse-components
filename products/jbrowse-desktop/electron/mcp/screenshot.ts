@@ -247,7 +247,7 @@ async function captureFullPage(
     const bounds = { x: 0, y: 0, ...content }
     const crop = await cropRect(args, bounds, true, relay)
     if (crop.error !== undefined) {
-      return errorAfterSettle(crop.error, settled)
+      return { error: crop.error }
     }
     const clip = crop.rect ?? bounds
     const shot = (await dbg.sendCommand('Page.captureScreenshot', {
