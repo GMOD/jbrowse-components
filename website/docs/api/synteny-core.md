@@ -236,7 +236,7 @@ answers a feature's two refNames in the order the color modes read them:
 
 ```js
 // type signature
-(features: readonly Feature[], ends: (feature: Feature) => readonly [string, string], channelNames: readonly string[]) => ColorFunctionInputs
+(features: readonly Feature[], ends: (feature: Feature, i: number) => readonly [string, string], channelNames: readonly string[]) => ColorFunctionInputs
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/featureColorInputs.ts)

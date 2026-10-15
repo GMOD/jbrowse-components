@@ -57,8 +57,7 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 | <span id="getter-bezierradius">**bezierRadius**</span><br><code>number</code> |  |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-hoveredfeatureid">**hoveredFeatureId**</span><br><code>string &#124; undefined</code> | the feature under the pointer, which the view hit-tests for every chord display at once |
-| <span id="getter-chordstage">**chordStage**</span><br><code>ChordStage</code> | the polar stage as the canvas and the pointer see it, rotation in |
-| <span id="getter-figurestage">**figureStage**</span><br><code>ChordStage</code> | the polar stage on the unrotated figure, which the view's SVG turns: what the export and the highlight paths are placed on |
+| <span id="getter-figurestage">**figureStage**</span><br><code>ChordStage</code> | the polar stage on the unrotated figure, which the view's SVG turns: what the export, the highlight paths and the hit tests are placed on |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>16 inherited getters from one model</summary>
