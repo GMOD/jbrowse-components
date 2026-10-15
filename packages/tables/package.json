@@ -41,6 +41,7 @@
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
     "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-config": "workspace:^",
     "@jbrowse/plugin-comparative-adapters": "workspace:^",
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-gff3": "workspace:^",

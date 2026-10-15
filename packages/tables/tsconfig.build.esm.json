@@ -5,6 +5,7 @@
     { "path": "../../plugins/bed/tsconfig.build.esm.json" },
     { "path": "../../plugins/canvas/tsconfig.build.esm.json" },
     { "path": "../../plugins/comparative-adapters/tsconfig.build.esm.json" },
+    { "path": "../../plugins/config/tsconfig.build.esm.json" },
     { "path": "../../plugins/dotplot-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/gff3/tsconfig.build.esm.json" },
     { "path": "../../plugins/gtf/tsconfig.build.esm.json" },

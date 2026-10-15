@@ -9,6 +9,7 @@ import {
 import BedPlugin from '@jbrowse/plugin-bed'
 import { featureTables } from '@jbrowse/plugin-canvas/tables'
 import { contigTables } from '@jbrowse/plugin-comparative-adapters/tables'
+import { registerConfigAdapters } from '@jbrowse/plugin-config/adapters'
 import { dotplotTables } from '@jbrowse/plugin-dotplot-view/tables'
 import GFF3Plugin from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
@@ -122,6 +123,7 @@ class TablesPlugin extends Plugin {
     registerWiggleAdapters(pluginManager)
     registerVariantAdapters(pluginManager)
     registerComparativeAdapters(pluginManager)
+    registerConfigAdapters(pluginManager)
   }
 }
 

@@ -194,3 +194,52 @@ test('records crowding a pixel fade by their count, as a zoomed-out row draws th
   expect(long[0]).toBe(1)
   expect(long[1]).toBeCloseTo(1 - 0.1 ** 0.5, 5)
 })
+
+/**
+ * `bcftools query -H -f '%POS\t%FILTER\t%INFO/AC\t%INFO/AN\t%INFO/POSITIVE_TRAIN_SITE\t%INFO/culprit\t%INFO/BaseQRankSum\n'`
+ * over the whole file, which the region spans.
+ */
+const BCFTOOLS_QUERY = 'test_data/dog10k/dog10k_cyp1a2_snvs.bcftools_query.tsv'
+
+test('each record carries its FILTER and INFO as bcftools query prints them', async () => {
+  const t = await engine.variants(DOG_VCF)
+  const query = readFileSync(path.resolve(BCFTOOLS_QUERY), 'utf8')
+    .trim()
+    .split('\n')
+    .slice(1)
+    .map(line => line.split('\t'))
+  const missing = (v: string) => (v === '.' ? null : v)
+  const joined = (v: unknown) =>
+    Array.isArray(v) ? v.map(x => x ?? '.').join(',') : v
+  expect(t.variants.start.map(s => `${s + 1}`)).toEqual(query.map(q => q[0]))
+  expect(t.variants.filter).toEqual(query.map(q => missing(q[1]!)))
+  expect(t.info.AC!.map(joined)).toEqual(query.map(q => q[2]))
+  expect(t.info.AN).toEqual(query.map(q => Number(q[3])))
+  expect(t.info.POSITIVE_TRAIN_SITE).toEqual(query.map(q => q[4] === '1'))
+  expect(t.info.culprit).toEqual(query.map(q => missing(q[5]!)))
+  expect(t.info.BaseQRankSum).toEqual(
+    query.map(q => (q[6] === '.' ? null : Number(q[6]))),
+  )
+  expect(t.info.AC!.some(ac => (ac as number[]).length === 2)).toBe(true)
+  expect(new Set(t.info.RAW_MQandDP)).toEqual(new Set([null]))
+  const declared = (key: string) => {
+    const i = t.infoFields.key.indexOf(key)
+    return [t.infoFields.number[i], t.infoFields.type[i]]
+  }
+  expect(t.infoFields.key.slice(0, 3)).toEqual(['AC', 'AF', 'AN'])
+  expect(declared('AC')).toEqual(['A', 'Integer'])
+  expect(declared('NEGATIVE_TRAIN_SITE')).toEqual(['0', 'Flag'])
+  expect(declared('culprit')).toEqual(['1', 'String'])
+})
+
+test('a record the display filters out takes its FILTER and INFO with it', async () => {
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { filter: ['jexl:get(feature,"FILTER") == "PASS"'] },
+  })
+  expect(t.variants.start.length).toBe(22)
+  expect(new Set(t.variants.filter)).toEqual(new Set(['PASS']))
+  for (const column of Object.values(t.info)) {
+    expect(column).toHaveLength(22)
+  }
+})

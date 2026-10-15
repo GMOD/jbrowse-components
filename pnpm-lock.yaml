@@ -750,6 +750,9 @@ importers:
       '@jbrowse/plugin-comparative-adapters':
         specifier: workspace:^
         version: link:../../plugins/comparative-adapters
+      '@jbrowse/plugin-config':
+        specifier: workspace:^
+        version: link:../../plugins/config
       '@jbrowse/plugin-dotplot-view':
         specifier: workspace:^
         version: link:../../plugins/dotplot-view

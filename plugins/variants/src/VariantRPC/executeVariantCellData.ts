@@ -135,7 +135,12 @@ export type CellDataResult = CellDataBase & {
   perRegionCellData: Record<number, VariantCellData>
 }
 
-export async function executeVariantCellData({
+/**
+ * The cell data and the records it draws, the features themselves, for a
+ * caller on this thread that reads more of each record than the payload
+ * carries.
+ */
+export async function variantCellData({
   pluginManager,
   args,
 }: {
@@ -270,12 +275,38 @@ export async function executeVariantCellData({
     },
   )
 
+  const value: CellDataResult = {
+    samplePloidy,
+    rowNames,
+    hasPhasedOrHaploid,
+    colorRead: color,
+    ...paintedLegendFlags(Object.values(perRegionCellData)),
+    hasConsequence,
+    hasSvType,
+    hasPhaseSet,
+    simplifiedFeatures,
+    genotypeDict,
+    sampleNames,
+    bytes,
+    perRegionCellData,
+  }
+  return { value, records: filteredVariants.map(v => v.feature) }
+}
+
+export async function executeVariantCellData(args: {
+  pluginManager: PluginManager
+  args: RpcExecuteArgs<'MultiSampleVariantGetCellData'>
+}) {
+  const result = await variantCellData(args)
+  if ('regionTooLarge' in result) {
+    return result
+  }
+  const { value } = result
   // A Set, not a list: a variant spanning two regions ships in both, sharing
   // one `genotypeCodes` array, and handing the same buffer to postMessage
   // twice is a structured-clone error.
-  const payloads = Object.values(perRegionCellData)
   const transferables = new Set<ArrayBufferLike>()
-  for (const data of payloads) {
+  for (const data of Object.values(value.perRegionCellData)) {
     for (const info of data.featureInfo) {
       transferables.add(info.genotypeCodes.buffer)
     }
@@ -288,23 +319,5 @@ export async function executeVariantCellData({
     transferables.add(data.featureInsertedBp.buffer)
     transferables.add(data.featureColorValues.buffer)
   }
-
-  return rpcResult(
-    {
-      samplePloidy,
-      rowNames,
-      hasPhasedOrHaploid,
-      colorRead: color,
-      ...paintedLegendFlags(payloads),
-      hasConsequence,
-      hasSvType,
-      hasPhaseSet,
-      simplifiedFeatures,
-      genotypeDict,
-      sampleNames,
-      bytes,
-      perRegionCellData,
-    },
-    [...transferables],
-  )
+  return rpcResult(value, [...transferables])
 }

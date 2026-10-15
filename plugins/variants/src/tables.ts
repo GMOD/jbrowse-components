@@ -40,7 +40,7 @@ import {
 } from './LinearMultiSampleVariantDisplay/paintCells.ts'
 import { getVariantColorScales } from './LinearMultiSampleVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
-import { executeVariantCellData } from './VariantRPC/executeVariantCellData.ts'
+import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
 import {
   readAltDosages,
   readPhasedAlleleIndicators,
@@ -61,6 +61,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
+import type { Feature } from '@jbrowse/core/util'
 import type { RowAlias } from '@jbrowse/tree-sidebar/arrangeRows'
 
 type DisplayConf = ReturnType<ReturnType<typeof configSchemaFactory>['create']>
@@ -116,7 +117,9 @@ function legendOf(scales: ColorScale[]) {
  * #api
  * A region of a multi-sample VCF as the multi-sample variant display fetches,
  * filters and paints it, as tables: `variants`, each record the display
- * keeps, with its lane color; `cells`, each sample's (or under
+ * keeps, with its lane color and its `filter`; `info`, each INFO key's
+ * values aligned to `variants`, and `infoFields`, the header's declaration
+ * of each key; `cells`, each sample's (or under
  * `unit: 'haplotype'` each haplotype's) cell at each record, with its
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
  * rows the cells name, top to bottom as the display arranges them by `rows`
@@ -201,7 +204,7 @@ export async function variantTables(
     byteLimit,
     statusCallback: () => {},
   }
-  const result = await executeVariantCellData({ pluginManager, args })
+  const result = await variantCellData({ pluginManager, args })
   if ('regionTooLarge' in result) {
     throw new Error(
       `${region.refName}:${region.start}-${region.end} needs ${result.bytes} bytes of variants, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
@@ -209,6 +212,10 @@ export async function variantTables(
   }
   const value = result.value
   const data = value.perRegionCellData[0]
+  const recordOf = new Map(result.records.map(r => [r.id(), r]))
+  const records = (data?.featureInfo ?? []).map(info =>
+    recordOf.get(info.featureId)!,
+  )
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
   const expanded =
@@ -262,6 +269,7 @@ export async function variantTables(
     alt: [] as string[],
     type: [] as string[],
     color: [] as string[],
+    filter: records.map(filterOf),
   }
   const cells = {
     variant: [] as number[],
@@ -330,6 +338,7 @@ export async function variantTables(
   })
   return {
     variants,
+    ...infoColumns(records, await vcfHeaderOf(adapter)),
     cells,
     rows,
     legend: legendOf(scales),
@@ -343,6 +352,96 @@ export async function variantTables(
       end: banded.bands.map(b => b.end),
     },
   }
+}
+
+/**
+ * A record's FILTER as the file writes it, the failed filters joined by `;`,
+ * and null for `.`, a record no filter was applied to.
+ */
+function filterOf(record: Feature) {
+  const filter = record.get('FILTER') as string | string[] | undefined
+  return Array.isArray(filter) ? filter.join(';') : (filter ?? null)
+}
+
+interface InfoDeclaration {
+  Number?: unknown
+  Type?: unknown
+  Description?: unknown
+}
+
+interface VcfHeader {
+  declared: string[]
+  meta: Record<string, InfoDeclaration | undefined>
+}
+
+async function vcfHeaderOf(adapter: object): Promise<VcfHeader> {
+  const vcf = adapter as {
+    getHeader?: () => Promise<string>
+    getMetadata?: () => Promise<{ INFO?: VcfHeader['meta'] }>
+  }
+  const header = (await vcf.getHeader?.()) ?? ''
+  return {
+    declared: [...header.matchAll(/^##INFO=<ID=([^,>]+)/gm)].map(m => m[1]!),
+    meta: (await vcf.getMetadata?.())?.INFO ?? {},
+  }
+}
+
+type InfoValue = true | (string | number | undefined)[] | undefined
+
+/**
+ * Each INFO key's values, one per record, typed by the key's header line:
+ * a flag as a boolean, false where the record lacks it; a `Number=1` key as
+ * its value; any other `Number` (`A`, `R`, `G`, `.`, 2) as an array, an
+ * entry per value. A record lacking a non-flag key, or giving `.`, has null.
+ * The keys are the header's, in its order, then any other a record uses,
+ * typed as the VCF spec reserves it, else read as a flag where every use is
+ * bare and as a `Number=.` string otherwise. `infoFields` lists each key's
+ * declaration.
+ */
+function infoColumns(
+  records: readonly Feature[],
+  { declared, meta }: VcfHeader,
+) {
+  const infos = records.map(
+    r => r.get('INFO') as Record<string, InfoValue> | undefined,
+  )
+  const keys = new Set(declared)
+  for (const info of infos) {
+    for (const key of Object.keys(info ?? {})) {
+      keys.add(key)
+    }
+  }
+  const infoFields = {
+    key: [] as string[],
+    number: [] as string[],
+    type: [] as string[],
+    description: [] as string[],
+  }
+  const info: Record<string, unknown[]> = {}
+  for (const key of keys) {
+    const values = infos.map(i => i?.[key])
+    const declaration = meta[key]
+    const bare = values.every(v => v === undefined || v === true)
+    const type = String(declaration?.Type ?? (bare ? 'Flag' : 'String'))
+    const number = String(declaration?.Number ?? (type === 'Flag' ? 0 : '.'))
+    const numeric = type === 'Integer' || type === 'Float'
+    infoFields.key.push(key)
+    infoFields.number.push(number)
+    infoFields.type.push(type)
+    infoFields.description.push(String(declaration?.Description ?? ''))
+    info[key] = values.map(v =>
+      type === 'Flag' || number === '0'
+        ? v !== undefined
+        : v === undefined || v === true
+          ? null
+          : number !== '1'
+            ? v.map(x => x ?? null)
+            : numeric || v.length === 1
+              ? (v[0] ?? null)
+              : v.map(x => x ?? '.').join(','),
+    )
+  }
+  return { info, infoFields }
 }
 
 /**

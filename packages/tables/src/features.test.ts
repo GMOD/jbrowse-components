@@ -1,3 +1,7 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import { createTablesEngine } from './index.ts'
 import { BIGBED, GFF3 } from './volvox.fixture.ts'
 
@@ -259,4 +263,39 @@ test('a facet on a feature field stamps each feature with its value', async () =
     const same = t.features.type.indexOf(type)
     expect(t.features.section[i]).toBe(t.features.section[same])
   })
+})
+
+test('features a config writes inline lay out as the same features in a file do', async () => {
+  const bed = path.resolve('test_data/volvox/arc_test.bed')
+  const region = { refName: 'ctgA', start: 9000, end: 11000 }
+  const fromFile = await engine.features({
+    adapterConfig: {
+      type: 'BedAdapter',
+      bedLocation: {
+        uri: pathToFileURL(bed).href,
+        locationType: 'UriLocation',
+      },
+    },
+    region,
+    bpPerPx: 2,
+  })
+  const features = readFileSync(bed, 'utf8')
+    .trim()
+    .split('\n')
+    .map(line => {
+      const [refName, start, end, name] = line.split('\t')
+      return { uniqueId: name, refName, start: +start!, end: +end!, name }
+    })
+  const fromConfig = await engine.features({
+    adapterConfig: { type: 'FromConfigAdapter', features },
+    region,
+    bpPerPx: 2,
+  })
+  expect(fromConfig.features.name).toHaveLength(6)
+  const { id: _, ...placed } = fromConfig.features
+  const { id: __, ...filePlaced } = fromFile.features
+  expect(placed).toEqual(filePlaced)
+  expect(fromConfig.rects).toEqual(fromFile.rects)
+  expect(fromConfig.labels).toEqual(fromFile.labels)
+  expect(fromConfig.missingContig).toBe('')
 })

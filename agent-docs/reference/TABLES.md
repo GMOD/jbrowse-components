@@ -192,7 +192,9 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
 
 The layout is the display's grown to its content, as under `heightMode:
 'grow'`: no fit ladder, no facet sections. `@jbrowse/tables` installs the
-BED, GFF3 and GTF plugins, which register adapters and nothing else.
+BED, GFF3 and GTF plugins, which register adapters and nothing else, and
+registers `FromConfigAdapter` (`@jbrowse/plugin-config/adapters`), so a
+track that writes its features inline in its config reads as a file does.
 
 `@jbrowse/plugin-wiggle/tables` (`wiggleTables`) does the same for a
 quantitative track. It takes the `LinearWiggleDisplay`'s config and a
@@ -241,7 +243,12 @@ and paints the cells as the display does (`paintCellColors`,
 `paintFeatureColors`):
 
 - `variants`: each record the display's filters keep (MAF, missingness, the
-  jexl `filter`), with its lane color.
+  jexl `filter`), with its lane color and its `filter`, the FILTER column
+  as the file writes it (`PASS`, or the failed filters joined by `;`), null
+  for `.`.
+- `info`: each INFO key's values, a column per key aligned to `variants`,
+  and `infoFields`, each key's `number`, `type` and `description` off its
+  header line. See the INFO shape below.
 - `cells`: each row's cell at a record, with its genotype, its alt dosage over
   the called alleles, and the fill `shade(hue, dosage)` paints. Under
   `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
@@ -249,6 +256,27 @@ and paints the cells as the display does (`paintCellColors`,
   named as the display names them, in file order.
 - `legend` and `ramps`: the display's key, from `getVariantColorScales` over
   what the cells painted.
+
+**INFO comes back as typed columns, one per key.** A host compares a
+record's `AC` with its own genotype counts, so the value sits beside the
+record. A long table (variant, key, value) would mix integers, floats,
+strings and flags in one text column.
+
+- **The header decides each column's shape, never the data.** A flag
+  (`Type=Flag` or `Number=0`) is a boolean, false where the record lacks it.
+  A `Number=1` key is its value. Any other `Number` (`A`, `R`, `G`, `.`, 2)
+  is an array per record, an entry per value with null for `.`, even where
+  every record in the region has one alt. A region of biallelic sites then
+  types `AC` as a region with a multiallelic site does.
+- **A record lacking a key, or giving `.`, has null.** R reads it as `NA`.
+- **The keys are the header's, in its order**, so every region of a file
+  returns the same columns, then any key a record uses undeclared. An
+  undeclared key takes the type the VCF spec reserves for it, else reads as
+  a flag where every use is bare and as a `Number=.` string otherwise.
+- **`info` sits beside `variants` as an object of its own**, so an INFO key
+  never shadows `start`, `type` or `color`. A host that flattens the two
+  names a collision its own way: ggjbrowse prefixes the INFO column
+  `info_`.
 
 The table does not apply the display's density fade, which depends on zoom,
 and does not order the rows by the `rows` arrangement. A categorical `color`
