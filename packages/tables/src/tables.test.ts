@@ -1014,7 +1014,7 @@ test('config is the display’s resolved config, the slots the call set and the 
 
 test('a region of the reference reads as its bases', async () => {
   const bases = await engine.sequence({
-    sequenceAdapter: BAM.sequenceAdapter!,
+    sequenceAdapter: BAM.sequenceAdapter,
     region: { refName: 'ctgA', start: 1000, end: 1010 },
   })
   expect(bases).toMatch(/^[ACGTNacgtn]{10}$/)
