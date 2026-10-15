@@ -143,7 +143,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   // translocation view: reads whose mate landed on another chromosome each take
   // that chromosome's color.
   //
-  // LGVSyntenyDisplay spells its own label for it ("Query name"): a PAF block
+  // LGVSyntenyDisplay spells its own label for it ("Query"): a PAF block
   // has no mate, and on a BAM "query name" means QNAME, i.e. the read name —
   // the one thing this scheme does not color by.
   mateRefName: {

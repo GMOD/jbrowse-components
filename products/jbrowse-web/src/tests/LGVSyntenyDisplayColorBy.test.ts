@@ -90,7 +90,7 @@ test('offers only the schemes a PAF block can answer', async () => {
     'Normal',
     'Strand',
     'Mapping quality',
-    'Query name',
+    'Query',
   ])
 })
 
@@ -105,7 +105,7 @@ test('colors by strand until a config says otherwise', async () => {
   expect((await syntenyDisplay()).colorBy).toEqual({ type: 'strand' })
 })
 
-test('picking Query name stores the scheme through the config slot', async () => {
+test('picking Query stores the scheme through the config slot', async () => {
   const display = await syntenyDisplay()
   display.colorByField('mateRefName')
   expect(display.colorBy).toEqual({ type: 'mateRefName' })

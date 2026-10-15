@@ -292,7 +292,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             getColorByMenuItem(self, {
               colorOptions: colorFieldOptions('', 'strand', 'mapq', {
                 field: 'mateRefName',
-                label: 'Query name',
+                label: 'Query',
               }),
             }),
             ...editPlotMenuItems(self),
@@ -312,7 +312,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // Same submenu the synteny view and dotplot show, from one source, so
             // the three surfaces can't word the same setting differently
             ...lodMenuItems(self),
-            getFeatureHeightMenuItem(self, self.featureNoun),
+            getFeatureHeightMenuItem(self, self.featureNoun, {
+              disabled: !self.showPileup,
+              disabledHelpText: `Turn on "Show alignments" to change ${self.featureNoun} height`,
+            }),
           ] satisfies MenuItem[]
         },
       }))

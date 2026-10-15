@@ -22,7 +22,22 @@ function colorRows(display: ReturnType<typeof createDisplay>) {
 test('the curated color schemes are the four synteny ones', () => {
   expect(
     colorRows(createDisplay()).map(i => ('label' in i ? i.label : undefined)),
-  ).toEqual(['Normal', 'Strand', 'Mapping quality', 'Query name'])
+  ).toEqual(['Normal', 'Strand', 'Mapping quality', 'Query'])
+})
+
+function customHeightDisabled(display: ReturnType<typeof createDisplay>) {
+  const custom = subMenu(
+    display.trackMenuItems() as MenuItem[],
+    'Feature height',
+  ).find(i => 'label' in i && i.label === 'Custom...')
+  return custom && 'disabled' in custom ? custom.disabled : undefined
+}
+
+test('the feature height sizes grey out while the alignments are hidden', () => {
+  const display = createDisplay()
+  expect(customHeightDisabled(display)).toBe(false)
+  display.setShowPileup(false)
+  expect(customHeightDisabled(display)).toBe(true)
 })
 
 // The field defaults to `strand` here, so the string has to say "no field" as
