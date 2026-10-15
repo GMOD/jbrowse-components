@@ -104,7 +104,7 @@ the next person to add a row has no way to know the public copy shows a subset.
 Where a table reads badly in public, the fix is the record.
 
 **A figure quoted in prose carries a reference rather than a retyped value** —
-`1.34-1.46x<!--m:bgzf-pool-tabix.speedup.range-->` resolves against the record's
+`1.55-2.02x<!--m:bgzf-pool-tabix.speedup.range-->` resolves against the record's
 own column. Prose restating a figure from the table above it is the one
 staleness no checker can see, because the old value is still sitting in the doc
 it was copied from.

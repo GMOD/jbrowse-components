@@ -55,31 +55,29 @@ one pool per JS context, wired into `BamAdapter` and every `TabixIndexedFile`
 site. On BAM it is worth **1.95x** end to end, over a 22-view pan and zoom
 across 1000x long-read data with both arms returning the same 38,246 records.
 
-Tabix is worth appreciably less. Same pool, a 213 MB slice of 1000 Genomes over
-`chr1`, headless Chrome, real HTTP with range requests, arms interleaved, min of
-six:
+Tabix, measured on a 213 MB slice of 1000 Genomes over `chr1`, with the same
+pool, headless Chrome, real HTTP with range requests and arms interleaved:
 
 <!-- BEGIN GENERATED MEASUREMENT bgzf-pool-tabix -->
 
-| workload      | records | unpooled | pooled | speedup |
-| ------------- | ------- | -------- | ------ | ------- |
-| 50kb window   | 2,732   | 803ms    | 562ms  | 1.43x   |
-| 100kb window  | 4,878   | 1222ms   | 887ms  | 1.38x   |
-| 200kb window  | 7,627   | 1880ms   | 1289ms | 1.46x   |
-| 400kb window  | 8,503   | 2025ms   | 1390ms | 1.46x   |
-| 12 x 20kb pan | 7,627   | 2446ms   | 1822ms | 1.34x   |
+| workload      | records | unpooled | pooled | speedup | cached | scan share | inflate speedup |
+| ------------- | ------- | -------- | ------ | ------- | ------ | ---------- | --------------- |
+| 50kb window   | 2,732   | 498ms    | 246ms  | 2.02x   | 96ms   | 19%        | 2.68x           |
+| 100kb window  | 4,878   | 887ms    | 496ms  | 1.79x   | 234ms  | 26%        | 2.49x           |
+| 200kb window  | 7,627   | 1351ms   | 697ms  | 1.94x   | 360ms  | 27%        | 2.94x           |
+| 400kb window  | 8,503   | 1494ms   | 776ms  | 1.93x   | 400ms  | 27%        | 2.91x           |
+| 12 x 20kb pan | 7,627   | 1465ms   | 944ms  | 1.55x   | 452ms  | 31%        | 2.06x           |
 
 <!-- END GENERATED MEASUREMENT bgzf-pool-tabix -->
 
-The gap to BAM is structural. A tabix query decompresses its blocks and then
-scans the text inside them line by line, and only the first half is what the
-pool speeds up. Running a second pan over the same file answers from the
-decompressed chunk cache and so decompresses nothing, which measures the two
-halves apart: the line scan alone is 28% of the cold query, and the pool reaches
-the rest at 1.83x. Amdahl's law puts the end-to-end figure at 1.49x against
-1.45x measured. A 1000 Genomes line has a genotype field per sample, so that 28%
-is byte scanning on enormous lines. Getting past 1.5x on multi-sample VCF
-therefore means attacking
+A tabix query decompresses its blocks and then scans the text inside them line
+by line, and the pool speeds up only the first half. The `cached` column runs
+the same views again from the decompressed chunk cache, which decompresses
+nothing, and so measures the two halves apart: the line scan alone is
+19-31%<!--m:bgzf-pool-tabix.scanShare.range--> of the cold query, and the pool
+reaches the rest at 2.06-2.94x<!--m:bgzf-pool-tabix.inflateSpeedup.range-->. A
+1000 Genomes line has a genotype field per sample, so the scan is byte scanning
+on enormous lines, and getting much past 2x on multi-sample VCF means attacking
 [the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines).
 
 **The pool falls back without reporting it, so verify it engages.** jbrowse-web

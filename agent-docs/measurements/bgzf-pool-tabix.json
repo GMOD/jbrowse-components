@@ -1,10 +1,10 @@
 {
   "id": "bgzf-pool-tabix",
-  "measured": "2026-08-11",
+  "measured": "2026-10-15",
   "source": {
     "kind": "hand",
-    "repro": "Headless Chrome against ~/src/gmod/tabix-js/test/data/1kg.chr1.subset.vcf.gz over real HTTP range requests, 4 workers, arms interleaved, min of 6, machine on AC. Both arms assert the same record count on every run.",
-    "notes": "213MB of 1000 Genomes over chr1:10,109-622,047 — thousands of samples and ~60KB lines. The speedup column is computed from the two arms, so re-measuring one of them moves it."
+    "repro": "Headless Chrome on an i9-12900K (ssh ada) against ~/src/gmod/tabix-js/test/data/1kg.chr1.subset.vcf.gz over real HTTP range requests, @gmod/tabix 3.11.0 and @gmod/bgzf-filehandle 6.8.0, 4 workers. Each window starts at chr1:100,000; the pan is twelve 20kb views stepped 180kb/11 apart, so they tile chr1:100,000-300,000, run in order on one file with the chunk cache cleared before the first. Arms interleaved, 2 warmup rounds, min of 30 over three runs of 10. cached times the same views again straight after the unpooled arm's cold run, without clearing the chunk cache, so it is the scan alone; it comes from the third run, the only one that timed it. Both arms assert the same record count on every run.",
+    "notes": "213MB of 1000 Genomes over chr1:10,109-622,047 — thousands of samples and ~60KB lines. The speedup column is computed from the two arms, so re-measuring one of them moves it. The 2026-08-11 figures, 1.34-1.46x, came from a laptop before tabix 3.11.0 parsed pooled chunks in segments, so the rise mixes the two."
   },
   "columns": [
     { "key": "workload", "label": "workload" },
@@ -16,6 +16,19 @@
       "label": "speedup",
       "format": "x",
       "derived": "unpooledMs / pooledMs"
+    },
+    { "key": "cachedMs", "label": "cached", "format": "ms" },
+    {
+      "key": "scanShare",
+      "label": "scan share",
+      "format": "percent",
+      "derived": "100 * cachedMs / unpooledMs"
+    },
+    {
+      "key": "inflateSpeedup",
+      "label": "inflate speedup",
+      "format": "x",
+      "derived": "(unpooledMs - cachedMs) / (pooledMs - cachedMs)"
     }
   ],
   "rows": [
@@ -23,40 +36,45 @@
       "values": {
         "workload": "50kb window",
         "records": 2732,
-        "unpooledMs": 803,
-        "pooledMs": 562
+        "unpooledMs": 498,
+        "pooledMs": 246,
+        "cachedMs": 96
       }
     },
     {
       "values": {
         "workload": "100kb window",
         "records": 4878,
-        "unpooledMs": 1222,
-        "pooledMs": 887
+        "unpooledMs": 887,
+        "pooledMs": 496,
+        "cachedMs": 234
       }
     },
     {
       "values": {
         "workload": "200kb window",
         "records": 7627,
-        "unpooledMs": 1880,
-        "pooledMs": 1289
+        "unpooledMs": 1351,
+        "pooledMs": 697,
+        "cachedMs": 360
       }
     },
     {
       "values": {
         "workload": "400kb window",
         "records": 8503,
-        "unpooledMs": 2025,
-        "pooledMs": 1390
+        "unpooledMs": 1494,
+        "pooledMs": 776,
+        "cachedMs": 400
       }
     },
     {
       "values": {
         "workload": "12 x 20kb pan",
         "records": 7627,
-        "unpooledMs": 2446,
-        "pooledMs": 1822
+        "unpooledMs": 1465,
+        "pooledMs": 944,
+        "cachedMs": 452
       }
     }
   ]
