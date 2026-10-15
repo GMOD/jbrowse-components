@@ -9,7 +9,6 @@ import {
   addPermanentPlugin,
   onPermanentPluginsChanged,
   permanentPluginSafeMode,
-  permanentPluginSafeModeSuspects,
   readPermanentPlugins,
   reloadWithPermanentPlugins,
   removePermanentPlugin,
@@ -28,16 +27,6 @@ import type {
 } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
-
-// undefined when the permanent plugins loaded normally. The module decides this
-// once, when it is first imported, so every session in this load reads the same
-// answer — including one created by the plugin-install rebuild.
-function safeMode() {
-  const reason = permanentPluginSafeMode()
-  return reason
-    ? { reason, suspects: permanentPluginSafeModeSuspects() }
-    : undefined
-}
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -77,9 +66,10 @@ export default function sessionModelFactory({
         /**
          * #volatile
          * why this load skipped the list, or undefined when it loaded them,
-         * decided once at boot
+         * decided once at boot, so a session from the plugin-install rebuild
+         * reads the same answer
          */
-        permanentPluginsSafeMode: safeMode(),
+        permanentPluginsSafeMode: permanentPluginSafeMode(),
       }))
       .actions(self => ({
         /**

@@ -18,7 +18,6 @@ import { loadHubSpec } from './loadHubSpec.ts'
 import {
   markPermanentPluginLoadFinished,
   permanentPluginSafeMode,
-  permanentPluginSafeModeSuspects,
   readPermanentPlugins,
 } from './permanentPlugins.ts'
 import { discardPrewarmedWorker } from './prewarmedWorker.ts'
@@ -209,11 +208,11 @@ function preloadSessionAssemblies(
 // be missing their plugins on every visit with nothing on screen saying why.
 // Only when there is a list being skipped: an empty one is a no-op, not news.
 function notifyPermanentPluginSafeMode(rootModel: WebRootModel) {
-  const reason = permanentPluginSafeMode()
-  if (!reason || !readPermanentPlugins().some(p => !p.disabled)) {
+  const safeMode = permanentPluginSafeMode()
+  if (!safeMode || !readPermanentPlugins().some(p => !p.disabled)) {
     return
   }
-  const suspects = permanentPluginSafeModeSuspects()
+  const { reason, suspects } = safeMode
   rootModel.session?.notify(
     [
       reason === 'previousLaunchFailed'

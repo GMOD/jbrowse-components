@@ -208,26 +208,24 @@ function readSafeModeReason(): SafeModeReason | undefined {
 // Read once, at module load: the marker is cleared during a successful boot, so
 // asking later would answer a different question than the one callers mean.
 const safeModeReason = readSafeModeReason()
-const safeModeSuspects =
-  safeModeReason === 'previousLaunchFailed'
-    ? localStorageGetStringArray(markerKey())
-    : []
+const safeMode = safeModeReason
+  ? {
+      reason: safeModeReason,
+      suspects:
+        safeModeReason === 'previousLaunchFailed'
+          ? localStorageGetStringArray(markerKey())
+          : [],
+    }
+  : undefined
 
 /**
  * Why the permanent plugins are being skipped this load, or undefined when they
- * are loading normally.
+ * are loading normally. `suspects` are the plugins that were loading when the
+ * previous attempt failed to finish; empty under `?safeMode`, where nothing
+ * failed and there is nothing to accuse.
  */
 export function permanentPluginSafeMode() {
-  return safeModeReason
-}
-
-/**
- * The plugins that were loading when the previous attempt failed to finish, when
- * that is why they are off. Empty otherwise — including under `?safeMode`, where
- * nothing failed and there is nothing to accuse.
- */
-export function permanentPluginSafeModeSuspects() {
-  return safeModeSuspects
+  return safeMode
 }
 
 /**

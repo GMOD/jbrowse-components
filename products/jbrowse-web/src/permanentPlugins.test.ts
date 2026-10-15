@@ -216,8 +216,8 @@ test('a marker left by a crash turns safe mode on and names the suspects', async
   )
   const p = await importFresh()
   p.addPermanentPlugin(gwas)
-  expect(p.permanentPluginSafeMode()).toBe('previousLaunchFailed')
-  expect(p.permanentPluginSafeModeSuspects()).toEqual([
+  expect(p.permanentPluginSafeMode()?.reason).toBe('previousLaunchFailed')
+  expect(p.permanentPluginSafeMode()?.suspects).toEqual([
     'GWAS (https://example.com/gwas.js)',
   ])
   expect(p.getPermanentPlugins()).toEqual([])
@@ -250,15 +250,17 @@ test('nothing is accused when safe mode was asked for', async () => {
     JSON.stringify(['GWAS (x)']),
   )
   const p = await importFresh('/?config=volvox/config.json&safeMode')
-  expect(p.permanentPluginSafeMode()).toBe('requested')
-  expect(p.permanentPluginSafeModeSuspects()).toEqual([])
+  expect(p.permanentPluginSafeMode()).toEqual({
+    reason: 'requested',
+    suspects: [],
+  })
 })
 
 // A jbrowse-web url whose params live in the hash keeps this one there too, so
 // reading window.location.search directly would miss it.
 test('safeMode is read from the hash when the params live there', async () => {
   const p = await importFresh('/#config=volvox/config.json&safeMode=1')
-  expect(p.permanentPluginSafeMode()).toBe('requested')
+  expect(p.permanentPluginSafeMode()?.reason).toBe('requested')
   expect(p.getPermanentPlugins()).toEqual([])
 })
 
