@@ -183,6 +183,39 @@ describe('run_javascript envelope', () => {
     const second = await run(pluginManager, 'return 2')
     expect(second).not.toHaveProperty('notifications')
   })
+
+  // a settle inside the code spends the toast, so the answer has to carry it
+  // whichever way the call ends
+  describe('a toast the code settled on', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    })
+
+    it('rides the error when the code throws after the settle', async () => {
+      const { pluginManager, session } = fakeApp()
+      session.snackbarMessages.push({ message: 'track failed', level: 'error' })
+      await expect(
+        run(pluginManager, 'await jb.waitReady(5000); throw new Error("x")'),
+      ).rejects.toThrow(
+        /notifications raised before the error:\n- error: track failed/,
+      )
+    })
+
+    it('reaches the next answer when a parked job settled after its call', async () => {
+      const { pluginManager, session } = fakeApp()
+      await run(
+        pluginManager,
+        'globalThis.__mcpParkedJob = jb.waitReady(5000); return 1',
+      )
+      session.snackbarMessages.push({ message: 'track failed', level: 'error' })
+      await (globalThis as Record<string, unknown>).__mcpParkedJob
+      delete (globalThis as Record<string, unknown>).__mcpParkedJob
+
+      expect(await run(pluginManager, 'return 2')).toMatchObject({
+        notifications: [{ level: 'error', message: 'track failed' }],
+      })
+    })
+  })
 })
 
 // maxBytes bounds the value; the logs rode beside it bounded only by the entry

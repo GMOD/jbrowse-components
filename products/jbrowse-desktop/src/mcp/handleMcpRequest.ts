@@ -217,6 +217,22 @@ async function runUntilHalted<T>(
   }
 }
 
+// A toast is delivered once, by identity, and a settle inside the code is what
+// consumes it, so whatever the code's own settles took has to reach an answer.
+// Not the call's own: one that throws after a settle, and a job parked on
+// globalThis whose settles land after its call answered, both dropped them. Held
+// here instead and drained by the next answer, success or error, the way
+// pageErrors are.
+const consumedByCode: { level: string; message: string }[] = []
+
+function notificationsText(
+  notifications: { level: string; message: string }[],
+) {
+  return notifications.length > 0
+    ? `\nnotifications raised before the error:\n${notifications.map(n => `- ${n.level}: ${n.message}`).join('\n')}`
+    : ''
+}
+
 // The evaluations in flight, so `cancel` can reach the one a client gave up on.
 // Keyed by the bridge's own request id, which is what the cancel carries.
 const running = new Map<number, AbortController>()
@@ -258,15 +274,9 @@ async function evaluateWith(
   }
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 50_000
   const timeoutMs = clampTimeout(args.timeoutMs)
-  // A toast is delivered once, by identity, and a settle is what consumes it —
-  // so `await jb.waitReady(...)` inside the code took the notifications this
-  // envelope promises to carry, and returning anything but the settle dropped
-  // them. Collected here and merged below, so it does not matter which of the
-  // two read them first.
-  const consumed: { level: string; message: string }[] = []
   const jb = createJbApi(pluginManager, {
     onNotifications: messages => {
-      consumed.push(...messages)
+      consumedByCode.push(...messages)
     },
   })
   const fn = compileCode(code)
@@ -287,12 +297,15 @@ async function evaluateWith(
       abort,
     )
   } catch (e) {
-    throw new Error(codeErrorMessage(e, logs), { cause: e })
+    throw new Error(
+      `${codeErrorMessage(e, logs)}${notificationsText(consumedByCode.splice(0))}`,
+      { cause: e },
+    )
   }
   // read after the code ran: loadSessionSpec inside it replaces the session
   const liveSession = sessionOf(pluginManager)
   const notifications = [
-    ...consumed,
+    ...consumedByCode.splice(0),
     ...(liveSession ? undeliveredNotifications(liveSession) : []),
   ]
   const pageErrors = drainPageErrors()
