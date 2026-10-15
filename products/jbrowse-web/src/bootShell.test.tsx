@@ -184,14 +184,18 @@ test("the shell's logo is LogoFull in white", () => {
       .parseFromString(markup, 'text/html')
       .querySelector(selector)!
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    const blank: Node[] = []
+    const blank: Text[] = []
     while (walker.nextNode()) {
       if (!walker.currentNode.textContent?.trim()) {
-        blank.push(walker.currentNode)
+        blank.push(walker.currentNode as Text)
       }
     }
     for (const node of blank) {
-      node.parentNode?.removeChild(node)
+      node.remove()
+    }
+    // the formatter rewrites `fill:#fff` as `fill: #fff`; compare the CSS
+    for (const styled of el.querySelectorAll<SVGElement>('[style]')) {
+      styled.setAttribute('style', styled.style.cssText)
     }
     return el.outerHTML
   }
