@@ -124,3 +124,73 @@ test('each row takes the display’s rowColor from the samples file, under the a
   expect(new Set(plain.rows.color)).toEqual(new Set(['']))
   expect(plain.rowLegend.label).toEqual([])
 })
+
+test('the rows take the arrangement `rows` saves: its order first, its labels, its focus', async () => {
+  const plain = await engine.variants(DOG_VCF)
+  const [a, b, c] = plain.rows.name.slice(-3) as [string, string, string]
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { domain: [c, a], labels: { [c]: 'Proband' } } },
+  })
+  expect(t.rows.name.slice(0, 2)).toEqual([c, a])
+  expect(t.rows.name.slice(2)).toEqual(
+    plain.rows.name.filter(n => n !== a && n !== c),
+  )
+  expect(t.rows.label[0]).toBe('Proband')
+  expect(t.rows.label[1]).toBe(a)
+  const focused = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { kept: [b, a] } },
+  })
+  expect([...focused.rows.name].sort()).toEqual([a, b].sort())
+  expect(new Set(focused.cells.row)).toEqual(new Set([a, b]))
+})
+
+test('a sample named in the order places each of its haplotype rows', async () => {
+  const plain = await engine.variants(DOG_VCF)
+  const last = plain.rows.name.at(-1)!
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { unit: 'haplotype', rows: { domain: [last] } },
+  })
+  expect(t.rows.name.slice(0, 2)).toEqual([`${last} HP0`, `${last} HP1`])
+  expect(t.rows.sample.slice(0, 2)).toEqual([last, last])
+})
+
+test('a facet stacks the rows in a band per value of the samples file’s attribute', async () => {
+  const t = await engine.variants({
+    ...DOG_SV,
+    display: { facet: { field: 'group', domain: ['Gray wolf'] } },
+  })
+  expect(t.bands.label[0]).toBe('Gray wolf')
+  expect(t.bands.label.slice(1)).toEqual([...t.bands.label.slice(1)].sort())
+  expect(t.bands.start[0]).toBe(0)
+  expect(t.bands.end.at(-1)).toBe(t.rows.name.length)
+  t.bands.key.forEach((key, i) => {
+    for (let r = t.bands.start[i]!; r < t.bands.end[i]!; r++) {
+      expect(t.rows.band[r]).toBe(key)
+    }
+  })
+  const plain = await engine.variants(DOG_SV)
+  expect(plain.bands.key).toEqual([])
+  expect(new Set(plain.rows.band)).toEqual(new Set(['']))
+})
+
+test('records crowding a pixel fade by their count, as a zoomed-out row draws them', async () => {
+  const t = await engine.variants(DOG_VCF)
+  const { start, end } = t.variants
+  const near = engine.variantDensityAlpha({ start, end, bpPerPx: 0.1 })
+  expect(new Set(near)).toEqual(new Set([1]))
+  const far = engine.variantDensityAlpha({ start, end, bpPerPx: 50 })
+  expect(Math.min(...far)).toBeLessThan(1)
+  for (const a of far) {
+    expect(a).toBeGreaterThan(0)
+  }
+  const long = engine.variantDensityAlpha({
+    start: [0, 10, 11],
+    end: [5000, 11, 12],
+    bpPerPx: 64,
+  })
+  expect(long[0]).toBe(1)
+  expect(long[1]).toBeCloseTo(1 - 0.1 ** 0.5, 5)
+})

@@ -31,6 +31,8 @@ const engine = createTablesEngine()
     JSON.stringify(plain(await engine.wiggle(JSON.parse(args)))),
   variants: async (args: string) =>
     JSON.stringify(plain(await engine.variants(JSON.parse(args)))),
+  variantDensityAlpha: async (args: string) =>
+    JSON.stringify(engine.variantDensityAlpha(JSON.parse(args))),
   synteny: async (args: string) =>
     JSON.stringify(plain(await engine.synteny(JSON.parse(args)))),
   dotplot: async (args: string) =>

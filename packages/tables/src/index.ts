@@ -20,6 +20,7 @@ import {
 import { registerSequenceAdapters } from '@jbrowse/plugin-sequence/adapters'
 import {
   registerVariantAdapters,
+  variantDensityAlpha,
   variantTables,
 } from '@jbrowse/plugin-variants/tables'
 import {
@@ -154,6 +155,7 @@ export function createTablesEngine() {
     features: (args: FeatureTablesArgs) => onContig(args, featureTables),
     wiggle: (args: WiggleTablesArgs) => onContig(args, wiggleTables),
     variants: (args: VariantTablesArgs) => onContig(args, variantTables),
+    variantDensityAlpha,
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
     contigs: (args: ContigTablesArgs) => contigTables(pluginManager, args),

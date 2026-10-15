@@ -13,14 +13,26 @@ import {
   paintedColorEncoding,
   pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import {
+  arrangeRows,
+  bandRows,
+  orderRowsByDomain,
+} from '@jbrowse/tree-sidebar/arrangeRows'
+import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
 import { liftRowColor } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealtValueColors,
   resolveRowColors,
   rowColorKeyEntries,
+  rowFieldValue,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 
 import configSchemaFactory from './LinearMultiSampleVariantDisplay/configSchema.ts'
+import {
+  densityRung,
+  recordDensityAlpha,
+} from './LinearMultiSampleVariantDisplay/densityFade.ts'
 import {
   paintCellColors,
   paintFeatureColors,
@@ -37,13 +49,21 @@ import VcfAdapterF from './VcfAdapter/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { cellHueOf } from './shared/cellHue.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
-import { parseRowName } from './shared/getSources.ts'
+import {
+  expandPhasedRows,
+  resolveSampleName,
+  rowAliasOf,
+} from './shared/getSources.ts'
 
 import type { VariantUnit } from './shared/constants.ts'
+import type { ProcessedSource } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
+import type { RowAlias } from '@jbrowse/tree-sidebar/arrangeRows'
+
+type DisplayConf = ReturnType<ReturnType<typeof configSchemaFactory>['create']>
 
 /** Registers the adapters `variantTables` reads through: VCF, tabixed or not. */
 export function registerVariantAdapters(pluginManager: PluginManager) {
@@ -59,8 +79,9 @@ export interface VariantTablesArgs {
    * The display's config as a track's `displays` entry writes it for a
    * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
    * `'haplotype'`), `filter`, `minorAlleleFrequencyFilter`,
-   * `maxMissingnessFilter`, `referenceDrawingMode`, `shadeByDosage` and the
-   * rest of its slots. Unset reads the default display.
+   * `maxMissingnessFilter`, `referenceDrawingMode`, `shadeByDosage`, the
+   * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
+   * default display.
    */
   display?: Record<string, unknown>
   /**
@@ -98,8 +119,10 @@ function legendOf(scales: ColorScale[]) {
  * keeps, with its lane color; `cells`, each sample's (or under
  * `unit: 'haplotype'` each haplotype's) cell at each record, with its
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
- * rows the cells name; and `legend` and
- * `ramps`, the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
+ * rows the cells name, top to bottom as the display arranges them by `rows`
+ * and stacks them in `facet`'s bands, each with its label and band; `bands`,
+ * each band's value, label and the rows it spans; and `legend` and `ramps`,
+ * the key the display shows. Under `referenceDrawingMode: 'skip'`, the default,
  * a reference call draws no cell. For a host that draws them itself, such as
  * R through V8. The adapters must be registered on `pluginManager`
  * (`registerVariantAdapters`).
@@ -140,6 +163,20 @@ export async function variantTables(
   const unit: VariantUnit = readConfObject(conf, 'unit')
   const shade: boolean = readConfObject(conf, 'shadeByDosage')
   const filters: string[] = readConfObject(conf, 'filter')
+  const arrangement = {
+    domain: readConfObject(conf.rows, 'domain'),
+    labels: readConfObject(conf.rows, 'labels'),
+    kept: readConfObject(conf.rows, 'kept'),
+  }
+  const adapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId: 'tables',
+    adapterConfig,
+  })
+  const sources: ProcessedSource[] = (await adapter.getSources([])).map(
+    source => ({ ...source, sampleName: resolveSampleName(source) }),
+  )
+  const rowAlias = rowAliasOf(sources)
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -147,6 +184,11 @@ export async function variantTables(
     layout: 'genomic',
     unit,
     color: cellHue.read,
+    sampleFilter: arrangement.kept.length
+      ? keptRows(sources, arrangement.kept, rowAlias)
+          .map(resolveSampleName)
+          .sort()
+      : undefined,
     referenceDrawingMode: readConfObject(conf, 'referenceDrawingMode'),
     minorAlleleFrequencyFilter: readConfObject(
       conf,
@@ -168,26 +210,48 @@ export async function variantTables(
   const value = result.value
   const data = value.perRegionCellData[0]
 
-  const samples = new Set(value.sampleNames)
   const sampleIndex = buildSampleIndex(value.sampleNames)
-  const rowsParsed = value.rowNames.map(name => parseRowName(name, samples))
-  const rowSamples = rowsParsed.map(
-    (r, i) => r?.sampleName ?? value.rowNames[i]!,
-  )
-  const rowColor = await rowColorsOf(
-    pluginManager,
-    adapterConfig,
+  const expanded =
+    unit === 'haplotype'
+      ? expandPhasedRows({
+          rows: sources,
+          ploidy: value.samplePloidy,
+          domain: arrangement.domain,
+        })
+      : sources
+  const fetched = new Set(value.rowNames)
+  const arranged = keptRows(
+    arrangeRows(expanded, arrangement, {
+      unlistedRowsSort: 'source',
+      rowAlias,
+    }),
+    arrangement.kept,
+    rowAlias,
+  ).filter(row => fetched.has(row.name))
+  const facet = facetSettingOf({
+    field: readConfObject(conf.facet, 'field'),
+    domain: readConfObject(conf.facet, 'domain'),
+  })
+  const banded = facet
+    ? bandRows(arranged, row => rowFieldValue(row, facet.field), facet)
+    : { rows: arranged, bands: [] }
+  const drawn = banded.rows
+  const rowColor = rowColorsOf(
     conf,
-    value.rowNames,
-    rowSamples,
+    orderRowsByDomain(expanded, arrangement.domain, rowAlias),
+    drawn,
+    rowAlias,
   )
   const rows = {
-    name: value.rowNames,
-    sample: rowSamples,
-    haplotype: rowsParsed.map(r => r?.HP ?? 0),
-    ploidy: rowsParsed.map(r => value.samplePloidy[r?.sampleName ?? ''] ?? 0),
+    name: drawn.map(row => row.name),
+    label: drawn.map(row => row.label ?? row.name),
+    sample: drawn.map(row => row.sampleName),
+    haplotype: drawn.map(row => row.HP ?? 0),
+    ploidy: drawn.map(row => value.samplePloidy[row.sampleName] ?? 0),
+    band: drawn.map(row => (facet ? rowFieldValue(row, facet.field) : '')),
     color: rowColor.colors,
   }
+  const rowIndex = new Map(rows.name.map((name, i) => [name, i]))
 
   const variants = {
     start: [] as number[],
@@ -225,9 +289,13 @@ export async function variantTables(
     })
     for (let i = 0; i < data.numCells; i++) {
       const f = data.cellFeatureIndices[i]!
-      const row = data.cellRowIndices[i]!
+      const name = value.rowNames[data.cellRowIndices[i]!]!
+      const row = rowIndex.get(name)
+      if (row === undefined) {
+        continue
+      }
       cells.variant.push(f)
-      cells.row.push(value.rowNames[row]!)
+      cells.row.push(name)
       cells.genotype.push(
         decodeGenotype(
           value.genotypeDict,
@@ -268,6 +336,12 @@ export async function variantTables(
     ramps: scales.filter(s => s.kind === 'ramp').map(rampKeyOf),
     rowLegend: rowColor.legend,
     rowLegendTitle: rowColor.title,
+    bands: {
+      key: banded.bands.map(b => b.key),
+      label: banded.bands.map(b => b.label),
+      start: banded.bands.map(b => b.start),
+      end: banded.bands.map(b => b.end),
+    },
   }
 }
 
@@ -301,52 +375,65 @@ function cellDosage(
 /**
  * Each row's label-bar color as the display resolves it: the `rowColor`
  * field's value for the row's sample in the samples file, dealt the row
- * palette, else the sample's own `color`, else `''`; and the key the display
- * shows for an attribute.
+ * palette over `dealRows`, the rows in the config's order, else the sample's
+ * own `color`, else `''`; and the key the display shows for an attribute.
  */
-async function rowColorsOf(
-  pluginManager: PluginManager,
-  adapterConfig: Record<string, unknown>,
-  conf: ReturnType<ReturnType<typeof configSchemaFactory>['create']>,
-  rowNames: readonly string[],
-  rowSamples: readonly string[],
+function rowColorsOf(
+  conf: DisplayConf,
+  dealRows: readonly ProcessedSource[],
+  drawn: readonly ProcessedSource[],
+  rowAlias: RowAlias,
 ) {
-  const adapter = await getFeatureAdapterOrThrow({
-    pluginManager,
-    sessionId: 'tables',
-    adapterConfig,
-  })
-  const bySample = new Map(
-    (await adapter.getSources([])).map(source => [source.name, source]),
-  )
-  const sources = rowNames.map((name, i) => ({
-    ...bySample.get(rowSamples[i]!),
-    name,
-  }))
   const setting = liftRowColor({
     field: readConfObject(conf.rowColor, 'field'),
     domain: readConfObject(conf.rowColor, 'domain'),
     range: readConfObject(conf.rowColor, 'range'),
     unknown: readConfObject(conf.rowColor, 'unknown'),
   })
-  const dealt = dealtValueColors(setting, () => sources, false)
-  const resolved = resolveRowColors(sources, setting.field, dealt, undefined)
+  const dealt = dealtValueColors(setting, () => dealRows, false)
+  const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)
   const attribute = setting.field === 'name' ? '' : setting.field
   const entries = attribute
     ? rowColorKeyEntries(
-        sources,
+        dealRows,
         { setting, pairs: pairedColorsOf(setting), dealt, resolved },
         name => name,
       )
     : []
   return {
-    colors: rowNames.map(name => resolved.get(name) ?? ''),
+    colors: drawn.map(row => resolved.get(row.name) ?? ''),
     legend: {
       label: entries.map(e => e.label),
       color: entries.map(e => e.color ?? ''),
     },
     title: attribute ? capitalizeFirst(attribute) : '',
   }
+}
+
+/**
+ * #api
+ * Each record's alpha factor where records too short to see share pixels at
+ * `bpPerPx`, as the multi-sample variant display fades a zoomed-out row
+ * (`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a
+ * record covers its pixels alone. For a host that draws the cells at its own
+ * scale.
+ */
+export function variantDensityAlpha({
+  start,
+  end,
+  bpPerPx,
+}: {
+  start: readonly number[]
+  end: readonly number[]
+  bpPerPx: number
+}) {
+  const positions = new Uint32Array(start.length * 2)
+  for (let f = 0; f < start.length; f++) {
+    positions[2 * f] = start[f]!
+    positions[2 * f + 1] = end[f]!
+  }
+  const alpha = recordDensityAlpha(positions, densityRung(bpPerPx))
+  return alpha ? Array.from(alpha) : start.map(() => 1)
 }
 
 export type VariantTables = Awaited<ReturnType<typeof variantTables>>
