@@ -8,7 +8,10 @@ import {
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { PluggableElements } from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
-import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  SvgLegend,
+  svgLegendGutterWidth,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
@@ -46,7 +49,7 @@ export async function renderToSvg(
   // the axes on the pre-wait geometry while the dots were drawn against the new
   // one. (Same ordering rule as the LGV export's track heights.)
   const { width, borderX, viewWidth, viewHeight, height } = model
-  const legendWidth = model.svgLegendWidth()
+  const legendWidth = svgLegendGutterWidth(model, theme, viewHeight)
 
   const { pluginManager } = getEnv(model)
 
@@ -78,12 +81,7 @@ export async function renderToSvg(
               <g key={id}>{node}</g>
             ))}
           </SvgClipRect>
-          <SvgLegend
-            model={model}
-            width={viewWidth}
-            height={viewHeight}
-            opts={{ legendWidth }}
-          />
+          <SvgLegend model={model} width={viewWidth} height={viewHeight} />
         </g>
         <g transform={`translate(${borderX} ${viewHeight})`}>
           <HorizontalAxisRaw model={model} />

@@ -2,7 +2,10 @@ import { setConf } from '@jbrowse/core/configuration'
 import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { withFreshSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
+import { renderViewTracks } from '@jbrowse/plugin-linear-genome-view'
 import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
+import { render } from '@testing-library/react'
 import { when } from 'mobx'
 import { renderToString } from 'react-dom/server'
 
@@ -104,7 +107,10 @@ test('the export prints gene names where the panned glyphs are', async () => {
   expect(labelX(await exported()) - before).toBe(30)
 })
 
-test('the export carries the color key where the colors key something', async () => {
+// The lanes fill the view's width, so a key drawn over them hides the right
+// end of every lane: the view's export sets it beside the plot, in a gutter it
+// widens the canvas by.
+test('the view export carries the color key beside the lanes', async () => {
   const display = createDisplay()
   setConf(display, 'color', "jexl:randomColor(get(feature,'name'))")
   await when(() => display.features !== undefined, { timeout: 5000 })
@@ -128,16 +134,33 @@ test('the export carries the color key where the colors key something', async ()
     ),
   )
   await when(() => display.svgReady, { timeout: 5000 })
+  const view = display.lgv
+  const gutter = async () =>
+    (
+      await renderViewTracks({
+        view,
+        opts: {},
+        theme: undefined,
+        textHeight: 20,
+        trackLabels: 'offset',
+      })
+    ).legendWidth
 
-  const svg = renderToString(<svg>{await display.renderSvg()}</svg>)
-  expect(svg).toContain('color-legend')
-  expect(svg).toContain('galF')
-  expect(svg).toContain('wzzB')
-
-  display.setShowLegend(false)
   expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
     'color-legend',
   )
+  expect(await gutter()).toBeGreaterThan(0)
+  const key = render(
+    <svg>
+      <SvgLegend model={display} width={view.width} height={display.height} />
+    </svg>,
+  ).getByTestId('color-legend')
+  expect(key.textContent).toContain('galF')
+  expect(key.textContent).toContain('wzzB')
+  expect(key.getAttribute('transform')).toBe(`translate(${view.width + 10} 0)`)
+
+  display.setShowLegend(false)
+  expect(await gutter()).toBe(0)
 })
 
 test('the export prints the lane names, and none with names off', async () => {

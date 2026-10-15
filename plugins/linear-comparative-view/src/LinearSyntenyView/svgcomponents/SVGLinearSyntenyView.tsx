@@ -6,7 +6,10 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
-import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
+import {
+  SvgLegend,
+  svgLegendGutterWidth,
+} from '@jbrowse/display-kit/renderDisplaySvg'
 import {
   SVGStackedRow,
   defaultTextHeight,
@@ -103,6 +106,13 @@ export async function renderToSvg(
   // drawn against the new one. (Same ordering rule as the LGV export's track
   // heights.)
   const { width } = model
+  // the view's key sits beside the first ribbon band and each track's beside
+  // its row, all in one gutter right of the stack
+  const firstLevel = levels[0]
+  const legendWidth = Math.max(
+    ...rowTracks.map(r => r.legendWidth),
+    firstLevel ? svgLegendGutterWidth(model, theme, firstLevel.height) : 0,
+  )
 
   // one gutter for the whole export, wide enough for the widest label in any
   // row, so the rows stay vertically aligned with each other
@@ -113,7 +123,7 @@ export async function renderToSvg(
     fontFamily,
     session,
   })
-  const w = width + trackLabelOffset
+  const w = width + trackLabelOffset + legendWidth
 
   // The export is a vertical stack, top to bottom: each genome view, and
   // directly beneath it the synteny ribbon level between it and the next view.
@@ -164,15 +174,12 @@ export async function renderToSvg(
                     opts={opts}
                   />
                 }
-                // one legend for the whole view, in the topmost ribbon band —
-                // the same placement the on-screen LevelSection uses
                 legend={
                   i === 0 ? (
                     <SvgLegend
                       model={model}
                       width={width}
                       height={level.height}
-                      opts={undefined}
                     />
                   ) : undefined
                 }

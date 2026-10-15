@@ -13,11 +13,13 @@ function drawTracks({
   trackLabelOffset = 0,
   textHeight = 0,
   displays,
+  legendHeights = [],
 }: {
   trackLabels?: 'hidden' | 'left'
   trackLabelOffset?: number
   textHeight?: number
   displays: Record<string, unknown>[]
+  legendHeights?: (number | undefined)[]
 }) {
   const session = createTestSession({
     sessionSnapshot: {
@@ -47,13 +49,13 @@ function drawTracks({
           trackLabels={trackLabels}
           trackLabelOffset={trackLabelOffset}
           leftBuffer={0}
-          legendWidth={0}
           displayResults={displays.map((display, i) => ({
             track: {
               configuration: { trackId: `t${i}`, name: `t${i}` },
               displays: [{ height: 40, ...display }],
             } as any,
             result: <g data-testid="body" />,
+            legendHeight: legendHeights[i],
           }))}
         />
       </svg>
@@ -93,4 +95,47 @@ test('a left track name right-aligns in the gutter, and goes offset above a trac
       b.parentElement!.getAttribute('transform'),
     ),
   ).toEqual(['translate(300 0)', 'translate(300 20)'])
+})
+
+// The body is clipped to the plot, so a key inside that clip would be cut off at
+// the plot's right edge, and a key over the plot hides the data under it
+test("a key draws right of its track's body, outside the body's clip", () => {
+  const container = drawTracks({
+    trackLabels: 'left',
+    trackLabelOffset: 300,
+    textHeight: 20,
+    displays: [
+      {
+        id: 'keyed',
+        showLegend: true,
+        legendSpec: {
+          sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+        },
+        setShowLegend() {},
+        dismissLegendSection() {},
+      },
+    ],
+    legendHeights: [40],
+  })
+  const key = container.querySelector('[data-testid="color-legend"]')!
+  expect(key.closest('g[clip-path]')).toBeNull()
+  expect(key.getAttribute('transform')).toBe('translate(810 0)')
+  expect(key.parentElement!.getAttribute('transform')).toBe('translate(300 0)')
+})
+
+test('a track with no room for a key draws none', () => {
+  const container = drawTracks({
+    displays: [
+      {
+        id: 'keyed',
+        showLegend: true,
+        legendSpec: {
+          sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+        },
+        setShowLegend() {},
+        dismissLegendSection() {},
+      },
+    ],
+  })
+  expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
 })

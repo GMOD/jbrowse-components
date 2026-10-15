@@ -1,6 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -24,6 +25,11 @@ function draw(result: React.ReactNode) {
       <svg>{result as React.ReactElement}</svg>
     </ThemeProvider>,
   )
+}
+
+// The exporting view draws the key beside the display, through this component
+function drawKey(display: ReturnType<typeof clusteredDisplay>['display']) {
+  return draw(<SvgLegend model={display} width={800} height={display.height} />)
 }
 
 function clusteredDisplay() {
@@ -69,9 +75,9 @@ test('a dismissed color key stays out of the export', async () => {
   view.zoomTo(100)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   expect(display.colorScales.length).toBeGreaterThan(0)
-  expect(draw(await renderSvg(display, {}))).toContain('color-legend')
+  expect(drawKey(display)).toContain('color-legend')
   display.setShowLegend(false)
-  expect(draw(await renderSvg(display, {}))).not.toContain('color-legend')
+  expect(drawKey(display)).not.toContain('color-legend')
 })
 
 // A score-0 summary bar is the match color at alpha 64/255.
@@ -182,7 +188,9 @@ test('the exported key is in the export palette', async () => {
     const palette = resolvePalette({ mode })
     const svg = renderToString(
       <PaletteProvider palette={palette}>
-        <svg>{(await renderSvg(display, {})) as React.ReactElement}</svg>
+        <svg>
+          <SvgLegend model={display} width={800} height={display.height} />
+        </svg>
       </PaletteProvider>,
     )
     return { svg, stop: getCodonColors(palette).fill.stop }

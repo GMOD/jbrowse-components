@@ -4,7 +4,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { oneCell } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import { svgLegendGutterWidth } from './LegendMixin.ts'
 import {
   computeTriangleYScalar,
   triangleDataToScreen,
@@ -165,13 +164,6 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
           canvasWidth: self.canvasWidth,
           canvasHeight: self.matrixHeight,
         }
-      },
-      /**
-       * #method
-       * The export parks the key beside the matrix, which fills its band.
-       */
-      svgLegendWidth(): number {
-        return svgLegendGutterWidth(hostOf(self))
       },
     }))
     .views(self => ({

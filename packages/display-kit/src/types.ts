@@ -75,21 +75,10 @@ export interface ExportSvgDisplayOptions extends ExportSvgOptions {
    */
   theme?: ThemeOptions
   /**
-   * The legend area the export container reserved to the right of every
-   * track, the max of `svgLegendWidth()` across them. Absent or 0 — the
-   * synteny and breakpoint exports reserve none — and a display floats its
-   * legend over the plot instead; see {@link svgLegendAreaReserved}.
-   */
-  legendWidth?: number
-  /**
    * The display's own canvas alone: no axis, legend, or anything the screen
    * draws over that canvas (labels, trees, arcs, chips). For an export that
    * resamples the strip the way the circular view's rings sample the on-screen
    * canvas, so the figure warps what the screen warps.
    */
   plotOnly?: boolean
-}
-
-export function svgLegendAreaReserved(opts?: ExportSvgDisplayOptions) {
-  return (opts?.legendWidth ?? 0) > 0
 }

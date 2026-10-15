@@ -132,7 +132,6 @@ describe('the key derives from the scales', () => {
     expect(display.colorScales).toEqual([])
     expect(display.legendSpec.sections).toEqual([])
     expect(display.hasLegendKey).toBe(false)
-    expect(display.svgLegendWidth()).toBe(0)
   })
 
   it('one section per scale, in the order declared', () => {

@@ -23,13 +23,6 @@ const GRADIENT_BAR_HEIGHT = 10
 // the bar plus the row of domain labels under it
 const GRADIENT_ROW_HEIGHT = GRADIENT_BAR_HEIGHT + 4 + LEGEND_ROW_HEIGHT
 
-/**
- * Horizontal space the LGV export reserves beside the plot for a display whose
- * legend asked to sit off the plot (`LegendMixin.svgLegendWidth`): the widest
- * row this draws for a ramp, plus a margin either side.
- */
-export const LEGEND_SVG_GUTTER_WIDTH = GRADIENT_BAR_WIDTH + 40
-
 // A row's swatches, with the flat `color` shorthand read as the single
 // square it has always drawn.
 function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
@@ -138,38 +131,9 @@ function GradientRow({
   )
 }
 
-// Shared SVG color key: one translucent row per entry — a swatch and a label,
-// or a ramp bar with its domain ends — right-aligned within `canvasWidth`, or
-// at `x` when the caller places it (the LGV export's legend gutter). A <g>, so
-// an on-screen SVG overlay and the export share one renderer.
-//
-// `maxHeight` (the display height) caps the box: entries past what fits
-// collapse into a trailing "+N more" summary row, so the legend never overflows
-// its display — the full list stays reachable via the track menu.
-export default function SvgColorLegend({
-  entries,
-  canvasWidth,
-  x,
-  maxHeight,
-  testid,
-  idPrefix,
-}: {
-  entries: ColorLegendEntry[]
-  canvasWidth: number
-  x?: number
-  maxHeight?: number
-  // What a gradient's `<linearGradient id>` is minted from. An export passes
-  // the display's `svgNodeId`, so two exports of one unchanged view are the
-  // same bytes; on screen the React id is unique and enough.
-  idPrefix?: string
-  // opt-in marker for tests/screenshot specs: the legend renders only once
-  // color entries exist (i.e. real data has loaded and been binned), so it is a
-  // data-gated ready signal — unlike canvasDrawn, which can flip on an
-  // empty first paint
-  testid?: string
-}) {
-  const reactId = useId()
-  const legendId = idPrefix ?? reactId
+// What the key draws for `entries` under `maxHeight`, and how wide its paper
+// is, so a caller sizing a gutter measures the box this renders.
+function legendBox(entries: ColorLegendEntry[], maxHeight?: number) {
   const shown =
     maxHeight === undefined ? entries : fitEntries(entries, maxHeight)
   const cutRows = entries.slice(shown.length).filter(keysAColor).length
@@ -202,13 +166,68 @@ export default function SvgColorLegend({
     )
   }
   const totalWidth = contentRight + 6
-  const left = x ?? Math.max(0, canvasWidth - totalWidth - 4)
   const rowTops: number[] = []
   let y = 0
   for (const entry of shown) {
     rowTops.push(y)
     y += rowHeight(entry)
   }
+  return { shown, overflowLabel, textLeft, totalWidth, rowTops, bottom: y }
+}
+
+/**
+ * Width of the paper `SvgColorLegend` draws for `entries` under `maxHeight`, 0
+ * when it draws nothing.
+ */
+export function svgColorLegendWidth(
+  entries: ColorLegendEntry[],
+  maxHeight?: number,
+) {
+  const { shown, overflowLabel, totalWidth } = legendBox(entries, maxHeight)
+  return shown.length || overflowLabel ? totalWidth : 0
+}
+
+// Shared SVG color key: one translucent row per entry — a swatch and a label,
+// or a ramp bar with its domain ends — right-aligned within `canvasWidth`, or
+// at `x` when the caller places it (the LGV export's legend gutter). A <g>, so
+// an on-screen SVG overlay and the export share one renderer.
+//
+// `maxHeight` (the display height) caps the box: entries past what fits
+// collapse into a trailing "+N more" summary row, so the legend never overflows
+// its display — the full list stays reachable via the track menu.
+export default function SvgColorLegend({
+  entries,
+  canvasWidth,
+  x,
+  maxHeight,
+  testid,
+  idPrefix,
+}: {
+  entries: ColorLegendEntry[]
+  canvasWidth: number
+  x?: number
+  maxHeight?: number
+  // What a gradient's `<linearGradient id>` is minted from. An export passes
+  // the display's `svgNodeId`, so two exports of one unchanged view are the
+  // same bytes; on screen the React id is unique and enough.
+  idPrefix?: string
+  // opt-in marker for tests/screenshot specs: the legend renders only once
+  // color entries exist (i.e. real data has loaded and been binned), so it is a
+  // data-gated ready signal — unlike canvasDrawn, which can flip on an
+  // empty first paint
+  testid?: string
+}) {
+  const reactId = useId()
+  const legendId = idPrefix ?? reactId
+  const {
+    shown,
+    overflowLabel,
+    textLeft,
+    totalWidth,
+    rowTops,
+    bottom: y,
+  } = legendBox(entries, maxHeight)
+  const left = x ?? Math.max(0, canvasWidth - totalWidth - 4)
   return shown.length || overflowLabel ? (
     <g transform={`translate(${left} 0)`} data-testid={testid}>
       {shown.map((entry, idx) => (

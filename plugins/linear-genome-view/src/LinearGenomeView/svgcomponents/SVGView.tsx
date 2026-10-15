@@ -12,7 +12,7 @@ import type { ReactNode } from 'react'
 // Shared by all three exports that stack an LGV — the standalone one, and the
 // linear-synteny and breakpoint-split rows — so their per-view layout can't
 // drift. It did drift while the standalone export kept its own copy of these
-// four groups: only that copy widened the per-track clip by `legendWidth`.
+// four groups.
 export default function SVGView({
   view,
   displayResults,
@@ -25,7 +25,6 @@ export default function SVGView({
   tracksHeight,
   showGridlines,
   leftBuffer,
-  legendWidth = 0,
 }: {
   view: LinearGenomeViewModel
   displayResults: SvgDisplayResult[]
@@ -52,10 +51,6 @@ export default function SVGView({
   // (a wiggle Y-scalebar) isn't clipped. Callers that translate the whole view
   // by a margin pass that margin here.
   leftBuffer: number
-  // Right gutter the caller widened its canvas by for legends, so the per-track
-  // clip reaches them. 0 for a stacked export, which has no room to give and
-  // whose displays float their legends over the plot instead.
-  legendWidth?: number
 }) {
   return (
     <>
@@ -74,7 +69,6 @@ export default function SVGView({
           displayResults={displayResults}
           trackLabelOffset={trackLabelOffset}
           leftBuffer={leftBuffer}
-          legendWidth={legendWidth}
         />
       </g>
       {/*

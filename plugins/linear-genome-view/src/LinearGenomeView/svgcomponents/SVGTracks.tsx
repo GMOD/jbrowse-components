@@ -2,6 +2,7 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { getSession } from '@jbrowse/core/util'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
@@ -21,7 +22,6 @@ export default function SVGTracks({
   trackLabels,
   trackLabelOffset,
   leftBuffer,
-  legendWidth,
 }: {
   displayResults: SvgDisplayResult[]
   model: LGV
@@ -30,7 +30,6 @@ export default function SVGTracks({
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   leftBuffer: number
-  legendWidth: number
 }) {
   const session = getSession(model)
   const x = Math.max(-model.offsetPx, 0)
@@ -41,7 +40,7 @@ export default function SVGTracks({
   )
   return (
     <>
-      {displayResults.map(({ track, result }, i) => {
+      {displayResults.map(({ track, result, legendHeight }, i) => {
         const conf = track.configuration
         const trackName = svgTrackName(track, session)
         const display = track.displays[0]!
@@ -58,7 +57,7 @@ export default function SVGTracks({
               id={`track-clip-${svgNodeId(model)}-${conf.trackId}`}
               x={-leftBuffer}
               y={textOffset}
-              width={model.width + trackLabelOffset + leftBuffer + legendWidth}
+              width={model.width + trackLabelOffset + leftBuffer}
               height={display.height}
             >
               <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
@@ -70,6 +69,15 @@ export default function SVGTracks({
                 )}
               </g>
             </SvgClipRect>
+            {legendHeight === undefined ? null : (
+              <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
+                <SvgLegend
+                  model={display}
+                  width={model.width}
+                  height={legendHeight}
+                />
+              </g>
+            )}
             <SVGTrackLabel
               trackName={trackName}
               fontSize={fontSize}

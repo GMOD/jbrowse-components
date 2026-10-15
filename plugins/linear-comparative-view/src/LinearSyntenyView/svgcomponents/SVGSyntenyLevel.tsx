@@ -32,8 +32,8 @@ export default function SVGSyntenyLevel({
   // over every display's ribbons, as the screen overlay is, and inside the clip
   // because a mark is laid out in the same overdrawn view coordinates they are
   offscreenMates?: ReactNode
-  // the color-by key, floated over the band as it is on screen. Outside the
-  // clip so a legend taller than a short level isn't cropped.
+  // the color-by key, beside the band. Outside the clip, which ends at the
+  // band's right edge.
   legend?: ReactNode
 }) {
   return (

@@ -1,5 +1,4 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { LEGEND_SVG_GUTTER_WIDTH } from '@jbrowse/core/ui/SvgColorLegend'
 import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -41,7 +40,7 @@ function shownLegendSpec(scales: ColorScale[], dismissed: string[]) {
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
+ * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), and answers whether there is a key to offer (`hasLegendKey`). `DisplayChrome` draws the on-screen key and the exporting view the exported one, in a gutter right of the plot, so a display places neither
  *
  * A key derived from the scales the painter resolves colors through lists only
  * colors that were painted. A legend hand-built from a second copy of the rules
@@ -99,16 +98,6 @@ export default function LegendMixin() {
        * right edge — the multi-way lanes' scales. Not read by the export.
        */
       get legendRight(): number {
-        return 0
-      },
-      /**
-       * #method
-       * Overridable hook (default 0): the width the LGV export reserves beside
-       * the plot for this legend. A display whose plot fills its band — the
-       * contact matrix, the LD triangle — answers `svgLegendGutterWidth(self)`
-       * so the key does not cover it.
-       */
-      svgLegendWidth(): number {
         return 0
       },
     }))
@@ -174,19 +163,6 @@ export default function LegendMixin() {
         self.dismissedLegendSections = [...self.dismissedLegendSections, id]
       },
     }))
-}
-
-/**
- * The `svgLegendWidth()` a display whose plot fills its band answers with.
- * Deliberately NOT gated on whether there is legend data: SVGLinearGenomeView
- * maxes this across tracks *before* awaiting each `renderSvg`, so on a headless
- * export (jbrowse-img — the fetch is a debounced autorun) the data has not
- * landed yet and a data-dependent answer reserved nothing, leaving the legend
- * to float over the matrix. Reserving on the setting alone costs an unused
- * strip only when the track loads empty or errors.
- */
-export function svgLegendGutterWidth(self: { showLegend: boolean }) {
-  return self.showLegend ? LEGEND_SVG_GUTTER_WIDTH : 0
 }
 
 /**

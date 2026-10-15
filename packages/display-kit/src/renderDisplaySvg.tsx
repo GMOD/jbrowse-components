@@ -5,9 +5,12 @@ import { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
+import SvgColorLegend, {
+  svgColorLegendWidth,
+} from '@jbrowse/core/ui/SvgColorLegend'
 import { highlightBoxColors } from '@jbrowse/core/ui/hoverBoxStyle'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { splitPaintAlpha } from '@jbrowse/core/util/svgColorProps'
 import {
   AXIS_RIGHT_INSET_PX,
@@ -22,25 +25,20 @@ import {
 } from '@jbrowse/display-ui'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
-import {
-  axisCaptionsReservedPx,
-  bandsOnScreen,
-  captionedAxes,
-  isAxisHost,
-} from './axisHost.ts'
+import { bandsOnScreen, captionedAxes, isAxisHost } from './axisHost.ts'
 import { containingHost } from './foundationView.ts'
 import { isPinnedInkHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
-import { svgLegendAreaReserved } from './types.ts'
 
 import type { AxisHost } from './axisHost.ts'
 import type { HighlightRect } from './highlightHost.ts'
-import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions, ExportTextStyle } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { ThemeOptions } from '@mui/material'
 import type React from 'react'
 
 /**
@@ -93,50 +91,61 @@ export interface LgvSvgBodyProps<M> {
   opts: ExportSvgDisplayOptions | undefined
 }
 
-// Gap between the plot's right edge and a legend parked in the export's
-// reserved gutter.
+// Gap between the plot's right edge and the legend beside it.
 const GUTTER_INSET = 10
 
+function exportedLegendEntries(model: object, palette: JBrowsePalette) {
+  return isLegendHost(model) && model.showLegend
+    ? legendEntries(model.legendSpecIn?.(palette) ?? model.legendSpec)
+    : []
+}
+
 /**
- * The exported key of a display composing `LegendMixin`, drawn by the shell
- * off `legendSpecIn` in the export's palette: the key the chrome draws on
- * screen, in the export's theme. Over the plot's
- * top-right corner, below any axis captions there, as every display placed its
- * own; beside the plot, from its top, when the display reserved the export
- * gutter (`svgLegendWidth`) and the container granted it. `legendTop` is not
- * read: the controls it clears on screen are not exported. No `onDismiss`: an
- * exported legend cannot be clicked. Exported so a display's test can render
- * its key without a fetch.
+ * Px an export widens its canvas by for `model`'s key beside a `width`-wide
+ * plot, as {@link SvgLegend} draws it under `maxHeight`: 0 for a model with no
+ * key to draw, so a figure with no legend gets no empty strip. Measured after
+ * the model's data has landed, since most keys list what was loaded.
+ */
+export function svgLegendGutterWidth(
+  model: object,
+  theme: ThemeOptions | undefined,
+  maxHeight: number,
+) {
+  const { palette } = resolveStyleTheme({ configTheme: theme })
+  const width = svgColorLegendWidth(
+    exportedLegendEntries(model, palette),
+    maxHeight,
+  )
+  return width > 0 ? width + GUTTER_INSET : 0
+}
+
+/**
+ * The exported key of a display or view composing `LegendMixin`'s members,
+ * drawn beside a `width`-wide plot from its top, in the gutter the export
+ * reserved with {@link svgLegendGutterWidth}: the key the chrome draws on
+ * screen, in the export's palette, cut to `height` with a "+N more" row. No
+ * `onDismiss`: an exported legend cannot be clicked.
  */
 export function SvgLegend({
   model,
   width,
   height,
-  opts,
 }: {
-  model: LegendHost
+  model: object
   width: number
   height: number
-  opts: ExportSvgDisplayOptions | undefined
 }) {
   const palette = usePalette()
-  const gutter =
-    svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
-  const top = !gutter && isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
-  if (!model.showLegend) {
-    return null
-  }
-  const key = (
+  return isLegendHost(model) ? (
     <SvgColorLegend
-      entries={legendEntries(model.legendSpecIn?.(palette) ?? model.legendSpec)}
+      entries={exportedLegendEntries(model, palette)}
       canvasWidth={width}
-      x={gutter ? width + GUTTER_INSET : undefined}
-      maxHeight={height - top}
+      x={width + GUTTER_INSET}
+      maxHeight={height}
       testid="color-legend"
       idPrefix={`legend-${svgNodeId(model)}`}
     />
-  )
-  return top > 0 ? <g transform={`translate(0 ${top})`}>{key}</g> : key
+  ) : null
 }
 
 /**
@@ -260,7 +269,8 @@ export function SvgYAxis({
  * resolve the view geometry once, mount the single terminal-state gate around
  * the display's own body, clip the body to its box under a model-scoped id,
  * draw the pinned highlight of a display that has one over the body inside that
- * clip, and append the axes and legend of a display that has them outside it.
+ * clip, and append the axes of a display that has them outside it. The legend
+ * is the exporting view's to place, beside the plot (`SvgLegend`).
  *
  * A display that failed to load fails the whole export, in `awaitSvgReady`
  * itself. `regionTooLarge` is the other terminal and stays drawn: see
@@ -323,14 +333,6 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
       </SvgClipRect>
       {isAxisHost(model) && overlays ? (
         <SvgYAxis model={model} view={view} width={view.width} />
-      ) : null}
-      {isLegendHost(model) && overlays ? (
-        <SvgLegend
-          model={model}
-          width={view.width}
-          height={height}
-          opts={opts}
-        />
       ) : null}
     </SvgChrome>
   )

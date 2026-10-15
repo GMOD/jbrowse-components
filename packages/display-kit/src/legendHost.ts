@@ -3,10 +3,9 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * What the two chrome shells read to draw a display's legend: the members
- * `LegendMixin` brings, named structurally so `DisplayChrome` and
- * `renderDisplaySvg` can detect the mixin on any model handed to them without
- * importing it.
+ * What `DisplayChrome` and the export's `SvgLegend` read to draw a legend: the
+ * members `LegendMixin` brings, named structurally so both can detect the mixin
+ * on any model handed to them without importing it.
  */
 export interface LegendHost extends IStateTreeNode {
   id: string
@@ -21,8 +20,6 @@ export interface LegendHost extends IStateTreeNode {
    * `focusesRows`; a click on one of their entries focuses the rows it names.
    */
   focusLegendEntry?(scaleId: string, value: string): void
-  /** Width the LGV export reserves beside the plot for this legend, 0 to float it over the plot. */
-  svgLegendWidth?(): number
   /** Px the on-screen key is pushed down from its own inset, clearing a control there. */
   legendTop?: number
   /** Px the on-screen key is pushed left from its own inset, clearing a column of text there. */

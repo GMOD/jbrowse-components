@@ -46,8 +46,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 
-  // owns the two orderings this used to spell out by hand: legendWidth before
-  // the awaits, tracksHeight after them. Every display's `renderSvg` owns its
+  // owns the ordering this used to spell out by hand: the stack's height and
+  // legend gutter measured after the awaits. Every display's `renderSvg` owns its
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
@@ -58,9 +58,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       theme,
       textHeight,
       trackLabels,
-      // the standalone export is the one with room to give: it widens its
-      // canvas below so a legend sits beside the plot rather than over it
-      reserveLegendWidth: true,
     })
   notifySkippedSvgTracks(session, skippedTracks)
 
@@ -115,7 +112,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           tracksHeight={tracksHeight}
           showGridlines={showGridlines}
           leftBuffer={exportMargin}
-          legendWidth={legendWidth}
         />
       </g>
     ),

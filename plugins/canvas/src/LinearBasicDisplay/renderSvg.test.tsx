@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { createJBrowseTheme, legendSpecOf } from '@jbrowse/core/ui'
+import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
@@ -265,40 +266,34 @@ describe('renderSvg', () => {
     expect(renderResult(result)).not.toContain('rgb(255,177,29)')
   })
 
-  // The shell draws the key off `legendSpec`, so a display places none of its
-  // own: the same rows the chrome shows on screen, or nothing when the reader
-  // put the key away.
-  it('bakes the display color key into the export, and omits it when absent or dismissed', async () => {
+  // The exporting view draws the key off `legendSpec` beside the plot, so the
+  // display's own export carries none: the same rows the chrome shows on
+  // screen, or nothing when the reader put the key away.
+  it('leaves the color key to the view, which draws it from the same spec', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
-    const exportWith = async (showLegend: boolean) =>
+    const modelWith = (showLegend: boolean) =>
+      makeModel({
+        laidOutDataMap: new Map([[0, data]]),
+        showLegend,
+        legendSpec: legendSpecOf([
+          {
+            kind: 'categorical',
+            id: 'impact',
+            entries: [
+              { value: 'HIGH', label: 'HIGH', color: '#d32f2f' },
+              { value: 'LOW', label: 'LOW', color: '#fbc02d' },
+            ],
+          },
+        ]),
+      })
+    const keyOf = (showLegend: boolean) =>
       renderResult(
-        await renderSvg(
-          makeModel({
-            laidOutDataMap: new Map([[0, data]]),
-            showLegend,
-            legendSpec: legendSpecOf([
-              {
-                kind: 'categorical',
-                id: 'impact',
-                entries: [
-                  { value: 'HIGH', label: 'HIGH', color: '#d32f2f' },
-                  { value: 'LOW', label: 'LOW', color: '#fbc02d' },
-                ],
-              },
-            ]),
-          }),
-        ),
+        <SvgLegend model={modelWith(showLegend)} width={800} height={100} />,
       )
-    const withKey = await exportWith(true)
-    expect(withKey).toContain('HIGH')
-    expect(withKey).toContain('#d32f2f')
-
-    expect(await exportWith(false)).not.toContain('HIGH')
-
-    const withoutKey = renderResult(
-      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
-    )
-    expect(withoutKey).not.toContain('HIGH')
+    expect(renderResult(await renderSvg(modelWith(true)))).not.toContain('HIGH')
+    expect(keyOf(true)).toContain('HIGH')
+    expect(keyOf(true)).toContain('#d32f2f')
+    expect(keyOf(false)).not.toContain('HIGH')
   })
 
   // Runs last: SvgCanvas numbers clip ids from a module-global counter, so

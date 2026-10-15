@@ -20,13 +20,13 @@ function createDisplay(sources: Source[]) {
   return display
 }
 
-// The key is the export shell's, so these cases render the shell's own
-// component over this model: what they check is that it keys the display off
+// The key is the exporting view's, so these cases render its component over
+// this model: what they check is that it keys the display off
 // the same scales the screen does.
 function renderKey(model: ReturnType<typeof createDisplay>) {
   return render(
     <svg>
-      <SvgLegend model={model} width={800} height={model.height} opts={{}} />
+      <SvgLegend model={model} width={800} height={model.height} />
     </svg>,
   )
 }

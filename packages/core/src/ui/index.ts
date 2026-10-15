@@ -144,7 +144,6 @@ export type { MouseState, MouseTracker } from './useMouseTracking.ts'
 export { VIEW_HEADER_HEIGHT } from './viewHeaderHeight.ts'
 export {
   LEGEND_ROW_HEIGHT,
-  LEGEND_SVG_GUTTER_WIDTH,
   LEGEND_SWATCH,
   default as SvgColorLegend,
 } from './SvgColorLegend.tsx'

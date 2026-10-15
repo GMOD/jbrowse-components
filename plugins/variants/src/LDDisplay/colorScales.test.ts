@@ -1,5 +1,4 @@
 import { setConf } from '@jbrowse/core/configuration'
-import { LEGEND_SVG_GUTTER_WIDTH } from '@jbrowse/core/ui/SvgColorLegend'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -40,14 +39,4 @@ test('an end pinned inside 0 to 1 keys as at-most or at-least', () => {
   expect(display.legendSpec.sections[0]!.items[0]).toMatchObject({
     gradient: { minLabel: '≤0.2', maxLabel: '≥0.8' },
   })
-})
-
-// The triangle fills its band, so the export parks the key beside it — on the
-// setting alone, since the container measures this before any data lands.
-test('the export gutter is reserved on the setting, not on the data', () => {
-  const { display } = createTestEnvironment().createDisplay()
-  display.setShowLegend(true)
-  expect(display.svgLegendWidth()).toBe(LEGEND_SVG_GUTTER_WIDTH)
-  display.setShowLegend(false)
-  expect(display.svgLegendWidth()).toBe(0)
 })

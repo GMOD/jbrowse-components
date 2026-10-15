@@ -22,7 +22,6 @@ export default function SVGStackedRow({
   trackLabels,
   trackLabelOffset,
   showGridlines,
-  legendWidth,
   showAssemblyName,
   showScalebar,
 }: {
@@ -36,7 +35,6 @@ export default function SVGStackedRow({
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   showGridlines: boolean
-  legendWidth?: number
   showAssemblyName?: boolean
   showScalebar?: boolean
 }) {
@@ -62,7 +60,6 @@ export default function SVGStackedRow({
         tracksHeight={rendered.tracksHeight}
         showGridlines={showGridlines}
         leftBuffer={margin}
-        legendWidth={legendWidth}
       />
     </g>
   )

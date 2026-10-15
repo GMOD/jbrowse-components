@@ -1,7 +1,8 @@
 import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import { max } from '@jbrowse/core/util'
+import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
 
-import { totalHeight } from './util.ts'
+import { labelOffset, totalHeight, trackBoxOffsets } from './util.ts'
 
 import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -20,7 +21,7 @@ export interface SvgExportTrack {
   minimized: boolean
   displays: {
     height: number
-    svgLegendWidth?: () => number
+    regionTooLarge?: boolean
     svgSidebarWidth?: LgvSvgExportable['svgSidebarWidth']
     /**
      * Optional, and the option is the point: SVG export is a substantial extra
@@ -37,10 +38,14 @@ export interface SvgExportTrack {
 export interface ViewTracksSvg<T> {
   /** the tracks that were rendered, in the order they were laid out */
   tracks: T[]
-  displayResults: { track: T; result: ReactNode }[]
+  /**
+   * `legendHeight` is the room a track's key has in the gutter, absent for a
+   * track with no key to draw
+   */
+  displayResults: { track: T; result: ReactNode; legendHeight?: number }[]
   /** total height of the stack, valid only because the renders above resolved */
   tracksHeight: number
-  /** 0 unless `reserveLegendWidth` was asked for */
+  /** px the caller widens its canvas by for the keys right of the plot */
   legendWidth: number
   /**
    * Visible tracks left out because their display implements no `renderSvg`.
@@ -54,23 +59,21 @@ export interface ViewTracksSvg<T> {
  * One view's worth of exported track bodies: which tracks are in, their
  * rendered SVG, and how tall the stack ends up.
  *
- * It exists to own the two orderings that each of the three view exports got
- * wrong at least once, because neither is visible at a call site that merely
- * lists the same statements in some order:
+ * It exists to own an ordering that each of the three view exports got wrong at
+ * least once, because it is not visible at a call site that merely lists the
+ * same statements in some order: the geometry is measured **after** the
+ * awaits.
  *
- * - `legendWidth` is measured **before** the awaits, because it is an input to
- *   them: a display draws its legend beside its body or floating over it
- *   depending on whether the container reserved room. That is why
- *   `svgLegendWidth` is specified as a function of the *settings* and not of
- *   the loaded data — see LinearHicDisplay's implementation.
- * - `tracksHeight` is measured **after** them. A display whose height follows
- *   its data (grow mode; `LinearMultiRowFeatureDisplay` is `nrow *
- *   effectiveRowHeight`) only reaches its final height once `renderSvg`'s
- *   readiness wait resolves, and `SVGTracks` re-reads `displays[0].height`
- *   later still. Measuring up front sized the canvas for the pre-fetch height
- *   and the taller bodies ran off the bottom of the export — and in the
- *   breakpoint-split export it also desynced the overlay anchors, resolved
- *   after, from the view tops, which weren't.
+ * - `tracksHeight`: a display whose height follows its data (grow mode;
+ *   `LinearMultiRowFeatureDisplay` is `nrow * effectiveRowHeight`) only reaches
+ *   its final height once `renderSvg`'s readiness wait resolves, and
+ *   `SVGTracks` re-reads `displays[0].height` later still. Measuring up front
+ *   sized the canvas for the pre-fetch height and the taller bodies ran off the
+ *   bottom of the export — and in the breakpoint-split export it also desynced
+ *   the overlay anchors, resolved after, from the view tops, which weren't.
+ * - `legendWidth`: most keys list what was loaded, and on a headless export
+ *   (jbrowse-img) nothing has loaded before the waits. Measured after, a track
+ *   with no key reserves nothing and the figure has no empty strip.
  *
  * The minimized filter and the track order are here for the same reason: the
  * reserved height, the rendered bodies, the label gutter and (breakpoint-split)
@@ -83,17 +86,12 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   theme,
   textHeight,
   trackLabels,
-  reserveLegendWidth = false,
 }: {
   view: { pinnedTracks: T[]; unpinnedTracks: T[] }
   opts: ExportSvgOptions
   theme: ThemeOptions | undefined
   textHeight: number
   trackLabels: TrackLabelMode
-  // Whether the caller widens its canvas by the returned `legendWidth`. Off by
-  // default: a stacked export (synteny, breakpoint-split) has no gutter to give
-  // a legend, so its displays float theirs over the plot instead.
-  reserveLegendWidth?: boolean
 }): Promise<ViewTracksSvg<T>> {
   // Partitioned before anything is measured, so a skipped track reserves no
   // height and takes no place in the label gutter — the alternative is a figure
@@ -107,30 +105,50 @@ export async function renderViewTracks<T extends SvgExportTrack>({
       ;(track.displays[0]?.renderSvg ? tracks : skippedTracks).push(track)
     }
   }
-  const legendWidth = reserveLegendWidth
-    ? max(
-        tracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),
-        0,
-      )
-    : 0
   // `awaitSvgRenders` over `Promise.all`: a track whose data won't load fails
   // the export, and a view with three broken tracks should say so once rather
   // than name whichever rejected first
   const displayResults = await awaitSvgRenders(
     tracks.map(async track => ({
       track,
-      result: await track.displays[0]!.renderSvg!({
-        ...opts,
-        theme,
-        legendWidth,
-      }),
+      result: await track.displays[0]!.renderSvg!({ ...opts, theme }),
     })),
   )
+  const tracksHeight = totalHeight(tracks, trackLabels, textHeight)
+  const keyed = tracks.map(
+    track =>
+      !opts.plotOnly &&
+      !track.displays[0]!.regionTooLarge &&
+      svgLegendGutterWidth(track.displays[0]!, theme, Infinity) > 0,
+  )
+  const bodyTops = trackBoxOffsets(tracks, trackLabels, textHeight).map(
+    (top, i) => top + labelOffset(tracks[i]!, trackLabels, textHeight),
+  )
+  // A key runs from its body's top to the next keyed body's, or to the foot of
+  // the stack, so a long key beside a short track carries on past the unkeyed
+  // tracks below it before it cuts to "+N more".
+  const legendHeights = keyed.map((isKeyed, i) => {
+    const next = keyed.findIndex((k, j) => k && j > i)
+    return isKeyed
+      ? (next === -1 ? tracksHeight : bodyTops[next]!) - bodyTops[i]!
+      : undefined
+  })
   return {
     tracks,
-    displayResults,
-    tracksHeight: totalHeight(tracks, trackLabels, textHeight),
-    legendWidth,
+    displayResults: displayResults.map((r, i) => ({
+      ...r,
+      legendHeight: legendHeights[i],
+    })),
+    tracksHeight,
+    legendWidth: max(
+      tracks.map((track, i) => {
+        const height = legendHeights[i]
+        return height === undefined
+          ? 0
+          : svgLegendGutterWidth(track.displays[0]!, theme, height)
+      }),
+      0,
+    ),
     skippedTracks,
   }
 }

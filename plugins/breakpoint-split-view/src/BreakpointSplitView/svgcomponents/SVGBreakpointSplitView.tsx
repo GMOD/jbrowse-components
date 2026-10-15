@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { LEGEND_ROW_HEIGHT } from '@jbrowse/core/ui/SvgColorLegend'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, max } from '@jbrowse/core/util'
 import {
   SVGStackedRow,
   defaultTextHeight,
@@ -103,7 +103,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     fontFamily,
     session,
   })
-  const w = width + trackLabelOffset
+  const w =
+    width +
+    trackLabelOffset +
+    max(
+      rowTracks.map(r => r.legendWidth),
+      0,
+    )
 
   // stack the views top to bottom: one running top offset positions each group,
   // anchors that view's overlay ribbons, and ends as the total content height,

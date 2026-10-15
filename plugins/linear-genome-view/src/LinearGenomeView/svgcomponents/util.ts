@@ -35,6 +35,8 @@ export interface SvgDisplayResult {
     } & SidebarDisplay)[]
   }
   result: ReactNode
+  /** the room its key has in the export's legend gutter, absent for no key */
+  legendHeight?: number
 }
 
 export const trackSpacing = 2

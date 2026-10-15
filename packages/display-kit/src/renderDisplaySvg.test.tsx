@@ -2,7 +2,11 @@ import { measureText } from '@jbrowse/core/util/measureText'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
 
-import { SvgLegend, renderDisplaySvg } from './renderDisplaySvg.tsx'
+import {
+  SvgLegend,
+  renderDisplaySvg,
+  svgLegendGutterWidth,
+} from './renderDisplaySvg.tsx'
 
 import type { LegendHost } from './legendHost.ts'
 import type { LgvSvgBodyProps } from './renderDisplaySvg.tsx'
@@ -316,59 +320,82 @@ describe('the y axis', () => {
     expect(rules.map(rule => rule.getAttribute('y1'))).toEqual(['20', '80'])
     expect(labelsOf(container).filter(t => t === 'cut')).toHaveLength(2)
   })
-
-  // The chrome stacks the key over the axis on screen; a right-side axis and
-  // the key share the top-right corner, so the export keeps the same order.
-  test('the key draws over the axis, as on screen', async () => {
-    const host = axisHost([scale({ side: 'right' })])
-    const model = Object.create(host, {
-      showLegend: { value: true },
-      legendSpec: {
-        value: {
-          sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
-        },
-      },
-      setShowLegend: { value: () => {} },
-    }) as TestDisplayModel
-    const { container } = await renderShell(model, [])
-    const legend = container.querySelector('[data-testid="color-legend"]')!
-    const axisLabel = [...container.querySelectorAll('text')].find(
-      t => !legend.contains(t),
-    )!
-    expect(
-      axisLabel.compareDocumentPosition(legend) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
-  })
 })
 
-// `legendTop` clears a control a display draws in the key's corner on screen
-// (Hi-C's resolution box). The export draws no controls, so honouring it left
-// an exported key floating that far below its corner, beside the plot or over
-// it.
-describe('SvgLegend', () => {
-  const host = {
-    showLegend: true,
+// The exporting view places the key beside the plot, so a display's own export
+// never carries it over its data.
+test('the shell draws no key, even for a display with one', async () => {
+  const model = Object.create(makeDisplay({}), {
+    showLegend: { value: true },
     legendSpec: {
-      sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+      value: {
+        sections: [{ id: 'a', items: [{ label: 'a', color: 'red' }] }],
+      },
     },
-    setShowLegend() {},
-    dismissLegendSection() {},
-    legendTop: 28,
-    svgLegendWidth: () => 100,
-  } as unknown as LegendHost
+    setShowLegend: { value: () => {} },
+  }) as TestDisplayModel
+  const { container } = await renderShell(model, [])
+  expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
+})
 
-  test.each([
-    ['in the reserved gutter', { legendWidth: 100 }],
-    ['floating over the plot', {}],
-  ])('ignores an on-screen legendTop %s', (_, opts) => {
+describe('SvgLegend', () => {
+  function host(showLegend: boolean, labels: string[]) {
+    return {
+      id: 'host',
+      showLegend,
+      legendSpec: {
+        sections: [
+          {
+            id: 'a',
+            items: labels.map(label => ({ label, color: 'red' })),
+          },
+        ],
+      },
+      setShowLegend() {},
+      dismissLegendSection() {},
+      // `legendTop` clears a control a display draws in the key's corner on
+      // screen (Hi-C's resolution box); the export draws no controls
+      legendTop: 28,
+    } as unknown as LegendHost
+  }
+
+  test('draws beside the plot, from its top', () => {
     const { container } = render(
       <svg>
-        <SvgLegend model={host} width={800} height={200} opts={opts} />
+        <SvgLegend model={host(true, ['a'])} width={800} height={200} />
       </svg>,
     )
-    expect(container.querySelector('[data-testid="color-legend"]')).toBeTruthy()
-    expect(container.querySelector('g[transform="translate(0 28)"]')).toBeNull()
+    expect(
+      container
+        .querySelector('[data-testid="color-legend"]')
+        ?.getAttribute('transform'),
+    ).toBe('translate(810 0)')
+  })
+
+  test('a hidden legend draws nothing and reserves no gutter', () => {
+    const model = host(false, ['a'])
+    const { container } = render(
+      <svg>
+        <SvgLegend model={model} width={800} height={200} />
+      </svg>,
+    )
+    expect(container.querySelector('[data-testid="color-legend"]')).toBeNull()
+    expect(svgLegendGutterWidth(model, undefined, 200)).toBe(0)
+  })
+
+  test('a model with no key reserves no gutter', () => {
+    expect(svgLegendGutterWidth(host(true, []), undefined, 200)).toBe(0)
+    expect(svgLegendGutterWidth({ id: 'plain' }, undefined, 200)).toBe(0)
+  })
+
+  test('the gutter is as wide as the key it holds, and a cut key is narrower', () => {
+    const labels = ['a', 'b', 'a much longer label than the rest']
+    const whole = svgLegendGutterWidth(host(true, labels), undefined, 200)
+    const short = svgLegendGutterWidth(host(true, ['a']), undefined, 200)
+    const cut = svgLegendGutterWidth(host(true, labels), undefined, 14)
+    expect(whole).toBeGreaterThan(short)
+    expect(cut).toBeLessThan(whole)
+    expect(short).toBeGreaterThan(10)
   })
 })
 

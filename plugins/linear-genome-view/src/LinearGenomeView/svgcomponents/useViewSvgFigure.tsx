@@ -132,7 +132,6 @@ interface FigureSnapshot extends ResolvedOptions {
   height: number
   bandHeight: number
   tracksHeight: number
-  legendWidth: number
   trackLabelOffset: number
   textHeight: number
   locstring: string
@@ -143,12 +142,11 @@ interface FigureSnapshot extends ResolvedOptions {
  * One figure: every visible track rendered to SVG elements, and the geometry
  * that lays them out.
  *
- * `renderViewTracks` owns the two orderings this cannot state for itself — the
- * legend gutter measured before the renders (a display draws its key beside the
- * plot or floating over it depending on whether the container reserved room),
- * the stack height after them (a display whose height follows its data only
- * reaches its final height once its readiness wait resolves). Everything read
- * below is read after the awaits for the same reason.
+ * `renderViewTracks` owns the ordering this cannot state for itself: the stack
+ * height and the legend gutter are measured after the renders, since a
+ * display's height and its key follow data that lands only once its readiness
+ * wait resolves. Everything read below is read after the awaits for the same
+ * reason.
  */
 async function renderFigure(
   view: LinearGenomeViewModel,
@@ -171,9 +169,6 @@ async function renderFigure(
       theme,
       textHeight,
       trackLabels,
-      // an inline figure has room to give: a legend sits beside the plot rather
-      // than over it
-      reserveLegendWidth: true,
     })
   // the room the row header needs *above* its own origin — it draws the assembly
   // name and the scalebar at negative y, so the caller reserves the band and
@@ -193,7 +188,6 @@ async function renderFigure(
     height: bandHeight + rulerHeight + tracksHeight + opts.margin,
     bandHeight,
     tracksHeight,
-    legendWidth,
     trackLabelOffset,
     textHeight,
     locstring: view.visibleLocStrings,
@@ -266,7 +260,6 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
           trackLabels={snapshot.trackLabels}
           trackLabelOffset={snapshot.trackLabelOffset}
           showGridlines={snapshot.showGridlines}
-          legendWidth={snapshot.legendWidth}
           showScalebar={snapshot.showScalebar}
         />
       </svg>

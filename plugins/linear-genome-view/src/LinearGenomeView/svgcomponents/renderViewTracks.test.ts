@@ -1,9 +1,9 @@
+import { svgLegendGutterWidth } from '@jbrowse/display-kit/renderDisplaySvg'
+
 import { renderViewTracks } from './renderViewTracks.ts'
 import { trackSpacing } from './util.ts'
 
-import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-
-// The orderings renderViewTracks exists to own. Both were violated by all three
+// The ordering renderViewTracks exists to own. It was violated by all three
 // view exports at some point, and each time only a minute-long integration
 // snapshot noticed — these run in milliseconds and say which rule broke.
 
@@ -14,26 +14,40 @@ interface Opts {
   // height the display settles at once its renderSvg resolves, as a grow-mode
   // display does when its data lands
   settlesTo?: number
-  legendWidth?: number
+  // the key's labels, listed only once renderSvg resolves, as a key listing
+  // what was loaded is
+  keyLabels?: string[]
+  regionTooLarge?: boolean
   minimized?: boolean
+}
+
+function legendSpecOf(labels: string[]) {
+  return {
+    sections: labels.length
+      ? [{ id: 'k', items: labels.map(label => ({ label, color: 'red' })) }]
+      : [],
+  }
 }
 
 function makeTrack(
   name: string,
-  { height, settlesTo, legendWidth, minimized = false }: Opts,
-  log: string[],
+  { height, settlesTo, keyLabels, regionTooLarge, minimized = false }: Opts,
 ) {
   const display = {
+    id: name,
     height,
-    svgLegendWidth: () => {
-      log.push(`legendWidth:${name}`)
-      return legendWidth ?? 0
-    },
-    renderSvg: async (opts: ExportSvgDisplayOptions) => {
-      log.push(`render:${name}:legendWidth=${opts.legendWidth}`)
+    regionTooLarge,
+    showLegend: true,
+    legendSpec: legendSpecOf([]),
+    setShowLegend() {},
+    dismissLegendSection() {},
+    renderSvg: async () => {
       await Promise.resolve()
       if (settlesTo !== undefined) {
         display.height = settlesTo
+      }
+      if (keyLabels) {
+        display.legendSpec = legendSpecOf(keyLabels)
       }
       return null
     },
@@ -41,27 +55,30 @@ function makeTrack(
   return { name, minimized, displays: [display] }
 }
 
-function run(
-  tracks: {
-    pinned: ReturnType<typeof makeTrack>[]
-    unpinned: ReturnType<typeof makeTrack>[]
-  },
-  extra?: { reserveLegendWidth?: boolean },
-) {
+function gutterFor(labels: string[], maxHeight = Infinity) {
+  return svgLegendGutterWidth(
+    { id: 'x', showLegend: true, legendSpec: legendSpecOf(labels) },
+    undefined,
+    maxHeight,
+  )
+}
+
+function run(tracks: {
+  pinned: ReturnType<typeof makeTrack>[]
+  unpinned: ReturnType<typeof makeTrack>[]
+}) {
   return renderViewTracks({
     view: { pinnedTracks: tracks.pinned, unpinnedTracks: tracks.unpinned },
     opts: {},
     theme: undefined,
     textHeight: TEXT_HEIGHT,
     trackLabels: 'offset',
-    ...extra,
   })
 }
 
 test('the stack is measured after the displays settle, not before', async () => {
-  const log: string[] = []
   // a grow-mode display: 20px before its data lands, 300px after
-  const track = makeTrack('grow', { height: 20, settlesTo: 300 }, log)
+  const track = makeTrack('grow', { height: 20, settlesTo: 300 })
 
   const { tracksHeight } = await run({ pinned: [], unpinned: [track] })
 
@@ -70,48 +87,63 @@ test('the stack is measured after the displays settle, not before', async () => 
   expect(tracksHeight).toBe(300 + TEXT_HEIGHT + trackSpacing)
 })
 
-test('the legend width is measured before the displays render', async () => {
-  const log: string[] = []
-  const a = makeTrack('a', { height: 10, legendWidth: 40 }, log)
-  const b = makeTrack('b', { height: 10, legendWidth: 90 }, log)
+// jbrowse-img measures before any data has landed, so a gutter sized then
+// reserved nothing and the key floated over the plot it was meant to sit beside
+test('the legend gutter is measured after the displays settle', async () => {
+  const a = makeTrack('a', { height: 10, keyLabels: ['short'] })
+  const b = makeTrack('b', { height: 10, keyLabels: ['a much longer label'] })
 
-  const { legendWidth } = await run(
-    { pinned: [], unpinned: [a, b] },
-    { reserveLegendWidth: true },
-  )
+  const { legendWidth } = await run({ pinned: [], unpinned: [a, b] })
 
-  // the widest wins, and every display is told the reservation — a display
-  // decides whether to park its legend outside the plot or float it over the
-  // plot from that, so it cannot be resolved after the fact
-  expect(legendWidth).toBe(90)
-  expect(log).toEqual([
-    'legendWidth:a',
-    'legendWidth:b',
-    'render:a:legendWidth=90',
-    'render:b:legendWidth=90',
+  expect(legendWidth).toBeGreaterThan(0)
+  expect(legendWidth).toBe(gutterFor(['a much longer label']))
+})
+
+test('a stack with no key reserves no gutter', async () => {
+  const { legendWidth, displayResults } = await run({
+    pinned: [],
+    unpinned: [makeTrack('a', { height: 10 })],
+  })
+
+  expect(legendWidth).toBe(0)
+  expect(displayResults[0]!.legendHeight).toBeUndefined()
+})
+
+test("a key's room runs to the next keyed track, or to the foot of the stack", async () => {
+  const { displayResults, tracksHeight } = await run({
+    pinned: [],
+    unpinned: [
+      makeTrack('keyed', { height: 10, keyLabels: ['a'] }),
+      makeTrack('plain', { height: 100 }),
+      makeTrack('last', { height: 50, keyLabels: ['b'] }),
+    ],
+  })
+
+  const box = (height: number) => height + TEXT_HEIGHT + trackSpacing
+  const lastBodyTop = box(10) + box(100) + TEXT_HEIGHT
+  expect(displayResults.map(r => r.legendHeight)).toEqual([
+    lastBodyTop - TEXT_HEIGHT,
+    undefined,
+    tracksHeight - lastBodyTop,
   ])
 })
 
-test('no reservation means displays are told there is no gutter', async () => {
-  const log: string[] = []
-  const track = makeTrack('a', { height: 10, legendWidth: 40 }, log)
+// A too-large region draws a note in place of the body, and a key beside a
+// note keys nothing
+test('a region-too-large track draws no key', async () => {
+  const { legendWidth } = await run({
+    pinned: [],
+    unpinned: [
+      makeTrack('a', { height: 10, keyLabels: ['a'], regionTooLarge: true }),
+    ],
+  })
 
-  const { legendWidth } = await run({ pinned: [], unpinned: [track] })
-
-  // the stacked exports (synteny, breakpoint-split) don't widen their canvas,
-  // so a display that asked for 40px must not draw as though it got them
   expect(legendWidth).toBe(0)
-  expect(log).toEqual(['render:a:legendWidth=0'])
 })
 
 test('minimized tracks are dropped from both the render and the measurement', async () => {
-  const log: string[] = []
-  const shown = makeTrack('shown', { height: 100 }, log)
-  const collapsed = makeTrack(
-    'collapsed',
-    { height: 100, minimized: true },
-    log,
-  )
+  const shown = makeTrack('shown', { height: 100 })
+  const collapsed = makeTrack('collapsed', { height: 100, minimized: true })
 
   const { tracks, displayResults, tracksHeight } = await run({
     pinned: [],
@@ -130,9 +162,8 @@ test('minimized tracks are dropped from both the render and the measurement', as
 // a display threw and awaitSvgRenders aggregated the throw into an export
 // failure that saved nothing.
 test('a display with no renderSvg is skipped, not thrown on', async () => {
-  const log: string[] = []
-  const supported = makeTrack('supported', { height: 100 }, log)
-  const unsupported = makeTrack('unsupported', { height: 100 }, log) as {
+  const supported = makeTrack('supported', { height: 100 })
+  const unsupported = makeTrack('unsupported', { height: 100 }) as {
     name: string
     minimized: boolean
     displays: { height: number; renderSvg?: unknown }[]
@@ -153,33 +184,27 @@ test('a display with no renderSvg is skipped, not thrown on', async () => {
 })
 
 test('a skipped track does not enter the legend measurement', async () => {
-  const log: string[] = []
-  const supported = makeTrack('supported', { height: 10, legendWidth: 40 }, log)
-  const unsupported = makeTrack(
-    'unsupported',
-    { height: 10, legendWidth: 300 },
-    log,
-  ) as { displays: { renderSvg?: unknown }[] }
+  const supported = makeTrack('supported', { height: 10, keyLabels: ['a'] })
+  const unsupported = makeTrack('unsupported', {
+    height: 10,
+    keyLabels: ['a label far wider than the drawn key'],
+  }) as { displays: { renderSvg?: unknown }[] }
   delete unsupported.displays[0]!.renderSvg
 
-  const { legendWidth } = await run(
-    {
-      pinned: [],
-      unpinned: [supported, unsupported as ReturnType<typeof makeTrack>],
-    },
-    { reserveLegendWidth: true },
-  )
+  const { legendWidth } = await run({
+    pinned: [],
+    unpinned: [supported, unsupported as ReturnType<typeof makeTrack>],
+  })
 
-  // the widest legend belongs to a track that is not drawn, so reserving for it
-  // would leave a 300px empty gutter beside the figure
-  expect(legendWidth).toBe(40)
+  // the widest key belongs to a track that is not drawn, so reserving for it
+  // would leave an empty gutter beside the figure
+  expect(legendWidth).toBe(gutterFor(['a']))
 })
 
 test('pinned tracks lead, as they do on screen', async () => {
-  const log: string[] = []
   const { tracks } = await run({
-    pinned: [makeTrack('pinned', { height: 10 }, log)],
-    unpinned: [makeTrack('normal', { height: 10 }, log)],
+    pinned: [makeTrack('pinned', { height: 10 })],
+    unpinned: [makeTrack('normal', { height: 10 })],
   })
 
   expect(tracks.map(t => t.name)).toEqual(['pinned', 'normal'])
