@@ -4,7 +4,7 @@ import { bandGroundColor, bandInk } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { GENE_LABEL_FONT_PX } from '../laneLabels.ts'
-import { drawnPx, laneMapOf } from '../multiwayRenderTypes.ts'
+import { drawnLeftPx, laneMapOf } from '../multiwayRenderTypes.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 
@@ -22,7 +22,7 @@ const PlacedLabels = observer(function PlacedLabels({
       <FloatingText
         key={label.key}
         data-testid="multiway-gene-label"
-        x={drawnPx(laneMapOf(model, label.row), label.left)}
+        x={drawnLeftPx(laneMapOf(model, label.row), label.left, label.width)}
         y={label.top - scrollTop}
         color={bandInk().text}
         fontSize={GENE_LABEL_FONT_PX}

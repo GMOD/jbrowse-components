@@ -4,6 +4,7 @@ import { getFeatureName } from '@jbrowse/plugin-canvas'
 
 import { LaneGene } from './geneGlyph.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
+import { drawnLeftPx } from './multiwayRenderTypes.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -145,4 +146,10 @@ describe('placeLaneLabels', () => {
       ['A', false],
     ])
   })
+})
+
+test('a label on a lane mid-flip starts at its box’s left end on screen', () => {
+  const mirror = { scale: -1, offset: 800 }
+  expect(drawnLeftPx(mirror, 100, 40)).toBe(660)
+  expect(drawnLeftPx({ scale: 1, offset: 0 }, 100, 40)).toBe(100)
 })

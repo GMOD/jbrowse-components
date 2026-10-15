@@ -133,6 +133,11 @@ export function drawnPx(map: LaneMap, px: number) {
   return map.scale * px + map.offset
 }
 
+/** where a box of `width` packed at `left` starts on screen, mirrored or not */
+export function drawnLeftPx(map: LaneMap, left: number, width: number) {
+  return Math.min(drawnPx(map, left), drawnPx(map, left + width))
+}
+
 export function packedPx(map: LaneMap, px: number) {
   return (px - map.offset) / map.scale
 }
