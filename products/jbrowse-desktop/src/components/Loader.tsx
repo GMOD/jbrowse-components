@@ -145,6 +145,18 @@ const LoaderContents = observer(function LoaderContents() {
     clearTarget()
   })
 
+  // The start screen is only on screen while no session is, so a manager it
+  // hands over once one is showing is a launch the user has already moved past:
+  // a slow hub clicked before a recent session that opened first, or a pushed
+  // link that beat it. Installing it would replace the session they are in.
+  const installFromStartScreen = useEventCallback((pm: PluginManager) => {
+    if (desktopRootModel(installedRef.current)?.session) {
+      destroyPluginManager(pm)
+    } else {
+      handleSetPluginManager(pm)
+    }
+  })
+
   const { swap, swapping } = useSessionSwap({
     flush: useEventCallback(async () => {
       await desktopRootModel(installedRef.current)?.flushSession()
@@ -242,7 +254,7 @@ const LoaderContents = observer(function LoaderContents() {
       ) : target ? (
         loading
       ) : (
-        <StartScreen setPluginManager={handleSetPluginManager} />
+        <StartScreen setPluginManager={installFromStartScreen} />
       )}
     </>
   )
