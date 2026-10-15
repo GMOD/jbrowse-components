@@ -1,5 +1,7 @@
 import path from 'node:path'
 
+import { isWebUrl } from './navigationGuard.ts'
+
 import type { LaunchTarget } from './ipc/channelTypes.ts'
 
 // Parses what a launch (argv, an OS open-file, or a jbrowse:// link) asks the
@@ -62,12 +64,6 @@ function hasLaunchExtension(arg: string) {
   return LAUNCH_FILE_EXTENSIONS.some(ext => lower.endsWith(ext))
 }
 
-// Only ever wrap a web link. A jbrowse:// url arrives from anywhere that can
-// make the OS open a link (any web page), so the wrapped url is restricted to
-// http(s): without this, `jbrowse://open?url=file:///…` would turn a link click
-// into a local-file read.
-const ALLOWED_LINK_PROTOCOLS = new Set(['http:', 'https:'])
-
 /**
  * Wrap a JBrowse Web url as the jbrowse:// link that opens it in Desktop. The
  * whole url is carried as one encoded parameter (rather than copying its
@@ -109,13 +105,9 @@ export function parseProtocolUrl(input: string): string | undefined {
   if (!wrapped) {
     return undefined
   }
-  try {
-    return ALLOWED_LINK_PROTOCOLS.has(new URL(wrapped).protocol)
-      ? wrapped
-      : undefined
-  } catch {
-    return undefined
-  }
+  // A jbrowse:// url arrives from anywhere that can make the OS open a link,
+  // so `jbrowse://open?url=file:///…` must not turn a click into a local read
+  return isWebUrl(wrapped) ? wrapped : undefined
 }
 
 // URL schemes are case-insensitive, and Windows hands the link back with
