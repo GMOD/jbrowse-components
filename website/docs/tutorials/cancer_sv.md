@@ -197,7 +197,9 @@ reference:
 
 ```bash
 # asm5: same-species preset; -c: base-level CIGAR, to draw junctions at base scale
-minimap2 -cx asm5 GRCh38.fa contigs.fa > der3.vs_reference.paf
+# -s 50: asm5 keeps only chains scoring 200 or more, which drops the 199 bp
+# chr10 and 184 bp chr12 inserts
+minimap2 -cx asm5 -s 50 GRCh38.fa contigs.fa > der3.vs_reference.paf
 jbrowse make-pif der3.vs_reference.paf
 ```
 
