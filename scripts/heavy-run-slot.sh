@@ -63,10 +63,22 @@ export JB_HEAVY_SLOT=$i
 #
 # Backgrounded so a trap can forward signals while it waits, with stdin handed
 # over explicitly since a background command otherwise reads /dev/null.
+#
+# Each run also gets its own systemd scope inside agents.slice, so a shared
+# MemoryHigh in ~/.config/systemd/user/agents.slice throttles every gated run
+# together instead of the kernel swapping the desktop out. Without a user
+# manager the probe fails and the command runs unscoped.
+scope=()
+if command -v systemd-run >/dev/null &&
+  systemd-run --user --scope --quiet --collect true 2>/dev/null; then
+  scope=(systemd-run --user --scope --quiet --collect --slice=agents.slice
+    -p OOMPolicy=continue --)
+fi
+
 child=
 trap '[ -n "$child" ] && kill -TERM "$child" 2>/dev/null' TERM INT HUP
 exec {stdin}<&0
-"$@" <&"$stdin" {stdin}<&- {fd}>&- &
+"${scope[@]}" "$@" <&"$stdin" {stdin}<&- {fd}>&- &
 child=$!
 while :; do
   wait "$child"
