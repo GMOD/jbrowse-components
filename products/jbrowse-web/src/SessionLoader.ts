@@ -39,7 +39,12 @@ import {
 } from './util.ts'
 
 import type { CrashedSession } from './crashedSession.ts'
-import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
+import type {
+  SessionSnap,
+  SessionSource,
+  SessionTriagedInfo,
+  Snap,
+} from './types.ts'
 import type {
   PluginLoadFailure,
   PluginRecord,
@@ -529,10 +534,7 @@ const SessionLoader = types
     /**
      * #action
      */
-    async loadSession(
-      snap: { sessionPlugins?: PluginDefinition[]; id: string },
-      userAcceptedConfirmation?: boolean,
-    ) {
+    async loadSession(snap: SessionSnap, userAcceptedConfirmation?: boolean) {
       try {
         // Two sets are dropped before anything is fetched. The vendored ones,
         // because core already registers what they provide; and the ones the
@@ -778,10 +780,7 @@ const SessionLoader = types
           // fetchSharedSession etc.
           if (self.sessionSource.type === 'snapshot' && !self.sessionPlugins) {
             await self.loadSession(
-              self.sessionSource.snapshot as {
-                sessionPlugins?: PluginDefinition[]
-                id: string
-              },
+              self.sessionSource.snapshot as SessionSnap,
               true,
             )
           }
@@ -854,9 +853,20 @@ const SessionLoader = types
      * loadSessionByType may itself surface a new (session) triage.
      */
     async applyTriagedConfig(snap: Snap) {
-      await self.loadConfigAndPlugins(snap)
       self.setSessionTriaged(undefined)
+      await self.loadConfigAndPlugins(snap)
       await this.loadSessionByType()
+    },
+    /**
+     * #action
+     * Loads a triaged session as it stands: an imported one already has its
+     * fresh id, and a local one keeps the id its autosave row is under.
+     * Clearing the triage first unmounts the dialog, so a second click cannot
+     * load it twice.
+     */
+    async acceptTriagedSession(snap: SessionSnap) {
+      self.setSessionTriaged(undefined)
+      await self.loadSession(snap, true)
     },
     /**
      * #action

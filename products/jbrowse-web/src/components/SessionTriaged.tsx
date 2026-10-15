@@ -14,7 +14,7 @@ const SessionTriaged = observer(function SessionTriaged({
   loader: SessionLoaderModel
   sessionTriaged: SessionTriagedInfo
 }) {
-  const { origin, snap, reason } = sessionTriaged
+  const { origin, reason } = sessionTriaged
   return (
     <PluginWarningDialog
       kind={origin}
@@ -23,14 +23,9 @@ const SessionTriaged = observer(function SessionTriaged({
         if (remember) {
           rememberPlugins(reason)
         }
-        if (origin === 'session') {
-          await loader.loadImportedSession(snap, true)
-          loader.setSessionTriaged(undefined)
-        } else {
-          // applyTriagedConfig clears the config triage and resolves the
-          // session itself, which may surface a new (session) triage
-          await loader.applyTriagedConfig(snap)
-        }
+        await (sessionTriaged.origin === 'session'
+          ? loader.acceptTriagedSession(sessionTriaged.snap)
+          : loader.applyTriagedConfig(sessionTriaged.snap))
       }}
       onCancel={() => {
         if (origin === 'session') {

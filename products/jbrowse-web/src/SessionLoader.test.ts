@@ -749,6 +749,40 @@ describe('SessionLoader', () => {
       expect(loader.sessionSource).toBeUndefined()
     })
 
+    it('accepting a triaged local session keeps the id its autosave row is under', async () => {
+      const { checkPlugins } = jest.requireMock('./util')
+      checkPlugins.mockResolvedValueOnce(false)
+      sessionStorage.setItem(
+        'current',
+        JSON.stringify({
+          session: {
+            id: 'abc',
+            name: 'Mine',
+            sessionPlugins: [
+              { name: 'Custom', url: 'https://example.com/custom.js' },
+            ],
+          },
+          createdAt: new Date(),
+        }),
+      )
+      const loader = SessionLoader.create({
+        sessionQuery: 'local-abc',
+        configSnapshot: {},
+        initialTimestamp: Date.now(),
+      })
+      await loader.loadSessionByType()
+      expect(loader.sessionTriaged).toMatchObject({ origin: 'session' })
+
+      await loader.acceptTriagedSession(
+        loader.sessionTriaged!.snap as { id: string },
+      )
+      expect(loader.sessionTriaged).toBeUndefined()
+      expect(loader.sessionSource).toMatchObject({
+        type: 'snapshot',
+        snapshot: { id: 'abc' },
+      })
+    })
+
     // A triaged cross-origin config must NOT commit until accepted, and session
     // loading must be deferred: running it would let an untrusted session
     // overwrite the config triage, leaving the config uncommitted and `ready`

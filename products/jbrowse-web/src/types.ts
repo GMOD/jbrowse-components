@@ -31,11 +31,15 @@ export interface SessionDB extends DBSchema {
 // it, and consumers import it from there.
 export type { LayoutNode, ViewSpec } from '@jbrowse/app-core'
 
-export interface SessionTriagedInfo {
-  snap: Record<string, unknown>
-  origin: 'session' | 'config'
-  reason: PluginDefinition[]
+export interface SessionSnap {
+  id: string
+  sessionPlugins?: PluginDefinition[]
+  [key: string]: unknown
 }
+
+export type SessionTriagedInfo =
+  | { origin: 'session'; snap: SessionSnap; reason: PluginDefinition[] }
+  | { origin: 'config'; snap: Snap; reason: PluginDefinition[] }
 
 /**
  * The single resolved session the loader hands to createPluginManager. The
