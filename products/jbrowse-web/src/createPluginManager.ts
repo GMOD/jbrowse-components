@@ -276,7 +276,13 @@ function initSession(
           sessionTracks: sessionSource.sessionTracks,
         },
         pluginManager,
-      )
+      ).catch((e: unknown) => {
+        console.error(e)
+        if (!rootModel.session) {
+          rootModel.setDefaultSession()
+        }
+        rootModel.session?.notifyError(`${e}`, e)
+      })
     } else if (sessionSource?.type === 'spec') {
       void loadSessionSpec(
         // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the

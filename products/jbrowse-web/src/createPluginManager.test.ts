@@ -3,6 +3,9 @@ import { createPluginManager } from './createPluginManager.ts'
 import type { SessionSource } from './types.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
+jest.mock('./loadHubSpec', () => ({
+  loadHubSpec: jest.fn().mockRejectedValue(new Error('hub broke')),
+}))
 
 async function sessionNameFor(
   sessionSource: SessionSource,
@@ -55,6 +58,31 @@ test('a default session gets the link’s sessionTracks', async () => {
     sessionTracks: { trackId: string }[]
   }
   expect(session.sessionTracks.map(t => t.trackId)).toEqual(['url_track'])
+})
+
+test('a hub that fails to set up falls back to a session that says so', async () => {
+  const pluginManager = await createPluginManager(
+    {
+      configSnapshot: {
+        configuration: {
+          rpc: { defaultDriver: 'MainThreadRpcDriver' },
+          disableAnalytics: true,
+        },
+      },
+      sessionSource: {
+        type: 'hub',
+        hubSpec: { hubURL: ['https://example.com/hub.txt'] },
+      },
+      initialTimestamp: 0,
+    },
+    () => {},
+  )
+  const session = pluginManager.rootModel!.session as unknown as {
+    snackbarMessages: { message: string }[]
+  }
+  expect(session.snackbarMessages.map(m => m.message)).toEqual([
+    'Error: hub broke',
+  ])
 })
 
 describe('a spec session', () => {
