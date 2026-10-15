@@ -410,7 +410,10 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         adapterConfig: spec.adapterConfig,
         regions: await laneRegions(getSession(self), spec.lane, spec.regions),
       })
-      return { key: spec.key, genes: laneGeneFeatures(features) }
+      return {
+        key: spec.key,
+        genes: laneGeneFeatures(features, spec.canonical),
+      }
     },
     empty: spec => ({ key: spec.key, genes: [] }),
     commit: (genes, specs, anchor) => {

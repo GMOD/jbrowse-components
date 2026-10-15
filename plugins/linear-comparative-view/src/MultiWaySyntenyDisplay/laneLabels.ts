@@ -61,12 +61,12 @@ function drawnNames(
       ...b,
       width: measureText(b.name, GENE_LABEL_FONT_PX, fontFamily),
     }))
-  for (const { feature } of genes) {
+  for (const { feature, drawn } of genes) {
     const label = labelOf(feature)
     const span = lane.spanOf(
-      feature.get('refName'),
-      feature.get('start'),
-      feature.get('end'),
+      drawn.get('refName'),
+      drawn.get('start'),
+      drawn.get('end'),
     )
     if (label && span) {
       const left = Math.min(span[0], span[1])

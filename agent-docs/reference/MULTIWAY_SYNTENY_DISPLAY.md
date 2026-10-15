@@ -82,6 +82,13 @@ cost is linear in lanes.
   per-genome gene IDs differ, so no name can key it. Each placement's
   orientation is its gene's own strand. A star source indexes its anchor alone
   and gets no such fetch.
+- **A lane gene draws its representative transcript**, the one the feature
+  track's `longestCoding` draws (`representativeIsoform`), ranked by the gene
+  track's own canonical tags. A union of every isoform's exons is no molecule
+  (`geneGlyphMode.ts`). The lane places introns, the arrow, the label and the
+  placement claim on that transcript's extent, and draws nothing for a
+  childless transcript beside it, an `lnc_RNA` the feature track draws on its
+  own row.
 - **Strand means the record's strand**, never the drawn twist, in the config
   schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
   `orientation` is the pair's strand, never the mate's transcription strand.

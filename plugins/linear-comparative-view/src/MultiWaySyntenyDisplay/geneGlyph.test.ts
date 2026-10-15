@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
 import {
   LaneGene,
@@ -6,6 +7,7 @@ import {
   geneGlyphShape,
   annotatedSpans,
   laneGeneFeatures,
+  trackCanonicalTranscripts,
 } from './geneGlyph.ts'
 
 import type { Span } from './layoutMultiWay.ts'
@@ -106,6 +108,34 @@ describe('a gene glyph in px', () => {
     expect(px.full).toEqual([[0, 20]])
   })
 
+  test('connects only the drawn transcript, not a childless one beside it', () => {
+    const feature = geneFeature({
+      start: 100,
+      end: 300,
+      exons: [
+        [100, 150],
+        [250, 300],
+      ],
+    })
+    const lncRNA = new SimpleFeature({
+      uniqueId: 'lnc',
+      refName: 'chr1',
+      start: 100,
+      end: 900,
+      type: 'lnc_RNA',
+    })
+    const g = new LaneGene(
+      new SimpleFeature({
+        ...feature.toJSON(),
+        end: 900,
+        subfeatures: [...feature.toJSON().subfeatures!, lncRNA.toJSON()],
+      }),
+    )
+    const px = geneGlyphGeometry(g, [100, 300], identity)
+    expect(px.pieces).toEqual([[100, 300]])
+    expect(px.introns).toEqual([[150, 250]])
+  })
+
   test('draws a strandless gene with no direction', () => {
     const g = gene({
       start: 0,
@@ -120,66 +150,170 @@ describe('a gene glyph in px', () => {
   })
 })
 
-test('geneGlyphShape merges exons across transcripts and falls back to the span', () => {
+const cds = (uniqueId: string, start: number, end: number) => ({
+  uniqueId,
+  refName: 'chr1',
+  start,
+  end,
+  type: 'CDS',
+})
+
+function shapeOf(feature: SimpleFeature) {
+  const { full, thin } = geneGlyphShape(feature)
+  return { full, thin }
+}
+
+test('geneGlyphShape draws one transcript, never a union of every isoform', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',
     refName: 'chr1',
     start: 100,
     end: 400,
+    type: 'gene',
     subfeatures: [
       {
         uniqueId: 'rna1',
         refName: 'chr1',
         start: 100,
         end: 400,
-        subfeatures: [
-          {
-            uniqueId: 'e1',
-            refName: 'chr1',
-            start: 100,
-            end: 150,
-            type: 'exon',
-          },
-          {
-            uniqueId: 'e2',
-            refName: 'chr1',
-            start: 300,
-            end: 400,
-            type: 'exon',
-          },
-        ],
+        type: 'mRNA',
+        subfeatures: [cds('c1', 100, 200), cds('c2', 300, 400)],
       },
       {
         uniqueId: 'rna2',
         refName: 'chr1',
-        start: 100,
-        end: 400,
-        subfeatures: [
-          {
-            uniqueId: 'e3',
-            refName: 'chr1',
-            start: 120,
-            end: 200,
-            type: 'exon',
-          },
-        ],
+        start: 180,
+        end: 320,
+        type: 'mRNA',
+        subfeatures: [cds('c3', 180, 320)],
       },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
+  const shape = geneGlyphShape(gene)
+  expect(shape.transcript.id()).toBe('rna1')
+  expect(shapeOf(gene)).toEqual({
     full: [
       [100, 200],
       [300, 400],
     ],
     thin: [],
   })
+})
+
+test('geneGlyphShape draws the transcript a canonical tag names over a longer one', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene8',
+    refName: 'chr1',
+    start: 100,
+    end: 900,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'long',
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'mRNA',
+        subfeatures: [cds('c1', 100, 900)],
+      },
+      {
+        uniqueId: 'select',
+        refName: 'chr1',
+        start: 200,
+        end: 400,
+        type: 'mRNA',
+        tag: 'MANE Select',
+        subfeatures: [cds('c2', 200, 400)],
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene).transcript.id()).toBe('select')
+  expect(
+    geneGlyphShape(gene, { field: 'tag', tags: ['nothing'] }).transcript.id(),
+  ).toBe('long')
+})
+
+test('geneGlyphShape draws a childless transcript as its own span', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene9',
+    refName: 'chr1',
+    start: 100,
+    end: 900,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'rna',
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'transcript',
+      },
+    ],
+  })
+  expect(shapeOf(gene)).toEqual({ full: [[100, 900]], thin: [] })
+})
+
+test('geneGlyphShape draws a polyprotein CDS as its own span, a discontinuous one by its rows', () => {
+  const peptide = (uniqueId: string, start: number, end: number) => ({
+    uniqueId,
+    refName: 'chr1',
+    start,
+    end,
+    type: 'mature_protein_region_of_CDS',
+  })
+  const polyprotein = new SimpleFeature({
+    uniqueId: 'gene10',
+    refName: 'chr1',
+    start: 100,
+    end: 900,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'poly',
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'CDS',
+        subfeatures: [peptide('p1', 100, 500), peptide('p2', 500, 900)],
+      },
+    ],
+  })
+  expect(shapeOf(polyprotein)).toEqual({ full: [[100, 900]], thin: [] })
+
+  const slipped = new SimpleFeature({
+    uniqueId: 'gene11',
+    refName: 'chr1',
+    start: 100,
+    end: 900,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'slip',
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'CDS',
+        subfeatures: [cds('s1', 100, 400), cds('s2', 450, 900)],
+      },
+    ],
+  })
+  expect(shapeOf(slipped)).toEqual({
+    full: [
+      [100, 400],
+      [450, 900],
+    ],
+    thin: [],
+  })
+})
+
+test('geneGlyphShape falls back to the span', () => {
   const bare = new SimpleFeature({
     uniqueId: 'bare',
     refName: 'chr1',
     start: 5,
     end: 10,
   })
-  expect(geneGlyphShape(bare)).toEqual({ full: [[5, 10]], thin: [] })
+  expect(shapeOf(bare)).toEqual({ full: [[5, 10]], thin: [] })
 })
 
 test('geneGlyphShape splits merged exons into CDS and UTR intervals', () => {
@@ -227,7 +361,7 @@ test('geneGlyphShape splits merged exons into CDS and UTR intervals', () => {
       },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
+  expect(shapeOf(gene)).toEqual({
     full: [
       [140, 160],
       [300, 380],
@@ -250,7 +384,7 @@ test('geneGlyphShape draws a CDS-only annotation full height', () => {
       { uniqueId: 'c2', refName: 'chr1', start: 170, end: 200, type: 'CDS' },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
+  expect(shapeOf(gene)).toEqual({
     full: [
       [100, 150],
       [170, 200],
@@ -271,7 +405,7 @@ test('geneGlyphShape implies a CDS-only annotation’s UTRs from its own bounds'
     ],
   })
   // 150..170 is an intron between two CDS pieces, not UTR
-  expect(geneGlyphShape(gene)).toEqual({
+  expect(shapeOf(gene)).toEqual({
     full: [
       [100, 150],
       [170, 200],
@@ -294,7 +428,7 @@ test('geneGlyphShape reads a lowercase cds the way the feature track does', () =
       { uniqueId: 'c1', refName: 'chr1', start: 140, end: 180, type: 'cds' },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
+  expect(shapeOf(gene)).toEqual({
     full: [[140, 180]],
     thin: [
       [100, 140],
@@ -327,7 +461,7 @@ test('geneGlyphShape draws explicit UTR rows where a transcript names no exons',
       },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
+  expect(shapeOf(gene)).toEqual({
     full: [[130, 175]],
     thin: [
       [100, 130],
@@ -336,7 +470,7 @@ test('geneGlyphShape draws explicit UTR rows where a transcript names no exons',
   })
 })
 
-test('geneGlyphShape lets each transcript decide its own UTRs', () => {
+test('geneGlyphShape draws the representative transcript’s own UTRs', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene7',
     refName: 'chr1',
@@ -382,20 +516,32 @@ test('geneGlyphShape lets each transcript decide its own UTRs', () => {
             uniqueId: 'c2',
             refName: 'chr1',
             start: 200,
-            end: 350,
+            end: 380,
             type: 'CDS',
           },
         ],
       },
     ],
   })
-  expect(geneGlyphShape(gene)).toEqual({
-    full: [[150, 350]],
-    thin: [
-      [100, 150],
-      [350, 400],
-    ],
+  expect(shapeOf(gene)).toEqual({
+    full: [[200, 380]],
+    thin: [[380, 400]],
   })
+})
+
+test('a lane ranks isoforms by the tags its gene track’s display names', () => {
+  expect(
+    trackCanonicalTranscripts({
+      trackId: 't',
+      type: 'FeatureTrack',
+      displays: [
+        { type: 'LinearBasicDisplay', canonicalTranscriptTags: ['Ensembl'] },
+      ],
+    }),
+  ).toEqual({ field: 'tag', tags: ['Ensembl'] })
+  expect(trackCanonicalTranscripts(undefined)).toEqual(
+    DEFAULT_CANONICAL_TRANSCRIPTS,
+  )
 })
 
 test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {

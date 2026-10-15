@@ -2,6 +2,7 @@ import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 export interface LaneWindow {
@@ -26,6 +27,7 @@ export interface LaneFetchSpec {
 export interface LaneGenesFetchSpec extends LaneFetchSpec {
   adapterConfig: Record<string, unknown>
   regions: FetchRegion[]
+  canonical: CanonicalTranscripts
 }
 
 /**

@@ -1,5 +1,7 @@
 import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
+import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import {
+  GENE_GLYPH_DEFAULTS,
   featureType,
   getSubfeatures,
   impliedUTRs,
@@ -7,33 +9,73 @@ import {
   isExon,
   isUTR,
   mergeSpans,
+  representativeIsoform,
 } from '@jbrowse/plugin-canvas'
 
 import type { Span } from './layoutMultiWay.ts'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
+import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
 import type { GlyphSpan } from '@jbrowse/plugin-canvas'
 
 // an NCBI-style GFF3's `region` row would otherwise paint the lane end to end
 const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])
 
-export function laneGeneFeatures(features: Feature[]) {
+export function laneGeneFeatures(
+  features: Feature[],
+  canonical?: CanonicalTranscripts,
+) {
   const unique = dedupe(features, f => f.id())
   // lowercased as the feature track admits, or a GFF3 `Gene` is no gene here
   const typeOf = (f: Feature) => featureType(f).toLowerCase()
   const genes = unique.filter(f => typeOf(f).endsWith('gene'))
   return (
     genes.length ? genes : unique.filter(f => !CONTAINER_TYPES.has(typeOf(f)))
-  ).map(feature => new LaneGene(feature))
+  ).map(feature => new LaneGene(feature, canonical))
+}
+
+/**
+ * The tags the track's own feature display ranks isoforms by, so the lane
+ * draws the transcript that track draws.
+ */
+export function trackCanonicalTranscripts(
+  entry: TrackConfigEntry | undefined,
+): CanonicalTranscripts {
+  const displays = Array.isArray(entry?.displays)
+    ? (entry.displays as Record<string, unknown>[])
+    : []
+  const display = displays.find(
+    d =>
+      d.canonicalTranscriptField !== undefined ||
+      d.canonicalTranscriptTags !== undefined,
+  )
+  return {
+    field:
+      typeof display?.canonicalTranscriptField === 'string'
+        ? display.canonicalTranscriptField
+        : DEFAULT_CANONICAL_TRANSCRIPTS.field,
+    tags: Array.isArray(display?.canonicalTranscriptTags)
+      ? display.canonicalTranscriptTags.map(String)
+      : DEFAULT_CANONICAL_TRANSCRIPTS.tags,
+  }
 }
 
 export class LaneGene {
   private resolved?: GeneGlyphShape
 
-  constructor(readonly feature: Feature) {}
+  constructor(
+    readonly feature: Feature,
+    readonly canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
+  ) {}
 
   get shape() {
-    this.resolved ??= geneGlyphShape(this.feature)
+    this.resolved ??= geneGlyphShape(this.feature, this.canonical)
     return this.resolved
+  }
+
+  /** the transcript the lane draws, which every extent and claim reads */
+  get drawn() {
+    return this.shape.transcript
   }
 }
 
@@ -89,8 +131,12 @@ function subtractIntervals(
   return out
 }
 
+// A gene draws its representative transcript, as the feature track's
+// `longestCoding` does: a union of every isoform's exons is no molecule.
 export interface GeneGlyphShape {
-  // merged CDS, else merged exons, else the feature's whole span
+  // the representative isoform, or the gene where no child is a transcript
+  transcript: Feature
+  // merged CDS, else merged exons, else the transcript's whole span
   full: [number, number][]
   thin: [number, number][]
 }
@@ -99,43 +145,47 @@ function spanOf(f: Feature): GlyphSpan {
   return [f.get('start'), f.get('end')]
 }
 
-export function geneGlyphShape(feature: Feature): GeneGlyphShape {
-  const cds: GlyphSpan[] = []
-  const utr: GlyphSpan[] = []
-  const nonCoding: GlyphSpan[] = []
-  const visit = (f: Feature) => {
-    const subs = getSubfeatures(f)
-    const ownCds = subs.filter(isCDS).map(spanOf)
-    if (ownCds.length) {
-      cds.push(...ownCds)
-      utr.push(...subs.filter(isUTR).map(spanOf))
-      utr.push(...impliedUTRs(f, subs).map(u => [u.start, u.end] as GlyphSpan))
-    } else {
-      const exons = subs.filter(isExon)
-      nonCoding.push(...(exons.length ? exons : subs.filter(isUTR)).map(spanOf))
-    }
-    for (const sub of subs) {
-      visit(sub)
+export function geneGlyphShape(
+  feature: Feature,
+  canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
+): GeneGlyphShape {
+  const transcript =
+    representativeIsoform(feature, {
+      transcriptTypes: GENE_GLYPH_DEFAULTS.transcriptTypes,
+      canonicalTranscriptField: canonical.field,
+      canonicalTranscriptTags: [...canonical.tags],
+    }) ?? feature
+  const subs = getSubfeatures(transcript)
+  const cds = subs.filter(isCDS).map(spanOf)
+  if (cds.length) {
+    return {
+      transcript,
+      full: mergeSpans(cds),
+      thin: mergeSpans([
+        ...subs.filter(isUTR).map(spanOf),
+        ...impliedUTRs(transcript, subs).map(
+          u => [u.start, u.end] as GlyphSpan,
+        ),
+      ]),
     }
   }
-  visit(feature)
-  const full = mergeSpans(cds)
-  if (!full.length) {
-    const merged = mergeSpans(nonCoding)
-    return { full: merged.length ? merged : [spanOf(feature)], thin: [] }
-  }
+  const exons = subs.filter(isExon)
+  const parts = mergeSpans(
+    (exons.length ? exons : subs.filter(isUTR)).map(spanOf),
+  )
   return {
-    full,
-    thin: subtractIntervals(mergeSpans([...utr, ...nonCoding]), full),
+    transcript,
+    full: parts.length ? parts : [spanOf(transcript)],
+    thin: [],
   }
 }
 
 export interface GeneGlyphGeometry {
   left: number
   right: number
-  // the gene's strand mirrored where the lane is, 0 for a strandless feature
+  // the drawn transcript's strand mirrored where the lane is, 0 for none
   pxDir: number
-  // the gene's own extent, one piece per side of each hole its lane opens in it
+  // the drawn transcript's extent, one piece per side of each hole in it
   pieces: Span[]
   full: Span[]
   thin: Span[]
@@ -147,15 +197,18 @@ function ascending(px: Span): Span {
   return px[0] < px[1] ? px : [px[1], px[0]]
 }
 
-/** Ascending px intervals on the lane; `spansOf` cuts at the lane's holes. */
+/**
+ * Ascending px intervals on the lane; `span` is the drawn transcript's, and
+ * `spansOf` cuts at the lane's holes.
+ */
 export function geneGlyphGeometry(
   gene: LaneGene,
   span: Span,
   spansOf: (start: number, end: number) => Span[],
 ): GeneGlyphGeometry {
   const [l, r] = span
-  const { feature } = gene
-  const strand = feature.get('strand') ?? 0
+  const { drawn, feature } = gene
+  const strand = drawn.get('strand') ?? feature.get('strand') ?? 0
   const pxDir = strand === 0 ? 0 : l <= r ? strand : -strand
   const [left, right] = l < r ? [l, r] : [r, l]
   const toPx = (intervals: [number, number][]) =>
@@ -163,7 +216,7 @@ export function geneGlyphGeometry(
   const { full, thin } = gene.shape
   const fullPx = toPx(full)
   const thinPx = toPx(thin)
-  const pieces = toPx([[feature.get('start'), feature.get('end')]])
+  const pieces = toPx([[drawn.get('start'), drawn.get('end')]])
   const introns = subtractIntervals(pieces, mergeSpans([...fullPx, ...thinPx]))
   return { left, right, pxDir, pieces, full: fullPx, thin: thinPx, introns }
 }

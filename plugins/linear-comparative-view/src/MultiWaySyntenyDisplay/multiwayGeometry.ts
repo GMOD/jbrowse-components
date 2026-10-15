@@ -914,10 +914,10 @@ interface LaneBox {
 function claimPlacements(lane: Lane, drawn: DrawnGene[]) {
   const onRef = new Map<string, { spans: Span[]; drawn: DrawnGene[] }>()
   for (const d of drawn) {
-    const { feature } = d.gene
-    const ref = lane.canon(feature.get('refName'))
+    const transcript = d.gene.drawn
+    const ref = lane.canon(transcript.get('refName'))
     const genes = onRef.get(ref) ?? { spans: [], drawn: [] }
-    genes.spans.push([feature.get('start'), feature.get('end')])
+    genes.spans.push([transcript.get('start'), transcript.get('end')])
     genes.drawn.push(d)
     onRef.set(ref, genes)
   }
@@ -1025,11 +1025,11 @@ export function buildLaneCells({
 
   const drawn: DrawnGene[] = []
   for (const gene of genes) {
-    const { feature } = gene
+    const transcript = gene.drawn
     const span = lane.spanOf(
-      feature.get('refName'),
-      feature.get('start'),
-      feature.get('end'),
+      transcript.get('refName'),
+      transcript.get('start'),
+      transcript.get('end'),
     )
     if (span !== undefined && onCanvas(span, reach)) {
       drawn.push({ gene, span })
@@ -1073,9 +1073,11 @@ export function buildLaneCells({
         stroke,
       )
     }
+    const { drawn: transcript } = gene
     const label = lines(
       getFeatureName(feature),
-      locOn(lane, refName, feature.get('start'), feature.get('end')),
+      transcript === feature ? undefined : getFeatureName(transcript),
+      locOn(lane, refName, transcript.get('start'), transcript.get('end')),
     )
     for (const [x1, x2] of pieces) {
       glyphs.hits.push({

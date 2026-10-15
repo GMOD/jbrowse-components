@@ -119,6 +119,7 @@ export {
   isUTR,
 } from './RenderFeatureDataRPC/util.ts'
 export { impliedUTRs } from './RenderFeatureDataRPC/impliedUTRs.ts'
+export { representativeIsoform } from './RenderFeatureDataRPC/glyphs/subfeatures.ts'
 export type { ImpliedUTR } from './RenderFeatureDataRPC/impliedUTRs.ts'
 export { mergeSpans } from './shared/mergeSpans.ts'
 export type { Span as GlyphSpan } from './shared/mergeSpans.ts'

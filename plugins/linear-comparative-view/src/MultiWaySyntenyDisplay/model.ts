@@ -98,6 +98,7 @@ import {
 } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { geneColors } from './geneColor.ts'
+import { trackCanonicalTranscripts } from './geneGlyph.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import {
   decideLaneFrames,
@@ -1878,8 +1879,10 @@ export function stateModelFactory(
           const adapter = adapters.get(assemblyName)
           if (adapter) {
             const track = tracks.get(assemblyName)
-            const source = track
-              ? track.trackId
+            const entry = track ? toTrackConfigEntry(track) : undefined
+            const canonical = trackCanonicalTranscripts(entry)
+            const source = entry
+              ? `${entry.trackId}|${JSON.stringify(canonical)}`
               : `adapter:${JSON.stringify(adapter)}`
             specs.push({
               lane: assemblyName,
@@ -1887,6 +1890,7 @@ export function stateModelFactory(
               assemblyName,
               adapterConfig: adapter,
               regions,
+              canonical,
             })
           }
         }
