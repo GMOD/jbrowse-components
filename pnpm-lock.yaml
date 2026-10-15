@@ -417,8 +417,8 @@ importers:
         specifier: ^0.27.20
         version: 0.27.20(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@gmod/bgzf-filehandle':
-        specifier: ^6.7.0
-        version: 6.7.0
+        specifier: ^6.8.0
+        version: 6.8.0
       '@gmod/range-cache-filehandle':
         specifier: ^1.5.1
         version: 1.5.1
@@ -920,8 +920,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^10.0.6
-        version: 10.0.6
+        specifier: ^10.1.0
+        version: 10.1.0
       '@gmod/cram':
         specifier: ^14.3.1
         version: 14.3.1
@@ -1023,8 +1023,8 @@ importers:
         specifier: ^2.3.2
         version: 2.3.2
       '@gmod/tabix':
-        specifier: ^3.10.2
-        version: 3.10.2
+        specifier: ^3.11.0
+        version: 3.11.0
       '@gmod/trix':
         specifier: ^3.0.22
         version: 3.0.22
@@ -1217,8 +1217,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.2
-        version: 3.10.2
+        specifier: ^3.11.0
+        version: 3.11.0
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1419,8 +1419,8 @@ importers:
         specifier: ^5.6.1
         version: 5.6.1
       '@gmod/tabix':
-        specifier: ^3.10.2
-        version: 3.10.2
+        specifier: ^3.11.0
+        version: 3.11.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1479,8 +1479,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.2
-        version: 3.10.2
+        specifier: ^3.11.0
+        version: 3.11.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1777,8 +1777,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.7.0
-        version: 6.7.0
+        specifier: ^6.8.0
+        version: 6.8.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -2107,8 +2107,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.2
-        version: 3.10.2
+        specifier: ^3.11.0
+        version: 3.11.0
       '@gmod/vcf':
         specifier: ^7.3.0
         version: 7.3.0
@@ -4847,8 +4847,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@10.0.6':
-    resolution: {integrity: sha512-fgxO7DT73A5tEHW/CbMQILoZjJ8yf8adiE+VRk6y/YicBlFxHaJYewTpSwCG5oMKZHpCZ+PwlpvZXp+J4gHsXQ==}
+  '@gmod/bam@10.1.0':
+    resolution: {integrity: sha512-z2zsWiTBuqQBWrhe8TpCkl8FI/gj2QnFVahN4fsdNoER8M9tuHva0BhhVs5izf3yQF9JODp+jR8WOgoFMNSmsw==}
 
   '@gmod/bbi@11.3.2':
     resolution: {integrity: sha512-u5K9sRQSLlKiWGcU4ypqaX+lPwE8+emblz3NFoKlng80Z+iiVLM2k3qBfkVn6pXyCRnSiZscSRJ97VtkNmBN9g==}
@@ -4856,8 +4856,8 @@ packages:
   '@gmod/bed@2.3.2':
     resolution: {integrity: sha512-TyWmwYiRIGckvslI9U9iEiW4FooA0TL9nBHgqxjdhiDLxAj05hkB8MgoMD7jbCJipYpm8wLgXoAIf9KLqFISnw==}
 
-  '@gmod/bgzf-filehandle@6.7.0':
-    resolution: {integrity: sha512-ThtHVneb+tASyGFACVL/rMu6d5AY0vWK6poeOJwIIAaJpXYpptrmwvhdk2xk5eoNzL+iN40B3bXytMvQ+e+80Q==}
+  '@gmod/bgzf-filehandle@6.8.0':
+    resolution: {integrity: sha512-AZvtooJr9Pw3ARvypOhSmOb4tWPYwb1HrIxAXUHntRElZ3+dpuczpveD3ZcTrkKhyT9Ct8rVbMLWIdEv8lTdNA==}
 
   '@gmod/cram@14.3.1':
     resolution: {integrity: sha512-N3FAH5Cp+/zMHqnIjI5rTs+0werlxD8+epzDb41bskywIoM9N/VVkgZtxLDEqpvFZ7XWdU5jJaCrn8bC5zp5Zg==}
@@ -4892,8 +4892,8 @@ packages:
   '@gmod/shared-read-cache@2.1.0':
     resolution: {integrity: sha512-AyiUt0hiEGl7lWc1fuigbXR/RToIw3h72dalaRoSNau9WL9ux9rEfkcsXDYTgSDudehfAEQac1jTvn2zrfnELQ==}
 
-  '@gmod/tabix@3.10.2':
-    resolution: {integrity: sha512-vlHs03ILhRNuVWbqaA01nNQvRZBR+/uXia/1hWVu4wsHoArVfro5bUBCcYAhBo+kes7tdYJRc7xVWxwxT4Jscw==}
+  '@gmod/tabix@3.11.0':
+    resolution: {integrity: sha512-kunAT5jtwMoIx+rnuLLXt0rSI1MtX7sGW9Vn9agTgzz7sLJzZewx6knppvf22Ahr9JRZSnSj/TwKEXS/XeIjYw==}
 
   '@gmod/trix@3.0.22':
     resolution: {integrity: sha512-cOf2r20K2LecQCZ6Am4H17S6GNAU0g5FZJ4t6EU6IiKGpmYclDWjGVNvDnsERJgjOfvkp4HzHJxQ37WnuKK8Sg==}
@@ -12986,9 +12986,9 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@10.0.6':
+  '@gmod/bam@10.1.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.7.0
+      '@gmod/bgzf-filehandle': 6.8.0
       '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
@@ -13000,7 +13000,7 @@ snapshots:
 
   '@gmod/bed@2.3.2': {}
 
-  '@gmod/bgzf-filehandle@6.7.0':
+  '@gmod/bgzf-filehandle@6.8.0':
     dependencies:
       generic-filehandle2: 2.5.1
       pako-esm2: 2.0.2
@@ -13030,7 +13030,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.13':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.7.0
+      '@gmod/bgzf-filehandle': 6.8.0
       '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
@@ -13049,9 +13049,9 @@ snapshots:
 
   '@gmod/shared-read-cache@2.1.0': {}
 
-  '@gmod/tabix@3.10.2':
+  '@gmod/tabix@3.11.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.7.0
+      '@gmod/bgzf-filehandle': 6.8.0
       '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
