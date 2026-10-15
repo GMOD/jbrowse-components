@@ -32,7 +32,7 @@ const CONSENSUS_LABEL = 'Consensus sequence'
 // launch's two entries do: the selection is what the rubberband entry has and
 // this one does not. Spelled out rather than built off CONSENSUS_LABEL, because
 // `check-menu-labels` reads the docs' menu paths back off the source.
-const VISIBLE_LABEL = 'Consensus sequence (visible region)'
+const VISIBLE_LABEL = 'Consensus sequence (visible region)...'
 
 // The dialog's own prop type plus the discriminator picking it out of a track's
 // displays, so what the dialog reads off a display is checked here rather than

@@ -549,7 +549,7 @@ export function createBaseTrackModel(
        */
       get saveTrackDataMenuItem(): MenuItem {
         return {
-          label: 'Save track data',
+          label: 'Save track data...',
           icon: Save,
           priority: TRACK_MENU_PRIORITY.saveTrackData,
           onClick: () => {

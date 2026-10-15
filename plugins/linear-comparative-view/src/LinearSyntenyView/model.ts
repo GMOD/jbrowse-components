@@ -1187,7 +1187,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => {
       const exportSvgMenuItem = {
-        label: 'Export SVG',
+        label: 'Export SVG...',
         icon: PhotoCameraIcon,
         onClick: () => {
           getDialogHost(self).queueDialog(handleClose => [

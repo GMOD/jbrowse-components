@@ -128,7 +128,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       icon: TrackSelectorIcon,
     },
     {
-      label: 'Export SVG',
+      label: 'Export SVG...',
       icon: PhotoCameraIcon,
       onClick: () => {
         session.queueDialog(handleClose => [
@@ -392,7 +392,7 @@ export function buildRubberBandMenuItems(
       },
     },
     {
-      label: 'Get sequence',
+      label: 'Get sequence...',
       icon: MenuOpenIcon,
       onClick: () => {
         const regions = self.getSelectedRegions(leftOffset, rightOffset)

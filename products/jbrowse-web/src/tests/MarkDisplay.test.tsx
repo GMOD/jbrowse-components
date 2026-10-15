@@ -122,7 +122,7 @@ test('the SVG export paints the same bars and carries the key under its title', 
   await findDisplayPainted('mark-display', { timeout })
 
   fireEvent.click(await findByTestId('view_menu_icon', {}, { timeout }))
-  fireEvent.click(await findByText('Export SVG', {}, { timeout }))
+  fireEvent.click(await findByText('Export SVG...', {}, { timeout }))
   fireEvent.click(await findByText('Submit', {}, { timeout }))
   await waitFor(
     () => {

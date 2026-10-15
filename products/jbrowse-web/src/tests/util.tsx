@@ -567,9 +567,9 @@ export async function exportAndVerifySvg({
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
 
   if (findAllByText) {
-    fireEvent.click((await findAllByText('Export SVG'))[0]!)
+    fireEvent.click((await findAllByText('Export SVG...'))[0]!)
   } else {
-    fireEvent.click(await findByText('Export SVG', ...opts))
+    fireEvent.click(await findByText('Export SVG...', ...opts))
   }
 
   await beforeSubmit?.()

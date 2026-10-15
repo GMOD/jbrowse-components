@@ -45,7 +45,7 @@ local file never travels in a share link. See
 
 ### How do I make an image for a publication
 
-Every genome view has an "Export SVG" option that writes exactly what is on
+Every genome view has an "Export SVG..." option that writes exactly what is on
 screen, ready for Illustrator or Inkscape. To regenerate figures as the data
 changes, [@jbrowse/img](/docs/jbrowse-img) renders from the command line, and
 [](/docs/agents_capture) drives the running app for a screenshot of a menu or an

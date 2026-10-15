@@ -16,7 +16,7 @@ it on Web is planned.
 
 ## BLAT search
 
-Choose **Tools → BLAT search…**, paste a DNA sequence or FASTA, pick the
+Choose **Tools → BLAT search...**, paste a DNA sequence or FASTA, pick the
 assembly, and submit.
 
 What comes back is a new track named after the query, holding the hits, and a
@@ -81,8 +81,8 @@ you send with its own — so a key only spends against UCSC directly.
 
 ## In-silico PCR
 
-Choose **Tools → In-silico PCR…** to find where a primer pair amplifies. Enter a
-forward and reverse primer and an optional maximum product size. This uses
+Choose **Tools → In-silico PCR...** to find where a primer pair amplifies. Enter
+a forward and reverse primer and an optional maximum product size. This uses
 UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
 options as BLAT search.
 

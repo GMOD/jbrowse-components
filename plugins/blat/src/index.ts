@@ -20,7 +20,7 @@ export default class BlatPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'BLAT search…',
+        label: 'BLAT search...',
         icon: SearchIcon,
         onClick: (session: UcscHost) => {
           session.queueDialog(handleClose => [
@@ -30,7 +30,7 @@ export default class BlatPlugin extends Plugin {
         },
       })
       pluginManager.rootModel.appendToMenu('Tools', {
-        label: 'In-silico PCR…',
+        label: 'In-silico PCR...',
         icon: BiotechIcon,
         onClick: (session: UcscHost) => {
           session.queueDialog(handleClose => [

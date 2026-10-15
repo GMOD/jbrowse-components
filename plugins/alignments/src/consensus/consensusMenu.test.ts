@@ -5,7 +5,7 @@ import {
 } from '../LinearAlignmentsDisplay/testUtils.ts'
 import ConsensusSequenceF from './index.ts'
 
-const LABEL = 'Consensus sequence (visible region)'
+const LABEL = 'Consensus sequence (visible region)...'
 
 test('the alignments track menu offers a consensus, no rubberband needed', () => {
   const { createDisplay } = createRpcTestEnvironment({

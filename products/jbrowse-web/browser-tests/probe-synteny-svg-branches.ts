@@ -106,12 +106,12 @@ try {
   await (await page.waitForSelector('[data-testid="view_menu_icon"]'))!.click()
   await page.waitForFunction(() =>
     [...document.querySelectorAll('*')].some(
-      e => e.textContent === 'Export SVG',
+      e => e.textContent === 'Export SVG...',
     ),
   )
   await page.evaluate(() => {
     const el = [...document.querySelectorAll('*')].find(
-      e => e.textContent === 'Export SVG',
+      e => e.textContent === 'Export SVG...',
     )
     ;(el as HTMLElement | undefined)?.click()
   })

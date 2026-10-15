@@ -184,7 +184,7 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
       },
     },
     {
-      label: 'Get sequence',
+      label: 'Get sequence...',
       icon: BiotechIcon,
       onClick: () => {
         const region = self.loadedRegions.get(displayedRegionIndex)

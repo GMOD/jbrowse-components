@@ -158,7 +158,10 @@ export interface StepPreset {
  * alone counts nothing, so the count per bin is the pair a density is.
  */
 export const STEP_PRESETS: readonly StepPreset[] = [
-  { label: 'Keep features where…', steps: [{ type: 'filter', expr: 'jexl:' }] },
+  {
+    label: 'Keep features where...',
+    steps: [{ type: 'filter', expr: 'jexl:' }],
+  },
   {
     label: 'Compute a field',
     steps: [{ type: 'formula', expr: 'jexl:', as: DEFAULT_FORMULA_AS }],

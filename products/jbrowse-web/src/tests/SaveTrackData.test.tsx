@@ -34,7 +34,7 @@ async function openSaveTrackDataDialog(trackId: string) {
   fireEvent.click(await screen.findByTestId(hts(trackId), ...opts))
   fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await screen.findByText('Track actions', ...opts))
-  fireEvent.click(await screen.findByText('Save track data', ...opts))
+  fireEvent.click(await screen.findByText('Save track data...', ...opts))
 }
 
 test.each([

@@ -1468,7 +1468,7 @@ export default function stateModelFactory(pm: PluginManager) {
               },
             },
             {
-              label: 'Export SVG',
+              label: 'Export SVG...',
               icon: PhotoCameraIcon,
               onClick: () => {
                 getDialogHost(self).queueDialog(handleClose => [

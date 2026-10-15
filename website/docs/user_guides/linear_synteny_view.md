@@ -288,7 +288,7 @@ inside **Rows**:
   are one genome's chromosomes is anchored on that genome
   (`diagonalizeAnchorRow` on the view)
 - **Show...** for the header's own search boxes
-- **Export SVG**
+- **Export SVG...**
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 

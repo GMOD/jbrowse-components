@@ -50,7 +50,7 @@ describe('feature "Get sequence" context menu', () => {
     loadGene(display, [])
 
     rightClick(display, gene)
-    clickContextMenuItem(display, 'Get sequence')
+    clickContextMenuItem(display, 'Get sequence...')
 
     expect(session.queuedDialogs).toHaveLength(1)
     expect(session.queuedDialogs[0]![1]).toMatchObject({
@@ -67,7 +67,7 @@ describe('feature "Get sequence" context menu', () => {
     loadGene(display, [eden1])
 
     rightClick(display, gene, eden1)
-    clickContextMenuItem(display, 'Get sequence')
+    clickContextMenuItem(display, 'Get sequence...')
 
     expect(session.queuedDialogs[0]![1]).toMatchObject({
       parentFeatureId: 'EDEN',
@@ -82,7 +82,7 @@ describe('feature "Get sequence" context menu', () => {
     loadGene(display, [nested])
 
     rightClick(display, gene, nested)
-    clickContextMenuItem(display, 'Get sequence')
+    clickContextMenuItem(display, 'Get sequence...')
 
     expect(session.queuedDialogs[0]![1]).toMatchObject({
       parentFeatureId: 'EDEN',

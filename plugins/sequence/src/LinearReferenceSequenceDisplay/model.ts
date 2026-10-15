@@ -404,7 +404,7 @@ export function modelFactory(
               type: 'subMenu' as const,
               subMenu: [
                 {
-                  label: 'Get sequence (visible region)',
+                  label: 'Get sequence (visible region)...',
                   onClick: () => {
                     const { view } = self
                     // a fractional span comes back from fetchSequence the

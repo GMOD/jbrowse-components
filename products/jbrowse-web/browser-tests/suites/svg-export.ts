@@ -59,7 +59,7 @@ async function triggerSvgExport(page: Page, { vector = false } = {}) {
   const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
   await viewMenu.click()
   await delay(300)
-  const exportSvg = await findByText(page, 'Export SVG', 10000)
+  const exportSvg = await findByText(page, 'Export SVG...', 10000)
   await exportSvg.click()
   await delay(500)
   if (vector) {

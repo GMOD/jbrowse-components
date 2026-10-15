@@ -44,8 +44,8 @@ protospacer's own sequence; scoring a guide's specificity takes a genome-wide
 search, and this mode runs a scan of the region in view. A protospacer that
 reaches into an assembly gap is skipped.
 
-To order oligos from a search, use **Save track data** on the track's menu. The
-GFF3 export contains the guide sequence, PAM, cut positions, and flags as
+To order oligos from a search, use **Save track data...** on the track's menu.
+The GFF3 export contains the guide sequence, PAM, cut positions, and flags as
 attributes.
 
 ## Restriction enzymes and other named motifs

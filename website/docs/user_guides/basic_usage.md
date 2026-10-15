@@ -260,7 +260,7 @@ Click and drag on either the main (lower) or overview (upper) scale bar.
 
 <Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
 
-The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
+The main scale bar's menu holds **Zoom to region**, **Get sequence...**, **Copy
 range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
 **Launch** submenu of what can open from the selection:
 
@@ -273,9 +273,9 @@ range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
 - [](/docs/user_guides/consensus_sequence), when an alignments track is open
 
 Each of these has a track-menu twin that takes the visible window instead of a
-selection: **Get sequence (visible region)** on the reference sequence track,
-**Consensus sequence (visible region)** on an alignments track, and the synteny
-launch's own
+selection: **Get sequence (visible region)...** on the reference sequence track,
+**Consensus sequence (visible region)...** on an alignments track, and the
+synteny launch's own
 [visible-region entry](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
 Clicking the scale bar without dragging names a single base. Its menu holds

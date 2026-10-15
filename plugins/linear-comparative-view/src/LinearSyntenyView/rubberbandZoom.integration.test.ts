@@ -94,7 +94,7 @@ test('each row offers its own rubberband menu', async () => {
     // open one from
     expect(row.map(i => ('label' in i ? i.label : i.type))).toEqual([
       'Zoom to region',
-      'Get sequence',
+      'Get sequence...',
       'Copy range',
       'Highlight region',
     ])

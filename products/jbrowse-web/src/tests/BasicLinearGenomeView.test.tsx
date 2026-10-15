@@ -80,7 +80,7 @@ test('click and drag rubberband, click get sequence to open sequenceDialog', asy
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
-  fireEvent.click(await findByText('Get sequence'))
+  fireEvent.click(await findByText('Get sequence...'))
   expect(view.leftOffset).toBeTruthy()
   expect(view.rightOffset).toBeTruthy()
 }, 30000)

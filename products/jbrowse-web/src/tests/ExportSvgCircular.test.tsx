@@ -74,7 +74,7 @@ test('export svg of circular fails when a track fails to load', async () => {
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
 
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
+  fireEvent.click(await findByText('Export SVG...', ...opts))
   fireEvent.click(await findByText('Submit', ...opts))
 
   // the export resolves (it must not hang) into the dialog's own error banner

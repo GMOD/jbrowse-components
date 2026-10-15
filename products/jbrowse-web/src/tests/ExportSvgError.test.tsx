@@ -42,7 +42,7 @@ async function testExportSvgFails(tracks: string[], expectedError: RegExp) {
     await findAllByText(/HTTP 404/, {}, delay)
 
     fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-    fireEvent.click((await findAllByText('Export SVG'))[0]!)
+    fireEvent.click((await findAllByText('Export SVG...'))[0]!)
     fireEvent.click(await findByText('Submit', ...opts))
 
     // the dialog's own banner, not a rect inside a saved file
