@@ -1,5 +1,8 @@
 import { Component, useState } from 'react'
 
+import fs from 'node:fs'
+import path from 'node:path'
+
 import { act, render } from '@testing-library/react'
 
 import { useBootShell } from './bootShell.ts'
@@ -101,6 +104,64 @@ test('a throw that tears the tree down removes the shell', async () => {
   })
   await flush()
   expect(shell()).toBeNull()
+})
+
+describe("index.html's theme check", () => {
+  const html = fs.readFileSync(
+    path.join(__dirname, '../public/index.html'),
+    'utf8',
+  )
+  const script = /<script id="boot-shell-theme">([\s\S]*?)<\/script>/.exec(
+    html,
+  )![1]!
+  const hidden = () =>
+    document.documentElement.classList.contains('no-boot-shell')
+
+  beforeEach(() => {
+    window.name = ''
+  })
+
+  afterEach(() => {
+    localStorage.clear()
+  })
+
+  // global scope, as the browser runs a classic script: a top-level `var name`
+  // there is `window.name`, which reads back the string "null"
+  const run = () => {
+    // eslint-disable-next-line no-eval
+    ;(0, eval)(script)
+  }
+
+  test('a fresh visitor gets the shell', () => {
+    run()
+    expect(hidden()).toBe(false)
+  })
+
+  // Chrome's window.name setter turns a stored null into "null", which hid the
+  // shell for everyone; jsdom's does not, so the check is on the globals
+  test('it leaves the page globals alone', () => {
+    const before = { keys: Object.keys(window), name: window.name }
+    run()
+    expect({ keys: Object.keys(window), name: window.name }).toEqual(before)
+  })
+
+  test.each([
+    ['themeName', 'lightStock'],
+    ['themeMode', 'dark'],
+    ['themeMode', 'system'],
+    ['themeModeOverride', 'dark'],
+  ])('%s=%s hides it', (key, value) => {
+    localStorage.setItem(key, value)
+    run()
+    expect(hidden()).toBe(true)
+  })
+
+  test('the stored default theme in light mode keeps it', () => {
+    localStorage.setItem('themeName', 'default')
+    localStorage.setItem('themeMode', 'light')
+    run()
+    expect(hidden()).toBe(false)
+  })
 })
 
 test('a stored non-default theme leaves the spinner, since the shell is hidden', async () => {

@@ -53,18 +53,20 @@
         background: #fff;
       }
     </style>
-    <script>
-      try {
-        var name = localStorage.getItem('themeName')
-        var mode = localStorage.getItem('themeMode')
-        if (
-          (name && name !== 'default') ||
-          (mode && mode !== 'light') ||
-          localStorage.getItem('themeModeOverride') === 'dark'
-        ) {
-          document.documentElement.classList.add('no-boot-shell')
-        }
-      } catch (e) {}
+    <script id="boot-shell-theme">
+      ;(function () {
+        try {
+          var themeName = localStorage.getItem('themeName')
+          var themeMode = localStorage.getItem('themeMode')
+          if (
+            (themeName && themeName !== 'default') ||
+            (themeMode && themeMode !== 'light') ||
+            localStorage.getItem('themeModeOverride') === 'dark'
+          ) {
+            document.documentElement.classList.add('no-boot-shell')
+          }
+        } catch (e) {}
+      })()
     </script>
   </head>
   <body>
