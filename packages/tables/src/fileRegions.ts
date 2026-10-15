@@ -1,0 +1,83 @@
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+import type { ResolvedAssembly } from './assembly.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+/**
+ * The end a whole contig reads to where nothing states its length: the most
+ * an int32 holds, which each reader clamps to what its index addresses.
+ */
+export const WHOLE_CONTIG_END = 2 ** 31 - 1
+
+interface Contig {
+  refName: string
+  length?: number
+  hasData?: boolean | null
+}
+
+/**
+ * Adapters whose contig names come from a tabix index, which lists only the
+ * contigs holding records, or from the parsed records themselves.
+ */
+const NAMES_FROM_RECORDS = new Set([
+  'BedAdapter',
+  'BedTabixAdapter',
+  'BedGraphAdapter',
+  'BedGraphTabixAdapter',
+  'BedpeAdapter',
+  'Gff3Adapter',
+  'Gff3TabixAdapter',
+  'GtfAdapter',
+  'GtfTabixAdapter',
+  'FromConfigAdapter',
+])
+
+async function contigsOf(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+): Promise<Contig[]> {
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    'tables',
+    adapterConfig,
+  )
+  if ('getContigs' in dataAdapter) {
+    return (dataAdapter as { getContigs: () => Promise<Contig[]> }).getContigs()
+  }
+  const refNames: string[] =
+    'getRefNames' in dataAdapter
+      ? await (
+          dataAdapter as { getRefNames: () => Promise<string[]> }
+        ).getRefNames()
+      : []
+  const listed = NAMES_FROM_RECORDS.has(String(adapterConfig.type))
+  return refNames.map(refName => ({ refName, hasData: listed ? true : null }))
+}
+
+/**
+ * Each contig a file lists, from 0 to its length: the assembly's where it
+ * has the contig, else the file's own where it states one, else
+ * `WHOLE_CONTIG_END`. `hasData` is whether the file holds records there,
+ * null where its index cannot tell.
+ */
+export async function fileRegions(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  assembly?: ResolvedAssembly,
+) {
+  const contigs = await contigsOf(pluginManager, adapterConfig)
+  const canonical = assembly?.canonical ?? ((name: string) => name)
+  const assemblyLength = new Map(
+    assembly?.regions.map(r => [canonical(r.refName), r.end]),
+  )
+  const length = contigs.map(
+    c => assemblyLength.get(canonical(c.refName)) ?? c.length,
+  )
+  return {
+    refName: contigs.map(c => c.refName),
+    start: contigs.map(() => 0),
+    end: length.map(l => l ?? WHOLE_CONTIG_END),
+    lengthKnown: length.map(l => l !== undefined),
+    hasData: contigs.map(c => c.hasData ?? null),
+  }
+}

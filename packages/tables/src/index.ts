@@ -35,6 +35,7 @@ import {
 } from '@jbrowse/plugin-wiggle/tables'
 
 import { assemblyResolver, renameRegions } from './assembly.ts'
+import { fileRegions } from './fileRegions.ts'
 
 import type { AssemblyConfig, TablesRegion } from './assembly.ts'
 import type { AlignmentTablesArgs } from '@jbrowse/plugin-alignments/tables'
@@ -98,12 +99,6 @@ interface RegionArgs {
 interface RowLimit {
   rowLimit?: number
 }
-
-/**
- * The end a whole contig reads to where the file states no length: the most
- * an int32 holds, which each reader clamps to what its index addresses.
- */
-const WHOLE_CONTIG_END = 2 ** 31 - 1
 
 /** The longest column of each table in `result`, a table being an object of arrays. */
 function tableRows(result: object, path = ''): [string, number][] {
@@ -274,31 +269,23 @@ export function createTablesEngine() {
     /**
      * Each contig a file lists, from 0 to the end of the contig: the regions
      * a read of the whole file reads, under the file's own spelling. The end
-     * is the most an int32 holds, which each reader clamps to what its index
-     * addresses, since most files state no contig lengths.
+     * is the contig's length where the assembly or the file states one, else
+     * the most an int32 holds, which each reader clamps to what its index
+     * addresses. `lengthKnown` says which, and `hasData` whether the file
+     * holds records there, null where its index cannot tell.
      */
     fileRegions: async ({
       adapterConfig,
+      assembly,
     }: {
       adapterConfig: Record<string, unknown>
-    }) => {
-      const { dataAdapter } = await getAdapter(
+      assembly?: AssemblyConfig
+    }) =>
+      fileRegions(
         pluginManager,
-        'tables',
         adapterConfig,
-      )
-      const refName: string[] =
-        'getRefNames' in dataAdapter
-          ? await (
-              dataAdapter as { getRefNames: () => Promise<string[]> }
-            ).getRefNames()
-          : []
-      return {
-        refName,
-        start: refName.map(() => 0),
-        end: refName.map(() => WHOLE_CONTIG_END),
-      }
-    },
+        assembly ? await assemblyOf(assembly) : undefined,
+      ),
     variantDensityAlpha,
     synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
     dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),

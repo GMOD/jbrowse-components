@@ -26,7 +26,7 @@ export interface TablesRegion {
   originalRefName?: string
 }
 
-interface ResolvedAssembly {
+export interface ResolvedAssembly {
   sequenceAdapter?: Record<string, unknown>
   regions: { refName: string; start: number; end: number }[]
   canonical: (name: string) => string

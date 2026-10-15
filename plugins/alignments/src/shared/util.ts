@@ -224,12 +224,15 @@ export interface SamHeaderLine {
 
 export interface ParsedSamHeader {
   idToName: string[]
+  /** Each reference's `LN`, undefined where its `@SQ` line gives none. */
+  idToLength: (number | undefined)[]
   nameToId: Record<string, number>
   readGroups: string[]
 }
 
 export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   const idToName: string[] = []
+  const idToLength: (number | undefined)[] = []
   const nameToId: Record<string, number> = {}
   const readGroups: string[] = []
   let refId = 0
@@ -238,9 +241,11 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
   for (const line of samHeader) {
     if (line.tag === 'SQ') {
       const sn = line.data.find(d => d.tag === 'SN')
+      const ln = line.data.find(d => d.tag === 'LN')
       if (sn) {
         nameToId[sn.value] = refId
         idToName[refId] = sn.value
+        idToLength[refId] = ln ? Number(ln.value) : undefined
       }
       refId++
     } else if (line.tag === 'RG') {
@@ -252,7 +257,7 @@ export function parseSamHeader(samHeader: SamHeaderLine[]): ParsedSamHeader {
     }
   }
 
-  return { idToName, nameToId, readGroups }
+  return { idToName, idToLength, nameToId, readGroups }
 }
 
 function getColorBaseMap(palette: JBrowsePalette) {

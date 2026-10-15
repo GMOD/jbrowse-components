@@ -169,6 +169,11 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return rawHeader
   }
 
+  protected async indexHasData(refId: number, opts?: BaseOptions) {
+    const { index } = this.configure()
+    return index.hasDataForReferenceSequence(refId, { signal: opts?.signal })
+  }
+
   private refIdToOriginalName(refId: number) {
     return this.seqIdToOriginalRefName[refId]
   }

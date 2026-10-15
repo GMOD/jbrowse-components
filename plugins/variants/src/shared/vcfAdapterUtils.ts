@@ -93,3 +93,21 @@ export async function appendVcfLines(
     )
   }
 }
+
+/**
+ * The contigs a VCF holds records on, which its index or its records name,
+ * each with the length its `##contig` line states.
+ */
+export function vcfContigs(refNames: string[], metadata: unknown) {
+  const declared = (
+    metadata as { contig?: Record<string, { length?: unknown }> }
+  ).contig
+  return refNames.map(refName => {
+    const length = Number(declared?.[refName]?.length)
+    return {
+      refName,
+      length: Number.isFinite(length) ? length : undefined,
+      hasData: true,
+    }
+  })
+}

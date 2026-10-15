@@ -51,6 +51,28 @@ export abstract class BaseSamAdapter<
     return idToName
   }
 
+  /**
+   * Each contig's `@SQ` length and whether the index says the file holds
+   * reads on it: null where the index cannot tell.
+   */
+  async getContigs(opts?: BaseOptions) {
+    const { idToName, idToLength } = await this.setup(opts)
+    return Promise.all(
+      idToName.map(async (refName, id) => ({
+        refName,
+        length: idToLength[id],
+        hasData: await this.indexHasData(id, opts),
+      })),
+    )
+  }
+
+  protected async indexHasData(
+    _refId: number,
+    _opts?: BaseOptions,
+  ): Promise<boolean | null> {
+    return null
+  }
+
   refIdToName(refId: number) {
     return this.samHeader?.idToName[refId]
   }

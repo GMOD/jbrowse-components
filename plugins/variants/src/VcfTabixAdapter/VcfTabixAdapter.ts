@@ -11,7 +11,11 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { appendVcfLines, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import {
+  appendVcfLines,
+  streamVcfFeatures,
+  vcfContigs,
+} from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -74,6 +78,14 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       opts.statusCallback,
       onProgress => vcf.getReferenceSequenceNames({ ...opts, onProgress }),
     )
+  }
+
+  async getContigs(opts: BaseOptions = {}) {
+    const [refNames, metadata] = await Promise.all([
+      this.getRefNames(opts),
+      this.getMetadata(opts),
+    ])
+    return vcfContigs(refNames, metadata)
   }
 
   async getHeader(opts?: BaseOptions) {

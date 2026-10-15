@@ -100,6 +100,16 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return Object.keys(header.refsByName)
   }
 
+  /** Each contig's length off the chrom table, which lists empty contigs too. */
+  public async getContigs(opts?: BaseOptions) {
+    const { header } = await this.setup(opts)
+    return Object.entries(header.refsByName).map(([refName, id]) => ({
+      refName,
+      length: header.refsByNumber[id]?.length,
+      hasData: null,
+    }))
+  }
+
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {

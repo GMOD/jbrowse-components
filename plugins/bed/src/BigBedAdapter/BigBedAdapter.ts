@@ -69,6 +69,16 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     return Object.keys(header.refsByName)
   }
 
+  /** Each contig's length off the chrom table, which lists empty contigs too. */
+  public async getContigs(opts?: BaseOptions) {
+    const { header } = await this.configure(opts)
+    return Object.entries(header.refsByName).map(([refName, id]) => ({
+      refName,
+      length: header.refsByNumber[id]?.length,
+      hasData: null,
+    }))
+  }
+
   // Compressed download-size estimate straight from the bbi R-tree index (block
   // byte lengths, no data blocks read), so a display can byte-gate an over-large
   // BigBed fetch before it starts. Overrides the base no-estimate default, which

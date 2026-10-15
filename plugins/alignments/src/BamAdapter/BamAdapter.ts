@@ -88,6 +88,16 @@ export abstract class BamAdapterBase<
     return bam.getHeader({ onProgress, signal })
   }
 
+  /**
+   * A BAI or CSI counts a contig's reads in its pseudo-bin, 0 both for a
+   * contig with none and for one the index never wrote, so only a count says.
+   */
+  protected async indexHasData(refId: number, opts?: BaseOptions) {
+    const { bam } = this.configure()
+    const count = await bam.index?.lineCount(refId, opts)
+    return count ? true : null
+  }
+
   async getHeader(_opts?: BaseOptions) {
     const { bam } = this.configure()
     return bam.getHeaderText()

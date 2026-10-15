@@ -11,6 +11,7 @@ import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { getEnd } from '../VcfFeature/util.ts'
+import { vcfContigs } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -32,6 +33,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
   async getMetadata() {
     const { parser } = await this.setup()
     return parser.getMetadata()
+  }
+
+  async getContigs(opts: BaseOptions = {}) {
+    return vcfContigs(await this.getRefNames(opts), await this.getMetadata())
   }
 
   private async setupPre(opts?: BaseOptions) {
