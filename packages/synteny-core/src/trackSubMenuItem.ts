@@ -14,8 +14,8 @@ export interface MenuTrack {
 /**
  * #api
  * One track's menu as a submenu named for the track: the session's track
- * actions (About track, Settings) beside the track's own items, by priority.
- * A linear view hangs this off the track label; a view that draws no label
+ * actions (About track, Settings) beside the track's own items; the menu orders
+ * them by priority. A linear view hangs this off the track label; a view that draws no label
  * puts it in its own menu. `view` is whatever shows and launches the track.
  */
 export function trackSubMenuItem(
@@ -32,6 +32,6 @@ export function trackSubMenuItem(
         view,
       }) ?? []),
       ...track.trackMenuItems(),
-    ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+    ],
   }
 }
