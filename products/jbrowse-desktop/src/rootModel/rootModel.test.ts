@@ -200,11 +200,11 @@ test('Open genome cancels through a promise and closes the dialog', async () => 
     throw new Error('no clickable Open genome item')
   }
   item.onClick()
-  const { onClose } = root.session!.DialogProps as {
+  const { onClose } = root.session.DialogProps as {
     onClose: () => Promise<void>
   }
   await expect(onClose()).resolves.toBeUndefined()
-  expect(root.session!.DialogComponent).toBeUndefined()
+  expect(root.session.DialogComponent).toBeUndefined()
 })
 
 // the plugin store's add and remove drop setPluginsUpdated's promise, so a
@@ -217,7 +217,7 @@ test('a plugin reload that fails is reported on the session it left open', async
 
   await root.setPluginsUpdated()
 
-  expect(root.session!.snackbarMessages.map(m => m.message)).toEqual([
-    'Error: plugin reload failed',
-  ])
+  expect(
+    root.session.snackbarMessages.map((m: { message: string }) => m.message),
+  ).toEqual(['Error: plugin reload failed'])
 })
