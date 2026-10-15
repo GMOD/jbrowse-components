@@ -41,6 +41,10 @@ export function sessionLastUsed(m: SessionMetadata) {
   return m.updatedAt ?? m.createdAt
 }
 
+export function byLastUsedDesc(a: SessionMetadata, b: SessionMetadata) {
+  return +sessionLastUsed(b) - +sessionLastUsed(a)
+}
+
 /** Shape of the jbrowse config model as seen from the session */
 export interface AbstractJBrowseModel {
   readonly configuration: AnyConfigurationModel

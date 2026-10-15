@@ -1,5 +1,5 @@
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { sessionLastUsed } from '@jbrowse/web-core'
+import { byLastUsedDesc, sessionLastUsed } from '@jbrowse/web-core'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
@@ -47,7 +47,7 @@ export function staleSessionIds(
   )
   const overCap = candidates
     .filter(m => m.edited !== false)
-    .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
+    .sort(byLastUsedDesc)
     .slice(MAX_AUTOSAVED_SESSIONS)
   return [...unedited, ...overCap].map(m => m.id)
 }

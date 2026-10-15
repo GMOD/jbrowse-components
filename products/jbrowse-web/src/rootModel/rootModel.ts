@@ -24,7 +24,7 @@ import {
   redoMenuItem,
   undoMenuItem,
 } from '@jbrowse/product-core'
-import { sessionLastUsed } from '@jbrowse/web-core'
+import { byLastUsedDesc } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 
 import packageJSON from '../../package.json' with { type: 'json' }
@@ -243,9 +243,7 @@ export default function RootModel({
               return
             }
             this.setSavedSessionMetadata(
-              ret
-                .filter(m => isListed(self, m))
-                .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
+              ret.filter(m => isListed(self, m)).sort(byLastUsedDesc),
             )
           }
         },
@@ -265,7 +263,7 @@ export default function RootModel({
                 ...(self.savedSessionMetadata ?? []).filter(
                   m => m.id !== meta.id,
                 ),
-              ].sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
+              ].sort(byLastUsedDesc),
             )
           }
         },
