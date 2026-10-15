@@ -181,15 +181,8 @@ export function BaseChordDisplay() {
       },
       /**
        * #getter
-       * the polar stage as the canvas and the pointer see it, rotation in
-       */
-      get chordStage(): ChordStage {
-        return { ...this.figureStage, offsetRadians: this.view.offsetRadians }
-      },
-      /**
-       * #getter
        * the polar stage on the unrotated figure, which the view's SVG turns:
-       * what the export and the highlight paths are placed on
+       * what the export, the highlight paths and the hit tests are placed on
        */
       get figureStage(): ChordStage {
         const { radiansPerBp, gapRadians } = this.view.chordScale

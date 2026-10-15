@@ -96,6 +96,20 @@ export interface ChordStage {
   bezierRadiusPx: number
 }
 
+/**
+ * A point `dx`,`dy` CSS px from the circle's centre in the screen frame, on the
+ * unrotated figure a rotation of `offsetRadians` turns.
+ */
+export function figurePoint(
+  dx: number,
+  dy: number,
+  offsetRadians: number,
+): [number, number] {
+  const c = Math.cos(offsetRadians)
+  const s = Math.sin(offsetRadians)
+  return [dx * c + dy * s, dy * c - dx * s]
+}
+
 export function footRadians(x: number, gaps: number, stage: ChordStage) {
   return x * stage.radiansPerBp + gaps * stage.gapRadians
 }

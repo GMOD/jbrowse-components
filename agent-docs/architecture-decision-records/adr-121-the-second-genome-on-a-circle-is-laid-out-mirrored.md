@@ -7,6 +7,13 @@ summary: "A two-genome circle reorders its second genome with the same `diagonal
 
 ## Status
 
+**Amended 2026-10-14**: the ribbon fetch asks for every genome's regions but
+the last's. Until then it asked both genomes, read each alignment once from
+each end, and `dedupeRibbons` dropped the second copy, so "halved" below held
+for the draw and not the read. A pairwise adapter answers from either end and a
+ribbon draws only with both ends on the circle, so the earlier genome reaches
+every pair; the copy kept is the one the dedupe kept before.
+
 **Amended 2026-09-16**: the reorder no longer has an RPC. The circle holds every
 alignment on the main thread already, so `runCircularDiagonalize` waits for the
 ribbon displays' fetch and runs `diagonalizeRegions` over

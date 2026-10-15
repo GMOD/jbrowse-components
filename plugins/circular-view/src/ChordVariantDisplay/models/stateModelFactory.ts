@@ -34,7 +34,7 @@ import {
 import { getEndpoint } from '../../chords/chordGeometry.ts'
 import { hitChord } from '../../chords/chordHit.ts'
 import { chordLabel } from '../../chords/chordLabel.ts'
-import { axisX, chordEndsAt } from '../../chords/chordStage.ts'
+import { axisX, chordEndsAt, figurePoint } from '../../chords/chordStage.ts'
 import { DIMMED_OPACITY } from '../../chords/shaders/chordStage.generated.ts'
 import { shapePath } from '../../chords/shapePath.ts'
 
@@ -355,7 +355,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           return undefined
         }
         const lanes = this.chordLanes
-        const i = hitChord(lanes, self.chordStage, dx, dy)
+        const [x, y] = figurePoint(dx, dy, self.view.offsetRadians)
+        const i = hitChord(lanes, self.figureStage, x, y)
         return i === undefined ? undefined : lanes.features[i]
       },
       /**

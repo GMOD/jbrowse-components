@@ -183,13 +183,13 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
     ).toHex()
 
   view.setColorField('query')
-  expect(display.ribbonFill(feature)).toBe(ideogram('volvox', 'ctgA'))
+  expect(display.shapeFor(feature.id())!.fill).toBe(ideogram('volvox', 'ctgA'))
   view.setColorField('target')
-  expect(display.ribbonFill(feature)).toBe(ideogram('volvox2', 'ctgB'))
+  expect(display.shapeFor(feature.id())!.fill).toBe(ideogram('volvox2', 'ctgB'))
   expect(display.shapeAlpha).toBe(0.45)
   view.setColorField('strand')
   view.setOpacity(0.5)
-  expect(display.ribbonFill(feature)).toBe(
+  expect(display.shapeFor(feature.id())!.fill).toBe(
     colord(UNIVERSAL_FIELD_PRESETS.strand.range[1]).toHex(),
   )
   expect(display.shapeAlpha).toBe(0.5)
@@ -198,16 +198,16 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
 // a hidden row would still take the pointer through its transparent fill
 test('a ribbon its color paints transparent is not drawn', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
-  expect(display.drawnFeatures).toHaveLength(1)
+  expect(display.ribbonLanes.count).toBe(1)
   applySnapshot(view.color, { value: 'rgba(0,0,0,0)' })
-  expect(display.drawnFeatures).toHaveLength(0)
+  expect(display.ribbonLanes.count).toBe(0)
 }, 20000)
 
 test("a ribbon shorter than the view's minimum length is not drawn", async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
-  expect(display.drawnFeatures).toHaveLength(1)
+  expect(display.ribbonLanes.count).toBe(1)
   view.setMinAlignmentLength(101)
-  expect(display.drawnFeatures).toHaveLength(0)
+  expect(display.ribbonLanes.count).toBe(0)
 }, 20000)
 
 // each end resolves against its own assembly's slices, which is what a
@@ -278,4 +278,42 @@ test('a rotation or a zoom leaves the uploaded cell as it was', async () => {
   dispose()
   expect(cells).toHaveLength(1)
   expect(cells[0]).toBeDefined()
+}, 20000)
+
+test('a two-genome fetch asks for the first genome only', async () => {
+  const { session, display } = await setup(['volvox', 'volvox2'])
+  const call = jest.spyOn(session.rpcManager, 'call')
+  display.reload()
+  await when(() => display.features === undefined)
+  await when(() => display.ready)
+  const asked = call.mock.calls
+    .filter(([, name]) => name === 'CoreGetFeatures')
+    .flatMap(
+      ([, , args]) => (args as { regions: { assemblyName: string }[] }).regions,
+    )
+  expect(asked.length).toBeGreaterThan(0)
+  expect(new Set(asked.map(r => r.assemblyName))).toEqual(new Set(['volvox']))
+  expect(display.ribbonLanes.count).toBe(1)
+}, 20000)
+
+// the hit test measures the unrotated figure, so the pointer turns instead
+test('a ribbon is hit where it is drawn, before and after a rotation', async () => {
+  const { view, display } = await setup(['volvox', 'volvox2'])
+  const { a1, a2 } = display.shapeFor(
+    display.ribbonLanes.features[0]!.id(),
+  )!.angles
+  const onFigure = (a1 + a2) / 2
+  const r = display.radiusPx - 1
+  for (const turn of [0, 0.7]) {
+    view.rotate(turn)
+    const screen = onFigure + view.offsetRadians
+    const hit = display.hitAt(r * Math.cos(screen), r * Math.sin(screen))
+    expect(hit?.id()).toBe(display.ribbonLanes.features[0]!.id())
+    expect(
+      display.hitAt(
+        r * Math.cos(screen + Math.PI),
+        r * Math.sin(screen + Math.PI),
+      ),
+    ).toBeUndefined()
+  }
 }, 20000)

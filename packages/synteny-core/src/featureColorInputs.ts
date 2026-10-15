@@ -16,7 +16,7 @@ import type { Feature } from '@jbrowse/core/util'
  */
 export function featureColorInputs(
   features: readonly Feature[],
-  ends: (feature: Feature) => readonly [string, string],
+  ends: (feature: Feature, i: number) => readonly [string, string],
   channelNames: readonly string[],
 ): ColorFunctionInputs {
   const refNames = makeStringDict()
@@ -26,7 +26,7 @@ export function featureColorInputs(
   const strands = new Int8Array(features.length)
   const channels = createAttributeChannels(channelNames, features.length)
   features.forEach((feature, i) => {
-    const [first, second] = ends(feature)
+    const [first, second] = ends(feature, i)
     refNameIds[i] = refNames.idFor(first)
     mateRefNameIds[i] = mateRefNames.idFor(second)
     strands[i] = feature.get('strand') === -1 ? -1 : 1
