@@ -230,7 +230,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/ui/Logo': ['LogoFull', 'Logomark'],
   '@jbrowse/core/ui/measureLegendText': ['measureLegendText'],
   '@jbrowse/core/ui/Menu': ['default'],
-  '@jbrowse/core/ui/menuItems': ['checkboxItem', 'makeRadioSubMenu', 'radioItem', 'radioItems', 'resolveSubMenu', 'showLegendCheckboxItem', 'staysOpenOnClick', 'toggleItem', 'withHint', 'withSubHeader'],
+  '@jbrowse/core/ui/menuItems': ['TRACK_MENU_PRIORITY', 'checkboxItem', 'makeRadioSubMenu', 'radioItem', 'radioItems', 'resolveSubMenu', 'showLegendCheckboxItem', 'staysOpenOnClick', 'subMenuIfAny', 'toggleItem', 'withHint', 'withSubHeader'],
   '@jbrowse/core/ui/multiTrackMenuItems': ['addMultiTrackMenuItems', 'buildMultiTrackMenuItems'],
   '@jbrowse/core/ui/palette': ['alpha', 'augmentColor', 'colorFwdStrand', 'colorInterchrom', 'colorLongInsert', 'colorLongreadInv', 'colorPairLL', 'colorPairLR', 'colorPairLRDark', 'colorPairRL', 'colorPairRR', 'colorRevStrand', 'colorShortInsert', 'colorSplitReadInversion', 'colorSupplementary', 'colorUnmappedMate', 'colorUnmappedMateDark', 'darken', 'featureDefaultColor', 'getContrastRatio', 'getContrastText', 'getLuminance', 'grey', 'legacyThemeNames', 'lighten', 'methylated5hmC', 'methylated5mC', 'palettePresets', 'resolvePalette', 'resolveThemeSelection', 'tagColorPalette', 'unmethylated5mC', 'utrDefaultColor'],
   '@jbrowse/core/ui/PaletteContext': ['PaletteProvider', 'SessionPaletteProvider', 'StyleThemeProvider', 'usePalette', 'useSessionPalette', 'useStyleTheme'],

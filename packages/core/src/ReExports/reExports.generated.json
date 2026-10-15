@@ -1884,6 +1884,7 @@
     "@jbrowse/core/ui/menuItems": {
       "package": "@jbrowse/core",
       "names": [
+        "TRACK_MENU_PRIORITY",
         "checkboxItem",
         "makeRadioSubMenu",
         "radioItem",
@@ -1891,6 +1892,7 @@
         "resolveSubMenu",
         "showLegendCheckboxItem",
         "staysOpenOnClick",
+        "subMenuIfAny",
         "toggleItem",
         "withHint",
         "withSubHeader"

@@ -115,9 +115,10 @@ export interface SubMenuItem extends BaseMenuItem {
 }
 
 /**
- * Where a track menu's shared rows sort, higher first. A display's own rows sit
- * at 0, between the track's actions above and the recovery, Advanced and
- * Display types rows below.
+ * #menuBuilder TRACK_MENU_PRIORITY | the `priority` of each shared track menu row, higher first
+ *
+ * A display's own rows sit at 0, between the track's actions above and the
+ * recovery, Advanced and Display types rows below.
  */
 export const TRACK_MENU_PRIORITY = {
   aboutTrack: 1002,
@@ -130,7 +131,7 @@ export const TRACK_MENU_PRIORITY = {
   displayTypes: -1000,
 } as const
 
-/** The submenu as a one-row list, or no row while it has nothing to hold. */
+/** #menuBuilder subMenuIfAny | a submenu row, or no row while it has nothing to hold */
 export function subMenuIfAny(
   item: BaseMenuItem & { subMenu: MenuItem[] },
 ): MenuItem[] {

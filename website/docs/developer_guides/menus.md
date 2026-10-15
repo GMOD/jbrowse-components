@@ -210,7 +210,9 @@ the Material UI barrel into every host that installs the plugin.
 | `radioItem` | one radio setting row; the singular of `radioItems` |
 | `radioItems` | a radio group, one row per option |
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
+| `subMenuIfAny` | a submenu row, or no row while it has nothing to hold |
 | `toggleItem` | a checkbox row whose setter takes the new value |
+| `TRACK_MENU_PRIORITY` | the `priority` of each shared track menu row, higher first |
 | `withHint` | a row label carrying an aside that is only sometimes there |
 | `withSubHeader` | a section heading, present only if the section is |
 
