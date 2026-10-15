@@ -180,7 +180,8 @@ The gene track is UCSC's RefSeq annotation of dm6:
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz"
+    "uri": "https://jbrowse.org/ucsc/dm6/ncbiRefSeq.gff.gz",
+    "csi": true
   }
 }
 ```
