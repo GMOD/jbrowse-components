@@ -125,7 +125,7 @@ test('rows are lanes on a multi-way track and a layout on a wiggle track', () =>
 test('marks are added in the plot editor of the mark and Manhattan displays', () => {
   const marks = [{ mark: 'link' }, { mark: 'rule' }]
   expect(stepPaths('marks', marks, 'LinearMarkDisplay')).toEqual([
-    'Track menu → Edit plot... → Add mark',
+    'Track menu → Edit marks... → Add mark',
   ])
   expect(stepPaths('marks', marks, 'LinearManhattanDisplay')).toHaveLength(1)
   expect(stepPaths('marks', marks, 'LinearBasicDisplay')).toEqual([])

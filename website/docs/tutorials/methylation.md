@@ -336,9 +336,9 @@ promoter and the stretch of _SNHG14_ downstream of it:
 
 <Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average. At the SNRPN promoter HP1 is methylated and HP2 unmethylated, and across the SNHG14 gene body HP2 is the more methylated. Upstream of SNRPN the two rows sit at about the same level." src="/img/methylation/hg002_imprinted_smoothed.png" />
 
-**Edit plot...** in the track menu opens the marks. In the line's `window` step,
-set **rows before** and **rows after** to 500 for a 1,001-CpG average, then type
-`chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
+**Edit marks...** in the track menu opens the marks. In the line's `window`
+step, set **rows before** and **rows after** to 500 for a 1,001-CpG average,
+then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 
 <Figure caption="The same track across the Prader-Willi and Angelman domain with a 1,001-CpG moving average. The haplotypes part across SNRPN and SNHG14 and track each other over the rest of the domain." src="/img/methylation/hg002_imprinted_domain.png" />
 

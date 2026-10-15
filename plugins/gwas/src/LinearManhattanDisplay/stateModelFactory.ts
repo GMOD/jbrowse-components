@@ -310,7 +310,7 @@ export function stateModelFactory(
                         checked: self.ldColored,
                         disabled: !self.ldColored && !self.ldColorable,
                         disabledHelpText:
-                          'LD coloring colors a point mark that plots each SNP at its own position, and this plot has none: add one with Edit plot...',
+                          'LD coloring colors a point mark that plots each SNP at its own position, and this plot has none: add one with Edit marks...',
                         onClick: () => {
                           self.setLdColoring(!self.ldColored)
                         },

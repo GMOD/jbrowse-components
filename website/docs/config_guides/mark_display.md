@@ -960,14 +960,14 @@ shows the rule's id beside it.
 
 ## What the track menu offers
 
-**Edit plot...** is the whole plot as controls. Above, the plot's own settings:
+**Edit marks...** is the whole plot as controls. Above, the plot's own settings:
 the field its sections stack by (`facet`) and the field that gives each value a
 row (`rows`), each with the order its values take, and the axis every mark
 stands on, with its title, type, pinned ends and grid. Below, the marks in paint
 order on the left, and on the right the selected mark's type, its steps, and a
 field picker per channel that type reads.
 
-<Figure src="/img/mark_display/edit_plot.png" caption="Edit plot over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
+<Figure src="/img/mark_display/edit_plot.png" caption="Edit marks over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
 
 A picker takes free text as well as a scanned field or one the mark's steps
 write, so `INFO.DP`, `count`, a `jexl:` expression or a constant all go through.
@@ -990,10 +990,11 @@ and a far end naming its own sequence field. The rules run as you type and each
 finding sits under the control that caused it. The corner notice opens the same
 dialog.
 
-**Edit as text...**, inside it, is the same plot as text, and **Back to form**
-there returns. A setting left out stays as it is; `null` clears one. Neither
-editor refuses a plot the rules complain about, since the display draws what it
-can; Apply refuses only what a config file is refused for.
+**Edit as text...**, inside it, is the same plot as text, which **Advanced →
+Edit plot...** in the track menu also opens, and **Back to form** there returns.
+A setting left out stays as it is; `null` clears one. Neither editor refuses a
+plot the rules complain about, since the display draws what it can; Apply
+refuses only what a config file is refused for.
 
 With no `marks` at all a display plots `score` as bars, links a record to the
 other end it names, or opens the dialog where the fields say neither.

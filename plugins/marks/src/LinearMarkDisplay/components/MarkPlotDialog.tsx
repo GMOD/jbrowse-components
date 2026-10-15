@@ -142,7 +142,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
       open
       maxWidth="lg"
       fullWidth
-      title="Edit plot"
+      title="Edit marks"
       submitText="Apply"
       submitDisabled={error !== undefined}
       onCancel={handleClose}

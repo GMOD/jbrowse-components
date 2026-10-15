@@ -50,7 +50,7 @@ const ALU_MARKS_TRACK = {
   ],
 }
 
-// The Alu track as a multiscale pair, which is what Edit plot opens on: two
+// The Alu track as a multiscale pair, which is what Edit marks opens on: two
 // rows in the mark list, so its order is the paint order and the second mark
 // carries steps the controls leave to the JSON box.
 const ALU_EDIT_PLOT_TRACK = {
@@ -177,7 +177,7 @@ export const marksSpecs: ScreenshotSpec[] = [
     viewportHeight: 610,
   },
 
-  // Edit plot over the Alu track, opened on the one mark that track declares:
+  // Edit marks over the Alu track, opened on the one mark that track declares:
   // the mark list on the left, and on the right its type and a control per
   // channel that type reads, filled from the fields the scan found.
   {
@@ -207,9 +207,9 @@ export const marksSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     actions: [
       trackMenuIcon('alu_edit_plot'),
-      { type: 'waitForText', text: 'Edit plot...' },
-      { type: 'click', text: 'Edit plot...' },
-      { type: 'waitForText', text: 'Edit plot' },
+      { type: 'waitForText', text: 'Edit marks...' },
+      { type: 'click', text: 'Edit marks...' },
+      { type: 'waitForText', text: 'Edit marks' },
       { type: 'waitForText', text: 'Marks draw in order' },
       { type: 'delay', ms: 500 },
     ],

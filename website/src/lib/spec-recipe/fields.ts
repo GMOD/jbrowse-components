@@ -1533,7 +1533,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     const types = asList(value)?.flatMap(mark => asString(asRecord(mark)?.mark) ?? [])
     return types?.length && displayType && MARK_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → Edit plot... → Add mark`,
+          path: `${TRACK_MENU} → Edit marks... → Add mark`,
           note: `This figure draws ${[...new Set(types)].join(' and ')} marks. The form picks a mark's type and maps its channels to fields.`,
         }
       : undefined

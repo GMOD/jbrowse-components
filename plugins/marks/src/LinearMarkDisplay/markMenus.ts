@@ -5,7 +5,11 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
+import {
+  hiddenGroupsItems,
+  sectionOrderMenuItems,
+} from '@jbrowse/display-kit/groupByMenu'
+import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -73,11 +77,11 @@ function pinDistinctShapesMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
     : []
 }
 
-/** The track menu: the plot editor, the axis, the filter, the sections and rows, and the chrome toggles. */
+/** The track menu: the mark form, the axis, the filter, the sections and rows, the chrome toggles, and the plot as text. */
 export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
   return [
     {
-      label: 'Edit plot...',
+      label: 'Edit marks...',
       icon: ShowChartIcon,
       onClick: () => {
         self.openMarkPlotDialog()
@@ -119,7 +123,9 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
         : []),
       legendCheckboxItem(self),
+      ...hiddenGroupsItems(self),
     ]),
+    ...editPlotMenuItems(self),
   ]
 }
 

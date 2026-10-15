@@ -487,6 +487,22 @@ test('the track menu offers the Y axis row', () => {
   ).toContain('Y axis...')
 })
 
+test('the track menu offers the mark form and, under Advanced, the plot as text', () => {
+  const { display } = createTestEnvironment([
+    { mark: 'bar', encoding: { y: 'score' } },
+  ]).createDisplay()
+  const items = display.trackMenuItems()
+  const advanced = items.find(i => 'label' in i && i.label === 'Advanced')
+  expect(items.map(i => ('label' in i ? i.label : ''))).toContain(
+    'Edit marks...',
+  )
+  expect(
+    (advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []).map(
+      i => ('label' in i ? i.label : ''),
+    ),
+  ).toEqual(['Edit plot...'])
+})
+
 test('one end of the declared domain pins and the other autoscales', () => {
   const { createDisplay } = createTestEnvironment(
     [{ mark: 'bar', encoding: { y: 'score' } }],
@@ -2427,6 +2443,23 @@ test('hiding a section takes its instances out of the drawn layer and lifts the 
   expect([...layer!.featureIndex!]).toEqual([1, 2])
   expect(rowsOf(display)).toEqual([0, 1])
   display.showAllGroups()
+  expect(rowsOf(display)).toEqual([0, 1, 2])
+})
+
+test('the Show submenu brings a hidden section back', () => {
+  const { display } = facetedEnvironment().createDisplay()
+  display.setRpcData(0, facetResult([0, 1, 2]), REGION)
+  display.hideGroup('a')
+  const show = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Show...')
+  const row = (show && 'subMenu' in show ? resolveSubMenu(show) : []).find(
+    i => 'label' in i && i.label === 'Show 1 hidden group',
+  )
+  if (!row || !('onClick' in row)) {
+    throw new Error('expected a row showing the hidden section')
+  }
+  row.onClick()
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 

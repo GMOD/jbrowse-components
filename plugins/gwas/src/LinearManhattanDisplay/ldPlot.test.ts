@@ -350,7 +350,7 @@ test('a plot with no point placing each SNP greys the item out and changes nothi
     expect(item).toMatchObject({ disabled: true })
     expect(item).toHaveProperty(
       'disabledHelpText',
-      expect.stringMatching(/Edit plot/),
+      expect.stringMatching(/Edit marks/),
     )
     display.setLdColoring(true)
     expect(marksOf(display)).toEqual(
@@ -424,6 +424,8 @@ test('the LD menu is there only for a track with an LD file', () => {
   const withLd = createTestEnvironment().createDisplay().display
   expect(labels(withLd.trackMenuItems())).toEqual(
     expect.arrayContaining([
+      'Edit marks...',
+      'Advanced',
       'Edit plot...',
       'LD',
       'Color by LD to index SNP',
