@@ -171,7 +171,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       impliedUTRs: {
         type: 'boolean',
         description:
-          'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
+          'draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds',
         defaultValue: GENE_GLYPH_DEFAULTS.impliedUTRs,
       },
       /**

@@ -146,3 +146,17 @@ test('a side a UTR row covers only in part fills the rest of it', () => {
     [200, 300, 'five_prime_UTR', 'sub0'],
   ])
 })
+
+test('with no exons, a side a UTR row touches implies nothing, since its gaps may be introns', () => {
+  expect(
+    spans(
+      transcript(
+        [
+          { type: 'five_prime_UTR', start: 30, end: 40 },
+          { type: 'CDS', start: 40, end: 100 },
+        ],
+        { start: 0, end: 100 },
+      ),
+    ),
+  ).toEqual([])
+})

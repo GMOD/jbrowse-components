@@ -1,3 +1,4 @@
+import { mergeSpans } from '../shared/mergeSpans.ts'
 import {
   collapsibleIntronsOf,
   featureHasSplicedParts,
@@ -283,6 +284,9 @@ describe('collapsibleIntronsOf', () => {
 })
 
 describe('exonIntervals', () => {
+  const merged = (tx: Feature) =>
+    mergeSpans(exonIntervals([tx]).map(({ start, end }) => [start, end]))
+
   it('keeps the UTR rows of a transcript that names a CDS and no exons', () => {
     const tx = feat({
       start: 0,
@@ -294,12 +298,10 @@ describe('exonIntervals', () => {
         part('three_prime_UTR', 500, 600),
       ],
     })
-    expect(exonIntervals([tx])).toEqual(
-      expect.arrayContaining([
-        { start: 0, end: 100 },
-        { start: 500, end: 600 },
-      ]),
-    )
+    expect(merged(tx)).toEqual([
+      [0, 200],
+      [300, 600],
+    ])
   })
 
   it('fills the untranslated ends a CDS-only transcript leaves from its bounds', () => {
@@ -308,12 +310,10 @@ describe('exonIntervals', () => {
       end: 600,
       subfeatures: [part('CDS', 100, 200), part('CDS', 300, 500)],
     })
-    expect(exonIntervals([tx])).toEqual(
-      expect.arrayContaining([
-        { start: 0, end: 100 },
-        { start: 500, end: 600 },
-      ]),
-    )
+    expect(merged(tx)).toEqual([
+      [0, 200],
+      [300, 600],
+    ])
   })
 
   it('reads an alignment by its blocks alone', () => {

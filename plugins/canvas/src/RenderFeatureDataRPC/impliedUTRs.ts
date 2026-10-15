@@ -30,8 +30,8 @@ function utrType(strand: number, left: boolean): ImpliedUTR['type'] {
  * Files often name one UTR and not the other, and a GTF's UTR rows leave out
  * the stop codon its CDS rows also leave out, so a side is filled piece by
  * piece rather than all or nothing. Where the transcript has no exons, its own
- * bounds are the only evidence, and only at the ends: the gaps between CDS or
- * UTR pieces are introns. Exons are the authority where they exist, because
+ * bounds are the only evidence, and only for a side no UTR row touches: the
+ * gaps between CDS or UTR pieces may be introns. Exons are the authority where they exist, because
  * bounds overhanging the exon union would invent a UTR over untranscribed
  * sequence, which malformed but real GFF does.
  *
@@ -80,9 +80,10 @@ export function impliedUTRs(
     if (cursor < end) {
       pieces.push([cursor, end])
     }
-    const atBound = ([s, e]: Span) =>
-      side === 'left' ? s === start : e === end
-    const kept = source === transcript ? pieces.filter(atBound) : pieces
+    const [first] = pieces
+    const untouched =
+      pieces.length === 1 && first![0] === start && first![1] === end
+    const kept = source !== transcript || untouched ? pieces : []
     const type = utrType(strand, side === 'left')
     for (const [s, e] of kept) {
       out.push({ start: s, end: e, side, type, source })

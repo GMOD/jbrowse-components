@@ -5353,7 +5353,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "impliedUTRs": {
-          "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
+          "description": "draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds.",
           "default": true,
           "if": {
             "type": "null"
