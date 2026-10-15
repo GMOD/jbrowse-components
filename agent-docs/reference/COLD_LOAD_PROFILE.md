@@ -144,10 +144,11 @@ Measured on ada against the merge-base `5c79967fb6`, Chrome 155 pinned with
 - Declined: the hint on every chunk. It drew the cold BAM track at 600 ms against
   746 ms on 4 cores, but cost the second visit 52 ms there and 111 ms on 2 cores.
 
-The hub still shows its shell for about 0.45 s while its four runtime plugins
-load (MafViewer, Hubs, Protein3d, MsaView), none of which its default session
-uses. Stripping them from a copy of the config moved first paint from 1248 ms to
-892 ms at 80 ms RTT. The same config inlines 1.32 MB of UCSC description HTML,
+The hub still shows its shell for about 0.45 s while its runtime plugins load,
+none of which its default session uses. It names four, but `MafViewer` is in
+`vendoredPluginNames` and never loads, so the cost is Hubs, Protein3d and
+MsaView plus the re-export registry. Stripping the `plugins` list from a copy of
+the config moved first paint from 1248 ms to 892 ms at 80 ms RTT. The same config inlines 1.32 MB of UCSC description HTML,
 2.47 MB raw and 427 KB as served, against 48 KB without it.
 
 ## Deep windows
