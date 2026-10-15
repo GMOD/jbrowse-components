@@ -1,6 +1,7 @@
 import {
   collapsibleIntronsOf,
   featureHasSplicedParts,
+  exonIntervals,
   getSplicedParts,
   getTranscripts,
   hasCollapsibleIntrons,
@@ -278,5 +279,51 @@ describe('collapsibleIntronsOf', () => {
 
   it('refuses a gene carrying no parts at all', () => {
     expect(collapsibleIntronsOf(feat({ type: 'gene' }))).toBe(false)
+  })
+})
+
+describe('exonIntervals', () => {
+  it('keeps the UTR rows of a transcript that names a CDS and no exons', () => {
+    const tx = feat({
+      start: 0,
+      end: 600,
+      subfeatures: [
+        part('five_prime_UTR', 0, 100),
+        part('CDS', 100, 200),
+        part('CDS', 300, 500),
+        part('three_prime_UTR', 500, 600),
+      ],
+    })
+    expect(exonIntervals([tx])).toEqual(
+      expect.arrayContaining([
+        { start: 0, end: 100 },
+        { start: 500, end: 600 },
+      ]),
+    )
+  })
+
+  it('fills the untranslated ends a CDS-only transcript leaves from its bounds', () => {
+    const tx = feat({
+      start: 0,
+      end: 600,
+      subfeatures: [part('CDS', 100, 200), part('CDS', 300, 500)],
+    })
+    expect(exonIntervals([tx])).toEqual(
+      expect.arrayContaining([
+        { start: 0, end: 100 },
+        { start: 500, end: 600 },
+      ]),
+    )
+  })
+
+  it('reads an alignment by its blocks alone', () => {
+    const match = transcript(
+      part('match_part', 0, 100),
+      part('match_part', 200, 300),
+    )
+    expect(exonIntervals([match])).toEqual([
+      { start: 0, end: 100 },
+      { start: 200, end: 300 },
+    ])
   })
 })

@@ -4,8 +4,10 @@ import {
   mergeIntervals,
 } from '@jbrowse/core/util'
 
-import { featureType, getSubfeatures } from './util.ts'
+import { impliedUTRs } from './impliedUTRs.ts'
+import { featureType, getSubfeatures, isCDS, isExon, isUTR } from './util.ts'
 
+import type { Span } from '../shared/mergeSpans.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // The child shapes whose gaps are introns: exon/CDS on an annotation,
@@ -30,10 +32,28 @@ export function featureHasSplicedParts(feature: Feature) {
   return getSubfeatures(feature).some(isSplicedPart)
 }
 
+const spanOf = (f: Feature): Span => [f.get('start'), f.get('end')]
+
+/**
+ * A transcript's spliced parts, plus its UTRs where it names a CDS and no
+ * exons: its CDS rows alone leave out the untranslated ends the track draws.
+ */
+export function transcribedSpans(transcript: Feature): Span[] {
+  const subs = getSubfeatures(transcript)
+  const parts = subs.filter(isSplicedPart).map(spanOf)
+  return subs.some(isExon) || !subs.some(isCDS)
+    ? parts
+    : [
+        ...parts,
+        ...subs.filter(isUTR).map(spanOf),
+        ...impliedUTRs(transcript, subs).map((u): Span => [u.start, u.end]),
+      ]
+}
+
 export function exonIntervals(transcripts: Feature[]) {
-  return getSplicedParts(transcripts).map(f => ({
-    start: f.get('start'),
-    end: f.get('end'),
+  return transcripts.flatMap(transcribedSpans).map(([start, end]) => ({
+    start,
+    end,
   }))
 }
 

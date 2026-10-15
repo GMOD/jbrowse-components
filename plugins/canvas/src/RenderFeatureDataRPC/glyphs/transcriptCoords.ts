@@ -1,6 +1,6 @@
 import { mergeSpans } from '../../shared/mergeSpans.ts'
-import { impliedUTRs } from '../impliedUTRs.ts'
-import { getSubfeatures, isCDS, isExon, isUTR } from '../util.ts'
+import { transcribedSpans } from '../splicedParts.ts'
+import { getSubfeatures, isCDS, isExon } from '../util.ts'
 
 import type { Span } from '../../shared/mergeSpans.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
@@ -28,20 +28,15 @@ export function transcriptCoords(
 ): TranscriptCoords | undefined {
   const { feature, glyphType } = layout
   const exons: Span[] = []
-  const codingOrUtr: Span[] = []
   let codeStart = Infinity
   let codeEnd = -Infinity
-  const subs = getSubfeatures(feature)
-  for (const sub of subs) {
+  for (const sub of getSubfeatures(feature)) {
     const span: Span = [sub.get('start'), sub.get('end')]
     if (isExon(sub)) {
       exons.push(span)
     } else if (isCDS(sub)) {
-      codingOrUtr.push(span)
       codeStart = Math.min(codeStart, span[0])
       codeEnd = Math.max(codeEnd, span[1])
-    } else if (isUTR(sub)) {
-      codingOrUtr.push(span)
     }
   }
   const coding: Span | undefined =
@@ -52,10 +47,7 @@ export function transcriptCoords(
     if (glyphType !== 'ProcessedTranscript') {
       return undefined
     }
-    spans = [
-      ...codingOrUtr,
-      ...impliedUTRs(feature, subs).map(u => [u.start, u.end] as Span),
-    ]
+    spans = transcribedSpans(feature)
   }
   const merged = mergeSpans(spans)
   if (merged.length === 0) {
