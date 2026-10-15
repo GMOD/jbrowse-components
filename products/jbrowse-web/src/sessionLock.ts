@@ -62,6 +62,20 @@ export function claimSessionId(
   })
 }
 
+/**
+ * The ids among `ids` another live tab holds. That tab autosaves its session
+ * every tick, so deleting or renaming the row here would be undone by its next
+ * write.
+ */
+export async function sessionIdsHeldElsewhere(ids: string[]) {
+  if (!locksAvailable()) {
+    return new Set<string>()
+  }
+  const { held: locks = [] } = await navigator.locks.query()
+  const names = new Set(locks.map(l => l.name))
+  return new Set(ids.filter(id => !held.has(id) && names.has(lockName(id))))
+}
+
 export function releaseSessionIdsExcept(keep: string | undefined) {
   for (const [id, release] of held) {
     if (id !== keep) {

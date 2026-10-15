@@ -37,7 +37,7 @@ import {
   renameSessionRows,
   setSessionFavoriteRow,
 } from '../sessionDbOps.ts'
-import { claimSessionId } from '../sessionLock.ts'
+import { claimSessionId, sessionIdsHeldElsewhere } from '../sessionLock.ts'
 import {
   saveSessionSnapshot,
   setupSessionDB,
@@ -84,6 +84,9 @@ interface SessionDbHost {
 function isOpenSession(self: SessionDbHost, id: string) {
   return id === self.session?.id
 }
+
+const OPEN_ELSEWHERE =
+  'That session is open in another tab, so change it from that tab'
 
 // Whether a row belongs in this root's recent lists: saved against this config,
 // and edited at some point rather than only written as it booted (see
@@ -394,6 +397,10 @@ export default function RootModel({
           )
           return
         }
+        if ((await sessionIdsHeldElsewhere([id])).size) {
+          self.session?.notify(OPEN_ELSEWHERE, 'info')
+          return
+        }
         await this.deleteSavedSessions([id])
       },
       /**
@@ -411,7 +418,10 @@ export default function RootModel({
        * already been reported.
        */
       async deleteSavedSessions(ids: string[]) {
-        const toDelete = ids.filter(id => !isOpenSession(self, id))
+        const elsewhere = await sessionIdsHeldElsewhere(ids)
+        const toDelete = ids.filter(
+          id => !isOpenSession(self, id) && !elsewhere.has(id),
+        )
         let deleted = 0
         if (toDelete.length) {
           await withSessionDB(self, async sessionDB => {
@@ -432,6 +442,10 @@ export default function RootModel({
           await withErrorNotify(self, () => {
             self.renameCurrentSession(name)
           })
+          return
+        }
+        if ((await sessionIdsHeldElsewhere([id])).size) {
+          self.session?.notify(OPEN_ELSEWHERE, 'info')
           return
         }
         await withSessionDB(self, async sessionDB => {

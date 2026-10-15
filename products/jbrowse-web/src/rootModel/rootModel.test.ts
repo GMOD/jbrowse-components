@@ -473,6 +473,47 @@ describe('deleteSavedSession', () => {
   })
 })
 
+// that tab's next autosave would put the row back, star lost, or write its own
+// name back over the rename
+describe('a session open in another tab', () => {
+  beforeEach(() => {
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: {
+        request: () => new Promise(() => {}),
+        query: async () => ({ held: [{ name: 'jbrowse-session:other' }] }),
+      },
+    })
+  })
+  afterEach(() => {
+    // @ts-expect-error removing the stub
+    delete navigator.locks
+  })
+
+  const OPEN_ELSEWHERE =
+    'That session is open in another tab, so change it from that tab'
+  const messages = (session: { snackbarMessages: { message: string }[] }) =>
+    session.snackbarMessages.map(m => m.message)
+
+  function setup() {
+    const root = getRootModel().create(mainThreadConfig)
+    root.setSession({ name: 'testSession' })
+    return { root, session: root.session! }
+  }
+
+  test('is not deleted here', async () => {
+    const { root, session } = setup()
+    await root.deleteSavedSession('other')
+    expect(messages(session)).toEqual([OPEN_ELSEWHERE])
+  })
+
+  test('is not renamed here', async () => {
+    const { root, session } = setup()
+    await root.renameSavedSession('other', 'new name')
+    expect(messages(session)).toEqual([OPEN_ELSEWHERE])
+  })
+})
+
 describe('deleteSavedSessions', () => {
   // a bulk delete is not aimed at any one row, so the open session is dropped
   // from the batch silently rather than reported on -- but it must still be
