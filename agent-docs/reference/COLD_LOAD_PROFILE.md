@@ -95,6 +95,45 @@ against 1.25 s. What grows with track count on the WebGL2 rung is one context an
 one set of programs per display, recorded in
 [cut-webgl2-contexts-per-display](../ideas/waiting-on-someone-else/cut-webgl2-contexts-per-display.md).
 
+## What a cold load shows
+
+[`probe-coldload-film.ts`](../../products/jbrowse-web/browser-tests/probe-coldload-film.ts)
+films a load frame by frame. Before 2026-10-14 a cold load showed a white page
+and a lone spinner for most of its wait (0.3 s on one BAM track, 1.15 s on the
+hg38 hub), then the header, an "Untitled view" box, a striped track and the reads
+within about 250 ms, with five 50-100 ms long tasks freezing the screen during
+that reveal. Layout shift was nil (CLS 0.001).
+
+Two changes answer it:
+
+- **`index.html` paints the app's first frame** (`#boot-shell`: the header bar
+  and a view box) before any script runs. `Loading` holds the shell instead of
+  drawing a spinner, and the shell goes in the commit that unmounts the last
+  `Loading` (`src/bootShell.ts`). A stored theme or mode other than default
+  light hides it, since an `extraThemes` palette is unknown before the config.
+- **V8 compiles the boot chunks eagerly.** `BootChunksPlugin` puts
+  `//# allFunctionsCalledOnLoad` at the top of the entry and the preloaded
+  chunks, so V8 compiles them on a background thread while they download.
+
+Measured on ada against the merge-base `5c79967fb6`, Chrome 155 pinned with
+`taskset`, 20 ms RTT, medians of 5 interleaved loads:
+
+- The first app-shaped frame moved from 480 ms to 50-90 ms on BAM and from
+  732 ms to 67 ms on the hub (one film each).
+- On 4 cores the cold BAM track drew at 597 ms against 718 ms, the hub at
+  877 ms against 902 ms, and repeat visits moved by 20 ms or less.
+- On 2 cores the cold BAM track drew at 880 ms against 967 ms, and the hub was
+  flat. A second BAM visit took 58 ms longer and later ones 34-40 ms, since V8
+  compiles functions the boot never calls.
+- Declined: the hint on every chunk. It drew the cold BAM track at 600 ms against
+  746 ms on 4 cores, but cost the second visit 52 ms there and 111 ms on 2 cores.
+
+The hub still shows its shell for about 0.45 s while its four runtime plugins
+load (MafViewer, Hubs, Protein3d, MsaView), none of which its default session
+uses. Stripping them from a copy of the config moved first paint from 1248 ms to
+892 ms at 80 ms RTT. The same config inlines 1.32 MB of UCSC description HTML,
+2.47 MB raw and 427 KB as served, against 48 KB without it.
+
 ## Deep windows
 
 100x short reads over 1 Mb, BAM: drawn at 3.96 s, and the render worker was busy
