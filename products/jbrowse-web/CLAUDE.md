@@ -7,9 +7,9 @@ together, not total bundle size. `browser-tests/measure-load.ts` and
 `worker-smoke.ts` are the harnesses (run after a build).
 
 `splitChunks: { chunks: 'all' }` was reverted on a measurement that counted the
-page's requests alone. Counting the worker's too, the 2026-10-08 audit
-([handoffs/jbrowse-web-bundle-audit](../../agent-docs/handoffs/jbrowse-web-bundle-audit.md))
-found it saves 39-41 KB gz on every page.
+page's requests alone. Counting the worker's too, it saves 39-41 KB gz on every
+page
+([ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web](../../agent-docs/ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web.md)).
 
 Bytes are not what a cold load waits on: a warm-cache reload of the hg38 hub
 took as long as a cold one. `browser-tests/measure-load-latency.ts` emulates a
