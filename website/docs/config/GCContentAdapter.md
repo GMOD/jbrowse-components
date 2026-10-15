@@ -24,8 +24,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 Computes GC content (or GC skew) from an assembly's sequence at render time,
 so there is no data file to prepare: the sequence comes from the assembly
 the track is displayed against. The window, the step and the mode are
-this adapter's, which the `GCContentTrack` menu's GC parameters and GC skew
-write.
+this adapter's, which the `GCContentTrack` menu's GC parameters write.
 
 ## Related links
 
