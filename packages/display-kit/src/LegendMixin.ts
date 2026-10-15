@@ -1,6 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
@@ -166,15 +166,13 @@ export default function LegendMixin() {
 }
 
 /**
- * The "Show legend" checkbox for a display composing `LegendMixin`: the slot
- * and the toggle, so a track menu lists it in one call. A display with no key
- * to show (`hasLegendKey`) leaves the row out.
+ * The "Legend" row of a display's "Show..." submenu, for a display composing
+ * `LegendMixin`. A display with no key to show (`hasLegendKey`) leaves the row
+ * out, and every display lists it last.
  */
 export function legendCheckboxItem(self: {
   showLegend: boolean
   setShowLegend: (arg: boolean) => void
 }) {
-  return showLegendCheckboxItem(self.showLegend, () => {
-    self.setShowLegend(!self.showLegend)
-  })
+  return toggleItem('Legend', self.showLegend, self.setShowLegend)
 }

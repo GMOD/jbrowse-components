@@ -121,8 +121,8 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
       ...(self.drawsRows
         ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
         : []),
-      legendCheckboxItem(self),
       ...hiddenGroupsItems(self),
+      legendCheckboxItem(self),
     ]),
     ...editPlotMenuItems(self),
   ]

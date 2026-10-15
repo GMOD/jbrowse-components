@@ -26,6 +26,7 @@ import {
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import { breakendSplitViewMenuItem } from '../shared/breakendSplitViewMenuItem.ts'
 import { recordHueField } from '../shared/cellHue.ts'
@@ -99,12 +100,11 @@ export function variantShowSubmenuItems(
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
     showRowSeparatorsMenuItem(self),
-    legendCheckboxItem(self),
     // columns always draw reference cells, so the toggle is genomic-only
     ...(self.atGenomicPositions
       ? [
           {
-            label: 'Show reference alleles',
+            label: 'Reference alleles',
             helpText:
               'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
             type: 'checkbox' as const,
@@ -118,7 +118,7 @@ export function variantShowSubmenuItems(
         ]
       : []),
     {
-      label: 'Show tooltips',
+      label: 'Tooltips',
       helpText:
         'Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs and the highlighted cell still follow the pointer — only the panel covering the rows beside it goes away',
       type: 'checkbox',
@@ -127,20 +127,10 @@ export function variantShowSubmenuItems(
         self.setShowTooltips(!self.showTooltips)
       },
     },
-    {
-      label: 'Show as genotype matrix',
-      helpText:
-        'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
-      type: 'checkbox',
-      checked: !self.atGenomicPositions,
-      onClick: () => {
-        self.setVariantLayout(self.atGenomicPositions ? 'columns' : 'genomic')
-      },
-    },
     ...(self.atGenomicPositions
       ? [
           {
-            label: 'Show variant lane',
+            label: 'Variant lane',
             helpText:
               'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
             type: 'checkbox' as const,
@@ -168,7 +158,27 @@ export function variantShowSubmenuItems(
             : []),
         ]
       : []),
+    legendCheckboxItem(self),
   ]
+}
+
+function layoutMenuItem(self: LinearMultiSampleVariantDisplayModel): MenuItem {
+  return {
+    label: 'Layout',
+    icon: ViewQuiltIcon,
+    subMenu: [
+      {
+        label: 'Genotype matrix',
+        helpText:
+          'Draw one equal-width column per variant in view, tied to its position by a line, so the genotype pattern across variants a few bases apart stays readable at any zoom. Off, each variant is drawn across the bases it covers, so a deletion reads as long as it is',
+        type: 'checkbox',
+        checked: !self.atGenomicPositions,
+        onClick: () => {
+          self.setVariantLayout(self.atGenomicPositions ? 'columns' : 'genomic')
+        },
+      },
+    ],
+  }
 }
 
 // The display-specific track-menu items (row height, rows, filtering,
@@ -188,6 +198,7 @@ export function variantTrackMenuItems(
   )
   return [
     ...makeShowSubMenu(variantShowSubmenuItems(self)),
+    layoutMenuItem(self),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
     rowHeightMenuItem(self),

@@ -938,7 +938,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             : []),
           ...makeShowSubMenu([
             {
-              label: 'Show header',
+              label: 'Header',
               type: 'checkbox',
               checked: self.showHeader,
               // opts out of the checkbox "stay open" default: this menu is
@@ -950,7 +950,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Show intra-view links',
+              label: 'Intra-view links',
               type: 'checkbox',
               checked: self.showIntraviewLinks,
               onClick: () => {

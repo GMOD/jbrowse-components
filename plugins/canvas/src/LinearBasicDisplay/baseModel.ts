@@ -107,6 +107,7 @@ import {
   colorMenuItems,
   featureHeightMenuItems,
   showSubmenuCheckboxItems,
+  showSubmenuLegendItems,
   showSubmenuRadioGroups,
 } from './trackMenus.ts'
 import {
@@ -1742,12 +1743,13 @@ export default function baseStateModelFactory(
       /**
        * #method
        * Flattened "Show..." submenu: all checkbox toggles first, then the
-       * radio groups (each under its own subHeader).
+       * radio groups (each under its own subHeader), then the legend.
        */
       showSubmenuMenuItems(): MenuItem[] {
         return [
           ...self.showSubmenuCheckboxItems(),
           ...self.showSubmenuRadioGroups(),
+          ...showSubmenuLegendItems(self),
         ]
       },
     }))

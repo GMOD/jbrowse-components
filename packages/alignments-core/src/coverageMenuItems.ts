@@ -49,7 +49,7 @@ function nearestSnpFrequencyOption(fraction: number) {
 // on, so each names that switch instead. At depth 500 every sequencing error
 // paints a sliver, so without a floor the band carries a permanent rainbow.
 const BAND_HIDDEN_HELP =
-  'These settings scale the coverage band — turn on "Show coverage" first'
+  'These settings scale the coverage band — turn on "Show... → Coverage" first'
 
 export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
   const disabled = !model.showCoverage
@@ -75,7 +75,7 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
 }
 
 /**
- * The coverage band's "Show interbase indicators" row. Every interbase mark
+ * The coverage band's "Interbase indicators" row. Every interbase mark
  * draws inside the band and its hit test reads the band's height, so with the
  * band hidden the row greys out and names that switch.
  */
@@ -85,7 +85,7 @@ export function interbaseIndicatorsMenuItem(model: {
   setShowInterbaseIndicators: (show: boolean) => void
 }): MenuItem {
   return toggleItem(
-    'Show interbase indicators',
+    'Interbase indicators',
     model.showInterbaseIndicators,
     show => {
       model.setShowInterbaseIndicators(show)
@@ -93,7 +93,7 @@ export function interbaseIndicatorsMenuItem(model: {
     {
       disabled: !model.showCoverage,
       disabledHelpText:
-        'Interbase marks are drawn in the coverage band — turn on "Show coverage" first',
+        'Interbase marks are drawn in the coverage band — turn on "Show... → Coverage" first',
       helpText:
         'Mark what occupies no reference base, insertions and on reads their clipping, with a between-base tick in the coverage band.',
     },

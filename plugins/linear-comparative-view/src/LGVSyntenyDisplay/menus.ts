@@ -105,13 +105,12 @@ interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // menu, which this display also builds.
 export function getSyntenyShowMenuItems(model: ShowModel) {
   return makeShowSubMenu([
-    legendCheckboxItem(model),
-    toggleItem('Show coverage', model.showCoverage, model.setShowCoverage, {
+    toggleItem('Coverage', model.showCoverage, model.setShowCoverage, {
       helpText:
         'Draw a histogram of how deeply each reference base is covered by ' +
         'the aligned blocks — the depth of syntenic coverage.',
     }),
-    toggleItem('Show alignments', model.showPileup, model.setShowPileup, {
+    toggleItem('Alignments', model.showPileup, model.setShowPileup, {
       helpText:
         'Uncheck to collapse the stacked alignment blocks, leaving just ' +
         'the coverage histogram.',
@@ -120,16 +119,11 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     // mate assembly this is the default, one band per mate genome.
     ...collapseGroupRowsItems(model),
     ...hiddenGroupsItems(model),
-    toggleItem(
-      'Show mismatches',
-      model.showMismatches,
-      model.setShowMismatches,
-      {
-        helpText:
-          'Draw per-base differences between the two assemblies, read from ' +
-          "the alignment's cs tag or CIGAR.",
-      },
-    ),
+    toggleItem('Mismatches', model.showMismatches, model.setShowMismatches, {
+      helpText:
+        'Draw per-base differences between the two assemblies, read from ' +
+        "the alignment's cs tag or CIGAR.",
+    }),
     // Only while the coverage band is drawn. Every interbase mark lives in
     // that band — the coverage marks draw under `showCoverage`, and the
     // hit test gates on `showCoverage && showInterbaseIndicators` — and this
@@ -141,7 +135,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     ...(model.showCoverage
       ? [
           toggleItem(
-            'Show interbase indicators',
+            'Interbase indicators',
             model.showInterbaseIndicators,
             model.setShowInterbaseIndicators,
             {
@@ -152,5 +146,6 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
           ),
         ]
       : []),
+    legendCheckboxItem(model),
   ] satisfies MenuItem[])
 }

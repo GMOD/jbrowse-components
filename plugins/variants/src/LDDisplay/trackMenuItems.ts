@@ -3,6 +3,7 @@ import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import type { LDMetric, LDSnp } from '../RenderLDDataRPC/ldTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -63,26 +64,35 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    legendCheckboxItem(self),
-    toggleItem('Show variant labels', self.showLabels, self.setShowLabels),
+    toggleItem('Variant labels', self.showLabels, self.setShowLabels),
     toggleItem(
-      'Show vertical guides on hover',
+      'Vertical guides on hover',
       self.showVerticalGuides,
       self.setShowVerticalGuides,
     ),
-    squashToHeightCheckboxItem(self),
-    toggleItem(
-      'Size cells by genomic distance',
-      self.variantLayout === 'genomic',
-      on => {
-        self.setVariantLayout(on ? 'genomic' : 'columns')
-      },
-      {
-        helpText:
-          'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
-      },
-    ),
+    legendCheckboxItem(self),
   ]
+}
+
+function layoutMenuItem(self: LDMenuSelf): MenuItem {
+  return {
+    label: 'Layout',
+    icon: ViewQuiltIcon,
+    subMenu: [
+      squashToHeightCheckboxItem(self),
+      toggleItem(
+        'Size cells by genomic distance',
+        self.variantLayout === 'genomic',
+        on => {
+          self.setVariantLayout(on ? 'genomic' : 'columns')
+        },
+        {
+          helpText:
+            'Off, every SNP takes one equal-width column. On, each cell is as wide as the genomic distance between its SNPs, so the triangle lines up with the genome.',
+        },
+      ),
+    ],
+  }
 }
 
 export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
@@ -100,5 +110,6 @@ export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
     metricMenuItem(self),
     colorSchemeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
+    layoutMenuItem(self),
   ]
 }

@@ -128,7 +128,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
     ? [
         toggleItem(
           withHint(
-            'Show CDS frames',
+            'CDS frames',
             self.framesGateBlocked
               ? 'too much frame data here, zoom in'
               : undefined,
@@ -176,24 +176,23 @@ function colorMenuItem(self: MafMenuSelf): MenuItem {
       ...(self.selectedColorField === 'identity'
         ? [colorSchemeMenuItem(self)]
         : []),
-      toggleItem(
-        'Show bases when zoomed in',
-        self.rowIdentityAutoZoom,
-        self.setRowIdentityAutoZoom,
-        { helpText: 'identity, in either plot, yields to the bases' },
-      ),
-      toggleItem(
-        'Show letters at all positions',
-        self.showAllLetters,
-        self.setShowAllLetters,
-      ),
-      toggleItem(
-        'Show letters as uppercase',
-        self.showAsUpperCase,
-        self.setShowAsUpperCase,
-      ),
     ],
   })
+}
+
+function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {
+  return self.annotationAdapterConfig
+    ? [
+        makeRadioSubMenu({
+          label: 'Conservation resolution',
+          value: self.conservationMode,
+          onChange: m => {
+            self.setConservationMode(m)
+          },
+          options: CONSERVATION_MODES,
+        }),
+      ]
+    : []
 }
 
 function plotTypeMenuItem(self: MafMenuSelf): MenuItem {
@@ -214,49 +213,53 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
-    // Only where a key exists: `bases` mode has nothing to key.
-    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
     toggleItem(
       withHint(
-        'Show coverage',
+        'Coverage',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showCoverage,
       self.setShowCoverage,
     ),
     interbaseIndicatorsMenuItem(self),
-    toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
+    toggleItem('Alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
-      'Show reference row',
+      'Reference row',
       self.showReferenceRow,
       self.setShowReferenceRow,
     ),
     toggleItem(
       withHint(
-        'Show conservation (% identity)',
+        'Conservation (% identity)',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showConservation,
       self.setShowConservation,
     ),
-    ...(self.annotationAdapterConfig
-      ? [
-          makeRadioSubMenu({
-            label: 'Conservation resolution',
-            value: self.conservationMode,
-            onChange: m => {
-              self.setConservationMode(m)
-            },
-            options: CONSERVATION_MODES,
-          }),
-        ]
-      : []),
     toggleItem(
-      'Show inversions (strand flips)',
+      'Inversions (strand flips)',
       self.showInversions,
       self.setShowInversions,
     ),
     ...frameMenuItems(self),
+    toggleItem(
+      'Bases when zoomed in',
+      self.rowIdentityAutoZoom,
+      self.setRowIdentityAutoZoom,
+      { helpText: 'identity, in either plot, yields to the bases' },
+    ),
+    toggleItem(
+      'Letters at all positions',
+      self.showAllLetters,
+      self.setShowAllLetters,
+    ),
+    toggleItem(
+      'Letters as uppercase',
+      self.showAsUpperCase,
+      self.setShowAsUpperCase,
+    ),
+    // Only where a key exists: `bases` mode has nothing to key.
+    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
   ]
 }
 
@@ -265,6 +268,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     rowHeightMenuItem(self, HEIGHT_PRESETS),
     colorMenuItem(self),
     plotTypeMenuItem(self),
+    ...conservationResolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
     ...getCoverageMenuItems(self),
     ...rowOrderMenuItems(self, {

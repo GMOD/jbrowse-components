@@ -46,7 +46,7 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // menu.
 function softClippingItem(model: ReadsModel) {
   return toggleItem(
-    'Show soft clipping',
+    'Soft clipping',
     model.showSoftClipping,
     value => {
       model.setShowSoftClipping(value)
@@ -63,11 +63,10 @@ function softClippingItem(model: ReadsModel) {
 
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
-    legendCheckboxItem(model),
-    toggleItem('Show coverage', model.showCoverage, show => {
+    toggleItem('Coverage', model.showCoverage, show => {
       model.setShowCoverage(show)
     }),
-    toggleItem('Show pileup', model.showPileup, show => {
+    toggleItem('Pileup', model.showPileup, show => {
       model.setShowPileup(show)
     }),
     // Only while grouping is in effect, so it sits next to the pileup toggle
@@ -75,7 +74,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     ...collapseGroupRowsItems(model),
     ...hiddenGroupsItems(model),
     toggleItem(
-      'Show mismatches',
+      'Mismatches',
       model.showMismatches,
       show => {
         model.setShowMismatches(show)
@@ -104,5 +103,6 @@ export function getReadsMenuItems(model: ReadsModel) {
     // `renderers/interbaseNeedsCoverage.test.ts` is the A/B that the toggle
     // draws nothing with the band hidden.
     interbaseIndicatorsMenuItem(model),
+    legendCheckboxItem(model),
   ] satisfies MenuItem[])
 }

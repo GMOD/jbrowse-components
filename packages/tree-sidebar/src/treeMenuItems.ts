@@ -13,7 +13,7 @@ import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 
 // The tree toggle's label. Exported because the website's figure recipes name
 // it in a click path and must not re-spell it.
-export const TREE_SIDEBAR_LABEL = 'Show tree'
+export const TREE_SIDEBAR_LABEL = 'Tree'
 
 interface BranchLengthMenuModel {
   showTree: boolean
@@ -48,7 +48,7 @@ interface RowLabelsMenuModel {
 }
 
 /**
- * Shared "Show row labels" toggle. Every display with a sidebar had written its
+ * Shared "Row labels" toggle. Every display with a sidebar had written its
  * own, and they had drifted in three ways at once — one called the slot
  * `showSidebarLabels`, one dropped the row from the menu entirely while the
  * tree was off, and one explained the swatch degradation that is true of all of
@@ -60,15 +60,10 @@ interface RowLabelsMenuModel {
  * showing, so this toggle always has something to toggle.
  */
 export function showRowLabelsMenuItem(self: RowLabelsMenuModel): MenuItem {
-  return toggleItem(
-    'Show row labels',
-    self.showRowLabels,
-    self.setShowRowLabels,
-    {
-      helpText:
-        'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
-    },
-  )
+  return toggleItem('Row labels', self.showRowLabels, self.setShowRowLabels, {
+    helpText:
+      'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
+  })
 }
 
 interface RowSeparatorsMenuModel {
@@ -78,7 +73,7 @@ interface RowSeparatorsMenuModel {
 }
 
 /**
- * Shared "Show row separators" toggle, for the same reason
+ * Shared "Row separators" toggle, for the same reason
  * {@link showRowLabelsMenuItem} is shared: the canvas multi-row painting and
  * the multi-wiggle display had written it out identically, down to the hint
  * text, off the same `MIN_SEPARATOR_ROW_PX` threshold.
@@ -92,7 +87,7 @@ export function showRowSeparatorsMenuItem(
 ): MenuItem {
   return toggleItem(
     withHint(
-      'Show row separators',
+      'Row separators',
       self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
         ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
         : undefined,
@@ -107,7 +102,7 @@ interface TreeSidebarMenuModel extends BranchLengthMenuModel {
   setShowTree: (arg: boolean) => void
 }
 
-// Shared "Show tree" toggle. Disabled until there is a tree to show — a
+// Shared "Tree" toggle. Disabled until there is a tree to show — a
 // clustering run's, or the guide phylogeny a MAF adapter supplies — so it is
 // never a no-op: `treeIsShowing` gates the gutter on the positioned tree, and
 // with no `clusterTree` flipping `showTree` draws nothing either way.
@@ -121,7 +116,7 @@ export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
 /**
  * The two tree-display controls, as one group every row display opens its
  * "Show..." submenu with. They used to be split between that submenu and the
- * Clustering one, differently per display: a reader who found "Show tree"
+ * Clustering one, differently per display: a reader who found "Tree"
  * under Clustering on a variant track looked there on a MAF track and found
  * nothing. Both are visibility toggles, and "Show..." is where those live;
  * Clustering is the operation.

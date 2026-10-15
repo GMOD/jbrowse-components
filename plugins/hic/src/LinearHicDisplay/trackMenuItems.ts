@@ -10,6 +10,7 @@ import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import BalanceIcon from '@mui/icons-material/Balance'
 import GradientIcon from '@mui/icons-material/Gradient'
 import GridOnIcon from '@mui/icons-material/GridOn'
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import type { ColorRangeHost } from './components/ColorRangeDialog.tsx'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
@@ -85,11 +86,10 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    legendCheckboxItem(self),
     ...(self.hasResolutions
       ? [
           toggleItem(
-            'Show resolution controls',
+            'Resolution controls',
             self.showResolutionControls,
             self.setShowResolutionControls,
             {
@@ -99,8 +99,16 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
           ),
         ]
       : []),
-    squashToHeightCheckboxItem(self),
+    legendCheckboxItem(self),
   ]
+}
+
+function layoutMenuItem(self: HicMenuSelf): MenuItem {
+  return {
+    label: 'Layout',
+    icon: ViewQuiltIcon,
+    subMenu: [squashToHeightCheckboxItem(self)],
+  }
 }
 
 // 0.95 as the key reads it, "95th".
@@ -190,6 +198,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     ...resolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
+    layoutMenuItem(self),
     colorSchemeMenuItem(self, colorScaleMenuItems(self)),
     colorRangeMenuItem(self),
     ...normalizationMenuItems(self),

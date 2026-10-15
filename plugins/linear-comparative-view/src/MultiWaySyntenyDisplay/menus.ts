@@ -234,12 +234,8 @@ function laneFlipMenuItems(
 
 export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
-    toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks),
-    toggleItem(
-      'Show gene labels',
-      model.showGeneLabels,
-      model.setShowGeneLabels,
-    ),
+    toggleItem('Lane ticks', model.showLaneTicks, model.setShowLaneTicks),
+    toggleItem('Gene labels', model.showGeneLabels, model.setShowGeneLabels),
     toggleItem(
       'Lane names on the gene row',
       model.inlineLaneNames,
@@ -258,7 +254,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
       ? []
       : [
           toggleItem(
-            'Show ribbons across gaps',
+            'Ribbons across gaps',
             model.bridgeSkippedLanes,
             model.setBridgeSkippedLanes,
             {
@@ -267,10 +263,10 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
             },
           ),
         ]),
-    ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
       model.showHiddenLanes()
     }),
+    ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
   ]
 }
 

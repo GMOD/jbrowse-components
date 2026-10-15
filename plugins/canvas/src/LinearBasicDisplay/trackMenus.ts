@@ -118,10 +118,16 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
-    toggleItem('Show outline', self.showOutline, self.setShowOutline),
-    ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
+    toggleItem('Outline', self.showOutline, self.setShowOutline),
     ...hiddenGroupsItems(self),
   ]
+}
+
+// A divider keeps the legend from reading as the last radio group's option.
+export function showSubmenuLegendItems(self: ShowSubmenuSelf): MenuItem[] {
+  return self.hasLegendKey
+    ? [{ type: 'divider' }, legendCheckboxItem(self)]
+    : []
 }
 
 export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {

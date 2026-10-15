@@ -208,7 +208,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     ...makeShowSubMenu([
       showAllRegionsMenuItem(self),
       {
-        label: 'Show ruler only',
+        label: 'Ruler only',
         type: 'checkbox',
         checked: self.scalebarOnly,
         onClick: () => {
@@ -216,7 +216,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show header',
+        label: 'Header',
         type: 'checkbox',
         checked: !self.hideHeader,
         // opts out of the checkbox "stay open" default: with the header
@@ -228,7 +228,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show header overview',
+        label: 'Header overview',
         type: 'checkbox',
         checked: !self.hideHeaderOverview,
         onClick: () => {
@@ -239,7 +239,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       ...(self.canShowCytobands
         ? [
             {
-              label: 'Show ideogram',
+              label: 'Ideogram',
               type: 'checkbox' as const,
               checked: self.showCytobands,
               onClick: () => {
@@ -249,7 +249,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           ]
         : []),
       {
-        label: 'Show center line',
+        label: 'Center line',
         type: 'checkbox',
         checked: self.showCenterLine,
         onClick: () => {
@@ -257,7 +257,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show guidelines',
+        label: 'Guidelines',
         type: 'checkbox',
         checked: self.showGridlines,
         onClick: () => {
@@ -265,7 +265,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show track outlines',
+        label: 'Track outlines',
         type: 'checkbox',
         checked: self.showTrackOutlines,
         onClick: () => {
@@ -273,7 +273,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show no tracks active button',
+        label: 'No tracks active button',
         type: 'checkbox',
         checked: !self.hideNoTracksActive,
         onClick: () => {
@@ -282,7 +282,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
       { type: 'subHeader', label: 'Sequence' },
       {
-        label: 'Show CDS reading frame colors',
+        label: 'CDS reading frame colors',
         type: 'checkbox',
         checked: self.colorByCDS,
         onClick: () => {
@@ -290,7 +290,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         },
       },
       {
-        label: 'Show amino acids when zoomed in',
+        label: 'Amino acids when zoomed in',
         type: 'checkbox',
         checked: self.showAminoAcids,
         onClick: () => {

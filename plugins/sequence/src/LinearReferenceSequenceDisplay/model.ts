@@ -422,21 +422,17 @@ export function modelFactory(
               ],
             },
             ...makeShowSubMenu([
-              checkboxItem('Show forward', self.showForward, () => {
+              checkboxItem('Forward', self.showForward, () => {
                 self.toggleShowForward()
               }),
               ...(self.isDna
                 ? [
-                    checkboxItem('Show reverse', self.showReverse, () => {
+                    checkboxItem('Reverse', self.showReverse, () => {
                       self.toggleShowReverse()
                     }),
-                    checkboxItem(
-                      'Show translation',
-                      self.showTranslation,
-                      () => {
-                        self.toggleShowTranslation()
-                      },
-                    ),
+                    checkboxItem('Translation', self.showTranslation, () => {
+                      self.toggleShowTranslation()
+                    }),
                   ]
                 : []),
             ]),

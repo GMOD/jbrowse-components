@@ -292,18 +292,10 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            toggleItem(
-              'Show only genes',
-              self.showOnlyGenes,
-              self.setShowOnlyGenes,
-            ),
-            toggleItem(
-              'Show chevrons',
-              self.displayDirectionalChevrons,
-              show => {
-                self.setDisplayDirectionalChevrons(show)
-              },
-            ),
+            toggleItem('Only genes', self.showOnlyGenes, self.setShowOnlyGenes),
+            toggleItem('Chevrons', self.displayDirectionalChevrons, show => {
+              self.setDisplayDirectionalChevrons(show)
+            }),
           ]
         },
         showSubmenuRadioGroups() {

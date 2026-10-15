@@ -22,7 +22,9 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
     <CascadingMenuButton
       tooltip="View options"
       menuItems={() =>
-        model.headerMenuItems(makeShowSubMenu(searchBoxMenuItems(prefs)))
+        model.headerMenuItems(
+          makeShowSubMenu(searchBoxMenuItems(prefs, 'Search boxes')),
+        )
       }
     >
       <MoreVertIcon />
