@@ -55,9 +55,24 @@ track. The remaining move is
 The GFF, VCF and BED tabix adapters start the header read (BED: the column
 names) beside the region read once the index is in, since both need only the
 index. Each adapter's `firstLoadReads.test.ts` asserts that two reads are in
-flight before either ends. A GFF with `##sequence-region` pragmas still issues the
-origin-tail read after the header, so it gains no round trip there, and no
-wall-clock figure exists yet.
+flight before either ends.
+
+Measured 2026-10-14 in node against a local HTTP server that holds each request
+80 ms, the adapter before and after `61d8ab6369`, a fresh adapter per run,
+medians of 9 interleaved runs, first `getFeatures` on a region far from the
+header. A file under ~64 KB shows nothing, since the range cache serves header
+and region from one request.
+
+| Track | Before | After |
+| --- | --- | --- |
+| GFF, 1.7 MB, no pragmas | 313 ms | 230 ms |
+| VCF, 1.2 MB | 290 ms | 201 ms |
+| BED, 1.4 MB, `#` header names | 261 ms | 182 ms |
+| GFF, 1.7 MB, `##sequence-region` | 311 ms | 359 ms |
+
+The last row is noise around no change, and a rerun of 25 pairs gave 400 ms against
+409 ms. The origin-tail read waits for the header's lengths, so it keeps both
+chains the same length.
 
 ## Code-discovery rounds
 
