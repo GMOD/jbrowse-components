@@ -790,17 +790,11 @@ function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
   colors: { color: string[]; category: string[] },
-  refName: string,
+  region: { refName: string; start: number; end: number },
   plainRead: string,
 ) {
   const [readStart, readEnd] = pairs(d.readPositions)
   const [gapStart, gapEnd] = pairs(d.gapPositions)
-  const bin = d.coverageBinSize
-  const n = d.coverageDepths.length
-  const coverageStart = Float64Array.from(
-    { length: n },
-    (_, i) => d.coverageStartPos + i * bin,
-  )
   return {
     reads: {
       start: readStart,
@@ -833,20 +827,70 @@ function sectionTables(
       read: d.gapReadIndices,
       fade: fades(d.gapFrequencies),
     },
-    coverage: {
-      start: coverageStart,
-      end: coverageStart.map(s => s + bin),
-      depth: d.coverageDepths,
-      forward: d.coverageFwdDepths,
-      reverse: d.coverageRevDepths,
-    },
     ...interbase(d),
     modifications: modifications(d),
     qualities: qualities(d, plainRead),
-    ...coverageStacks(d),
-    ...interbaseStacks(d),
-    junctions: junctions(d, refName),
+    ...coverageBand(d, region),
+    junctions: junctions(d, region.refName),
   }
+}
+
+/**
+ * The coverage band's tables over the region alone. The worker counts depth
+ * and stacks wherever its reads reach, which past the region's ends is a
+ * partial count of the reads that also cross into it. A bin straddling an end
+ * is cut at it.
+ */
+function coverageBand(
+  d: WorkerPileupData,
+  region: { start: number; end: number },
+) {
+  const bin = d.coverageBinSize
+  const first = Math.max(
+    0,
+    Math.floor((region.start - d.coverageStartPos) / bin),
+  )
+  const last = Math.min(
+    d.coverageDepths.length,
+    Math.ceil((region.end - d.coverageStartPos) / bin),
+  )
+  const bins = Array.from(
+    { length: Math.max(0, last - first) },
+    (_, i) => first + i,
+  )
+  const binStart = (i: number) => d.coverageStartPos + i * bin
+  const inside = (position: number) =>
+    position >= region.start && position < region.end
+  const stacks = { ...coverageStacks(d), ...interbaseStacks(d) }
+  return {
+    coverage: {
+      start: bins.map(i => Math.max(region.start, binStart(i))),
+      end: bins.map(i => Math.min(region.end, binStart(i) + bin)),
+      depth: bins.map(i => d.coverageDepths[i]!),
+      forward: bins.map(i => d.coverageFwdDepths[i]!),
+      reverse: bins.map(i => d.coverageRevDepths[i]!),
+    },
+    alleleCoverage: rowsWhere(stacks.alleleCoverage, inside),
+    modificationCoverage: rowsWhere(stacks.modificationCoverage, inside),
+    interbaseCoverage: rowsWhere(stacks.interbaseCoverage, inside),
+    indicators: rowsWhere(stacks.indicators, inside),
+  }
+}
+
+/** A table's rows whose `position` passes `keep`. */
+function rowsWhere<T extends { position: ArrayLike<number> }>(
+  table: T,
+  keep: (position: number) => boolean,
+) {
+  const rows = Array.from(table.position, (p, i) => (keep(p) ? i : -1)).filter(
+    i => i >= 0,
+  )
+  return Object.fromEntries(
+    Object.entries(table).map(([name, column]) => [
+      name,
+      rows.map(i => (column as ArrayLike<unknown>)[i]),
+    ]),
+  ) as { [K in keyof T]: T[K] extends ArrayLike<infer V> ? V[] : never }
 }
 
 /**
@@ -1058,26 +1102,29 @@ export async function alignmentTables(
     colors,
   )
   return {
-    ...joinSections(
-      order.map(({ key, label }) => ({
-        label,
-        tables: {
-          ...chainTables(
-            chain ? laidByGroup.get(key) : undefined,
-            normalizedRgbToHex(colors.palette.colorConnectingLine),
-            normalizedRgbToHex(colors.palette.colorOverlap),
-          ),
-          ...sectionTables(
-            dataFor(key),
-            laidByGroup.get(key)!.readYs,
-            colors.sections.get(key)!,
-            region.refName,
-            normalizedRgbToHex(colors.palette.readCategoryColors.plain),
-          ),
-          ...connections.bySection.get(key)!,
-        },
-      })),
-      tables => tables.reads.start.length,
+    ...drawnBands(
+      conf,
+      joinSections(
+        order.map(({ key, label }) => ({
+          label,
+          tables: {
+            ...chainTables(
+              chain ? laidByGroup.get(key) : undefined,
+              normalizedRgbToHex(colors.palette.colorConnectingLine),
+              normalizedRgbToHex(colors.palette.colorOverlap),
+            ),
+            ...sectionTables(
+              dataFor(key),
+              laidByGroup.get(key)!.readYs,
+              colors.sections.get(key)!,
+              region,
+              normalizedRgbToHex(colors.palette.readCategoryColors.plain),
+            ),
+            ...connections.bySection.get(key)!,
+          },
+        })),
+        tables => tables.reads.start.length,
+      ),
     ),
     sections: {
       key: order.map(g => g.key),
@@ -1112,6 +1159,54 @@ export async function alignmentTables(
       COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),
     ) as Record<(typeof COMPOSING_SLOTS)[number], unknown>,
   }
+}
+
+/**
+ * The tables each `show*` slot turns off with its band, as the display then
+ * draws none of them.
+ */
+const BAND_TABLES = {
+  showPileup: [
+    'reads',
+    'mismatches',
+    'gaps',
+    'insertions',
+    'clips',
+    'modifications',
+    'qualities',
+    'chains',
+    'overlaps',
+  ],
+  showMismatches: ['mismatches'],
+  showCoverage: [
+    'coverage',
+    'alleleCoverage',
+    'modificationCoverage',
+    'interbaseCoverage',
+    'indicators',
+  ],
+  showInterbaseIndicators: ['interbaseCoverage', 'indicators'],
+  showSashimiArcs: ['junctions'],
+} as const
+
+/** The tables, each of a band the display does not draw left empty. */
+function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
+  conf: DisplayConf,
+  tables: T,
+) {
+  const hidden = new Set<string>(
+    (Object.keys(BAND_TABLES) as (keyof typeof BAND_TABLES)[]).flatMap(slot =>
+      readConfObject(conf, slot) ? [] : BAND_TABLES[slot],
+    ),
+  )
+  return Object.fromEntries(
+    Object.entries(tables).map(([name, table]) => [
+      name,
+      hidden.has(name)
+        ? Object.fromEntries(Object.keys(table).map(column => [column, []]))
+        : table,
+    ]),
+  ) as T
 }
 
 /**

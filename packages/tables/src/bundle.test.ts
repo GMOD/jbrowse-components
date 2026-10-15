@@ -32,6 +32,7 @@ import {
   METHYLATED,
   SIGNED_BIGWIG,
 } from './volvox.fixture.ts'
+import { fromWire } from './wire.ts'
 
 // A host with no web globals at all, as R's V8 is: an empty vm context, less
 // the `Intl` R's V8 is built without, where the only thing the bundle is
@@ -59,6 +60,10 @@ let jbrowse: {
   regions: (args: string) => Promise<string>
 }
 let code: string
+
+// what a host reads off the wire, its nested columns arrays again
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const read = (wire: string) => fromWire(JSON.parse(wire)) as any
 
 beforeAll(() => {
   const out = path.join(mkdtempSync(path.join(tmpdir(), 'tables-')), 'b.js')
@@ -92,7 +97,7 @@ test.each([
 ])(
   'the bundle answers a %s as the engine does, in a bare host',
   async (_, args) => {
-    const bare = JSON.parse(await jbrowse.alignments(JSON.stringify(args)))
+    const bare = read(await jbrowse.alignments(JSON.stringify(args)))
     const direct = await createTablesEngine().alignments(args)
     expect(bare.reads.name).toEqual(direct.reads.name)
     expect(bare.reads.row).toEqual(direct.reads.row)
@@ -113,7 +118,7 @@ test.each([
 ])(
   'the bundle answers a %s feature track as the engine does, in a bare host',
   async (_, args) => {
-    const bare = JSON.parse(await jbrowse.features(JSON.stringify(args)))
+    const bare = read(await jbrowse.features(JSON.stringify(args)))
     const direct = await createTablesEngine().features(args)
     expect(bare.features.id.length).toBeGreaterThan(0)
     // jest stubs the adapter's id prefix, so ids differ by it alone
@@ -132,7 +137,7 @@ test.each([
 ])(
   'the bundle answers a %s BigWig as the engine does, in a bare host',
   async (_, args) => {
-    const bare = JSON.parse(await jbrowse.wiggle(JSON.stringify(args)))
+    const bare = read(await jbrowse.wiggle(JSON.stringify(args)))
     const direct = await createTablesEngine().wiggle(args)
     expect(bare.bins.score.length).toBeGreaterThan(0)
     expect(bare.bins).toEqual(direct.bins)
@@ -147,7 +152,7 @@ test.each([
 ])(
   'the bundle answers a multi-sample VCF by %s as the engine does, in a bare host',
   async (_, args) => {
-    const bare = JSON.parse(await jbrowse.variants(JSON.stringify(args)))
+    const bare = read(await jbrowse.variants(JSON.stringify(args)))
     const direct = await createTablesEngine().variants(args)
     expect(bare.cells.variant.length).toBeGreaterThan(0)
     const { id: _bareId, ...bareVariants } = bare.variants
@@ -155,8 +160,23 @@ test.each([
     expect(bareVariants).toEqual(directVariants)
     expect(bare.cells).toEqual(direct.cells)
     expect(bare.legend).toEqual(direct.legend)
+    expect(bare.info).toEqual(JSON.parse(JSON.stringify(direct.info)))
   },
 )
+
+test('a nested column crosses as its rows’ lengths and values, whatever lengths they share', async () => {
+  const wire = JSON.parse(await jbrowse.variants(JSON.stringify(DOG_VCF)))
+  const direct = await createTablesEngine().variants(DOG_VCF)
+  const ac = direct.info.AC as (number[] | null)[]
+  expect(ac.some(v => v?.length === 2)).toBe(true)
+  expect(wire.info.AC).toEqual({
+    $list: {
+      lengths: ac.map(v => v?.length ?? -1),
+      values: ac.flatMap(v => v ?? []),
+    },
+  })
+  expect(wire.info.AN).toEqual(direct.info.AN)
+})
 
 test('the bundle reads a file under its alias through an assembly, in a bare host', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'tables-'))
@@ -178,7 +198,7 @@ test('the bundle reads a file under its alias through an assembly, in a bare hos
     region: BAM.region,
     assembly,
   }
-  const bare = JSON.parse(await jbrowse.alignments(JSON.stringify(args)))
+  const bare = read(await jbrowse.alignments(JSON.stringify(args)))
   expect(bare.readAs).toEqual({
     refName: ['contigA'],
     originalRefName: ['ctgA'],
@@ -186,13 +206,15 @@ test('the bundle reads a file under its alias through an assembly, in a bare hos
   expect(bare.reads.start).toEqual(
     Array.from((await createTablesEngine().alignments(BAM)).reads.start),
   )
-  expect(
-    JSON.parse(await jbrowse.regions(JSON.stringify({ assembly }))),
-  ).toEqual({ refName: ['ctgA', 'ctgB'], start: [0, 0], end: [50001, 6079] })
+  expect(read(await jbrowse.regions(JSON.stringify({ assembly })))).toEqual({
+    refName: ['ctgA', 'ctgB'],
+    start: [0, 0],
+    end: [50001, 6079],
+  })
 })
 
 test('the bundle answers a PAF as the engine does, in a bare host', async () => {
-  const bare = JSON.parse(await jbrowse.synteny(JSON.stringify(INV_INDELS)))
+  const bare = read(await jbrowse.synteny(JSON.stringify(INV_INDELS)))
   const direct = await createTablesEngine().synteny(INV_INDELS)
   expect(bare.ribbons.kind.length).toBeGreaterThan(7)
   const { id: _bareId, ...bareAlignments } = bare.alignments
@@ -201,21 +223,21 @@ test('the bundle answers a PAF as the engine does, in a bare host', async () => 
   expect(bare.ribbons).toEqual(direct.ribbons)
   expect(bare.legend).toEqual(direct.legend)
 
-  const bareDots = JSON.parse(
+  const bareDots = read(
     await jbrowse.dotplot(JSON.stringify(INV_INDELS_DOTPLOT)),
   )
   const directDots = await createTablesEngine().dotplot(INV_INDELS_DOTPLOT)
   expect(bareDots.segments).toEqual(directDots.segments)
 
   const args = { adapterConfig: INV_INDELS.adapterConfig }
-  expect(JSON.parse(await jbrowse.contigs(JSON.stringify(args)))).toEqual(
+  expect(read(await jbrowse.contigs(JSON.stringify(args)))).toEqual(
     await createTablesEngine().contigs(args),
   )
 })
 
 test('the bundle stacks a multi-genome PAF as the engine does, in a bare host', async () => {
   for (const args of [ALL_VS_ALL, SYRI]) {
-    const bare = JSON.parse(await jbrowse.multiway(JSON.stringify(args)))
+    const bare = read(await jbrowse.multiway(JSON.stringify(args)))
     const direct = await createTablesEngine().multiway(args)
     expect(bare.ribbons.kind.length).toBeGreaterThan(2)
     expect(bare.lanes).toEqual(direct.lanes)

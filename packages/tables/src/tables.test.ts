@@ -97,9 +97,12 @@ test('a mismatch\u2019s frequency is its base\u2019s share of the depth there', 
       )
     }
   })
-  expect(mismatches.frequency.filter(f => f > 0).length).toBe(
-    mismatches.position.filter(p => depthAt.get(p)).length,
-  )
+  const inside = (p: number) => p >= BAM.region.start && p < BAM.region.end
+  expect(
+    mismatches.frequency.filter(
+      (f, i) => f > 0 && inside(mismatches.position[i]!),
+    ).length,
+  ).toBe(mismatches.position.filter(p => depthAt.get(p)).length)
 })
 
 test('a key spells each color as the reads do, whatever CSS the config wrote', async () => {
@@ -283,6 +286,62 @@ test('junctions are the skips merged, each with its support', async () => {
   }
   const total = junctions.count.reduce((a, b) => a + b, 0)
   expect(total).toBe(gaps.type.filter(t => t === 'skip').length)
+})
+
+test('the coverage band covers the region and no more, its reads reaching past it', async () => {
+  const { region } = BAM
+  const t = await engine.alignments(BAM)
+  expect(Math.min(...t.reads.start)).toBeLessThan(region.start)
+  expect(Math.max(...t.reads.end)).toBeGreaterThan(region.end)
+  expect(t.coverage.start[0]).toBe(region.start)
+  expect(t.coverage.end.at(-1)).toBe(region.end)
+  expect(t.coverage.end.reduce((a, b) => Math.max(a, b), 0)).toBe(region.end)
+  // each stack inside the region is the one a wider read stacks there
+  const wide = await engine.alignments({
+    ...BAM,
+    region: { refName: 'ctgA', start: 0, end: 7000 },
+  })
+  const inside = (p: number) => p >= region.start && p < region.end
+  for (const name of [
+    'alleleCoverage',
+    'interbaseCoverage',
+    'indicators',
+  ] as const) {
+    expect(Array.from(t[name].position)).toEqual(
+      Array.from(wide[name].position).filter(inside),
+    )
+  }
+  expect(t.alleleCoverage.position.length).toBeGreaterThan(0)
+})
+
+test('a band the display hides leaves its tables empty', async () => {
+  const empty = (table: Record<string, ArrayLike<unknown>>) =>
+    Object.values(table).every(column => column.length === 0)
+  const shown = await engine.alignments(SPLICED)
+  expect(
+    empty(shown.coverage) || empty(shown.reads) || empty(shown.junctions),
+  ).toBe(false)
+  const noCoverage = await engine.alignments({
+    ...SPLICED,
+    display: { showCoverage: false },
+  })
+  for (const table of [
+    noCoverage.coverage,
+    noCoverage.alleleCoverage,
+    noCoverage.interbaseCoverage,
+    noCoverage.indicators,
+  ]) {
+    expect(empty(table)).toBe(true)
+  }
+  expect(noCoverage.reads.start).toEqual(shown.reads.start)
+  const noPileup = await engine.alignments({
+    ...SPLICED,
+    display: { showPileup: false, showSashimiArcs: false },
+  })
+  expect(empty(noPileup.reads)).toBe(true)
+  expect(empty(noPileup.gaps)).toBe(true)
+  expect(empty(noPileup.junctions)).toBe(true)
+  expect(noPileup.coverage.depth).toEqual(shown.coverage.depth)
 })
 
 test('base modifications paint under the modifications layer, keyed with the reads', async () => {

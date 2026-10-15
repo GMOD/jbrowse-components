@@ -1,48 +1,31 @@
 import './hostGlobals.ts'
 
 import { alignmentColors, createTablesEngine } from './index.ts'
+import { toWire } from './wire.ts'
 
 // The bundle's interface to a bare host: `jbrowse.<table>(argsJson)` resolves
-// to the tables as JSON, typed arrays written as plain arrays.
+// to the tables as `toWire` writes them.
 
-function plain(value: unknown): unknown {
-  if (ArrayBuffer.isView(value)) {
-    return Array.from(value as unknown as ArrayLike<number>)
-  }
-  if (Array.isArray(value)) {
-    return value.map(plain)
-  }
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, plain(v)]),
-    )
-  }
-  return value
-}
+const send = (value: unknown) => JSON.stringify(toWire(value))
 
 const engine = createTablesEngine()
 
 ;(globalThis as Record<string, unknown>).jbrowse = {
   alignments: async (args: string) =>
-    JSON.stringify(plain(await engine.alignments(JSON.parse(args)))),
+    send(await engine.alignments(JSON.parse(args))),
   features: async (args: string) =>
-    JSON.stringify(plain(await engine.features(JSON.parse(args)))),
-  wiggle: async (args: string) =>
-    JSON.stringify(plain(await engine.wiggle(JSON.parse(args)))),
+    send(await engine.features(JSON.parse(args))),
+  wiggle: async (args: string) => send(await engine.wiggle(JSON.parse(args))),
   variants: async (args: string) =>
-    JSON.stringify(plain(await engine.variants(JSON.parse(args)))),
+    send(await engine.variants(JSON.parse(args))),
   variantDensityAlpha: async (args: string) =>
-    JSON.stringify(engine.variantDensityAlpha(JSON.parse(args))),
-  synteny: async (args: string) =>
-    JSON.stringify(plain(await engine.synteny(JSON.parse(args)))),
-  dotplot: async (args: string) =>
-    JSON.stringify(plain(await engine.dotplot(JSON.parse(args)))),
-  contigs: async (args: string) =>
-    JSON.stringify(await engine.contigs(JSON.parse(args))),
+    send(engine.variantDensityAlpha(JSON.parse(args))),
+  synteny: async (args: string) => send(await engine.synteny(JSON.parse(args))),
+  dotplot: async (args: string) => send(await engine.dotplot(JSON.parse(args))),
+  contigs: async (args: string) => send(await engine.contigs(JSON.parse(args))),
   multiway: async (args: string) =>
-    JSON.stringify(plain(await engine.multiway(JSON.parse(args)))),
+    send(await engine.multiway(JSON.parse(args))),
   sequence: async (args: string) => engine.sequence(JSON.parse(args)),
-  regions: async (args: string) =>
-    JSON.stringify(await engine.regions(JSON.parse(args))),
-  alignmentColors: () => JSON.stringify(alignmentColors()),
+  regions: async (args: string) => send(await engine.regions(JSON.parse(args))),
+  alignmentColors: () => send(alignmentColors()),
 }
