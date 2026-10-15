@@ -41,14 +41,16 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     /gff3tabix_genes <- jbrowse_features\(".*volvox\.sort\.gff3\.gz",\n {2}locus,\n {2}display = list\(heightMode = "fit", height = 100\),\n {2}width = width\)/,
   )
   expect(script).toContain('\nwidth <- 1500\n')
-  expect(script).toContain('display = list(color = list(field = "mapq")))')
+  expect(script).toContain(
+    'display = list(color = list(field = "mapq")),\n  width = width)',
+  )
   expect(script).toContain(
     'fig <- jbrowse_stack(gff3tabix_genes, volvox_microarray, volvox_alignments)\nprint(fig)\n',
   )
   expect(script).toContain(
     'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.9.0"')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.10.0"')
   expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
   const code = script
     .split('\n')
@@ -75,13 +77,17 @@ test("a track named width keeps the script's width", () => {
   expect(script).toMatch(/^width_2 <- jbrowse_wiggle\(/m)
 })
 
-test('a script with no reader that takes a width sets none', () => {
-  const script = scriptOf({
-    regions: ONE,
-    bpPerPx: 8000 / 1500,
-    tracks: [track('volvox_alignments', 'LinearAlignmentsDisplay')],
-  })
-  expect(script).not.toMatch(/width <-|width = width/)
+test('every reader lays its track out at the view’s width, and none without a zoom', () => {
+  const tracks = [
+    track('volvox_alignments', 'LinearAlignmentsDisplay'),
+    track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
+  ]
+  const script = scriptOf({ regions: ONE, bpPerPx: 8000 / 1500, tracks })
+  expect(script).toContain('\nwidth <- 1500\n')
+  expect(script.match(/\n {2}width = width/g)).toHaveLength(2)
+  expect(scriptOf({ regions: ONE, tracks })).not.toMatch(
+    /width <-|width = width/,
+  )
 })
 
 test('several regions are one vector of loci, which the readers draw end to end', () => {

@@ -81,11 +81,11 @@ track) land in the script header.
   list. The engine reads each file under that file's spelling of a contig, so
   every reader takes the view's canonical `locus`, and a CRAM decodes against
   the assembly's sequence.
-- **`width` is the view's pixels** (`bp / bpPerPx`), so a feature or
-  quantitative track resolves its labels, chevrons and BigWig zoom level as
-  the view did. The script sets it once, as `width <- N` under `locus`, so a
-  reader after a narrower figure edits one number; `jbrowse_stack` hands it
-  on to an alignments track's pileup too.
+- **`width` is the view's pixels** (`bp / bpPerPx`), and every reader takes
+  it, so a feature or quantitative track resolves its labels, chevrons and
+  BigWig zoom level as the view did, and the pileup and variant matrix fade
+  as it did. The script sets it once, as `width <- N` under `locus`, so a
+  reader after a narrower figure edits one number.
 - **The figure is as tall as the view's bands and as wide as its pixels.**
   `ggsave()` takes `jbrowse_height(fig)`, which measures the stack's bands at
   the display's pixels, a compact pileup included, and its keys, rather than a

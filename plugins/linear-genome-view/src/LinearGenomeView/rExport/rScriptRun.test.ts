@@ -98,8 +98,8 @@ const twoRegions = register(
     track('gff3tabix_genes', 'LinearBasicDisplay'),
     track('volvox_alignments', 'LinearAlignmentsDisplay'),
   ],
-  `identical(sort(unique(volvox_alignments$reads$.region)), 1:2),
-  identical(sort(unique(gff3tabix_genes$features$.region)), 1:2)`,
+  `identical(sort(unique(volvox_alignments$reads$region)), 1:2),
+  identical(sort(unique(gff3tabix_genes$features$region)), 1:2)`,
   TWO,
 )
 
@@ -171,7 +171,7 @@ const bigBed = register(
 const lackingContig = register(
   'lacking_contig',
   [track('volvox_microarray', 'LinearWiggleDisplay')],
-  'all(volvox_microarray$bins$.region == 1)',
+  'all(volvox_microarray$bins$region == 1)',
   [
     { refName: 'ctgA', start: 1000, end: 4000 },
     { refName: 'ctgB', start: 0, end: 3000 },

@@ -78,7 +78,7 @@ const READERS: Record<
 }
 
 /** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.9.0'
+export const GGJBROWSE_VERSION = '0.10.0'
 
 const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
 
@@ -426,9 +426,6 @@ function settingNotes(track: RExportTrack) {
           'color: mateRefName colors each contig by its hash, where the browser orders them by the assembly',
         ]
       : []),
-    ...(track.display.facet && track.displayType !== 'LinearAlignmentsDisplay'
-      ? ['facet: drawn as one section']
-      : []),
   ]
 }
 
@@ -494,9 +491,7 @@ export function exportTracksToR({
             ...(height === undefined ? {} : { height }),
           }
         : track.display
-    const width =
-      viewPx !== undefined &&
-      (reader.call === 'jbrowse_features' || reader.call === 'jbrowse_wiggle')
+    const width = viewPx !== undefined
     const args = [
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),
       ...(width ? ['width = width'] : []),
