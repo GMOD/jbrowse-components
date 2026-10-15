@@ -5,23 +5,7 @@ import configFactory from '../../../config/webpack/config/webpack.config.ts'
 import build from '../../../config/webpack/scripts/build.ts'
 import desktopConfig from './config.ts'
 
-const pkgPath = path.resolve(import.meta.dirname, '../package.json')
-const originalPkgContent = fs.readFileSync(pkgPath, 'utf8')
-const pkg = JSON.parse(originalPkgContent)
-const customVersion = process.env.JBROWSE_VERSION
-
-if (customVersion) {
-  pkg.version = customVersion
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
-}
-
-try {
-  await build(desktopConfig(configFactory()))
-} finally {
-  if (customVersion) {
-    fs.writeFileSync(pkgPath, originalPkgContent)
-  }
-}
+await build(desktopConfig(configFactory()))
 
 const testDataPath = path.resolve(import.meta.dirname, '../build/test_data')
 if (fs.existsSync(testDataPath)) {

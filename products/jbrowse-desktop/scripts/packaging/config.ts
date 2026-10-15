@@ -52,7 +52,7 @@ export const ASSETS = path.join(ROOT, 'assets')
 
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 
-export const VERSION = process.env.JBROWSE_VERSION || pkg.version
+export const VERSION = pkg.version as string
 export const APP_NAME = 'jbrowse-desktop'
 export const PRODUCT_NAME = 'JBrowse 2'
 export const APP_ID = 'org.jbrowse2.app'
