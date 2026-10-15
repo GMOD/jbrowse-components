@@ -69,4 +69,20 @@ describe('makeRadioSubMenu', () => {
       'Something else',
     )
   })
+
+  it('carries an option object’s own gate and help onto its row', () => {
+    const item = makeRadioSubMenu({
+      label: 'Mode',
+      value: 'a',
+      onChange: () => {},
+      options: [
+        ['a', 'A'],
+        { value: 'b', label: 'B', disabled: true, helpText: 'no B here' },
+      ],
+    })
+    expect('subMenu' in item ? resolveSubMenu(item) : []).toMatchObject([
+      { label: 'A', checked: true },
+      { label: 'B', checked: false, disabled: true, helpText: 'no B here' },
+    ])
+  })
 })

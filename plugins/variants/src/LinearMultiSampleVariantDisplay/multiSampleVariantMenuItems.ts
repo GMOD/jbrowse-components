@@ -1,6 +1,6 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -191,21 +191,22 @@ export function variantTrackMenuItems(
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
     rowHeightMenuItem(self),
-    {
+    makeRadioSubMenu({
       label: 'Rows',
       icon: SplitscreenIcon,
-      subMenu: [
+      value: self.unit,
+      onChange: unit => {
+        self.setUnit(unit)
+      },
+      options: [
         {
+          value: 'sample',
           label: 'Per sample',
           helpText:
             'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
-          type: 'radio',
-          checked: self.unit === 'sample',
-          onClick: () => {
-            self.setUnit('sample')
-          },
         },
         {
+          value: 'haplotype',
           // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
           // callset is haploid, with no `|` anywhere, and draws per haplotype
           ...needs(
@@ -216,14 +217,9 @@ export function variantTrackMenuItems(
           ),
           helpText:
             'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP0 and SAMPLE1 HP1, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
-          checked: self.unit === 'haplotype',
-          type: 'radio',
-          onClick: () => {
-            self.setUnit('haplotype')
-          },
         },
       ],
-    },
+    }),
     // The cell fill and the sample metadata's row color are independent
     // color objects, so each is a block of its own.
     colorByMenuItem({

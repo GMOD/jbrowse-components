@@ -1,6 +1,7 @@
 import { radioItems } from './toggleMenuItems.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
+import type { RadioOption } from './toggleMenuItems.ts'
 import type React from 'react'
 
 /**
@@ -25,7 +26,8 @@ export function makeRadioSubMenu<T extends string>(opts: {
   icon?: React.ElementType
   value: T | undefined
   onChange: (value: T) => void
-  options: readonly (readonly [T, string])[]
+  /** `[value, label]` pairs, or `RadioOption`s for rows gated one by one */
+  options: readonly (readonly [T, string] | RadioOption<T>)[]
   extraItems?: MenuItem[]
   /**
    * Prose for the group, on the row that opens it. One "?" here rather than one
@@ -43,7 +45,9 @@ export function makeRadioSubMenu<T extends string>(opts: {
       // via radioItems so these keep the menu open like every other
       // setting row — a plot type is usually picked by trying a couple
       ...radioItems(
-        options.map(([value, label]) => ({ value, label })),
+        options.map(option =>
+          'value' in option ? option : { value: option[0], label: option[1] },
+        ),
         value,
         onChange,
       ),

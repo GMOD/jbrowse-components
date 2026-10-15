@@ -1,4 +1,4 @@
-import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
@@ -33,33 +33,32 @@ export interface LDMenuSelf extends IStateTreeNode {
 // The radios write `color.field`, which of the file's columns to draw, and a
 // file that lacks one says so on the disabled row rather than serving zeros
 // under its name.
-function metricMenuItems(self: LDMenuSelf): MenuItem[] {
-  return [
-    {
-      label: 'R² (squared correlation)',
-      type: 'radio',
-      checked: self.effectiveLdMetric === 'r2',
-      disabled: !self.r2Available,
-      helpText: self.r2Available
-        ? 'Squared correlation between the two variants (0-1), read from the LD file.'
-        : 'This LD file has no r² (R2) column',
-      onClick: () => {
-        self.setLDMetric('r2')
-      },
+function metricMenuItem(self: LDMenuSelf): MenuItem {
+  return makeRadioSubMenu({
+    label: 'LD metric',
+    value: self.effectiveLdMetric,
+    onChange: metric => {
+      self.setLDMetric(metric)
     },
-    {
-      label: "D' (normalized D)",
-      type: 'radio',
-      checked: self.effectiveLdMetric === 'dprime',
-      disabled: !self.dprimeAvailable,
-      helpText: self.dprimeAvailable
-        ? "Lewontin's normalized D (0-1), read from the LD file."
-        : "This LD file has no D' (DP) column",
-      onClick: () => {
-        self.setLDMetric('dprime')
+    options: [
+      {
+        value: 'r2',
+        label: 'R² (squared correlation)',
+        disabled: !self.r2Available,
+        helpText: self.r2Available
+          ? 'Squared correlation between the two variants (0-1), read from the LD file.'
+          : 'This LD file has no r² (R2) column',
       },
-    },
-  ]
+      {
+        value: 'dprime',
+        label: "D' (normalized D)",
+        disabled: !self.dprimeAvailable,
+        helpText: self.dprimeAvailable
+          ? "Lewontin's normalized D (0-1), read from the LD file."
+          : "This LD file has no D' (DP) column",
+      },
+    ],
+  })
 }
 
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
@@ -98,10 +97,7 @@ export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
           },
         ]
       : []),
-    {
-      label: 'LD metric',
-      subMenu: metricMenuItems(self),
-    },
+    metricMenuItem(self),
     colorSchemeMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
   ]
