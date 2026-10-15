@@ -10,7 +10,7 @@
 # private set of slots gates nothing.
 set -u
 
-slots=${JB_HEAVY_SLOTS:-3}
+slots=${JB_HEAVY_SLOTS:-2}
 
 # Agent runs only. A human at a terminal gets the machine undiluted, and an
 # unset slot count or a missing flock(1) falls through rather than failing a

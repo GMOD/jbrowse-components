@@ -10,7 +10,10 @@ refuse() {
 if grep -Eq "${start}git([[:space:]]+-C[[:space:]]+[^[:space:]]+)?[[:space:]]+stash\b" <<<"$cmd"; then
   refuse 'Refused: git stash. The stash stack is repo-global and other agents pop it. Use a WIP commit, or `git diff main -- <path>`.'
 fi
-if grep -Eq "${start}((npx|pnpm|pnpm exec|pnpm dlx)[[:space:]]+)?(tsc|tsgo)\b" <<<"$cmd"; then
+wrapper='((timeout[[:space:]]+[^[:space:]]+|time|nice|nohup|command|env|[A-Za-z_]+=[^[:space:]]*)[[:space:]]+)*'
+runner='((npx|pnpm|pnpm exec|pnpm dlx|npm exec)[[:space:]]+)?'
+compiler='(([^[:space:]]*/)?(tsc|tsgo)|node[[:space:]]+[^[:space:]]*typescript[^[:space:]]*/bin/tsc)([[:space:]]|$)'
+if grep -Eq "${start}${wrapper}${runner}${compiler}" <<<"$cmd"; then
   refuse 'Refused: bare tsc/tsgo. Each whole-repo program is ~4GB; `pnpm typecheck` queues on the machine-wide slots (scripts/heavy-run-slot.sh) so a dozen agents do not swap the box.'
 fi
 if grep -Eq "${start}npx[[:space:]]+prettier\b" <<<"$cmd"; then
