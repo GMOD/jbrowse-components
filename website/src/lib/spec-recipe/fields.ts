@@ -960,7 +960,6 @@ function isHicOnlyField(displayType: string | undefined) {
 const MARK_DISPLAYS = new Set(['LinearMarkDisplay', 'LinearManhattanDisplay'])
 
 const READ_CONNECTIONS_MENU = `${TRACK_MENU} → Read connections`
-const BAND_OPTIONS = `${READ_CONNECTIONS_MENU} → Arc / read cloud band options`
 
 function geneGlyphStep(value: unknown): FieldStep | undefined {
   const option = GENE_GLYPH_MODE_OPTIONS.find(o => o.value === value)
@@ -1558,14 +1557,14 @@ export const trackFields: Record<string, FieldRecipe> = {
   showLongRange: (value, { displayType }) =>
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {
-          path: `${BAND_OPTIONS} → Show off-screen mate connections (${value ? 'checked' : 'unchecked'})`,
-          note: 'That submenu stays greyed out until an arc or read-cloud overlay is on.',
+          path: `${READ_CONNECTIONS_MENU} → Show off-screen mate connections (${value ? 'checked' : 'unchecked'})`,
+          note: 'The row stays greyed out until an arc or read-cloud overlay is on.',
         }
       : undefined,
   showInterchrom: (value, { displayType }) =>
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {
-          path: `${BAND_OPTIONS} → Show inter-chromosomal pairs (${value ? 'checked' : 'unchecked'})`,
+          path: `${READ_CONNECTIONS_MENU} → Show inter-chromosomal pairs (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
   readConnectionsHeight: (value, { displayType }) =>
@@ -1838,10 +1837,10 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   readConnectionsDown: checkbox(
-    'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
+    'Read connections → Draw arcs below coverage band',
   ),
   showOrdinaryPairs: checkbox(
-    'Read connections → Arc / read cloud band options → Show ordinary pairs',
+    'Read connections → Show ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   minSashimiScore: numberField(n => ({

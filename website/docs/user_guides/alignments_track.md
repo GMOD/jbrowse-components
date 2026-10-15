@@ -91,9 +91,9 @@ For a BAM/CRAM with MM/ML modification calls (nanopore, PacBio), **Color by →
 Modifications** paints them in two modes:
 
 - **One color per modification type** marks only where the MM tag reports a
-  modified base, so an unmethylated region looks empty. **Threshold** raises the
-  probability cutoff and **Modification types** restricts to one type such as
-  5mC
+  modified base, so an unmethylated region looks empty. The **Hide calls under**
+  slider raises the probability cutoff and **Modification types** restricts to
+  one type such as 5mC
 - **One color per type, plus low-probability & unmodified in blue** (IGV's
   "2-color") also paints the not-modified side blue. For cytosine data it fills
   every CpG in context, including ones the basecaller left implicit, inferred
