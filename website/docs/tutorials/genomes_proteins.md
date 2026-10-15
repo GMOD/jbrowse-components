@@ -230,8 +230,8 @@ The domain calls come from NCBI's protein records. For a protein NCBI has no
 calls for:
 
 - `react-msaview-cli interproscan` scans the sequences into a domain file.
-- **File → Annotations → Open annotation file...** reads that file in.
-- **File → Annotations → How to get a domain file...** opens a
+- **File → Open annotation file...** reads that file in. The dialog's _How to
+  make one_ link opens a
   [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family) that also
   covers `interpro`, the instant path when the rows are UniProt accessions.
 

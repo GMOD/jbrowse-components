@@ -132,8 +132,8 @@ export function pluginSourceDirs(name: string): [string, ...string[]] {
 // view the launcher opens is the library's, so every label under that view's own
 // menus lives here and nowhere the plugin checkout can reach. `msaview`'s File
 // menu is the worked example: the docs walk a reader to
-// **File → Annotations → Query InterProScan...**, and all three of those
-// segments are react-msaview's.
+// **File → Open annotation file...**, and both of those segments are
+// react-msaview's.
 export function libraryCheckout(name: string) {
   return join(primaryRepoRoot, '..', name)
 }
