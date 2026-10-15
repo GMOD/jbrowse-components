@@ -138,3 +138,38 @@ test('destroying the host disposes the autorun', async () => {
   await Promise.resolve()
   expect(ran).toBe(1)
 })
+
+test('with idleLeading, a change after an idle delay runs on the leading edge', async () => {
+  const o = observable.box(0)
+  const seen: number[] = []
+  leadingEdgeAutorun(
+    host(),
+    () => {
+      seen.push(o.get())
+      return true
+    },
+    { name: 'test', delay: 50, idleLeading: true },
+  )
+  await Promise.resolve()
+  expect(seen).toEqual([0])
+
+  // within the delay of the last run: coalesced, as without the option
+  runInAction(() => {
+    o.set(1)
+  })
+  runInAction(() => {
+    o.set(2)
+  })
+  await Promise.resolve()
+  expect(seen).toEqual([0])
+  await new Promise(r => setTimeout(r, 120))
+  expect(seen).toEqual([0, 2])
+
+  // idle for longer than the delay: nothing to coalesce, so no timer
+  await new Promise(r => setTimeout(r, 80))
+  runInAction(() => {
+    o.set(3)
+  })
+  await Promise.resolve()
+  expect(seen).toEqual([0, 2, 3])
+})

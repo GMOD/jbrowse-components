@@ -259,7 +259,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     // the debounce stays a literal here: `generateFetchAutorunDocs` reads it off
     // this call to write the docs' autorun table, so a named constant would put
     // the number back in the docs' hands
-    { name: 'FetchVisibleRegions', delay: 600 },
+    { name: 'FetchVisibleRegions', delay: 600, idleLeading: true },
   )
 
   // Drop a stored hover whenever the content it names moves or goes away.

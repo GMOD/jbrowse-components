@@ -63,6 +63,7 @@ const COUNTS = [
 interface Autorun {
   name: string
   delay?: number
+  idleLeading?: boolean
   firesOn: string
   action: string
 }
@@ -84,6 +85,7 @@ function optionsArg(node: ts.CallExpression) {
     )?.initializer
   const name = prop('name')
   const delay = prop('delay')
+  const idleLeading = prop('idleLeading')
   if (!name || !ts.isStringLiteral(name)) {
     return undefined
   }
@@ -99,6 +101,7 @@ function optionsArg(node: ts.CallExpression) {
   return {
     name: name.text,
     delay: delay ? Number((delay as ts.NumericLiteral).text) : undefined,
+    idleLeading: idleLeading?.kind === ts.SyntaxKind.TrueKeyword,
   }
 }
 
@@ -172,7 +175,8 @@ export function collectAutoruns(): Autorun[] {
 // The count leads the table, so "the five autoruns" can't outlive a sixth. The
 // debounce rides the trigger cell for the same reason: 600 is a number in the
 // source, not one to retype. It reads "immediate, then debounced" because
-// `autorunOnReadyView`'s `delay` is leading-edge — see leadingEdgeAutorun.
+// `autorunOnReadyView`'s `delay` is leading-edge — see leadingEdgeAutorun — and
+// "or debounced within" where `idleLeading` returns it to the leading edge.
 function render(autoruns: Autorun[]) {
   const count = COUNTS[autoruns.length] ?? String(autoruns.length)
   return [
@@ -183,7 +187,11 @@ function render(autoruns: Autorun[]) {
       autoruns.map(
         a =>
           `| \`${a.name}\` | ${a.firesOn}${
-            a.delay ? ` (immediate, then debounced ${a.delay} ms)` : ''
+            a.delay
+              ? a.idleLeading
+                ? ` (immediate, or debounced ${a.delay} ms within ${a.delay} ms of the last run)`
+                : ` (immediate, then debounced ${a.delay} ms)`
+              : ''
           } | ${a.action} |`,
       ),
     ),

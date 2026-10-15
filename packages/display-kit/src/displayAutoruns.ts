@@ -35,7 +35,11 @@ declare const process: { env: { NODE_ENV?: string } }
 export function autorunOnReadyView(
   self: IAnyStateTreeNode,
   fn: (view: RegionHost) => boolean | void,
-  { name, delay }: { name: string; delay?: number },
+  {
+    name,
+    delay,
+    idleLeading,
+  }: { name: string; delay?: number; idleLeading?: boolean },
 ) {
   const body = () => {
     // The skeleton's rule, ported: liveness above the walk, because the walk
@@ -53,7 +57,7 @@ export function autorunOnReadyView(
   if (delay === undefined) {
     namedAutorun(self, body, { name })
   } else {
-    leadingEdgeAutorun(self, body, { name, delay })
+    leadingEdgeAutorun(self, body, { name, delay, idleLeading })
   }
 }
 

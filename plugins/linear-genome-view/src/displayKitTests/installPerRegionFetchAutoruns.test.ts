@@ -124,6 +124,28 @@ describe('FetchVisibleRegions fires on the viewport', () => {
     view.scrollTo(view.offsetPx + 5)
     expect(await quiet(display)).toBe(1)
   })
+
+  // A jump after the view has sat idle has nothing to coalesce with, so it
+  // fetches on the leading edge rather than 600 ms later
+  it('fetches a pan after the view sat idle without waiting out the debounce', async () => {
+    const { display, view } = setup()
+    await quiet(display)
+    view.scrollTo(view.offsetPx + view.width * 4)
+    await jest.advanceTimersByTimeAsync(50)
+    expect(display.fetchLog).toHaveLength(2)
+  })
+
+  it('still coalesces a pan that follows a fetch within the debounce', async () => {
+    const { display, view } = setup()
+    await quiet(display)
+    view.scrollTo(view.offsetPx + view.width * 4)
+    await jest.advanceTimersByTimeAsync(50)
+    expect(display.fetchLog).toHaveLength(2)
+    view.scrollTo(view.offsetPx + view.width * 4)
+    await jest.advanceTimersByTimeAsync(50)
+    expect(display.fetchLog).toHaveLength(2)
+    expect(await quiet(display)).toBe(3)
+  })
 })
 
 describe('the trigger list', () => {

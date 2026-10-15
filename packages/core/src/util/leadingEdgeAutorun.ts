@@ -7,6 +7,14 @@ export interface LeadingEdgeAutorunOptions {
   name: string
   /** how long to coalesce reruns once the body has started work once */
   delay: number
+  /**
+   * Run on the leading edge again once the last run that started work is at
+   * least `delay` old. A change that arrives after the autorun has sat idle,
+   * such as a jump to a new locus, has nothing to coalesce with, so waiting the
+   * delay out only adds latency. A change within `delay` of that work is
+   * coalesced as before.
+   */
+  idleLeading?: boolean
 }
 
 /**
@@ -44,20 +52,23 @@ export interface LeadingEdgeAutorunOptions {
 export function leadingEdgeAutorun(
   self: IAnyStateTreeNode,
   body: () => boolean | void,
-  { name, delay }: LeadingEdgeAutorunOptions,
+  { name, delay, idleLeading = false }: LeadingEdgeAutorunOptions,
 ) {
   let primed = false
+  let lastWork = Number.NEGATIVE_INFINITY
   return namedAutorun(
     self,
     () => {
       if (body()) {
         primed = true
+        lastWork = performance.now()
       }
     },
     {
       name,
       scheduler: run => {
-        if (primed) {
+        const idle = idleLeading && performance.now() - lastWork >= delay
+        if (primed && !idle) {
           setTimeout(run, delay)
         } else {
           queueMicrotask(run)
