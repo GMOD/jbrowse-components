@@ -2039,7 +2039,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         : undefined
     }
     const path = settingsPath(viewType, 'Identity fade')
-    return field === 'identity' && path && viewType !== 'DotplotView'
+    return field === 'identity' && path
       ? { path: `${path} → tick it` }
       : undefined
   },

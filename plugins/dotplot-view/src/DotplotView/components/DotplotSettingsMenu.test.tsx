@@ -184,6 +184,16 @@ function isTicked(name: string | RegExp) {
   return checkboxRow(name).getAttribute('aria-checked') === 'true'
 }
 
+test('Identity fade reads opacity from identity and back', async () => {
+  const view = await openMenu()
+  expect(isTicked('Identity fade')).toBe(false)
+  fireEvent.click(checkboxRow('Identity fade'))
+  expect(view.opacityField).toBe('identity')
+  expect(isTicked('Identity fade')).toBe(true)
+  fireEvent.click(checkboxRow('Identity fade'))
+  expect(view.opacityField).toBe('')
+}, 20000)
+
 // Asserted in both polarities, since a row rendering its glyph from a constant
 // passes either one alone.
 test.each([

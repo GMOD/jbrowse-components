@@ -3,6 +3,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import {
   SETTINGS_SURFACE_LABELS,
+  identityFadeMenuItem,
   lodMenuItems,
   minLengthMenuItem,
   opacityMenuItem,
@@ -37,6 +38,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
       tooltip={SETTINGS_SURFACE_LABELS.DotplotView}
       menuItems={() =>
         [
+          identityFadeMenuItem(model),
           toggleItem(
             'CIGAR indels',
             model.drawCigar,
