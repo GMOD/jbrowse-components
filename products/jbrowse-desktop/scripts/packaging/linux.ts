@@ -36,21 +36,16 @@ export async function buildLinux({ phase }: { phase: Phase }) {
     return electronAppDir
   }
 
-  log('Creating AppImage...')
   const { appImage: appImageName, manifest } = linuxArtifacts({
     appName: APP_NAME,
     version: VERSION,
   })
   const appImagePath = path.join(DIST, appImageName)
 
-  // Create AppDir structure
+  // the packaged tree becomes the AppDir; nothing reads it after this
   const appDir = path.join(DIST, `${APP_NAME}.AppDir`)
-  ensureDir(appDir)
-
-  if (!fs.existsSync(electronAppDir)) {
-    throw new Error(`Packaged app not found at ${electronAppDir}`)
-  }
-  fs.cpSync(electronAppDir, appDir, { recursive: true })
+  fs.rmSync(appDir, { recursive: true, force: true })
+  fs.renameSync(electronAppDir, appDir)
 
   // Rename executable for wrapper script
   const execPath = path.join(appDir, APP_NAME)
@@ -140,9 +135,7 @@ MimeType=${SESSION_MIME_TYPE};x-scheme-handler/${JBROWSE_PROTOCOL};
     env: { ...process.env, ARCH: 'x86_64' },
   })
 
-  // Cleanup
   fs.rmSync(appDir, { recursive: true })
-  fs.rmSync(electronAppDir, { recursive: true })
 
   fs.writeFileSync(path.join(DIST, manifest), generateLatestYml([appImageName]))
 
