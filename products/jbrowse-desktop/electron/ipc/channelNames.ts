@@ -3,7 +3,7 @@
 // this list is bundled into the preload, which runs in the renderer process.
 // The `import type` below is erased at build time, so it costs nothing here.
 
-import type { IpcChannels } from './channelTypes.ts'
+import type { IpcChannels, IpcPushChannels } from './channelTypes.ts'
 
 export const INVOKABLE_CHANNELS = [
   'quit',
@@ -62,3 +62,17 @@ type AssertNever<T extends never> = T
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _EveryChannelIsListed = AssertNever<UnlistedChannel>
+
+// The channels the main process pushes to the page. The renderer listens on all
+// three, and the close flush rides one of them, so a preload that relayed only
+// invokes would have stopped saving the session on close.
+export const PUSH_CHANNELS = [
+  'flushSessionForClose',
+  'openLaunchTarget',
+  'mcpRequest',
+] as const satisfies readonly (keyof IpcPushChannels)[]
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _EveryPushChannelIsListed = AssertNever<
+  Exclude<keyof IpcPushChannels, (typeof PUSH_CHANNELS)[number]>
+>

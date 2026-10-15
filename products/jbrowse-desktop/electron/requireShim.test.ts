@@ -1,10 +1,13 @@
 import { createRequireShim } from './requireShim.ts'
 
 const invoke = jest.fn().mockResolvedValue('ok')
-const requireShim = createRequireShim(invoke)
+const unsubscribe = jest.fn()
+const subscribe = jest.fn().mockReturnValue(unsubscribe)
+const requireShim = createRequireShim(invoke, subscribe)
 
 beforeEach(() => {
   invoke.mockClear()
+  subscribe.mockClear()
 })
 
 // the exact shape the Apollo plugin uses to open its OAuth window:
@@ -46,4 +49,21 @@ test('no node module is reachable, however it is asked for', () => {
 
 test('the refusal says where filesystem access does belong', () => {
   expect(() => requireShim('fs')).toThrow(/RPC worker/)
+})
+
+// the close flush is a push, so a bridge with only invoke would have stopped
+// saving the session on close
+test('a push channel subscribes and hands back its own unsubscribe', () => {
+  const { ipcRenderer } = requireShim('electron')
+  const listener = () => {}
+  expect(ipcRenderer.on('flushSessionForClose', listener)).toBe(unsubscribe)
+  expect(subscribe).toHaveBeenCalledWith('flushSessionForClose', listener)
+})
+
+test('an unlisted push channel is refused', () => {
+  const { ipcRenderer } = requireShim('electron')
+  expect(() => ipcRenderer.on('evilChannel', () => {})).toThrow(
+    'unknown channel',
+  )
+  expect(subscribe).not.toHaveBeenCalled()
 })
