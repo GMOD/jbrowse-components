@@ -301,10 +301,39 @@ function one<T>(v: unknown) {
 export const rangeReads = { bytes: 0 }
 
 /**
- * The size of each file the host last read whole: an index, or a file an
- * adapter parses whole, either of which the adapter keeps.
+ * The uncompressed size of each file the host last read whole: an index, or
+ * a file an adapter parses whole, either of which the adapter keeps.
  */
 export const wholeFileBytes = new Map<string, number>()
+
+/**
+ * The bytes `file` inflates to: the sum of its BGZF blocks' sizes, a plain
+ * gzip's last member size, or its own length if it is not gzip.
+ */
+export function inflatedSize(file: Uint8Array) {
+  const view = new DataView(file.buffer, file.byteOffset, file.byteLength)
+  const gzipAt = (at: number) =>
+    at + 18 <= file.length && file[at] === 0x1f && file[at + 1] === 0x8b
+  const bgzfAt = (at: number) =>
+    gzipAt(at) && file[at + 12] === 66 && file[at + 13] === 67
+  if (!gzipAt(0)) {
+    return file.length
+  }
+  if (!bgzfAt(0)) {
+    return view.getUint32(file.length - 4, true)
+  }
+  let total = 0
+  let at = 0
+  while (bgzfAt(at)) {
+    const next = at + view.getUint16(at + 16, true) + 1
+    if (next > file.length) {
+      break
+    }
+    total += view.getUint32(next - 4, true)
+    at = next
+  }
+  return total
+}
 
 function fetchFromHost(
   url: string,
@@ -317,7 +346,7 @@ function fetchFromHost(
   if (range) {
     rangeReads.bytes += bytes.length
   } else {
-    wholeFileBytes.set(url, bytes.length)
+    wholeFileBytes.set(url, inflatedSize(bytes))
   }
   return {
     status: one<number>(r.status),

@@ -1,5 +1,5 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { adapterAssemblyNames } from '@jbrowse/synteny-core'
 
 import BlastTabularAdapterF from './BlastTabularAdapter/index.ts'
@@ -80,10 +80,10 @@ export async function contigTables(
   { adapterConfig }: ContigTablesArgs,
 ) {
   const names = adapterAssemblyNames(adapterConfig)
-  const { dataAdapter } = await getAdapter(
+  const dataAdapter = await tablesAdapter(
     pluginManager,
-    'tables',
     adapterConfig,
+    undefined,
   )
   return {
     query: await sideContigs(dataAdapter, 0, names[0] ?? ''),

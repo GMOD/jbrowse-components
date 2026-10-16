@@ -1,12 +1,16 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import {
   TextDecoder as NodeTextDecoder,
   TextEncoder as NodeTextEncoder,
 } from 'node:util'
+import { gunzipSync, gzipSync } from 'node:zlib'
 
 import {
   TextDecoderShim,
   TextEncoderShim,
   fetchShim,
+  inflatedSize,
   installBareHostGlobals,
 } from './bareHost.ts'
 
@@ -83,4 +87,16 @@ test('a range past the end of the file answers 416, as a server does', async () 
   })
   expect(res.status).toBe(416)
   expect(res.headers.get('content-range')).toBe('bytes */10')
+})
+
+test('a file read whole weighs what it inflates to', () => {
+  const tbi = readFileSync(
+    path.resolve(
+      'test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi',
+    ),
+  )
+  const text = new TextEncoder().encode('ctgA\t1\n'.repeat(10_000))
+  expect(inflatedSize(tbi)).toBe(gunzipSync(tbi).length)
+  expect(inflatedSize(gzipSync(text))).toBe(text.length)
+  expect(inflatedSize(text)).toBe(text.length)
 })

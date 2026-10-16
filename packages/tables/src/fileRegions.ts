@@ -1,4 +1,4 @@
-import { adapterOf } from './assembly.ts'
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type { ResolvedAssembly } from './assembly.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -37,7 +37,7 @@ async function contigsOf(
   adapterConfig: Record<string, unknown>,
   sequenceAdapter: Record<string, unknown> | undefined,
 ): Promise<Contig[]> {
-  const dataAdapter = await adapterOf(
+  const dataAdapter = await tablesAdapter(
     pluginManager,
     adapterConfig,
     sequenceAdapter,

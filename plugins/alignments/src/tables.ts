@@ -19,7 +19,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { isSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -188,11 +188,11 @@ export async function referenceSequence(
     region: { refName: string; start: number; end: number }
   },
 ) {
-  const adapter = await getFeatureAdapterOrThrow({
+  const adapter = await tablesFeatureAdapter(
     pluginManager,
-    sessionId: 'tables',
-    adapterConfig: sequenceAdapter,
-  })
+    sequenceAdapter,
+    undefined,
+  )
   if (!isSequenceAdapter(adapter)) {
     throw new Error(`${String(sequenceAdapter.type)} serves no sequence`)
   }
@@ -1229,12 +1229,11 @@ export async function alignmentTables(
     new Error(
       `${where} ${several ? 'need' : 'needs'} ${bytes} bytes of alignments${inTotal}, over the ${byteLimit}-byte limit; read a smaller region or raise byteLimit`,
     )
-  const dataAdapter = await getFeatureAdapterOrThrow({
+  const dataAdapter = await tablesFeatureAdapter(
     pluginManager,
-    sessionId: 'tables',
     adapterConfig,
     sequenceAdapter,
-  })
+  )
   const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
   const bytes = await totalRegionBytes(dataAdapter, fetchRegions)
   if (overByteBudget(bytes, byteLimit)) {

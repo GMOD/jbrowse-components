@@ -38,7 +38,7 @@ every record, a record calling no genotype included:
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, regions, ids, }: { adapterConfig: Record<…>; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: { adapterConfig: Record<…>; sequenceAdapter?: Record<…> | undefined; regions: { refName: string; start: number; end: number; }[]; ids: readonly string[]; }) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)
@@ -67,7 +67,7 @@ draws them itself, such as R through V8. The adapters must be registered on
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<…>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, region, regions, display, byteLimit, }: VariantTablesArgs) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

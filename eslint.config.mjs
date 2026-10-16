@@ -1097,20 +1097,26 @@ export default defineConfig(
     },
   },
   {
-    files: ['packages/tables/src/**/*.ts'],
-    ignores: ['packages/tables/src/assembly.ts', '**/*.test.ts'],
+    files: ['packages/tables/src/**/*.ts', 'plugins/*/src/tables.ts'],
+    ignores: ['**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           paths: [
             noUseEffectEvent,
-            {
-              name: '@jbrowse/core/data_adapters/dataAdapterCache',
-              importNames: ['getAdapter'],
+            ...[
+              ['dataAdapterCache', ['getAdapter']],
+              [
+                'getFeatureAdapter',
+                ['getFeatureAdapter', 'getFeatureAdapterOrThrow'],
+              ],
+            ].map(([module, importNames]) => ({
+              name: `@jbrowse/core/data_adapters/${module}`,
+              importNames,
               message:
-                "Look adapters up with assembly.ts's adapterOf, which takes the sequence adapter: a BAM, SAM or CRAM looked up without it is a second instance with its own index.",
-            },
+                'Look adapters up with tablesAdapter or tablesFeatureAdapter (@jbrowse/core/data_adapters/getFeatureAdapter), which take the sequence adapter: a BAM, SAM or CRAM looked up without it is a second instance with its own index.',
+            })),
           ],
           patterns: [noSrcImport, noShaderTextImport],
         },

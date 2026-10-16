@@ -1,5 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { overByteBudget, totalRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
@@ -83,6 +83,8 @@ interface VariantRegion {
 
 export interface VariantTablesArgs {
   adapterConfig: Record<string, unknown>
+  /** The assembly's sequence adapter, which a reference-reading file is keyed on. */
+  sequenceAdapter?: Record<string, unknown>
   /** One region, read as `regions: [region]`. */
   region?: VariantRegion
   /**
@@ -153,6 +155,7 @@ export async function variantTables(
   pluginManager: PluginManager,
   {
     adapterConfig,
+    sequenceAdapter,
     region,
     regions = region ? [region] : [],
     display = {},
@@ -194,11 +197,11 @@ export async function variantTables(
     labels: readConfObject(conf.rows, 'labels'),
     kept: readConfObject(conf.rows, 'kept'),
   }
-  const adapter = await getFeatureAdapterOrThrow({
+  const adapter = await tablesFeatureAdapter(
     pluginManager,
-    sessionId: 'tables',
     adapterConfig,
-  })
+    sequenceAdapter,
+  )
   const fetchRegions = regions.map(r => ({ assemblyName: '', ...r }))
   const several = regions.length > 1
   const tooLarge = (bytes: number | undefined) =>
@@ -630,19 +633,21 @@ export async function variantRecordTables(
   pluginManager: PluginManager,
   {
     adapterConfig,
+    sequenceAdapter,
     regions,
     ids,
   }: {
     adapterConfig: Record<string, unknown>
+    sequenceAdapter?: Record<string, unknown>
     regions: { refName: string; start: number; end: number }[]
     ids: readonly string[]
   },
 ) {
-  const adapter = await getFeatureAdapterOrThrow({
+  const adapter = await tablesFeatureAdapter(
     pluginManager,
-    sessionId: 'tables',
     adapterConfig,
-  })
+    sequenceAdapter,
+  )
   const fetched = await fetchVariantFeatures(
     adapter,
     regions.map(r => ({ assemblyName: '', ...r })),

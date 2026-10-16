@@ -8,7 +8,7 @@ import {
   isRefNameAliasAdapter,
   isRegionsAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -30,21 +30,6 @@ export interface ResolvedAssembly {
   sequenceAdapter?: Record<string, unknown>
   regions: { refName: string; start: number; end: number }[]
   canonical: (name: string) => string
-}
-
-/**
- * The cached adapter for `config`, which every tables lookup goes through: a
- * reference-reading adapter (`READS_REFERENCE`) is keyed on its config and the
- * sequence adapter, so a lookup without the one the read uses builds a second
- * instance with its own index.
- */
-export async function adapterOf(
-  pluginManager: PluginManager,
-  config: Record<string, unknown>,
-  sequenceAdapter: Record<string, unknown> | undefined,
-) {
-  return (await getAdapter(pluginManager, 'tables', config, sequenceAdapter))
-    .dataAdapter
 }
 
 function aliasAdapterOf(sidecar: unknown) {
@@ -72,12 +57,12 @@ async function resolveAssembly(
   const aliasAdapter = aliasAdapterOf(expanded.refNameAliases)
   const [regions, aliases] = await Promise.all([
     sequenceAdapter
-      ? adapterOf(pluginManager, sequenceAdapter, undefined).then(a =>
+      ? tablesAdapter(pluginManager, sequenceAdapter, undefined).then(a =>
           isRegionsAdapter(a) ? a.getRegions({}) : [],
         )
       : [],
     aliasAdapter
-      ? adapterOf(pluginManager, aliasAdapter, undefined).then(a =>
+      ? tablesAdapter(pluginManager, aliasAdapter, undefined).then(a =>
           isRefNameAliasAdapter(a) ? a.getRefNameAliases({}) : [],
         )
       : [],
@@ -147,7 +132,11 @@ async function spellingIn(
   sequenceAdapter: Record<string, unknown> | undefined,
   { canonical }: ResolvedAssembly,
 ) {
-  const adapter = await adapterOf(pluginManager, adapterConfig, sequenceAdapter)
+  const adapter = await tablesAdapter(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
+  )
   const names: string[] =
     'getRefNames' in adapter ? await adapter.getRefNames() : []
   const listed = new Set(names)

@@ -1,5 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { tablesFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -965,21 +965,23 @@ export async function featureAttributeTables(
   pluginManager: PluginManager,
   {
     adapterConfig,
+    sequenceAdapter,
     regions,
     ids,
     subfeatureIds,
   }: {
     adapterConfig: Record<string, unknown>
+    sequenceAdapter?: Record<string, unknown>
     regions: TablesRegion[]
     ids: readonly string[]
     subfeatureIds: readonly string[]
   },
 ) {
-  const adapter = await getFeatureAdapterOrThrow({
+  const adapter = await tablesFeatureAdapter(
     pluginManager,
-    sessionId: 'tables',
     adapterConfig,
-  })
+    sequenceAdapter,
+  )
   const byId = new Map<string, Feature>()
   const walk = (feature: Feature) => {
     byId.set(feature.id(), feature)

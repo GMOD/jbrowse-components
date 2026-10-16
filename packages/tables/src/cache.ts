@@ -17,10 +17,10 @@ import type { UriLocation } from '@jbrowse/core/util/types'
 
 /**
  * What the engine keeps between calls, two bounds of this many bytes each:
- * the decoded records (BAM and CRAM records, tabix lines), and the indexes of
- * the adapters it keeps besides the last call's. A browser worker keeps 1 GiB
- * of records, sized for panning; a host such as R holds its own copy of each
- * table and rarely reads a region twice.
+ * the decoded records (BAM and CRAM records, tabix lines), and what the
+ * adapters it keeps parsed from the files they read whole. A browser worker
+ * keeps 1 GiB of records, sized for panning; a host such as R holds its own
+ * copy of each table and rarely reads a region twice.
  */
 export const DEFAULT_CACHE_LIMIT = 256 * 2 ** 20
 
@@ -33,25 +33,23 @@ export const MIN_ADAPTER_BYTES = 2 ** 20
 const CHUNK_CACHE_BYTES = MAX_CACHE_ENTRIES * CHUNK_SIZE
 
 /**
- * An estimate of what a parsed index holds per byte of its file, the most
- * measured with five contigs read (TABLES.md). Any other file counts its size.
+ * Estimates of what an adapter holds per uncompressed byte of a file it read
+ * whole (TABLES.md): about 4 for an index, about 10 for a file it parses into
+ * records, such as a plain VCF.
  */
-const RETAINED_PER_FILE_BYTE = new Map([
-  ['bai', 4],
-  ['csi', 5],
-  ['crai', 12],
-  ['tbi', 20],
-])
+const INDEX_HOLDS_PER_BYTE = 4
+const PARSED_HOLDS_PER_BYTE = 10
+const INDEX = /\.(bai|csi|crai|tbi)$/i
 
 export interface CacheUse {
-  /** the bound, in bytes, on decoded records and separately on indexes */
+  /** the bound, in bytes, on decoded records and separately on `parsed` */
   limit: number
   /** bytes of decoded records held */
   decoded: number
-  /** file bytes the chunk cache holds, at most its own 256 MiB cap */
+  /** at most the file bytes the chunk cache holds, under its 256 MiB cap */
   chunks: number
-  /** what the adapters held weigh, estimated from the files they read whole */
-  indexes: number
+  /** an estimate of what the adapters held parsed from files read whole */
+  parsed: number
   /** adapters held, one per file or sequence read */
   adapters: number
   /** assemblies resolved: each one's contigs and alias names */
@@ -87,9 +85,10 @@ function urlsIn(adapter: AnyDataAdapter) {
 }
 
 function retained(url: string) {
-  const extension = /\.([^./]+)$/.exec(url.replace(/[?#].*$/, ''))?.[1]
-  const perByte = RETAINED_PER_FILE_BYTE.get(extension?.toLowerCase() ?? '')
-  return (wholeFileBytes.get(url) ?? 0) * (perByte ?? 1)
+  const perByte = INDEX.test(url.replace(/[?#].*$/, ''))
+    ? INDEX_HOLDS_PER_BYTE
+    : PARSED_HOLDS_PER_BYTE
+  return (wholeFileBytes.get(url) ?? 0) * perByte
 }
 
 function weigh(adapter: AnyDataAdapter) {
@@ -101,27 +100,29 @@ function weigh(adapter: AnyDataAdapter) {
 }
 
 let limit = DEFAULT_CACHE_LIMIT
-let indexes = 0
+let parsed = 0
+let lastCall = 0
 
 const held = (): CacheUse => ({
   limit,
   decoded: decompressedBytesBudget.total,
   chunks: Math.min(rangeReads.bytes, CHUNK_CACHE_BYTES),
-  indexes,
+  parsed,
   adapters: cachedAdapterCount(),
   assemblies: resolvedAssemblies(),
 })
 
 /**
- * Keeps the adapters a call since request `since` used, then the most
- * recently requested others while their weight fits `limit`.
+ * Keeps the adapters the last call used, then each other adapter, most
+ * recently requested first, whose weight still fits under `limit` beside
+ * those kept.
  */
-async function trim(since = adapterRequests()) {
+async function trim() {
   const named = new Set<string>()
   let kept = 0
   await keepAdapters((adapter, lastRequest) => {
     const weight = weigh(adapter)
-    const keep = lastRequest > since || kept + weight <= limit
+    const keep = lastRequest > lastCall || kept + weight <= limit
     if (keep) {
       kept += weight
       for (const url of urlsIn(adapter)) {
@@ -130,7 +131,7 @@ async function trim(since = adapterRequests()) {
     }
     return keep
   })
-  indexes = kept
+  parsed = kept
   for (const url of wholeFileBytes.keys()) {
     if (!named.has(url)) {
       wholeFileBytes.delete(url)
@@ -154,7 +155,8 @@ const cache = {
     try {
       return await call()
     } finally {
-      await trim(since)
+      lastCall = since
+      await trim()
     }
   },
   async setLimit(bytes: number) {
@@ -168,7 +170,7 @@ const cache = {
     rangeReads.bytes = 0
     wholeFileBytes.clear()
     forgetAssemblies()
-    indexes = 0
+    parsed = 0
     return held()
   },
 }

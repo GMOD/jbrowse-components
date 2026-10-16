@@ -27,15 +27,21 @@ three bounds that share no space:
 - **Decoded records:** at most `limit`, 256 MiB unless set.
 - **Chunks:** the file bytes read in ranges, under the chunk cache's own cap of
   1000 chunks of 256 KiB.
-- **Adapters:** the ones the last call read, whatever they weigh, then the most
-  recently read others while their weight fits another `limit`. An adapter
-  weighs at least 1 MiB, and an estimate of what each file it read whole holds
-  once parsed: a BAI four times its size, a CSI five, a CRAI 12, a TBI 20.
+- **Adapters:** the ones the last call read stay whatever they weigh. Then each
+  other adapter, most recently read first, stays if its weight still fits under
+  `limit` beside those kept.
+- An adapter weighs at least 1 MiB, or an estimate of what it parsed from the
+  files it read whole: four times an index's uncompressed size, ten times any
+  other file's, such as a plain or gzipped VCF.
 - `engine.cache({ limit })` sets `limit` in bytes, `Infinity` for none, and
-  reports what the engine holds; `engine.clearCache()` empties it.
+  reports what the engine holds: `chunks` is at most what the chunk cache holds,
+  and `parsed` is the adapters' estimated weight. `engine.clearCache()` empties
+  every cache.
 - A call's own reads and tables come on top, which one wide read of a deep BAM
   takes to gigabytes. So does the memory of the wasm decompressors, which
   `limit` cannot lower.
+- R's V8 stops at a heap of about 1.4 GB, which whole-file adapters reach first:
+  a 24 MB plain VCF parses to about 220 MiB.
 - A host that never yields to its event loop keeps alive every object a
   `WeakRef` points to, the shared budget's evicted caches among them, so await a
   macrotask between calls. From R's V8 the engine frees them.

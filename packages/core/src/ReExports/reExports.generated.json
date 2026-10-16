@@ -1023,7 +1023,9 @@
       "package": "@jbrowse/core",
       "names": [
         "getFeatureAdapter",
-        "getFeatureAdapterOrThrow"
+        "getFeatureAdapterOrThrow",
+        "tablesAdapter",
+        "tablesFeatureAdapter"
       ],
       "worker": "real"
     },

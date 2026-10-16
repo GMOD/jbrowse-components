@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   alignmentTables,
   referenceSequence,
@@ -33,7 +34,7 @@ import {
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
 
-import { adapterOf, assemblyResolver, renameRegions } from './assembly.ts'
+import { assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { fileRegions } from './fileRegions.ts'
 
@@ -151,7 +152,7 @@ async function missingContigs(
     regions = region ? [region] : [],
   }: RegionArgs,
 ) {
-  const dataAdapter = await adapterOf(
+  const dataAdapter = await tablesAdapter(
     pluginManager,
     adapterConfig,
     sequenceAdapter,
@@ -197,6 +198,7 @@ async function featureAndRecordTables(
         }
       : await featureAttributeTables(pluginManager, {
           adapterConfig: args.adapterConfig,
+          sequenceAdapter: args.sequenceAdapter,
           regions,
           ids: features.features.id,
           subfeatureIds: features.subfeatures.id,
@@ -204,6 +206,7 @@ async function featureAndRecordTables(
     vcf: vcf
       ? await variantRecordTables(pluginManager, {
           adapterConfig: args.adapterConfig,
+          sequenceAdapter: args.sequenceAdapter,
           regions,
           ids: features.features.id,
         })
@@ -227,7 +230,7 @@ class TablesPlugin extends Plugin {
  * A plugin manager holding only the adapters the tables read through, and the
  * table functions over it. Each returns columns: one array per field, so a
  * host reads each table as a data frame. Each call leaves the caches, which
- * every engine in the process shares, within their budget (`cache`).
+ * every engine in the process shares, within their limit (`cache`).
  */
 export function createTablesEngine() {
   const pluginManager = new PluginManager([
@@ -356,8 +359,9 @@ export function createTablesEngine() {
       }
     }),
     /**
-     * What the caches hold, after setting their budget to `limit` bytes where
-     * given, `Infinity` for none: a smaller budget evicts at once.
+     * What the caches hold, after setting their limit to `limit` bytes where
+     * given, `Infinity` for none: a smaller limit evicts at once, keeping the
+     * adapters the last call read.
      */
     cache: async ({ limit }: { limit?: number } = {}) =>
       limit === undefined ? cache.held() : cache.setLimit(limit),

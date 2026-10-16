@@ -26,7 +26,7 @@ keys JBrowse gives a feature (`start`, `type`, ...) or decodes into its glyph
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, regions, ids, subfeatureIds, }: { adapterConfig: Record<string, unknown>; regions: TablesRegion[]; ids: readonly string[]; subfeatureIds: readonly string[]; }) => Promise<{ attributes: Record<string, unknown[]>; subfeatureAttributes: Record<string, unknown[]>; attributeFields: { key: string[]; type: string[]; number: string[]; description: string[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, subfeatureIds, }: { adapterConfig: Record<string, unknown>; sequenceAdapter?: Record<string, unknown> | undefined; regions: TablesRegion[]; ids: readonly string[]; subfeatureIds: readonly string[]; }) => Promise<{ attributes: Record<string, unknown[]>; subfeatureAttributes: Record<string, unknown[]>; attributeFields: { key: string[]; type: string[]; number: string[]; description: string[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/tables.ts)

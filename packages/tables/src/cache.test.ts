@@ -31,7 +31,7 @@ test('a read leaves what it decoded in the cache, and clearing empties it', asyn
     limit: DEFAULT_CACHE_LIMIT,
     decoded: 0,
     chunks: 0,
-    indexes: 0,
+    parsed: 0,
     adapters: 0,
     assemblies: 0,
   })
@@ -55,14 +55,17 @@ test('the decoded records stay within the limit, and use all of it', async () =>
   expect((await engine.cache({ limit: 0 })).decoded).toBeLessThanOrEqual(one)
 })
 
-test('the adapters the last call read stay, past any budget', async () => {
+test('the adapters the last call read stay, past any limit', async () => {
   await engine.cache({ limit: 0 })
   await engine.alignments(copy(0))
   const perCall = (await engine.cache()).adapters
   expect(perCall).toBeGreaterThan(0)
   await engine.variants(DOG_VCF)
   expect((await engine.cache()).adapters).toBe(1)
-  expect((await engine.cache({ limit: 0 })).adapters).toBe(0)
+  expect((await engine.cache({ limit: 0 })).adapters).toBe(1)
+  await engine.clearCache()
+  await engine.alignments(copy(0))
+  expect((await engine.cache({ limit: 0 })).adapters).toBe(perCall)
 })
 
 test('every engine shares one budget and one set of caches', async () => {

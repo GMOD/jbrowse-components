@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
+import { gzipSync } from 'node:zlib'
 
 import { parse } from 'acorn'
 
@@ -284,7 +285,7 @@ interface CacheUse {
   limit: number | null
   decoded: number
   chunks: number
-  indexes: number
+  parsed: number
   adapters: number
 }
 const cache = async (args = {}) =>
@@ -325,6 +326,14 @@ describe('a bare host under a budget', () => {
     },
   )
 
+  test('a BAM read as features through an assembly opens the file once', async () => {
+    const { adapterConfig, sequenceAdapter, region } = BAM
+    const assembly = { name: 'volvox', sequence: { adapter: sequenceAdapter } }
+    await jbrowse.features(JSON.stringify({ adapterConfig, region, assembly }))
+    expect((await cache()).adapters).toBe(2)
+    expect(new Set(wholeReads.values())).toEqual(new Set([1]))
+  })
+
   test('keeps the chunks it read under any limit', async () => {
     const { bamLocation, index } = BAM.adapterConfig
     await cache({ limit: 0 })
@@ -363,7 +372,29 @@ describe('a bare host under a budget', () => {
     expect(wholeReads.get(`${index.location.uri}?copy=0`)).toBe(1)
   })
 
-  test('weighs a tabix index by what its parse holds, not its file size', async () => {
+  test('weighs a gzipped file read whole by what it inflates to', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'tables-'))
+    const vcf = path.join(dir, 'whole.vcf.gz')
+    const records = Array.from(
+      { length: 40_000 },
+      (_, i) => `ctgA\t${i + 1}\t.\tA\tG\t50\tPASS\tNOTE=${'x'.repeat(200)}\n`,
+    )
+    const text = `##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n${records.join('')}`
+    writeFileSync(vcf, gzipSync(text))
+    expect(statSync(vcf).size * 10).toBeLessThan(text.length)
+    await jbrowse.features(
+      JSON.stringify({
+        adapterConfig: {
+          type: 'VcfAdapter',
+          vcfLocation: { uri: pathToFileURL(vcf).href },
+        },
+        region: { refName: 'ctgA', start: 0, end: 100 },
+      }),
+    )
+    expect((await cache()).parsed).toBeGreaterThanOrEqual(text.length)
+  })
+
+  test('weighs a tabix index by what it inflates to, not its file size', async () => {
     const vcf = (file: string) =>
       pathToFileURL(path.resolve('test_data/breakpoint', file)).href
     const tbi = vcf('hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi')
@@ -405,7 +436,7 @@ describe('a bare host under a budget', () => {
     })
     await cache({ limit: size + MIN_ADAPTER_BYTES / 2 })
     await jbrowse.features(features)
-    expect((await cache()).indexes).toBeGreaterThanOrEqual(size)
+    expect((await cache()).parsed).toBeGreaterThanOrEqual(size)
     await jbrowse.alignments(JSON.stringify(BAM))
     await jbrowse.features(features)
     expect(wholeReads.get(uri)).toBe(2)
@@ -419,7 +450,7 @@ describe('a bare host under a budget', () => {
       limit: 64 * 2 ** 20,
       decoded: 0,
       chunks: 0,
-      indexes: 0,
+      parsed: 0,
       adapters: 0,
       assemblies: 0,
     })

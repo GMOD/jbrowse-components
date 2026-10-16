@@ -51,3 +51,36 @@ export async function getFeatureAdapterOrThrow(
   }
   return dataAdapter
 }
+
+/**
+ * The cached adapter a `@jbrowse/tables` read uses, which every tables
+ * lookup goes through. A `READS_REFERENCE` adapter is keyed on its
+ * config and `sequenceAdapter`, so a lookup without the one the read uses
+ * builds a second instance with its own index.
+ */
+export async function tablesAdapter(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  return (
+    await getAdapter(pluginManager, 'tables', adapterConfig, sequenceAdapter)
+  ).dataAdapter
+}
+
+/** {@link tablesAdapter}, refusing an adapter that serves no features. */
+export async function tablesFeatureAdapter(
+  pluginManager: PluginManager,
+  adapterConfig: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
+) {
+  const adapter = await tablesAdapter(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
+  )
+  if (!isFeatureAdapter(adapter)) {
+    throw new Error(`adapter "${adapterConfig.type}" is not a feature adapter`)
+  }
+  return adapter
+}
