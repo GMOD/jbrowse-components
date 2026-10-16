@@ -636,7 +636,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
-    viewportHeight: 895,
+    viewportHeight: 990,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK, TRUTH_SET_TRACK],
