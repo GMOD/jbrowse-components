@@ -45,16 +45,20 @@ interface AdapterCacheEntry {
 
 // Pruned by storeWithEvict (rejections) and by freeAdapterResources, which the
 // CoreFreeResources RPC reaches when the last track holding an adapter config is
-// closed (releaseAdapterSession). There is still no size bound: an adapter
-// whose track stays open lives as long as its worker, by design.
-let adapterCache: Record<string, Promise<AdapterCacheEntry>> = {}
+// closed (releaseAdapterSession). The browser sets no size bound: an adapter
+// whose track stays open lives as long as its worker, by design. A host with no
+// tracks to close bounds it with keepRecentAdapters. Ordered least recently
+// requested first.
+let adapterCache = new Map<string, Promise<AdapterCacheEntry>>()
 
 /** stores a promise in the cache and auto-evicts if it rejects */
 function storeWithEvict(key: string, p: Promise<AdapterCacheEntry>) {
   p.catch(() => {
-    delete adapterCache[key]
+    if (adapterCache.get(key) === p) {
+      adapterCache.delete(key)
+    }
   })
-  adapterCache[key] = p
+  adapterCache.set(key, p)
   return p
 }
 
@@ -117,17 +121,20 @@ function getOrCreateEntry(
   const cacheKey = keyedSequence
     ? `${configKey}|${adapterConfigCacheKey(keyedSequence)}`
     : configKey
-  return (
-    adapterCache[cacheKey] ??
-    storeWithEvict(
-      cacheKey,
-      getAdapterPre(
-        pluginManager,
-        sessionId,
-        adapterConfigSnapshot,
-        keyedSequence,
-      ),
-    )
+  const cached = adapterCache.get(cacheKey)
+  if (cached) {
+    adapterCache.delete(cacheKey)
+    adapterCache.set(cacheKey, cached)
+    return cached
+  }
+  return storeWithEvict(
+    cacheKey,
+    getAdapterPre(
+      pluginManager,
+      sessionId,
+      adapterConfigSnapshot,
+      keyedSequence,
+    ),
   )
 }
 
@@ -191,12 +198,12 @@ export async function freeAdapterResources(args: { sessionId?: string }) {
   if (!sessionId) {
     return
   }
-  for (const [cacheKey, cacheEntryP] of Object.entries(adapterCache)) {
+  for (const [cacheKey, cacheEntryP] of [...adapterCache]) {
     try {
       const cacheEntry = await cacheEntryP
       cacheEntry.sessionIds.delete(sessionId)
       if (cacheEntry.sessionIds.size === 0) {
-        delete adapterCache[cacheKey]
+        evict(cacheKey, cacheEntryP)
         cacheEntry.dataAdapter.freeResources()
       }
     } catch (e) {
@@ -204,11 +211,43 @@ export async function freeAdapterResources(args: { sessionId?: string }) {
         `dataAdapterCache: evicting failed adapter "${cacheKey}"`,
         e,
       )
-      delete adapterCache[cacheKey]
+      evict(cacheKey, cacheEntryP)
     }
   }
 }
 
+function evict(cacheKey: string, entry: Promise<AdapterCacheEntry>) {
+  if (adapterCache.get(cacheKey) === entry) {
+    adapterCache.delete(cacheKey)
+  }
+}
+
+/**
+ * Evict every cached adapter but the `count` most recently requested, each
+ * told to free what it holds, whatever sessions claim it. For a host with no
+ * tracks to close, such as `@jbrowse/tables`, which would otherwise keep an
+ * adapter, its parsed index and its share of the decoded-bytes budget for
+ * every file it ever read.
+ */
+export async function keepRecentAdapters(count: number) {
+  const stale = [...adapterCache].slice(
+    0,
+    Math.max(0, adapterCache.size - count),
+  )
+  for (const [cacheKey, entry] of stale) {
+    evict(cacheKey, entry)
+  }
+  for (const [, entry] of stale) {
+    const evicted = await entry.catch(() => undefined)
+    evicted?.dataAdapter.freeResources()
+  }
+}
+
+/** How many adapters the cache holds, failed and pending ones included. */
+export function cachedAdapterCount() {
+  return adapterCache.size
+}
+
 export function clearAdapterCache() {
-  adapterCache = {}
+  adapterCache = new Map()
 }
