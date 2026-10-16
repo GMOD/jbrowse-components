@@ -22,7 +22,6 @@ import {
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
-import { withPreset } from '@jbrowse/core/util/colorScale'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
@@ -31,10 +30,6 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import {
-  colorEncodingOf,
-  colorSnapshotOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -69,7 +64,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import {
   identityColorScale,
-  identityLut,
   identityOver,
 } from '../LinearMafRenderer/identity.ts'
 import {
@@ -95,11 +89,11 @@ import { conservationTicks } from './components/conservationBand.ts'
 import {
   perRowChromRanks,
   sourceChromLegendItems,
-  sourceChromRankColors,
 } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { findRowSpans } from './components/findRowSpan.ts'
 import { summaryAt } from './components/summarySpans.ts'
+import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import {
   EMPTY_MAF_COVERAGE,
   createRowsSourceJoin,
@@ -139,7 +133,6 @@ import type { HoverBp } from './components/findRowHover.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
-import type { ConservationMode } from './conservationModes.ts'
 import type {
   IdentityEncoding,
   MafRowsEncodeProps,
@@ -154,16 +147,11 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { UriLocation } from '@jbrowse/core/util'
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
-import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
   CoarseTierResult,
 } from '@jbrowse/display-kit/coarseTier'
-import type {
-  ColorSetting,
-  FieldColorEncoding,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -404,199 +392,10 @@ export default function stateModelFactory(
             ),
           }
         },
-        /**
-         * #getter
-         */
-        get rowProportion(): number {
-          return getConf(self, 'rowProportion')
-        },
-        /**
-         * #getter
-         */
-        get showAllLetters(): boolean {
-          return getConf(self, 'showAllLetters')
-        },
-        /**
-         * #getter
-         */
-        get showAsUpperCase(): boolean {
-          return getConf(self, 'showAsUpperCase')
-        },
-        /**
-         * #getter
-         */
-        get showCoverage(): boolean {
-          return getConf(self, 'showCoverage')
-        },
-        /**
-         * #getter
-         */
-        get showAlignments(): boolean {
-          return getConf(self, 'showAlignments')
-        },
-        /**
-         * #getter
-         */
-        get coverageHeight(): number {
-          return getConf(self, 'coverageHeight')
-        },
-        /**
-         * #getter
-         */
-        get coverageSnpMinFrequency(): number {
-          return getConf(self, 'coverageSnpMinFrequency')
-        },
-        /**
-         * #getter
-         */
-        get showInterbaseIndicators(): boolean {
-          return getConf(self, 'showInterbaseIndicators')
-        },
-        /**
-         * #getter
-         */
-        get showConservation(): boolean {
-          return getConf(self, 'showConservation')
-        },
-        /**
-         * #getter
-         */
-        get conservationHeight(): number {
-          return getConf(self, 'conservationHeight')
-        },
-        /**
-         * #getter
-         */
-        get conservationMode(): ConservationMode {
-          return getConf(self, 'conservationMode')
-        },
-        /**
-         * #getter
-         */
-        get colorField(): MafColorField {
-          return getConf(self, ['color', 'field'])
-        },
-        /**
-         * #getter
-         * The `color` object as written, with the key's labels and title.
-         */
-        get colorSetting(): ColorSetting & { value: undefined } {
-          const { color } = self.configuration
-          return {
-            ...colorSnapshotOf(color),
-            value: undefined,
-            scale: undefined,
-          }
-        },
-        /**
-         * #getter
-         * The `color` object as it paints, through its field's preset: one
-         * scale per field, so `scale` is never written.
-         */
-        get colorEncoding(): FieldColorEncoding {
-          return colorEncodingOf(this.colorSetting, MAF_FIELD_PRESETS)!
-        },
-        /**
-         * #getter
-         * The key's heading: the written `title`, else the field's own.
-         */
-        get colorKeyTitle(): string {
-          return withPreset(this.colorSetting, MAF_FIELD_PRESETS).title ?? ''
-        },
-        /**
-         * #getter
-         * The identity ramp's packed color at each hundredth, the default
-         * ramp unless `color` is identity. One array per ramp, so a color
-         * edit that leaves the ramp alone re-encodes nothing.
-         */
-        get identityColors(): Uint32Array {
-          const color = this.colorEncoding
-          return identityLut(
-            color.field === 'identity' && color.scale === 'linear'
-              ? color
-              : undefined,
-          )
-        },
-        /**
-         * #getter
-         * The named ramp identity paints along, the preset's where `color`
-         * writes none or is not identity, and none while a written `range`
-         * paints instead.
-         */
-        get colorScheme(): ColorSchemeName | undefined {
-          const color = this.colorEncoding
-          return color.field !== 'identity' || color.scale !== 'linear'
-            ? MAF_FIELD_PRESETS.identity.scheme
-            : color.range?.length
-              ? undefined
-              : (color.scheme ?? MAF_FIELD_PRESETS.identity.scheme)
-        },
-        /**
-         * #getter
-         * Each source chromosome rank's packed color, `color.range`'s while
-         * `color` is chromosome. One array per range, as `identityColors`.
-         */
-        get sourceChromColors(): readonly number[] {
-          const color = this.colorEncoding
-          return sourceChromRankColors(
-            color.field === 'chromosome' && color.scale === 'categorical'
-              ? color.range
-              : undefined,
-          )
-        },
-        /**
-         * #getter
-         */
-        get yField(): MafYField | undefined {
-          return getConf(self, 'y')
-        },
-        /**
-         * #getter
-         */
-        get rowIdentityAutoZoom(): boolean {
-          return getConf(self, 'rowIdentityAutoZoom')
-        },
-        /**
-         * #getter
-         */
-        get showAnnotations(): boolean {
-          return getConf(self, 'showAnnotations')
-        },
-        /**
-         * #getter
-         */
-        get showInversions(): boolean {
-          return getConf(self, 'showInversions')
-        },
-        /**
-         * #getter
-         */
-        get showReferenceRow(): boolean {
-          return getConf(self, 'showReferenceRow')
-        },
       }))
+      .views(configSlotViews)
+      .actions(configSlotActions)
       .actions(self => ({
-        /**
-         * #action
-         */
-        setRowProportion(n: number) {
-          setConf(self, 'rowProportion', n)
-        },
-        /**
-         * #action
-         */
-        setShowAllLetters(f: boolean) {
-          setConf(self, 'showAllLetters', f)
-        },
-        /**
-         * #action
-         * Paint identity along a named ramp, clearing a written `range`, which
-         * would win over it.
-         */
-        setColorScheme(scheme: ColorSchemeName) {
-          setConf(self, ['color', 'scheme'], scheme)
-          setConf(self, ['color', 'range'], [])
-        },
         /**
          * #action
          * Receive the worker's `samples` and serialized Newick tree.
@@ -634,78 +433,6 @@ export default function stateModelFactory(
             self.treeNewickVolatile = treeNewick
           }
           self.speciesListed = samplesCanonical
-        },
-        /**
-         * #action
-         */
-        setShowAsUpperCase(arg: boolean) {
-          setConf(self, 'showAsUpperCase', arg)
-        },
-        /**
-         * #action
-         */
-        setShowCoverage(arg: boolean) {
-          setConf(self, 'showCoverage', arg)
-        },
-        /**
-         * #action
-         */
-        setCoverageSnpMinFrequency(fraction: number) {
-          setConf(self, 'coverageSnpMinFrequency', fraction)
-        },
-        /**
-         * #action
-         */
-        setShowInterbaseIndicators(arg: boolean) {
-          setConf(self, 'showInterbaseIndicators', arg)
-        },
-        /**
-         * #action
-         */
-        setShowAlignments(arg: boolean) {
-          setConf(self, 'showAlignments', arg)
-        },
-        /**
-         * #action
-         */
-        setShowConservation(arg: boolean) {
-          setConf(self, 'showConservation', arg)
-        },
-        /**
-         * #action
-         */
-        setConservationMode(arg: ConservationMode) {
-          setConf(self, 'conservationMode', arg)
-        },
-        /**
-         * #action
-         */
-        setYField(field: MafYField | undefined) {
-          setConf(self, 'y', field)
-        },
-        /**
-         * #action
-         */
-        setRowIdentityAutoZoom(arg: boolean) {
-          setConf(self, 'rowIdentityAutoZoom', arg)
-        },
-        /**
-         * #action
-         */
-        setShowAnnotations(arg: boolean) {
-          setConf(self, 'showAnnotations', arg)
-        },
-        /**
-         * #action
-         */
-        setShowInversions(arg: boolean) {
-          setConf(self, 'showInversions', arg)
-        },
-        /**
-         * #action
-         */
-        setShowReferenceRow(arg: boolean) {
-          setConf(self, 'showReferenceRow', arg)
         },
       }))
       .views(self => ({
