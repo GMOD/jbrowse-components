@@ -46,8 +46,7 @@ const ScoreLabel = observer(function ScoreLabel({
 
 // DisplayChrome supplies the display's box, its loading scrim, error bar and
 // region-too-large banner, and WebGL/WebGPU context-loss recovery. Its render
-// prop hands back the canvasRef to attach to the <canvas>, and holds only
-// components: a model read written inline there re-renders the chrome.
+// prop hands back the canvasRef to attach to the <canvas>.
 const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
   model,
 }: {
