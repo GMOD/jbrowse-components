@@ -150,6 +150,12 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/dtu)
 - [](/docs/tutorials/tp53_structures)
 
+#### Variants on protein structures
+
+- [](/docs/tutorials/protein_variants_sickle_cell)
+- [](/docs/tutorials/protein_variants_dog_myelopathy)
+- [](/docs/tutorials/protein_variants_seedless_grape)
+
 ### Genes & annotation
 
 - [](/docs/tutorials/gene_prediction_review)
