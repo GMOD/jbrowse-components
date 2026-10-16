@@ -1,0 +1,191 @@
+{
+  "name": "SOD1 on canFam4",
+  "views": [
+    {
+      "id": "lgv-SOD1",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": true,
+      "init": {
+        "assembly": "canFam4",
+        "loc": "chr31:27123013-27123103",
+        "tracks": ["canFam4-ncbiRefSeqCurated"]
+      }
+    },
+    {
+      "id": "msa-SOD1",
+      "type": "MsaView",
+      "connectedViewId": "lgv-SOD1",
+      "connectedFeature": {
+        "uniqueId": "NM_001003035.1",
+        "type": "mRNA",
+        "refName": "chr31",
+        "start": 27118834,
+        "end": 27126931,
+        "strand": 1,
+        "name": "NM_001003035.1",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 27118834,
+            "end": 27118906,
+            "strand": 1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 27123011,
+            "end": 27123105,
+            "strand": 1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 27124754,
+            "end": 27124824,
+            "strand": 1,
+            "phase": 2
+          },
+          {
+            "type": "CDS",
+            "start": 27125647,
+            "end": 27125696,
+            "strand": 1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 27125697,
+            "end": 27125766,
+            "strand": 1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 27126823,
+            "end": 27126931,
+            "strand": 1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "Q8WNN6",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 9615,
+        "geneCandidates": ["SOD1", "403559"],
+        "source": "ncbi",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MEMKAVCVLKGQGPVEGTIHFVQKGSGPVVVSGTITGLTEGEHGFHVHQFEDXTQGCTSAGPHFNPLSKKHGGPKDQERHVGDLGNVTAGKDGVAIVSIEDSLIALSGDYSIIGRTMVVHEKRDDLGKGDNEESTQTGNAGSRLACGVIGIAQ"
+      }
+    },
+    {
+      "id": "protein-SOD1-7wx0",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "7wx0",
+          "feature": {
+            "uniqueId": "NM_001003035.1",
+            "type": "mRNA",
+            "refName": "chr31",
+            "start": 27118834,
+            "end": 27126931,
+            "strand": 1,
+            "name": "NM_001003035.1",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 27118834,
+                "end": 27118906,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 27123011,
+                "end": 27123105,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 27124754,
+                "end": 27124824,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 27125647,
+                "end": 27125696,
+                "strand": 1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 27125697,
+                "end": 27125766,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 27126823,
+                "end": 27126931,
+                "strand": 1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MEMKAVCVLKGQGPVEGTIHFVQKGSGPVVVSGTITGLTEGEHGFHVHQFEDXTQGCTSAGPHFNPLSKKHGGPKDQERHVGDLGNVTAGKDGVAIVSIEDSLIALSGDYSIIGRTMVVHEKRDDLGKGDNEESTQTGNAGSRLACGVIGIAQ",
+          "connectedViewId": "lgv-SOD1",
+          "initialTranscriptResidues": [
+            {
+              "start": 40,
+              "end": 40
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-SOD1", "msa-SOD1"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-SOD1-7wx0"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}

@@ -13,6 +13,11 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 //   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 134 GWAS Catalog rows.
 //   1000 Genomes AF_AFR 0.100, AF_AMR 0.005, EUR/EAS/SAS 0. rs713040
 //   (chr11:5,227,013, His3, synonymous) 0.50-0.88 in every superpopulation.
+//   SOD1 E40K chr31:27,123,057 G>A (canFam4), codon 40 GAA>AAA. Dog10K: 198
+//   carriers of 1,987; wolves 0/126 and coyotes 0/8 chromosomes, breed dogs
+//   184/3186, village dogs 34/618. chr31:27,122,819 C>T is alternate in 0.96 of
+//   wolf, 0.79 of breed and 0.92 of village dog chromosomes. NCBI orthologs at
+//   residue 40: Glu in mammals, Asp in birds, Pro in fish, Lys in axolotl.
 
 interface ViewJson {
   init?: object
@@ -144,6 +149,32 @@ const HBB_STRUCTURE = structureCallout(
   'Val6 in magenta: 2HBS is the sickle protein itself',
 )
 
+const SOD1_SESSION = readSession('sod1_canfam4.session.json')
+const SOD1_GENES = 'canFam4-ncbiRefSeqCurated'
+const DOG10K = 'dog10k_sod1'
+const DOG10K_TRACK = pageTrack(
+  'tutorials/protein_variants_dog_myelopathy.md',
+  DOG10K,
+)
+const SOD1_CODON = 'chr31:27123013-27123103'
+const SOD1_E40K = 'chr31:27,123,058'
+const SOD1_CONTROL = 'chr31:27,122,819'
+const SOD1_GENE_TRACK = { trackId: SOD1_GENES, height: 60 }
+
+function sod1Session(options: SessionOptions) {
+  const session = structuredClone(SOD1_SESSION)
+  const [, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
+  msa.orthologParams = { ...(msa.orthologParams as object), maxSpecies: 30 }
+  protein.colorScheme = 'mapped-chain'
+  return linkedSession(
+    session,
+    'https://jbrowse.org/ucsc/canFam4/config.json',
+    'SOD1 orthologs',
+    { row: 'dog_query', start: 25, end: 55 },
+    options,
+  )
+}
+
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -212,6 +243,59 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dy: 40,
       },
       HBB_STRUCTURE,
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/sod1_codon_hover',
+    url: sod1Session({ loc: SOD1_CODON, tracks: [SOD1_GENE_TRACK] }),
+    ...READY,
+    actions: hoverAlignment({ dy: 88 }),
+    annotations: [
+      codonCallout('Codon 40, GAA on the transcript', SOD1_GENES, SOD1_E40K),
+      structureCallout(
+        'Lys40 outlined in pink: 7WX0 is the E40K protein itself',
+      ),
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/sod1_dog10k',
+    url: sod1Session({
+      loc: `chr31:27122805-27122834 ${SOD1_CODON}`,
+      tracks: [
+        SOD1_GENE_TRACK,
+        {
+          trackId: DOG10K,
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 640,
+        },
+      ],
+      sessionTracks: [DOG10K_TRACK],
+      msaHeight: 300,
+    }),
+    ...READY,
+    viewportHeight: 1300,
+    actions: RESET_ZOOM,
+    annotations: [
+      {
+        type: 'text',
+        text: 'E40K: no wolf or coyote carries it',
+        fontSize: 18,
+        leader: true,
+        anchor: { trackId: DOG10K, loc: SOD1_E40K, fracY: 0.02 },
+        dx: -80,
+        dy: 170,
+      },
+      {
+        type: 'text',
+        text: 'Intronic SNV, in every category',
+        fontSize: 18,
+        leader: true,
+        anchor: { trackId: DOG10K, loc: SOD1_CONTROL, fracY: 0.5 },
+        dx: 120,
+        dy: 0,
+      },
     ],
   },
 ]

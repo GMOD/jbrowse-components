@@ -321,6 +321,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.6, 0.98],
     position: 'center',
   },
+  protein_variants_dog_myelopathy: {
+    src: 'protein/sod1_dog10k.png',
+    band: [0.2, 0.7],
+    xband: [0.62, 0.98],
+    position: 'center',
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',

@@ -150,6 +150,7 @@ export const TUTORIAL_ORDER = [
   'dtu',
   'tp53_structures',
   'protein_variants_sickle_cell',
+  'protein_variants_dog_myelopathy',
   'gene_prediction_review',
   'gene_density',
   'organelle_map',
