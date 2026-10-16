@@ -102,7 +102,7 @@ awk 'BEGIN{OFS="\t"} NR>1 {print $2,$6,$7}' samples_ped_population.txt \
 
 Add the callset as a track, with a hosted copy of that sheet:
 
-```json addtrack
+```json addtrack loc=chr11:5226956-5227046
 {
   "type": "VariantTrack",
   "trackId": "kgp3202_chr11_snv",
