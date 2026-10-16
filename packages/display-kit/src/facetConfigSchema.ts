@@ -44,7 +44,8 @@ export const facetConfigSchema = ConfigurationSchema(
      * The feature field each value of which packs its own labelled section
      * of the track: a field name, a dotted path into a structured field
      * (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or
-     * `strand`. A feature with no value stacks last, under `field: none`.
+     * `strand`. A feature with no value stacks last, under `field: none`
+     * (`(no value)` for a `jexl:` field, whose sections show the value alone).
      * The multi-sample variant displays read a sample attribute instead, and
      * the multi-row display `group`, its `rowGroups`.
      * The alignments displays also take a read dimension here:

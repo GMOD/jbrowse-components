@@ -75,6 +75,13 @@ test('any other field names a key as itself in a legend and field: key on a chip
   expect(hp.sectionLabel('')).toBe('HP: none')
 })
 
+test('a jexl: field names a section by its value alone', () => {
+  const bins = categoricalField("jexl:get(feature,'AF') > 0.5 ? 'high' : 'low'")
+  expect(bins.sectionLabel('high')).toBe('high')
+  expect(bins.sectionLabel('')).toBe(NO_VALUE_LABEL)
+  expect(categoricalField(' jexl:x').sectionLabel('a')).toBe(' jexl:x: a')
+})
+
 test('the empty key sorts after every value and paints the no-category grey', () => {
   const field = categoricalField('biotype', { domain: ['snoRNA'] })
   expect(['', 'lncRNA', 'snoRNA'].sort(field.compare)).toEqual([

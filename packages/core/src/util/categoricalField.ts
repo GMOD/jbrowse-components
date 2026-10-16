@@ -2,6 +2,7 @@ import { categoricalColorScale } from '../ui/colors.ts'
 import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { universalPresetOf } from './colorScale.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
+import { isJexl } from './jexlStrings.ts'
 
 import type { CategoricalScale, HeldSlots } from '../ui/colors.ts'
 
@@ -107,6 +108,9 @@ export function categoricalField(
   const declared = keyNames(order, labels)
   const own = vocabulary && keyNames(ownOrder, vocabulary.labels)
   const named = (key: string) => declared.get(key) ?? own?.get(key)
+  const label = (key: string) =>
+    named(key) ?? (key === '' ? NO_VALUE_LABEL : key)
+  const jexlField = isJexl(field)
   let colorOf: CategoricalScale<string> | undefined
   return {
     field,
@@ -116,8 +120,11 @@ export function categoricalField(
       return key === '' ? (vocabulary?.missing ?? key) : key
     },
     compare: groupKeyComparator(order),
-    label: key => named(key) ?? (key === '' ? NO_VALUE_LABEL : key),
-    sectionLabel: key => named(key) ?? `${field}: ${key === '' ? 'none' : key}`,
+    label,
+    sectionLabel: key =>
+      jexlField
+        ? label(key)
+        : (named(key) ?? `${field}: ${key === '' ? 'none' : key}`),
     color: key => {
       if (key === '') {
         return NO_CATEGORY_COLOR
