@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { autorun } from 'mobx'
@@ -161,13 +162,9 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
       onClick={event => {
         // Click a cell to make its row SNP focal, empty space to clear.
         // Hit-tested from the click, since the hover can be a frame stale.
-        const rect = event.currentTarget.getBoundingClientRect()
         if (!model.isLoadingOrCanceled) {
-          const item = model.hitTest(
-            event.clientX - rect.left,
-            event.clientY - rect.top,
-          )
-          model.setFocalSnp(item?.snp1)
+          const { x, y } = eventPoint(event)
+          model.setFocalSnp(model.hitTest(x, y)?.snp1)
         }
       }}
     >
