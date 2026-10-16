@@ -15,8 +15,6 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
-import { levelColor } from '../shared/alignmentsColor.ts'
-import { isReadLevelScheme } from '../shared/readFieldLevels.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
 import {
   mapqExtentAcrossGroups,
@@ -178,16 +176,6 @@ export function bakedColorScale(
     scaled?.scale === 'categorical'
       ? withoutNoValue(scaled.domain?.map(String) ?? [], scaled.range)
       : { domain: [], range: undefined }
-  const { type } = colorBy
-  if (isReadLevelScheme(type) && !range?.length) {
-    const own = categoricalColorScale(domain, tagColorPalette)
-    return {
-      kind: 'categorical',
-      declared: true,
-      domain,
-      color: value => levelColor(type, value) ?? own(value),
-    }
-  }
   if (domain.length > 0 || range?.length) {
     return {
       kind: 'categorical',

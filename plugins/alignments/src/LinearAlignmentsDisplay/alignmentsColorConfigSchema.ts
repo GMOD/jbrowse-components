@@ -23,12 +23,10 @@ import {
  * field each read carries. A read dimension paints its own vocabulary
  * (`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
  * `insertSizeAndOrientation`, `mateRefName`) or bins (`mapq`, the four a
- * facet over it stacks). `split`, `spliced`, `pairing` and `svSignal` paint
- * the levels a facet over them sections by, leaving the unsplit, unspliced,
- * concordant or no-evidence reads the plain fill. `tags.XX` reads a SAM tag,
- * and any other name reads the read as a facet over it does: `mateAssembly`,
- * a feature attribute, a dotted path into one or a `jexl:` expression. A
- * string is the constant.
+ * facet over it stacks), `tags.XX` reads a SAM tag, and any other name reads
+ * the read as a facet over it does: the facet's own `split`, `spliced`,
+ * `pairing` and `mateAssembly`, a feature attribute, a dotted path into one
+ * or a `jexl:` expression. A string is the constant.
  * The per-base layer over the reads is
  * [AlignmentsBaseColor](../alignmentsbasecolor).
  *
@@ -80,7 +78,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       scaleName: 'AlignmentsColorScale',
       fieldType: 'string',
       field:
-        'field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; split, spliced, pairing and svSignal paint their levels over the plain fill; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression',
+        'field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: split, spliced, pairing, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
       scale:
         'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field',
     }),

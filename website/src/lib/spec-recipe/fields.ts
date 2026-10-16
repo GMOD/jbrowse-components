@@ -188,9 +188,6 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
     return undefined
   }
   const { menu } = COLOR_SCHEMES[colorBy.type]
-  if (menu.kind === 'whileActive') {
-    return undefined
-  }
   const path = [
     TRACK_MENU,
     'Color by...',

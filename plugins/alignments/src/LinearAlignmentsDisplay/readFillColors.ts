@@ -2,8 +2,6 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
-import { isReadLevelScheme } from '../shared/readFieldLevels.ts'
-import { bakeReadLevels } from '../shared/readLevels.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
@@ -145,11 +143,7 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
     return (data: WorkerPileupData) => applyMapqTable(data, table)
   }
   const resolve = makeColorResolver(colorBy, scale)
-  const { type } = colorBy
-  return isReadLevelScheme(type)
-    ? (data: WorkerPileupData) =>
-        bakeReadLevels(type, data, level => resolve(level, 0))
-    : (data: WorkerPileupData) => applyResolver(data, resolve)
+  return (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 
 // Overlay freshly-baked `readFillColors` onto each laid-out region. Baking here

@@ -1,6 +1,6 @@
 ---
 name: category-filters-leave-coverage-whole
-description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Idea 1 landed as ADR-229 and Idea 3 as ADR-230; Idea 2 is left.
+description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Idea 1 landed as ADR-229 and ADR-230 declined Idea 3; Idea 2 is left.
 ---
 
 # Category filters that leave coverage whole
@@ -8,10 +8,10 @@ description: The category filters (`svSignal`, `split`, `spliced`, `singletons`,
 Colin reviewed this proposal and decided its calls on 2026-10-12. Idea 1, one
 `svSignal` category in place of `properPairs`, landed as
 [ADR-229](../../architecture-decision-records/adr-229-sv-evidence-is-one-read-category.md),
-which holds its definition, its consumers and its rejected variants. Idea 3,
-the `svSignal` color field, landed as
-[ADR-230](../../architecture-decision-records/adr-230-read-categories-color-on-the-main-thread.md).
-Idea 2 is left.
+which holds its definition, its consumers and its rejected variants.
+[ADR-230](../../architecture-decision-records/adr-230-reads-and-arcs-share-one-color-language.md)
+declined Idea 3, the `svSignal` color field, after a built version painted
+reads in colors their arcs do not use. Idea 2 is left.
 
 Paths are under `plugins/alignments/src/` unless they say otherwise.
 
@@ -124,7 +124,8 @@ insertions count) are ADR-229's.
    count from all reads.
 6. The four figures above get a `split` facet and say so in their captions.
 7. The consensus follows the drawn reads.
-8. Idea 3 is a color field plus the sort, with no `dim` value.
+8. Idea 3 is a color field plus the sort, with no `dim` value. ADR-230
+   reversed the color field.
 
 ## Build plan
 
@@ -160,9 +161,6 @@ Each pin names the sabotage that turns it red.
    - Each per-read array's read index after compaction. Sabotage: skip the
      remap.
    - The 300x bench, and the four figures rebuilt.
-2. **Idea 3** landed without its canvas2d-against-WebGPU capture: it paints
-   through the baked per-read fill both backends share. Shoot the capture if a
-   backend ever splits on it.
 
 ## Rejected variants
 
@@ -173,4 +171,5 @@ Each pin names the sabotage that turns it red.
 - **Filtering on the main thread** (ship every read, mask at layout, as
   ADR-188 moved chain identity). Instant toggles, for a skip path in every
   row-instanced packer; nothing decided needs it.
-- **A `dim` filter value or an `opacity` channel.** The color field does it.
+- **A `dim` filter value or an `opacity` channel.** The `svSignal` facet
+  separates the evidence instead.

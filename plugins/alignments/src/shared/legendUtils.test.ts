@@ -1,8 +1,4 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import {
-  colorDiscordantPair,
-  colorSupplementary,
-} from '@jbrowse/core/ui/palette'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -14,10 +10,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
-import {
-  alignmentsColorEncoding,
-  declaredReadLabels,
-} from './alignmentsColor.ts'
+import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   arcColorCategoryLabel,
@@ -51,7 +44,6 @@ function legendFor(
     sectionOrder?: (a: string, b: string) => number
     baseLayer?: BaseLayer
     baseQualityUnavailable?: boolean
-    labels?: ReturnType<typeof declaredReadLabels>
   },
 ) {
   return getReadDisplayLegendItems({
@@ -502,60 +494,6 @@ describe('getReadDisplayLegendItems', () => {
         presentTagValues: new Set(['chr10', 'chr2']),
       }).map(i => i.label),
     ).toEqual(['chr10', 'chr2'])
-  })
-
-  test('SV evidence keys each kind by name and its baseline as no evidence', () => {
-    const encoding = alignmentsColorEncoding({
-      value: undefined,
-      field: 'svSignal',
-      scale: undefined,
-      domain: [],
-      range: [],
-      scheme: undefined,
-      reverse: false,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-    })
-    const colorBy: ColorBy = { type: 'svSignal' }
-    const items = legendFor(colorBy, ['tag', 'noTagValue'], {
-      presentTagValues: new Set(['discordantPair', 'splitRead', '']),
-      bakedScale: bakedColorScale(colorBy, encoding, undefined, undefined),
-      labels: declaredReadLabels(encoding, []),
-    })
-    expect(items.map(i => [i.label, i.color])).toEqual([
-      ['Split read', colorSupplementary],
-      ['Discordant pair', colorDiscordantPair],
-      [
-        'No SV evidence',
-        rgb255(makeTestPalette().readCategoryColors.noTagValue),
-      ],
-    ])
-  })
-
-  test('a written SV evidence domain orders the key and keeps the names', () => {
-    const encoding = alignmentsColorEncoding({
-      value: undefined,
-      field: 'svSignal',
-      scale: 'categorical',
-      domain: ['discordantPair', 'splitRead'],
-      range: [],
-      scheme: undefined,
-      reverse: false,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-    })
-    const colorBy: ColorBy = { type: 'svSignal' }
-    const items = legendFor(colorBy, ['tag'], {
-      presentTagValues: new Set(['splitRead', 'discordantPair']),
-      bakedScale: bakedColorScale(colorBy, encoding, undefined, undefined),
-      labels: declaredReadLabels(encoding, []),
-    })
-    expect(items.map(i => [i.label, i.color])).toEqual([
-      ['Discordant pair', colorDiscordantPair],
-      ['Split read', colorSupplementary],
-    ])
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {

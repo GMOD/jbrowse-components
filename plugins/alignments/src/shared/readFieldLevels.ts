@@ -65,40 +65,9 @@ export const SV_SIGNAL_OF_TIER: readonly SvSignal[] = [
   'splitRead',
 ]
 
-/**
- * The color fields the main thread answers per read from arrays every fetch
- * ships, so picking one recolors what is loaded instead of refetching it.
- * Each is a facet dimension too. A read takes the level its section is keyed
- * by, except under `unit: 'chain'`, where a section keys the whole chain and
- * each record keeps its own color, so a split section shows which piece split.
- */
-export const READ_LEVEL_SCHEMES = [
-  'split',
-  'spliced',
-  'pairing',
-  'svSignal',
-] as const
-
-export type ReadLevelScheme = (typeof READ_LEVEL_SCHEMES)[number]
-
-/**
- * The level a read takes when it has nothing to show: it keeps the plain
- * fill, as a read with no tag value does.
- */
-export const BASELINE_LEVEL = {
-  split: 'unsplit',
-  spliced: 'unspliced',
-  pairing: 'concordant',
-  svSignal: 'none',
-} as const satisfies Record<ReadLevelScheme, string>
-
-export function isReadLevelScheme(type: string): type is ReadLevelScheme {
-  return (READ_LEVEL_SCHEMES as readonly string[]).includes(type)
-}
-
 type Labelled<L extends readonly string[]> = Readonly<Record<L[number], string>>
 
-/** Each level's name, as a facet section and a color key both print it. */
+/** Each level's name, as a facet section prints it. */
 export const READ_LEVEL_LABELS: {
   split: Labelled<typeof SPLIT_LEVELS>
   spliced: Labelled<typeof SPLICED_LEVELS>

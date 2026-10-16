@@ -72,8 +72,10 @@ import {
   orderedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
-import { presentBakedValues } from './LinearAlignmentsDisplay/presentBakedValues.ts'
-import { baseQualitySpanAcrossGroups } from './LinearAlignmentsDisplay/qualitySpans.ts'
+import {
+  baseQualitySpanAcrossGroups,
+  presentMapqs,
+} from './LinearAlignmentsDisplay/qualitySpans.ts'
 import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { intronAlpha } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
@@ -463,9 +465,11 @@ function colorReads(
     ]),
   )
   const declared = declaredReadLabels(encoding, labels ?? [])
-  const presentTagValues = isBakedScheme(colorBy)
-    ? presentBakedValues(colorBy, colored)
-    : undefined
+  const presentTagValues = !isBakedScheme(colorBy)
+    ? undefined
+    : colorBy.type === 'mappingQuality'
+      ? presentMapqs(colored)
+      : collectAcrossGroups(colored, d => d.readTagValues)
   const detectedModifications = new Map(
     [...collectAcrossGroups(colored, d => d.detectedModifications)].map(
       type => [type, getColorForModification(type)],

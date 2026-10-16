@@ -9,15 +9,12 @@ import type {
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
-// Menu placement for a color scheme. Discriminated so a scheme is a plain
-// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu),
-// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite)
-// — or 'whileActive', a field a config or Edit plot names, which the menu lists
-// only while it paints the reads, so the radio group never shows none checked.
+// Menu placement for a color scheme. Discriminated so a scheme is either a plain
+// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
+// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
 export type ColorSchemeMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
-  | { kind: 'whileActive'; label: string }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
@@ -55,6 +52,8 @@ export interface ColorSchemeDef {
 // map in colorBy.ts) allowed, where a new scheme could get a shader index yet
 // silently never appear in any menu. Insertion order is the menu order
 // (Object.values preserves it), so the derived radio lists need no re-sorting.
+// A read category (svSignal, pairing, split, spliced) has no scheme: reads take
+// their arcs' colors, and Group by separates the categories (ADR-230).
 export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   normal: {
     type: 'normal',
@@ -154,31 +153,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     bodyScheme: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
-  },
-  // The four fields the main thread answers per read (`readLevels.ts`), each
-  // baked per read as the tag values are, so a switch among them recolors
-  // what is loaded. Split and spliced keep no standing radio: SV evidence
-  // already paints every placed split read, and on RNA-seq a spliced color
-  // paints most of the pileup; Group by and Sort by answer both.
-  svSignal: {
-    type: 'svSignal',
-    bodyScheme: 'tag',
-    menu: { kind: 'radio', label: FACET_LABELS.svSignal, group: 'basic' },
-  },
-  split: {
-    type: 'split',
-    bodyScheme: 'tag',
-    menu: { kind: 'whileActive', label: FACET_LABELS.split },
-  },
-  spliced: {
-    type: 'spliced',
-    bodyScheme: 'tag',
-    menu: { kind: 'whileActive', label: FACET_LABELS.spliced },
-  },
-  pairing: {
-    type: 'pairing',
-    bodyScheme: 'tag',
-    menu: { kind: 'radio', label: FACET_LABELS.pairing, group: 'pairedEnd' },
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)

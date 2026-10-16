@@ -5932,7 +5932,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; split, spliced, pairing and svSignal paint their levels over the plain fill; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: split, spliced, pairing, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "",
               "if": {
                 "type": "null"
@@ -7650,7 +7650,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; split, spliced, pairing and svSignal paint their levels over the plain fill; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
+              "description": "field to color each read by: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: split, spliced, pairing, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "strand",
               "if": {
                 "type": "null"

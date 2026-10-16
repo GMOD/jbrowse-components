@@ -81,10 +81,6 @@ export type ColorSchemeType =
   | 'perBaseLetter'
   | 'tag'
   | 'mateRefName'
-  | 'split'
-  | 'spliced'
-  | 'pairing'
-  | 'svSignal'
   | 'modifications'
   | 'bisulfite'
 

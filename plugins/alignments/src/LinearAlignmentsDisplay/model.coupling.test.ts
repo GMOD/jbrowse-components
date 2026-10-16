@@ -388,23 +388,6 @@ describe('Arc color menu visibility', () => {
   })
 })
 
-describe('read-level fields in Color by', () => {
-  const colorRows = (display: ReturnType<typeof createDisplay>) =>
-    menuSubItems(display.trackMenuItems(), 'Color by...')
-
-  test('SV evidence and Pairing have rows; split shows one only while it paints', () => {
-    const display = createDisplay()
-    expect(hasMenuItem(colorRows(display), 'SV evidence')).toBe(true)
-    expect(hasMenuItem(colorRows(display), 'Pairing')).toBe(true)
-    expect(hasMenuItem(colorRows(display), 'Split read (SA tag)')).toBe(false)
-    display.colorByField('split')
-    const row = colorRows(display).find(
-      item => 'label' in item && item.label === 'Split read (SA tag)',
-    )
-    expect(row).toMatchObject({ type: 'radio', checked: true })
-  })
-})
-
 describe('arc color follows the reads unless it names its own field', () => {
   test('an empty arcColor takes a pair field from the reads', () => {
     const display = createDisplay()
@@ -953,7 +936,7 @@ describe('read categories + filter submenu', () => {
     const display = createDisplay()
     // Scoped to the category row rather than the group above it: the group's
     // label carries the active count, so it is renamed by the very click being
-    // made here. Color by and Group by have an "SV evidence" row too, so the
+    // made here. Group by has an "SV evidence" row too, so the
     // search starts inside the filters.
     clickMenuItem(
       menuSubItems(
