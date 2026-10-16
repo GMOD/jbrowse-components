@@ -694,7 +694,7 @@ function writerParams(attrs: readonly InstanceAttr[]) {
  * `u32`, which was true of maf's struct and of nothing else. And `finish`
  * right-sizes with a copy rather than a subarray view, because these payloads are
  * retained per region for as long as the region is loaded and a view would pin
- * the whole over-allocation (the rule in `packages/render-core/CLAUDE.md`).
+ * the whole over-allocation.
  *
  * `finish` returns the buffer alone. The instance count is `writer.count`, and
  * `uploadPass` takes it off `byteLength / stride` — returning a `{buffer, count}`

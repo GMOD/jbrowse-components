@@ -4,8 +4,9 @@ import type { Page } from 'puppeteer'
 // smokeExamplesSite. These live here rather than in each site's smoke.mjs
 // because all three products ship the same demos of the same shared API, and a
 // check that drifts between them stops being a guard. (The
-// don't-factor-anything-out rule in each site's CLAUDE.md is about the *example
-// files*, which a reader has to be able to paste; scripts are not that.)
+// don't-factor-anything-out rule in reference/EXAMPLES_SITES.md is about the
+// *example files*, which a reader has to be able to paste; scripts are not
+// that.)
 
 // How far a demo may sit from the space held for it. The two edges are not
 // symmetric, because the two mistakes are not. A demo taller than its

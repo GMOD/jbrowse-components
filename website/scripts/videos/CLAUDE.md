@@ -1,339 +1,79 @@
 # website/scripts/videos
 
-One module per topic, assembled by `../video-specs.ts`. What a tour is FOR and
-how it is embedded is in `website/CLAUDE.md` § Videos.
+What a tour is for, and the embed order: `website/CLAUDE.md` § Videos.
+`check-video-specs` (rules in `video-spec-rules.ts`) pairs specs with embeds in
+both directions, and `pnpm video` runs it before filming.
 
-## Filming
+## Framing
 
-- **`check-video-specs` is the gate over the list and the pages together**, and
-  the rules are in `video-spec-rules.ts` where `videoSpecRules.test.ts` reaches
-  them. It pairs each spec with the embed that plays it in both directions: a
-  spec nothing embeds is filmed and served with nothing playing it, and an embed
-  whose spec was renamed keeps playing while silently losing the live session
-  link. `pnpm video` runs the spec half before it films.
-- **Width is not a per-tour decision, so a spec states only its height.**
-  `VIDEO_FRAME_DEFAULTS` is a full-screen browser on a 1080p display, which is
-  the window a reader has open. Filmed at 1280 instead, every linear view lays
-  out in a column narrower than anyone runs.
-- **A viewport is even on both sides.** The scale filter's `-2` rounds an odd
-  height up, so the spec's frame is a pixel off the clip every reader plays
-  (`annotation_1d` said 1045 and shipped 1046) — and an odd WIDTH fails the
-  encode outright, after the filming. Even and at or under `VIDEO_OUTPUT_WIDTH`
-  makes the finished clip exactly the viewport, which is what the embed reserves
-  its box from: `videoFrames` in `liveLinks.generated.ts`, checked against the
-  published posters by `videoFrames.test.ts`. **So a re-frame needs
-  `pnpm autogen`**, or the page holds a box the wrong shape and the browser
-  letterboxes the clip inside it.
-- **A clip's figure carries an id built from its SPEC NAME**
-  (`video-pangenome-hprc_cluster_callset`), which DocsLayout's jump bar under
-  the h1 links to. So renaming a spec silently breaks any inbound link to that
-  anchor, and nothing checks it — `check-links` only sees anchors a doc itself
-  writes. The bar labels each link with the h2/h3 above the clip, one entry per
-  section, which is why a page running four clips under one heading gets one
-  link.
-- **`videoEmbedsIn` is the one scanner** — `check-video-specs` and
-  `check-figure-refs` both read it, rather than each carrying a pattern. Match
-  what remark-video matches or a tag goes unjudged while it renders: walking
-  lines loses a tag that wraps, and a `[^>]` scan loses one whose caption holds
-  an angle bracket (`<DEL>` is in a caption today). A tag that never closes with
-  `/>` matches nothing in the plugin at all, and the browser lowercases the raw
-  string into a bare `<video>` with no controls and no poster.
-- `static/media/` is gitignored; bytes live in the store (`media.lock`), which
-  `pnpm build` pulls through `figures:pull` **because `rclone sync` deletes**
-  what dist/ does not carry. `pnpm figures:push` publishes it beside the
-  figures. A `<Video>` may land before its bytes: `check-figure-refs` stays red
-  and the embed 404s until the push-and-lock commit follows. A clip is three
-  files there — the mp4, the poster and the caption track — sharing one name, so
-  `--filter` selects a clip rather than one of its files.
-- **Size the viewport from the run's own content report**, which names the app's
-  height at the first frame, the last and its tallest in between. A tour grows
-  the app and one frame has to serve every state. The end-of-run summary
-  (`video-report.ts`) collects that per tour and calls out the two directions —
-  `CONTENT TALLER THAN THE FRAME` and `PAGE BACKGROUND UNDER THE APP` — beside
-  `DISPLAYS NOT PAINTED AT THE LAST FRAME` (a poster of a blank track) and
-  `STEPS FILMED WHILE NOTHING HAPPENED` (a wait that wants `cut: true`). None of
-  them fails the run; a clip nothing diffs is one where a run is the only place
-  a mistake is visible at all.
-- **The harness sets the pace.** A caption stays up for its reading time before
-  the next one may replace it, a typed value goes in at a typist's speed, and a
-  value past 32 characters is pasted behind a Ctrl V keycap. So a spec states
-  holds for what it shows, never for what it says.
-- **A step's `say` is a caption track, not just a chip.** `video-captions.ts`
-  times the lines onto the clip and writes a `.vtt` beside the mp4;
-  `videoCaptioned` in `liveLinks.generated.ts` is what makes remark-video hang a
-  `<track>` off the clip, and `videoFrames.test.ts` fails if a tour the site
-  captions has no track in `media.lock`. So **a tour that grows its first `say`
-  has to be re-filmed**, or the page carries a track whose src 404s.
-- **A rubberband names loci, not pixels.** `fromAnchor`/`toAnchor` on a `drag`
-  resolve through the same model the click anchors use, with `band` naming the
-  strip to take the y from (`rubberband_controls` for the scalebar). A measured
-  `from: {x, y}` is correct only at the width it was measured at, which is
-  exactly what a re-frame invalidates.
-- **`cut` on a step takes the camera off for its wait.** Put it on the wait, not
-  on the click that starts it, or the click is off camera too.
-- **A tour that films a track being ADDED starts from a config without that
-  track**, so the lane it adds is the only one of its kind on screen. Its live
-  link is then the better one of the two kinds: a figure's opens the state it
-  shows, a tour's opens the state it starts in.
-- **What the form is filled from has to be the page's own fence, and
-  `check-paste-configs` is the gate.** The graph tours read every field they
-  type off the fence's JSON; a film is the half nobody re-reads, so a reworded
-  slot drifts one way silently.
-- **`opensTab` follows a launcher into a new tab**, and the camera moves with
-  it. For a route that leaves the app: another site hands the reader a session
-  through a `target="_blank"` link, so the result is a second page rather than a
-  navigation. It implies a cut. A label rendered in caps by CSS is not the
-  string a `text` step matches — read the DOM, and put the caps in the `say`.
-- **The poster is the middle of the payoff line**, not the last frame: a hover
-  payoff is gone once the tail parks the pointer.
-- **The last repaint of a run of them does not reach the file.** Chrome sends
-  screencast frames while the page paints and stops when it goes quiet, and the
-  frames arrive a couple behind — so whatever a clip is doing at the very end is
-  in the mp4 only up to about four fifths of the way through, and the tail then
-  holds THAT frame for its whole length. It is why `parkCursor` hides the drawn
-  cursor in one step rather than gliding it out of the viewport: the glide
-  version froze the arrow near the bottom edge of every clip that ends at its
-  own last frame, which is the frame the poster comes from. Anything that has to
-  be true in the last frame has to be true well before it.
-- **Re-navigate after the drawer closes.** A widget takes ~400 px off the linear
-  view while it is open and an LGV keeps its bp-per-pixel across a resize, so
-  the window standing afterwards is wider than the one the session opened at.
-  Anything reading `dynamicBlocks` (a subgraph launch) then cuts a region the
-  spec never named, and it fails late, at whatever the next step anchors by id.
-- **A tour stays on light tracks, and light is about VOLUME.** A deep human ONT
-  lane under swiftshader blocks the main thread per animated frame until the
-  click's own round trip throws, which is where this rule came from. It is not
-  the display type: `epigenomics/bisulfite_contexts` films a per-read pileup
-  headless with nothing starved, over 14 kb of Illumina WGBS on a plant genome.
-  Measure the tour you have; `--headed` runs on the real GPU when it needs to.
+- A spec states only its height; the width comes from `VIDEO_FRAME_DEFAULTS`.
+  Keep the viewport even on both sides: an odd height ships a pixel off, and an
+  odd width fails the encode after filming.
+- **A re-frame needs `pnpm autogen`**, since the embed reserves its box from
+  `videoFrames` in `liveLinks.generated.ts`.
+- A clip's anchor id comes from its spec name, so renaming a spec breaks inbound
+  links and nothing checks them.
+- Size the viewport from `video-report.ts`'s content report. None of its
+  warnings fails the run. The report measures the tallest state, not the last,
+  so where states differ by hundreds of pixels, end on the tall one. It measures
+  app height only, so size a dialog-centred tour to the dialog.
+- The caption chip sits 32px off the frame's bottom, over the app's last 100px
+  or so.
+- The harness sets the pace: a spec's holds cover what the frame shows, never
+  how long the caption takes to read.
 
-## Inside a spec's `steps`
+## The end of a clip
 
-Each of these cost a refilm, and the run reports none of them.
+- **The last repaints of a clip do not reach the file**, and a
+  `recorder.stop() -> TIMEOUT` in the log loses whatever had not flushed.
+  Anything that must be true in the last frame must be true well before it;
+  never reopen a menu after the result.
+- The poster is the middle of the payoff line, not the last frame.
+- A screencast off a backgrounded tab is one frozen frame at the right duration.
+  `probe-clip-motion.ts <clip.mp4>` counts distinct frames.
+- Don't end by scrolling to text: the fence beside the clip carries text better
+  than a film.
 
-- **A radio menu item leaves its menu standing over the result it produced.**
-  The film fails when one is still open at the payoff, but nothing says so while
-  it stands over the steps before it. A `Display types` pick closes the cascade
-  (`keepMenuOpen: false`, because the rows above it belong to the display being
-  replaced); every other radio only writes a setting and stays up.
-  `leaveMenu(row)` in `shared.ts` takes the whole cascade down and blurs the
-  menu icon, whose "Track settings" tooltip otherwise outlives the menu.
-- **Escape leaves ONE level per press, and only from the top of MUI's modal
-  stack.** Two of them work on a two-level cascade because the second lands back
-  in the root `Menu`, which is the focus trap it came from. At THREE levels —
-  `Color by...` then `Bisulfite / EM-seq` then the context radio — the second
-  press lands on whatever MUI restored focus to, which is inside no modal, and
-  the run dies at whichever `hidden` wait names the level that never closed.
-  **One click on `.MuiBackdrop-root` takes the whole cascade at any depth**: the
-  root menu is a plain MUI `Menu`, its backdrop spans the viewport, and every
-  submenu is a React child of its list. The backdrop that click reaches is the
-  root's, because a submenu's `HoverMenu` sets pointer-events none on its own
-  modal root and its backdrop inherits that. It is still two clicks in a row,
-  since the backdrop swallows the first: the second is the one that reaches
-  `[aria-label="JBrowse"]` and blurs the menu icon.
-- **The wordmark cannot BE the outside click.** `actions.ts` falls back to
-  `node.click()` for a target something covers, and a menu's backdrop covers
-  everything — but `click()` is on `HTMLElement`, and `[aria-label="JBrowse"]`
-  is a bare SVG `<g>`, so the step throws `node.click is not a function` after
-  the load and every step before it. It is the right place to park the cursor
-  and the wrong thing to dismiss a menu with.
-- **The camera parks the pointer on the wordmark while the goal is read**,
-  because top centre is a full-width LGV's overview strip, and the view writes
-  the locus under the pointer into its own title bar and syncs a hover band into
-  a graph track below it. A page with no wordmark (a launcher on another site)
-  still gets top centre.
-- **A hold is where the pointer is, not where the click was.** The last click
-  before a held end state leaves the pointer on whatever now occupies that spot,
-  and a re-layout moves what that is: `Replace current view` sat where the
-  breakpoint split view then drew a junction arc, so a clip held its panels for
-  five seconds under a tooltip naming both ends of that arc by feature uuid. The
-  harness parks the pointer on the wordmark before the payoff unless a `hover`
-  precedes it; a hold mid-tour takes the same
-  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` itself. A
-  focus tooltip outlives a hover, so a menu icon still needs the first bullet's
-  click.
-- **A display-type switch does not carry the old display's height.**
-  `replaceDisplay` builds the new one from its own config, so a multi-row
-  painting arriving at the default height fits every row it discovers into the
-  space one packed lane was using. A tour that films the switch pins the height
-  in its own session — a `displays` array with the default form first, which is
-  the shape a config guide prints anyway.
-- **Check what the opening frame actually draws at the figures' locus.** A
-  feature display stops above `maxFeatureScreenDensity` and paints "Too many
-  features" instead, so a tour opening where the page's widest figure is taken
-  can film that message rather than the state the page describes. Open narrower
-  and let the tour navigate out, which also puts the reason the wide display
-  exists into the clip.
-- **The session comes from a `*VideoFixtures` bag in `../specs/`**, never
-  written again here: a tour whose track config had drifted from the figures'
-  would document a route through an app the rest of the page is not showing.
-- **A `say` on a step that is `cut` reaches nothing.** The whole step is off
-  camera, its `hold` included, so the chip is never filmed — and the caption cue
-  is dropped too, because `captionTrack` times cues on the ON-CAMERA clock and a
-  cut leaves that clock where it was, which makes the cue zero-length.
-  `ui/bulk_add_tracks` shipped four captions for five `say` lines and no check
-  saw it. Name the beat AFTER the cut instead, on a delay the camera is back
-  for, which is also where the `hold` belongs.
-- **One line per PHASE, not one per click.** A caption stays up until another
-  step replaces it, so a cascade needs one line on its first step and silence
-  after it. The line says what the phase does and why, in plain words --
-  `Load the graph by URL from File, Open track` over **File → Open track... →
-  the workflow select → Submit** -- since the labels themselves are already in
-  the frame, under a 40px cursor and a red ripple. A line that is the menu item,
-  the typed value or a track's name tells the viewer nothing the frame does not.
-- **A `say` goes up when its step STARTS.** So a line describing what the step
-  produces is wrong for the whole time it runs — `hic/two_regions` once said the
-  wedge was chr9 against chr22 over a box that still held one window. The
-  meaning goes on the PAYOFF: a `delay` after the result has drawn, whose line
-  says what the frame now shows, written from the frame itself.
-- **Nothing holds a `say` to a string the app draws.** `check-menu-labels` reads
-  the doc pages, not the specs, so a line can name a control by its TESTID and
-  the run is happy: `ui/add_genome` once put `Assembly name` over a field the
-  form labels `Genome name`. Read the label out of the frame.
-- **A gene search in GRCh38's MHC raises the results picker**, because the alt
-  contigs carry the same genes: C4A has three hits and HLA-DRB1 six, with the
-  primary chromosome's first. `pangenome_hprc` has the reader type `C4A` and
-  pick the chr6 hit, so a tour of that route films the picker too.
-- **A right-click anchored by locus lands on whatever the display DREW there**,
-  which inside an alignment is often a CIGAR op rather than the feature. Over an
-  indel wide enough to paint, the menu grows an "Open deletion details (N bp)"
-  row above the items the tour is for -- the launch still works, since the menu
-  is built from the feature either way, but the frame then shows a row the page
-  never mentions. Move the locus onto a plain stretch of the block.
-- **The caption chip is fixed 32px off the frame's BOTTOM, not off the app's,
-  and centred.** A frame sized exactly to the app therefore puts every caption
-  over the last ~100px of the last state -- the chip is 32px type in a 12px
-  padding now, for the docs column rather than for the capture -- and that is
-  usually the half the caption is about (an empty mate panel, the bottom row of
-  a stack). `video-report` allows 120px of slack before it says anything, so a
-  frame with the chip's strip under the app reports clean.
-- **A tour that ADDS its track films the defaults, not the figures' display.** A
-  session spec pins a lane's height, its color jexl and its labels; a track
-  added through the form carries only what the form writes, so the lane arrives
-  at the display's default height — which grew `pggb_subgraph_launch`'s frame by
-  50px the first time it was filmed this way — and in the default color. Any
-  claim the caption made about the lane and the graph pane sharing a ramp stops
-  being true with it. The repair is in the FENCE or nowhere: `displayDefaults`
-  reaches a slot a reader would sensibly set (`showLabels` off over a segment
-  index whose names are GFA ids), and a ramp over the tour's own window is not
-  one of those.
-- **A display over its density gate still reports `ready`.** It is refusing to
-  fetch, not failing to paint, so a tour that navigates from a gated window into
-  a drawable one and waits on `displayReady(...)` carries on with the banner
-  still on screen. What to wait on is the banner going away —
-  `{ type: 'waitForText', text: 'Too many features', hidden: true }` — and the
-  display id after it, for the paint. The film fails if a gated display is still
-  on camera after any step, which is what a zoom to a whole chromosome meets on
-  every gene lane.
-- **A highlight whose span becomes the window washes the whole frame.** The
-  graph's `Highlight in <assembly>` writes a translucent band into the linear
-  view, which reads well while the band is a slice of the window and edge to
-  edge once the tour has navigated onto it. Where the point is only WHERE the
-  thing is, a `hover` is free: hovering a node syncs the same interval into the
-  view above for as long as the pointer is on it, and leaves nothing behind.
-- **A `graphNode` anchor resolves halfway along the node's drawn line.** The
-  middle VERTEX of an anchored node's two-point line is its left end, where it
-  meets its neighbour, and the app's hit test there answers the neighbour. On a
-  chromosome-scale tier a node is narrower than a pixel, so a click there can
-  still land on the next one; cut the tier over a few megabases, and leave the
-  chromosome-scale picture to a figure.
-- **A node's `Open in <assembly>` navigates the linear view its graph track is
-  in rather than adding one**, when that view carries the assembly, so a tour
-  built on it keeps the frame it opened at. That is what makes the
-  coarse-to-fine route cheap to frame: the view lands on the node's span and the
-  track re-cuts from the fine index in place.
-- **Don't end a tour by scrolling to text.** A panel of JSON or a table of
-  values is the one thing a page does better than a film — the fence beside the
-  clip is searchable, diffable and holds still — and the harness cannot aim at a
-  line anyway. `scrollTo` scrolls the page, `scroll` scrolls horizontally, and
-  the only lever inside a dialog's own field is a caret: a `PageDown` from where
-  the click landed moved fifteen lines between two takes of
-  `config/settings_to_json`, and a `PageDown` to the end is deterministic and
-  stops one screen past the thing you wanted. That tour dropped the scroll and
-  got shorter and clearer. Film the route; let the page carry what it produced.
-- **An action that writes one setting can write another.** `setUnit` nudges a
-  `colorBy` still at `normal` to `insertSizeAndOrientation` as it enters chain
-  mode, so a tour taking a page's settings in the order the page lists them
-  filmed a menu being opened to pick a radio the app had already filled in — a
-  click that changes nothing, reported as success. The frame that says so is the
-  menu BEFORE the click: a radio already selected is the tell, and the fix is
-  usually the ORDER, on the page as well as in the spec.
-- **The run cannot see which state a tour is left standing in.**
-  `PAGE BACKGROUND UNDER THE APP` measures the TALLEST state against the frame,
-  so a tour that grows the app in the middle and shrinks back reports clean
-  while its last frame — and the poster taken from it — is a third page
-  background: a tour that switches a graph's layout and back, in a frame sized
-  to the taller drawing, passes every run. Where two states differ by hundreds
-  of pixels, END ON THE TALL ONE: the slack then falls at the opening, which is
-  the shorter half of the clip and not the frame the poster comes from.
-- **A purple chip with a number in it over a MAF row is a rendered insertion**,
-  not a tooltip left standing — the insertion mark centres the inserted length
-  in the marker once the row is tall enough for letters, and it does not move
-  with the pointer. The page's own still of the same window is the cheapest way
-  to tell a drawn feature from a hover artifact: pull the figure beside the
-  frame before writing a step to clear something.
-- **A tour that opens the track selector zooms every row out by the drawer's
-  width.** An LGV holds its WINDOW in bp across a resize rather than its bp/px
-  (`windowWidthBp` is the state and each later width divides into it), so the
-  drawer's ~390px is a 25% zoom-out for everything in the frame — and a feature
-  display sitting just under `maxFeatureScreenDensity` crosses it and paints
-  "Too many features" for as long as the drawer is open.
-  `synteny/three_strain_import` turned three whole-chromosome gene tracks on
-  this way at 0.95 features per pixel, and the display's density ESTIMATE runs a
-  few percent over the exact count, so a lane could stay on the banner after the
-  drawer closed; it now zooms each row in once first. Nothing in the run says so
-  — a gated display still reports `ready` — and the frame that shows it is one
-  pulled with `ffmpeg -ss` from the drawer's own stretch rather than the last
-  one. What keeps it honest is
-  `{ type: 'waitForText', text: 'Too many features', hidden: true, cut: true }`
-  after the drawer closes: it fails the run if the margin ever goes the other
-  way, where a `waitForAppSettled` carries on and ships the payoff as three
-  warnings.
-- **The clip's last STATE CHANGE has to be the payoff, not just its last hold.**
-  `website/CLAUDE.md`'s "the last repaint of a run of them does not reach the
-  file" understates it: `page.screencast` writes through ffmpeg's stdin, and
-  when `recorder.stop()` times out (the run logs
-  `recorder.stop() -> TIMEOUT after 15s`, which is not one of the four things
-  `video-report` names) whatever had not flushed is gone. On the first take of
-  `genomes_basics/gnomad_filter` that was twelve seconds — the on-camera clock
-  said 41s and the mp4 was 29s — and the twelve seconds were the ones that
-  dismissed a menu the tour had reopened for one beat. So the clip ended on an
-  open cascade and the poster was that cascade standing over the payoff, which
-  is the exact frame the first bullet here is about. A tour that reopens a menu
-  after its result has to do it in the MIDDLE, and there is usually no middle
-  left: the affordance goes on the page instead, which is the division the
-  corpus is built on anyway.
-- **A beat can film a control doing nothing visible, and the run reports it as a
-  step like any other.** `sv_cgiab/copy_number_layout` once set a manual min/max
-  on the coverage lane because the page lists that as a bullet and because
-  indexcov's spikes run to 497 — but those spikes are elsewhere in the genome,
-  and on the chromosome the tour films local autoscale had already given the
-  lane 0..2, so capping it to 0..3 barely moved the drawing. Nothing said so:
-  the click landed, the wait passed, the report was clean. The caption written
-  from the SPEC's reasoning then claimed a change the frames did not carry. Pull
-  the frames on either side of the beat (`ffmpeg -ss`, one before the click and
-  one after the repaint) and write the caption from those two pictures; where
-  they are the same picture, move the tour to a window where the control bites,
-  or cut the beat, as that tour did.
-- **Size a dialog-centred tour to the DIALOG.** The run's content report
-  measures app height only, so it will tell you to shrink a frame the dialog
-  needs. Pull a mid-clip frame with `ffmpeg -ss` and look.
-- **`cut: true` on a `type` step** is how a paste is filmed. Five URLs typed a
-  keystroke at a time read as 9.4s of nothing happening.
-- **Don't film a reader reading.** A tour that ends by scrolling a text panel to
-  the line that matters is filming the one thing a page does better: the fence
-  beside the clip is searchable, diffable and holds still.
-  `config/settings_to_json` spent three takes trying to land a 20-row JSON panel
-  on four keys before dropping the scroll entirely, and the clip got shorter and
-  clearer for it. A clip carries the route; the page carries the text the route
-  produced.
-- **A menu path a page prints is a claim, and a `waitForText` is what checks
-  it.** Two of the first four page defects tours found were levels missing from
-  a cascade, and both showed up as a step dying by name rather than as anything
-  anyone read. Write the path the page prints, not the path you verified in the
-  source, and let the run disagree.
-- **Check whether the app already did the next step for you.** An action that
-  writes one setting can nudge another (`setUnit` sets `colorBy` on the way into
-  chain mode), so a tour taking a page's bullets in order can film a click that
-  changes nothing and report success. The frame to pull is the menu BEFORE the
-  click: a radio already filled in is the tell.
+## Captions
+
+- A `say` goes up when its step **starts**, so the meaning goes on the payoff: a
+  `delay` after the result has drawn, whose line reads the frame.
+- One line per phase, not per click. A line that repeats the menu item or the
+  typed value tells the viewer nothing the frame does not.
+- **A `say` on a `cut` step is never filmed, and its cue is dropped.** Name the
+  beat after the cut.
+- A tour that grows its first `say` must be re-filmed, or the page carries a
+  caption track that 404s.
+- Nothing holds a `say` to a string the app draws: read the label out of the
+  frame. A CSS-uppercased label is not the string a `text` step matches.
+- Write the caption from frames pulled either side of the beat (`ffmpeg -ss`),
+  not from the spec's reasoning: a control can land and change nothing visible.
+
+## Steps
+
+- **A radio menu item leaves its menu open over its result.** `leaveMenu(row)`
+  in `shared.ts` takes the whole cascade down. Escape leaves one level per press
+  and fails past two; one click on `.MuiBackdrop-root` clears any depth. The
+  wordmark is an SVG `<g>` with no `.click()`, so it parks the pointer but
+  cannot dismiss a menu.
+- `cut` goes on the wait, not on the click that starts it. `cut: true` on a
+  `type` step films a paste.
+- Anchor a `drag` by locus (`fromAnchor`/`toAnchor`), never by measured pixels.
+- **A display over its density gate still reports `ready`.** Wait on
+  `{ type: 'waitForText', text: 'Too many features', hidden: true }`, then on
+  the display. An LGV keeps its bp window across a resize, so opening the track
+  selector zooms every row out about 25% and can push a lane over the gate;
+  re-navigate after a drawer closes.
+- A display-type switch does not carry the old height; pin the height in the
+  session.
+- A tour that adds a track starts from a config without it, and films the
+  display's defaults rather than the figures' settings.
+- An action can write a second setting (`setUnit` sets `colorBy`), so a later
+  click can change nothing and still report success. A radio already selected in
+  the frame before the click is the tell; fix the order on the page too.
+- The session comes from a `*VideoFixtures` bag in `../specs/`, and form values
+  from the page's own fence (`check-paste-configs`).
+- Write the menu path the page prints, not the one verified in source, and let
+  the run disagree.
+- Keep tours on light tracks. Data volume, not display type, starves
+  swiftshader; `--headed` uses the real GPU.

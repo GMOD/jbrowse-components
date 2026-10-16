@@ -1,7 +1,7 @@
 // The pileup's mark shapes: one factory over render-core's `MarkShape`, taking
 // a shader, its packer and the rule codes one row-instanced pass draws and
 // hit-tests by. A new rule is a code and a case here, never a function on the
-// mark; plugins/alignments/src/CLAUDE.md says what the codes were measured at.
+// mark.
 import {
   insertionSizeAlpha,
   spanRectLeftPx,

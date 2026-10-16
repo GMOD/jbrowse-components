@@ -33,7 +33,7 @@ const LAYOUTS = [
 // `<layout>:<renderingType>`, and MENU-LOCAL. The model still holds the two
 // axes apart — five `renderingType` names that say what a source is drawn as,
 // `rows` that says where it sits — and nothing outside this file reads a key
-// (plugins/wiggle/CLAUDE.md, ADR-143). Reviving the nine names as config values
+// (ADR-143). Reviving the nine names as config values
 // is what put the layout back inside a plot name, where `isOverlayMode` had to
 // recover it by string-set membership.
 const leafKey = (layout: string, rendering: string) => `${layout}:${rendering}`

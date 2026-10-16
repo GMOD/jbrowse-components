@@ -18,8 +18,6 @@
 //      reverse) left dangling by a renamed heading.
 //   4. Every relative markdown link between docs (`](../ARCHITECTURE.md#x)`),
 //      the same check as 3 for the way agent-docs actually cross-links itself.
-//      Its CLAUDE.md warns that other docs cite sections by title and to rename
-//      one only after grepping — which is a rule that wants a checker.
 //   5. Every backticked identifier in developer-guide and ARCHITECTURE.md prose
 //      — `PascalCase`, or `camelCase` with an internal capital — checked to
 //      appear somewhere in source CODE — `codeOf` strips comments first, or a
@@ -383,10 +381,7 @@ function scanBlobAnchors(path: string, lines: string[]): Problem[] {
 // to the same standard as the GitHub blob links above. It is the *same* check
 // with a different way of naming the target, and it was the half not covered:
 // the agent-docs knowledge base cross-links itself relatively rather than
-// through github.com, and its own CLAUDE.md warns that "other docs and a few
-// source comments cite their sections by title — rename one only after grepping
-// for it", which is precisely a rule that wants a checker rather than a
-// reminder. ARCHITECTURE.md pointed at
+// through github.com. ARCHITECTURE.md pointed at
 // `ARCHITECTURAL_LIMITS.md#ordering-is-the-contract-in-five-places` for as long
 // as it took someone to shorten that heading.
 //
@@ -555,7 +550,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // story kept it in the symbol set until `codeOf` stopped collecting from
   // comments.
   'featureUnderMouse',
-  // ARCHITECTURE.md §"Display stacks", packages/display-kit/CLAUDE.md and adr-007:
+  // ARCHITECTURE.md §"Display stacks" and adr-007:
   // the second global foundation, named to say it is gone and why the argument
   // for splitting the family in two did not survive. `GlobalFetchMixin` is the
   // whole family now, so the name must stay unwritten.
@@ -577,9 +572,10 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // misspelling one display shipped for `showRowLabels`, named to say why the
   // mixin now declares the accessors — the name must stay unwritten.
   'showSidebarLabels',
-  // packages/tree-sidebar/CLAUDE.md: the `ReactNode` prop this dialog's color
-  // and row-edit controls replaced, named to say a node cannot be held for a
-  // Submit — the same argument DISPLAYCHROME.md makes for DisplayMessageComponent.
+  // agent-docs/reference/TREE_SIDEBAR.md: the `ReactNode` prop this dialog's
+  // color and row-edit controls replaced, named to say a node cannot be held
+  // for a Submit — the same argument DISPLAYCHROME.md makes for
+  // DisplayMessageComponent.
   'displayControls',
 ])
 
@@ -602,7 +598,7 @@ const DOC_THIRD_PARTY = new Set([
   // ARCHITECTURAL_LIMITS.md §"A canvas past the backing-store caps draws at reduced resolution": the DOMException the browser throws, quoted because the guard
   // exists to keep it from being thrown. The name is the browser's.
   'InvalidStateError',
-  // products/jbrowse-build-your-own/examples-site/CLAUDE.md: the MUI global
+  // mechanisms/green-checks-that-cannot-fail.md: the MUI global
   // class an embedder would find in their bundle. The entry is about what
   // reaches an embedder's page, so the emitted class name is the evidence.
   'MuiLinearProgress',

@@ -6,8 +6,7 @@ kind: spec
 
 # @jbrowse/display-kit
 
-The rules list and the subsystem's overview are `packages/display-kit/CLAUDE.md`. Bare paths
-below are relative to `packages/display-kit/`.
+Bare paths below are relative to `packages/display-kit/`.
 
 ## Attach
 

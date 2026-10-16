@@ -21,7 +21,7 @@ import type {
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Regression guard for the config-read narrowing described in
-// ./CLAUDE.md ("Config read type narrowing"). `Equal` is an exact type equality
+// ./CLAUDE.md ("Types"). `Equal` is an exact type equality
 // that ALSO distinguishes `any` from every concrete type, and `assertType`
 // fails `pnpm typecheck` when its check is `false` — so a `getConf(self, slot)`
 // read silently widening to `any` is caught here. A plain typecheck can't catch

@@ -662,12 +662,13 @@ function bucketItems(
  *
  * **Collapsed group rows: two swatches, "this but tinted".** There the mark IS
  * a modifier — unrelated reads deliberately share a row, spans are not merged
- * (`collapsedLayout`, and the `mergeSpans` note in the display's CLAUDE.md), so
- * the tint stacks and the strength is the depth. There is no single swatch to
- * list, because the tint lands on whatever the reads underneath already carry:
- * under an insert-size scheme it tints five different colors. The neutral
- * read color and that same color tinted is the only honest form, and
- * `LegendItem.swatches` exists for exactly this — one meaning drawn twice.
+ * (`collapsedLayout`, and the `mergeSpans` note in
+ * reference/LINEAR_ALIGNMENTS_DISPLAY.md), so the tint stacks and the strength
+ * is the depth. There is no single swatch to list, because the tint lands on
+ * whatever the reads underneath already carry: under an insert-size scheme it
+ * tints five different colors. The neutral read color and that same color
+ * tinted is the only honest form, and `LegendItem.swatches` exists for exactly
+ * this — one meaning drawn twice.
  *
  * **Composited to an opaque color, not shipped as an alpha fill.**
  * `LegendSwatchGlyph` emits one `fill` for both the on-screen box and the SVG

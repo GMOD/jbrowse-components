@@ -173,8 +173,8 @@ function navSignature(
 
 /**
  * Keep the non-anchor genome rows on the region that aligns to the anchor
- * row's window, and make a gesture on any followed row the anchor. See this
- * directory's CLAUDE.md.
+ * row's window, and make a gesture on any followed row the anchor. See
+ * agent-docs/reference/SYNTENY_FOLLOW.md.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()

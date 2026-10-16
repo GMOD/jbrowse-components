@@ -5,7 +5,7 @@
 //
 // The problem this exists for is specific to a figure whose SOURCE is tracked.
 // Figure bytes are gitignored and live in the store (see figure-store.ts), so an
-// unpushed regen is already invisible to git — website/CLAUDE.md says so. A
+// unpushed regen is already invisible to git. A
 // diagram makes that sharper rather than softer: edit the source, forget to
 // re-render, and the commit shows a source change while the site keeps serving
 // the old picture. A reviewer reading that diff has every reason to believe the

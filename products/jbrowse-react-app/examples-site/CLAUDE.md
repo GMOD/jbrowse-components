@@ -1,18 +1,8 @@
 # examples-site
 
-Shared doctrine for all four sites:
+Shared rules for all four sites:
 [agent-docs/reference/EXAMPLES_SITES.md](../../../agent-docs/reference/EXAMPLES_SITES.md).
-Local to this one:
 
-The published package an example may import from is `@jbrowse/react-app2`.
-
-The only relative-import hit is `../volvox-config.json`, which is the allowed
-bulk-data exception.
-
-**This site reserves no demo heights, and shouldn't** — it is the one exception
-to the shared `demoHeights.json` rule. `demoFillHeight` fixes every demo box at
-`80vh` in CSS, so it already owns its space from first paint and there is no
-layout shift to remove; `checkDemoHeights` in `pnpm smoke` skips a `.fill` box
-for that reason. The box still gets the loading skeleton, styled on the
-`client:only` island's `:empty` state so it ends itself the moment React puts
-something there.
+**This site reserves no demo heights, and shouldn't.** `demoFillHeight` fixes
+every demo box at `80vh` in CSS, so nothing shifts on load, and
+`checkDemoHeights` skips a `.fill` box for that reason.

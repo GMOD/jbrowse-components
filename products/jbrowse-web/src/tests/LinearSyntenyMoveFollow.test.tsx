@@ -76,7 +76,7 @@ async function openSwapView() {
 
 // In bp, never `offsetPx`: a followed row's scale is not constant through a
 // pan, so a pixel offset can move backwards over a step the row moved forwards
-// through. `SyntenyFollow/CLAUDE.md` has the measurement.
+// through. `reference/SYNTENY_FOLLOW.md` has the measurement.
 function windowOf(lgv: LinearGenomeViewModel) {
   return Math.round(lgv.windowStartBp)
 }

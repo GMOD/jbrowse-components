@@ -40,11 +40,6 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 - A duck-typed `XSelf` across a lazy boundary still extends `IStateTreeNode`;
   importing the model type there is a circular-reference trap.
 
-## Tracks
-
-A track a feature stands up for the user goes to `addSessionTrackConf`;
-`publishTrackConf` is for Add-track workflows only.
-
 ## Names
 
 - **Main thread**: user-supplied refName text goes through
@@ -64,6 +59,11 @@ A track a feature stands up for the user goes to `addSessionTrackConf`;
 - **`pnpm verify`, then the changed code's own suite** — `npx jest <file>`, one
   file, since jest skips the machine-wide slots `pnpm typecheck`, lint,
   `build:esm` and `pnpm test` queue on.
+- **CI also runs `check-docs`, `build:esm` and type-aware lint of untouched
+  files**, which plain `pnpm verify` skips: `--full` adds the first two, `--all`
+  the third. A change to a widely read type lands green locally and reds the
+  tree. Only `build:esm` raises TS4058 ("cannot be named"), so run it after
+  adding a type to an exported surface.
 - **`pnpm test-related` is the escalation**, for a change whose blast radius you
   cannot name: a hub module sits in 300-900 suites. Read `-- --listTests` first.
   `reference/TEST_INFRASTRUCTURE.md`.
@@ -76,7 +76,6 @@ A track a feature stands up for the user goes to `addSessionTrackConf`;
   `reference/COMPILER_TERNARY_FINDING.md`.
 - `pnpm autogen` answers any "X is out of date". **Check `pnpm gen:shaders`'s
   exit code** — a failed compile leaves the stale `.generated.ts` passing.
-- `typescript` 6.x lints, `typescript7` typechecks.
 - Removing a plugin export, session member or extension point fails quietly:
   `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).

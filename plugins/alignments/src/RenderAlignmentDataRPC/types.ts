@@ -87,15 +87,13 @@ export interface ModTooltipEntry {
 // main thread, and each tier is a separate type so the worker cannot ship a
 // placeholder for a field it has no answer for. `PileupDataResult` at the bottom
 // of this file is the fully-tiered value; the tiers themselves are the display's
-// invalidation tiers 1/2/3 (LinearAlignmentsDisplay/CLAUDE.md).
+// invalidation tiers 1/2/3 (agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md).
 //
 // The per-feature draw/pack functions depend only on their narrow
 // `features/X/types.ts` contract (which the tiered whole structurally satisfies),
 // not on any of these. Fields group into row-instanced features (carry `*Ys`,
 // packed main-thread post-layout) and position-aggregate features (no `*Ys`,
-// pre-packed in the worker as a `*PackedBuffer`) — see
-// plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"Row-instanced vs
-// position-aggregate".
+// pre-packed in the worker as a `*PackedBuffer`).
 export interface WorkerPileupData {
   // Read data - positions are absolute genomic uint32
   // [start, end] pairs — the read's true alignment span, never clipped to the

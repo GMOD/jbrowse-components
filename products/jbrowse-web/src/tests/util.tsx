@@ -240,13 +240,14 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
  * look. The second sample gives an imminent `loading` somewhere to appear.
  *
  * **Only for a setting whose change REFETCHES.** One that merely repaints —
- * anything in the `renderState` tier, per `LinearAlignmentsDisplay/CLAUDE.md`'s
- * invalidation tiers — never moves the phase, so this returns immediately with
- * the previous frame still up. Not hypothetical: `BigWigColor` was ported to
- * this and captured the pre-recolor canvas (the default blue, 68% different
- * from the green it had just asked for) while the phase sat at `ready`
- * throughout. Those callers take {@link waitForRepaintedCanvas}, which watches
- * the pixels because nothing on the model moves.
+ * anything in the `renderState` tier, per
+ * `reference/LINEAR_ALIGNMENTS_DISPLAY.md`'s invalidation tiers — never moves
+ * the phase, so this returns immediately with the previous frame still up. Not
+ * hypothetical: `BigWigColor` was ported to this and captured the pre-recolor
+ * canvas (the default blue, 68% different from the green it had just asked for)
+ * while the phase sat at `ready` throughout. Those callers take {@link
+ * waitForRepaintedCanvas}, which watches the pixels because nothing on the
+ * model moves.
  */
 export async function findSettledDisplay(
   testid = 'pileup-display',

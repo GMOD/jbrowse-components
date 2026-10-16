@@ -37,8 +37,9 @@ export const MISSING = Number.NaN
 //     despite carrying different numbers of alt alleles; they now score 1.33 and
 //     0.67.
 //   - **Mixed ploidy is why this is a fraction, not a raw count.** A haploid alt
-//     (`1`, routine on chrX non-PAR and chrM, and per the plugin's CLAUDE.md a
-//     case every genotype consumer has to agree on) carries one alt allele but
+//     (`1`, routine on chrX non-PAR and chrM, and per
+//     reference/VARIANTS_DISPLAY.md a case every genotype consumer has to
+//     agree on) carries one alt allele but
 //     is fully alt, so a raw count would score it 1 and make it the twin of a
 //     diploid het. Dividing by the called alleles is ploidy-invariant, so `1`
 //     and `1/1` and `1/1/1` all land on 2 the way they should.

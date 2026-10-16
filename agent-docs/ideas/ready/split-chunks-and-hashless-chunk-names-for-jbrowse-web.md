@@ -30,7 +30,6 @@ dev box.
 - Gate: `browser-tests/worker-smoke.ts` and the e2e suite in CI.
 - `main.js` was 124 KB gz with mobx inside after `1e57f5c68a` moved mobx out and
   reached 97 KB; this change moves mobx out again.
-- Update the note in `products/jbrowse-web/CLAUDE.md` with the change.
 
 ## 2. Chunk filenames without per-chunk hashes
 

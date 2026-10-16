@@ -516,7 +516,6 @@ export function isChainFacetable(field: string | undefined) {
 // The grouping a fetch can actually honor. A per-read dimension in chain mode (an
 // old session with strand + chain, say) degrades to ungrouped rather than
 // splitting chains across sections and breaking their connecting lines.
-// See ../RenderAlignmentDataRPC/CLAUDE.md.
 export function facetForUnit(facet: Facet | undefined, unit: AlignmentsUnit) {
   return unit === 'chain' && !isChainFacetable(facet?.field) ? undefined : facet
 }

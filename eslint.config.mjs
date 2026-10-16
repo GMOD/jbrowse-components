@@ -113,15 +113,14 @@ const noTrackWidthPx = {
   message:
     'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See MultiRegionDisplayMixin.canvasWidthPx.',
 }
-// plugins/alignments/src/CLAUDE.md states this one and also states why it needs a
-// linter rather than a reviewer: the flag agrees with `strand` on every BAM under
+// This one needs a linter rather than a reviewer: the flag agrees with `strand` on every BAM under
 // test and disagrees only on the flagless PAF/synteny blocks the same pipeline
 // serves, so a conversion written anywhere else "survives review and ships".
 // Every strand bug this plugin has had was that.
 const noSamFlagReverse = {
   selector: "Identifier[name='SAM_FLAG_REVERSE']",
   message:
-    'SAM_FLAG_REVERSE may only become a strand inside an adapter feature class (SamRecordFeature.strand). Everywhere downstream reads `getStrand(feature)` / `readStrands[i]` / `FeatureData.strand`, which is universal — `getFlags` returns 0 for a PAF/synteny block, so a flag-derived strand reports every one of them forward. Rules needing a strand AND a flag live in shared/util.ts (firstOfPairStrand). See plugins/alignments/src/CLAUDE.md.',
+    'SAM_FLAG_REVERSE may only become a strand inside an adapter feature class (SamRecordFeature.strand). Everywhere downstream reads `getStrand(feature)` / `readStrands[i]` / `FeatureData.strand`, which is universal — `getFlags` returns 0 for a PAF/synteny block, so a flag-derived strand reports every one of them forward. Rules needing a strand AND a flag live in shared/util.ts (firstOfPairStrand).',
 }
 // The mutation `withRegionRef` exists to prevent. Nothing does it today; the rule
 // is here so nothing starts, because the failure is a wrong picture rather than a
@@ -132,7 +131,7 @@ const noRecordRefMutation = {
   selector:
     "AssignmentExpression[left.type='MemberExpression'][left.computed=false][left.property.name='ref']",
   message:
-    "Do not assign `record.ref = …`. @gmod/bam memoizes decoded records in a per-file chunk LRU, so two queries can be handed the identical objects and the last fetch to resolve rebinds the reference for every other region — resolving one region's mismatches against another region's sequence. Use `record.withRegionRef(packedRef)`, which returns a bound view. See plugins/alignments/src/CLAUDE.md and regionRefAliasing.test.ts.",
+    "Do not assign `record.ref = …`. @gmod/bam memoizes decoded records in a per-file chunk LRU, so two queries can be handed the identical objects and the last fetch to resolve rebinds the reference for every other region — resolving one region's mismatches against another region's sequence. Use `record.withRegionRef(packedRef)`, which returns a bound view. See regionRefAliasing.test.ts.",
 }
 
 // `rpcManager.call` reached two ways — off a binding, and off `getSession(…)` /
@@ -223,7 +222,7 @@ const restrictedSyntax = [
 const noHandRolledAttach = {
   selector: "CallExpression[callee.property.name='attachRenderingBackend']",
   message:
-    'Call installUpload rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
+    'Call installUpload rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079.',
 }
 
 // `initialized` and `ready` are one-sided: neither ever goes true on the error

@@ -338,8 +338,7 @@ interface Events {
   bases: string[]
 }
 
-// The refactor changed two representations ON PURPOSE, and both are documented
-// (plugins/alignments/CLAUDE.md names the same pair for the CRAM walk):
+// The refactor changed two representations ON PURPOSE:
 //
 //   - a clip's `length` was 1, and is now 0. A clip consumes no reference; its
 //     read length travels in `cliplen`, which is what consumers read.

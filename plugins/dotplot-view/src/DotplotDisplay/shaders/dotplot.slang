@@ -8,7 +8,7 @@
 // lineCap:'round', so short alignments render as dots.
 //
 // Colors are pre-packed opaque ABGR; the plot-wide opacity slider is the
-// `alpha` uniform (DotplotDisplay/AGENTS.md).
+// `alpha` uniform (DotplotDisplay/CLAUDE.md).
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! blend: premultiplied

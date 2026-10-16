@@ -32,7 +32,7 @@ export interface JunctionReference {
 //
 // Worker-side compute. SVG-overlay geometry (`projectSashimiArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
-// LinearAlignmentsDisplay/CLAUDE.md).
+// reference/LINEAR_ALIGNMENTS_DISPLAY.md).
 export function computeSashimiJunctions(
   gaps: CoverageGap[],
   reference?: JunctionReference,

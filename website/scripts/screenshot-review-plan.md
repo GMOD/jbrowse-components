@@ -22,9 +22,9 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   ```bash
   node scripts/generate-screenshots.ts --filter <name> --exact --force
   ```
-  - **Use `--force`.** The content-stable gate (see root `website/CLAUDE.md`)
-    keeps the old PNG when a re-render differs by <0.5%, which silently skips
-    small text/annotation edits.
+  - **Use `--force`.** The content-stable gate keeps the old PNG when a
+    re-render differs by <0.5%, which silently skips small text/annotation
+    edits.
   - The Bash tool's 2-min default timeout kills specs that fetch big remote data
     (1000g, cactus, celegans, cgiab) — pass a longer tool timeout (~400000ms).
     Concurrency is 4, so batch a few `--filter a,b,c` together, or pass your own

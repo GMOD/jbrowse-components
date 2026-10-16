@@ -118,7 +118,7 @@ function stateModelFactory() {
         // This is a snapshot, so read a specific slot with an array path off the
         // live node (`getConf(track, ['adapter', 'x'])`) rather than off this —
         // `types.stripDefault` omits a slot at its default. See
-        // ../../configuration/CLAUDE.md.
+        // agent-docs/reference/CONFIG_PATTERN.md.
         return getConf(self.parentTrack, 'adapter')
       },
 

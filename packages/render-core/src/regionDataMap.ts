@@ -23,8 +23,8 @@ export function isCheckedAtTheStore(map: ReadonlyMap<unknown, unknown>) {
  * ADR-060.
  *
  * **Shallow, and that follows from an invariant the codebase already states**:
- * per-region values are freshly constructed and never mutated (agent-docs
- * CLAUDE.md; backends diff by reference identity). Nothing inside an entry can
+ * per-region values are freshly constructed and never mutated (ADR-060;
+ * backends diff by reference identity). Nothing inside an entry can
  * therefore change, so the deep enhancer's field-level atoms can never fire —
  * they are unreachable reactivity, not a safety margin. What they do cost is
  * paid on every insert and every read:

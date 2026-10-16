@@ -1,7 +1,7 @@
 // What `check-page-endings` asserts of one tutorial's text. A tutorial closes
 // with `## See also`, `## External links`, then `## Citations`, each only when
 // it has entries, and no `##` section after them; a See also bullet links a
-// page on jbrowse.org. website/docs/tutorials/CLAUDE.md says what goes in each.
+// page on jbrowse.org.
 
 import { KINDS } from '../src/lib/remark-see-also.ts'
 

@@ -1,141 +1,45 @@
 # RenderAlignmentDataRPC
 
-One RPC serves every alignments display, and it knows no chains: chain identity
-is joined on the main thread (`attachChainFields`,
-[ADR-188](../../../../agent-docs/architecture-decision-records/adr-188-the-worker-knows-no-chains.md)).
-What chain mode changes about a fetch is the unit a facet keeps whole,
-`facet.unit`.
-
-## Row-instanced vs position-aggregate
-
-Row-instanced features carry `*Ys` and are packed on the **main thread** at
-upload, because a read's row isn't known until all visible regions are laid out
-together
-([ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)
-— the pack is separable from the layout, and the ADR says how).
-Position-aggregate features are row-independent, so the worker packs them once
-and the main thread uploads the bytes verbatim.
-
-`coverageRegionOf` derives a region's band metadata separately from the uploads
-rather than as a side effect of one, because a region whose payload is unchanged
-still needs the metadata while skipping every pack.
+The worker knows no chains: chain identity is joined on the main thread
+(`attachChainFields`, ADR-188). Row-instanced passes are packed on the main
+thread after layout (ADR-053); position-aggregate passes are packed in the
+worker and uploaded verbatim.
 
 ## Group-by
 
-`chainGroupingKey` is the single source of truth for by-name grouping. It
-returns a **unique synthetic key for secondary alignments**, so a multimapper
-never joins its primary's chain, and for a feature with **no name at all** — a
-PAF/synteny block, which keyed by the empty name made every block in the region
-one chain the moment `unit: 'chain'` was set. `groupReadsByName` skips a
-nameless read likewise.
+- **`chainGroupingKey` is the only by-name grouping key.** It gives secondary
+  alignments and nameless features (PAF blocks) a unique synthetic key; keyed by
+  name, every PAF block in a region became one chain.
+- **Keep every dimension a closed set**; `MAX_GROUPS` is only a backstop. Each
+  group allocates region-width depth arrays and a GPU coverage buffer.
+- The `''` untagged group stays out of the overflow merge — reads lacking the
+  tag are an answer users look for.
+- **The cap is per call**, so only `orderedGroups` can size the drawn overflow
+  lane; that is why merged keys ride on the group.
+- **`fragmentLevel` is not "every read yields the same key"**: a supplementary
+  carries its own strand and pair orientation, and the primary read1 answers for
+  the fragment. A chain can therefore sit in two sections across regions, which
+  is why `attachChainFields` unions by name across lanes too.
+- Key generators serve SAM and flagless records alike: `strand`, not
+  `SAM_FLAG_REVERSE`.
 
-- **Keep every dimension a closed set; `MAX_GROUPS` is only the backstop.** Each
-  group allocates region-width depth arrays and its own GPU coverage buffer.
-- `mapq` bins by confidence, not by decade — real MAPQ is bimodal at the
-  aligner's ceiling.
-- A tag or field facet and `mateAssembly` are the ones the DATA decides, and
-  they are answered at opposite ends. A tag has a dialog, which scans the
-  visible blocks and blocks Submit on the count (`tagGroupingVerdict`, which
-  also names the other end — a tag no read carries); a field written in config
-  has no point of choice and falls to the overflow lane. `mateAssembly` has no
-  point of choice either: an all-vs-all track names its mates from the file, an
-  unlisted sample falling back to its bare PanSN prefix
-  (`assemblyForPanSNName`), so config cannot bound the count and only a second
-  scan could. It is told after the fact instead, by the overflow lane's own chip
-  (`overflowLabel`).
-- The `''` untagged group is held out of the overflow merge — reads _lacking_
-  the tag are a distinct answer users look for.
-- **The cap is per call, so the overflow lane's COUNT is not.** Each region
-  merges its own tail; the drawn lane holds the union, which only
-  `orderedGroups` can size. That is why the merged keys ride along on the group.
-- Chain mode allows only dimensions that resolve one chain to one key —
-  `fragmentLevel` (the chain's representative read answers for the fragment)
-  **or** a `chainKey` that answers for the whole chain, which is why
-  `isChainFacetable` derives the answer instead of reading a third field. A tag
-  or field facet describes the fragment. `fragmentLevel` is **not** "every read
-  yields the same key": a supplementary segment carries its own strand and its
-  own `pair_orientation`, so it disagrees with its primary and the fragment's
-  answer is the primary read1's. A new `ReadDimension` member is a compile error
-  until it's classified, and each entry's `field` is pinned to its own registry
-  key.
-- Key generators must cover **both** worlds this pipeline serves — hence
-  `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
-- A chain-unit facet keys each chain off its representative read (or the
-  dimension's `chainKey`) and files the whole chain in that section. A region
-  holding only a chain's supplementary files it under the supplementary's own
-  key, so a chain can sit in two sections across regions — which is why
-  `attachChainFields` unions by name across lanes as well as regions.
+## Types per invalidation tier
 
-## One value, three types, one per invalidation tier
+`WorkerPileupData` → `ChainedPileupData` → layout → color bakes →
+`PileupDataResult`. Type a function by the narrowest tier it reads; the worker
+never ships placeholders for fields a later tier produces.
 
-`WorkerPileupData` is what this RPC returns. `ChainFields` is what chain mode
-attaches on the main thread ahead of layout (`ChainedPileupData`, the layout's
-input), `PileupLayoutArrays` is what main-thread layout adds,
-`readFillColors`/`readColorCategories` what the two color bakes add, and
-`PileupDataResult` is the whole of it — the value a renderer, hit test or
-overlay reads. The display's tier rule
-(`agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md` §"Which getter decides what
-a setting invalidates") is therefore type-checked rather than remembered:
+**Fixtures build on `testPileupData` (`baseWorkerPileupData`,
+`basePileupDataResult`), never `as unknown as`.** The optional fields are left
+out on purpose: `isChainData` narrows on them.
 
-- **The worker cannot ship a placeholder** for a row it doesn't know. It used to
-  ship eleven — a zero `maxY`, empty color arrays, three empty line/tint passes
-  — and each one was a field whose real producer lived elsewhere.
-- **`cloneWithLayout` returns a different type than it takes**, so a pass that
-  reads `readYs` cannot be handed raw data. `withoutLayout` is the zero-row
-  answer for the two cases that place nothing (an empty region, a lane collapsed
-  to its coverage band) — a real layout, not a gap.
-- **`overlayReadColorCategories` takes `FillColoredPileupData`**, which is how
-  the "tag colors first, the `noTagValue` bucket is read off them" ordering
-  stopped being a comment.
+## Placement and sort
 
-A pass that only reads fetched arrays (arcs, sashimi, the coverage domain) says
-`WorkerPileupData` and can then be fed either. That direction is the safe one,
-so prefer the narrowest tier a function actually reads.
-
-## A fixture builds on `testPileupData`, never `as unknown as`
-
-`WorkerPileupData` has ~80 required fields, so the cast looked free. It turns
-off excess-property checking, so a misspelled field is accepted in silence, and
-it lets a fixture omit a field production code later starts reading.
-`baseWorkerPileupData(n)` supplies the worker's required set and
-`basePileupDataResult(n)` carries it through both main-thread tiers with the
-production functions; `makePileupDataResult` sizes either from whichever
-per-read array you pass.
-
-The optional fields are left out **on purpose** — they are what `isChainData`
-narrows on, so a base that filled them would move tests to the other branch
-without saying so.
-
-## The placement axis is segmented per refName — in BOTH layouts
-
-RefNames share a coordinate space but occupy disjoint screen space, so one axis
-collides regions that never overlap. Pileup shifts each read's unioned extent as
-a unit; chain shifts each region's bounds **before** merging by name, because a
-chain can span refNames. Chain had this bug after pileup's was fixed.
-
-## `sortColumn` names a column, not an offset — `sortForRegions` is the gate
-
-It applies **only when every region being laid out is on `sortColumn.refName`**,
-so a localized sort can't false-match the same number on another chromosome.
-Both layout paths call it: the gate lived in the multi-region path alone while
-the single-region path — most browsing — passed `sortColumn` straight through,
-and the slot is **config**, so a sort set at chr1:1000 silently reordered chr2's
-reads with the menu still showing a sort as active.
-
-It is also what the display's `sortColumn` getter promises: it canonicalizes the
-refName because a session spec can carry an alias, and says an unresolvable one
-leaves the reads _unsorted_. The multi-region path keeps its own `regions &&`
-check on top — structural, not policy.
-
-**Which reads a sort ranks is `partitionBySort`, and it is not just the span
-test.** An interbase mark sits BETWEEN reference bases, so a right-edge soft or
-hard clip is recorded at the read's **exclusive end** and `end > sortPos` drops
-it — sinking the clipped reads below the ones reading through the breakpoint,
-the inverse of the request, while the track menu showed the sort as applied
-(interbase types tick "Base pair"). A read carrying a ranked mark at `sortPos`
-counts however its alignment ends. Left-edge clips sit on the read's own start,
-so the feature worked on half its inputs, and the interbase sorts are reachable
-only from the right-click menu.
-
-`showSoftClipping` belongs in `rpcProps` — the worker gates per-base extraction
-on it.
+- **The placement axis is segmented per refName in both layouts** — pileup and
+  chain. One shared axis collides regions that never overlap on screen.
+- **`sortColumn` is config, so it goes through `sortForRegions`** in both layout
+  paths: it applies only when every laid-out region is on its refName.
+- **`partitionBySort` is not a span test.** A right-edge clip sits at the read's
+  exclusive end, so `end > sortPos` alone drops the reads the sort is about.
+- `showSoftClipping` belongs in `rpcProps`: the worker gates per-base extraction
+  on it.

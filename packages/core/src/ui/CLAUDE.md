@@ -1,94 +1,44 @@
 # packages/core/src/ui
 
-## `CascadingMenu` decides dismissal from the row type
+## Menus
 
-A `checkbox`/`radio` is a setting and keeps the menu open; everything else
-dismisses. So a settings row states nothing. `keepMenuOpen` is for exceptions,
-in practice only `false`: a checkbox whose click opens a dialog, swaps the
-display the menu was built from, or unmounts the chrome hosting it.
+- **A `checkbox`/`radio` row keeps `CascadingMenu` open; everything else
+  dismisses.** `keepMenuOpen: false` is for a checkbox that opens a dialog or
+  replaces the display the menu was built from. A test or figure spec that
+  toggles a setting must dismiss the menu before touching the view.
+- **Build rows from `@jbrowse/core/ui/menuItems`** (React-free, loaded at plugin
+  install); render from `@jbrowse/core/ui`.
+- **`toggleItem` over a setter, not `checkboxItem`.**
+- **A shared builder never sets `endAdornment` or `icon`** — the element drags
+  its component graph into every caller
+  (`agent-docs/reference/EAGER_BUNDLE.md`).
+- A builder wrapping `SettingRowOptions` passes the whole bag through; narrowing
+  it drops fields silently.
 
-The menu is a modal, so a test or figure spec that toggles a setting then
-touches the view has to dismiss it first.
+## `Reversible`: state that hides things declares itself
 
-## Builders here, components there
-
-**Build a row from `@jbrowse/core/ui/menuItems`; render one from
-`@jbrowse/core/ui`.** `menuItems.ts` is a React-free entry and
-`menuItems.purity.test.ts` fails if anything it reaches imports react/@mui/
-@emotion — its callers are evaluated at plugin install, so reaching them through
-the barrel put ~80 Material components in every host's first paint.
-
-- `SettingRowOptions` is the one bag every row takes — a builder that
-  hand-narrows it drops fields silently, which is what MAF's local `toggle`
-  wrapper had done to three of the five.
-- **`toggleItem`, not `checkboxItem`, for a checkbox over a setter.** It hands
-  the setter the new value instead of leaving 40 rows to write `!` against the
-  same expression they are `checked` by. Same shape `radioItems` already takes.
-- A row's trailing control is `endAdornment`, a raw element, resolved at draw
-  time by `menuItemAdornment.tsx`. It is the only form there is — no descriptor
-  field exists — so **a shared builder should not set one**: the element drags
-  its whole component graph into every caller. `icon` is still an element type;
-  `agent-docs/reference/EAGER_BUNDLE.md`.
-- **A row's key is `id ?? label`, deduped by occurrence within the level**
-  (`rowKeys`), so no menu can hand React one key for several rows whatever its
-  rows are called — an element label, which interpolates to `[object Object]`,
-  or a label two rows legitimately share. `id` then buys a row its identity
-  across a reorder rather than being owed. Both collisions shipped because React
-  reports them through `console.error`, which an agent's jest run does not print
-  for a passing suite.
-
-## State that hides things declares itself: `Reversible`
-
-Anything narrowing or marking what the user sees is declared once as
-`{ count, label?, icon?, clear }` in a `Reversibles` record. The "Filter by…
-(n)" count, the undo rows and what "Clear all filters" clears are all **derived
-from that one list** — they drifted apart repeatedly and every failure was
-silent.
+Anything narrowing or marking what the user sees is one
+`{ count, label?, icon?, clear }` entry. The filter count, the undo rows and
+"Clear all filters" all derive from that list.
 
 - **The seam is a method, not a getter** — `const { x } = self` on a getter
-  freezes the composition-time value, so a super-capturing subclass gets a stale
-  snapshot.
-- **Narrowing and marking are separate lists** — `featureNarrowings` (hide data;
-  counted, cleared as a group) and `featureMarks` (highlights, pins). A
-  highlight isn't filtering anything.
-- **`filterMenuItems` takes only `narrowings`.** A filter living wholly in a
-  dialog still declares one, with no `label`, so its count and clear come from
-  the same place.
-- **The jexl-filter entry is `jexlFilterNarrowing`**, shared by all three
-  displays with that row. Its count is "the override differs from what the
-  config declared", never a length: a filter an admin declared is not a user
-  narrowing, and "Clear all filters" could not undo it anyway.
+  freezes the composition-time value for a super-capturing subclass. The same
+  holds for any extension seam.
+- `featureNarrowings` hide data; `featureMarks` (highlights, pins) don't.
+  `filterMenuItems` takes only narrowings.
+- `jexlFilterNarrowing` counts "override differs from config", never a length:
+  an admin's filter is not a user narrowing.
 
-## Design tokens
+## Styling
 
-`makeStyles` hands a component **`JBrowseStyleTheme`** — palette, spacing,
-shape, type scale — not MUI's `Theme`. Deliberately a subset, so `theme.zIndex`
-or `theme.shadows` is a compile error; layering is `zIndexes.ts`.
-`SessionPaletteProvider` (colors, plus the `setThemeMode` write the worker's
-baked labels derive from) is what an embedding app mounts — `PaletteProvider`
-alone is the near miss it exists to close, and stays for a host supplying its
-own palette. `StyleThemeProvider` (the whole thing, from `session.styleTheme`)
-is what our products mount. `util/tss-react/muiFree.test.ts` fails if
-`makeStyles` reaches `@mui/*`.
-
-**An `sx` cannot override a `makeStyles` class on the same element.** Emotion
-merges a styled component's incoming `className` AFTER the `sx` it serialized,
-so the tss class wins whatever the specificity looks like, silently. A variant
-of a `makeStyles` rule is a second rule composed with `cx`, never an `sx` — the
-leading `subHeader` in `CascadingMenu` shipped its rule-off for six weeks that
-way.
-
-**A class on a `Paper` sets `backgroundColor`, never the `background`
-shorthand.** MUI draws the dark theme's elevation as a `background-image`
-overlay, and the shorthand resets it, so a floating label comes out the same
-color as the page behind it (`TrackLabel`, `MiniControls`).
-
-**`palette.ts` is the single source of truth for colors**; `theme.ts` builds the
-MUI theme over it and holds none of its own. Colors shared with RPC workers are
-plain `export const` CSS strings — import them directly, never a fallback copy
-or a `theme.palette` hop. Theme-varying colors go on `StringColors`
-(`lightStringColors` + a `darkStringColors` override). **`primary` is the brand
-and stays midnight on the dark theme**, so a mark on the page's own ground, such
-as a checked box, a selected row or a crosshair, reads `accent`. A JSDoc
-`#color <group> | <label> | <description>` tag surfaces one as a swatch row in
-the website guides.
+- `makeStyles` hands a component `JBrowseStyleTheme`, a deliberate subset of
+  MUI's `Theme`; layering is `zIndexes.ts`.
+- An embedding app mounts `SessionPaletteProvider`, not bare `PaletteProvider`.
+- **An `sx` cannot override a `makeStyles` class on the same element** — the tss
+  class wins regardless of specificity. Compose a second rule with `cx`.
+- **A class on a `Paper` sets `backgroundColor`, never `background`**, which
+  erases MUI's dark-theme elevation overlay.
+- **`palette.ts` is the single source of colors.** Worker-shared colors are
+  plain `export const` strings, imported directly. `primary` stays midnight in
+  dark theme; a mark on the page ground (checkbox, selection, crosshair) uses
+  `accent`.

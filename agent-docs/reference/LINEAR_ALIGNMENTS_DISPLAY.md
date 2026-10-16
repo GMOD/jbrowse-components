@@ -6,7 +6,7 @@ kind: spec
 
 # LinearAlignmentsDisplay
 
-The rules list and the subsystem's overview are `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`. Bare paths
+`plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md` points here. Bare paths
 below are relative to `plugins/alignments/src/LinearAlignmentsDisplay/`.
 
 ## Which getter decides what a setting invalidates
@@ -18,9 +18,7 @@ tracking.
 
 The first three tiers are also three TYPES — `WorkerPileupData` →
 `LaidOutPileupData` → `PileupDataResult` — so a pass that reads a row cannot be
-handed unlaid data and the worker cannot state a field it has no answer for
-(plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"One value, three
-types").
+handed unlaid data and the worker cannot state a field it has no answer for.
 
 **Chain mode is not a tier-1 setting.** The worker knows no chains;
 `chainAttachment` joins chain identity across every region and lane

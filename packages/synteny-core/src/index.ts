@@ -110,7 +110,8 @@ export type { ComparativeFetchContext } from './installComparativeFetchAutorun.t
 // `runDiagonalize` reaches it through a dynamic import, and a static export
 // beside that is how the deferral gets silently undone — a bundler that sees the
 // module imported both ways puts it in the main chunk, which is the same trap
-// packages/tree-sidebar/CLAUDE.md prices at 608KB vs 539KB. Call runDiagonalize.
+// agent-docs/reference/TREE_SIDEBAR.md prices at 608KB vs 539KB. Call
+// runDiagonalize.
 export type {
   DiagonalizeAdapterSpec,
   DiagonalizeArgs,

@@ -297,7 +297,7 @@ is declared in `STATES_NO_RULES`.
 - Don't hand-edit a generated markdown block either. Both marker spellings are
   live — `<!-- NAME START -->` and `<!-- BEGIN GENERATED NAME -->` — and `pnpm
   autogen` overwrites the edit at the next run; change the source it scans. See
-  [the marker table](CLAUDE.md#frontmatter-and-generated-tables).
+  [the marker table](reference/GENERATED_DOC_BLOCKS.md).
 - Don't leave a per-instance vertex budget without the input range it covers.
   Where one instance draws an unbounded number of marks, `verticesPerInstance`
   caps how many the shader can address and the Canvas2D path has no such cap, so

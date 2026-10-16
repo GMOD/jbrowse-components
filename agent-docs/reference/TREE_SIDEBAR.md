@@ -6,8 +6,7 @@ kind: spec
 
 # tree-sidebar
 
-The rules list and the subsystem's overview are `packages/tree-sidebar/CLAUDE.md`. Bare paths
-below are relative to `packages/tree-sidebar/`.
+Bare paths below are relative to `packages/tree-sidebar/`.
 
 ## Clustering lifecycle lives here, not per plugin
 

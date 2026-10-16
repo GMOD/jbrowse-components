@@ -9,8 +9,8 @@
 // what `{ type: 'waitForAppSettled' }` replaces. All `ready` means the work was
 // over before the spec's last wait returned, so the sleep is dead time — and
 // dropping it is then a question about the page's own rendering rather than about
-// the app (see `search_feature_highlight` in website/CLAUDE.md, which is
-// measurably sensitive to being captured 200ms earlier).
+// the app (see `search_feature_highlight` in website/scripts/CLAUDE.md, which
+// is measurably sensitive to being captured 200ms earlier).
 //
 // The spec name comes in through the environment because screenshot-options.ts
 // parses process.argv strictly and exits on a positional.

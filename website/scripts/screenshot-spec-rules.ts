@@ -207,9 +207,8 @@ export function shadowedSessionTracks(
 
 // ── The raw-pixel ratchet ──────────────────────────────────────────────────
 //
-// `website/CLAUDE.md` says it twice — "never hand-measure a callout position —
-// every annotation `anchor`s" and "a click anchors too" — and a rule nothing
-// counts is a rule that drifts. This counts.
+// `website/scripts/CLAUDE.md` says every annotation `anchor`s, never by a
+// measured pixel, and a rule nothing counts is a rule that drifts. This counts.
 //
 // It is a RATCHET, not a gate: the remaining entries are deliberate (see below),
 // so failing on their existence would fail every run. What it stops is number

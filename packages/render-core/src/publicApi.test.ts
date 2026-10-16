@@ -12,7 +12,7 @@ import { join } from 'node:path'
 // changes when someone means it to.
 //
 // There was a fifth case here, pinning the names re-exported from a `src/index.ts`
-// barrel. The barrel is gone (see the package CLAUDE.md): it duplicated 88 of
+// barrel. The barrel is gone: it duplicated 88 of
 // its 90 names from the subpath map below, contributed two `useRenderingBackend`
 // internals it claimed not to re-export, and had 15 in-repo importers against
 // the subpaths' 336. Pinning a second spelling of the same surface only ever

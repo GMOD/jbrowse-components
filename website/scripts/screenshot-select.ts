@@ -177,9 +177,9 @@ export async function selectSpecsToRender(): Promise<
   //
   // It refuses rather than pulling: a sweep is long and expensive, and silently
   // going to the network at minute zero is not something to do on the user's
-  // behalf. `pnpm screenshots` pulls first, but website/CLAUDE.md tells people
-  // to run the generator directly with node (npx tsx breaks page.evaluate), so
-  // the guard cannot live only in the npm script.
+  // behalf. `pnpm screenshots` pulls first, but website/scripts/CLAUDE.md tells
+  // people to run the generator directly with node (npx tsx breaks
+  // page.evaluate), so the guard cannot live only in the npm script.
   //
   // Scoped to THIS RUN's own outputs rather than the whole manifest. An absent
   // figure only matters to a capture about to overwrite it, and scoping it that

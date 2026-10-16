@@ -62,8 +62,8 @@ self.conf.rows.field
 ## Reference resolution
 
 `ConfigurationReference(schemaType)` dispatches on the schema's
-`explicitIdentifier`; `packages/core/src/configuration/CLAUDE.md` is the
-authoritative account with its canary tests. One trap lives here: **a subclass
+`explicitIdentifier`; ADR-084 and the resolvers' doc comments are the
+authoritative account. One trap lives here: **a subclass
 that adds config slots must redeclare
 `configuration: ConfigurationReference(configSchema)` in its `types.compose`**,
 or `getConf` types against the base schema. Compose overrides props, so this

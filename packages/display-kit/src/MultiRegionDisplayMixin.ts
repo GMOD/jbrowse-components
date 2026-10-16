@@ -421,11 +421,11 @@ export default function MultiRegionDisplayMixin() {
       }))
       // `dataCurrent` and `svgReady` sit in their own blocks, after everything
       // they read, so each reads its siblings off `self` rather than `this`.
-      // Same shape as `GlobalFetchMixin`, and for the reason in CLAUDE.md ("a
-      // super-captured view is called bare"): a subclass that captures one of
-      // these and calls it with no receiver would get `undefined` for a `this`
-      // sibling. Nothing captures them today; the split is what keeps that true
-      // by construction instead of by luck.
+      // Same shape as `GlobalFetchMixin`, and for the reason in
+      // reference/DISPLAY_KIT.md ("a super-captured view is called bare"): a
+      // subclass that captures one of these and calls it with no receiver would
+      // get `undefined` for a `this` sibling. Nothing captures them today; the
+      // split is what keeps that true by construction instead of by luck.
       .views(self => ({
         /**
          * #getter

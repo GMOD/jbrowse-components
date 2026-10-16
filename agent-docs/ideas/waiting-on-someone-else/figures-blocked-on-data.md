@@ -1,6 +1,6 @@
 ---
 name: figures-blocked-on-data
-description: Figures nobody can shoot until someone builds, hosts or pays for the data behind them — the junction BED the RNA-seq tutorial section names and nothing hosts, three parked on a cost or a call Colin has not made (wheat Compara, a per-level dotplot scale, the wolf-ancestry sweep), and the cancer SV datasets worth shooting plus the three dead ends recorded so nobody re-checks them.
+description: Figures nobody can shoot until someone builds, hosts or pays for the data behind them — the junction BED the RNA-seq tutorial section names and nothing hosts, three parked on a cost or a call Colin has not made (wheat Compara, a per-level dotplot scale, the wolf-ancestry sweep), and the cancer SV datasets worth shooting plus the three dead ends recorded so nobody re-checks them, and the tutorial pages removed for good.
 ---
 
 # Figures blocked on data, a cost or a call
@@ -84,3 +84,16 @@ only raw PacBio CLR in SRA `PRJNA476239`, so the paper is design inspiration
 only. **C-GIAB / HG008** has no RNA arm at all and cannot carry a fusion
 tutorial. COLO829 has no matching RNA and K562 no usable hg38 WGS (ENCODE's is
 hg19 and 337 GB), which is why the tutorial uses two cell lines.
+
+## Removed tutorial pages
+
+None comes back as written.
+
+- `readpair_heatmap` (16250c4b58).
+- `introgression` (3be9f8f745): a reviewer could not check its human archaic
+  figures, and it had no negative control.
+- `pangenome_chrm` (42d7fe8da6): the caption claimed lineage clusters the matrix
+  did not show, the legend offered heterozygous dosage on a haploid genome, and
+  a band at the chromosome start read as the circular start mishandled.
+  Clustering chrM haplotypes against Haplogrep lineages is still a route no
+  other page has.

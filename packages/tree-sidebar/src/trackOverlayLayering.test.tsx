@@ -10,7 +10,7 @@ import { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
  * inside the components, so it regresses silently: drop the portal and every
  * test still passes, because the fallback renders in place.
  *
- * These assert the escape itself. See the package CLAUDE.md for why the
+ * These assert the escape itself. See reference/TREE_SIDEBAR.md for why the
  * hit-test layer deliberately does NOT escape.
  */
 describe('sidebar chrome escapes the display sandbox', () => {

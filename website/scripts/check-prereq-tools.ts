@@ -7,15 +7,11 @@
 // naming a tool no fence anywhere on the page runs is still the failure — which
 // part shows it is not something this check judges.
 //
-// The rule is in docs/tutorials/CLAUDE.md — "the command that produces the
-// page's subject file goes in the prose, in a form a reader runs on their own
-// equivalent data", and the line right under it, "watch for a tool in
-// `## Prerequisites` that no fence on the page ever invokes". That was prose,
-// and the corpus had drifted a long way from it: a page listed `plink` and
-// showed no plink, listed vcftools and showed no vcftools, told a reader to
-// install bedtools for lanes it then described in words. A reader who installs
-// what a page asks for and finds no use for it on the page has been told to
-// prepare for a tutorial that isn't there.
+// The rule was prose, and the corpus had drifted a long way from it: a page
+// listed `plink` and showed no plink, listed vcftools and showed no vcftools,
+// told a reader to install bedtools for lanes it then described in words. A
+// reader who installs what a page asks for and finds no use for it on the page
+// has been told to prepare for a tutorial that isn't there.
 //
 // So this asks the narrow, checkable version: does some fence on the page run
 // it. Not which flags (that is check-script-commands, against the build script)
@@ -30,9 +26,8 @@
 // on the command word would report every one of those as missing.
 //
 // PLUMBING is the other half of staying quiet: a runtime, a fetcher, an
-// installer or the bgzip/tabix prep that docs/tutorials/CLAUDE.md sends to
-// quickstart_web is named because the reader needs it, not because the page is
-// a tutorial about it.
+// installer or the bgzip/tabix prep is named because the reader needs it, not
+// because the page is a tutorial about it.
 //
 // Run: `pnpm check-prereq-tools`, or the root `pnpm check-docs`.
 import { readFileSync, readdirSync } from 'node:fs'

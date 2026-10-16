@@ -1,110 +1,36 @@
 # jbrowse-web
 
-## Bundle size
+## Load cost
 
-Measure **JS bytes over the wire on the initial load**, page and workers
-together, not total bundle size. `browser-tests/measure-load.ts` and
-`worker-smoke.ts` are the harnesses (run after a build).
-
-`splitChunks: { chunks: 'all' }` was reverted on a measurement that counted the
-page's requests alone. Counting the worker's too, it saves 39-41 KB gz on every
-page
-([ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web](../../agent-docs/ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web.md)).
-
-Bytes are not what a cold load waits on: a warm-cache reload of the hg38 hub
-took as long as a cold one. `browser-tests/measure-load-latency.ts` emulates a
-round trip per request and reports what serializes a load: when the worker
-starts, when its first data request goes out, and how many fetches waited on the
-one before.
+Measure JS bytes over the wire on the initial load, page and workers together
+(`browser-tests/measure-load.ts`, `worker-smoke.ts`), not bundle size. A cold
+load waits on round trips more than on bytes: `measure-load-latency.ts`.
 
 ## Browser (e2e) tests
 
-Always build first — the tests load `build/`, and a stale one gives false
-failures. `--debug` unsuppresses GPU/WebGL console noise.
-
-**`suites/local-file-blob.ts` is the only check that a locally-opened file still
-resolves in the worker**, and it has to run here: the worker's blob map is
-installed by `RpcMethodType.invoke` and by nothing else, but every jest test
-runs worker code in the main thread's realm, where the map is already populated
-and a method that skips installing it reads the right answer by accident.
-
-**Goldens are not in git.** `__snapshots__/` is gitignored; the bytes live in
-`s3://jbrowse.org/jb2-snapshots/` and git tracks `browser-tests/snapshots.lock`.
-`pnpm snapshots` is the CLI, and the runner pulls what the lock names before it
-compares, so a fresh clone needs no command.
-
-- **`pnpm snapshots push` after an `--update-snapshots` run**, then commit
-  `snapshots.lock`. **Pass `--filter` in a shared worktree**: a bare push
-  rewrites the lock from every golden on disk.
-- **`pull` will not overwrite a golden that is not in the store**, because those
-  bytes exist nowhere else. `--force` discards them.
-- Goldens remain **environment-specific** — a real-GPU webgl golden will not
-  match a swiftshader capture, and only canvas2d really travels. CI compares
-  backends against each other.
-- **The webgpu goldens carry a device pixel ratio; the others do not.** Chrome
-  is launched with a `defaultViewport`, which pins `deviceScaleFactor` to 1
-  whatever the panel is, so canvas2d and webgl goldens survive a move to a
-  retina machine. WebGPU goes through Firefox, which follows the OS, and the
-  runner pins `layout.css.devPixelsPerPx` for neither browser — so the committed
-  1266x90 webgpu goldens meet a 2532x180 capture on a retina Mac and all of them
-  fail on SIZE before a pixel is compared. That is not a regression and it is
-  not something to `-u` away: a sweep there swaps a whole backend's goldens from
-  dpr 1 to dpr 2 under cover of whatever change is in flight. Shoot webgpu
-  goldens where the existing ones were shot, or pin the pref first.
-- **A `-u` run rewrites every golden past the 0.5% gate, not the ones your
-  change moved.** Measured on the wiggle suites: 22 of them were past it, and
-  the same 22 were past it with the change reverted. Diff your own captures
-  against captures of the same suites at the base commit before reading an
-  update list as yours — `browser-tests/probe-bar-top-aa.ts` does that
-  comparison and classifies each differing pixel as a horizontal or a vertical
-  run, which is what separates "the mark moved" from "the mark is missing". A
-  capture that is short of its features reads as a huge blob diff with no edge
-  structure; one turned up in that measurement and was a half-loaded frame.
-- **Never screenshot with `fullPage: true`.** Puppeteer resizes the viewport to
-  implement it, which invalidates the raster; under concurrent browser churn the
-  capture returns before the content re-rasters, reported as a 10-25% snapshot
-  regression that moves run to run. Use `page.setViewport`.
+- **Build first** — the tests load `build/`, and a stale one gives false
+  failures.
+- **`suites/local-file-blob.ts` is the only check that a locally opened file
+  resolves in the worker.** Jest runs worker code in the main thread's realm,
+  where the blob map is already populated.
+- **Goldens are not in git**: the bytes live in S3 and git tracks
+  `browser-tests/snapshots.lock` (`pnpm snapshots`). After an
+  `--update-snapshots` run, `pnpm snapshots push --filter <suite>` and commit
+  the lock; a bare push rewrites the lock from every golden on disk, another
+  agent's included.
+- **Only canvas2d goldens travel.** WebGPU runs in Firefox, which follows the OS
+  pixel ratio, so on a retina Mac every webgpu golden fails on size. Shoot them
+  where the existing ones were shot; never `-u` them there.
+- **A `-u` run rewrites every golden past the 0.5% gate**, not only the ones
+  your change moved. Diff your captures against the same suites at the base
+  commit (`probe-bar-top-aa.ts`) before calling an update yours.
+- Never screenshot with `fullPage: true`, which resizes the viewport
+  mid-capture; use `page.setViewport`.
 - **Don't wait on `textContent.includes('Loading')`** — `LoadingOverlay` always
-  keeps that literal in the DOM, so the wait is always true and burns its full
-  timeout. Wait on the `loading-overlay` test-id count, or `data-display-drawn`
-  for canvas paint (`findDisplayPainted`).
-- **One `runner.ts` at a time per worktree.** Two gate runs in one checkout took
-  each other down twice: one was reaped part way through its captures, the other
-  wedged indefinitely on a suite the first was filtered to. A golden-refresh
-  wrapper doing `rm -rf __snapshots__` before restoring its own copy is what
-  makes it destructive rather than merely slow. Check
-  `ps -Ao command | grep runner.ts` before starting one, and read a
-  `--gate-only --drift-report` number as void if another run overlapped it.
-- `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
-  otherwise accumulate until the kernel OOM-kills a live renderer mid-run.
-- **A box's height cannot tell hard line breaks from wrapped text.** Anything
-  asserting that text laid out as N lines counts LINE BOXES —
-  `range.selectNodeContents(el); range.getClientRects().length` — because a
-  collapsed multi-line string just wraps at `maxWidth` and stays tall.
-  `comparative-tooltips.ts` carries the measured pair. **Mutate the source and
-  rebuild before believing a layout assertion**: the first spelling of that
-  check passed against a deliberately broken build.
-- **`pnpm review-snapshots-web` rebuilds its page on every load**, so editing
-  `browser-tests/review-app/` needs a reload, not a restart. It shares its write
-  protocol and repaint properties with the website's screenshot review via
-  `@jbrowse/browser-test-utils/reviewApp` — fix a protocol bug in the shared
-  client and run `reviewAppProbe.ts` after.
-- **Two traps when writing a probe against the built app**, both of which
-  produce a confident wrong answer rather than an error. **`constructor.name` is
-  minified** — the bundle a probe loads is the production build, so every
-  backend, model and renderer answers to a two-letter name and a check like
-  `backend.constructor.name.startsWith('Gpu')` reports the GPU path as absent.
-  Key off behavior or off the app's own console lines instead. And **Firefox
-  clamps `performance.now()`** for fingerprinting resistance, coarser than
-  anything sub-millisecond, so every duration column reads `0.000` whatever the
-  truth is; a probe that needs real durations sets
-  `privacy.reduceTimerPrecision: false` in `extraPrefsFirefox`, which the runner
-  deliberately does not (a test should see what a user's browser does).
-- **A verdict paints; it does not resize.** Anything that moves a button between
-  a mousedown and its mouseup makes the browser dispatch no click at all,
-  reported as "I had to press Deny twice". So in header and card: nothing a
-  verdict or background pass can change is conditionally MOUNTED (use
-  `visibility: hidden` or `disabled`), every count sits in a fixed-width slot,
-  and a pill that comes and goes gets a reserved row. Measure a change by
-  driving the real page with puppeteer and comparing `getBoundingClientRect()`
-  across the write.
+  holds that literal. Wait on the `loading-overlay` test-id count, or
+  `data-display-drawn` (`findDisplayPainted`).
+- **One `runner.ts` per worktree at a time**; two take each other down. Check
+  `ps -Ao command | grep runner.ts` first.
+- **A probe against the built app reads minified `constructor.name`s**, so key
+  off behavior. Firefox clamps `performance.now()`; a probe needing real
+  durations sets `privacy.reduceTimerPrecision: false` in `extraPrefsFirefox`.

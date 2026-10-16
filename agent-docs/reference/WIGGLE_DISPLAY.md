@@ -6,7 +6,7 @@ kind: spec
 
 # plugins/wiggle
 
-The rules list and the subsystem's overview are `plugins/wiggle/src/CLAUDE.md`. Bare paths
+`plugins/wiggle/src/CLAUDE.md` points here. Bare paths
 below are relative to `plugins/wiggle/src/`.
 
 ## Four records, because a module reflects one instance struct
@@ -71,7 +71,7 @@ separators, clustering and the row-order sort all hang off `isRowLayout`.
 what a source is drawn as and nothing about the layout, which is why there is
 one table and not nine names. `rows.field` is an enum of `source` alone
 (`quantitativeRowsConfigSchema`), so the JSON schema says so too. The same object holds the reader's arrangement, which
-`TreeSidebarMixin` owns (`packages/tree-sidebar/CLAUDE.md`, ADR-157);
+`TreeSidebarMixin` owns (`agent-docs/reference/TREE_SIDEBAR.md`, ADR-157);
 `setRowLayout` writes the field alone, so the arrangement survives a trip
 through the shared plot.
 

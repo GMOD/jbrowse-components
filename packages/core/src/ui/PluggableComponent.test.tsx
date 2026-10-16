@@ -37,8 +37,8 @@ function widgetProps(model: Partial<ReplaceWidgetProps['model']>) {
   }
 }
 
-// inline observer, matching the real fire sites (DrawerWidget/ModalWidget): per
-// CLAUDE.md the react compiler leaves those alone, so the `props` object really
+// inline observer, matching the real fire sites (DrawerWidget/ModalWidget): the
+// react compiler leaves those alone, so the `props` object really
 // is a fresh identity every render, as it is in the app. A compiled harness
 // memoizes it, PluggableComponent's own memo then skips the re-render, and the
 // remount below stops reproducing.

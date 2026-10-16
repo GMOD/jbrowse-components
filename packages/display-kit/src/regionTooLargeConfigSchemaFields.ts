@@ -4,15 +4,15 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * The config slots a display owes `RegionTooLargeMixin` — the byte budget the
  * gate spends, and the declarative way to switch the gate off.
  *
- * A table beside the mixin, for the reason `packages/tree-sidebar/CLAUDE.md`
- * gives for `RowHeightMixin` + `rowHeightConfigSchemaFields`: a mixin's slots
- * live with the mixin, so a display composing it declares them by spreading one
- * thing. This mixin was the exception — it read both slots off
- * `baseLinearDisplayConfigSchema`, which most of its composers extend and five
- * do not (the wiggle family, the two GC-content displays that inherit wiggle's
- * schema, and the reference sequence display). On those five the reads returned
- * `undefined` while typed `number` / `boolean`, as `getConf` on an undeclared
- * slot always does.
+ * A table beside the mixin, for the reason
+ * `agent-docs/reference/TREE_SIDEBAR.md` gives for `RowHeightMixin` +
+ * `rowHeightConfigSchemaFields`: a mixin's slots live with the mixin, so a
+ * display composing it declares them by spreading one thing. This mixin was the
+ * exception — it read both slots off `baseLinearDisplayConfigSchema`, which
+ * most of its composers extend and five do not (the wiggle family, the two
+ * GC-content displays that inherit wiggle's schema, and the reference sequence
+ * display). On those five the reads returned `undefined` while typed `number` /
+ * `boolean`, as `getConf` on an undeclared slot always does.
  *
  * The gap has no effect today, because all five leave `gateEnabled` false and
  * every read is behind it, as the mixin's docstrings state. It was closed

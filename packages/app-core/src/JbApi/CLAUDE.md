@@ -19,4 +19,4 @@ The briefing differs, and that is what gets missed.
   `getConf` is not `readConfObject` with extra steps, because readConfObject
   handed a model reads the MODEL's member (`getConf.test.ts`). `jb.rootModel` is
   the browser agent's handle on Web, where nothing passes rootModel as a call
-  argument. Three reviews proposed cuts onto these without driving any.
+  argument.

@@ -175,7 +175,8 @@ jbrowse-web fetches that chunk before app-ready whenever the config names a
 plugin. Declined: deleting the entry (ABI-breaking); per-export shaking, which
 splits Material UI into many small chunks that are all still fetched; raising
 `splitChunks.minSize`, which turns the fragments into duplicates.
-`products/jbrowse-web/CLAUDE.md` records `chunks: 'all'` failing the same way.
+[split-chunks-and-hashless-chunk-names-for-jbrowse-web](../ideas/ready/split-chunks-and-hashless-chunk-names-for-jbrowse-web.md)
+records `chunks: 'all'` failing the same way.
 The remaining lever is the component half of the barrel behind `lazy()` with
 **one shared `webpackChunkName`**, an ABI change (every served component becomes
 Suspense-wrapped, the hazard `MuiReExports.ts`'s header describes).

@@ -31,7 +31,33 @@ default text in a curated `HOOKS` array no scan can find, and asserts each
 `owner` file still declares the default.
 
 A row joins a block by existing in the source, never by being written down; the
-rule is in [CLAUDE.md](../CLAUDE.md#frontmatter-and-generated-tables).
+rule is in [CLAUDE.md](../CLAUDE.md#generated-tables).
+
+## Measurements
+
+A measurement is a record, `agent-docs/measurements/<id>.json` (the values, the
+`measured` date and the `source.repro` that takes them again), and every table
+showing it is generated between `<!-- BEGIN GENERATED MEASUREMENT <id> -->` and
+`END`, in its `reference/` doc and on the public page. Edit the record, never
+the table.
+
+- A column that is arithmetic over other columns is `derived`
+  (`"derived": "unpooledMs / pooledMs"`), so re-measuring one arm moves the
+  ratio beside it.
+- `source.kind` is `bench`, `jb2bench` (naming the file under `~/src/jb2bench`)
+  or `hand`, which only a human can refresh; `pnpm measurement-tables` counts
+  those.
+- The table travels whole. Where one reads badly in public, fix the record.
+- **Quote a cell instead of retyping it**:
+  `1.55-2.02x<!--m:bgzf-pool-tabix.speedup.range-->`, keyed
+  `<id>.<row>.<column>` or `<id>.<column>.<min|max|span|range|first|last>`.
+  `<row>` is the row's first column slugified, with the next column joined on
+  where rows share it. Write no space between the value and the marker: a line
+  that begins `<!--` ends the paragraph around it.
+- `check-quoted-figures` holds every `<number><unit>` on a public measurement
+  page, both ends of a range included, to an agent-doc the page links or the
+  JSDoc of an exported symbol it names. Prose retyping a number from a table on
+  the same page passes that check, so quote the cell.
 
 <!-- MARKER_INDEX START -->
 

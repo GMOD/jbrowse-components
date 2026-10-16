@@ -215,7 +215,7 @@ export class SvgCanvas {
   // treats as the same rect anchored at `x-w`) is NOT normalized here — SVG
   // would emit `width="-w"` and silently not render. Callers must pass a
   // non-negative size; spans resolve both edges and take
-  // `left = min(x1,x2)` / `w = abs(x2-x1)` (see render-core/CLAUDE.md), the
+  // `left = min(x1,x2)` / `w = abs(x2-x1)`, the
   // same convention that keeps reversed blocks correct.
   private transformRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(

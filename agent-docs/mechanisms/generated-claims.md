@@ -16,7 +16,8 @@ moves, in this order:
   alone.
 - **Ratchet** where today's answer is "most of them are still hand-written."
 
-The local spellings are in [agent-docs/CLAUDE.md](../CLAUDE.md); the checkers
+The local spellings are in
+[GENERATED_DOC_BLOCKS.md](../reference/GENERATED_DOC_BLOCKS.md); the checkers
 are `scripts/autogen.ts` and the `website/scripts/check-*.ts` and
 `website/scripts/*sync*.ts` families. What follows is the shape, which has
 nothing to do with genomics.

@@ -28,8 +28,8 @@ export const ARC_SHAPE_FLAT_UNPLACED = 3
 //
 // It answers "does this draw as a bar" and NEVER either of the two questions
 // below, which is why all three are named. `formatArcTooltip` is where that
-// bites and says so, and the display's CLAUDE.md states the rule; it belongs on
-// the predicates too, now that they have a home.
+// bites and says so, and reference/LINEAR_ALIGNMENTS_DISPLAY.md states the
+// rule; it belongs on the predicates too, now that they have a home.
 export function isFlatArcShape(shape: number) {
   return (
     shape === ARC_SHAPE_FLAT ||

@@ -15,7 +15,7 @@ The harness films in its own headless GNOME Shell. A smoke take on 2026-10-11
 tiled both windows and typed its prompt, and then stopped at the account's
 weekly Opus limit (resets 2026-10-16), so shoot `takes/smoke.mjs` again first.
 
-The harness, its traps and how to run a take are `scripts/agent-demos/CLAUDE.md`;
+The harness, its traps and how to run a take are `scripts/agent-demos/README.md`;
 each take's plan, and its staging under "Before filming", is
 `scripts/agent-demos/takes/<take>.md`.
 

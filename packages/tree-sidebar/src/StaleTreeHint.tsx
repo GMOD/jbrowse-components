@@ -10,7 +10,7 @@ import type { TreeSidebarModel } from './types.ts'
  * describes the rows.
  *
  * `computeClusterHierarchy` declines to position a tree whose leaves aren't the
- * rows on screen (see the package CLAUDE.md), which is the right answer — a
+ * rows on screen (reference/TREE_SIDEBAR.md), which is the right answer — a
  * positioned stale tree labels every row with another row's name — but on its
  * own it is a tree that silently vanishes. Rendered by `TreeSidebar`, so every
  * display with a sidebar gets it without wiring anything up.

@@ -32,9 +32,8 @@ import { websiteDir } from './paths.ts'
 // all, which is most of them — so "no entry" can only be read as "nothing went
 // wrong" if something else says the run reached it. `filter` was standing in for
 // that and got it wrong in the direction that matters: --affected and --cover
-// narrow just as hard and leave `filter` empty, so a 14-spec --affected run (the
-// workflow website/CLAUDE.md actually recommends) reported as a full sweep and
-// the other 300 figures read as verified by it.
+// narrow just as hard and leave `filter` empty, so a 14-spec --affected run
+// reported as a full sweep and the other 300 figures read as verified by it.
 export interface RunReport {
   finishedAt: string
   filter: string[]

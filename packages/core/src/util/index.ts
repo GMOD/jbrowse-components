@@ -432,7 +432,7 @@ export function isSupportedIndexingAdapter(type = '') {
 // Still an object rather than a Map because this is on the plugin ABI — a Map
 // would leave `Object.entries` on a published plugin returning [] and silently
 // doing nothing. So integer-like keys still hoist ahead of the rest; anything
-// needing insertion order builds its own Map (see tree-sidebar's CLAUDE.md).
+// needing insertion order builds its own Map (reference/TREE_SIDEBAR.md).
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
   const result: Record<string, T[]> = Object.create(null)
   // eslint-disable-next-line unicorn/prefer-group-by -- Object.groupBy types its result Partial, which would widen every caller's Object.values to `T[] | undefined`

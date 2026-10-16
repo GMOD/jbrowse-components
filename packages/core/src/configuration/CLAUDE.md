@@ -1,182 +1,53 @@
-# Configuration package
+# Configuration
 
-Full model: `agent-docs/reference/CONFIG_PATTERN.md` — reading a slot off the
-node not the snapshot, forwarding a callback slot raw, reference resolution.
+`agent-docs/reference/CONFIG_PATTERN.md` covers reading a slot off the node
+rather than a snapshot (`stripDefault` omits defaulted slots), forwarding a
+callback slot raw, and reference resolution (ADR-084).
 
-## Readers
+## Reading and writing
 
-- `getConf` is exactly `readConfObject(model.configuration, path)` and equally
-  strict about slot names — **switching readers cannot make a slot-name error go
-  away.**
-- **`setSlot` throws on an undeclared name**, which is what makes a misspelled
-  _write_ diagnosable at all; `setConf`'s compile-time guard only covers
-  concrete schemas and a mixin erases that.
-- **`setSlot` reads `null` as a reset to the slot's default**, because JSON
-  cannot spell `undefined` and a session spec, share link or agent call would
-  otherwise be able to set a slot and not put it back. So **no slot declares
-  `null` as its default**, and `ConfigSlot` throws on one — a slot meaning
-  "unset" is `maybeFrozen`, never `frozen` with `defaultValue: null`, and a
-  sidecar file the adapter works without is `maybeFileLocation`, never
-  `fileLocation` with a `/path/to/...` placeholder the reader compares against.
-  Omitting the key is a different thing: `setSlot` is the merge path, where an
-  absent key means "leave it alone", while a snapshot handed to `create` resets
-  an omitted slot already. **`create` reads a `null` member as unset too**, in a
-  slot or a sub-schema at any depth (`preProcessSnapshotWith`), except in a
-  frozen-family slot, which stores it. A settings bag (`applyConfSettings`)
-  writes a namespace's members one by one, so a `null` among them resets that
-  member at any depth. ADR-146.
-- **`setConf` classifies a member off the schema's definition**, not off what
-  the node holds there: an optional sub-schema nobody has written holds nothing,
-  and a `stringArray` slot holds an array. A config node has two write actions
-  under it, `setSlot` and `setSubschema` (single or a collection, whole), and
-  `no-restricted-syntax` sends a direct call of either to `setConf`.
-- **A settings bag goes through `applyConfSettings`**: a session spec's track
-  entry, a share link, an agent's `applyDisplaySettings`. Each key is one
-  `setConf`, except that a namespace's object names members inside it, written
-  one by one so the rest keep their values, and each level runs its schema's own
-  lift first. It reports the keys the config does not declare rather than
-  writing them, which is what the display's setter fallback reads.
-- **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
-  omits a slot sitting at its default, and a worker has no schema to fill it
-  back in. It recurses into a list or map of sub-schemas too, and a typed schema
-  carries its `type`, which is how a union list's entries stay apart.
-- **An arg-less read of a `jexl:` slot still evaluates**, against a context
-  where every name is `undefined`, and returns the fallout as the setting.
-  Skipping evaluation when `args` is empty was built, measured and backed out.
-- **A slot takes `jexl:` only where it declares `contextVariable`.** Its MST
-  type refuses one elsewhere, and so does the snapshot preprocessor, which runs
-  in a build with MST's type check off. A `featureField` holds a `jexl:`
-  expression as a field the display evaluates per feature, and the reader hands
-  it over raw. ADR-155.
+- **A typed prop is the stored value; `getConf`/`readConfObject` is the
+  setting** — the reader evaluates `jexl:` and resolves the default. For a
+  track's assemblies use `getTrackAssemblyNames`: `ReferenceSequenceTrack` has
+  no `assemblyNames` slot.
+- **`setSlot(name, null)` resets to the default**, because JSON cannot spell
+  `undefined`. So "unset" is a `maybe*` slot, never `defaultValue: null`.
+- **A worker payload is `fullConfSnapshot`, not `getSnapshot`** — a worker has
+  no schema to refill omitted defaults.
+- **A settings bag (session spec, share link, agent call) goes through
+  `applyConfSettings`**, which writes namespaces member by member and reports
+  undeclared keys.
+- **A new write path wraps its `create` in `refusingUndeclaredKeys`** (ADR-221),
+  or a typo becomes a console line.
+- An arg-less read of a `jexl:` slot still evaluates, against all-`undefined`
+  names. A skip on empty `args` was measured and backed out.
 
-## Schema composition
+## Schemas
 
-- **A new write door wraps its `create` in `refusingUndeclaredKeys`.** A
-  `closed` schema names an undeclared key on a load and refuses it only inside
-  that scope, so a write path creating a schema outside it turns a typo into a
-  console line. ADR-221.
-- A subclass redeclaring a slot gets a **field-by-field merge**, so state only
-  what differs — but keep `type`, which is what distinguishes a slot from a
-  sub-schema. It is a spread, so turning a base field off means stating it.
-- **`defaultValue` is required only on a non-`maybe*` slot**, which is what the
-  `ConfigSlotDefinition` union says. A `maybe*` slot's default is unset, so omit
-  the field rather than writing `defaultValue: undefined` — **except when the
-  slot overrides a base slot that has a concrete default.** The merge is a
-  spread, so omitting inherits that value and the slot is never unset;
-  `LinearMafDisplay`'s `height` over `BaseLinearDisplay`'s `number`/100 is the
-  one case in the repo. **`ConfigSlot` now throws on it** rather than leaving it
-  to that display's own tests — a `maybe*` slot with a concrete merged default
-  is always an authoring mistake, because no config can spell `undefined`.
-- **A changed slot default shows up in
-  `products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts`**, a
-  snapshot of every registered schema's slots. It is the only thing that reports
-  one. A diff there is a line to review, not a failure; `-u` when it's intended.
-  It also pins each **enum slot's vocabulary** — dropping a member is a silent
-  compatibility break, since a saved session holding it fails MST validation and
-  the track then fails to hydrate rather than falling back.
-- `actions` / `views` / `extend` / `preProcessSnapshot` / `requires` **compose**
-  rather than replace; override a hook member by redeclaring its name.
-  `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different
-  reason — it wants a subset, and `baseConfiguration` only adds.
-- **A list whose entries are one of several schemas is
-  `types.array(ConfigurationSchemaUnion(name, { key: schema }))`**, not a bare
-  `types.union`, which loads a snapshot naming no member as its first member and
-  drops every key that member lacks. Each member is `explicitlyTyped`, `closed`
-  and named by its key, and the helper throws at construction when one is not.
-  `getConfigurationSchemaUnion` is what the editor and the JSON schema read; a
-  pluggable element union is not one.
-- **The base must carry a slot table.** A union
-  (`pluginManager.pluggableConfigSchemaType`) or a plain model has none and
-  throws at construction, where it used to drop every inherited slot silently. A
-  `types.late` or `optional` wrapper resolves to its schema: the registry looks
-  a type up through the fork's `unwrapType`, from whatever handle a caller
-  holds.
+- A subclass redeclaring a slot gets a field-by-field spread merge: state only
+  what differs, keep `type`.
+- **A changed slot default or enum vocabulary shows up only in
+  `products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts`.** Dropping
+  an enum member breaks saved sessions; review the diff, `-u` if intended.
+- `actions`/`views`/`extend`/`preProcessSnapshot` compose; override a hook by
+  redeclaring its name.
 
-## Read type narrowing
+## Types
 
-Reads narrow only when the schema is concrete — type a state model factory's
-`configSchema` param to its concrete type. Don't pin a shared base if any
-consumer reads its own non-shared slots through it. Guards in
-`configTypeNarrowing.test.ts` (checked by `pnpm typecheck`, not jest).
+- **Reads narrow only on a concrete schema.** Type a factory's `configSchema`
+  param concretely, and don't pin a shared base if a consumer reads its own
+  slots through it.
+- **Import a base schema directly.** One taken from
+  `pluginManager.getDisplayType(…).configSchema` is `any` and silently unchecks
+  the subclass's own slot reads.
+- **`SnapshotIn` of a config schema checks nothing.** Use
+  `ConfigurationSnapshot<SCHEMA>`, which only fires on an object literal.
+- After touching the node type, run `pnpm typecheck` **and**
+  `scripts/audit-config-read-types.ts`: a degraded narrowing can trip no pin and
+  show only in the count (`pnpm check-config-read-types`).
 
-**A config node's props come off the schema's definition**, so `node.colorr` is
-a compile error and a sub-schema member reads as that sub-config's own node.
-`ConfigurationSchemaType['Type']` replaces MST's `Record<string, any>` props
-rather than intersecting with them, which is what makes the name checked rather
-than merely typed; four type-level details hold it up and each fails quietly.
-ADR-145.
+## Frozen tracks
 
-**The identifier and an `explicitlyTyped` schema's `type` are folded into that
-definition** as synthetic string slots, which is what gives a subclass both
-through the ordinary base merge rather than through a second recursion — a
-recursion that was built and costs 111 excessively-deep errors. They are props
-and readable, but the runtime slot table never held them, so `setSlot` throws on
-either. Both are identity; writing one was never the intent.
-
-**A typed prop is not a substitute for the reader**, so a typed
-`conf.assemblyNames` is not `getConf(track, 'assemblyNames')` with fewer
-characters: `readConfObject` evaluates a `jexl:` slot and resolves the default,
-and a raw prop read does neither. Reach for the prop where you want the stored
-value, the reader where you want the setting. For a track's assemblies the
-answer is neither — `getTrackAssemblyNames`, because `ReferenceSequenceTrack`
-declares no `assemblyNames` slot and names its assembly by being the `sequence`
-of one.
-
-**Run `scripts/audit-config-read-types.ts` after touching the node type.** A
-brand that loses its polymorphic `this` cuts every node back to
-`AnyConfigurationSchemaType`, switching the read-side check off tree-wide. The
-typecheck catches that first — the `HostChecksSlotNames` pins fire, 72 errors
-across 15 files when it was tried — and the audit is what sizes it, 121
-unchecked reads becoming 338. Run both: a narrowing that degrades without
-tripping a pin shows up only in the count.
-
-**A widened `baseConfiguration` poisons the whole schema** — `MergeConfigDef`
-maps over the base's keys and an `any` definition's keys are `string`, so a
-schema taking its base from `pluginManager.getDisplayType(…).configSchema` has
-unchecked reads of its _own_ slots. Import the base schema directly.
-
-**The merged definition is the only place the type level looks.** The base's
-slots, the identifier and an `explicitlyTyped` schema's `type` are all in it, so
-`ConfigurationSlotName`, the path types, `ConfigurationSnapshot` and a
-reference's instance read `keyof D` and walk no base chain. A second walk
-through the options was what admitted a path into a sub-schema the subclass had
-replaced — `['sub', 'dropped']` compiled and read `undefined`.
-
-`pnpm check-config-read-types` counts call sites reaching the narrowing
-(baselined in `scripts/configReadTypeGaps.txt`, `--write` to re-baseline). CI
-fails only when the count grows. **The signal is the read's return type, not the
-config node's.**
-
-## Checking a config snapshot going in: `ConfigurationSnapshot`
-
-**`SnapshotIn` of a config schema checks nothing, and looks like it does.**
-`makeConfigurationSchemaModel` assembles its MST props as a
-`Record<string, any>`, so the snapshot type is `Partial<Record<string, any>>`
-and every key is spellable. Typing an embedder's `configuration` option "off the
-config model" — which reads as the obvious fix, and is what `assembly` and
-`tracks` do — accepts `preferance: {…}` in silence.
-
-`ConfigurationSnapshot<SCHEMA>` reads the names off the schema's DEFINITION
-instead, the same `const` generic `ConfigurationSlotName` keys on, recursing
-into sub-schemas and the base. Values stay `unknown`: a slot takes its own type,
-a `jexl:` string, or nothing. **The check is TypeScript's excess-property rule,
-so it only fires on an object literal** — which is how a config is written, and
-is not how one arrives from a variable or a `JSON.parse`.
-
-## Frozen tracks + hydration
-
-MST's custom reference `get()` has no memoization, so something has to hand back
-the same node on every read of `track.configuration`. In every product that is
-the session's working copy (`getEditableTrackConfig`, ADR-032); the hydration
-cache on `PluginManager` does it for `hydrateTrackConfig` and for a session
-without `SessionTracksManagerSessionMixin` (ADR-031).
-
-Hydration is `create(frozen)`, so an invalid config throws on first read. The
-invariant is that **`view.tracks` only ever holds usable tracks**, enforced at
-the three entry points, so downstream never defends against it.
-`showTrackGeneric` catches its own failures and returns `undefined` — don't wrap
-it in a try/catch that re-notifies.
-
-Why `ConfigurationReference`'s union accepts a full config as well as an id,
-which of the three resolvers you get, and why none of it takes an
-`as SCHEMATYPE`: ADR-084 and the doc comments on the resolvers themselves.
+- **`view.tracks` only ever holds usable tracks**, enforced at the three entry
+  points, so downstream code doesn't defend against an invalid config.
+- `showTrackGeneric` catches and notifies its own failures; don't wrap it.

@@ -50,7 +50,7 @@ const ratchet =
     ? [
         `${found.length} hand-placed viewport coordinates in screenshot specs, up from ${baseline}.`,
         '  Anchor the new one instead: `anchor: {trackId, loc, fracY}` for data,',
-        '  `{selector}`/`{text}` for chrome. See website/CLAUDE.md and',
+        '  `{selector}`/`{text}` for chrome. See website/scripts/CLAUDE.md and',
         '  website/scripts/locusAnchor.ts for what a stale coordinate has cost.',
         ...found.map(entry => `  - ${entry}`),
       ]
@@ -72,7 +72,7 @@ const leaderRatchet =
         `${labels.found.length} label+arrow pairs in screenshot specs, up from ${labels.baseline}.`,
         '  Write the new one as one annotation: `leader: true` on the text, with',
         '  the anchor on what it names and `dx` placing the label off it. See',
-        '  website/CLAUDE.md and reference/FIGURE_CAPTURE.md.',
+        '  website/scripts/CLAUDE.md and reference/FIGURE_CAPTURE.md.',
         ...labels.found.map(entry => `  - ${entry}`),
       ]
     : labels.found.length < labels.baseline

@@ -4,7 +4,7 @@
 //   pnpm verify --all    the fast gates over the whole tree, as CI runs them
 //   pnpm verify --full   adds `autogen --check`, `check-docs`, `build:esm` (~5 min)
 //
-// The definition of done in agent-docs/CLAUDE.md is typecheck, scoped tests,
+// The definition of done in CLAUDE.md § Tooling is typecheck, scoped tests,
 // lint. Three CI jobs are gated by none of those — `check-format`, `check-docs`
 // and the spell check — so a change can be green by every measure an author
 // runs and still land red. On 2026-08-12 all three were red on `main` at once,

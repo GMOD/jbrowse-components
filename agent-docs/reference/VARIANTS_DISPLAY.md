@@ -6,7 +6,7 @@ kind: spec
 
 # Multi-sample variants
 
-The rules list and the subsystem's overview are `plugins/variants/src/CLAUDE.md`. Bare paths
+`plugins/variants/src/CLAUDE.md` points here. Bare paths
 below are relative to `plugins/variants/src/`.
 
 ## Genotypes

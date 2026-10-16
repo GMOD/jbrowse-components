@@ -1951,7 +1951,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // On a loaded one it is not enough, and the failure names the label
       // ("click target not found") rather than the wait, so it reads as a track
       // that was renamed out from under the spec. It was in config_demo.json
-      // the whole time. website/CLAUDE.md calls this shape a red flag.
+      // the whole time.
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'click', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'delay', ms: 1500 },

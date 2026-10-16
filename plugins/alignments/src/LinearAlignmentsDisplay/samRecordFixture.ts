@@ -12,7 +12,7 @@ import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
  *
  * `strand` is carried rather than derived from `flag`, because converting the
  * reverse flag to a strand is the adapter's job and no other layer is allowed
- * to redo it (see the plugin's CLAUDE.md).
+ * to redo it.
  */
 export interface SamRecordFixture {
   name: string

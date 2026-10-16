@@ -3,9 +3,7 @@ import type { ProcessedSource, Source } from './types.ts'
 
 // A source's bare VCF sample identity: `sampleName` when present (set once a
 // source is processed/HP-expanded), else the raw `name`. Single source of truth
-// for the fallback so every genotype-map lookup keys by the same string — see
-// the "genotype maps cross the RPC boundary keyed by sampleName" note in
-// plugins/variants/src/CLAUDE.md.
+// for the fallback so every genotype-map lookup keys by the same string.
 export function resolveSampleName(source: Source) {
   return source.sampleName ?? source.name
 }

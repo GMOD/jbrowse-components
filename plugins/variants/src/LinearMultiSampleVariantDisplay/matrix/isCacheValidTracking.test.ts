@@ -16,7 +16,7 @@ import { createTestEnvironment } from './testEnv.ts'
 // is masked. Two pins, then — the declaration site below, and the tracking
 // behavior it buys further down. Getters can't regress this way (MST throws on a
 // getter inside `.actions()`), which is why the gate's opt-in is now the boolean
-// getter `gateEnabled`. See packages/display-kit/CLAUDE.md.
+// getter `gateEnabled`. See agent-docs/reference/DISPLAY_KIT.md.
 test('the reactive method hooks are views, not actions', () => {
   const { display } = createTestEnvironment().createDisplay()
   const { actions } = getMembers(display)

@@ -1,177 +1,65 @@
 # @jbrowse/render-core
 
-The HAL, the draw-lifecycle mixin, backend base classes, clip/canvas geometry,
-React backend hooks.
+Lifecycle, upload cells, backend parity, HAL and shaders:
+`agent-docs/reference/GPU_RENDERING.md`. **@experimental** — third-party plugins
+pin an exact version.
 
-`agent-docs/ARCHITECTURE.md` ("What not to do") and `reference/GPU_RENDERING.md`
-(the hub for lifecycle, the upload cells and the one installer that drives them,
-backend parity, HAL, shaders) own the rules those two state; don't restate them.
-What follows is this package's own.
-
-**@experimental** — third-party plugins should pin an exact version.
-
-- **No barrel — the `exports` map is the API.** New module = new entry +
-  `pnpm autogen`.
-- **Must not depend on `@jbrowse/core`.** Don't put `Gpu` on a symbol that also
-  drives the Canvas2D fallback.
-- **Module state must survive duplication, or live on the `globalThis` cell.** A
-  plugin built before ADR-128 bundled its own copy, so two live copies on one
-  page still ship; `GpuDeviceCell`'s shape is a cross-version contract.
+- **Must not depend on `@jbrowse/core`.**
+- **Module state survives duplication or lives on the `globalThis` cell.** Old
+  plugins bundle their own copy, so `GpuDeviceCell`'s shape is a cross-version
+  contract.
 - **The WebGL→Canvas2D ladder runs at backend construction only.** Later loss is
   `renderError`; `setGpuOverride` is the page-wide escape.
-- **`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` own
-  `setErrorHandler`**, which turns a HAL over-limit allocation into the "too
-  much data, zoom in" banner rather than a blank canvas.
-- **A backend subclass implements `draw`, never `render`/`renderBlocks`.** Both
-  families' bases own the frame scaffold — `resize` + paired
-  `beginFrame`/`endFrame` on GPU, `prepareCanvas` on Canvas2D — and own the "did
-  real content reach the canvas" answer `RenderLifecycleMixin` flips
-  `canvasDrawn` from. A display that re-derives that answer from its own data is
-  answering a different question than the renderer's guard.
+- **A backend subclass implements `draw`, never `render`/`renderBlocks`.** The
+  bases own the frame scaffold and the "did content reach the canvas" answer
+  `canvasDrawn` reads; a display must not re-derive it from its own data.
 - **HAL parity**: a behavior change to one HAL lands in the other and in
-  `MockHal`. The gates are `browser-tests/compare-backends.ts` and
-  `hal/regionRegistry.test.ts` — not the attribute layout, which
-  `assertVertexInputsMatch` settles at `pnpm gen:shaders` time. `GpuHalBase` is
-  the structural half of that rule: all three HALs extend it, so the upload
-  shells, the registry passthroughs, the over-limit wording and the `dispose`
-  guard are shared code rather than three copies. Behavior that is genuinely
-  per-backend stays in the leaf hooks (`limits`, `createBuffer`,
-  `destroyBuffer`, `createTexture`, `releaseResources`) — a change that lands in
-  one of those is still a change to mirror.
-- A shared `.slang` **shape** module needs two real consumers and non-obvious
-  math (ADR-040).
-- **`//! coverage: analytic` on a shader whose fragments compute their own edge
-  coverage or pixel-snap.** `createRenderingBackend` derives a display's sample
-  count from it — 1 when every registered pass declares it, else 4 — and
-  `sampleCount` is the per-display override. A flat fill with a fractional edge
-  on either axis does not qualify; the survey and captures are
-  `ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md`.
+  `MockHal`, including in the per-backend leaf hooks under `GpuHalBase`. Gates:
+  `browser-tests/compare-backends.ts`, `hal/regionRegistry.test.ts`.
+- `//! coverage: analytic` only on a shader whose fragments compute their own
+  edge coverage; it drops the display's MSAA to 1 sample.
 
-## The reversed-block family
+## Reversed blocks
 
-Three ways to misplace a mark on a flipped region, all invisible on forward
-blocks. Don't hand-roll: min-width widening, a per-base cell's floor included →
-`spanLeft`'s pivot, growing from the start edge (the pileup's `cellPlacement`
-for cells); a genomic strand from the worker → `flipX` /
-`block.reversed ? -d : d` before it becomes left/right. Each helper's JSDoc says
-when to reach for it; `reversedGlyphDirection.test.ts` says why a
-Canvas2D-vs-GPU parity gate cannot catch the strand case.
+Hand-rolled placement goes wrong only on flipped regions, where parity gates
+still pass. Min-width widening → `spanLeft`'s pivot (`cellPlacement` for cells);
+a worker strand → `flipX` before it becomes left/right; `bpRangeX` →
+`bpRangeXTuple` or `writeBpRangeUniforms`.
 
 ## Upload
 
-- **A display installs the upload; it never calls `attachRenderingBackend`.**
-  `installUpload(self, backend, { cells, inputs?, encode?, render })` is the
-  whole taxonomy: a map of immutable payloads diffed by reference, keyed by
-  whatever the display's map is keyed by — a `displayedRegionIndex`, a sibling
-  display's `sharedBackendKey`, or a slot name (`oneCell('data', payload)`) on a
-  display that holds one payload for the view. Every backend implements
-  `upload(key, data)` and `release(key)`; a departed key is released by itself,
-  never by an active-set prune, which is what makes one installer correct on a
-  canvas several displays share. `noHandRolledAttach` in `eslint.config.mjs` is
-  the check; ADR-088 is the why.
-- **Whatever the installer's callbacks close over goes inside the setup thunk**,
-  which `attachRenderingBackend` runs once. A second call swaps the backend and
-  keeps the first call's callbacks, so state allocated outside it is rebuilt and
-  dropped on every context-loss recovery — silently, because the original copy
-  is still doing the work.
-- **`createInstanceCache` for a buffer reused across recolors.** Its options go
-  beside the `interleave` whose lanes they name, not in the renderer — the one
-  way this breaks is a patch landing in a different lane than the pack. Its
-  geometry token must be a **coordinate** array (replaced atomically on
-  refetch); a color array would never invalidate. The token is also the key, so
-  nothing evicts and one cache is safe inside a module-level mark's `pack`.
-- **A cell keyed on a value must read that value from its own computed, not
-  through the display's render state.** Same failure as the `inputs` rule below
-  and one layer earlier: synteny's clicked-outline cell read `clickedFeatureId`
-  off `renderParams`, which carries the two rows' `offsetPx`, so the cell's
-  identity moved on every pan frame and every hover and the installer's diff
-  re-packed and re-uploaded it per pointermove. A gate that compares pictures
-  cannot see it; the check is a test that pans with a selection live and counts
-  `upload` calls (`outlineUploadSchedule.test.ts`).
-- **An `installUpload` declares a narrow `inputs` getter (`gpuProps()`), never
-  the display's `renderState`.** Its identity re-encodes _every_ region, and a
-  `renderState` carries the canvas box and row geometry, which move on each
-  frame of a height drag — rebuilding byte-identical output at tens of MB per
-  frame. Omitting `inputs` is the other safe shape, for an encode that needs
-  nothing. Reading an observable inside `encode` is no longer the trap it was
-  (ADR-078: it invalidates nothing), but state the dependency in `inputs` or a
-  settings change will not reach the buffer.
-- **Omit `encode` outright when the display's payload is what the backend
-  uploads** — four of the seven per-region displays. The helper then keeps no
-  mirror maps and hands `render` the display's own map, which is what those four
-  were reading anyway while passing `encode: data => data` beside it.
-- **A display that reads its own encoding holds `createEncodeMemo` in a `.views`
-  closure and hands identity cells.** The installer's `encode` path runs on the
-  same factory, so the two shapes upload the same references; what the closure
-  buys is a map the hit test and the SVG export can read (multi-row, MAF). A
-  pointer handler reads it untracked, so an `afterAttach` autorun holds the
-  observer — an unobserved memo re-encodes every region per read.
-- **The shape owns geometry and picking, the display owns its data and the
-  encode from data to channels, and the installer owns only the diff.**
-  `channels` and `params` on `defineMark` are lenses that pick fields, never
-  work — MAF's payload carries coverage buffers beside its cells, and the lens
-  is what lets one payload feed several marks. A review proposed seven ways of
-  moving one of those three across a boundary, and all seven were declined.
-- **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
-  before it looks at the count, so an empty pack IS the release.
-- **A cell is a payload, and absence is absence.** `regionDataMap` checks a
-  region entry is a non-null object at the `set`; `installUpload` checks every
-  other map it is handed for `undefined` / `null` cells, which is what covers a
-  map derived off a computed (canvas's `renderDataMap`, variants'
-  `perRegionCellMap`). A display with nothing to upload yet leaves the key out
-  (`oneCell` does) rather than storing nothing under it. Dev-only, reports
-  rather than throws.
+- **Whatever the installer's callbacks close over goes inside the setup thunk.**
+  A second attach keeps the first call's callbacks, so state allocated outside
+  is rebuilt and dropped on every context-loss recovery.
+- **`inputs` is a narrow getter (`gpuProps()`), never `renderState`.** Its
+  identity re-encodes every region, and `renderState` moves on every frame of a
+  height drag.
+- **A cell keyed on a value reads that value from its own computed**, not
+  through render state. Synteny's outline cell read `clickedFeatureId` off
+  `renderParams` and re-uploaded per pointermove; only an upload-count test
+  (`outlineUploadSchedule.test.ts`) sees that.
+- **`createInstanceCache`'s token is a coordinate array**, replaced on refetch;
+  a color array never invalidates. Its options sit beside the `interleave` whose
+  lanes they name.
+- **A memo the hit test or SVG export reads (`createEncodeMemo`) needs an
+  `afterAttach` autorun observing it**, or it re-encodes every region per read.
+- **Don't guard an empty upload** — an empty pack is the release.
+- A display with nothing to upload leaves the key out rather than storing
+  `undefined`.
 
 ## Drawing
 
-- **A scrolling GPU canvas and its DOM overlays must share one scroll source
-  (`model.scrollTop`)** — wrap overlays in `ScrollLockedOverlay`. A native
-  `overflow:auto` container is a second, compositor-driven scroll space, so on a
-  fast scroll labels tear away from their glyphs.
-- **Every drawing path gets its ratio from `getDpr()`**, never a bare
-  `devicePixelRatio` — it caps at 2, so a canvas sized by one with geometry from
-  the other is scaled wrong. Analytics is not a drawing path. The cap's own
-  consequences are in `reference/ARCHITECTURAL_LIMITS.md`.
-- **Two uniform-write patterns, don't invent a third**: the generated
-  object-packer (`writeUniforms`) when every field is set in one place, or
-  offset-pokes when writes are incremental. Every per-region and global renderer
-  but alignments is now the first — the packer makes the set _total_, and the
-  scratch buffer outlives the frame, so a poke left out silently redraws with
-  last frame's value. Alignments is the second and stays: it writes the palette
-  once ahead of the block loop, then per section.
-- **The `bpRangeX` triple never gets hand-rolled** — `bpRangeXTuple` as a packer
-  field, or `writeBpRangeUniforms` if you are poking. Both carry the reversed
-  pivot, which is the part that goes wrong.
-- **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
-  `select` callback is the single skip gate, and the `finally`-paired restore is
-  what keeps a throwing painter from leaving every later frame clipped.
-- **A shape whose instance is a box declares `ink` and no `hitNearest`** —
-  `defineMark` derives the hit test from the box and the chrome's highlight
-  reads it; `sweepMarkAgainstHit` holds the box to the painting within a pixel.
-  A shape writes `hitNearest` only where its ink is not a box, or its hit rule
-  is not the box (`point`'s glyph cluster). ADR-110.
-- **A box shape places each instance once**, through module-level placement
-  functions that call the generated twins and write onto a per-block frame
-  object that `paintBlock`, `ink` and any `hitNearest` share, or in the pileup
-  through one `walk` that paint and `ink` share, because a placement call per
-  instance blows the inlining budget there — `reference/GRAMMAR_OF_GRAPHICS.md`
-  §"Where a proposal lands" is the record of the design, and
-  `benches/placeWalkers.bench.ts` holds each port to the painter it retired.
-- **A pass that samples a color ramp declares it in `textures` on
-  `defineMark`**, keyed by the sampler that reads it, rather than uploading one
-  itself: the backend binds each sampler's texture once per pass, re-uploads
-  only when its identity moves, and binds an inert table for a sampler nothing
-  names — a textured pass missing any texture draws nothing on either GPU HAL.
-  Every ramp in tree reaches the GPU that way; nothing calls
-  `uploadColorRampLut` but the mark backend's binder. The same lens may name a
-  canvas (`MarkImage`), copied on the GPU when its identity moves — the circular
-  view's ring samples a display's strip that way — and a lens answering nothing
-  for a region leaves the pass's texture where it is. A shape's own `textures`
-  answers from its params (`span`'s row table), under the display's lens.
-- **A display that stacks bands on one canvas declares them as `band` on
-  `defineMark`**, never as a renderer pair around the mark list: the GPU
-  scissors to the strip and hands the block column back, Canvas2D clips, a
-  zero-height band draws nothing. The band is a clip, not an offset — the shape
-  still places Y against the whole canvas, which is what lets one `scrollTop`
-  serve both backends. A display with its own frame scaffold (alignments'
-  sections) scissors around `mark.drawRegion` itself and declares none.
+- **GPU canvas and DOM overlays share `model.scrollTop`**
+  (`ScrollLockedOverlay`); a native `overflow:auto` tears labels from glyphs.
+- **Ratio comes from `getDpr()`** (capped at 2), never bare `devicePixelRatio`.
+- **Uniforms: `writeUniforms` packer, or offset-pokes** where writes are
+  incremental (alignments only). A poke left out silently redraws last frame's
+  value.
+- **Per-block Canvas2D clipping goes through `forEachClippedBlock`.**
+- **A box shape declares `ink` and no `hitNearest`**; `defineMark` derives the
+  hit test (ADR-110).
+- **A sampled color ramp is `textures` on `defineMark`**; a textured pass
+  missing a texture draws nothing on either GPU HAL.
+- **Stacked strips are `band` on `defineMark`**, a clip, not an offset. A
+  display with its own frame scaffold (alignments' sections) scissors around
+  `mark.drawRegion` itself and declares none.

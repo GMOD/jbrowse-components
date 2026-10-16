@@ -1,193 +1,48 @@
 # plugins/alignments
 
-Adapter seams and the measurements behind the array shapes:
+Adapter seams and array-shape measurements:
 `agent-docs/reference/BAM_STACK_INTEGRATION.md`.
 
-**Shaders live in `src/shaders`, a peer of `src/features`** — `features/` is the
-shared layer here, one pass per directory, so the shaders it packs for belong
-beside it rather than inside the single display that mounts them. Other plugins
-keep shaders display-local and are right to: theirs have one consumer.
+## Marks
 
-**A pass directory holds the canonical file set** — `extract.ts` (worker),
-`buildArrays.ts` (worker), `mark.ts` (the pass: packer, painter, hit test),
-`types.ts`. Not every pass needs all four, but a pass that has one of these
-spells it that way, so `features/` can be read as the pass list.
-`LinearAlignmentsDisplay/renderers/pileupMarks.ts` is the list itself,
-`PILEUP_MARKS`, in paint order: every entry is a render-core `defineMark`, and
-both renderers and the hit chain walk that one list, so a mark cannot be added
-to one backend alone or gated on one alone. `arcs/` is a band of its own: its
-compute stages and `bandFeed.ts`, which hands render-core's link and point marks
-their channels (`renderers/arcMarks.ts`).
+- **`PILEUP_MARKS` (`LinearAlignmentsDisplay/renderers/pileupMarks.ts`) is the
+  one list** both renderers and the hit chain walk, so a mark can't be added to
+  or gated on one backend alone. A mark's `enabled` is the draw gate and the hit
+  gate together.
+- **A mark is data: channels plus rule codes** (`Fade`, `Hit`, `Band`, `Point`,
+  `Paint`), and no member takes an index. A new rule is a code and a case in the
+  `pileupShape` walker, never a callback on the mark — callbacks over one walker
+  go megamorphic.
+- **A mark added to `gapTypes` has to pick a pass.** Each gap mark's `channels`
+  takes its own kind out of that array, so a kind neither packs is drawn by
+  nothing, silently.
+- The interbase marks declare their slice (`channels`' `start`/`end`) of the one
+  merged array the worker ships; hand them that array, not pre-sliced views.
 
-**`pileupShape` is the one shape every row-instanced pass is an instance of.**
-`features/pileupShape.ts` states the projection, the reversed-block edge
-ordering, the row band, the sub-pixel widening and the fade once, in `walk`: the
-painter walks the block and `ink` and `hitNearest` walk one instance (`place`),
-so the box a mark paints and the box it answers a hover with are one derivation.
-A pass's `mark.ts` hands it a shader, a packer and rule CODES — `Fade`, `Hit`,
-`Band`, `Point`, `Paint` — plus a `channels` lens over its arrays and an
-`enabled` gate. Ten passes are instances: `gap` (twice), `mismatch`,
-`perBaseQuality`, `perBaseLetter`, `softclipBases`, `insertion`, `clip`,
-`overlap`, `modification`. `read`, `connectingLines` and `linkedReads` are
-plugin-local `MarkShape`s over their own painters: a read's instance is a
-segment and its color a per-read function of the scheme, and the two lines carry
-two rows per instance. `modification`'s hit test stays a Flatbush query because
-the INDEX is the part a row scan cannot supply.
+## Strand vs flags
 
-**A mark is DATA: channels plus rule codes, and no member takes an index.** The
-arrays come back from one `channels(data)` per region, in one field order for
-every mark; the alpha, the click gate, the row band, the point width and the
-fill color are small integers the walkers switch on. The members used to be
-callbacks, and with ten marks over one walker every call in the loop was
-megamorphic. `41689b467e`, which made them codes, timed gap paint at 94 ms
-against 45 and mismatch at 59 against 19 over 100K instances, a median of 20
-with no control, and credits 42 ms of the 94 to its `rgbaPrefix255` color-string
-change in the same commit, so codes against callbacks is unmeasured in
-isolation. A new rule is still a `Fade`/`Hit`/`Band`/`Paint` code and a case in
-the walker, never a function on the mark.
+PAF/synteny blocks run through this same pipeline with `getFlags` returning 0.
+Direction comes from `getStrand` / `readStrands`; `flags` answers only
+paired/supplementary/secondary/mate questions.
 
-**The draw gate and the hit gate are one `enabled`.** The hit chain
-(`hitTestPipeline.ts`) asks each mark's `hitNearest` with the section's
-`RenderState`, and `defineMark` answers nothing for a mark whose `enabled` says
-no — so a layer switched off cannot stay hoverable over blank pixels, and a
-drawn one cannot go inert, without the paint going with it. What the chain still
-owns is ORDER and ZOOM: which mark is asked first, and which candidate set
-(`insertionsOfSize`, `clipsOfKind`), is priority the marks cannot express, and
-the per-base steps drop out above `SNP_HIT_MAX_BP_PER_PX` there.
+## Per-read identity and strings
 
-**A mark that shares an array declares its own slice of it** (`channels`'
-`start`/`end`). The three interbase marks are the case: the worker lays that
-array out as (insertions, softclips, hardclips), so the bound is what keeps one
-hover from scanning the whole thing three times to reject most of it on a type
-byte the layout already guarantees. Both renderers therefore hand the marks the
-merged array the worker ships rather than pre-sliced views of it.
+- **A map key, dedupe key or sort tiebreak takes `readKeys`.** Build the string
+  with `readIdAt(data, i)` only where the id leaves the arrays (hover, click,
+  details fetch), and never spell it yourself: a wrong prefix fails only in the
+  worker, as "Could not load details".
+- **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** Anything
+  feeding the block stays allocation-free (`copyNameInto`, not a `nameBytes`
+  view). `groupReadsByName` hashing slices is a priced-in cost — don't "fix" it
+  by materialising a `string[]`.
+- **Don't gate the SA-tag walk on `readConnections`.** Linked reads, curved
+  connectors and the breakpoint split view read the same tags under their own
+  settings; `readConnections` stays out of `rpcProps` (`fetchAutorun.test.ts`).
+  Enumerate the consumers before making a shape cheaper.
 
-**The coverage band is `@jbrowse/alignments-core`'s** — its computes, passes,
-painters, hit test (`hitCoverageBand`, `coverageBinAt`) and tooltip tables,
-shared with MAF and declared once in
-`LinearAlignmentsDisplay/renderers/coverageMarks.ts`. What stays here is the
-plugin's own: `coverage/` (the hit type and a depth-scale parity test),
-`modCoverage/` (the modification stacks) and `indicator/` (the hit type).
+## BAM/CRAM hot path
 
-`sashimi/` is a band of its own, as `arcs/` is: its compute stages and
-`bandFeed.ts`, which hands render-core's link mark the junctions as channels
-(`renderers/sashimiMarks.ts`, ADR-222). Its count labels are the one DOM layer
-left, placed by `sashimiLabels` at the apex the mark reports.
-`linkedReads/connectorFeed.ts` likewise hands render-core's connector mark the
-connectors the straight-line pass leaves (`renderers/connectorMarks.ts`,
-ADR-225). `alignedBaseWalk.ts` is a bare shared walk, not a directory at all.
-
-The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`
-owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the
-separate letters-past-the-alignment-end pass; it consumes the `sequence` field
-`emitSoftclip` captures, which is why extraction for two passes lives in one
-place.
-
-`features/gap/` is the converse — one directory, one shader, one worker array,
-and TWO marks, because `skip` and `deletion` answer to different settings
-(`gap/mark.ts` says why). Splitting the mark rather than branching inside it is
-what lets `enabled` be one answer per mark: a mark is gated or it isn't, and a
-half-gated one would need the gate re-stated per instance. Each mark's
-`channels` takes its own kind out of `gapTypes`, so **a mark added to that array
-has to pick a pass** — a third gap type packed by neither is uploaded by nothing
-and drawn by nothing, silently.
-
-## Strand comes from `strand`; `flags` answers everything else
-
-This pipeline serves SAM-flavoured records and flagless ones (PAF/synteny
-blocks, which `LGVSyntenyDisplay` pushes through the same worker, layout and
-renderers). `getFlags` returns **0** for the latter, so:
-
-- **which way does it point** → `getStrand(feature)` / `readStrands[i]` /
-  `FeatureData.strand`. Universal.
-- **paired / supplementary / secondary / first-in-pair / mate-unmapped** →
-  `getFlags(feature)` / `readFlags[i]`. SAM-only.
-
-**`SAM_FLAG_REVERSE` may only be converted to a strand inside an adapter's
-feature class** (`SamRecordFeature.strand`). Every strand bug this plugin has
-had was that conversion done elsewhere: it agrees with `strand` on every BAM
-under test and disagrees on synteny, so it survives review and ships. Which is
-why it is a lint rule (`noSamFlagReverse`) and not only this paragraph —
-`SamAdapter/` and `packages/cigar-utils/` are the allowlist. Rules needing a
-strand AND a flag (`firstOfPairStrand`) live in `shared/util.ts`.
-
-## A read's identity is `readKeys`; `readIdAt` builds the string
-
-The result ships **keys** — a transferable `Float64Array` of the record id BAM
-and CRAM already hold, plus `readIdPrefix`.
-
-- **A map key, dedupe key or sort tiebreak takes the key.** `Map<ReadKey, …>` is
-  fine and faster.
-- **`readIdAt(data, i)` only where the id leaves these arrays** — hover, click,
-  feature-details fetch.
-- **Never spell the string yourself.** `alignments-core/src/readIdentity.ts`
-  derives the prefix by stripping a record id off a real `id()` and checking the
-  strip, so an adapter whose features carry no `recordId` falls back to whole
-  strings rather than shipping a wrong prefix. Hence `ReadKey` is
-  `number | string`.
-
-Getting this wrong is silent: the details RPC compares the rebuilt string
-against `feature.id()` **in the worker** and the click lands on "Could not load
-details". `browser-tests/suites/alignments-read-identity.ts` is the crossing
-test.
-
-## Read names are one block; `readNameAt` slices one out
-
-`readNameBlock` + `readNameOffsets`, not `readNames: string[]` — structured
-clone is priced by object **count**, and a name is **decoded**, not copied.
-
-- **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** V8 slices a
-  long string in O(1).
-- **`FeatureData` has no `name`.** Chain mode reads each QNAME off the block on
-  the main thread (`attachChainFields`).
-- **Anything feeding the block must be allocation-free** —
-  `BamSlightlyLazyFeature` exposes `nameLength` + `copyNameInto`; a `nameBytes`
-  subarray view per read gave the entire win back.
-- **Grouping pays for it, and that is priced in.** Hashing a SlicedString
-  flattens it, so `groupReadsByName` is dearer out of the block — still a net
-  win. Don't "fix" it by materialising the array.
-
-The regime is read COUNT: the block loses on a few hundred long reads and wins
-from tens of thousands up.
-
-## The other two per-read string arrays
-
-- **Mate reference is `readNextRefIds` + `nextRefNames`**; the worker resolves a
-  name once per contig. `buildReadInterchrom` compares per SLOT, not per read.
-- **`readSuppAlignments` ships only when some read in the group HAS one.** The
-  `getTag(f, 'SA')` walk runs whatever the settings; the absent array saves the
-  clone. **Gating the WALK on `readConnections` is the mistake to not repeat** —
-  linked reads, the curved connectors and a breakpoint split view over this
-  display read the same tags under settings of their own. `readConnections` is
-  therefore **not** in `rpcProps`, pinned by `fetchAutorun.test.ts`. What does
-  skip the walk is the read: SAM clips every record of a chimeric alignment, so
-  a read whose `hasEndClip` is false carries no SA (`saClipGate.probe.ts`).
-
-The shared rule: **ask what the consumer actually is before making the shape
-cheaper**, and **enumerate the consumers before deciding not to BUILD one** — a
-missing reader costs correctness, not milliseconds.
-
-`readTagValues` / `sortTagValues` are filled only under a tag color scheme or
-tag sort, so neither is on the default path.
-
-## Adapter hot path (BAM/CRAM)
-
-`extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of
-it: `seq` (CRAM decodes the whole read) and `convertTagsToPlainArrays` belong
-only in `toJSON()`, and the `mismatches` getter allocates — the render path
-drives `forEachMismatch`. The memos that were here measured as pure state, so a
-new one wants an interleaved A/B behind it.
-
-**`get('tags')` is never the way to read a tag on this path**, however many you
-want: it decodes every tag and BAM memoizes it onto a record in a shared chunk
-LRU, so it is retained as well as paid for. Use `getTag` / `getTagAlt` (5.7-9.2x
-on the repo's spliced fixtures). That inverts only for a read whose tag block is
-dominated by a long `MD`; `benches/gapStrand.bench.ts` prints tag bytes/read
-alongside the ratio, and the real fix is a library change (seam 5).
-
-**`withRegionRef`, never `record.ref = …`** — `@gmod/bam` memoizes decoded
-records in a per-file chunk LRU, so two queries can get the identical objects
-back and the last fetch to resolve rebinds it for every other region, resolving
-one region's mismatches against another's sequence. `regionRefAliasing.test.ts`
-is the regression test, `noRecordRefMutation` the lint rule that stops the
-assignment coming back.
+- `extractFeatureArrays` runs per read: keep `seq`, `convertTagsToPlainArrays`
+  and the allocating `mismatches` getter out of it (`forEachMismatch` instead).
+- **Read a tag with `getTag` / `getTagAlt`, never `get('tags')`**, which decodes
+  every tag and is retained in `@gmod/bam`'s chunk LRU.

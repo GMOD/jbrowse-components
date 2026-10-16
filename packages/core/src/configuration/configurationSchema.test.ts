@@ -1084,7 +1084,7 @@ describe('ConfigurationReference', () => {
     })
 
     // Fast unit canary for the inline-config union branch documented in
-    // configuration/CLAUDE.md — otherwise only covered by the slow
+    // ADR-084 — otherwise only covered by the slow
     // SVInspector.test.tsx and ReadVsRef.test.tsx integration tests. It is the
     // one way a view holds a track config nothing else can draw, and an id
     // string that no session list holds resolves nowhere: the test above this

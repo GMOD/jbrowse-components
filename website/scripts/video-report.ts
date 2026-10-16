@@ -91,9 +91,9 @@ function printReport(title: string, lines: string[]) {
 const mb = (bytes: number) => `${(bytes / 1e6).toFixed(2)} MB`
 
 // The frame against what the app actually filled, per tour, which is the number
-// a re-frame is decided on. website/CLAUDE.md says to size a viewport from the
-// run's own content report; this is that report, gathered rather than scattered
-// through the log a tour at a time.
+// a re-frame is decided on. website/scripts/videos/CLAUDE.md says to size a
+// viewport from the run's own content report; this is that report, gathered
+// rather than scattered through the log a tour at a time.
 function printFrames() {
   printReport(
     `FRAMES (${filmed.length}) — the app's height at the first frame, its tallest, and the frame it was filmed in`,

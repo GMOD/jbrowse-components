@@ -6,7 +6,7 @@ kind: spec
 
 # SyntenyFollow
 
-The rules list and the subsystem's overview are `plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md`. Bare paths
+`plugins/linear-comparative-view/src/SyntenyFollow/CLAUDE.md` points here. Bare paths
 below are relative to `plugins/linear-comparative-view/src/SyntenyFollow/`.
 
 ## Two passes, because the exact answer costs an RPC

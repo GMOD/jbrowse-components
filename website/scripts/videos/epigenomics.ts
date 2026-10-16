@@ -71,10 +71,10 @@ export const epigenomicsVideos: VideoSpec[] = [
   // each, and the aggregate MethylDackel rows stay put above the pileup as the
   // fixed reference the moving lane is read against.
   //
-  // KEPT ON A PILEUP, which website/CLAUDE.md says the tours stay off. The
-  // warning is real and it is about volume: a deep human ONT lane repainting
-  // under swiftshader starves the click's own round trip. This is 14 kb of
-  // Illumina WGBS over a plant genome, and it films headless.
+  // KEPT ON A PILEUP. Tours stay on light tracks, and light is about volume: a
+  // deep human ONT lane repainting under swiftshader starves the click's own
+  // round trip. This is 14 kb of Illumina WGBS over a plant genome, and it
+  // films headless.
   {
     name: 'epigenomics/bisulfite_contexts',
     description:

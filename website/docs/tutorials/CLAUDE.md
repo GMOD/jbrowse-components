@@ -1,349 +1,111 @@
-Show rather than tell: informative screenshot specs, minimal prose. No em-dashes
-anywhere, including code comments. This file follows its own rule. Numbers,
-captions and voice are in `website/CLAUDE.md`; page mechanics in
-`website/docs/CLAUDE.md`.
+Show rather than tell: informative figures, minimal prose. No em-dashes anywhere
+in tutorials, code comments included. Captions, numbers and voice:
+`website/CLAUDE.md`; page mechanics: `website/docs/CLAUDE.md`.
 
-A tutorial is **one continuous line of work**. Each step consumes what the step
-before it produced, and the test is whether the sections could be reordered
-without the page breaking. If they could, it is a user guide wearing a
-tutorial's clothes.
+The `check-*` scripts under `website/scripts/` (figure-actions,
+unshown-settings, unshown-tools, prereq-tools, script-commands, menu-paths,
+page-endings, and `check-build-scripts.py`) hold most page mechanics and print
+their rule when they fail; `--list` prints a ratchet's backlog. What follows is
+what no check sees.
 
-**A figure follows an instruction.** Before a `<Figure>` or `<Video>`, in the
-same section, the reader has been told the window to type, the menu path to
-take, the config to paste or the command to run. `check-figure-actions` ratchets
-the tags that arrive without one; `pnpm check-figure-actions --list` prints
-them.
+## Shape
 
-**And an instruction gets a figure.** A display setting makes a visual claim.
-`Color by... → Modifications` paints the reads, `Cluster rows by similarity`
-reorders them. Write the path with no picture under it and the reader has to
-imagine the result. Showing it is the page's job. `check-unshown-settings`
-ratchets the paths nothing shows, in their own section or the next;
-`pnpm check-unshown-settings --list` prints them. The check skips `File → ...`
-and `Global plugins...`, which draw nothing of their own.
+- **A tutorial is one continuous line of work.** Each step consumes what the
+  step before produced. If the sections could be reordered without breaking, the
+  page is a user guide. The spine can be a task (`display_settings`,
+  `cli_desktop`) rather than a dataset.
+- **A figure follows an instruction, and an instruction gets a figure**: the
+  window to type, the menu path, the config or the command, then the picture of
+  its result.
+- Most pages spend 150 to 250 lines on preparation before the first figure, on
+  purpose. "Put the payoff figure first" is a closed question.
+- One dataset is the default. A second belongs only where the first raised the
+  question it answers.
+- Every dataset has a built-in negative control in the same figure, and the page
+  ends by checking the inference against the raw data.
+- `pangenome_ecoli` and `pangenome_cactus` take the same strains through the
+  same sections on purpose, so a reader can compare the two graph builders.
 
-**Most pages lead with their build, and that is deliberate.** 150 to 250 lines
-of preparation come before the first figure, because a picture shown before the
-reader has done anything confuses them. So the figure-free stretch at the top of
-a page needs no closing, and "put the payoff figure first" is a closed question.
+## Voice
 
-One dataset is the usual way to get that, and the safe default. A second is fine
-where the first **raised the question it answers**, so the reader arrives at it
-rather than being taken there. What the rule excludes is the page that visits
-three datasets because each demonstrates the capability once.
-
-`pangenome_ecoli` and `pangenome_cactus` take the same five strains through the
-same sections on purpose, one graph builder per page, so a reader can compare
-them section by section. Trimming the Cactus page to what only it shows was
-proposed and declined (2026-10-12).
-
-The spine can be a task rather than a finding. `display_settings` changes a
-setting, reads the name back out of the session, puts that name in a config and
-then makes the two disagree; `cli_desktop` builds one folder and opens it twice.
-Neither has a dataset in the sense the rest of this file means, and both are
-tutorials, because you cannot start at step three.
-
-Every dataset has a built-in control, something in the same figure that ought to
-come out negative, and the page ends by checking the inference against the raw
-data.
+- Explore the data; don't argue. Cut the thesis paragraph (stop at the
+  observation), anticipate-and-correct, and moral framing ("the honest
+  outcome").
+- One sentence of orientation per step, then the mechanics. The goal is
+  unargued, not terse.
+- **The opening paragraph reads to someone who has never used JBrowse**: what
+  the page looks at and why, in the reader's terms, before any JBrowse noun or
+  display class name. The opening names the task and lists the loci.
+  `pangenome_hprc_haplotypes` is the page to copy.
+- Readers skip prose and copy commands, so cut content rather than compress it,
+  but never cut a route a reader can run on their own data.
+- Say each thing once. Prose beside a figure says what the caption cannot; prose
+  beside a fence says what its keys and comments cannot; a flag's explanation
+  lives in the comment in its fence. A sentence naming another tutorial needs a
+  step that uses it, or the link goes under See also.
 
 ## Typography
 
-**A gene symbol is `_italic_` in prose and bare everywhere else**: captions,
-headings, paper titles, link labels. Backticks are for a string the reader types
-into the location box. A protein product is roman where its gene is italic; a
-fusion name is one token (`BCR-ABL1`). `mappability_qc` is the page to copy.
-
-Don't pick the emphasis marker; `oxfmt` owns it and writes asterisks only where
-the span touches a **non-ASCII** character. Space the operator
-(`_ABL1_ × _BCR_`) if you want underscores.
-
-**A menu path in prose spells the label the way the app does**, ellipsis
-included: `**Color by... → Modifications**`. Neither `check-menu-paths.ts` nor
-`check-menu-labels.ts` sees the ellipsis. In a **caption** the same path stays
-bare, because a caption describes the frame rather than telling anyone to click.
-
-**A bold menu path stays on one source line.** oxfmt wraps prose at 80 columns,
-and a path split across two lines is invisible to the menu-path, figure-action
-and unshown-setting checks, which then report a drop. Open the sentence or a
-bullet with the path so the wrap falls after it.
-
-**Two labels really do differ by an ellipsis.** The FAB menu renders a bare
-`Add track`; the track-menu hamburger renders `Add track...`. Both are correct,
-so a report that a page is missing the ellipsis there is a report about which
-affordance the page describes, so check the route before adding one.
-
-## Don't argue, and don't preach
-
-A tutorial cultivates an air of exploring data. Three shapes to cut: the
-**thesis paragraph** (a section ending by telling the reader what it all means:
-stop at the observation), **anticipate-and-correct** (naming a wrong inference
-to refute it), and **moral framing** ("the honest outcome", "checked rather than
-trusted").
-
-**Ease the reader in.** Terse is not the goal; unargued is. One sentence of
-orientation saying what a step produces, then the mechanics. The opening
-paragraph primes the page, not each section.
-
-**The opening paragraph reads to someone who has never used JBrowse.** Say what
-the page looks at and why anyone would want to, in the reader's own terms,
-before any JBrowse noun. A display or adapter class name cannot be the thing
-holding the meaning: `an LDTrackDisplay draws plink's pairwise r2 table` names
-nothing the reader recognises, where
-`we look at linkage disequilibrium around the lactase gene` does. Naming the
-feature afterwards is worth doing when it tells the reader a capability exists,
-and so is naming the outside tool the page integrates with, because which of the
-two computed the numbers is itself the methodological point.
-
-**Tell the reader what we are doing, and how.** The opening names the task and,
-where the page visits several loci, lists them: "at CFH, find haplotypes missing
-two genes". Each section is the instruction, then its figure. Readers skip prose
-and copy commands, so cut content rather than compress it, and let the figures
-and fences make up the page. `pangenome_hprc_haplotypes` is the page to copy.
-Cut explanation, never a route a reader can run on their own data: the GFA to
-PAF conversion left that page once and came straight back.
-
-**Commands a reader can run on their own data.** Placeholder filenames
-(`graph.gbz.db`, `genes.fa`) over accession-laden URLs, one command per fence,
-one line of prose above it saying what it produces.
-
-## Say it once
-
-Nothing checks these, and a trim of every page found each on most of them.
-
-- **A paragraph beside a figure says what the caption cannot**: the instruction,
-  a detail to click, a coordinate to type. A sentence the caption already has
-  goes.
-- **Prose beside a fence names what its keys and comments cannot**: the menu
-  path that writes the setting, a default being overridden, a reason. A flag's
-  explanation has one home, the comment in its fence.
-- **A section has an instruction or a figure.** An orientation section that
-  restates the opening merges into the next step's lead-in.
-- **Script internals appear once**, in the numbered list above the
-  `curl … | bash` fence. A second script gets one bullet.
-- **A sentence naming another tutorial or tool needs a step that uses it.**
-  Otherwise the link belongs under See also.
-- **Steps and settings are bullets** under one lead-in sentence that has the
-  first fact.
-- **A flag the prose names is in a fence, and the fence is the config its figure
-  was shot with.** Read the figure's spec before writing either; a build script
-  writes the config its page shows.
+- A gene symbol is `_italic_` in prose and bare in captions, headings, titles
+  and link labels; a protein product is roman. `mappability_qc` is the page to
+  copy. oxfmt picks the emphasis marker.
+- A menu path in prose spells the app's label, ellipsis included:
+  `**Color by... → Modifications**`. A caption keeps the path bare.
+- **A bold menu path stays on one source line.** oxfmt wraps at 80 columns, and
+  the menu-path, figure-action and unshown-setting checks cannot see a split
+  path.
+- `Add track` (FAB menu) and `Add track...` (track hamburger) are both real
+  labels.
 
 ## Commands
 
-These pages are about _using JBrowse_, not bioinformatics scripting, with one
-exception: **the command that produces the page's subject file goes in the
-prose**, in a form a reader runs on their own equivalent data. Everything around
-it stays in `scripts/build_*.sh` under `## Reproduce it end to end`. Link to
-`quickstart_web.md` for bgzip/tabix/`text-index` prep.
-
-**The reader has not cloned the repo.** `## Reproduce it end to end` curls the
-script and then runs the copy in the working directory;
-`scripts/check-build-scripts.py` fails a `bash scripts/…`. The `.py` helpers a
-build script invokes are the script's own problem. Each fetches what it is
-missing, and the same check pins that list against what the script calls.
-
-**A script is never handed over bare.** Above the `curl … | bash` fence, a short
-numbered list says what the script does and why, in the reader's terms: three or
-four steps, no commands, the reasoning that makes the result trustworthy (a span
-measured between two single-copy windows, an inversion tested by its forward
-flanks). A tutorial teaches the method; the script only saves typing.
-
-**Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
-`check-script-commands` asserts every tool, subcommand and flag in it still runs
-in that script, those rather than text, since the page shows the general form
-and the script the pinned one. Leave the marker off a fence showing a route the
-script does not take, and off one whose command the script only approximates:
-`local_ancestry` shows `jbrowse sort-bed` where its script sorts inline to stay
-free of node, so that line gets a fence to itself.
-
-**A page that shows no command at all is the other failure**, and
-`check-unshown-tools` ratchets it: hand a reader a build script without one
-marked fence and the list grows.
-
-**The marker has to go over a fence that shows a command.** Over the
-`curl … | bash build_x.sh` fence it satisfies the ratchet and asserts nothing,
-both words being plumbing the parser skips. Point it at a real command or drop
-it; widening the parser is the wrong repair.
-
-**A `python` or `r` fence takes the same marker**, because a build script's
-analysis step is as often a heredoc as a command. There the callee stands in for
-the tool and the keyword-argument names for the flags, so `satuRn::fitDTU` and
-its `object`/`formula`/`parallel` are what has to agree, and the values stay
-free. `dtu` is the page to copy; `callArguments.ts` is the parser.
-
-Explain the flags in comments inside the fence, and don't assume the reader
-knows why one is there: `seed=42` is not "fixes the run", it is "FLARE draws
-random samples while it infers, so two runs differ unless the seed is pinned".
-Several short comment lines beat one dense one.
-
-The test is whether a reader with their own data would run the line as written.
-Anything naming an accession, sample list or locus is script. Filenames are not
-the axis.
-
-**A tool in `## Prerequisites` that no fence on the page runs fails
-`check-prereq-tools`**, which is the same rule read backwards: a reader who
-installs what the page asked for has to find it used. Runtimes and the
-bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives (LAST
-under jcvi, minimap2 inside a python helper) goes in that script's ALLOWED with
-the reason.
-
-The reverse check, that every page names where the reader runs JBrowse, was
-measured on 69 pages and found no drift: the six that match no quickstart link
-either hand over a hosted URL of their own or inherit the session from an
-earlier part of a series. Build it when a page lands that names nowhere.
-
-**Repeated prose is usually load-bearing.** A dedupe pass over the corpus found
-no paragraph worth removing: bgzip/tabix prep, `jbrowse text-index` and the
-`.anchors` explanation each live once and are linked, and the
-`## Reproduce it end to end` fence is pinned by `check-script-commands`. What
-does repeat, the `UU_Cfam_GSD_1.0` gloss and the assembly-name sentence, repeats
-because each page has to read from a cold start, so the win is consistent
-wording, not removal. `**Add track**` and `**Add track...**` are both real
-labels (the FAB menu and the hamburger menu).
-
-**`gzip -dc`, never `zcat`.** macOS `/usr/bin/zcat` only ever looks for a `.Z`,
-so `zcat foo.gz` fails there and writes an empty file, which a build script then
-uses as if nothing happened. `gzip -dc` is the same thing everywhere. This is a
-page rule as much as a script one, since the fences are what a reader copies.
-
-**Assume a GNU userland is not what the reader has.** The same trap in a slower
-form: `grep -F -f` with many patterns against very long lines runs at 0.25 MB/s
-on the BSD grep macOS ships, against a minute's work on GNU grep. Where a
-command's cost depends on which build of it is installed, say so where it runs.
-
-**A display setting the figure depends on goes in the track config on the page**
-too, not only in the script's config patch.
+- **The command that produces the page's subject file goes in the prose**, in a
+  form a reader runs on their own data: placeholder filenames, one command per
+  fence, one line above it saying what it produces. Anything naming an
+  accession, sample list or locus belongs in `scripts/build_*.sh` under
+  `## Reproduce it end to end`.
+- The reader has not cloned the repo: Reproduce curls the script and runs the
+  copy.
+- **Never hand over a script bare.** Above the `curl … | bash` fence, a numbered
+  list of three or four steps says what the script does and why, in the reader's
+  terms, with no commands.
+- `<!-- from: scripts/build_<topic>.sh -->` goes over a fence showing a real
+  command the script runs, never over the `curl … | bash` fence, where it
+  asserts nothing. Leave it off a fence the script only approximates. A `python`
+  or `r` fence takes it too; `dtu` is the example.
+- Explain flags in comments inside the fence, including why each is there
+  (`seed=42`: FLARE samples randomly, so runs differ unless the seed is pinned).
+- **`gzip -dc`, never `zcat`**: macOS `zcat` wants a `.Z` and writes an empty
+  file. Where a command's speed depends on GNU or BSD tools, say so.
+- A display setting the figure depends on goes in the page's track config, not
+  only in the script's config patch.
 
 ## Page structure
 
-A tutorial with real requirements puts `## Prerequisites` under the opening
-paragraph: a bulleted list, optionally one short paragraph on installing what
-apt has no package for. Nothing else. The intro goes under its own `##` heading.
+- `## Prerequisites` comes under the opening paragraph: a bulleted list and
+  nothing else. The intro gets its own heading.
+- **`## Where the data comes from` lists only what the page's commands or script
+  download**, one bullet per file ending in the raw URL, under one sentence
+  saying who fetches them. A source read by URL goes in a `<details>` summarised
+  "Read by URL (no download needed)"; our own hub configs and rehosted results
+  are cut. Past about ten bullets, split into labelled groups.
+- Our buckets serve no directory listing, so write a rehosted copy as file URLs.
+- A Reproduce section does not mean the script fetches the data. Read how the
+  script gets each file before writing the sentence.
+- A new page goes in `TUTORIAL_ORDER` in `src/lib/guide-categories.ts`.
+- A `sidebar_label` leads with the word its kin lead with:
+  `Synteny (MCScan anchors)`.
+- **A See also entry is a bare link**, with no qualifier and no kind prefix; the
+  build adds the prefix.
+- No convenience pitches ("nothing to install"). A genomes.jbrowse.org link is
+  welcome where the story uses it.
+- Moving a figure off a page means moving its card's crop source in
+  `gen-tutorial-thumbs.ts`; nothing warns.
 
-**The visible list under `## Where the data comes from` is the download list**:
-only files the page's commands or its build script fetch. A reader takes every
-visible bullet as something to get before starting, so each other URL has one of
-two places:
+## Before adding a locus
 
-- **A source nobody downloads goes in a `<details>`** whose summary says so ("no
-  download needed"): a third-party file a track reads by URL, the upstream
-  release a hosted slice was cut from, a service a plugin queries.
-- **Our own outputs and configs are cut**: a genomes.jbrowse.org hub
-  `config.json`, a demo's finished config, a rehosted result the page's track
-  config already loads. Link the hub's page in the prose; the fence that loads a
-  file is where its URL lives. A rehosted file stays visible only where a
-  command on the page reads it (`repeatmasker_classes`).
-
-**One sentence above the list says who fetches it**, because a list of URLs
-under a provenance heading does not tell a reader whether to start downloading:
-
-- above a visible list, "The [build script](#reproduce-it-end-to-end) fetches
-  these files, so there is nothing to download by hand."
-- on a page nobody downloads for, "Nothing to download: the track configs below
-  read these files by URL.", then the `<details>` with the summary "The files".
-  Name the real reader where it is not a track config: a plugin, an agent, a
-  command (`tp53_structures`, `agent_synteny`, `hg002_haplotypes`).
-
-**A Reproduce section does not mean the script fetches the data.** Read how the
-script or command gets each file before writing the sentence:
-`gfa-to-tabix build` takes its graph as a local path, so
-`pangenome_prepare_graph` tells the reader to download it, and
-`build_repeatmasker_classes.sh` takes the reader's own genome, so the hosted
-files on that page are only read by URL.
-
-A `<details>` under a visible list is summarised "Read by URL (no download
-needed)". A page with nothing to list at all drops the section
-(`genomes_basics`).
-
-**`## Where the data comes from` is a source list, one bullet per file**, and
-each bullet ends in the raw full URL rather than a link label, because the host
-and the path are the thing worth showing. Link the FTP or bucket folder instead
-where the reader wants the file's siblings. The prose above the list is one
-sentence naming the release and citing it; what a file means to the page belongs
-in the section that uses it. The section goes between Prerequisites and the
-intro, so a reader meets the data before the work.
-
-A folder URL has to actually serve a listing. Archive directories do
-(ftp.ensembl.org, ftp.1000genomes.ebi.ac.uk, ftp.ncbi.nlm.nih.gov,
-ngs.sanger.ac.uk); **our own buckets do not**, so a rehosted copy is written as
-the file URLs rather than as `https://jbrowse.org/demos/<name>/`, which 404s. A
-genome the script fetches by accession with the `datasets` CLI has no download
-URL to write, and the plain NCBI FTP folder for that accession stands in for
-one. A Zarr store is a directory of chunks and 404s at its root, which is worth
-saying in the bullet since the string is still what an adapter takes.
-
-**A list past about ten bullets splits into labelled groups**, a bold lead line
-and bullets under each, rather than running as one column. What produces one
-that long is usually a page with a second dataset it cannot connect to its
-first: `cancer_sv` listed two cell lines out of two releases until the second
-became `k562_fusions`, and the wall went with it.
-
-Frontmatter sets `tutorial_category`, and `tutorial_subcategory` where the
-category has subsections (`TUTORIAL_SUBCATEGORIES` in
-`src/lib/guide-categories.ts`). A new page also goes in `TUTORIAL_ORDER` there,
-at the place in its section a reader should meet it. An unknown value in either
-field fails the build.
-
-**A `sidebar_label` leads with the word its kin lead with.** The sidebar is one
-flat alphabetical list, so the first word is the only thing grouping it:
-`Synteny (MCScan anchors)`, not `MCScan anchors (grape, peach)`. `title` stays
-the page's real name; a page needs a `sidebar_label` only when the title does
-not already sort where it belongs.
-
-A page closes with `## See also`, `## External links`, then `## Citations`, each
-only when it has entries, and nothing below them but footnotes.
-`check-page-endings` holds the order. `## Reproduce it end to end` goes after
-the data preparation it wraps up.
-
-- **See also** links pages on jbrowse.org, ours: other tutorials, guides, the
-  storybook.
-- **External links** are everything off-site: a tool's repo or manual, a data
-  portal, a format spec, a plugin's GitHub page.
-- **Citations** are papers and the citations a resource asks for
-  (RepeatMasker's), one per bullet with its DOI.
-
-**A `See also` entry is a bare link and nothing else**, one per bullet, text =
-page title. Relaxing this to allow a short qualifier has been tried, and the
-qualifiers grew into the sentences the relaxation was meant to exclude. The
-build prefixes each bullet with its kind (Tutorial, User guide, Config guide,
-Developer guide, Reference) and groups them in that order (`remark-see-also.ts`;
-the raw `.md` copies get the same), so write bullets in any order and never type
-the prefix, which `check-page-endings` rejects. A trailing "tutorial" in a
-tutorial bullet's text is dropped.
-
-Don't restate the prerequisite tool list inside Reproduce, point at
-`[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:
-a failure worth documenting is one this dataset produces, and it goes in the
-prose where it happens.
-
-**No convenience pitches.** "Nothing to install" and "reading needs only a
-browser" are padding, since every figure links its view live. Linking
-genomes.jbrowse.org is a different thing and is welcome where the story uses it:
-a lane that takes its assembly and genes from a hub config, a file rehosted
-there, a prerequisite assembly a hub loads with its tracks (`agent_synteny` and
-`hg38_vertebrates_synteny` are the pages to copy). A bare pointer leaves the
-reader asking why it is there. A page that builds its assemblies from FASTA has
-no such use, and a link there waits until the build loads the hub instead.
-
-Moving a figure off a page means moving its card's crop source in
-`gen-tutorial-thumbs.ts` too; nothing warns you.
-
-## Existing datasets, read before adding a locus
-
-- `agent-docs/reference/DOG10K_DATASETS.md`
-- `agent-docs/reference/SV_MULTIHOP.md`: COLO829 behind `cancer_sv`, K562 behind
-  `k562_fusions`
-- `agent-docs/reference/PANGENOME_GRAPHS.md`
-- `agent-docs/ideas/collections/tutorial-ideas-audit.md`, and the dead ends in
-  `agent-docs/ideas/waiting-on-someone-else/figures-blocked-on-data.md`
-- Two pages were removed and don't come back as written: `readpair_heatmap`
-  (16250c4b58) and `introgression` (3be9f8f745), whose human archaic figures a
-  reviewer could not check and which had no negative control. `methylation.md`'s
-  SNRPN figure is the pattern: the methylated haplotype above its unmethylated
-  partner in one figure.
-- `pangenome_chrm` (42d7fe8da6) was removed too. Its caption claimed clean
-  lineage clusters the matrix did not show, its legend offered heterozygous
-  dosage on a haploid genome, and a band at the start of the chromosome read as
-  the circular start mishandled. Clustering chrM haplotypes against Haplogrep
-  lineages is the one route no other page has.
+Read `agent-docs/reference/DOG10K_DATASETS.md`, `SV_MULTIHOP.md`,
+`PANGENOME_GRAPHS.md`, `ideas/collections/tutorial-ideas-audit.md` and
+`ideas/waiting-on-someone-else/figures-blocked-on-data.md`, which also lists the
+removed pages that should not come back as written. `methylation.md`'s SNRPN
+figure is the pattern: the methylated haplotype above its unmethylated partner.

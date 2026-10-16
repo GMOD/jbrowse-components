@@ -4,7 +4,7 @@
 // a directory can be scanned in one read instead of fifty. The list is INDEXES
 // below; add a directory there and give it a README with the marker pair.
 //
-// agent-docs/CLAUDE.md already makes the rule: every doc outside
+// agent-docs/CLAUDE.md made the rule: every doc outside
 // architecture-decision-records/ carries `name:` / `description:` frontmatter,
 // and "`ls` a directory and read the descriptions — that is how you find the
 // right doc without opening all of them, so a new doc without one is
@@ -25,10 +25,9 @@
 // page said so. Within a table, alphabetical, matching `ls`.
 //
 // `ideas/` joined in 2026-08 when OTHER_IDEAS.md was exploded into one file per
-// proposal. Its hand-maintained 104-line index was the very shape agent-docs
-// /CLAUDE.md warns about ("a list some author transcribed once and no one
-// re-derived"), and generating it was the point of the split as much as the
-// per-idea files were.
+// proposal. Its hand-maintained 104-line index was a list some author
+// transcribed once and no one re-derived, and generating it was the point of
+// the split as much as the per-idea files were.
 //
 // `ideas/` splits on its subfolders, and that is a stronger version of what
 // `reference/` gets from `audience:`: the grouping is where the file lives, so
