@@ -186,6 +186,19 @@ the result, since it is what a later audit need not redo:
   `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`,
   `conservationMode` and `heightMode` are layout or fetch modes, not marks.
 
+The 2026-10-16 alignments pass declined two regroupings, since neither moves
+a picture:
+
+- The predicates over the read-connection, sashimi and allele-segment data
+  (`showInterchrom`, `showLongRange`, `showOrdinaryPairs`,
+  `minInterchromSupport`, `minSashimiScore`, `showNonCanonicalJunctions`,
+  `coverageSnpMinFrequency`) stay flat slots. A filter object per layer would
+  rename them and change nothing else. The `show` prefix on three of them
+  names a filter, where every other `show` slot toggles a layer.
+- `fadeLowQualityMismatches` and `fadeLowFrequencyMismatches` stay booleans.
+  Each fades by one variable and has one consumer, so an `opacity` object
+  would take one legal value.
+
 Two docs the audit left on a jexl callback or a flag name, on purpose: the
 cookbook's whole-config recipe paints SNVs one color and every other variant
 another, which a color object has no member for, and jb2export's comparative

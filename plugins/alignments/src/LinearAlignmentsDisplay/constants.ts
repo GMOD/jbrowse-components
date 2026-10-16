@@ -42,7 +42,10 @@ export type ReadConnectionsMode =
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
 // paired-end `readConnectionsDown`). Defined next to the side-assignment
 // algorithm it selects and re-exported here for the display-layer model and
-// menus. 'up' is the default.
+// menus. 'up' is the default. `readConnectionsDown` answers the same question
+// for the read connections, and stays a boolean: one enum for both was
+// declined on 2026-10-16, since 'auto' has no meaning there and the rename
+// would move no picture.
 export {
   SASHIMI_ARCS_MODES,
   type SashimiArcsMode,
