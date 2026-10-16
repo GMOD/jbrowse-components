@@ -145,6 +145,7 @@ extend-exclude = [
   "plugins/legacy-jbrowse/test_data/",
   "plugins/spreadsheet-view/src/SpreadsheetView/test_data/",
   "products/aws/lambda-functions/",
+  "demos/dog10k_sod1/dog10k_samples.tsv",
   "*.ix",
   "*.ixx",
   "*.nh",
