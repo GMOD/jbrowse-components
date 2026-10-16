@@ -802,12 +802,12 @@ const defaultBases: Record<BaseKey, ShadeInput> = {
 
 const defaultFramesCDS: FrameTuple<ShadeInput> = [
   null,
-  { main: '#FF8080' },
-  { main: '#80FF80' },
+  { main: '#F46868' },
+  { main: '#2EAA2E' },
   { main: '#8080FF' },
   { main: '#8080FF' },
-  { main: '#80FF80' },
-  { main: '#FF8080' },
+  { main: '#2EAA2E' },
+  { main: '#F46868' },
 ]
 
 const defaultFrames: FrameTuple<ShadeInput> = [
