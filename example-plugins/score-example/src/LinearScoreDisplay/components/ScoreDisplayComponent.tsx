@@ -19,22 +19,46 @@ function createScoreBackend(canvas: HTMLCanvasElement) {
 }
 // #endregion
 
-// DisplayChrome supplies the display's chrome (loading scrim, error bar,
-// region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
-// only place useRenderingBackend is called. Its render-prop hands back the
-// canvasRef to attach to the <canvas>.
-const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
+// Its own observer: a hover read in the component that renders DisplayChrome
+// would rebuild the whole chrome on every pointer move.
+const ScoreLabel = observer(function ScoreLabel({
   model,
 }: {
   model: LinearScoreDisplayModel
 }) {
   const { hoveredFeature } = model
+  return hoveredFeature ? (
+    <div
+      style={{
+        position: 'absolute',
+        left: hoveredFeature.x + 6,
+        top: hoveredFeature.y - 6,
+        pointerEvents: 'none',
+        fontSize: 11,
+        background: 'rgba(255,255,255,0.85)',
+        padding: '0 3px',
+      }}
+    >
+      {hoveredFeature.score.toFixed(2)}
+    </div>
+  ) : null
+})
+
+// DisplayChrome supplies the display's box, its loading scrim, error bar and
+// region-too-large banner, and WebGL/WebGPU context-loss recovery. Its render
+// prop hands back the canvasRef to attach to the <canvas>, and holds only
+// components: a model read written inline there re-renders the chrome.
+const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
+  model,
+}: {
+  model: LinearScoreDisplayModel
+}) {
   return (
     <DisplayChrome
       model={model}
       factory={createScoreBackend}
       testid="score-display"
-      style={{ width: '100%', height: model.height }}
+      style={{ width: '100%' }}
       // #region hover
       // measured against the chrome container, which the canvas fills, so the
       // pointer lands in canvas px with no offset
@@ -59,21 +83,7 @@ const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
             ref={canvasRef}
             style={{ width: '100%', height: '100%', display: 'block' }}
           />
-          {hoveredFeature ? (
-            <div
-              style={{
-                position: 'absolute',
-                left: hoveredFeature.x + 6,
-                top: hoveredFeature.y - 6,
-                pointerEvents: 'none',
-                fontSize: 11,
-                background: 'rgba(255,255,255,0.85)',
-                padding: '0 3px',
-              }}
-            >
-              {hoveredFeature.score.toFixed(2)}
-            </div>
-          ) : null}
+          <ScoreLabel model={model} />
         </>
       )}
     </DisplayChrome>
