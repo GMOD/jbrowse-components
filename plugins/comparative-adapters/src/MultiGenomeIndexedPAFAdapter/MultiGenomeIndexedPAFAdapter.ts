@@ -40,6 +40,7 @@ function pifSide(line: PifLine): AlignedSide {
     mateStart: line.mateStart,
     mateEnd: line.mateEnd,
     strand: line.strand,
+    anchorIsQuery: line.indexedName[0]?.toLowerCase() === 'q',
   }
 }
 

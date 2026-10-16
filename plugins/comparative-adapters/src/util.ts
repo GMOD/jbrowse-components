@@ -770,6 +770,12 @@ export interface AlignedSide {
    * every caller had before the field existed.
    */
   strand?: number
+  /**
+   * Whether the anchor was the record's query. Two sides from records of one
+   * direction are two statements, so {@link isRestatement} pairs only sides
+   * that differ here; a side without it pairs with any side.
+   */
+  anchorIsQuery?: boolean
 }
 
 /**
@@ -906,12 +912,18 @@ function refSpan(a: AlignedSide) {
   return a.end - a.start
 }
 
+const sameDirection = (a: AlignedSide, b: AlignedSide) =>
+  a.anchorIsQuery !== undefined && a.anchorIsQuery === b.anchorIsQuery
+
 /**
- * Two sides are one homology stated twice when each span nearly contains the
- * other and they meet on the same diagonal.
+ * Two sides are one homology stated twice when they come from records of
+ * opposite direction, each span nearly contains the other and they meet on the
+ * same diagonal. A tandem copy's secondary meets its primary's diagonal past
+ * the insertion holding it, so direction is what tells it from a restatement.
  */
 function isRestatement(a: AlignedSide, b: AlignedSide) {
   return (
+    !sameDirection(a, b) &&
     containedFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
     containedFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
       RECIPROCAL_OVERLAP &&

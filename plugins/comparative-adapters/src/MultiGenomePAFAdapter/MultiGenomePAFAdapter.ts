@@ -84,6 +84,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
         if (!isSelfDiagonal(side)) {
           sides.push({
             ...side,
+            anchorIsQuery: flip,
             record,
             flip,
             syntenyId: record * 2 + (flip ? 0 : 1),

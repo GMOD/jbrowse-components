@@ -348,6 +348,45 @@ describe('markReciprocalDuplicates', () => {
     ])
   })
 
+  // HG01346#1 carries GSTM1 twice in tandem. minimap2 chains GRCh38 over the
+  // first copy and states the second as an 18 kb insertion, so the secondary
+  // placing GRCh38's GSTM1 on the second copy sits inside the primary on both
+  // axes and on its diagonal past the insertion. Both rows read GRCh38 as the
+  // target: one statement each, not one homology stated from either end.
+  const gstmPrimary = {
+    refName: 'GRCh38#0#chr1',
+    start: 109596098,
+    end: 109801021,
+    mateRefName: 'HG01346#1#JBHDSR010000049.1',
+    mateStart: 109825558,
+    mateEnd: 110044861,
+    strand: 1,
+    anchorIsQuery: false,
+  }
+  const gstmSecondCopy = {
+    ...gstmPrimary,
+    start: 109682998,
+    end: 109701443,
+    mateStart: 109926714,
+    mateEnd: 109945161,
+  }
+
+  test('keeps a tandem copy stated in the same direction as its primary', () => {
+    expect(markReciprocalDuplicates([gstmPrimary, gstmSecondCopy])).toEqual([
+      false,
+      false,
+    ])
+  })
+
+  test('drops a nested side stated from the other end', () => {
+    expect(
+      markReciprocalDuplicates([
+        gstmPrimary,
+        { ...gstmSecondCopy, anchorIsQuery: true },
+      ]),
+    ).toEqual([false, true])
+  })
+
   // A different contig pair is never a candidate, however similar the coords
   test('keeps identical coordinates on a different contig pair', () => {
     expect(
