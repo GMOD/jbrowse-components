@@ -46,17 +46,27 @@ function makeModel() {
   return model
 }
 
+function withoutMenu(model: ReturnType<typeof makeModel>) {
+  const {
+    contextMenuInfo: _info,
+    openContextMenu: _open,
+    closeContextMenu: _close,
+    contextMenuItems: _items,
+    ...rest
+  } = model
+  return rest
+}
+
 function renderPlot(withContextMenu: boolean) {
   const model = makeModel()
   const findHit = jest.fn((x: number, y: number): Hit => ({ x, y }))
   const { getByTestId } = render(
     <ScorePlotChrome
-      model={model}
+      model={withContextMenu ? model : withoutMenu(model)}
       marks={[]}
       testid="score-plot"
       findHit={findHit}
       tooltip={() => null}
-      contextMenu={withContextMenu ? model : undefined}
     />,
   )
   return { model, findHit, chrome: getByTestId('score-plot') }
@@ -105,7 +115,6 @@ test('a context hit of its own opens the menu where the hover hit is absent', ()
       findHit={() => undefined}
       findContextHit={(x, y) => ({ x, y })}
       tooltip={() => null}
-      contextMenu={model}
     />,
   )
   fireEvent.contextMenu(getByTestId('score-plot'), { clientX: 10, clientY: 30 })

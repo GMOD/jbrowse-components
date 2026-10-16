@@ -9,7 +9,6 @@ import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -330,8 +329,6 @@ const FeatureBody = observer(function FeatureBody({
           }}
         />
       </BottomRightIndicators>
-
-      <DisplayContextMenu model={model} />
     </>
   )
 })

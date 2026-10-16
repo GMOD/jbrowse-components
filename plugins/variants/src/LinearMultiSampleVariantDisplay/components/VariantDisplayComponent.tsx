@@ -1,5 +1,4 @@
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
@@ -162,7 +161,6 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
               ) : null
             }
           </PointerLayer>
-          <DisplayContextMenu model={model} />
         </>
       )}
     </DisplayChrome>

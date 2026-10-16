@@ -4,7 +4,7 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
-  DisplayContextMenu,
+  isContextMenuHost,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer, axisPlotBox } from '@jbrowse/display-ui'
@@ -29,15 +29,18 @@ interface PlotBox {
   plotHeight: number
 }
 
-interface ContextMenuView {
+export interface ScorePlotContextMenuHost<ContextHit> {
   contextMenuInfo?: ContextMenuAnchor
   contextMenuItems: () => MenuItem[]
   closeContextMenu: () => void
-}
-
-export interface ScorePlotContextMenuHost<ContextHit> extends ContextMenuView {
   openContextMenu: (info: ContextMenuAnchor & { hit: ContextHit }) => void
   clearHoveredFeature: () => void
+}
+
+function isScorePlotMenuHost<ContextHit>(
+  model: object,
+): model is ScorePlotContextMenuHost<ContextHit> {
+  return isContextMenuHost(model) && 'openContextMenu' in model
 }
 
 export type ScorePlotChromeModel<
@@ -55,8 +58,8 @@ export type ScorePlotChromeModel<
 /**
  * The on-screen chrome of a display drawing a mark list on a score axis: the
  * canvas in the axis plot box, hover and click resolved through `findHit`, the
- * pointer-following `tooltip`, and the right-click menu where `contextMenu`
- * names the model that owns it. `findHit` takes y from the plot's own top.
+ * pointer-following `tooltip`, and the right-click menu where the model
+ * composes `ContextMenuMixin`. `findHit` takes y from the plot's own top.
  * `findContextHit` is for a display whose menu is about something other than
  * the hovered record (the wiggle's column, which exists where no bin does).
  */
@@ -75,7 +78,6 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
   tooltip,
   overlay,
   indicators,
-  contextMenu,
 }: {
   model: ScorePlotChromeModel<Hit, TRegion, TState>
   marks: readonly Mark<TRegion, TState>[]
@@ -86,7 +88,6 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
   tooltip: (mouseState: MouseState | undefined) => ReactNode
   overlay?: (plotGeometry: PlotBox) => ReactNode
   indicators?: () => ReactNode
-  contextMenu?: ScorePlotContextMenuHost<ContextHit>
 }) {
   const { height, canvasWidthPx: width } = model
   const box = plotGeometry ?? axisPlotBox(height)
@@ -95,6 +96,7 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
     [marks],
   )
   const hitAt = (x: number, y: number) => findHit(x, y - box.yTop)
+  const contextMenu = isScorePlotMenuHost<ContextHit>(model) ? model : undefined
   return (
     <DisplayChrome
       model={model}
@@ -139,7 +141,6 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
           tooltip={tooltip}
           overlay={overlay}
           indicators={indicators}
-          contextMenu={contextMenu}
         />
       )}
     </DisplayChrome>
@@ -155,7 +156,6 @@ const ScorePlotBody = observer(function ScorePlotBody({
   tooltip,
   overlay,
   indicators,
-  contextMenu,
 }: {
   model: { scrollableHeight: number }
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -165,7 +165,6 @@ const ScorePlotBody = observer(function ScorePlotBody({
   tooltip: (mouseState: MouseState | undefined) => ReactNode
   overlay?: (plotGeometry: PlotBox) => ReactNode
   indicators?: () => ReactNode
-  contextMenu?: ContextMenuView
 }) {
   return (
     <>
@@ -186,7 +185,6 @@ const ScorePlotBody = observer(function ScorePlotBody({
           {indicators()}
         </BottomRightIndicators>
       ) : null}
-      {contextMenu ? <DisplayContextMenu model={contextMenu} /> : null}
     </>
   )
 })

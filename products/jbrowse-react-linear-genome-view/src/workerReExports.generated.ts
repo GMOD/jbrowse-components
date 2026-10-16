@@ -166,7 +166,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/DisplayBackgroundProgress': uiStub,
   '@jbrowse/display-kit/DisplayChrome': uiStub,
   '@jbrowse/display-kit/DisplayChromeBase': uiStub,
-  '@jbrowse/display-kit/DisplayContextMenu': uiNamespace(['DisplayContextMenu', 'openContextMenuFromEvent']),
+  '@jbrowse/display-kit/DisplayContextMenu': uiNamespace(['DisplayContextMenu', 'isContextMenuHost', 'openContextMenuFromEvent']),
   '@jbrowse/display-kit/DisplayErrorBar': uiStub,
   '@jbrowse/display-kit/DisplayLoadingOverlay': uiStub,
   '@jbrowse/display-kit/DisplayRenderErrorOverlay': uiStub,

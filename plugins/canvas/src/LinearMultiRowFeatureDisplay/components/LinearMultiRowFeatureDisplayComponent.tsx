@@ -4,7 +4,6 @@ import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMen
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
-  DisplayContextMenu,
   DisplayCrosshairs,
   RowLabelsOverlay,
   RowSeparatorLines,
@@ -102,7 +101,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         bands={rowBands}
       />
       <TreeSidebar model={model} />
-      <DisplayContextMenu model={model} />
     </>
   )
 })

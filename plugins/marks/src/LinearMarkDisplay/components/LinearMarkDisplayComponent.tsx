@@ -34,7 +34,6 @@ const LinearMarkDisplayComponent = observer(
             model.host.displayedRegions,
           )
         }
-        contextMenu={model}
         overlay={() => (
           <>
             <MarkTextLayer model={model} />

@@ -80,7 +80,6 @@ const WiggleComponent = observer(function WiggleComponent({
         const column = findWiggleContextHit(model, model.host.visibleRegions, x)
         return column ? { ...column, feature: hitAt(x, y) } : undefined
       }}
-      contextMenu={model}
       overlay={() => <WiggleOverlay model={model} />}
       // The vertical guide only, drawn for the pointer and not for a hit: a
       // horizontal one reads as an axis rule.

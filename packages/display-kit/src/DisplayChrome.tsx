@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { ConfigProblemsCorner } from './ConfigProblemsIndicator.tsx'
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
+import { DisplayContextMenu, isContextMenuHost } from './DisplayContextMenu.tsx'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
@@ -36,8 +37,9 @@ function useChromeOverlays() {
 /**
  * The chrome every in-tree GPU/Canvas2D display renders: `DisplayChromeBase`
  * with JBrowse's own MUI overlays bound in, unless a
- * `DisplayChromeOverlayProvider` above it says otherwise, and the display's
- * notice chip (`ConfigProblemsCorner`) in the corner every display shares.
+ * `DisplayChromeOverlayProvider` above it says otherwise, the display's
+ * notice chip (`ConfigProblemsCorner`) in the corner every display shares, and
+ * the right-click menu of a display composing `ContextMenuMixin`.
  *
  * All the behavior lives in `DisplayChromeBase` — see that file for the
  * `displayPhase` contract, the subtree-replacing terminal states, and the
@@ -53,6 +55,9 @@ const DisplayChrome = observer(function DisplayChrome<
         <>
           {children(handle)}
           <ConfigProblemsCorner model={model} />
+          {isContextMenuHost(model) ? (
+            <DisplayContextMenu model={model} />
+          ) : null}
         </>
       )}
     </DisplayChromeBase>

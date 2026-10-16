@@ -6,7 +6,6 @@ import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
-  DisplayContextMenu,
   DisplayCrosshairs,
   RowsPanel,
   treeSidebarRightEdge,
@@ -201,7 +200,6 @@ const MafBody = observer(function MafBody({
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />
-      <DisplayContextMenu model={model} />
     </>
   )
 })

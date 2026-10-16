@@ -1,7 +1,22 @@
-import { ContextMenu } from '@jbrowse/core/ui'
+import ContextMenu from '@jbrowse/core/ui/ContextMenu'
 import { observer } from 'mobx-react'
 
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+
+/**
+ * What `DisplayChrome` reads to draw a display's right-click menu: the members
+ * `ContextMenuMixin` brings plus the display's `contextMenuItems`, named
+ * structurally so the chrome detects the mixin on any model handed to it.
+ */
+export interface ContextMenuHost {
+  contextMenuInfo?: ContextMenuAnchor
+  contextMenuItems: () => MenuItem[]
+  closeContextMenu: () => void
+}
+
+export function isContextMenuHost(model: object): model is ContextMenuHost {
+  return 'contextMenuInfo' in model && 'contextMenuItems' in model
+}
 
 /**
  * Open a display's right-click menu from the event that asked for it, with the
@@ -39,19 +54,14 @@ export function openContextMenuFromEvent<Info extends ContextMenuAnchor>(
 }
 
 /**
- * The right-click menu of a display composing `ContextMenuMixin`, in an
- * observer of its own: reading `contextMenuInfo` in the component that mounts
- * `DisplayChrome` would attribute it to the chrome's observer and re-render
- * the whole subtree on every open.
+ * The right-click menu of a display composing `ContextMenuMixin`, which
+ * `DisplayChrome` renders for every such display. An observer of its own, so
+ * opening the menu re-renders this and not the chrome.
  */
 export const DisplayContextMenu = observer(function DisplayContextMenu({
   model,
 }: {
-  model: {
-    contextMenuInfo?: ContextMenuAnchor
-    contextMenuItems: () => MenuItem[]
-    closeContextMenu: () => void
-  }
+  model: ContextMenuHost
 }) {
   return (
     <ContextMenu

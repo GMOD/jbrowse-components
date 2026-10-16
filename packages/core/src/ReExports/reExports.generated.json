@@ -1651,6 +1651,16 @@
         "@mui/material"
       ]
     },
+    "@jbrowse/core/ui/ContextMenu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
     "@jbrowse/core/ui/DataGridFlexContainer": {
       "package": "@jbrowse/core",
       "names": [
@@ -4280,13 +4290,12 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "DisplayContextMenu",
+        "isContextMenuHost",
         "openContextMenuFromEvent"
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/DisplayErrorBar": {

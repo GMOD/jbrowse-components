@@ -206,6 +206,7 @@ export default [
   '@jbrowse/core/ui/colors',
   '@jbrowse/core/ui/colorScale',
   '@jbrowse/core/ui/ConfirmDialog',
+  '@jbrowse/core/ui/ContextMenu',
   '@jbrowse/core/ui/DataGridFlexContainer',
   '@jbrowse/core/ui/Dialog',
   '@jbrowse/core/ui/DraggableDialog',

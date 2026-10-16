@@ -12,7 +12,7 @@ position: the anchor plus whatever the click resolved to (a genomic column,
 a feature), held as one value so the menu's open-ness and the position its
 items act on cannot disagree. Brings `contextMenuInfo`, `openContextMenu`
 and `closeContextMenu`; the display supplies `contextMenuItems()`, and
-`DisplayContextMenu` renders the two together
+`DisplayChrome` renders the menu for every display composing this
 
 `Info` is the display's own resolution of the click — the multi-row painting
 carries the feature under it, multi-wiggle and MAF a column — and every one
