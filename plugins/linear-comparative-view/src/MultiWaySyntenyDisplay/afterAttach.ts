@@ -1,3 +1,4 @@
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import {
   dedupe,
@@ -410,9 +411,16 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         adapterConfig: spec.adapterConfig,
         regions: await laneRegions(getSession(self), spec.lane, spec.regions),
       })
+      const admitted = new SerializableFilterChain({
+        filters: spec.filter,
+        jexl: getEnv(self).pluginManager.jexl,
+      })
       return {
         key: spec.key,
-        genes: laneGeneFeatures(features, spec.isoforms),
+        genes: laneGeneFeatures(
+          features.filter(f => admitted.passes(f)),
+          spec.isoforms,
+        ),
       }
     },
     empty: spec => ({ key: spec.key, genes: [] }),

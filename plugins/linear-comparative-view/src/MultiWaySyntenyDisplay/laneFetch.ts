@@ -1,4 +1,4 @@
-import { laneIsoformSettings } from './geneGlyph.ts'
+import { laneGeneFilter, laneIsoformSettings } from './geneGlyph.ts'
 
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
@@ -31,6 +31,7 @@ export interface LaneGenesFetchSpec extends LaneFetchSpec {
   adapterConfig: Record<string, unknown>
   regions: FetchRegion[]
   isoforms: IsoformSettings
+  filter: string[]
 }
 
 /**
@@ -145,8 +146,9 @@ export function laneGenesFetchSpecsOf({
     if (adapter) {
       const entry = tracks.get(assemblyName)
       const isoforms = laneIsoformSettings(entry)
+      const filter = laneGeneFilter(entry)
       const source = entry
-        ? `${entry.trackId}|${JSON.stringify(isoforms)}`
+        ? `${entry.trackId}|${JSON.stringify({ isoforms, filter })}`
         : `adapter:${JSON.stringify(adapter)}`
       specs.push({
         lane: assemblyName,
@@ -155,6 +157,7 @@ export function laneGenesFetchSpecsOf({
         adapterConfig: adapter,
         regions,
         isoforms,
+        filter,
       })
     }
   }

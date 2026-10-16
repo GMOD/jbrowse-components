@@ -265,6 +265,63 @@ test('a lane run landing after a re-anchor leaves the new anchor uncovered', asy
   expect(display.awaitingDependentData).toBe(true)
 })
 
+test("a lane drops the genes its gene track's filter drops", async () => {
+  const gene = (name: string, biotype: string, start: number) =>
+    new SimpleFeature({
+      uniqueId: name,
+      name,
+      type: 'gene',
+      gene_biotype: biotype,
+      refName: 'ctgA',
+      start,
+      end: start + 60,
+      strand: 1,
+    })
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random'],
+    geneTracks: [
+      {
+        trackId: 'volvox_genes',
+        assemblyNames: ['volvox'],
+        frozen: true,
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            filter: ["jexl:get(feature,'gene_biotype')=='protein_coding'"],
+          },
+        ],
+      },
+    ],
+    rpc: async name =>
+      name === 'MultiWayGetFeatures'
+        ? [
+            new SimpleFeature({
+              uniqueId: 'pair',
+              refName: 'ctgA',
+              start: 100,
+              end: 700,
+              strand: 1,
+              assemblyName: 'volvox',
+              mate: {
+                assemblyName: 'volvox_random',
+                refName: 'ctgA',
+                start: 100,
+                end: 700,
+              },
+            }),
+          ]
+        : name === 'CoreGetFeatures'
+          ? [gene('GSTM1', 'protein_coding', 100), gene('lnc', 'lncRNA', 300)]
+          : [],
+  })
+  await until(() => display.laneGenes.held?.get('volvox') !== undefined)
+  expect(
+    display.laneGenes.held
+      ?.get('volvox')
+      ?.genes.map(g => g.feature.get('name')),
+  ).toEqual(['GSTM1'])
+})
+
 test('a re-anchor waits for its lane links again', () => {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],

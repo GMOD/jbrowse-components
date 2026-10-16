@@ -109,4 +109,25 @@ describe('laneGenesFetchSpecsOf', () => {
       true,
     )
   })
+
+  test("a lane reads its gene track's filter, and a new filter refetches", () => {
+    const specsWith = (filter: string[]) =>
+      laneGenesFetchSpecsOf({
+        windows,
+        adapters: new Map([['a', adapter]]),
+        tracks: new Map([
+          [
+            'a',
+            {
+              trackId: 'genes',
+              type: 'FeatureTrack',
+              displays: [{ type: 'LinearBasicDisplay', filter }],
+            },
+          ],
+        ]),
+      })[0]!
+    const coding = ["jexl:get(feature,'gene_biotype')=='protein_coding'"]
+    expect(specsWith(coding).filter).toEqual(coding)
+    expect(specsWith(coding).key).not.toBe(specsWith([]).key)
+  })
 })

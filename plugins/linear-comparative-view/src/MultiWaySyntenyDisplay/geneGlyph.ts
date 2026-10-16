@@ -41,16 +41,28 @@ function strings(value: unknown, fallback: string[]) {
     : fallback
 }
 
+function featureDisplayOf(entry?: TrackConfigEntry) {
+  const displays = Array.isArray(entry?.displays)
+    ? (entry.displays as Record<string, unknown>[])
+    : []
+  return displays.find(d => d.type === 'LinearBasicDisplay')
+}
+
+/**
+ * The `filter` the gene track's own feature display admits features by, so
+ * the lane drops what that track drops. Takes a preprocessed entry.
+ */
+export function laneGeneFilter(entry?: TrackConfigEntry): string[] {
+  return strings(featureDisplayOf(entry)?.filter, [])
+}
+
 /**
  * What the gene track's own feature display ranks isoforms by, so the lane
  * draws the transcript that track draws. Takes a preprocessed entry, whose
  * `displayDefaults` and retired display types are already folded in.
  */
 export function laneIsoformSettings(entry?: TrackConfigEntry): IsoformSettings {
-  const displays = Array.isArray(entry?.displays)
-    ? (entry.displays as Record<string, unknown>[])
-    : []
-  const display = displays.find(d => d.type === 'LinearBasicDisplay')
+  const display = featureDisplayOf(entry)
   return {
     transcriptTypes: strings(
       display?.transcriptTypes,
