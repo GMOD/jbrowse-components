@@ -529,33 +529,48 @@ process, under three bounds that share no space and one setting, `limit`
 - **Chunks:** the range cache's own cap, 1000 chunks of 256 KiB, which the
   engine never trims between calls. The bare host counts the bytes it answered
   to range requests, and `chunks` reports that count clamped to the cap.
-- **Adapters:** `keepAdapters` keeps the adapters the call used, then the most
-  recently requested others while their weight fits another `limit`. An
-  adapter weighs at least `MIN_ADAPTER_BYTES`, and each file its config names
-  that `readRange` read whole, times `RETAINED_PER_FILE_BYTE` for an index.
+- **Adapters:** `keepAdapters` keeps the adapters the last call used, whatever
+  they weigh, then walks the others from the most recently requested, keeping
+  each whose weight still fits under `limit` beside those kept. `setLimit`
+  keeps the last call's too.
+- **An adapter's weight** is at least `MIN_ADAPTER_BYTES`, or each file its
+  config names that `readRange` read whole, at its uncompressed size (summed
+  BGZF block sizes, or a gzip's last member size), times
+  `INDEX_HOLDS_PER_BYTE` (4) for a `.bai`, `.csi`, `.crai` or `.tbi` and
+  `PARSED_HOLDS_PER_BYTE` (10) for any other file. `parsed` reports the sum.
 - **Assemblies:** the `RESOLVED_ASSEMBLIES` (16) most recently read.
 - **`jbrowse.cache({ limit })`** sets `limit` and reports what is held;
   **`jbrowse.clearCache()`** empties every cache in place.
-- **Every tables lookup passes the sequence adapter** (`adapterOf` in
-  `assembly.ts`, which lint enforces): core keys a BAM, SAM or CRAM on it, and
-  a lookup without it built a second instance that read the index again. The
-  cancer_sv tutorial downloaded 183.3 MiB in R before the fix and 74.7 MiB
-  after.
+- **Every tables lookup passes the sequence adapter** through `tablesAdapter`
+  or `tablesFeatureAdapter` (`@jbrowse/core/data_adapters/getFeatureAdapter`),
+  which lint enforces in `packages/tables` and each plugin's `tables.ts`: core
+  keys a BAM, SAM or CRAM on it, and a lookup without it built a second
+  instance that read the index again. The cancer_sv tutorial downloaded 183.3
+  MiB in R before the fix and 73.7 MiB after.
+- **R's V8 stops at a heap of about 1.4 GB**, which whole-file adapters reach
+  first. Weighed by compressed size, ten distinct 24 MB plain VCFs stayed open
+  and the eleventh read aborted R.
 
-What a parsed index holds per byte of its file, measured with Node's heap and
-ArrayBuffer totals after a warm-up parse, so the inflater's wasm memory is not
-counted (`RETAINED_PER_FILE_BYTE` takes the most with five contigs read):
+What an adapter holds per uncompressed byte of a file it read whole, measured
+with Node's heap and ArrayBuffer totals after a warm-up parse, so the
+inflater's wasm memory is not counted (indexes with five contigs read, the
+most the libraries' `memoizeByRefId` keeps decoded):
 
-| Format | Files | One contig | Five contigs |
+| File | Uncompressed | Held | Per byte |
 | --- | --- | --- | --- |
-| BAI | 8.3, 2.6 MiB | 1.7-2.0x | 3.6-4.2x |
-| CSI | 1.9, 1.8 MiB | 4.2-4.5x | 4.2-4.5x |
-| CRAI | 0.6, 0.5, 0.4 MiB | 9.8-11.9x (parsed whole) | |
-| TBI | 1.3, 0.4, 0.3, 0.2 MiB | 6.3-19.4x | 13.0-19.0x |
+| BAI | 8.3, 2.6 MiB | 35.0, 9.3 MiB | 4.2x, 3.6x |
+| CRAI | 1.1 MiB | 4.7 MiB | 4.3x |
+| TBI | 4.9, 2.3, 2.1 MiB | 18.9, 6.9, 4.0 MiB | 3.9x, 3.0x, 1.9x |
+| TBI of the HPRC v2.1 graph's links | 605.5 MiB | 605.7 MiB | 1.0x |
+| CSI | 6.4, 6.4 MiB | 8.0, 8.0 MiB | 1.2x |
+| VCF parsed whole, plain or gzipped | 23.3 MiB | 218 MiB | 9.4x |
+| GFF3 parsed whole | 20.2 MiB | 41 MiB | 2.0x |
 
-The libraries memoize five decoded contigs (`memoizeByRefId`), so five is
-the most an index holds. Below about 250 KiB the 1 MiB floor outweighs the
-estimate.
+- **The variance follows the content, not the format or its compression.** A
+  factor per compressed byte ranged from 2x to 70x for the same parse.
+- **The estimate overcounts:** an index read on one contig holds about half,
+  and a GFF3 a fifth. An index under about 1 MiB uncompressed holds more than
+  four times its size, which the 1 MiB floor covers.
 
 Before and after, measured with the bundle in Node's `vm`, or from R where a
 row says so: the bytes the host read, and what the process held after the run,
@@ -567,14 +582,18 @@ heap plus ArrayBuffers after a full GC in Node and RSS in R:
 | 12 x 20 kb of 200x long reads, twice | 64 MiB | 202.8 + 191.8 MiB | 52.4 + 0 MiB | 85 MiB | 157 MiB |
 | One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 81 MiB | 81 MiB |
 | 30 remote BAMs, an 8.3 MiB BAI each | 256 MiB | 269.0 MiB | 269.0 MiB | 121 MiB, 7 adapters | 135 MiB, 7 adapters |
-| cancer_sv tutorial, from R | 256 MiB | 183.3 MiB, 29.7 s | 73.7 MiB, 15.8 s | 812 MiB RSS | 763 MiB RSS |
+| cancer_sv tutorial, from R | 256 MiB | 183.3 MiB, 29.7 s | 73.7 MiB, 16.5 s | 812 MiB RSS | 757 MiB RSS |
 | 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 127.0 MiB, 44.0 s | 168.5 + 0 MiB, 28.5 s | 840 MiB peak | 953 MiB peak |
+| 12 distinct gzipped 24 MB VCFs | 256 MiB | | | 2640 MiB, 12 adapters | 238 MiB, 1 adapter |
+| 120 distinct gzipped 20 MB GFF3s | 256 MiB | | | | 61 MiB, 1 adapter |
+| 16 distinct 24 MB plain VCFs, from R | 256 MiB | | | aborted at the 11th | 730-980 MiB RSS |
+| 6 distinct 70 MB plain VCFs, from R | 256 MiB | | | aborted at the 4th | 1175 MiB RSS |
+
+"Before" is main before the duplicate-adapter fix for the read workloads, and
+the bundle weighing compressed bytes for the whole-file loops.
 
 - **No workload reads more, and the engine holds more between calls:** up to
   the chunk cache's 256 MiB, and a full `limit` of records.
-- **The index estimate overcounts a file read on one contig.** The 30 BAMs
-  read one contig each, so their indexes held about 100 MiB against the 234
-  MiB `indexes` reported.
 - **A call's own working memory comes on top.** One 1 Mb read of a local 100x
   BAM took R to 2.2 GB at the default.
 - **The inflater's wasm memory is a floor `limit` cannot lower.** A
