@@ -1934,7 +1934,7 @@ export const figureFrames: Record<
   },
   "cancer_sv/derivative_synteny": {
     "width": 1600,
-    "height": 895
+    "height": 990
   },
   "cancer_sv/derivative_inserts": {
     "width": 1600,
@@ -2801,7 +2801,7 @@ export const figureCallouts: Record<string, object[]> = {
   "sv_cgiab/cnv_chr17_loh": [{"type":"text","text":"p-arm: one copy left, heterozygosity lost","fontSize":18,"anchor":{"trackId":"hg008_depth","loc":"chr17:12,000,000","fracY":0.15}},{"type":"text","text":"q-arm: two copies, both of one allele","fontSize":18,"anchor":{"trackId":"hg008_depth","loc":"chr17:45,000,000","fracY":0.85}}],
   "sv_cgiab/driver_smad4_loh": [{"type":"text","text":"SMAD4: heterozygous loss with LOH","fontSize":16,"textAlign":"end","anchor":{"trackId":"mane_hg38","loc":"chr18:51,030,212","fracY":0.1,"alignX":"left","dx":-16}}],
   "cancer_sv/multihop_tumour_vs_normal": [{"type":"text","text":"Right-click a breakend → Open breakpoint split view","fontSize":17,"maxWidth":260,"leader":true,"anchor":{"selector":"[data-testid=\"feature-name-r_12_1\"]"},"dx":-30,"dy":95}],
-  "cancer_sv/derivative_synteny": [{"type":"text","anchor":{"view":[0,1],"trackId":"der3_genes","fracY":0,"alignX":"left","dx":40,"dy":20},"text":"Fold-back: chr3, two short inserts, then the same chr3 stretch again, inverted","fontSize":18,"maxWidth":900},{"type":"text","text":"Dark rows: each molecule crosses this stretch twice, forward and then inverted","fontSize":17,"maxWidth":380,"leader":true,"anchor":{"view":[0,0],"trackId":"COLO829_tumor_ont","loc":"chr3:25,356,000","fracY":0.8},"dx":-140,"dy":-30}],
+  "cancer_sv/derivative_synteny": [{"type":"text","anchor":{"view":[0,1],"trackId":"der3_genes","fracY":0,"alignX":"left","dx":40,"dy":20},"text":"Fold-back: chr3, two short inserts, then the same chr3 stretch again, inverted","fontSize":18,"maxWidth":900},{"type":"text","text":"Dark rows: each molecule crosses this stretch twice, forward and then inverted","fontSize":17,"maxWidth":380,"leader":true,"anchor":{"view":[0,0],"trackId":"COLO829_tumor_ont","loc":"chr3:25,356,000","fracY":0.5},"dx":-140,"dy":65}],
   "cancer_sv/derivative_inserts": [{"type":"text","text":"validated calls, where the reads stop","fontSize":17,"leader":true,"dx":80,"anchor":{"view":[0,0],"trackId":"COLO829_truth_set","loc":"chr3:25,359,568","fracY":0.5}},{"type":"text","text":"hg38, three source loci","fontSize":19,"anchor":{"view":[0,0],"trackId":"ncbi_refseq_hg38","loc":"chr3:25,358,800","fracY":0.75}},{"type":"text","text":"the derivative allele","fontSize":19,"anchor":{"view":[0,1],"trackId":"der3_genes","alignX":"left","dx":10,"fracY":0.95}}],
   "cancer_sv/realigned_reads_reference": [{"type":"circle","text":"1","anchor":{"view":[0,0],"trackId":"COLO829_tumor_ont","fracY":0,"alignX":"left"},"radius":15,"dx":24,"dy":78},{"type":"text","text":"aligned to hg38","anchor":{"view":[0,0],"trackId":"COLO829_tumor_ont","fracY":0,"alignX":"left","dx":10,"dy":30}}],
   "cancer_sv/realigned_reads_derivative": [{"type":"circle","text":"2","anchor":{"trackId":"reads_vs_der3","fracY":0,"alignX":"left"},"radius":15,"dx":24,"dy":78},{"type":"text","text":"realigned to the derived contig","anchor":{"trackId":"reads_vs_der3","fracY":0,"alignX":"left","dx":10,"dy":30}}],
