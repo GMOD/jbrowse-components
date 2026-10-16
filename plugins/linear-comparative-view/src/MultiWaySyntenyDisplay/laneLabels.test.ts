@@ -59,6 +59,20 @@ describe('placeLaneLabels', () => {
     ).toEqual(['A', 'B'])
   })
 
+  // CAT draws HG00128#1's GSTM2 as a 41 kb transcript running through GSTM1;
+  // GSTM1's room ended at GSTM2's right edge, behind GSTM1's own left
+  it("names a gene inside another gene's span", () => {
+    expect(
+      place({
+        a: [
+          gene('GSTM2', 100, 600),
+          gene('GSTM1', 300, 360),
+          gene('GSTM5', 610, 700),
+        ],
+      }),
+    ).toEqual(['GSTM2', 'GSTM1', 'GSTM5'])
+  })
+
   it('labels every lane, each under its own glyphs', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20), lane('b', 60)],

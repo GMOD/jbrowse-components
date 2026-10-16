@@ -80,6 +80,30 @@ function drawnNames(
   return out.sort((a, b) => a.left - b.left)
 }
 
+/**
+ * The free stretch around `names[i]`, bounded by the nearest names it does not
+ * overlap: a gene inside another's intron is bounded by the genes beside the
+ * pair, not by the one around it. `names` is sorted by left edge.
+ */
+function roomBeside(names: readonly NamedSpan[], i: number) {
+  const n = names[i]!
+  let roomLeft = -Infinity
+  for (let j = i - 1; j >= 0; j--) {
+    const right = names[j]!.right
+    if (right <= n.left && right > roomLeft) {
+      roomLeft = right
+    }
+  }
+  let roomRight = Infinity
+  for (let j = i + 1; j < names.length; j++) {
+    if (names[j]!.left >= n.right) {
+      roomRight = names[j]!.left
+      break
+    }
+  }
+  return { roomLeft, roomRight }
+}
+
 export function placeLaneLabels({
   lanes,
   genesOf,
@@ -116,8 +140,7 @@ export function placeLaneLabels({
     )
     const top = lane.glyphTop + glyphHeight + GENE_LABEL_GAP_PX
     names.forEach((n, i) => {
-      const roomLeft = names[i - 1]?.right ?? -Infinity
-      const roomRight = names[i + 1]?.left ?? Infinity
+      const { roomLeft, roomRight } = roomBeside(names, i)
       const pinned = n.group !== undefined && pinnedGroups.has(n.group)
       const textWidth = n.width * (pinned ? BOLD_WIDTH : 1)
       if (
