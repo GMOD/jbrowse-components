@@ -73,6 +73,20 @@ describe('placeLaneLabels', () => {
     ).toEqual(['GSTM2', 'GSTM1', 'GSTM5'])
   })
 
+  // A nested gene's label starts at its own left edge, so the room it needs
+  // runs from there, not from the name before the gene around it
+  it("leaves a nested gene unnamed rather than overrunning its neighbour's name", () => {
+    expect(
+      place({
+        a: [
+          gene('OUTER', 100, 600),
+          gene('NESTEDLONGNAME', 570, 590),
+          gene('C', 610, 700),
+        ],
+      }),
+    ).toEqual(['OUTER', 'C'])
+  })
+
   it('labels every lane, each under its own glyphs', () => {
     const labels = placeLaneLabels({
       lanes: [lane('a', 20), lane('b', 60)],
