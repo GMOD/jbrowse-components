@@ -97,6 +97,12 @@ so sort, bgzip and tabix anything genome-scale (`jbrowse sort-gff` handles both
 formats) and give the form the `.gz` as the main file; it infers the `.tbi`
 beside it.
 
+### Pangenome graphs
+
+A GFA, or a graph indexed by `gfa-to-tabix` or gbz-base, opens from local files
+once the GraphGenomeView plugin is installed:
+[](/docs/user_guides/graph_genome_view#on-jbrowse-desktop).
+
 ### Connecting to a track hub
 
 **File → Open connection...** points at a UCSC track hub or a JBrowse hub, and

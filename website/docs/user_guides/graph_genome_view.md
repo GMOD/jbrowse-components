@@ -256,14 +256,55 @@ several haplotypes share appears on only one of their rows.
 
 ## On JBrowse Desktop
 
-[JBrowse Desktop](/docs/quickstart_desktop) runs Route 2 with no server, config
-or index. Install the plugin once by opening **Global plugins...** in the start
-screen menu and clicking **Install** beside GraphGenomeView under **Available
-plugins**. Then **Add → Graph genome view** offers **Choose file**.
+[JBrowse Desktop](/docs/quickstart_desktop) opens your own graph from files on
+disk, with no server and no config file, by either route. Desktop reads a file
+by its path, so a graph track finds the files `gfa-to-tabix build` wrote beside
+the one you pick: the links file, the tabix indexes and `<prefix>.graph.json`.
+JBrowse Web's file picker hands over only the file picked, so there an indexed
+graph opens by URL.
 
-Desktop starts a session only by opening a genome, so pick a genome before
-looking for the **Add** menu. Any genome works, because the view lays out a GFA
-opened this way from the GFA's P/W lines.
+Install the plugin and open a genome first:
+
+- **Install the plugin once.** Open **Global plugins...** in the start screen
+  menu and click **Install** beside GraphGenomeView under **Available plugins**
+- **Open a genome.** Desktop starts a session only by opening one. For a graph
+  track, open the graph's reference, the assembly its backbone comes from (K12
+  in the figures above, hg38 for HPRC)
+
+A GFA small enough for the view to draw whole opens in a view of its own
+([Route 2](#route-2-a-gfa-file)):
+
+- **Add → Graph genome view**, then **Choose file**. Any genome works, because
+  the view lays out the GFA from its own P/W lines
+
+A graph indexed once on the command line opens as a track that cuts each window
+as you browse ([Route 1](#route-1-a-graph-track-browsable-by-locus)):
+
+1. Index the graph with `gfa-to-tabix build`, as Route 1 shows, or build a
+   gbz-base database as [](/docs/tutorials/pangenome_prepare_graph) does. Keep
+   the output files together in one folder
+2. **File → Open track...**, then pick **Add pangenome graph track** from the
+   dropdown at the top of the form
+3. Choose the file type, then **Choose File** for the one file it names:
+   - **rGFA segments (tabix BED pair):** `<prefix>.segs.bed.gz`, for an rGFA or
+     a plain GFA. The form also reads `<prefix>.graph.json`, so the track gets
+     the coarse tier
+   - **Haplotype walks (.walks.bed.gz):** `<prefix>.<sample>.walks.bed.gz`, from
+     `gfa-to-tabix --walks`
+   - **GBZ database (.gbz.db):** the database, with the haplotype index from
+     `gbz-haplotype-index` beside it, and optionally reads aligned to the graph
+     as GAF
+4. **Sample name in the graph:** the graph's name for the open genome where the
+   two differ, `GRCh38` for an HPRC graph opened on hg38. Leave it blank where
+   they match
+5. **Submit**, then type a locus. Zoomed out past what the track can cut, it
+   asks you to zoom in, unless the graph has a coarse tier
+
+The general **Add a track from file or URL** form opens the same three files as
+a graph track too, with no coarse tier and no sample name field.
+
+Desktop autosaves the session, local paths included, so it reopens from the
+start screen with the graph as long as the files stay where they were.
 
 ## Seven layouts {#three-layouts}
 
