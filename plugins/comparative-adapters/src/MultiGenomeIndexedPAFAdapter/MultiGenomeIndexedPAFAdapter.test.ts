@@ -520,3 +520,25 @@ test('an all-vs-all file, or a star with one spoke, names no anchor', async () =
     'anchorAssemblyName',
   )
 })
+
+// tandem.pif.gz is `jbrowse make-pif` over tandem.paf beside it: HG01346#1's
+// two GSTM1 copies read against GRCh38, the primary over the first and a
+// secondary nested on its diagonal over the second. Both rows run one way, so
+// the second copy is a statement of its own, not a restatement to drop.
+test('draws a tandem copy beside its primary', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      pifGzLocation: loc('./test_data/tandem.pif.gz'),
+      index: { location: loc('./test_data/tandem.pif.gz.tbi') },
+      assemblyNames: ['hg38', 'HG01346'],
+      assemblyNameToPanSN: { hg38: 'GRCh38#0', HG01346: 'HG01346#1' },
+    }),
+  )
+  const fa = await feats(adapter, {
+    refName: 'chr1',
+    start: 109_500_000,
+    end: 109_900_000,
+    assemblyName: 'hg38',
+  })
+  expect(fa.map(f => f.get('start')).sort()).toEqual([109_596_098, 109_682_998])
+})

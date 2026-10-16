@@ -915,6 +915,15 @@ function refSpan(a: AlignedSide) {
 const sameDirection = (a: AlignedSide, b: AlignedSide) =>
   a.anchorIsQuery !== undefined && a.anchorIsQuery === b.anchorIsQuery
 
+function nestsOnDiagonal(a: AlignedSide, b: AlignedSide) {
+  return (
+    containedFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
+    containedFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
+      RECIPROCAL_OVERLAP &&
+    sharesBoundary(a, b)
+  )
+}
+
 /**
  * Two sides are one homology stated twice when they come from records of
  * opposite direction, each span nearly contains the other and they meet on the
@@ -922,13 +931,38 @@ const sameDirection = (a: AlignedSide, b: AlignedSide) =>
  * the insertion holding it, so direction is what tells it from a restatement.
  */
 function isRestatement(a: AlignedSide, b: AlignedSide) {
-  return (
-    !sameDirection(a, b) &&
-    containedFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
-    containedFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
-      RECIPROCAL_OVERLAP &&
-    sharesBoundary(a, b)
-  )
+  return !sameDirection(a, b) && nestsOnDiagonal(a, b)
+}
+
+/**
+ * Which sides of one contig pair sit on the diagonal inside a longer side of
+ * their own direction: a tandem copy's secondary inside its primary. In an
+ * all-vs-all file the other direction's chaining of the primary nests the
+ * secondary too, and would drop it as a restatement, so a nested side pairs
+ * only with a nested side, the other direction's statement of the same copy.
+ * Swept over every side, kept or not, since the primary may already be gone.
+ */
+function nestedCopies(sides: AlignedSide[], group: number[]) {
+  const nested = new Set<number>()
+  const reaching: number[] = []
+  for (const i of group) {
+    const side = sides[i]!
+    let write = 0
+    for (const j of reaching) {
+      if (sides[j]!.end > side.start) {
+        reaching[write++] = j
+      }
+    }
+    reaching.length = write
+    for (const j of reaching) {
+      const other = sides[j]!
+      if (sameDirection(side, other) && nestsOnDiagonal(side, other)) {
+        nested.add(refSpan(side) < refSpan(other) ? i : j)
+      }
+    }
+    reaching.push(i)
+  }
+  return nested
 }
 
 /**
@@ -1006,9 +1040,9 @@ function cmpSide(a: AlignedSide, b: AlignedSide) {
  * another's two — the E. coli graph's own file states K12/NCTC86 as 12 blocks
  * from K12 and 14 from NCTC86. A rule that only recognised equal spans left
  * those and drew them over their parent, which is why the doubled ink survived a
- * round of this. {@link isRestatement} therefore asks whether one side sits
- * inside the other on both axes AND meets it on the same diagonal, and the
- * longer chaining is the one kept.
+ * round of this. {@link isRestatement} therefore asks whether two sides from
+ * records of opposite direction sit one inside the other on both axes AND meet
+ * on the same diagonal, and the longer chaining is the one kept.
  *
  * Keeping one statement of a homology is not free at the edges, and the price is
  * worth stating: over the whole E. coli file this halves the rows (1,012 sides
@@ -1062,6 +1096,7 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
   for (const byMate of byPair.values()) {
     for (const group of byMate.values()) {
       group.sort((a, b) => cmpSide(sides[a]!, sides[b]!))
+      const nested = nestedCopies(sides, group)
       // Kept sides that still reach the sweep position. Sides arrive in
       // ascending start, so one whose end has been passed can never overlap
       // again.
@@ -1075,7 +1110,11 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
           }
         }
         active.length = write
-        const slot = active.findIndex(kept => isRestatement(sides[kept]!, side))
+        const slot = active.findIndex(
+          kept =>
+            nested.has(kept) === nested.has(i) &&
+            isRestatement(sides[kept]!, side),
+        )
         if (slot === -1) {
           active.push(i)
           continue

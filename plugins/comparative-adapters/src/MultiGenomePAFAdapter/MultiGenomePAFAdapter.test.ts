@@ -568,3 +568,27 @@ describe('an assembly the file has never heard of', () => {
     ).toEqual([])
   })
 })
+
+// HG01346#1's two GSTM1 copies read against GRCh38: the primary over the
+// first and a secondary nested on its diagonal over the second. Both rows run
+// one way, so the second copy is a statement of its own, not a restatement.
+test('draws a tandem copy beside its primary', async () => {
+  const loc = writePaf([
+    'HG01346#1#c\t120000000\t109825558\t110044861\t+\tGRCh38#0#chr1\t248956422\t109596098\t109801021\t200000\t219303\t60',
+    'HG01346#1#c\t120000000\t109926714\t109945161\t+\tGRCh38#0#chr1\t248956422\t109682998\t109701443\t18000\t18447\t0',
+  ])
+  const fa = await feats(
+    makeAdapter(
+      ['hg38', 'HG01346'],
+      { hg38: 'GRCh38#0', HG01346: 'HG01346#1' },
+      loc,
+    ),
+    {
+      refName: 'chr1',
+      start: 109_500_000,
+      end: 109_900_000,
+      assemblyName: 'hg38',
+    },
+  )
+  expect(fa.map(f => f.get('start')).sort()).toEqual([109_596_098, 109_682_998])
+})

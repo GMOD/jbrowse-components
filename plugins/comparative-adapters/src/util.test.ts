@@ -387,6 +387,38 @@ describe('markReciprocalDuplicates', () => {
     ).toEqual([false, true])
   })
 
+  // An all-vs-all file also chains the primary from the haplotype's end, and
+  // that chaining nests the second copy on its diagonal too.
+  const gstmPrimaryOtherEnd = {
+    ...gstmPrimary,
+    start: 109596090,
+    end: 109801030,
+    mateStart: 109825550,
+    mateEnd: 110044870,
+    anchorIsQuery: true,
+  }
+
+  test('keeps a tandem copy beside its primary stated from both ends', () => {
+    expect(
+      markReciprocalDuplicates([
+        gstmPrimary,
+        gstmSecondCopy,
+        gstmPrimaryOtherEnd,
+      ]),
+    ).toEqual([true, false, false])
+  })
+
+  test('keeps one statement each of a primary and its copy from both ends', () => {
+    expect(
+      markReciprocalDuplicates([
+        gstmPrimary,
+        gstmSecondCopy,
+        gstmPrimaryOtherEnd,
+        { ...gstmSecondCopy, start: 109682990, anchorIsQuery: true },
+      ]),
+    ).toEqual([true, true, false, false])
+  })
+
   // A different contig pair is never a candidate, however similar the coords
   test('keeps identical coordinates on a different contig pair', () => {
     expect(
