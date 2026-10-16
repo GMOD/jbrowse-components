@@ -17,8 +17,8 @@ view, cut where a lane opens a hole for a deletion, each with the px it
 spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
 each gutter draws in paint order, a trapezoid from a span on its upper
 lane to a span on its lower one, with its color and the alpha it
-composites at; `alignments`, the records the ribbons draw; and `legend`,
-the key. Positions are genomic on each lane, and px across the view's
+composites at; `alignments`, the records the ribbons draw; `legend`, the
+key; and `config`, the display's config with its defaults filled. Positions are genomic on each lane, and px across the view's
 `width`, where a lane's own frame puts them.
 
 ```js
@@ -43,7 +43,8 @@ other row is not showing, in the color the strip along that row's edge
 paints them, `offscreenContigs`, the count and aligned bp of each such
 contig and the line its hover prints, and `offscreenStrip`, the marks and
 labels the strips along the band's edges paint, in px;
-and `legend` and `ramps`, the key. For a host that draws
+`legend` and `ramps`, the key; and `config`, the view's settings with
+their defaults filled, `color` and `opacity` as config objects. For a host that draws
 them itself, such as R through V8. Positions are genomic, on the axis's
 region named by `queryRegion` and `targetRegion`.
 

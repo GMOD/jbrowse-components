@@ -15,7 +15,9 @@ measurements, in the color the view's `color` paints it; `segments`, the
 lines the plot draws in paint order, one per block, or one per CIGAR step
 where a block is wide enough on screen for its CIGAR to show, each from
 (`xStart`, `yStart`) to (`xEnd`, `yEnd`) in genomic coordinates on the
-axis's region named by `xRegion` and `yRegion`; and `legend`, the key.
+axis's region named by `xRegion` and `yRegion`; `legend`, the key; and
+`config`, the view's settings with their defaults filled, `color` and
+`opacity` as config objects.
 `skipped` counts the blocks neither axis places. For a host that draws
 them itself, such as R through V8.
 
