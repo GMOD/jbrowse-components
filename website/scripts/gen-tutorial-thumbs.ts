@@ -315,6 +315,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.75, 0.97],
     xband: [0.58, 0.96],
   },
+  protein_variants_sickle_cell: {
+    src: 'protein/hbb_codon_hover.png',
+    band: [0.33, 0.9],
+    xband: [0.6, 0.98],
+    position: 'center',
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',

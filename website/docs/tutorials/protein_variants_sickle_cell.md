@@ -1,12 +1,15 @@
 ---
-title: Sickle cell from GWAS hit to protein structure
-sidebar_label: Proteins (sickle cell variant)
+title:
+  'Variants on protein structures part 1: sickle cell from GWAS hit to
+  haemoglobin S'
+sidebar_label: Proteins (variants pt 1, sickle cell)
 description:
   Follow the sickle cell allele of HBB from its GWAS Catalog associations and
   its distribution across 1000 Genomes ancestries to the residue it changes in
   the crystal structure of sickle haemoglobin
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
+tutorial_subcategory: Variants on protein structures
 ---
 
 Sickle cell disease comes from one base change in _HBB_, the gene for the β
@@ -17,7 +20,7 @@ ancestries. We put all of that in one JBrowse session beside the residue it
 changes, in a crystal structure of sickle haemoglobin. We'll:
 
 - open _HBB_ on codon 7 in the protein browser, with structure 2HBS, and hover
-  the codon to find its residue
+  the codon's alignment column to find its residue
 - add the GWAS Catalog and read what has been associated with rs334
 - add 1000 Genomes genotypes grouped by ancestry, with a common synonymous
   variant four codons upstream as the control
@@ -63,7 +66,7 @@ on _HBB_ residue 7 with structure 2HBS:
   minus-strand gene reading left to right, the way it opened
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
   fit both haemoglobin tetramers in the asymmetric unit
-- hover the highlighted codon
+- hover column 7 of the `human_query` row in the alignment
 
 Residue 7 counts the initiator methionine, which the mature protein loses, so
 the literature's Glu6 is the transcript's residue 7. The protein view's header
@@ -142,7 +145,7 @@ Each step on this page works on any gene the protein browser opens:
 
 - the chips under the search box open other organisms on a residue each, from
   _M. tuberculosis_ _rpoB_ to dog _SOD1_, on genomes.jbrowse.org's GenArk
-  assemblies
+  assemblies.
 - **Launch protein view** in a gene's right-click menu picks the structure
   yourself, and its **File or URL** tab takes a PDB or mmCIF of your own, such
   as a ColabFold or AlphaFold model

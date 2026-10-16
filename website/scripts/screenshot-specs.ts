@@ -63,12 +63,12 @@ import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { paperSvSpecs } from './specs/paper-sv.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinStructuresSpecs } from './specs/protein_structures.ts'
+import { proteinVariantSpecs } from './specs/protein_variants.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { readMarksSpecs } from './specs/read_marks.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { scrnaSpecs } from './specs/scrna.ts'
-import { sickleCellSpecs } from './specs/sickle_cell.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { tcgaSpecs } from './specs/tcga.ts'
@@ -91,7 +91,7 @@ export const specs: ScreenshotSpec[] = [
   ...genomesPangenomeSpecs,
   ...featuresSpecs,
   ...proteinStructuresSpecs,
-  ...sickleCellSpecs,
+  ...proteinVariantSpecs,
   ...uiSpecs,
   ...methylationSpecs,
   ...ldSpecs,

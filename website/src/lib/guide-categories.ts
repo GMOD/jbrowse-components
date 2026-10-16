@@ -84,6 +84,7 @@ export const TUTORIAL_SUBCATEGORIES: Record<string, string[]> = {
     'Ortholog tables',
   ],
   Pangenomes: ['HPRC release 2'],
+  'Transcriptomics & proteins': ['Variants on protein structures'],
   'Population genomics': ['Dog10K'],
 }
 
@@ -148,7 +149,7 @@ export const TUTORIAL_ORDER = [
   'rnaseq',
   'dtu',
   'tp53_structures',
-  'sickle_cell_variant',
+  'protein_variants_sickle_cell',
   'gene_prediction_review',
   'gene_density',
   'organelle_map',
