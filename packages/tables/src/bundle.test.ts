@@ -69,6 +69,7 @@ let jbrowse: {
   contigs: (args: string) => Promise<string>
   multiway: (args: string) => Promise<string>
   regions: (args: string) => Promise<string>
+  fileRegions: (args: string) => Promise<string>
   cache: (args: string) => Promise<string>
   clearCache: () => Promise<string>
 }
@@ -304,6 +305,26 @@ describe('a bare host under a budget', () => {
     await cache({ limit })
   })
 
+  test.each([
+    ['BAM', BAM],
+    ['CRAM', CRAM],
+  ])(
+    'a %s read through an assembly opens the file once',
+    async (_, { adapterConfig, sequenceAdapter, region }) => {
+      const assembly = {
+        name: 'volvox',
+        sequence: { adapter: sequenceAdapter },
+      }
+      await jbrowse.fileRegions(JSON.stringify({ adapterConfig, assembly }))
+      await jbrowse.alignments(
+        JSON.stringify({ adapterConfig, region, assembly }),
+      )
+      expect((await cache()).adapters).toBe(2)
+      expect(wholeReads.size).toBeGreaterThan(1)
+      expect(new Set(wholeReads.values())).toEqual(new Set([1]))
+    },
+  )
+
   test('drops the chunks of the file it read least recently first', async () => {
     const bam = BAM.adapterConfig.bamLocation.uri
     const cram = CRAM.adapterConfig.cramLocation.uri
@@ -372,7 +393,7 @@ describe('a bare host under a budget', () => {
       adapterConfig: { type: 'Gff3Adapter', gffLocation: { uri } },
       region: { refName: 'ctgA', start: 0, end: 100 },
     }
-    await cache({ limit: 14 * 2 ** 20 })
+    await cache({ limit: 10 * 2 ** 20 })
     await jbrowse.features(JSON.stringify(features))
     expect((await cache()).indexes).toBeGreaterThanOrEqual(size)
     await jbrowse.alignments(JSON.stringify(BAM))

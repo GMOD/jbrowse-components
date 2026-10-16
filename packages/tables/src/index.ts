@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   alignmentTables,
   referenceSequence,
@@ -34,7 +33,7 @@ import {
   wiggleTables,
 } from '@jbrowse/plugin-wiggle/tables'
 
-import { assemblyResolver, renameRegions } from './assembly.ts'
+import { adapterOf, assemblyResolver, renameRegions } from './assembly.ts'
 import { engineCache } from './cache.ts'
 import { fileRegions } from './fileRegions.ts'
 
@@ -145,12 +144,17 @@ const LISTED_CONTIGS = 20
  */
 async function missingContigs(
   pluginManager: PluginManager,
-  { adapterConfig, region, regions = region ? [region] : [] }: RegionArgs,
-) {
-  const { dataAdapter } = await getAdapter(
-    pluginManager,
-    'tables',
+  {
     adapterConfig,
+    sequenceAdapter,
+    region,
+    regions = region ? [region] : [],
+  }: RegionArgs,
+) {
+  const dataAdapter = await adapterOf(
+    pluginManager,
+    adapterConfig,
+    sequenceAdapter,
   )
   const names: string[] =
     'getRefNames' in dataAdapter

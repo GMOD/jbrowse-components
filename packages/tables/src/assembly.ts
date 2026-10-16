@@ -32,11 +32,19 @@ export interface ResolvedAssembly {
   canonical: (name: string) => string
 }
 
-async function adapterOf(
+/**
+ * The cached adapter for `config`, which every tables lookup goes through: a
+ * reference-reading adapter (`READS_REFERENCE`) is keyed on its config and the
+ * sequence adapter, so a lookup without the one the read uses builds a second
+ * instance with its own index.
+ */
+export async function adapterOf(
   pluginManager: PluginManager,
   config: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
 ) {
-  return (await getAdapter(pluginManager, 'tables', config)).dataAdapter
+  return (await getAdapter(pluginManager, 'tables', config, sequenceAdapter))
+    .dataAdapter
 }
 
 function aliasAdapterOf(sidecar: unknown) {
@@ -64,12 +72,12 @@ async function resolveAssembly(
   const aliasAdapter = aliasAdapterOf(expanded.refNameAliases)
   const [regions, aliases] = await Promise.all([
     sequenceAdapter
-      ? adapterOf(pluginManager, sequenceAdapter).then(a =>
+      ? adapterOf(pluginManager, sequenceAdapter, undefined).then(a =>
           isRegionsAdapter(a) ? a.getRegions({}) : [],
         )
       : [],
     aliasAdapter
-      ? adapterOf(pluginManager, aliasAdapter).then(a =>
+      ? adapterOf(pluginManager, aliasAdapter, undefined).then(a =>
           isRefNameAliasAdapter(a) ? a.getRefNameAliases({}) : [],
         )
       : [],
@@ -136,9 +144,10 @@ export function assemblyResolver(pluginManager: PluginManager) {
 async function spellingIn(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
   { canonical }: ResolvedAssembly,
 ) {
-  const adapter = await adapterOf(pluginManager, adapterConfig)
+  const adapter = await adapterOf(pluginManager, adapterConfig, sequenceAdapter)
   const names: string[] =
     'getRefNames' in adapter ? await adapter.getRefNames() : []
   const listed = new Set(names)
@@ -170,10 +179,10 @@ export async function renameRegions<A extends AssemblyArgs>(
   const asIs = (name: string) => name
   const [inFile, inReference] = await Promise.all([
     args.adapterConfig
-      ? spellingIn(pluginManager, args.adapterConfig, assembly)
+      ? spellingIn(pluginManager, args.adapterConfig, sequenceAdapter, assembly)
       : asIs,
     sequenceAdapter
-      ? spellingIn(pluginManager, sequenceAdapter, assembly)
+      ? spellingIn(pluginManager, sequenceAdapter, undefined, assembly)
       : asIs,
   ])
   const rename = (r: TablesRegion) => ({

@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { adapterOf } from './assembly.ts'
 
 import type { ResolvedAssembly } from './assembly.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -35,11 +35,12 @@ const NAMES_FROM_RECORDS = new Set([
 async function contigsOf(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
+  sequenceAdapter: Record<string, unknown> | undefined,
 ): Promise<Contig[]> {
-  const { dataAdapter } = await getAdapter(
+  const dataAdapter = await adapterOf(
     pluginManager,
-    'tables',
     adapterConfig,
+    sequenceAdapter,
   )
   if ('getContigs' in dataAdapter) {
     return (dataAdapter as { getContigs: () => Promise<Contig[]> }).getContigs()
@@ -65,7 +66,11 @@ export async function fileRegions(
   adapterConfig: Record<string, unknown>,
   assembly?: ResolvedAssembly,
 ) {
-  const contigs = await contigsOf(pluginManager, adapterConfig)
+  const contigs = await contigsOf(
+    pluginManager,
+    adapterConfig,
+    assembly?.sequenceAdapter,
+  )
   const canonical = assembly?.canonical ?? ((name: string) => name)
   const assemblyLength = new Map(
     assembly?.regions.map(r => [canonical(r.refName), r.end]),

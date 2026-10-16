@@ -1096,6 +1096,27 @@ export default defineConfig(
       ],
     },
   },
+  {
+    files: ['packages/tables/src/**/*.ts'],
+    ignores: ['packages/tables/src/assembly.ts', '**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            noUseEffectEvent,
+            {
+              name: '@jbrowse/core/data_adapters/dataAdapterCache',
+              importNames: ['getAdapter'],
+              message:
+                "Look adapters up with assembly.ts's adapterOf, which takes the sequence adapter: a BAM, SAM or CRAM looked up without it is a second instance with its own index.",
+            },
+          ],
+          patterns: [noSrcImport, noShaderTextImport],
+        },
+      ],
+    },
+  },
   // The one file that has to reach another package's src: it pins the app's
   // format guesser to the CLI's, and @jbrowse/cli publishes a binary rather
   // than an importable entry point, so there is no public API to compare
