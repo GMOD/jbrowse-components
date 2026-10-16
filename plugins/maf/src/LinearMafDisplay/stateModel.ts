@@ -1,9 +1,7 @@
 import {
   buildCoverageTooltipBin,
-  computeCoverageTicks,
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
-  coverageBinAt,
   coverageDepthDomain,
   hitCoverageBand,
 } from '@jbrowse/alignments-core'
@@ -62,18 +60,12 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { mafCoverageBandColors } from '../LinearMafRenderer/coverageBandColors.ts'
-import {
-  identityColorScale,
-  identityOver,
-} from '../LinearMafRenderer/identity.ts'
-import {
-  getCodonLegendItems,
-  getFrameLegendItems,
-  getMafColorPalette,
-} from '../LinearMafRenderer/util.ts'
+import { identityOver } from '../LinearMafRenderer/identity.ts'
+import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 import { navigationFields } from '../util/navigationFields.ts'
 import { copyParent, placeCopyRows } from '../util/sampleCopies.ts'
 import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
+import { mafColorScales } from './colorScales.ts'
 import {
   computeVisibleAnnotations,
   findFrameAt,
@@ -85,15 +77,11 @@ import {
   consensusStrandByRowChr,
 } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { conservationTicks } from './components/conservationBand.ts'
-import {
-  perRowChromRanks,
-  sourceChromLegendItems,
-} from './components/drawSourceChrom.ts'
+import { perRowChromRanks } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
-import { findRowSpans } from './components/findRowSpan.ts'
 import { summaryAt } from './components/summarySpans.ts'
 import { configSlotActions, configSlotViews } from './configSlotViews.ts'
+import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
 import {
   EMPTY_MAF_COVERAGE,
   createRowsSourceJoin,
@@ -105,12 +93,14 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
+import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
 import { paintsBases } from './rowRenderings.ts'
 import {
   ZOOM_IN_FOR_BAND,
   buildMafTrackMenuItems,
   zoomGatedItem,
 } from './trackMenuItems.ts'
+import { mafValueScales } from './valueScales.ts'
 
 import type {
   MafGPURenderState,
@@ -130,7 +120,6 @@ import type { CodonGlyph } from './codons.ts'
 import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
-import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type {
@@ -243,19 +232,6 @@ const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
 function paintsThemeColors(field: MafColorField) {
   const preset = MAF_FIELD_PRESETS[field]
   return preset.scale === 'categorical' && !('range' in preset)
-}
-
-function categoricalScale(
-  id: string,
-  title: string,
-  items: { label: string; color?: string }[],
-): ColorScale {
-  return {
-    kind: 'categorical',
-    id,
-    title,
-    entries: items.map(({ label, color }) => ({ value: label, label, color })),
-  }
 }
 
 /**
@@ -1229,39 +1205,18 @@ export default function stateModelFactory(
          * autoscaled depth, and conservation over a fixed 0-100%.
          */
         get valueScales(): ValueScale[] {
-          const { topBands, coverageDepthDomain: domain } = self
-          const scales: ValueScale[] = []
-          if (self.coverageBandActive && domain) {
-            const height = topBands.reserved.coverage
-            scales.push({
-              domain,
-              scaleType: self.scaleType,
-              height,
-              ticks: computeCoverageTicks(
-                domain,
-                height,
-                self.scaleType,
-                self.symlogConstant,
-                self.minimalTicks,
-              ),
-              symlogConstant: self.symlogConstant,
-              caption: self.scaleTitle,
-              rules: self.scoreRules,
-              grid: self.grid,
-              bandTops: [topBands.top.coverage],
-            })
-          }
-          if (self.conservationBandActive) {
-            const height = topBands.reserved.conservation
-            scales.push({
-              domain: [0, 100],
-              scaleType: 'linear',
-              height,
-              ticks: conservationTicks(height),
-              bandTops: [topBands.top.conservation],
-            })
-          }
-          return scales
+          return mafValueScales({
+            topBands: self.topBands,
+            coverageActive: self.coverageBandActive,
+            coverageDomain: self.coverageDepthDomain,
+            conservationActive: self.conservationBandActive,
+            scaleType: self.scaleType,
+            symlogConstant: self.symlogConstant,
+            minimalTicks: self.minimalTicks,
+            caption: self.scaleTitle,
+            rules: self.scoreRules,
+            grid: self.grid,
+          })
         },
         /**
          * #getter
@@ -1350,55 +1305,17 @@ export default function stateModelFactory(
           startRow: number,
           endRow: number,
         ) {
-          const { sources } = self
           const { assemblyManager } = getSession(self)
-          const assemblyNames = new Map<number, string>()
-          for (
-            let row = Math.max(0, startRow);
-            row < Math.min(endRow, sources.length);
-            row++
-          ) {
-            const source = sources[row]!
-            // Falls back to a sample id that names a loaded assembly; not the
-            // portal lookup MAF_LARGE_BLOCKS.md rules out.
-            const assemblyName =
-              source.assemblyName ??
-              (assemblyManager.has(source.name) ? source.name : undefined)
-            if (assemblyName !== undefined) {
-              assemblyNames.set(row, assemblyName)
-            }
-          }
-          const region = assemblyNames.size
-            ? self.detailOnScreen.get(displayedRegionIndex)
-            : undefined
-          const spans = region
-            ? findRowSpans(
-                region,
-                startBp,
-                endBp,
-                new Set(assemblyNames.keys()),
-              )
-            : undefined
-          const targets: (RowSpan & {
-            assemblyName: string
-            assemblyConfigLocation?: UriLocation
-            sampleLabel: string
-            rowIndex: number
-          })[] = []
-          for (const [rowIndex, assemblyName] of assemblyNames) {
-            const span = spans?.get(rowIndex)
-            const source = sources[rowIndex]!
-            if (span) {
-              targets.push({
-                ...span,
-                assemblyName,
-                assemblyConfigLocation: source.assemblyConfigLocation,
-                sampleLabel: source.label ?? source.name,
-                rowIndex,
-              })
-            }
-          }
-          return targets
+          return rowNavigationTargetsOf({
+            sources: self.sources,
+            hasAssembly: name => assemblyManager.has(name),
+            detail: self.detailOnScreen,
+            displayedRegionIndex,
+            startBp,
+            endBp,
+            startRow,
+            endRow,
+          })
         },
         /**
          * #method
@@ -1453,29 +1370,15 @@ export default function stateModelFactory(
           reversed = false,
         ) {
           const coverage = self.rpcDataMap.get(displayedRegionIndex)?.coverage
-          if (!coverage) {
-            return undefined
-          }
-          const position = coverageBinAt(
-            coverage,
-            basePos,
-            bpPerPx,
-            reversed,
-            self.coverageSnpMinFrequency,
-          )
-          const bin =
-            position === undefined
-              ? undefined
-              : buildCoverageTooltipBin(position, coverage, coverage)
-          if (!bin) {
-            return undefined
-          }
-          const idx = bin.position - coverage.coverageStartPos
-          const identity =
-            idx >= 0 && idx < coverage.identityScores.length
-              ? (coverage.identityScores[idx] ?? Number.NaN)
-              : Number.NaN
-          return { ...bin, identity }
+          return coverage
+            ? coverageTooltipBinAt(
+                coverage,
+                basePos,
+                bpPerPx,
+                reversed,
+                self.coverageSnpMinFrequency,
+              )
+            : undefined
         },
         /**
          * #method
@@ -1887,62 +1790,19 @@ export default function stateModelFactory(
          * CDS-frame swatches follow it.
          */
         colorScalesIn(palette: JBrowsePalette): ColorScale[] {
-          const view = self.host
-          if (!view.initialized) {
-            return []
-          }
-          const rendering = self.activeRowRendering
-          const { colorEncoding, colorKeyTitle } = self
-          const named =
-            colorEncoding.scale === 'categorical' ? colorEncoding : {}
-          const oneBaseCells = self.encodeBinBp === 1
-          const rendered =
-            rendering === 'codon'
-              ? [
-                  categoricalScale(
-                    'codon',
-                    colorKeyTitle,
-                    getCodonLegendItems(palette, named),
-                  ),
-                ]
-              : rendering === 'chromosome'
-                ? [
-                    categoricalScale(
-                      'sourceChrom',
-                      colorKeyTitle,
-                      sourceChromLegendItems(
-                        self.sourceChromRanks.maxRank,
-                        named,
-                      ),
-                    ),
-                  ]
-                : rendering === 'identity' || self.rowsColor === 'identity'
-                  ? [
-                      identityColorScale(
-                        'heatmap',
-                        oneBaseCells,
-                        colorKeyTitle,
-                        colorEncoding.scale === 'linear'
-                          ? colorEncoding
-                          : undefined,
-                      ),
-                    ]
-                  : rendering === 'xyplot'
-                    ? [identityColorScale('xyplot', oneBaseCells)]
-                    : []
-          return [
-            ...rendered,
-            ...(self.visibleFrames.length > 0
-              ? [
-                  categoricalScale(
-                    'cdsFrame',
-                    'CDS frame',
-                    getFrameLegendItems(palette),
-                  ),
-                ]
-              : []),
-            ...self.rowColorScales,
-          ]
+          return self.host.initialized
+            ? mafColorScales({
+                palette,
+                rendering: self.activeRowRendering,
+                rowsColor: self.rowsColor,
+                colorEncoding: self.colorEncoding,
+                colorKeyTitle: self.colorKeyTitle,
+                oneBaseCells: self.encodeBinBp === 1,
+                maxSourceChromRank: self.sourceChromRanks.maxRank,
+                showsFrames: self.visibleFrames.length > 0,
+                rowColorScales: self.rowColorScales,
+              })
+            : []
         },
         /**
          * #getter
