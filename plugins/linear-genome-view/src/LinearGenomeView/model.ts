@@ -8,7 +8,6 @@ import {
   getBpDisplayStr,
   getNotificationSink,
   getSession,
-  getTickDisplayStr,
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
@@ -31,7 +30,6 @@ import { scaleBandHeights } from '@jbrowse/core/util/bandHeight'
 import { wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 import {
   hideTrackGeneric,
   launchToggleTrackGeneric,
@@ -97,14 +95,12 @@ import {
   expandRegion,
   fitAllRegionsWindow,
   generateLocations,
+  getGridlineTicks,
+  getPaddingSpans,
+  getScalebarLabels,
   getScalebarRefNameLabels,
   regionsOrientation,
-  groupContiguousBlocks,
-  labelFitsInBlock,
-  makeBlockTicks,
-  runRefNameLabelPx,
   setDisplayedRegionsKeepingCenter,
-  tickLabelWidth,
 } from './util.ts'
 
 import type { FlightViewport } from './flyTo.ts'
@@ -153,18 +149,7 @@ export interface SearchPickerState {
   pick: (id: string) => Promise<unknown>
 }
 
-/** One span of the row that is not track data — see `paddingSpans`. */
-export interface PaddingSpan {
-  key: string
-  x: number
-  width: number
-  kind: 'seam' | 'elided' | 'boundary'
-}
-
-// The one array `paddingSpans` returns when a view has nothing to mask, so that
-// computed's value repeats by identity. Frozen because every consumer maps over
-// it and a caller that sorted in place would do so for the whole session.
-const NO_PADDING_SPANS = Object.freeze([]) as readonly PaddingSpan[]
+export type { PaddingSpan } from './util.ts'
 
 export interface HighlightRegion {
   assemblyName?: string
@@ -2225,21 +2210,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * than recomputing the makeTicks loop per component.
          */
         get gridlineTicks() {
-          const { bpPerPx } = self
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
-          const ticks: { x: number; major: boolean }[] = []
-          // iterate merged region runs (like scalebarLabels) so a tick on an
-          // internal ~800px chunk boundary isn't emitted twice (once as a
-          // chunk's right edge, once as the next chunk's left edge)
-          for (const run of groupContiguousBlocks(blocks)) {
-            const runLeft = run.offsetPx - firstBlockOffset
-            for (const { type, x } of makeBlockTicks(run, bpPerPx)) {
-              if (x >= 0 && x <= run.widthPx) {
-                ticks.push({ x: runLeft + x, major: type === 'major' })
-              }
-            }
-          }
-          return ticks
+          return getGridlineTicks({
+            blocks,
+            firstBlockOffset,
+            bpPerPx: self.bpPerPx,
+          })
         },
         /**
          * #getter
@@ -2257,38 +2233,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * reads as the same number repeated across the row.
          */
         get scalebarLabels() {
-          const { bpPerPx } = self
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
-          const labels: { x: number; label: string; key: string }[] = []
-          const runs = groupContiguousBlocks(blocks)
-          const refNameLabelPx = runRefNameLabelPx(
-            runs,
-            self.displayedRegionsOrientation,
-          )
-          for (const [i, run] of runs.entries()) {
-            const runLeft = run.offsetPx - firstBlockOffset
-            const runLabels = []
-            for (const { base, x } of makeBlockTicks(run, bpPerPx, false)) {
-              const label = getTickDisplayStr(base + 1, bpPerPx)
-              const w = tickLabelWidth(label)
-              // the bold refName label pinned at the run's left edge takes
-              // precedence, as it does on the overview scalebar
-              if (
-                x - w / 2 >= refNameLabelPx[i]! &&
-                labelFitsInBlock(x - w / 2, w, run.widthPx)
-              ) {
-                runLabels.push({
-                  x: runLeft + x,
-                  label,
-                  key: `${run.offsetPx}-${base}`,
-                })
-              }
-            }
-            if (tickLabelsWorthDrawing(runLabels.length)) {
-              labels.push(...runLabels)
-            }
-          }
-          return labels
+          return getScalebarLabels({
+            blocks,
+            firstBlockOffset,
+            bpPerPx: self.bpPerPx,
+            orientation: self.displayedRegionsOrientation,
+          })
         },
         /**
          * #getter
@@ -2391,38 +2342,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           kind: 'seam' | 'elided' | 'boundary'
         }[] {
           const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
-          const spans: PaddingSpan[] = []
-          for (const block of blocks) {
-            const x = block.offsetPx - firstBlockOffset
-            if (block.type === 'ContentBlock') {
-              if (block.isRightEndOfDisplayedRegion) {
-                spans.push({
-                  key: `${block.key}-sep`,
-                  x: x + block.widthPx - 1,
-                  width: 3,
-                  kind: 'seam' as const,
-                })
-              }
-            } else {
-              spans.push({
-                key: block.key,
-                x,
-                width: block.widthPx,
-                kind:
-                  block.type === 'ElidedBlock'
-                    ? ('elided' as const)
-                    : ('boundary' as const),
-              })
-            }
-          }
-          // One shared array when there is nothing to draw, so the computed's
-          // value repeats and MobX's `===` stops the chain here. This is the
-          // COMMON case, not an edge one: a view sitting inside one contig has
-          // no region seam, no elision and no boundary, and that is where a
-          // reader spends nearly all of a session. A fresh `[]` each frame
-          // instead re-rendered a PaddingBlocks per track plus one for the
-          // container, every frame of every gesture, to draw nothing.
-          return spans.length > 0 ? spans : NO_PADDING_SPANS
+          return getPaddingSpans(blocks, firstBlockOffset)
         },
         /**
          * #getter

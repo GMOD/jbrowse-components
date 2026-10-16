@@ -1,4 +1,7 @@
 import {
+  getGridlineTicks,
+  getPaddingSpans,
+  getScalebarLabels,
   getScalebarRefNameLabels,
   groupContiguousBlocks,
   refNameLabelFitsInView,
@@ -246,6 +249,111 @@ describe('makeBlockTicks', () => {
   test('includeMinor=false keeps only major ticks', () => {
     const result = makeBlockTicks({ start: 0, end: 50 }, 1, false)
     expect(result.map(t => t.type)).toEqual(['major'])
+  })
+})
+
+describe('the scalebar geometry off the static blocks', () => {
+  const chunk = (
+    key: string,
+    start: number,
+    offsetPx: number,
+    widthPx: number,
+    extra: Partial<ContentBlock> = {},
+  ): ContentBlock => ({
+    type: 'ContentBlock',
+    key,
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start,
+    end: start + widthPx,
+    reversed: false,
+    offsetPx,
+    widthPx,
+    displayedRegionIndex: 0,
+    ...extra,
+  })
+  const regionInChunks = [chunk('a', 0, 100, 800), chunk('b', 800, 900, 800)]
+
+  test('a gridline on a chunk boundary is emitted once', () => {
+    const xs = getGridlineTicks({
+      blocks: regionInChunks,
+      firstBlockOffset: 100,
+      bpPerPx: 1,
+    }).map(t => t.x)
+    expect(new Set(xs).size).toBe(xs.length)
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(0)
+    expect(Math.max(...xs)).toBeLessThanOrEqual(1600)
+  })
+
+  test('positions are relative to the first block, not the viewport', () => {
+    const at = (offset: number) =>
+      getGridlineTicks({
+        blocks: [
+          chunk('a', 0, offset, 800),
+          chunk('b', 800, offset + 800, 800),
+        ],
+        firstBlockOffset: offset,
+        bpPerPx: 1,
+      })
+    expect(at(100)).toEqual(at(0))
+  })
+
+  test('labels sit on the gridlines they number, keyed by run and base', () => {
+    const ticks = getGridlineTicks({
+      blocks: regionInChunks,
+      firstBlockOffset: 100,
+      bpPerPx: 1,
+    })
+    const labels = getScalebarLabels({
+      blocks: regionInChunks,
+      firstBlockOffset: 100,
+      bpPerPx: 1,
+      orientation: 'forward',
+    })
+    expect(labels.length).toBeGreaterThan(1)
+    for (const { x, key } of labels) {
+      expect(ticks.some(t => t.x === x)).toBe(true)
+      expect(key.startsWith('100-')).toBe(true)
+    }
+  })
+
+  test('a run with room for one label only goes unnumbered', () => {
+    expect(
+      getScalebarLabels({
+        blocks: [chunk('a', 0, 0, 240)],
+        firstBlockOffset: 0,
+        bpPerPx: 1,
+        orientation: 'forward',
+      }),
+    ).toEqual([])
+  })
+
+  test('padding marks a region seam, an elision and a boundary', () => {
+    const spans = getPaddingSpans(
+      [
+        chunk('a', 0, 100, 800, { isRightEndOfDisplayedRegion: true }),
+        { type: 'ElidedBlock', key: 'e', offsetPx: 900, widthPx: 40 },
+        {
+          type: 'InterRegionPaddingBlock',
+          key: 'p',
+          offsetPx: 940,
+          widthPx: 3,
+          variant: 'boundary',
+        },
+      ],
+      100,
+    )
+    expect(spans).toEqual([
+      { key: 'a-sep', x: 799, width: 3, kind: 'seam' },
+      { key: 'e', x: 800, width: 40, kind: 'elided' },
+      { key: 'p', x: 840, width: 3, kind: 'boundary' },
+    ])
+  })
+
+  test('a view with nothing to mask returns one shared array', () => {
+    const first = getPaddingSpans([chunk('a', 0, 0, 800)], 0)
+    expect(first).toEqual([])
+    expect(getPaddingSpans([chunk('b', 0, 0, 400)], 0)).toBe(first)
   })
 })
 

@@ -913,6 +913,118 @@ export function parseLocStrings(
   }
 }
 
+/** One span of the row that is not track data — see `paddingSpans`. */
+export interface PaddingSpan {
+  key: string
+  x: number
+  width: number
+  kind: 'seam' | 'elided' | 'boundary'
+}
+
+// Frozen because every consumer maps over it and a caller that sorted in place
+// would do so for the whole session.
+const NO_PADDING_SPANS = Object.freeze([]) as readonly PaddingSpan[]
+
+/**
+ * Tick positions in the staticBlocks frame, one pass per merged run so a tick
+ * on an internal ~800px chunk boundary is emitted once.
+ */
+export function getGridlineTicks({
+  blocks,
+  firstBlockOffset,
+  bpPerPx,
+}: {
+  blocks: BaseBlock[]
+  firstBlockOffset: number
+  bpPerPx: number
+}) {
+  const ticks: { x: number; major: boolean }[] = []
+  for (const run of groupContiguousBlocks(blocks)) {
+    const runLeft = run.offsetPx - firstBlockOffset
+    for (const { type, x } of makeBlockTicks(run, bpPerPx)) {
+      if (x >= 0 && x <= run.widthPx) {
+        ticks.push({ x: runLeft + x, major: type === 'major' })
+      }
+    }
+  }
+  return ticks
+}
+
+/**
+ * Coordinate labels in the staticBlocks frame, off the same ticks as
+ * `getGridlineTicks`. A run that can hold too few labels to make a ruler goes
+ * unnumbered, and the bold refName label pinned at a run's left edge takes
+ * precedence over a number.
+ */
+export function getScalebarLabels({
+  blocks,
+  firstBlockOffset,
+  bpPerPx,
+  orientation,
+}: {
+  blocks: BaseBlock[]
+  firstBlockOffset: number
+  bpPerPx: number
+  orientation: RegionsOrientation
+}) {
+  const labels: { x: number; label: string; key: string }[] = []
+  const runs = groupContiguousBlocks(blocks)
+  const refNameLabelPx = runRefNameLabelPx(runs, orientation)
+  for (const [i, run] of runs.entries()) {
+    const runLeft = run.offsetPx - firstBlockOffset
+    const runLabels = []
+    for (const { base, x } of makeBlockTicks(run, bpPerPx, false)) {
+      const label = getTickDisplayStr(base + 1, bpPerPx)
+      const w = tickLabelWidth(label)
+      if (
+        x - w / 2 >= refNameLabelPx[i]! &&
+        labelFitsInBlock(x - w / 2, w, run.widthPx)
+      ) {
+        runLabels.push({
+          x: runLeft + x,
+          label,
+          key: `${run.offsetPx}-${base}`,
+        })
+      }
+    }
+    if (tickLabelsWorthDrawing(runLabels.length)) {
+      labels.push(...runLabels)
+    }
+  }
+  return labels
+}
+
+/**
+ * Every span along the row that is not track data, in the staticBlocks frame.
+ * Nothing to draw returns one shared array, so the computed's value repeats and
+ * MobX's `===` stops the chain: a view inside one contig has no seam, elision
+ * or boundary, and a fresh `[]` each frame re-rendered every track's padding.
+ */
+export function getPaddingSpans(blocks: BaseBlock[], firstBlockOffset: number) {
+  const spans: PaddingSpan[] = []
+  for (const block of blocks) {
+    const x = block.offsetPx - firstBlockOffset
+    if (block.type === 'ContentBlock') {
+      if (block.isRightEndOfDisplayedRegion) {
+        spans.push({
+          key: `${block.key}-sep`,
+          x: x + block.widthPx - 1,
+          width: 3,
+          kind: 'seam',
+        })
+      }
+    } else {
+      spans.push({
+        key: block.key,
+        x,
+        width: block.widthPx,
+        kind: block.type === 'ElidedBlock' ? 'elided' : 'boundary',
+      })
+    }
+  }
+  return spans.length > 0 ? spans : NO_PADDING_SPANS
+}
+
 export function calculateVisibleLocStrings(contentBlocks: ContentBlock[]) {
   return assembleLocStrings(
     contentBlocks.map(block => ({
