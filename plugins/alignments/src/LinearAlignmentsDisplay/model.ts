@@ -130,7 +130,11 @@ import {
 import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
 import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
-import { alignmentsConfigProblems, configSlotViews } from './configSlotViews.ts'
+import {
+  alignmentsConfigProblems,
+  configSlotActions,
+  configSlotViews,
+} from './configSlotViews.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -211,7 +215,6 @@ import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  ReadFilter,
   Facet,
   ColumnSortType,
   SortColumn,
@@ -224,11 +227,7 @@ import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
-import type {
-  AlignmentsUnit,
-  ReadConnectionsMode,
-  SashimiArcsMode,
-} from './constants.ts'
+import type { AlignmentsUnit } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type { QualitySpan } from './qualitySpans.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
@@ -387,8 +386,9 @@ export default function stateModelFactory(
           configuration: ConfigurationReference(configSchema),
         }),
       )
-      // Config-slot toggles live in `configSlotViews`.
+      // Config-slot reads and plain writes live in `configSlotViews`.
       .views(configSlotViews)
+      .actions(configSlotActions)
       .volatile(() => {
         return {
           /**
@@ -3056,27 +3056,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setReadFilter(filterBy: ReadFilter) {
-            setConf(self, 'filter', filterBy)
-          },
-
-          /**
-           * #action
-           */
-          setShowSoftClipping(value: boolean) {
-            setConf(self, 'showSoftClipping', value)
-          },
-
-          /**
-           * #action
-           */
-          setFadeLowQualityMismatches(value: boolean) {
-            setConf(self, 'fadeLowQualityMismatches', value)
-          },
-
-          /**
-           * #action
-           */
           sortAtCenterLine(type: ColumnSortType, tag?: string) {
             const view = self.view
             const { centerLineInfo } = view
@@ -3229,45 +3208,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Writes this slot alone. The arcs draw only with the coverage band
-           * (`showSashimiArcs`), and the menu greys the row out without it
-           * rather than turning the band back on behind the user's back.
-           */
-          setShowSashimiArcs(show: boolean) {
-            setConf(self, 'showSashimiArcs', show)
-          },
-
-          /**
-           * #action
-           */
-          setShowCoverage(show: boolean) {
-            setConf(self, 'showCoverage', show)
-          },
-
-          /**
-           * #action
-           */
-          setReadConnections(mode?: ReadConnectionsMode) {
-            setConf(self, 'readConnections', mode)
-          },
-
-          /**
-           * #action
-           * Whether the read-connection band hangs below the coverage band.
-           */
-          setReadConnectionsDown(down: boolean) {
-            setConf(self, 'readConnectionsDown', down)
-          },
-
-          /**
-           * #action
-           */
-          setShowPileup(show: boolean) {
-            setConf(self, 'showPileup', show)
-          },
-
-          /**
-           * #action
            */
           setCoverageHeight(height: number) {
             setConf(
@@ -3279,13 +3219,6 @@ export default function stateModelFactory(
                 self.resizableBandBounds,
               ),
             )
-          },
-
-          /**
-           * #action
-           */
-          setCoverageSnpMinFrequency(fraction: number) {
-            setConf(self, 'coverageSnpMinFrequency', fraction)
           },
 
           /**
@@ -3320,93 +3253,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setMinSashimiScore(score: number) {
-            setConf(self, 'minSashimiScore', score)
-          },
-
-          /**
-           * #action
-           */
-          setSashimiArcsMode(mode: SashimiArcsMode) {
-            setConf(self, 'sashimiArcsMode', mode)
-          },
-
-          /**
-           * #action
-           */
-          setShowSashimiLabels(show: boolean) {
-            setConf(self, 'showSashimiLabels', show)
-          },
-
-          /**
-           * #action
-           */
-          setShowNonCanonicalJunctions(show: boolean) {
-            setConf(self, 'showNonCanonicalJunctions', show)
-          },
-
-          /**
-           * #action
-           */
-          setReadConnectionsLineWidth(width: number) {
-            setConf(self, 'readConnectionsLineWidth', width)
-          },
-
-          /**
-           * #action
-           */
-          setShowInterchrom(draw: boolean) {
-            setConf(self, 'showInterchrom', draw)
-          },
-
-          /**
-           * #action
-           */
-          setShowOrdinaryPairs(show?: boolean) {
-            setConf(self, 'showOrdinaryPairs', show)
-          },
-
-          /**
-           * #action
-           */
-          setMinInterchromSupport(support: number) {
-            setConf(self, 'minInterchromSupport', support)
-          },
-
-          /**
-           * #action
-           */
-          setShowLongRange(draw: boolean) {
-            setConf(self, 'showLongRange', draw)
-          },
-
-          /**
-           * #action
-           * Paint the arcs by `field`, `''` following the reads. `arcColor`
-           * holds a field and nothing else, so it skips `colorForField`, whose
-           * `scale: 'none'` it has no slot for.
-           */
-          setArcColorField(field: ArcColorField | '') {
-            setConf(self, ['arcColor', 'field'], field)
-          },
-
-          /**
-           * #action
-           */
-          setShowMismatches(show: boolean) {
-            setConf(self, 'showMismatches', show)
-          },
-
-          /**
-           * #action
-           */
-          setShowInterbaseIndicators(show: boolean) {
-            setConf(self, 'showInterbaseIndicators', show)
-          },
-
-          /**
-           * #action
            * A new unit restacks the whole pileup, so the scroll resets: the
            * `scrollableHeight` clamp catches only a shorter stack.
            */
@@ -3432,15 +3278,6 @@ export default function stateModelFactory(
             // No refetch: chain identity is joined on the main thread
             // (`chainAttachment`). A facet in effect refetches, since it
             // changes the unit the worker keeps whole (`workerFacet`).
-          },
-
-          /**
-           * #action
-           * Toggle the paired-read connection overlay. A main-thread tier-2/4
-           * setting, not in `rpcProps`: toggling never refetches.
-           */
-          setShowBezierConnections(flag: boolean) {
-            setConf(self, 'showBezierConnections', flag)
           },
 
           /**

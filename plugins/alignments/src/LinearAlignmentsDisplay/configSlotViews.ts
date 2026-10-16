@@ -1,4 +1,4 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -386,6 +386,173 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get readConnectionsLineWidth() {
       return getConf(self, 'readConnectionsLineWidth')
+    },
+  }
+}
+
+export function configSlotActions(self: ConfigSlotSelf) {
+  return {
+    /**
+     * #action
+     */
+    setReadFilter(filterBy: ReadFilter) {
+      setConf(self, 'filter', filterBy)
+    },
+
+    /**
+     * #action
+     */
+    setShowSoftClipping(value: boolean) {
+      setConf(self, 'showSoftClipping', value)
+    },
+
+    /**
+     * #action
+     */
+    setFadeLowQualityMismatches(value: boolean) {
+      setConf(self, 'fadeLowQualityMismatches', value)
+    },
+
+    /**
+     * #action
+     * Writes this slot alone. The arcs draw only with the coverage band
+     * (`showSashimiArcs`), and the menu greys the row out without it
+     * rather than turning the band back on behind the user's back.
+     */
+    setShowSashimiArcs(show: boolean) {
+      setConf(self, 'showSashimiArcs', show)
+    },
+
+    /**
+     * #action
+     */
+    setShowCoverage(show: boolean) {
+      setConf(self, 'showCoverage', show)
+    },
+
+    /**
+     * #action
+     */
+    setReadConnections(mode?: ReadConnectionsMode) {
+      setConf(self, 'readConnections', mode)
+    },
+
+    /**
+     * #action
+     * Whether the read-connection band hangs below the coverage band.
+     */
+    setReadConnectionsDown(down: boolean) {
+      setConf(self, 'readConnectionsDown', down)
+    },
+
+    /**
+     * #action
+     */
+    setShowPileup(show: boolean) {
+      setConf(self, 'showPileup', show)
+    },
+
+    /**
+     * #action
+     */
+    setCoverageSnpMinFrequency(fraction: number) {
+      setConf(self, 'coverageSnpMinFrequency', fraction)
+    },
+
+    /**
+     * #action
+     */
+    setMinSashimiScore(score: number) {
+      setConf(self, 'minSashimiScore', score)
+    },
+
+    /**
+     * #action
+     */
+    setSashimiArcsMode(mode: SashimiArcsMode) {
+      setConf(self, 'sashimiArcsMode', mode)
+    },
+
+    /**
+     * #action
+     */
+    setShowSashimiLabels(show: boolean) {
+      setConf(self, 'showSashimiLabels', show)
+    },
+
+    /**
+     * #action
+     */
+    setShowNonCanonicalJunctions(show: boolean) {
+      setConf(self, 'showNonCanonicalJunctions', show)
+    },
+
+    /**
+     * #action
+     */
+    setReadConnectionsLineWidth(width: number) {
+      setConf(self, 'readConnectionsLineWidth', width)
+    },
+
+    /**
+     * #action
+     */
+    setShowInterchrom(draw: boolean) {
+      setConf(self, 'showInterchrom', draw)
+    },
+
+    /**
+     * #action
+     */
+    setShowOrdinaryPairs(show?: boolean) {
+      setConf(self, 'showOrdinaryPairs', show)
+    },
+
+    /**
+     * #action
+     */
+    setMinInterchromSupport(support: number) {
+      setConf(self, 'minInterchromSupport', support)
+    },
+
+    /**
+     * #action
+     */
+    setShowLongRange(draw: boolean) {
+      setConf(self, 'showLongRange', draw)
+    },
+
+    /**
+     * #action
+     * Paint the arcs by `field`, `''` following the reads. `arcColor`
+     * holds a field and nothing else, so it skips `colorForField`, whose
+     * `scale: 'none'` it has no slot for.
+     */
+    setArcColorField(field: ArcColorField | '') {
+      setConf(self, ['arcColor', 'field'], field)
+    },
+
+    /**
+     * #action
+     */
+    setShowMismatches(show: boolean) {
+      setConf(self, 'showMismatches', show)
+    },
+
+    /**
+     * #action
+     */
+    setShowInterbaseIndicators(show: boolean) {
+      setConf(self, 'showInterbaseIndicators', show)
+    },
+
+    /**
+     * #action
+     * Toggle the paired-read connection overlay. A main-thread tier-2/4
+     * setting, not in `rpcProps`: toggling never refetches.
+     */
+    setShowBezierConnections(flag: boolean) {
+      setConf(self, 'showBezierConnections', flag)
     },
   }
 }

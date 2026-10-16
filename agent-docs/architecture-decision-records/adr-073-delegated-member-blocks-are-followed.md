@@ -118,3 +118,16 @@ states the sharing in the type and gives the reader one page to go to; a block
 one model happens to keep elsewhere for size is a delegation. Reaching for a
 delegated block to share members across displays would get the docs right and
 the architecture wrong.
+
+## Update (2026-10-16)
+
+The split now covers getters and setters in three displays:
+
+- `LinearMafDisplay` moved 23 getters and 15 setters, `MultiWaySyntenyDisplay`
+  21 and 11, and `LinearAlignmentsDisplay` its 22 setters beside the getters it
+  already had.
+- A setter that only writes a slot is `configSlotActions`, composed as
+  `.actions(configSlotActions)`. The generator follows `.actions(sharedActions)`
+  as it follows `.views(sharedViews)`, and each model page kept every row and
+  only reordered them.
+- `LinearGenomeView` has one slot read and no block.

@@ -17,7 +17,11 @@ rule constrains the composed TYPES, not every view.
 `.views(configSlotViews)` link. The line between the two files is what the
 getter reads: any OTHER model member and it stays in the chain, where `self` is
 the model so far. `collapseGroupRows` and `showOutline` are slot reads that
-stayed for that reason. The docs generator follows the link
+stayed for that reason. **A setter that only writes a slot belongs there too**,
+as `configSlotActions`, composed as `.actions(configSlotActions)`; one that also
+touches another member (`setCollapseGroupRows` clears the height overrides)
+stays in the chain. `LinearMafDisplay` and `MultiWaySyntenyDisplay` follow the
+same split. The docs generator follows the link
 ([ADR-073](../../../../agent-docs/architecture-decision-records/adr-073-delegated-member-blocks-are-followed.md));
 before it did, this move silently deleted 33 rows from the model page.
 
