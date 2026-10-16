@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/ld-core",
-  "version": "5.0.0-beta.13",
+  "version": "5.0.0-beta.14",
   "type": "module",
   "description": "PLINK .ld parsing and the LD record-source contract, with no rendering or framework deps",
   "keywords": [
