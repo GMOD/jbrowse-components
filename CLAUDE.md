@@ -14,31 +14,24 @@ exists, the rule leaves this file — lint (`no-restricted-syntax` in
 `eslint.config.mjs`), the build, and `.claude/hooks/refuse-commands.sh` explain
 themselves when they fire.
 
-**Comment density in this tree is not a licence to match it** — dense neighbours
-are not the subsystem asking for more.
-
 ## Git
 
 Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 
 - **Never merge a `*.generated.ts` conflict** — regenerate it.
-- Worktree install, figures, base-ref drift: `reference/TOOLCHAIN.md`.
 
 ## MST
 
-- `@jbrowse/mobx-state-tree` is our ESM fork; treat it like upstream.
-- Keep the main model chain in one file.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
-- In React, `autorun` inside `useEffect`, not `reaction`.
 - **`detach` before `destroy`, and still destroy** (`scheduleDetachedDestroy`) —
   a detached-and-alive tree leaks silently. ADR-069.
 - **An `autorun` must do its own reads** — MST actions run untracked, and a
   direct observable write inside an autorun body silently fails.
 - **A NEW MST model exports `interface X extends Instance<…> {}`**, not a type
-  alias. The ~107 existing aliases stay (ADR-055) and are not findings.
-- A duck-typed `XSelf` across a lazy boundary still extends `IStateTreeNode`;
-  importing the model type there is a circular-reference trap.
+  alias. Existing aliases stay (ADR-055) and are not findings.
+- A duck-typed `XSelf` across a lazy boundary imports no model type — that is a
+  circular-reference trap.
 
 ## Names
 
@@ -59,14 +52,11 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 - **`pnpm verify`, then the changed code's own suite** — `npx jest <file>`, one
   file, since jest skips the machine-wide slots `pnpm typecheck`, lint,
   `build:esm` and `pnpm test` queue on.
-- **CI also runs `check-docs`, `build:esm` and type-aware lint of untouched
-  files**, which plain `pnpm verify` skips: `--full` adds the first two, `--all`
-  the third. A change to a widely read type lands green locally and reds the
-  tree. Only `build:esm` raises TS4058 ("cannot be named"), so run it after
-  adding a type to an exported surface.
-- **`pnpm test-related` is the escalation**, for a change whose blast radius you
-  cannot name: a hub module sits in 300-900 suites. Read `-- --listTests` first.
-  `reference/TEST_INFRASTRUCTURE.md`.
+- **Only `build:esm` raises TS4058** ("cannot be named"): run
+  `pnpm verify --full` after adding a type to an exported surface. A change to a
+  widely read type needs `--all`, or untouched files go red in CI.
+- **`pnpm test-related`** when you cannot name the blast radius. Read
+  `-- --listTests` first. `reference/TEST_INFRASTRUCTURE.md`.
 - **Don't run the `jbrowse-web` jest project locally**, even for a snapshot
   change — `pnpm test-ci` runs it on push, and a red there gets fixed forward.
 - **An agent's jest run prints nothing for a passing suite**, console noise
@@ -79,4 +69,3 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 - Removing a plugin export, session member or extension point fails quietly:
   `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).
-- Editing `jb` or the MCP text: `packages/app-core/src/JbApi/CLAUDE.md`.
