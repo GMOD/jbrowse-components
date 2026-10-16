@@ -2,6 +2,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
   FADE_AUTO_MIN_FEATURES,
   attributeColumns,
   axisNamePosition,
@@ -321,7 +322,8 @@ function concatColumns<T extends Record<string, unknown[]>>(a: T, b: T) {
  * paints them, `offscreenContigs`, the count and aligned bp of each such
  * contig and the line its hover prints, and `offscreenStrip`, the marks and
  * labels the strips along the band's edges paint, in px;
- * and `legend` and `ramps`, the key. For a host that draws
+ * `legend` and `ramps`, the key; and `config`, the view's settings with
+ * their defaults filled, `color` and `opacity` as config objects. For a host that draws
  * them itself, such as R through V8. Positions are genomic, on the axis's
  * region named by `queryRegion` and `targetRegion`.
  */
@@ -331,8 +333,14 @@ export async function syntenyTables(
 ) {
   const q = comparativeAxis(query, adapterConfig, 0)
   const t = comparativeAxis(target, adapterConfig, 1)
-  const cigarMode = view.cigarMode ?? 'full'
-  const height = view.height ?? DEFAULT_LEVEL_HEIGHT
+  const config = {
+    minAlignmentLength: view.minAlignmentLength ?? DEFAULT_MIN_ALIGNMENT_LENGTH,
+    cigarMode: view.cigarMode ?? 'full',
+    drawLocationMarkers: view.drawLocationMarkers ?? false,
+    fadeThinAlignmentsMode: view.fadeThinAlignmentsMode ?? 'auto',
+    height: view.height ?? DEFAULT_LEVEL_HEIGHT,
+  }
+  const { cigarMode, height } = config
   const { value } = await executeSyntenyFeaturesAndPositions({
     pluginManager,
     sessionId: 'tables',
@@ -381,7 +389,7 @@ export async function syntenyTables(
     featureData,
     ...colorArgs,
     valueColor: settings.valueColor,
-    drawLocationMarkers: view.drawLocationMarkers ?? false,
+    drawLocationMarkers: config.drawLocationMarkers,
     groundColor: bandGroundColor(),
   })
   const featureColor = createComparativeColorFunction({
@@ -391,8 +399,8 @@ export async function syntenyTables(
   })
 
   const n = featureData.featureIds.length
-  const minLength = view.minAlignmentLength ?? 0
-  const mode = view.fadeThinAlignmentsMode ?? 'auto'
+  const minLength = config.minAlignmentLength
+  const mode = config.fadeThinAlignmentsMode
   const fadeThin =
     mode === 'auto'
       ? fadesThinAt(
@@ -524,10 +532,10 @@ export async function syntenyTables(
     offscreenContigs,
     offscreenStrip: offscreenStrip(lanes, { width: query.width, height }),
     ...comparativeLegend(settings, { cigarOps }),
+    config: { ...config, ...settings.config },
     field: settings.field,
     alpha: level,
     fadeThin,
-    height,
     assemblyNames: [q.assemblyName, t.assemblyName],
     hasCigar: featureData.hasCigar,
   }

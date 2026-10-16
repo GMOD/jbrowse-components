@@ -105,7 +105,11 @@ copied.
 
 - `config` is the display's whole resolved config, every slot under
   JBrowse's own name, defaults included (`fullConfSnapshot`), from
-  `alignments`, `features`, `wiggle` and `variants` alike.
+  `alignments`, `features`, `wiggle` and `variants` alike. `multiway`
+  returns its display's the same way; `synteny` and `dotplot`, whose
+  settings live on a view rather than a config schema, return the view's
+  settings with the view's defaults, `color` and `opacity` as config
+  objects.
 - `alignmentTables` adds a `color` column, off the palette, to
   `mismatches`, `gaps`, `insertions`, `clips`, `coverage`, `alleleCoverage`,
   `interbaseCoverage`, `indicators` and `junctions`. It resolves a base

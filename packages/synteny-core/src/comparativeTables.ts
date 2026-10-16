@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/categoricalField'
 import {
@@ -19,6 +19,7 @@ import { opacityFadeOf, opacityLevel } from './opacityChannel.ts'
 import { adapterAssemblyNames } from './regionsInAssemblyNamespace.ts'
 import { paintedField } from './syntenyColorBy.ts'
 import { syntenyColorConfigSchema } from './syntenyColorConfigSchema.ts'
+import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 import { syntenyTrackPalette } from './trackColors.ts'
 
 import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
@@ -125,6 +126,8 @@ export interface ViewColorSettings {
   fade?: SyntenyOpacitySnapshot
   level: number
   attributeRanges: Record<string, AttributeRange>
+  /** `color` and `opacity` as config objects, every slot filled, `value` the view's default opacity where unset */
+  config: { color: Record<string, unknown>; opacity: Record<string, unknown> }
 }
 
 /**
@@ -169,6 +172,15 @@ export function viewColorSettings({
     fade: opacityFadeOf(opacitySnap),
     level: opacityLevel(opacitySnap, defaultOpacity, ordered),
     attributeRanges: ordered,
+    config: {
+      color: fullConfSnapshot(conf),
+      opacity: fullConfSnapshot(
+        syntenyOpacityConfigSchema.create({
+          ...opacitySnap,
+          value: opacitySnap.value ?? defaultOpacity,
+        }),
+      ),
+    },
   }
 }
 

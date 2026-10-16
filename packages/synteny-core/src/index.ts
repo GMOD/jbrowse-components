@@ -398,6 +398,7 @@ export type {
 } from './SelectorTypes.ts'
 export { getMate } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'
+export { DEFAULT_MIN_ALIGNMENT_LENGTH } from './minLengthHelp.ts'
 export {
   attributeColumns,
   axisNamePosition,

@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rampKeyOf } from '@jbrowse/core/ui/rampKey'
 import { dedupe } from '@jbrowse/core/util'
@@ -226,6 +226,7 @@ function readDisplay({
     showGeneLabels: readConfObject(conf, 'showGeneLabels'),
     inlineLaneNames: readConfObject(conf, 'inlineLaneNames'),
     height: readConfObject(conf, 'height'),
+    config: fullConfSnapshot(conf),
   }
 }
 
@@ -407,8 +408,8 @@ function alignmentRows(
  * spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
  * each gutter draws in paint order, a trapezoid from a span on its upper
  * lane to a span on its lower one, with its color and the alpha it
- * composites at; `alignments`, the records the ribbons draw; and `legend`,
- * the key. Positions are genomic on each lane, and px across the view's
+ * composites at; `alignments`, the records the ribbons draw; `legend`, the
+ * key; and `config`, the display's config with its defaults filled. Positions are genomic on each lane, and px across the view's
  * `width`, where a lane's own frame puts them.
  */
 export async function multiwayTables(
@@ -761,8 +762,7 @@ export async function multiwayTables(
     field: settings.field,
     tickInterval: tickIntervalFor(unitBp),
     rowsVsAnchor,
-    height: settings.height,
-    curves: settings.drawCurves,
+    config: settings.config,
     assemblyNames: [anchor, ...rows],
   }
 }

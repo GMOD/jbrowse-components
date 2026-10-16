@@ -21,6 +21,15 @@ test('a PAF comes back as the synteny band lays out and colors it', async () => 
   expect(t.assemblyNames).toEqual(['volvox_random_inv', 'volvox'])
   expect(t.hasCigar).toBe(true)
   expect(t.alpha).toBe(0.25)
+  expect(t.config).toMatchObject({
+    minAlignmentLength: 0,
+    cigarMode: 'full',
+    drawLocationMarkers: false,
+    fadeThinAlignmentsMode: 'auto',
+    height: 100,
+    color: { field: '' },
+    opacity: { value: 0.25, field: '' },
+  })
 
   const kinds = new Set(t.ribbons.kind)
   expect(kinds).toContain('match')
@@ -244,7 +253,13 @@ test('a PAF comes back as the dotplot lays out and colors it', async () => {
   expect(new Set(zoomed.segments.op)).toContain('deletion')
   expect(new Set(t.segments.color)).toEqual(new Set(['#000000']))
   expect(t.alpha).toBe(1)
-  expect(t.lineWidth).toBe(2.5)
+  expect(t.config).toMatchObject({
+    minAlignmentLength: 0,
+    minIdentity: 0,
+    drawCigar: true,
+    lineWidth: 2.5,
+    opacity: { value: 1 },
+  })
   for (let i = 0; i < t.alignments.strand.length; i++) {
     expect(t.alignments.xStart[i]).toBeLessThan(t.alignments.xEnd[i]!)
     expect(t.alignments.yStart[i]).toBeLessThan(t.alignments.yEnd[i]!)

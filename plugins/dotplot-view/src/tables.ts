@@ -2,6 +2,7 @@ import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
   attributeColumns,
   axisNamePosition,
   comparativeAxis,
@@ -67,7 +68,9 @@ const OP_NAMES: Record<number, string> = {
  * lines the plot draws in paint order, one per block, or one per CIGAR step
  * where a block is wide enough on screen for its CIGAR to show, each from
  * (`xStart`, `yStart`) to (`xEnd`, `yEnd`) in genomic coordinates on the
- * axis's region named by `xRegion` and `yRegion`; and `legend`, the key.
+ * axis's region named by `xRegion` and `yRegion`; `legend`, the key; and
+ * `config`, the view's settings with their defaults filled, `color` and
+ * `opacity` as config objects.
  * `skipped` counts the blocks neither axis places. For a host that draws
  * them itself, such as R through V8.
  */
@@ -75,6 +78,12 @@ export async function dotplotTables(
   pluginManager: PluginManager,
   { adapterConfig, x, y, view = {} }: DotplotTablesArgs,
 ) {
+  const config = {
+    minAlignmentLength: view.minAlignmentLength ?? DEFAULT_MIN_ALIGNMENT_LENGTH,
+    minIdentity: view.minIdentity ?? DEFAULT_MIN_IDENTITY,
+    drawCigar: view.drawCigar ?? true,
+    lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
+  }
   const h = comparativeAxis(x, adapterConfig, 0)
   const v = comparativeAxis(y, adapterConfig, 1)
   const { value } = await executeDotplotFeaturesAndPositions({
@@ -101,9 +110,9 @@ export async function dotplotTables(
         : undefined
   const instanceData = buildLineSegments(
     rpcData,
-    view.drawCigar ?? true,
-    view.minAlignmentLength ?? 0,
-    view.minIdentity ?? DEFAULT_MIN_IDENTITY,
+    config.drawCigar,
+    config.minAlignmentLength,
+    config.minIdentity,
     h.bpPerPx,
     v.bpPerPx,
     0,
@@ -210,9 +219,9 @@ export async function dotplotTables(
     alignments,
     segments,
     ...comparativeLegend(settings, { pointBased: true }),
+    config: { ...config, ...settings.config },
     field: settings.field,
     alpha: level,
-    lineWidth: view.lineWidth ?? DEFAULT_LINE_WIDTH,
     assemblyNames: [h.assemblyName, v.assemblyName],
     skipped: {
       count: rpcData.skippedFeatureCount,

@@ -99,7 +99,11 @@ test('ribbons color by strand, keyed against the lane above', async () => {
     ...ALL_VS_ALL,
     display: { ribbonColor: { field: 'strand' }, drawCurves: true },
   })
-  expect(t.curves).toBe(true)
+  expect(t.config).toMatchObject({
+    drawCurves: true,
+    hideUnlabelled: false,
+    ribbonColor: { field: 'strand' },
+  })
   expect(t.legend.label).toEqual([
     'Same orientation as lane above',
     'Inverted vs lane above',
