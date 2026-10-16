@@ -127,13 +127,21 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   (ADR-180): the row facet's value, `{assembly}`, picks each lane's track.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
-  Canvas2D painters' color batching. `encoding.size` maps a width through the
+  Canvas2D painters' color batching. The alignments mismatch fades
+  (`fadeLowQualityMismatches`, `fadeLowFrequencyMismatches`) stay booleans:
+  each fades by one variable, so an `opacity` object would take one legal
+  value. `encoding.size` maps a width through the
   `size` lane on the link alone
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
   No `tooltip` channel either: each display's hover prints its own fields,
   and a plot naming them waits on one whose hover prints the wrong ones.
+- **No filter object per alignments layer.** The read-connection, sashimi and
+  allele-segment predicates (`showInterchrom`, `showLongRange`,
+  `showOrdinaryPairs`, `minInterchromSupport`, `minSashimiScore`,
+  `showNonCanonicalJunctions`, `coverageSnpMinFrequency`) stay flat slots; one
+  object per layer would rename them and change no picture.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.
@@ -185,20 +193,6 @@ the result, since it is what a later audit need not redo:
 - Alignments `sort` is not a second spelling of
   `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`,
   `conservationMode` and `heightMode` are layout or fetch modes, not marks.
-
-The 2026-10-16 alignments pass declined two regroupings, since neither moves
-a picture:
-
-- The predicates over the read-connection, sashimi and allele-segment data
-  (`showInterchrom`, `showLongRange`, `showOrdinaryPairs`,
-  `minInterchromSupport`, `minSashimiScore`, `showNonCanonicalJunctions`,
-  `coverageSnpMinFrequency`) stay flat slots. A filter object per layer would
-  rename them and change nothing else. The three `show` slots among them hide
-  a class of connection the band draws: the cross-chromosome arcs and ticks,
-  the ticks to an unloaded mate, and the ordinary pairs' grey baseline.
-- `fadeLowQualityMismatches` and `fadeLowFrequencyMismatches` stay booleans.
-  Each fades by one variable and has one consumer, so an `opacity` object
-  would take one legal value.
 
 Two docs the audit left on a jexl callback or a flag name, on purpose: the
 cookbook's whole-config recipe paints SNVs one color and every other variant

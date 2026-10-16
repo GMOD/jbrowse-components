@@ -9,12 +9,15 @@ import type {
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
-// Menu placement for a color scheme. Discriminated so a scheme is either a plain
-// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
-// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
+// Menu placement for a color scheme. Discriminated so a scheme is a plain
+// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu),
+// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite)
+// — or 'whileActive', a field a config or Edit plot names, which the menu lists
+// only while it paints the reads, so the radio group never shows none checked.
 export type ColorSchemeMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
+  | { kind: 'whileActive'; label: string }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
@@ -154,7 +157,9 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
   // The four fields the main thread answers per read (`readLevels.ts`), each
   // baked per read as the tag values are, so a switch among them recolors
-  // what is loaded. Group by lists the same four under the same labels.
+  // what is loaded. Split and spliced keep no standing radio: SV evidence
+  // already paints every placed split read, and on RNA-seq a spliced color
+  // paints most of the pileup; Group by and Sort by answer both.
   svSignal: {
     type: 'svSignal',
     bodyScheme: 'tag',
@@ -163,12 +168,12 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   split: {
     type: 'split',
     bodyScheme: 'tag',
-    menu: { kind: 'radio', label: FACET_LABELS.split, group: 'basic' },
+    menu: { kind: 'whileActive', label: FACET_LABELS.split },
   },
   spliced: {
     type: 'spliced',
     bodyScheme: 'tag',
-    menu: { kind: 'radio', label: FACET_LABELS.spliced, group: 'basic' },
+    menu: { kind: 'whileActive', label: FACET_LABELS.spliced },
   },
   pairing: {
     type: 'pairing',

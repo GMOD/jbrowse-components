@@ -514,7 +514,25 @@ export const colorUnmappedMateDark = '#4a4a4a'
 export const colorLongreadInv = '#7755bb'
 /** #color alignments-pair-orientation | Split read (inverted) | Supplementary segment on the opposite strand to its primary */
 export const colorSplitReadInversion = '#9b30b0'
+/**
+ * #color alignments-read-level | Split read | A read aligned in pieces; under Pairing, a secondary or supplementary record
+ */
 export const colorSupplementary = '#f0b878'
+// The read-level fields' colors (Color by SV evidence, Pairing, and the
+// `split` and `spliced` fields), a read fill beside the arc and read-cloud
+// strokes above. Chosen by CIE76 dE against every slot above: the nearest is
+// colorPairRL at 29.6 (spliced), where Okabe-Ito's picks sat 15.0 from
+// colorShortInsert and 19.5 from colorInterchrom. A split piece takes
+// colorSupplementary, the color the pair schemes already give one. Gold and
+// olive are 27.2 apart, and never share a field.
+/** #color alignments-read-level | Discordant pair | A paired primary read the aligner did not call concordant */
+export const colorDiscordantPair = '#c71585'
+/** #color alignments-read-level | SV-size indel | A read carrying an insertion or deletion of 50 bp or more */
+export const colorSvIndel = '#c9a000'
+/** #color alignments-read-level | Spliced read | A read whose CIGAR carries a reference skip */
+export const colorSplicedRead = '#1a9e8f'
+/** #color alignments-read-level | Unpaired | A read with no mate, or whose mate is unmapped */
+export const colorUnpairedRead = '#7f7f00'
 
 // Qualitative palette for coloring reads by an arbitrary tag value (e.g. the HP
 // haplotype tag). Pale "tol_light" scheme:

@@ -1,4 +1,8 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import {
+  colorDiscordantPair,
+  colorSupplementary,
+} from '@jbrowse/core/ui/palette'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -520,9 +524,37 @@ describe('getReadDisplayLegendItems', () => {
       labels: declaredReadLabels(encoding, []),
     })
     expect(items.map(i => [i.label, i.color])).toEqual([
-      ['Split read', '#D55E00'],
-      ['Discordant pair', '#0072B2'],
-      ['No SV evidence', expect.any(String)],
+      ['Split read', colorSupplementary],
+      ['Discordant pair', colorDiscordantPair],
+      [
+        'No SV evidence',
+        rgb255(makeTestPalette().readCategoryColors.noTagValue),
+      ],
+    ])
+  })
+
+  test('a written SV evidence domain orders the key and keeps the names', () => {
+    const encoding = alignmentsColorEncoding({
+      value: undefined,
+      field: 'svSignal',
+      scale: 'categorical',
+      domain: ['discordantPair', 'splitRead'],
+      range: [],
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
+      domainMid: undefined,
+    })
+    const colorBy: ColorBy = { type: 'svSignal' }
+    const items = legendFor(colorBy, ['tag'], {
+      presentTagValues: new Set(['splitRead', 'discordantPair']),
+      bakedScale: bakedColorScale(colorBy, encoding, undefined, undefined),
+      labels: declaredReadLabels(encoding, []),
+    })
+    expect(items.map(i => [i.label, i.color])).toEqual([
+      ['Discordant pair', colorDiscordantPair],
+      ['Split read', colorSupplementary],
     ])
   })
 

@@ -1,3 +1,10 @@
+import {
+  colorDiscordantPair,
+  colorSplicedRead,
+  colorSupplementary,
+  colorSvIndel,
+  colorUnpairedRead,
+} from '@jbrowse/core/ui/palette'
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
@@ -335,25 +342,25 @@ export function levelKeysOf(type: ColorSchemeType) {
 }
 
 /**
- * The colors a read-level field paints its levels with, Okabe-Ito's, one hue
- * per kind of read across the fields: split vermilion, discordant blue. Its
- * baseline level keeps the plain fill (`BASELINE_LEVEL`).
+ * The colors a read-level field paints its levels with, one per kind of read
+ * across the fields (`palette.ts` says how they were chosen). Its baseline
+ * level keeps the plain fill (`BASELINE_LEVEL`).
  */
 const LEVEL_COLORS: Record<
   ReadLevelScheme,
   Readonly<Record<string, string>>
 > = {
-  split: { split: '#D55E00' },
-  spliced: { spliced: '#009E73' },
+  split: { split: colorSupplementary },
+  spliced: { spliced: colorSplicedRead },
   pairing: {
-    discordant: '#0072B2',
-    unpaired: '#E69F00',
-    nonPrimary: '#CC79A7',
+    discordant: colorDiscordantPair,
+    unpaired: colorUnpairedRead,
+    nonPrimary: colorSupplementary,
   },
   svSignal: {
-    splitRead: '#D55E00',
-    svIndel: '#CC79A7',
-    discordantPair: '#0072B2',
+    splitRead: colorSupplementary,
+    svIndel: colorSvIndel,
+    discordantPair: colorDiscordantPair,
   },
 }
 

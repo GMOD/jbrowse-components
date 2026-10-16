@@ -388,6 +388,23 @@ describe('Arc color menu visibility', () => {
   })
 })
 
+describe('read-level fields in Color by', () => {
+  const colorRows = (display: ReturnType<typeof createDisplay>) =>
+    menuSubItems(display.trackMenuItems(), 'Color by...')
+
+  test('SV evidence and Pairing have rows; split shows one only while it paints', () => {
+    const display = createDisplay()
+    expect(hasMenuItem(colorRows(display), 'SV evidence')).toBe(true)
+    expect(hasMenuItem(colorRows(display), 'Pairing')).toBe(true)
+    expect(hasMenuItem(colorRows(display), 'Split read (SA tag)')).toBe(false)
+    display.colorByField('split')
+    const row = colorRows(display).find(
+      item => 'label' in item && item.label === 'Split read (SA tag)',
+    )
+    expect(row).toMatchObject({ type: 'radio', checked: true })
+  })
+})
+
 describe('arc color follows the reads unless it names its own field', () => {
   test('an empty arcColor takes a pair field from the reads', () => {
     const display = createDisplay()

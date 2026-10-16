@@ -11,6 +11,7 @@ import {
   SAME_AS_READS_LABEL,
 } from '../../shared/arcColorOptions.ts'
 import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
+import { COLOR_SCHEMES } from '../../shared/colorSchemes.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
@@ -179,6 +180,15 @@ function tagItem(model: AnyColorByModel): MenuItem {
   )
 }
 
+// A field with no standing radio, listed while it paints the reads so the
+// group shows what is checked.
+function activeFieldItem(model: AnyColorByModel): MenuItem[] {
+  const { menu } = COLOR_SCHEMES[model.colorBy.type]
+  return menu.kind === 'whileActive'
+    ? [radioItem(menu.label, true, () => {})]
+    : []
+}
+
 // Plain scheme radios in a submenu — nothing here reads a modification field, so
 // it takes the bare model. Threading the `modModel` probe through it instead
 // silently dropped the whole section for a caller that opted in but carries no
@@ -264,6 +274,7 @@ export function getColorByMenuItem(
       {
         rows: [
           ...readOptions.map(o => colorRadio(model, o)),
+          ...activeFieldItem(model),
           ...(includeTagOption ? [tagItem(model)] : []),
           ...(includePairedEnd ? [pairedEndItem(model)] : []),
         ],

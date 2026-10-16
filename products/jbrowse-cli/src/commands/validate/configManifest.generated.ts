@@ -3702,7 +3702,7 @@ export const configManifest: ConfigManifest = {
                 "split"
               ],
               "range": [
-                "#D55E00"
+                "#f0b878"
               ],
               "labels": [
                 "Split (SA)"
@@ -3714,7 +3714,7 @@ export const configManifest: ConfigManifest = {
                 "spliced"
               ],
               "range": [
-                "#009E73"
+                "#1a9e8f"
               ],
               "labels": [
                 "Spliced"
@@ -3728,9 +3728,9 @@ export const configManifest: ConfigManifest = {
                 "nonPrimary"
               ],
               "range": [
-                "#0072B2",
-                "#E69F00",
-                "#CC79A7"
+                "#c71585",
+                "#7f7f00",
+                "#f0b878"
               ],
               "labels": [
                 "Discordant",
@@ -3746,9 +3746,9 @@ export const configManifest: ConfigManifest = {
                 "discordantPair"
               ],
               "range": [
-                "#D55E00",
-                "#CC79A7",
-                "#0072B2"
+                "#f0b878",
+                "#c9a000",
+                "#c71585"
               ],
               "labels": [
                 "Split read",
@@ -4494,7 +4494,7 @@ export const configManifest: ConfigManifest = {
                 "split"
               ],
               "range": [
-                "#D55E00"
+                "#f0b878"
               ],
               "labels": [
                 "Split (SA)"
@@ -4506,7 +4506,7 @@ export const configManifest: ConfigManifest = {
                 "spliced"
               ],
               "range": [
-                "#009E73"
+                "#1a9e8f"
               ],
               "labels": [
                 "Spliced"
@@ -4520,9 +4520,9 @@ export const configManifest: ConfigManifest = {
                 "nonPrimary"
               ],
               "range": [
-                "#0072B2",
-                "#E69F00",
-                "#CC79A7"
+                "#c71585",
+                "#7f7f00",
+                "#f0b878"
               ],
               "labels": [
                 "Discordant",
@@ -4538,9 +4538,9 @@ export const configManifest: ConfigManifest = {
                 "discordantPair"
               ],
               "range": [
-                "#D55E00",
-                "#CC79A7",
-                "#0072B2"
+                "#f0b878",
+                "#c9a000",
+                "#c71585"
               ],
               "labels": [
                 "Split read",

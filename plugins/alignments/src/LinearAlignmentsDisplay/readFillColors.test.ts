@@ -13,7 +13,15 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
-import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
+import {
+  colorDiscordantPair,
+  colorFwdStrand,
+  colorRevStrand,
+  colorSplicedRead,
+  colorSupplementary,
+  colorSvIndel,
+  colorUnpairedRead,
+} from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
@@ -351,8 +359,8 @@ describe('read-level fields', () => {
 
   test('svSignal paints each kind of evidence and leaves the rest plain', () => {
     expect([...buildReadFillColors(data, SV, scaleFor(SV))]).toEqual([
-      packed('#D55E00'),
-      packed('#0072B2'),
+      packed(colorSupplementary),
+      packed(colorDiscordantPair),
       0,
       0,
     ])
@@ -362,7 +370,7 @@ describe('read-level fields', () => {
     const split: ColorBy = { type: 'split' }
     const spliced: ColorBy = { type: 'spliced' }
     expect([...buildReadFillColors(data, split, scaleFor(split))]).toEqual([
-      packed('#D55E00'),
+      packed(colorSupplementary),
       0,
       0,
       0,
@@ -370,7 +378,7 @@ describe('read-level fields', () => {
     expect([...buildReadFillColors(data, spliced, scaleFor(spliced))]).toEqual([
       0,
       0,
-      packed('#009E73'),
+      packed(colorSplicedRead),
       0,
     ])
   })
@@ -384,18 +392,18 @@ describe('read-level fields', () => {
       readPairOrientations: new Uint8Array(1),
     })
     expect([...buildReadFillColors(indel, SV, scaleFor(SV))]).toEqual([
-      packed('#CC79A7'),
+      packed(colorSvIndel),
     ])
   })
 
-  test('a domain alone reorders the levels and keeps their colors', () => {
+  test('a domain alone keeps each level its own color', () => {
     const scale = scaleFor(SV, {
       scale: 'categorical',
       domain: ['discordantPair', 'splitRead'],
     })
     expect([...buildReadFillColors(data, SV, scale)].slice(0, 2)).toEqual([
-      packed('#D55E00'),
-      packed('#0072B2'),
+      packed(colorSupplementary),
+      packed(colorDiscordantPair),
     ])
   })
 
@@ -413,7 +421,12 @@ describe('read-level fields', () => {
     })
     const pairing: ColorBy = { type: 'pairing' }
     expect([...buildReadFillColors(pairs, pairing, scaleFor(pairing))]).toEqual(
-      [0, packed('#0072B2'), packed('#E69F00'), packed('#CC79A7')],
+      [
+        0,
+        packed(colorDiscordantPair),
+        packed(colorUnpairedRead),
+        packed(colorSupplementary),
+      ],
     )
   })
 

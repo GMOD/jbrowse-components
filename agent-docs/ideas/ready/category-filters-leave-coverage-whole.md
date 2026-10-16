@@ -1,6 +1,6 @@
 ---
 name: category-filters-leave-coverage-whole
-description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Decided 2026-10-12; Idea 1, `svSignal` in place of `properPairs`, landed as ADR-229, and Idea 3, the `svSignal` color field, landed 2026-10-16.
+description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Idea 1 landed as ADR-229 and Idea 3 as ADR-230; Idea 2 is left.
 ---
 
 # Category filters that leave coverage whole
@@ -9,9 +9,9 @@ Colin reviewed this proposal and decided its calls on 2026-10-12. Idea 1, one
 `svSignal` category in place of `properPairs`, landed as
 [ADR-229](../../architecture-decision-records/adr-229-sv-evidence-is-one-read-category.md),
 which holds its definition, its consumers and its rejected variants. Idea 3,
-the `svSignal` color field, landed as a read-level color field beside `split`,
-`spliced` and `pairing` (`shared/readLevels.ts`), and `svSignal` is a facet
-dimension too. Idea 2 is left.
+the `svSignal` color field, landed as
+[ADR-230](../../architecture-decision-records/adr-230-read-categories-color-on-the-main-thread.md).
+Idea 2 is left.
 
 Paths are under `plugins/alignments/src/` unless they say otherwise.
 
