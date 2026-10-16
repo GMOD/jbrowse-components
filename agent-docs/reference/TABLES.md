@@ -520,20 +520,32 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 ### What the engine keeps between calls
 
 A browser worker frees an adapter when its track closes. A host has no tracks,
-so `src/cache.ts` trims after every call:
+so `src/cache.ts` trims after every call, one state for every engine in the
+process:
 
-- **Bytes:** the decoded-bytes budget (`cacheBudgets.ts`) gets three quarters
-  of `DEFAULT_CACHE_LIMIT`, 256 MiB, where a browser worker allows 1 GiB.
-- **File chunks:** the range cache caps its entry count and keeps no byte
-  count, so the engine empties it once the bytes `readRange` answered since
-  the last emptying pass the other quarter.
-- **Adapters:** `keepRecentAdapters` keeps the `CACHED_ADAPTERS` (32) most
-  recently requested and frees the rest, so a loop over many files keeps the
-  parsed indexes of the last 32.
+- **Decoded records:** the decoded-bytes budget (`cacheBudgets.ts`) gets three
+  quarters of `DEFAULT_CACHE_LIMIT`, 256 MiB, where a browser worker allows 1
+  GiB.
+- **Indexes:** the bare host records the size of each file `readRange` read
+  whole, and an adapter weighs the files its config names, at least
+  `MIN_ADAPTER_BYTES`. `keepAdapters` keeps the adapters the call used, then
+  the most recently requested others that fit the last quarter. A count of 32
+  let 32 copies of an 8.7 MB BAI hold 281 MB of ArrayBuffers; weighed, 7 stay
+  and hold 67 MB.
+- **File chunks:** the range cache caps itself at 1000 chunks of 256 KiB and
+  keeps no byte count, so the bare host counts each URL's range bytes and the
+  engine drops the least recently read file's chunks (`clearCacheFor`) until
+  they fit what the indexes leave.
+- **Assemblies:** the `RESOLVED_ASSEMBLIES` (16) most recently read.
 - **`jbrowse.cache({ limit })`** sets the budget and reports what is held;
   **`jbrowse.clearCache()`** empties every cache in place. Measured from R on
   60 remote ONT CRAM reads, the process grew from 177 MB to 1325 MB before the
   trim and levelled at about 680 MB after it.
+- **The budget counts the caches kept between calls.** One 1 Mb read of a local 100x
+  BAM took R to 2.2 GB at the default, and a second pass over regions whose
+  records outgrow the budget downloads them again: 12 ONT regions of 100 kb,
+  222 MB decoded, read twice in 25 s and 19 s, and in 25 s and 4 s with no
+  limit.
 
 ## Hooks: who notices a break
 
