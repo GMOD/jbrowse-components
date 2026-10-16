@@ -27,8 +27,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`), `bcftools` and `pigz`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.12.0 or later, for
-  the graph's files and the walk index
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.1.0 or later, for the
+  graph's files and the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -307,7 +307,7 @@ from `domainMin` onto the two colors of `range`. The count is per haplotype
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
-(1.0.0 or later) writes every walk to one tabix-indexed file per reference,
+(1.1.0 or later) writes every walk to one tabix-indexed file per reference,
 which the browser reads for the graph track and for the haplotype lanes. It cuts
 each walk into pieces, one for each stretch the walk spends in a 64 kb chunk of
 a reference, and files each piece under its chunk, so the browser reads one
@@ -333,10 +333,6 @@ covers GRCh38 alone:
 | `.GRCh38.walks.bed.gz` | every walk through each 64 kb chunk of GRCh38    |
 | `.CHM13.walks.bed.gz`  | every walk through each 64 kb chunk of T2T-CHM13 |
 
-gfa-to-tabix 0.5.0 to 0.12 wrote three files per reference instead, the walks
-with every step beside the nodes and links they visit. The graph genome viewer
-plugin reads both kinds; it reads the one-file sets from 6.27.0.
-
 The file opens with header lines, which `tabix -H` prints:
 
 ```bash
@@ -344,7 +340,7 @@ tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 ```
 
 ```text
-#walks	format:i:2	chunk:i:65536	maxnode:i:1024
+#walks	format:i:3	chunk:i:65536	maxnode:i:1024
 #reference	CHM13
 #haplotype	GRCh38#0
 #haplotype	HG00097#1

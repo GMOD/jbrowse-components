@@ -247,24 +247,11 @@ Haplotype walks
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
       -o hprc-v2.1-mc-grch38-f3                      # 29:14, 12.9 GB RSS
 
-  The default --chunk 65536 applies. Each row is the format 2 file's row plus
-  its record tags.
+  The default --chunk 65536 applies.
 
-  The format 2 set, hprc-v2.1-mc-grch38-f2.{GRCh38,CHM13}.walks.bed.gz from
-  gfa-to-tabix 1.0.0 (2026-10-12), stays hosted for BandageJS; readers on
-  @jbrowse/graph-walks 2 refuse it. Six chunks of every chromosome on both
-  references, 176 M steps, decoded to the same pieces as the format 1 files
-  below.
-
-  Format 1 sets, kept for configs that name them: hprc-v2.1-mc-grch38.{GRCh38,
-  CHM13}.{walks,nodes,links}.bed.gz from gfa-to-tabix 0.5.0 (2026-10-08, 18.3 GB)
-  and hprc-v2.1-mc-grch38-w6.* from 0.6.0 (2026-10-09, 18.4 GB). Graph genome
-  viewer 6.27.0 reads them; readers built on @jbrowse/graph-walks refuse them.
-  The 0.4.0 single set with both references in one index and the chr22-only
-  files were removed on 2026-10-08; the jb2bench traces that measured them keep
-  their numbers. The contig-layout hprc-v2.1-mc-grch38.links.bed.gz above lost
-  its name to the single set's links file for a day and is back, from a
-  verbatim copy.
+  The format 1 and format 2 sets that came before (gfa-to-tabix 0.4.0 to 1.0.0)
+  were removed on 2026-10-16, since @jbrowse/graph-walks 2 reads format 3 only.
+  The jb2bench traces that measured them keep their numbers.
 
 
 repeat_density/ - per-class RepeatMasker density
