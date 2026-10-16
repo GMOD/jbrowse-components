@@ -204,27 +204,30 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38-f2.GRCh38.walks.bed.gz       1,224,347,426 bytes
-  hprc-v2.1-mc-grch38-f2.GRCh38.walks.bed.gz.tbi       667,959
-  hprc-v2.1-mc-grch38-f2.CHM13.walks.bed.gz        1,629,258,360
-  hprc-v2.1-mc-grch38-f2.CHM13.walks.bed.gz.tbi        625,289
+  hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz       1,224,902,709 bytes
+  hprc-v2.1-mc-grch38-f3.GRCh38.walks.bed.gz.tbi       667,904
+  hprc-v2.1-mc-grch38-f3.CHM13.walks.bed.gz        1,629,760,078
+  hprc-v2.1-mc-grch38-f3.CHM13.walks.bed.gz.tbi        625,326
 
-  Every haplotype's path through the base-level v2.1 graph, in walk format 2
+  Every haplotype's path through the base-level v2.1 graph, in walk format 3
   (gfa-to-tabix docs/walks-format.md): one file per reference, filed under
   64 kb chunks of it. A chunk holds the reference's path through it once, each
   distinct route a haplotype takes off that path once, the lengths of the
   nodes those routes visit, and each haplotype's piece as the list of routes
   it takes. A graph track reads one range of one file per window and decodes
-  only the haplotypes it is asked for.
+  only the haplotypes it is asked for. Where Minigraph-Cactus clips a contig
+  into several W lines, the first and last piece of each line give the bp the
+  graph lacks before the next, so walk rows say which of a gap's bases are
+  not in the graph.
 
   The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 file:
   it aligns each haplotype's walk to the reference's, and each lane to the
   next, on the nodes both visit, with no base compared. It reads no gbz.db
   and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38-f2.GRCh38, and defaultHaplotypes names the lanes it
+  hprc-v2.1-mc-grch38-f3.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
-  Each file's first header line gives format:i:2; chunk:i:65536, the chunk
+  Each file's first header line gives format:i:3; chunk:i:65536, the chunk
   size; and maxnode:i:1024, the longest node, which sets how far before a
   window a reader queries. The file then names its reference on one
   #reference line and the 463 other haplotypes, the other reference included,
@@ -235,17 +238,22 @@ Haplotype walks
   CHM13: 49,089,579 route rows and 56,686,843 walk rows from 56,730,334
   pieces; 3,736 paths have no row.
 
-  Built 2026-10-12 on ada with gfa-to-tabix 1.0.0's writer, from HPRC's
+  Built 2026-10-16 on ada with gfa-to-tabix 1.1.0, from HPRC's
   hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes, the release directory above),
   so node ids match the GBZ and the gbz.db:
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
                                                        # vg 1.76.1, 17 min, 90 GB
     gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      -o hprc-v2.1-mc-grch38-f2                      # 28:35, 12.9 GB RSS
+      -o hprc-v2.1-mc-grch38-f3                      # 29:14, 12.9 GB RSS
 
-  The default --chunk 65536 applies. Six chunks of every chromosome on both
-  references, 176 M steps, decode to the same pieces as the format 1 files
+  The default --chunk 65536 applies. Each row is the format 2 file's row plus
+  its record tags.
+
+  The format 2 set, hprc-v2.1-mc-grch38-f2.{GRCh38,CHM13}.walks.bed.gz from
+  gfa-to-tabix 1.0.0 (2026-10-12), stays hosted for BandageJS; readers on
+  @jbrowse/graph-walks 2 refuse it. Six chunks of every chromosome on both
+  references, 176 M steps, decoded to the same pieces as the format 1 files
   below.
 
   Format 1 sets, kept for configs that name them: hprc-v2.1-mc-grch38.{GRCh38,
