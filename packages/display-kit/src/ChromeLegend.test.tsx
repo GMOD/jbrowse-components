@@ -25,3 +25,14 @@ test('a display clears its own corner text by pushing the key down and left', ()
   const moved = getByTestId('floating-legend').style
   expect([moved.top, moved.right]).toEqual(['38px', '80px'])
 })
+
+test('a hidden legend never derives its key', () => {
+  const model = {
+    showLegend: false,
+    get legendSpec(): never {
+      throw new Error('derived the key of a hidden legend')
+    },
+  } as unknown as LegendHost
+  const { queryByTestId } = render(<ChromeLegend model={model} />)
+  expect(queryByTestId('floating-legend')).toBeNull()
+})

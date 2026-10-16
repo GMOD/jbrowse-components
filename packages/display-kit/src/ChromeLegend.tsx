@@ -21,10 +21,12 @@ const ChromeLegend = observer(function ChromeLegend({
 }: {
   model: LegendHost
 }) {
-  const { showLegend, legendSpec, legendTop, legendRight, legendMaxWidth } =
-    model
+  if (!model.showLegend) {
+    return null
+  }
+  const { legendSpec, legendTop, legendRight, legendMaxWidth } = model
   const captions = isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
-  return showLegend ? (
+  return (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
@@ -47,7 +49,7 @@ const ChromeLegend = observer(function ChromeLegend({
           : undefined
       }
     />
-  ) : null
+  )
 })
 
 export default ChromeLegend
