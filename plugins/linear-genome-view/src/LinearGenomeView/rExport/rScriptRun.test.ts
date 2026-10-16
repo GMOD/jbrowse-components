@@ -7,6 +7,7 @@ import {
   hasR,
   runCases,
   track,
+  VOLVOX,
   volvoxAssembly,
 } from './rScript.fixture.ts'
 import { exportTracksToR } from './rScript.ts'
@@ -157,7 +158,7 @@ const bigBed = register(
       adapter: {
         type: 'BigBedAdapter',
         bigBedLocation: {
-          localPath: path.resolve('test_data/volvox/volvox.bb'),
+          localPath: path.join(VOLVOX, 'volvox.bb'),
         },
         aggregateField: 'geneName',
       },

@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 import type { RExportTrack } from './rScript.ts'
 
-export const VOLVOX = path.resolve('test_data/volvox')
+export const VOLVOX = path.resolve(__dirname, '../../../../../test_data/volvox')
 const BASE_URI = `${pathToFileURL(VOLVOX).href}/`
 
 type Conf = Record<string, unknown> & { adapter: Record<string, unknown> }
