@@ -30,12 +30,18 @@ import {
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
-import { colorFieldOf, isBakedScheme, levelKeysOf } from './alignmentsColor.ts'
+import {
+  baselineLevelLabel,
+  colorFieldOf,
+  isBakedScheme,
+  levelKeysOf,
+} from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
 import { FACET_LABELS, FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
 import { isReadDimension } from './groupFeatures.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
 import { BASE_QUALITY_RAMP_MAX, qualityRampScale } from './qualityRamps.ts'
+import { isReadLevelScheme } from './readFieldLevels.ts'
 import {
   isModificationTypeVisible,
   paintsUnmodifiedState,
@@ -483,6 +489,9 @@ export function readCategoryLabelOverrides(
   return {
     ...strandLabelOverrides(colorBy?.type),
     ...(colorBy?.type === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
+    ...(colorBy && isReadLevelScheme(colorBy.type)
+      ? { noTagValue: baselineLevelLabel(colorBy.type) }
+      : {}),
     ...(colorBy?.type === 'tag' && colorBy.tag !== undefined
       ? { noTagValue: `No ${colorBy.tag} value` }
       : {}),
@@ -1060,18 +1069,13 @@ function schemeLegend({
           },
         ]
   }
-  const colorType = colorBy.type
   if (isStrandTag(colorBy) && !bakedScale?.declared) {
     return [
       { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
     ]
   }
-  if (
-    colorType === 'tag' ||
-    colorType === 'mateRefName' ||
-    colorType === 'mappingQuality'
-  ) {
+  if (isBakedScheme(colorBy)) {
     return bakedValueLegend(
       colorBy,
       presentTagValues,

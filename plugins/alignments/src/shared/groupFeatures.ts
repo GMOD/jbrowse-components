@@ -2,6 +2,7 @@ import {
   PAIR_DIRECTION_LABELS,
   pairDirection,
   pairOrientationToNum,
+  svSignalTier,
 } from '@jbrowse/alignments-core'
 import {
   CIGAR_HAS_SKIP,
@@ -33,11 +34,18 @@ import { pairingOf } from './pairing.ts'
 import {
   MAPQ_UNAVAILABLE_LEVEL,
   PAIRING_LEVELS,
+  READ_LEVEL_LABELS,
   SPLICED_LEVELS,
   SPLIT_LEVELS,
+  SV_SIGNAL_LEVELS,
+  SV_SIGNAL_OF_TIER,
   levelOrder,
 } from './readFieldLevels.ts'
-import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
+import {
+  chainIsSplit,
+  isSplitAlignment,
+  readCategoryBitsOf,
+} from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -49,7 +57,7 @@ import {
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
-import type { Pairing } from './readFieldLevels.ts'
+import type { Pairing, SvSignal } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -169,8 +177,14 @@ function pairOrientationKey(feature: Feature): GroupKey {
 }
 
 const [SPLIT_KEY, UNSPLIT_KEY] = SPLIT_LEVELS
-const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split (SA)' }
-const UNSPLIT_GROUP: GroupKey = { key: UNSPLIT_KEY, label: 'Not split' }
+const SPLIT_GROUP: GroupKey = {
+  key: SPLIT_KEY,
+  label: READ_LEVEL_LABELS.split[SPLIT_KEY],
+}
+const UNSPLIT_GROUP: GroupKey = {
+  key: UNSPLIT_KEY,
+  label: READ_LEVEL_LABELS.split[UNSPLIT_KEY],
+}
 
 // Reads that cross a breakpoint and reads that don't — at an SV locus, the
 // evidence and the background. `isSplitAlignment` is the "Show only split
@@ -180,8 +194,14 @@ function splitKey(feature: Feature): GroupKey {
 }
 
 const [SPLICED_KEY, UNSPLICED_KEY] = SPLICED_LEVELS
-const SPLICED_GROUP: GroupKey = { key: SPLICED_KEY, label: 'Spliced' }
-const UNSPLICED_GROUP: GroupKey = { key: UNSPLICED_KEY, label: 'Not spliced' }
+const SPLICED_GROUP: GroupKey = {
+  key: SPLICED_KEY,
+  label: READ_LEVEL_LABELS.spliced[SPLICED_KEY],
+}
+const UNSPLICED_GROUP: GroupKey = {
+  key: UNSPLICED_KEY,
+  label: READ_LEVEL_LABELS.spliced[UNSPLICED_KEY],
+}
 
 // Over the whole record, as the spliced filter and sort ask it.
 function isSpliced(feature: Feature) {
@@ -192,15 +212,11 @@ function splicedKey(feature: Feature): GroupKey {
   return isSpliced(feature) ? SPLICED_GROUP : UNSPLICED_GROUP
 }
 
-const PAIRING_GROUP_LABELS: Record<Pairing, string> = {
-  concordant: 'Concordant',
-  discordant: 'Discordant',
-  unpaired: 'Unpaired',
-  nonPrimary: 'Secondary or supplementary',
-}
-
 const PAIRING_GROUPS = Object.fromEntries(
-  PAIRING_LEVELS.map(key => [key, { key, label: PAIRING_GROUP_LABELS[key] }]),
+  PAIRING_LEVELS.map(key => [
+    key,
+    { key, label: READ_LEVEL_LABELS.pairing[key] },
+  ]),
 ) as Record<Pairing, GroupKey>
 
 function pairingKey(feature: Feature): GroupKey {
@@ -212,6 +228,27 @@ function pairingKey(feature: Feature): GroupKey {
       ),
     )
   ]
+}
+
+const SV_SIGNAL_GROUPS = Object.fromEntries(
+  SV_SIGNAL_LEVELS.map(key => [
+    key,
+    { key, label: READ_LEVEL_LABELS.svSignal[key] },
+  ]),
+) as Record<SvSignal, GroupKey>
+
+function svSignalTierOf(feature: Feature) {
+  return svSignalTier(readCategoryBitsOf(feature))
+}
+
+// A chain is as strong evidence as its strongest record, the rule the
+// `svSignal` filter keeps a chain by.
+function chainSvSignalKey(chain: Feature[]) {
+  let tier = 0
+  for (const feature of chain) {
+    tier = Math.max(tier, svSignalTierOf(feature))
+  }
+  return SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[tier]!]
 }
 
 // A read's mate reference, or a synteny block's query contig.
@@ -425,6 +462,13 @@ export const FACET_DIMENSIONS: {
     key: splicedKey,
     chainKey: chain =>
       chain.some(isSpliced) ? SPLICED_GROUP : UNSPLICED_GROUP,
+  },
+  svSignal: {
+    field: 'svSignal',
+    fragmentLevel: false,
+    key: feature =>
+      SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[svSignalTierOf(feature)]!],
+    chainKey: chainSvSignalKey,
   },
   mapq: {
     field: 'mapq',

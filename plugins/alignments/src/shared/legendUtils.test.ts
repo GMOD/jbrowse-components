@@ -10,7 +10,10 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
-import { alignmentsColorEncoding } from './alignmentsColor.ts'
+import {
+  alignmentsColorEncoding,
+  declaredReadLabels,
+} from './alignmentsColor.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   arcColorCategoryLabel,
@@ -44,6 +47,7 @@ function legendFor(
     sectionOrder?: (a: string, b: string) => number
     baseLayer?: BaseLayer
     baseQualityUnavailable?: boolean
+    labels?: ReturnType<typeof declaredReadLabels>
   },
 ) {
   return getReadDisplayLegendItems({
@@ -494,6 +498,32 @@ describe('getReadDisplayLegendItems', () => {
         presentTagValues: new Set(['chr10', 'chr2']),
       }).map(i => i.label),
     ).toEqual(['chr10', 'chr2'])
+  })
+
+  test('SV evidence keys each kind by name and its baseline as no evidence', () => {
+    const encoding = alignmentsColorEncoding({
+      value: undefined,
+      field: 'svSignal',
+      scale: undefined,
+      domain: [],
+      range: [],
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
+      domainMid: undefined,
+    })
+    const colorBy: ColorBy = { type: 'svSignal' }
+    const items = legendFor(colorBy, ['tag', 'noTagValue'], {
+      presentTagValues: new Set(['discordant', 'split', '']),
+      bakedScale: bakedColorScale(colorBy, encoding, undefined, undefined),
+      labels: declaredReadLabels(encoding, []),
+    })
+    expect(items.map(i => [i.label, i.color])).toEqual([
+      ['Split read', '#D55E00'],
+      ['Discordant pair', '#0072B2'],
+      ['No SV evidence', expect.any(String)],
+    ])
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {

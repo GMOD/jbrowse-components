@@ -193,7 +193,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot facet
        * In-track stacked grouping, one labelled section per value: a read
        * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
-       * `split`, `spliced`, `mapq`, `mateRefName`, `mateAssembly`), a tag
+       * `split`, `spliced`, `svSignal`, `mapq`, `mateRefName`, `mateAssembly`), a tag
        * (`tags.HP`), or any other field. `{ field: "tags.HP", domain: ["2",
        * "1"] }` stacks the listed values first.
        */

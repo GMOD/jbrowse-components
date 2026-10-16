@@ -16,10 +16,15 @@ import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
   PAIR_ORIENTATION_LEVELS,
+  BASELINE_LEVEL,
+  READ_LEVEL_LABELS,
+  isReadLevelScheme,
+  levelOrder,
 } from './readFieldLevels.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { RGBColor } from '../shaders/colors.ts'
+import type { ReadLevelScheme } from './readFieldLevels.ts'
 import type {
   BaseLayer,
   BaseLayerType,
@@ -30,7 +35,11 @@ import type {
   ReadColorSchemeType,
   TagColorScale,
 } from './types.ts'
-import type { ColorSlots, FieldPresets } from '@jbrowse/core/util/colorScale'
+import type {
+  ColorSlots,
+  FieldPreset,
+  FieldPresets,
+} from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -69,6 +78,10 @@ export const COLOR_FIELDS: Record<PresetScheme, string> = {
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',
   mateRefName: 'mateRefName',
+  split: 'split',
+  spliced: 'spliced',
+  pairing: 'pairing',
+  svSignal: 'svSignal',
 }
 
 /** The per-base variables `baseColor` paints a cell per base from. */
@@ -218,6 +231,7 @@ export function isBakedScheme(colorBy: ColorBy) {
   return (
     colorBy.type === 'mappingQuality' ||
     colorBy.type === 'mateRefName' ||
+    isReadLevelScheme(colorBy.type) ||
     (colorBy.type === 'tag' && !!(colorBy.tag ?? colorBy.attribute))
   )
 }
@@ -283,6 +297,10 @@ const READ_COLOR_LEVELS: Record<
   mappingQuality: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
+  split: [[BASELINE_LEVEL.split, 'noTagValue']],
+  spliced: [[BASELINE_LEVEL.spliced, 'noTagValue']],
+  pairing: [[BASELINE_LEVEL.pairing, 'noTagValue']],
+  svSignal: [[BASELINE_LEVEL.svSignal, 'noTagValue']],
 }
 
 /**
@@ -317,6 +335,43 @@ export function levelKeysOf(type: ColorSchemeType) {
 }
 
 /**
+ * The colors a read-level field paints its levels with, Okabe-Ito's, one hue
+ * per meaning across the fields: a split read vermilion, a discordant pair
+ * blue. Its baseline level keeps the plain fill (`BASELINE_LEVEL`).
+ */
+const LEVEL_COLORS: Record<
+  ReadLevelScheme,
+  Readonly<Record<string, string>>
+> = {
+  split: { split: '#D55E00' },
+  spliced: { spliced: '#009E73' },
+  pairing: {
+    discordant: '#0072B2',
+    unpaired: '#E69F00',
+    nonPrimary: '#CC79A7',
+  },
+  svSignal: { split: '#D55E00', svIndel: '#CC79A7', discordant: '#0072B2' },
+}
+
+function levelPreset(scheme: ReadLevelScheme): FieldPreset<'categorical'> {
+  const colors = LEVEL_COLORS[scheme]
+  const labels: Readonly<Record<string, string>> = READ_LEVEL_LABELS[scheme]
+  const domain = Object.keys(colors)
+  return {
+    scale: 'categorical',
+    domain,
+    range: domain.map(level => colors[level]!),
+    labels: domain.map(level => labels[level]!),
+  }
+}
+
+/** What a read-level field's baseline level is called in the key. */
+export function baselineLevelLabel(scheme: ReadLevelScheme) {
+  const labels: Readonly<Record<string, string>> = READ_LEVEL_LABELS[scheme]
+  return labels[BASELINE_LEVEL[scheme]]!
+}
+
+/**
  * What each field paints through while `scale` is unset: an insert-size field
  * a threshold, and any other field categorical, a preset scheme's field over
  * its own levels, which `range` and `labels` then index while `domain` is
@@ -328,14 +383,16 @@ export const ALIGNMENTS_FIELD_PRESETS = {
       field,
       INSERT_SIZE_FIELDS.has(field)
         ? { scale: 'threshold' }
-        : isBakedScheme({ type: scheme as PresetScheme })
-          ? { scale: 'categorical' }
-          : {
-              scale: 'categorical',
-              domain: paintedLevels(scheme as PresetScheme).map(
-                ([value]) => value,
-              ),
-            },
+        : isReadLevelScheme(scheme)
+          ? levelPreset(scheme)
+          : isBakedScheme({ type: scheme as PresetScheme })
+            ? { scale: 'categorical' }
+            : {
+                scale: 'categorical',
+                domain: paintedLevels(scheme as PresetScheme).map(
+                  ([value]) => value,
+                ),
+              },
     ]),
   ),
   mapq: MEASURE_FIELD_PRESETS.mapq,
@@ -356,6 +413,19 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
     return []
   }
   const { type } = colorByOf(encoding)
+  if (isReadLevelScheme(type)) {
+    const levels = levelOrder(type)
+    return encoding.scale === 'categorical'
+      ? Array.from(encoding.domain ?? [], String)
+          .filter(value => !levels.includes(value))
+          .map(
+            value =>
+              `color.domain: "${value}" names no level of ${encoding.field}, whose levels are ${levels.join(', ')}`,
+          )
+      : [
+          `color.scale: ${encoding.scale} has nothing to read in ${encoding.field}, whose levels are ${levels.join(', ')}; scale: "categorical" colors them`,
+        ]
+  }
   if (!LEVEL_SCHEMES.has(type)) {
     return []
   }

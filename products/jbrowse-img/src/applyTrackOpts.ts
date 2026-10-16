@@ -65,6 +65,7 @@ const ALIGNMENTS_COLOR_FIELD_LIST = [
   'pairing',
   'split',
   'spliced',
+  'svSignal',
   'mateRefName',
   'mateAssembly',
 ] as const

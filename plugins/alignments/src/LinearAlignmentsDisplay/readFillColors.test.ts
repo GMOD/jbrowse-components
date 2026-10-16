@@ -1,3 +1,9 @@
+import {
+  READ_DISCORDANT,
+  READ_SPLICED,
+  READ_SPLIT,
+  withSvTier,
+} from '@jbrowse/alignments-core'
 import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
@@ -320,5 +326,56 @@ describe('a declared scale', () => {
     expect(buildReadFillColors(pileupWith(['+']), XS, scale)[0]).toBe(
       packed('#123456'),
     )
+  })
+})
+
+describe('read-level fields', () => {
+  // Placed records, so a category bit is evidence; the last read is none.
+  const bits = [READ_SPLIT, READ_DISCORDANT, READ_SPLICED, 0].map(b =>
+    withSvTier(b, 60, b & READ_SPLIT ? 'ctgA,1,+,50M,60,0;' : '', undefined),
+  )
+  const data = makePileupDataResult({
+    readCategoryBits: Uint8Array.from(bits),
+    readFlags: new Uint16Array(bits.length),
+    readPairOrientations: new Uint8Array(bits.length),
+  })
+  const SV: ColorBy = { type: 'svSignal' }
+
+  test('svSignal paints each kind of evidence and leaves the rest plain', () => {
+    expect([...buildReadFillColors(data, SV, scaleFor(SV))]).toEqual([
+      packed('#D55E00'),
+      packed('#0072B2'),
+      0,
+      0,
+    ])
+  })
+
+  test('split and spliced paint their own reads', () => {
+    const split: ColorBy = { type: 'split' }
+    const spliced: ColorBy = { type: 'spliced' }
+    expect([...buildReadFillColors(data, split, scaleFor(split))]).toEqual([
+      packed('#D55E00'),
+      0,
+      0,
+      0,
+    ])
+    expect([...buildReadFillColors(data, spliced, scaleFor(spliced))]).toEqual([
+      0,
+      0,
+      packed('#009E73'),
+      0,
+    ])
+  })
+
+  test('a written domain and range recolor the levels', () => {
+    const scale = scaleFor(SV, {
+      scale: 'categorical',
+      domain: ['discordant', 'split'],
+      range: ['#111111', '#222222'],
+    })
+    expect([...buildReadFillColors(data, SV, scale)].slice(0, 2)).toEqual([
+      packed('#222222'),
+      packed('#111111'),
+    ])
   })
 })

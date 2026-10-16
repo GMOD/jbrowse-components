@@ -177,11 +177,8 @@ import {
   getSashimiMenuItem,
   getSortMenuItem,
 } from './menus/index.ts'
-import {
-  NO_QUALITY_SPAN,
-  baseQualitySpanAcrossGroups,
-  presentMapqs,
-} from './qualitySpans.ts'
+import { presentBakedValues } from './presentBakedValues.ts'
+import { NO_QUALITY_SPAN, baseQualitySpanAcrossGroups } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { connectorParamsOf } from './renderers/connectorMarks.ts'
 import {
@@ -875,9 +872,7 @@ export default function stateModelFactory(
             if (!self.showLegend || !isBakedScheme(self.colorBy)) {
               return undefined
             }
-            return self.colorBy.type === 'mappingQuality'
-              ? presentMapqs(this.laidOutByGroup)
-              : collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
+            return presentBakedValues(self.colorBy, this.laidOutByGroup)
           },
 
           /**

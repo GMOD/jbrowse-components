@@ -10,11 +10,13 @@ import type {
 export type ColorGroup = 'basic' | 'pairedEnd'
 
 // Menu placement for a color scheme. Discriminated so a scheme is either a plain
-// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
-// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
+// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu),
+// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite) —
+// or 'unlisted', a field a config or Edit plot names and no menu row offers.
 export type ColorSchemeMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
+  | { kind: 'unlisted' }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
@@ -151,6 +153,30 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     bodyScheme: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
+  },
+  // The four fields the main thread answers per read (`readLevels.ts`), each
+  // baked per read as the tag values are, so a switch among them recolors
+  // what is loaded. The Group by menu lists all four; Color by lists the SV
+  // evidence alone, since a config or Edit plot reaches the others.
+  svSignal: {
+    type: 'svSignal',
+    bodyScheme: 'tag',
+    menu: { kind: 'radio', label: FACET_LABELS.svSignal, group: 'basic' },
+  },
+  split: {
+    type: 'split',
+    bodyScheme: 'tag',
+    menu: { kind: 'unlisted' },
+  },
+  spliced: {
+    type: 'spliced',
+    bodyScheme: 'tag',
+    menu: { kind: 'unlisted' },
+  },
+  pairing: {
+    type: 'pairing',
+    bodyScheme: 'tag',
+    menu: { kind: 'unlisted' },
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)

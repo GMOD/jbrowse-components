@@ -730,6 +730,7 @@ Anything else is a CSS color, painting every read with it:
 | `pairing`                  | Concordant, discordant, unpaired or nonPrimary |
 | `split`                    | Split reads against the rest                   |
 | `spliced`                  | Spliced reads against the rest                 |
+| `svSignal`                 | Split read, SV-size indel or discordant pair   |
 | `mateRefName`              | Reference the mate landed on                   |
 | `mateAssembly`             | Assembly the mate landed on, for synteny reads |
 | `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |

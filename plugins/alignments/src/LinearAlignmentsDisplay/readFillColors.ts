@@ -2,6 +2,8 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
+import { isReadLevelScheme } from '../shared/readFieldLevels.ts'
+import { readLevelValues } from '../shared/readLevels.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
@@ -85,8 +87,8 @@ function makeColorResolver(
 function applyResolver(
   data: WorkerPileupData,
   resolve: ColorResolver,
+  tagValues = data.readTagValues,
 ): Uint32Array {
-  const tagValues = data.readTagValues
   const strands = data.readStrands
   // No values to bake from — a region fetched under a scheme that extracts none,
   // which the mid-switch window leaves laid out while the new colorBy is already
@@ -143,7 +145,11 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
     return (data: WorkerPileupData) => applyMapqTable(data, table)
   }
   const resolve = makeColorResolver(colorBy, scale)
-  return (data: WorkerPileupData) => applyResolver(data, resolve)
+  const { type } = colorBy
+  return isReadLevelScheme(type)
+    ? (data: WorkerPileupData) =>
+        applyResolver(data, resolve, readLevelValues(type, data))
+    : (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 
 // Overlay freshly-baked `readFillColors` onto each laid-out region. Baking here

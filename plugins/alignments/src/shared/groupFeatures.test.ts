@@ -207,6 +207,56 @@ test('split-read grouping counts a supplementary record with no SA tag', () => {
   expect(groups[0]!.features.map(f => f.id())).toEqual(['supp'])
 })
 
+// Unpaired and placed, so only the CIGAR or SA can make a record evidence.
+function svFeat(id: string, fields: Record<string, unknown>) {
+  return feat(id, { flags: 0, score: 60, tags: {}, CIGAR: '100M', ...fields })
+}
+
+test('the SV evidence facet sections reads by their strongest evidence', () => {
+  const features = [
+    svFeat('split', {
+      CIGAR: '50M50S',
+      tags: { SA: 'ctgA,200,+,50S50M,60,0;' },
+    }),
+    svFeat('deletion', { CIGAR: '40M60D60M' }),
+    feat('discordant', {
+      flags: 1,
+      score: 60,
+      tags: {},
+      CIGAR: '100M',
+      pair_orientation: 'F1R2',
+    }),
+    svFeat('plain', {}),
+    svFeat('unplaced-split', {
+      score: 0,
+      CIGAR: '50M50S',
+      tags: { SA: 'ctgA,200,+,50S50M,60,0;' },
+    }),
+  ]
+  const groups = partitionFeatures(features, { field: 'svSignal' })
+  expect(groups.map(g => [g.label, g.features.map(f => f.id())])).toEqual([
+    ['Split read', ['split']],
+    ['SV-size indel', ['deletion']],
+    ['Discordant pair', ['discordant']],
+    ['No SV evidence', ['plain', 'unplaced-split']],
+  ])
+})
+
+test('a chain takes the SV evidence of its strongest record', () => {
+  const groups = partitionFeatures(
+    [
+      svFeat('r1', { name: 'r', CIGAR: '40M60D60M' }),
+      svFeat('r2', { name: 'r' }),
+      svFeat('s', { name: 's' }),
+    ],
+    { field: 'svSignal', unit: 'chain' },
+  )
+  expect(groups.map(g => [g.key, g.features.map(f => f.id())])).toEqual([
+    ['svIndel', ['r1', 'r2']],
+    ['none', ['s']],
+  ])
+})
+
 // F1R2 and F2R1 are the SAME pair orientation — the normal LR — differing only
 // in which mate the record is. Keying the raw `pair_orientation` string opened a
 // section per permutation, so a plain FR library drew two "normal" sections, both

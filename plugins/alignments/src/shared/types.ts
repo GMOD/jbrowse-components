@@ -81,6 +81,10 @@ export type ColorSchemeType =
   | 'perBaseLetter'
   | 'tag'
   | 'mateRefName'
+  | 'split'
+  | 'spliced'
+  | 'pairing'
+  | 'svSignal'
   | 'modifications'
   | 'bisulfite'
 
@@ -215,6 +219,7 @@ export const READ_DIMENSIONS = [
   'pairing',
   'split',
   'spliced',
+  'svSignal',
   'mapq',
   'mateRefName',
   'mateAssembly',

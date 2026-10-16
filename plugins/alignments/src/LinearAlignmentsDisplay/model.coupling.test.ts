@@ -936,9 +936,13 @@ describe('read categories + filter submenu', () => {
     const display = createDisplay()
     // Scoped to the category row rather than the group above it: the group's
     // label carries the active count, so it is renamed by the very click being
-    // made here. `menuSubItems` recurses, so naming the row is enough.
+    // made here. Color by and Group by have an "SV evidence" row too, so the
+    // search starts inside the filters.
     clickMenuItem(
-      menuSubItems(display.trackMenuItems(), 'SV evidence'),
+      menuSubItems(
+        menuSubItems(display.trackMenuItems(), 'Filter by...'),
+        'SV evidence',
+      ),
       'Hide SV evidence',
     )
     expect(display.readFilter.svSignal).toBe('exclude')

@@ -3696,6 +3696,66 @@ export const configManifest: ConfigManifest = {
             "mateRefName": {
               "scale": "categorical"
             },
+            "split": {
+              "scale": "categorical",
+              "domain": [
+                "split"
+              ],
+              "range": [
+                "#D55E00"
+              ],
+              "labels": [
+                "Split (SA)"
+              ]
+            },
+            "spliced": {
+              "scale": "categorical",
+              "domain": [
+                "spliced"
+              ],
+              "range": [
+                "#009E73"
+              ],
+              "labels": [
+                "Spliced"
+              ]
+            },
+            "pairing": {
+              "scale": "categorical",
+              "domain": [
+                "discordant",
+                "unpaired",
+                "nonPrimary"
+              ],
+              "range": [
+                "#0072B2",
+                "#E69F00",
+                "#CC79A7"
+              ],
+              "labels": [
+                "Discordant",
+                "Unpaired",
+                "Secondary or supplementary"
+              ]
+            },
+            "svSignal": {
+              "scale": "categorical",
+              "domain": [
+                "split",
+                "svIndel",
+                "discordant"
+              ],
+              "range": [
+                "#D55E00",
+                "#CC79A7",
+                "#0072B2"
+              ],
+              "labels": [
+                "Split read",
+                "SV-size indel",
+                "Discordant pair"
+              ]
+            },
             "*": {
               "scale": "categorical"
             }
@@ -4427,6 +4487,66 @@ export const configManifest: ConfigManifest = {
             },
             "mateRefName": {
               "scale": "categorical"
+            },
+            "split": {
+              "scale": "categorical",
+              "domain": [
+                "split"
+              ],
+              "range": [
+                "#D55E00"
+              ],
+              "labels": [
+                "Split (SA)"
+              ]
+            },
+            "spliced": {
+              "scale": "categorical",
+              "domain": [
+                "spliced"
+              ],
+              "range": [
+                "#009E73"
+              ],
+              "labels": [
+                "Spliced"
+              ]
+            },
+            "pairing": {
+              "scale": "categorical",
+              "domain": [
+                "discordant",
+                "unpaired",
+                "nonPrimary"
+              ],
+              "range": [
+                "#0072B2",
+                "#E69F00",
+                "#CC79A7"
+              ],
+              "labels": [
+                "Discordant",
+                "Unpaired",
+                "Secondary or supplementary"
+              ]
+            },
+            "svSignal": {
+              "scale": "categorical",
+              "domain": [
+                "split",
+                "svIndel",
+                "discordant"
+              ],
+              "range": [
+                "#D55E00",
+                "#CC79A7",
+                "#0072B2"
+              ],
+              "labels": [
+                "Split read",
+                "SV-size indel",
+                "Discordant pair"
+              ]
             },
             "*": {
               "scale": "categorical"

@@ -86,6 +86,10 @@ const sample: Record<ColorSchemeType, ColorBy> = {
   insertSizeAndOrientation: { type: 'insertSizeAndOrientation' },
   tag: { type: 'tag', tag: 'HP' },
   mateRefName: { type: 'mateRefName' },
+  split: { type: 'split' },
+  spliced: { type: 'spliced' },
+  pairing: { type: 'pairing' },
+  svSignal: { type: 'svSignal' },
   modifications: { type: 'modifications' },
   bisulfite: { type: 'bisulfite' },
 }
