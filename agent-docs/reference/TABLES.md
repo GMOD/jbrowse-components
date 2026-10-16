@@ -521,31 +521,68 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 
 A browser worker frees an adapter when its track closes. A host has no tracks,
 so `src/cache.ts` trims after every call, one state for every engine in the
-process:
+process, under three bounds that share no space and one setting, `limit`
+(`DEFAULT_CACHE_LIMIT`, 256 MiB):
 
-- **Decoded records:** the decoded-bytes budget (`cacheBudgets.ts`) gets three
-  quarters of `DEFAULT_CACHE_LIMIT`, 256 MiB, where a browser worker allows 1
-  GiB.
-- **Indexes:** the bare host records the size of each file `readRange` read
-  whole, and an adapter weighs the files its config names, at least
-  `MIN_ADAPTER_BYTES`. `keepAdapters` keeps the adapters the call used, then
-  the most recently requested others that fit the last quarter. A count of 32
-  let 32 copies of an 8.7 MB BAI hold 281 MB of ArrayBuffers; weighed, 7 stay
-  and hold 67 MB.
-- **File chunks:** the range cache caps itself at 1000 chunks of 256 KiB and
-  keeps no byte count, so the bare host counts each URL's range bytes and the
-  engine drops the least recently read file's chunks (`clearCacheFor`) until
-  they fit what the indexes leave.
+- **Decoded records:** the decoded-bytes budget (`cacheBudgets.ts`) gets all
+  of `limit`, where a browser worker allows 1 GiB.
+- **Chunks:** the range cache's own cap, 1000 chunks of 256 KiB, which the
+  engine never trims between calls. The bare host counts the bytes it answered
+  to range requests, and `chunks` reports that count clamped to the cap.
+- **Adapters:** `keepAdapters` keeps the adapters the call used, then the most
+  recently requested others while their weight fits another `limit`. An
+  adapter weighs at least `MIN_ADAPTER_BYTES`, and each file its config names
+  that `readRange` read whole, times `RETAINED_PER_FILE_BYTE` for an index.
 - **Assemblies:** the `RESOLVED_ASSEMBLIES` (16) most recently read.
-- **`jbrowse.cache({ limit })`** sets the budget and reports what is held;
-  **`jbrowse.clearCache()`** empties every cache in place. Measured from R on
-  60 remote ONT CRAM reads, the process grew from 177 MB to 1325 MB before the
-  trim and levelled at about 680 MB after it.
-- **The budget counts the caches kept between calls.** One 1 Mb read of a local 100x
-  BAM took R to 2.2 GB at the default, and a second pass over regions whose
-  records outgrow the budget downloads them again: 12 ONT regions of 100 kb,
-  222 MB decoded, read twice in 25 s and 19 s, and in 25 s and 4 s with no
-  limit.
+- **`jbrowse.cache({ limit })`** sets `limit` and reports what is held;
+  **`jbrowse.clearCache()`** empties every cache in place.
+- **Every tables lookup passes the sequence adapter** (`adapterOf` in
+  `assembly.ts`, which lint enforces): core keys a BAM, SAM or CRAM on it, and
+  a lookup without it built a second instance that read the index again. The
+  cancer_sv tutorial downloaded 183.3 MiB in R before the fix and 74.7 MiB
+  after.
+
+What a parsed index holds per byte of its file, measured with Node's heap and
+ArrayBuffer totals after a warm-up parse, so the inflater's wasm memory is not
+counted (`RETAINED_PER_FILE_BYTE` takes the most with five contigs read):
+
+| Format | Files | One contig | Five contigs |
+| --- | --- | --- | --- |
+| BAI | 8.3, 2.6 MiB | 1.7-2.0x | 3.6-4.2x |
+| CSI | 1.9, 1.8 MiB | 4.2-4.5x | 4.2-4.5x |
+| CRAI | 0.6, 0.5, 0.4 MiB | 9.8-11.9x (parsed whole) | |
+| TBI | 1.3, 0.4, 0.3, 0.2 MiB | 6.3-19.4x | 13.0-19.0x |
+
+The libraries memoize five decoded contigs (`memoizeByRefId`), so five is
+the most an index holds. Below about 250 KiB the 1 MiB floor outweighs the
+estimate.
+
+Before and after, measured with the bundle in Node's `vm`, or from R where a
+row says so: the bytes the host read, and what the process held after the run,
+heap plus ArrayBuffers after a full GC in Node and RSS in R:
+
+| Workload | `limit` | Read before | Read after | Held before | Held after |
+| --- | --- | --- | --- | --- | --- |
+| 20 x 100 kb of a 100x BAM, twice | 256 MiB | 76.9 + 76.9 MiB | 75.9 + 0 MiB | 342 MiB | 543 MiB |
+| 12 x 20 kb of 200x long reads, twice | 64 MiB | 202.8 + 191.8 MiB | 52.4 + 0 MiB | 85 MiB | 157 MiB |
+| One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 81 MiB | 81 MiB |
+| 30 remote BAMs, an 8.3 MiB BAI each | 256 MiB | 269.0 MiB | 269.0 MiB | 121 MiB, 7 adapters | 135 MiB, 7 adapters |
+| cancer_sv tutorial, from R | 256 MiB | 183.3 MiB, 29.7 s | 73.7 MiB, 15.8 s | 812 MiB RSS | 763 MiB RSS |
+| 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 127.0 MiB, 44.0 s | 168.5 + 0 MiB, 28.5 s | 840 MiB peak | 953 MiB peak |
+
+- **No workload reads more, and the engine holds more between calls:** up to
+  the chunk cache's 256 MiB, and a full `limit` of records.
+- **The index estimate overcounts a file read on one contig.** The 30 BAMs
+  read one contig each, so their indexes held about 100 MiB against the 234
+  MiB `indexes` reported.
+- **A call's own working memory comes on top.** One 1 Mb read of a local 100x
+  BAM took R to 2.2 GB at the default.
+- **The inflater's wasm memory is a floor `limit` cannot lower.** A
+  `WebAssembly.Memory` only grows, and after one 20 kb window of 1000x long
+  reads `clearCache()` left a 261.9 MiB wasm backing store, the bundle's only
+  sizeable one.
+  [ideas/waiting-on-someone-else/gmod-memory-hooks-for-the-embedded-engine.md](../ideas/waiting-on-someone-else/gmod-memory-hooks-for-the-embedded-engine.md)
+  lists the library releases that would let one budget cover real bytes.
 
 ## Hooks: who notices a break
 
