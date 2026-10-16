@@ -525,7 +525,7 @@ export const colorSupplementary = '#f0b878'
 // colorShortInsert and 19.5 from colorInterchrom. A split piece takes
 // colorSupplementary, the color the pair schemes already give one. Gold and
 // olive are 27.2 apart, and never share a field.
-/** #color alignments-read-level | Discordant pair | A paired primary read the aligner did not call concordant */
+/** #color alignments-read-level | Discordant pair | A paired primary read without the proper-pair flag 0x2, or in a pair not facing FR */
 export const colorDiscordantPair = '#c71585'
 /** #color alignments-read-level | SV-size indel | A read carrying an insertion or deletion of 50 bp or more */
 export const colorSvIndel = '#c9a000'

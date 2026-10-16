@@ -147,7 +147,7 @@ read categories **Group by** sections reads into.
 | Color | Name | Value | Description |
 | --- | --- | --- | --- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f0b878;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f0b878"></span> | Split read | `#f0b878` | A read aligned in pieces; under Pairing, a secondary or supplementary record |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c71585;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c71585"></span> | Discordant pair | `#c71585` | A paired primary read the aligner did not call concordant |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c71585;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c71585"></span> | Discordant pair | `#c71585` | A paired primary read without the proper-pair flag 0x2, or in a pair not facing FR |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c9a000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c9a000"></span> | SV-size indel | `#c9a000` | A read carrying an insertion or deletion of 50 bp or more |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#1a9e8f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#1a9e8f"></span> | Spliced read | `#1a9e8f` | A read whose CIGAR carries a reference skip |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#7f7f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#7f7f00"></span> | Unpaired | `#7f7f00` | A read with no mate, or whose mate is unmapped |
