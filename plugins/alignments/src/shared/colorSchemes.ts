@@ -10,13 +10,11 @@ import type {
 export type ColorGroup = 'basic' | 'pairedEnd'
 
 // Menu placement for a color scheme. Discriminated so a scheme is either a plain
-// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu),
-// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite) —
-// or 'unlisted', a field a config or Edit plot names and no menu row offers.
+// radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
+// 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
 export type ColorSchemeMenu =
   | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
-  | { kind: 'unlisted' }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
@@ -156,8 +154,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
   // The four fields the main thread answers per read (`readLevels.ts`), each
   // baked per read as the tag values are, so a switch among them recolors
-  // what is loaded. The Group by menu lists all four; Color by lists the SV
-  // evidence alone, since a config or Edit plot reaches the others.
+  // what is loaded. Group by lists the same four under the same labels.
   svSignal: {
     type: 'svSignal',
     bodyScheme: 'tag',
@@ -166,17 +163,17 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   split: {
     type: 'split',
     bodyScheme: 'tag',
-    menu: { kind: 'unlisted' },
+    menu: { kind: 'radio', label: FACET_LABELS.split, group: 'basic' },
   },
   spliced: {
     type: 'spliced',
     bodyScheme: 'tag',
-    menu: { kind: 'unlisted' },
+    menu: { kind: 'radio', label: FACET_LABELS.spliced, group: 'basic' },
   },
   pairing: {
     type: 'pairing',
     bodyScheme: 'tag',
-    menu: { kind: 'unlisted' },
+    menu: { kind: 'radio', label: FACET_LABELS.pairing, group: 'pairedEnd' },
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)

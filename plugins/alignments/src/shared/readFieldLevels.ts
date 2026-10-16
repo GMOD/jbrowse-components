@@ -44,12 +44,14 @@ export type Pairing = (typeof PAIRING_LEVELS)[number]
 
 /**
  * A read's strongest SV evidence, by the tier `svSignalTier` stores: a split
- * read, an indel of 50 bp or more, a discordant pair, or none.
+ * read, an indel of 50 bp or more, a discordant pair, or none. Each needs both
+ * ends placed (ADR-229), so `splitRead` is narrower than `split: 'split'`
+ * and `discordantPair` than `pairing: 'discordant'`, and the names differ.
  */
 export const SV_SIGNAL_LEVELS = [
-  'split',
+  'splitRead',
   'svIndel',
-  'discordant',
+  'discordantPair',
   'none',
 ] as const
 
@@ -58,16 +60,17 @@ export type SvSignal = (typeof SV_SIGNAL_LEVELS)[number]
 /** The level `svSignalTier`'s tier names, 0 for none. */
 export const SV_SIGNAL_OF_TIER: readonly SvSignal[] = [
   'none',
-  'discordant',
+  'discordantPair',
   'svIndel',
-  'split',
+  'splitRead',
 ]
 
 /**
  * The color fields the main thread answers per read from arrays every fetch
  * ships, so picking one recolors what is loaded instead of refetching it.
- * Each is a facet dimension too, and a read takes the level its section is
- * keyed by.
+ * Each is a facet dimension too. A read takes the level its section is keyed
+ * by, except under `unit: 'chain'`, where a section keys the whole chain and
+ * each record keeps its own color, so a split section shows which piece split.
  */
 export const READ_LEVEL_SCHEMES = [
   'split',
@@ -111,9 +114,9 @@ export const READ_LEVEL_LABELS: {
     nonPrimary: 'Secondary or supplementary',
   },
   svSignal: {
-    split: 'Split read',
+    splitRead: 'Split read',
     svIndel: 'SV-size indel',
-    discordant: 'Discordant pair',
+    discordantPair: 'Discordant pair',
     none: 'No SV evidence',
   },
 }

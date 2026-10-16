@@ -515,7 +515,7 @@ describe('getReadDisplayLegendItems', () => {
     })
     const colorBy: ColorBy = { type: 'svSignal' }
     const items = legendFor(colorBy, ['tag', 'noTagValue'], {
-      presentTagValues: new Set(['discordant', 'split', '']),
+      presentTagValues: new Set(['discordantPair', 'splitRead', '']),
       bakedScale: bakedColorScale(colorBy, encoding, undefined, undefined),
       labels: declaredReadLabels(encoding, []),
     })

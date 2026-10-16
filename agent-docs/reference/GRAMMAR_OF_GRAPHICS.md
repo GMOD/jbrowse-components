@@ -193,8 +193,9 @@ a picture:
   (`showInterchrom`, `showLongRange`, `showOrdinaryPairs`,
   `minInterchromSupport`, `minSashimiScore`, `showNonCanonicalJunctions`,
   `coverageSnpMinFrequency`) stay flat slots. A filter object per layer would
-  rename them and change nothing else. The `show` prefix on three of them
-  names a filter, where every other `show` slot toggles a layer.
+  rename them and change nothing else. The three `show` slots among them hide
+  a class of connection the band draws: the cross-chromosome arcs and ticks,
+  the ticks to an unloaded mate, and the ordinary pairs' grey baseline.
 - `fadeLowQualityMismatches` and `fadeLowFrequencyMismatches` stay booleans.
   Each fades by one variable and has one consumer, so an `opacity` object
   would take one legal value.

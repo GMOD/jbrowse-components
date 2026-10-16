@@ -887,7 +887,7 @@ const SORT_NOTES: Record<string, string> = {
   spliced:
     'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup.',
   split:
-    'Gives the reads aligned in pieces, and the reads carrying a deletion of 50 bp or more, the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
+    'Gives the reads aligned in pieces the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
   basePair: CENTRE_LINE_NOTE,
   strand: CENTRE_LINE_NOTE,
   tag: CENTRE_LINE_NOTE,

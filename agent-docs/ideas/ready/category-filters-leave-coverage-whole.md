@@ -1,6 +1,6 @@
 ---
 name: category-filters-leave-coverage-whole
-description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table, and an `svSignal` color field paints no-evidence reads grey. Decided 2026-10-12; Idea 1, `svSignal` in place of `properPairs`, landed as ADR-229.
+description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Decided 2026-10-12; Idea 1, `svSignal` in place of `properPairs`, landed as ADR-229, and Idea 3, the `svSignal` color field, landed 2026-10-16.
 ---
 
 # Category filters that leave coverage whole
@@ -8,8 +8,10 @@ description: The category filters (`svSignal`, `split`, `spliced`, `singletons`,
 Colin reviewed this proposal and decided its calls on 2026-10-12. Idea 1, one
 `svSignal` category in place of `properPairs`, landed as
 [ADR-229](../../architecture-decision-records/adr-229-sv-evidence-is-one-read-category.md),
-which holds its definition, its consumers and its rejected variants. Ideas 2
-and 3 are left.
+which holds its definition, its consumers and its rejected variants. Idea 3,
+the `svSignal` color field, landed as a read-level color field beside `split`,
+`spliced` and `pairing` (`shared/readLevels.ts`), and `svSignal` is a facet
+dimension too. Idea 2 is left.
 
 Paths are under `plugins/alignments/src/` unless they say otherwise.
 
@@ -103,14 +105,6 @@ band: `derivative_inserts` (`website/scripts/specs/cancer_sv.ts:876-894`),
 `k562_bcr_abl_split` (1676). Rebuild each with a `split` facet and say so in
 the caption. Lines 296 and 828 also set `split: 'only'`; check them too.
 
-## Idea 3 (follow-up): an `svSignal` color field
-
-A color field `svSignal` paints no-evidence reads grey, as an ordinary pair's
-arc paints the baseline slot (`arcPaintOrder`), and the tiered sort lifts the
-evidence. No opacity channel and no `dim` filter value:
-`GRAMMAR_OF_GRAPHICS.md:125-127` keeps `opacity` a uniform. The color can read
-`readCategoryBits` through `svSignalTier`.
-
 ## Precedent
 
 - **IGV** applies its duplicate, vendor-failed, secondary, supplementary and
@@ -146,7 +140,9 @@ Each pin names the sabotage that turns it red.
    - Each per-read array's read index after compaction. Sabotage: skip the
      remap.
    - The 300x bench, and the four figures rebuilt.
-2. **Idea 3**: the color field, pinned by a canvas2d-against-WebGPU capture.
+2. **Idea 3** landed without its canvas2d-against-WebGPU capture: it paints
+   through the baked per-read fill both backends share. Shoot the capture if a
+   backend ever splits on it.
 
 ## Rejected variants
 

@@ -8,6 +8,8 @@ import {
   bodyColorScheme,
   colorByOf,
   colorFieldOf,
+  declaredReadCategoryColors,
+  declaredReadLabels,
   pinnedInsertSizeBand,
 } from './alignmentsColor.ts'
 import { FACET_LABELS } from './facetLabels.ts'
@@ -150,5 +152,24 @@ describe('pinnedInsertSizeBand', () => {
     expect(
       band({ field: 'insertSize', scale: 'none', domain: ['150', '600'] }),
     ).toBeUndefined()
+  })
+})
+
+describe('a read-level field', () => {
+  test('a domain naming the baseline level colors and names the plain reads', () => {
+    const encoding = alignmentsColorEncoding({
+      ...UNSET,
+      field: 'split',
+      domain: ['unsplit', 'split'],
+      range: ['#111111', '#222222'],
+    })
+    expect(declaredReadCategoryColors(encoding).noTagValue).toEqual([
+      0x11 / 255,
+      0x11 / 255,
+      0x11 / 255,
+    ])
+    expect(
+      declaredReadLabels(encoding, ['Whole', 'Broken']).categories.noTagValue,
+    ).toBe('Whole')
   })
 })

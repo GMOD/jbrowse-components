@@ -35,6 +35,7 @@ import {
   colorFieldOf,
   isBakedScheme,
   levelKeysOf,
+  levelLabel,
 } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
 import { FACET_LABELS, FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
@@ -869,10 +870,14 @@ function bakedValueLegend(
     : scale?.declared
       ? [...values].sort(groupKeyComparator(scale.domain))
       : sortedBakedValues(values, colorBy, refNamePosition)
+  const { type } = colorBy
   return sorted.map(value => ({
     color:
       scale?.color(value) ?? bakedValueColor(colorBy, value, refNamePosition),
-    label: names.get(value) ?? value,
+    label:
+      names.get(value) ??
+      (isReadLevelScheme(type) ? levelLabel(type, value) : undefined) ??
+      value,
   }))
 }
 

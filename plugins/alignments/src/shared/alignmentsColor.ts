@@ -336,8 +336,8 @@ export function levelKeysOf(type: ColorSchemeType) {
 
 /**
  * The colors a read-level field paints its levels with, Okabe-Ito's, one hue
- * per meaning across the fields: a split read vermilion, a discordant pair
- * blue. Its baseline level keeps the plain fill (`BASELINE_LEVEL`).
+ * per kind of read across the fields: split vermilion, discordant blue. Its
+ * baseline level keeps the plain fill (`BASELINE_LEVEL`).
  */
 const LEVEL_COLORS: Record<
   ReadLevelScheme,
@@ -350,7 +350,22 @@ const LEVEL_COLORS: Record<
     unpaired: '#E69F00',
     nonPrimary: '#CC79A7',
   },
-  svSignal: { split: '#D55E00', svIndel: '#CC79A7', discordant: '#0072B2' },
+  svSignal: {
+    splitRead: '#D55E00',
+    svIndel: '#CC79A7',
+    discordantPair: '#0072B2',
+  },
+}
+
+/** A read-level field's own color for `level`. */
+export function levelColor(scheme: ReadLevelScheme, level: string) {
+  return LEVEL_COLORS[scheme][level]
+}
+
+/** A read-level field's own name for `level`. */
+export function levelLabel(scheme: ReadLevelScheme, level: string) {
+  const labels: Readonly<Record<string, string>> = READ_LEVEL_LABELS[scheme]
+  return labels[level]
 }
 
 function levelPreset(scheme: ReadLevelScheme): FieldPreset<'categorical'> {
@@ -367,8 +382,7 @@ function levelPreset(scheme: ReadLevelScheme): FieldPreset<'categorical'> {
 
 /** What a read-level field's baseline level is called in the key. */
 export function baselineLevelLabel(scheme: ReadLevelScheme) {
-  const labels: Readonly<Record<string, string>> = READ_LEVEL_LABELS[scheme]
-  return labels[BASELINE_LEVEL[scheme]]!
+  return levelLabel(scheme, BASELINE_LEVEL[scheme])!
 }
 
 /**

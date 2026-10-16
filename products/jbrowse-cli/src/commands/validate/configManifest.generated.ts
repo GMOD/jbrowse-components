@@ -3741,9 +3741,9 @@ export const configManifest: ConfigManifest = {
             "svSignal": {
               "scale": "categorical",
               "domain": [
-                "split",
+                "splitRead",
                 "svIndel",
-                "discordant"
+                "discordantPair"
               ],
               "range": [
                 "#D55E00",
@@ -4533,9 +4533,9 @@ export const configManifest: ConfigManifest = {
             "svSignal": {
               "scale": "categorical",
               "domain": [
-                "split",
+                "splitRead",
                 "svIndel",
-                "discordant"
+                "discordantPair"
               ],
               "range": [
                 "#D55E00",

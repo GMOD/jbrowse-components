@@ -35,8 +35,8 @@ test.each([
   ],
   [
     'a domain naming no level of a read-level field',
-    { color: { field: 'svSignal', domain: ['split', 'sv'] } },
-    /^color\.domain: "sv" names no level of svSignal, whose levels are split, svIndel, discordant, none/,
+    { color: { field: 'svSignal', domain: ['splitRead', 'sv'] } },
+    /^color\.domain: "sv" names no level of svSignal, whose levels are splitRead, svIndel, discordantPair, none/,
   ],
 ])(
   "%s: a draft's problems are the notice it shows once applied",

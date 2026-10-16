@@ -3,7 +3,7 @@ import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
 import { isReadLevelScheme } from '../shared/readFieldLevels.ts'
-import { readLevelValues } from '../shared/readLevels.ts'
+import { bakeReadLevels } from '../shared/readLevels.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
@@ -87,8 +87,8 @@ function makeColorResolver(
 function applyResolver(
   data: WorkerPileupData,
   resolve: ColorResolver,
-  tagValues = data.readTagValues,
 ): Uint32Array {
+  const tagValues = data.readTagValues
   const strands = data.readStrands
   // No values to bake from — a region fetched under a scheme that extracts none,
   // which the mid-switch window leaves laid out while the new colorBy is already
@@ -148,7 +148,7 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
   const { type } = colorBy
   return isReadLevelScheme(type)
     ? (data: WorkerPileupData) =>
-        applyResolver(data, resolve, readLevelValues(type, data))
+        bakeReadLevels(type, data, level => resolve(level, 0))
     : (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 

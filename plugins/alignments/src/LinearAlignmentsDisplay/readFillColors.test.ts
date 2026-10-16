@@ -1,9 +1,17 @@
 import {
+  PAIR_DIRECTION_NUM,
   READ_DISCORDANT,
   READ_SPLICED,
   READ_SPLIT,
+  READ_SV_DELETION,
   withSvTier,
 } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
@@ -367,10 +375,52 @@ describe('read-level fields', () => {
     ])
   })
 
+  test('an SV-size indel paints its own color', () => {
+    const indel = makePileupDataResult({
+      readCategoryBits: Uint8Array.of(
+        withSvTier(READ_SV_DELETION, 60, '', undefined),
+      ),
+      readFlags: new Uint16Array(1),
+      readPairOrientations: new Uint8Array(1),
+    })
+    expect([...buildReadFillColors(indel, SV, scaleFor(SV))]).toEqual([
+      packed('#CC79A7'),
+    ])
+  })
+
+  test('a domain alone reorders the levels and keeps their colors', () => {
+    const scale = scaleFor(SV, {
+      scale: 'categorical',
+      domain: ['discordantPair', 'splitRead'],
+    })
+    expect([...buildReadFillColors(data, SV, scale)].slice(0, 2)).toEqual([
+      packed('#D55E00'),
+      packed('#0072B2'),
+    ])
+  })
+
+  test('pairing leaves concordant pairs plain and colors the rest', () => {
+    const LR = PAIR_DIRECTION_NUM.LR
+    const pairs = makePileupDataResult({
+      readCategoryBits: new Uint8Array(4),
+      readFlags: Uint16Array.of(
+        SAM_FLAG_PAIRED | SAM_FLAG_PROPER_PAIR,
+        SAM_FLAG_PAIRED,
+        SAM_FLAG_PAIRED | SAM_FLAG_MATE_UNMAPPED,
+        SAM_FLAG_PAIRED | SAM_FLAG_SUPPLEMENTARY,
+      ),
+      readPairOrientations: Uint8Array.of(LR, LR, LR, LR),
+    })
+    const pairing: ColorBy = { type: 'pairing' }
+    expect([...buildReadFillColors(pairs, pairing, scaleFor(pairing))]).toEqual(
+      [0, packed('#0072B2'), packed('#E69F00'), packed('#CC79A7')],
+    )
+  })
+
   test('a written domain and range recolor the levels', () => {
     const scale = scaleFor(SV, {
       scale: 'categorical',
-      domain: ['discordant', 'split'],
+      domain: ['discordantPair', 'splitRead'],
       range: ['#111111', '#222222'],
     })
     expect([...buildReadFillColors(data, SV, scale)].slice(0, 2)).toEqual([
