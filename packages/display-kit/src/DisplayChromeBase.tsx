@@ -22,16 +22,18 @@ import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
 import { useAnimationFrames } from './useAnimationFrames.ts'
 
-import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
-import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
-import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
-import type { TooLargeMessageModel } from './TooLargeMessage.tsx'
 import type { AnimationHost } from './useAnimationFrames.ts'
 import type {
   MouseState,
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
-import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
+import type {
+  DisplayBackgroundProgressModel,
+  DisplayChromeOverlays,
+  DisplayErrorBarModel,
+  DisplayLoadingOverlayModel,
+  TooLargeMessageModel,
+} from '@jbrowse/display-ui'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'

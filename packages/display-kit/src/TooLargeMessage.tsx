@@ -6,11 +6,6 @@ import BlockMsg from './BlockMsg.tsx'
 
 import type { TooLargeMessageModel } from '@jbrowse/display-ui'
 
-// Shape with the contract, re-exported here — see DisplayErrorBar.tsx. Every
-// field is required: reaching the `tooLarge` phase at all means a display
-// composes `RegionTooLargeMixin`, so there is no in-tree model without them.
-export type { TooLargeMessageModel }
-
 const TooLargeMessage = observer(function TooLargeMessage({
   model,
 }: {

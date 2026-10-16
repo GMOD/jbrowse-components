@@ -1,28 +1,16 @@
-// the deep subpath, never the `@jbrowse/core/ui` barrel: one named import from
-// it lands 40-odd Material modules — FileSelector, FatalErrorDialog, the
-// cascading-menu stack, PluginManager via wrapComponent — in whatever chunk
-// reaches this file. `plainChromeOverlays.tsx` carries the same rule; this is
-// the module where breaking it cost the most, because the overlay seam ran
-// through here.
+// the deep subpath: the `@jbrowse/core/ui` barrel lands 40-odd Material modules
+// in every display's chunk
 import ProgressChip from '@jbrowse/core/ui/ProgressChip'
 import { observer } from 'mobx-react'
 
 import type { DisplayBackgroundProgressModel } from '@jbrowse/display-ui'
 
-// Shape with the contract, re-exported here — see DisplayErrorBar.tsx.
-export type { DisplayBackgroundProgressModel }
-
 /**
- * The status channel again, for work that runs while the display is `ready`:
+ * The status channel for work that runs while the display is `ready`:
  * clustering, sorting, anything that reports through `setStatusMessage` without
- * a fetch behind it. The loading scrim only covers the `loading` phase, so this
- * work used to run invisibly — a session-triggered cluster of a big cohort sat
- * on drawn-but-unclustered rows for many seconds with nothing on screen.
- *
- * A corner chip rather than the scrim because the content underneath is real and
- * still usable: the rows are drawn, they just aren't reordered yet. `visible` is
- * the phase gate (the chrome passes `phase === 'ready'`), so the scrim and the
- * chip can never both be up for the same message.
+ * a fetch behind it. A corner chip rather than the scrim, because the drawn
+ * rows underneath stay usable. `visible` is `phase === 'ready'`, so the scrim
+ * and the chip never show the same message together.
  */
 const DisplayBackgroundProgress = observer(function DisplayBackgroundProgress({
   model,
@@ -34,8 +22,7 @@ const DisplayBackgroundProgress = observer(function DisplayBackgroundProgress({
   return visible && model.statusMessage ? (
     <ProgressChip
       status={{ message: model.statusMessage, fraction: model.statusProgress }}
-      // DisplayChromeBase anchors the corner and shares it with the
-      // display's control row; anchoring here too would put this underneath it
+      // the chrome anchors the corner it shares with the display's control row
       anchored={false}
     />
   ) : null

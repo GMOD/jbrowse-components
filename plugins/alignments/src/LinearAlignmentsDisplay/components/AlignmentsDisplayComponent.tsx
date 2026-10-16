@@ -84,12 +84,6 @@ const AlignmentsDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={AlignmentsRenderer}
-        // `pileup-display`, the name the screenshot specs and cypress already
-        // wait on. It used to be `display-${displayId}` here with
-        // `pileup-display-done` hand-written on an inner div, which is why
-        // `displayReady()` in screenshot-spec-helpers needed a `:has()` variant:
-        // the testid and `data-display-phase` sat on different elements. The
-        // display id now rides `data-display-id` on this same element.
         testid="pileup-display"
         className={classes.display}
       >

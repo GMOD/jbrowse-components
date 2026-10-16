@@ -159,7 +159,7 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
   `BaseLinearDisplay.tsx` (once the legacy `LinearBlocks` wrapper, now the thin
   shared GPU container left after the block path's removal, gated
   `'canvasDrawn' in model`). Distinct roles, distinct wrappers — not drift. See
-  [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) "First-paint `-done` testid".
+  [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) "One element per display".
 - `renderTick` stays: it is a justified workaround for MobX's inability to express
   "re-fire on A's *effect* when A doesn't change my deps' identity," and one
   counter serves both triggers (post-upload + tab-restore).

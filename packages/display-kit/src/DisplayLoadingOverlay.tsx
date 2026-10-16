@@ -3,9 +3,6 @@ import { observer } from 'mobx-react'
 
 import type { DisplayLoadingOverlayModel } from '@jbrowse/display-ui'
 
-// Shape with the contract, re-exported here — see DisplayErrorBar.tsx.
-export type { DisplayLoadingOverlayModel }
-
 const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
   model,
   visible,
@@ -15,8 +12,6 @@ const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
   visible: boolean
   immediate?: boolean
 }) {
-  // Lands above the LGV's inter-region masks without doing anything about it
-  // here: DisplayChromeBase portals the whole overlay group. See there.
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage}
