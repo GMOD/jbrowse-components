@@ -35,6 +35,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@mui/icons-material": "^9.5.0",
+    "@mui/material": "^9.5.0",
     "mobx": "^7.0.6",
     "rxjs": "^7.8.2"
   },
