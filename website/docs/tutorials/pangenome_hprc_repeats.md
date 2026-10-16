@@ -584,6 +584,18 @@ This session opens the script's `config.json`; point `config=` at your copy:
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_haplotypes)
+- [BandageJS](https://jbrowse.org/demos/bandagejs/)
+
+## External links
+
+- [ggbandage](https://github.com/GMOD/ggbandage), which draws
+  [KIV-2](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#kiv-2-copy-number-as-walk-rows)
+  and
+  [amylase](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#amylase-copy-number-in-twelve-haplotypes)
+  copy number as walk rows in ggplot2.
+- [ggtubemap](https://github.com/GMOD/ggtubemap), which draws
+  [a tandem repeat near LPA](https://github.com/GMOD/ggtubemap#from-a-walk-file)
+  as a tube map in ggplot2.
 
 ## Citations
 

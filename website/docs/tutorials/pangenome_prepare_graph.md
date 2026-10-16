@@ -551,6 +551,7 @@ The walk files come from the two commands under
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/user_guides/graph_genome_view)
+- [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
 ## External links
 
@@ -564,6 +565,9 @@ The walk files come from the two commands under
   [rows it writes](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/walks-format.md).
 - [gfa-to-tabix and gbz-base compared](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/gbz-comparison.md):
   what each holds, sizes and requests on HPRC v2.1.
+- [ggbandage](https://github.com/GMOD/ggbandage) and
+  [ggtubemap](https://github.com/GMOD/ggtubemap): R packages that draw a region
+  of a walk file as ggplot2 layers.
 
 ## Citations
 

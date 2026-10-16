@@ -220,6 +220,7 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/config_guides/grouping_and_ordering)
+- [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
 ## External links
 
@@ -227,6 +228,12 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
   flags the inversion.
 - [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks), which files each
   haplotype's walk under the reference so a window is one range request.
+- [ggbandage](https://github.com/GMOD/ggbandage), which draws
+  [RHD and CYP2D6 deletions](https://github.com/GMOD/ggbandage/blob/main/docs/gallery.md#rhd-and-cyp2d6-gene-deletions-as-arches)
+  as arches over GRCh38 in ggplot2.
+- [ggtubemap](https://github.com/GMOD/ggtubemap), which draws haplotypes against
+  each other as a tube map in ggplot2,
+  [colored by phase](https://github.com/GMOD/ggtubemap#colour-by-anything).
 
 ## Citations
 
