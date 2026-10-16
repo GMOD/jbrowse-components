@@ -128,6 +128,26 @@ insertions count) are ADR-229's.
 
 ## Build plan
 
+**First moves**, read off the code on 2026-10-16:
+
+- **Compact the extraction.** Each instance list `extractFeatureArrays`
+  returns (`GapData`, `MismatchData`, `InsertionData`, `SoftclipData`,
+  `HardclipData`, `ModificationEntry`) holds a `readIndex` per entry. A
+  kept-read mask and an old-to-new index remap compact one extraction before
+  `buildAlignmentDetailArrays`, which then runs once over every read (for the
+  band) and once over the drawn ones (for the marks), so the sorted detail
+  arrays are built compact.
+- **The fade counts every read and is read at the drawn instances.**
+  `computeFrequenciesAndThresholds` builds its counts and evaluates them off
+  one array set; it needs a counting set and an evaluated set.
+- **The tooltip is the large part.** `getCoverageBin`, `getInterbaseBin` and
+  `collectDeletionStats` (`components/positionStats.ts`) read the drawn
+  per-instance arrays. The smallest all-reads answer ships the hidden reads'
+  mismatch, gap and interbase arrays beside the drawn ones, absent when no
+  category filter is set, and sums both.
+- **`selectChains` decides the keep mask.** The facet then partitions the
+  sample, and each section's mask comes from the kept read keys.
+
 Each pin names the sabotage that turns it red.
 
 1. **Idea 2**, after the per-position table:
