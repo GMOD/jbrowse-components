@@ -295,11 +295,10 @@ function one<T>(v: unknown) {
 }
 
 /**
- * The bytes the host answered to each URL's range requests, which the chunk
- * cache keeps, least recently read first. The engine deletes a URL's entry
- * when it drops that URL's chunks.
+ * The bytes the host answered to range requests since the engine last emptied
+ * its caches, which the chunk cache keeps up to its cap.
  */
-export const rangeBytes = new Map<string, number>()
+export const rangeReads = { bytes: 0 }
 
 /**
  * The size of each file the host last read whole: an index, or a file an
@@ -316,9 +315,7 @@ function fetchFromHost(
   const body = one<Uint8Array | string | undefined>(r.bytes) ?? ''
   const bytes = typeof body === 'string' ? fromBase64(body) : body
   if (range) {
-    const before = rangeBytes.get(url) ?? 0
-    rangeBytes.delete(url)
-    rangeBytes.set(url, before + bytes.length)
+    rangeReads.bytes += bytes.length
   } else {
     wholeFileBytes.set(url, bytes.length)
   }

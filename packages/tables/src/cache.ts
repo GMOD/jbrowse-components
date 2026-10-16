@@ -1,3 +1,4 @@
+import { CHUNK_SIZE, MAX_CACHE_ENTRIES } from '@gmod/range-cache-filehandle'
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import {
   adapterRequests,
@@ -6,23 +7,20 @@ import {
 } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
-import {
-  clearCache,
-  clearCacheFor,
-} from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 
 import { forgetAssemblies, resolvedAssemblies } from './assembly.ts'
-import { rangeBytes, wholeFileBytes } from './bareHost.ts'
+import { rangeReads, wholeFileBytes } from './bareHost.ts'
 
 import type { AnyDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { UriLocation } from '@jbrowse/core/util/types'
 
 /**
- * The bytes the engine keeps between calls: three quarters for decoded
- * records (BAM and CRAM records, tabix lines), one quarter for file bytes:
- * the indexes of the adapters it keeps, then the chunks the host read. A
- * browser worker keeps up to 1.25 GiB, sized for panning; a host such as R
- * holds its own copy of each table and rarely reads a region twice.
+ * What the engine keeps between calls, two bounds of this many bytes each:
+ * the decoded records (BAM and CRAM records, tabix lines), and the indexes of
+ * the adapters it keeps besides the last call's. A browser worker keeps 1 GiB
+ * of records, sized for panning; a host such as R holds its own copy of each
+ * table and rarely reads a region twice.
  */
 export const DEFAULT_CACHE_LIMIT = 256 * 2 ** 20
 
@@ -32,14 +30,27 @@ export const DEFAULT_CACHE_LIMIT = 256 * 2 ** 20
  */
 export const MIN_ADAPTER_BYTES = 2 ** 20
 
+const CHUNK_CACHE_BYTES = MAX_CACHE_ENTRIES * CHUNK_SIZE
+
+/**
+ * An estimate of what a parsed index holds per byte of its file, the most
+ * measured with five contigs read (TABLES.md). Any other file counts its size.
+ */
+const RETAINED_PER_FILE_BYTE = new Map([
+  ['bai', 4],
+  ['csi', 5],
+  ['crai', 12],
+  ['tbi', 20],
+])
+
 export interface CacheUse {
-  /** the budget, in bytes */
+  /** the bound, in bytes, on decoded records and separately on indexes */
   limit: number
   /** bytes of decoded records held */
   decoded: number
-  /** file bytes the host read in ranges and the chunk cache may hold */
+  /** file bytes the chunk cache holds, at most its own 256 MiB cap */
   chunks: number
-  /** bytes the adapters held weigh: each file they read whole */
+  /** what the adapters held weigh, estimated from the files they read whole */
   indexes: number
   /** adapters held, one per file or sequence read */
   adapters: number
@@ -75,20 +86,18 @@ function urlsIn(adapter: AnyDataAdapter) {
   return urls
 }
 
+function retained(url: string) {
+  const extension = /\.([^./]+)$/.exec(url.replace(/[?#].*$/, ''))?.[1]
+  const perByte = RETAINED_PER_FILE_BYTE.get(extension?.toLowerCase() ?? '')
+  return (wholeFileBytes.get(url) ?? 0) * (perByte ?? 1)
+}
+
 function weigh(adapter: AnyDataAdapter) {
   let bytes = 0
   for (const url of urlsIn(adapter)) {
-    bytes += wholeFileBytes.get(url) ?? 0
+    bytes += retained(url)
   }
   return Math.max(MIN_ADAPTER_BYTES, bytes)
-}
-
-function sum(map: Map<string, number>) {
-  let total = 0
-  for (const bytes of map.values()) {
-    total += bytes
-  }
-  return total
 }
 
 let limit = DEFAULT_CACHE_LIMIT
@@ -97,7 +106,7 @@ let indexes = 0
 const held = (): CacheUse => ({
   limit,
   decoded: decompressedBytesBudget.total,
-  chunks: sum(rangeBytes),
+  chunks: Math.min(rangeReads.bytes, CHUNK_CACHE_BYTES),
   indexes,
   adapters: cachedAdapterCount(),
   assemblies: resolvedAssemblies(),
@@ -105,16 +114,14 @@ const held = (): CacheUse => ({
 
 /**
  * Keeps the adapters a call since request `since` used, then the most
- * recently requested others whose weight fits the file quarter, then each
- * file's chunks, least recently read dropped first, in what is left.
+ * recently requested others while their weight fits `limit`.
  */
 async function trim(since = adapterRequests()) {
-  const share = limit / 4
   const named = new Set<string>()
   let kept = 0
   await keepAdapters((adapter, lastRequest) => {
     const weight = weigh(adapter)
-    const keep = lastRequest > since || kept + weight <= share
+    const keep = lastRequest > since || kept + weight <= limit
     if (keep) {
       kept += weight
       for (const url of urlsIn(adapter)) {
@@ -129,15 +136,6 @@ async function trim(since = adapterRequests()) {
       wholeFileBytes.delete(url)
     }
   }
-  let chunks = sum(rangeBytes)
-  for (const [url, bytes] of rangeBytes) {
-    if (chunks <= share - indexes) {
-      break
-    }
-    clearCacheFor(url)
-    rangeBytes.delete(url)
-    chunks -= bytes
-  }
 }
 
 function applyLimit(bytes: number) {
@@ -145,7 +143,7 @@ function applyLimit(bytes: number) {
     throw new Error(`a cache limit is a number of bytes, not ${bytes}`)
   }
   limit = bytes
-  decompressedBytesBudget.limit = bytes * 0.75
+  decompressedBytesBudget.limit = bytes
 }
 
 const cache = {
@@ -167,7 +165,7 @@ const cache = {
   async clear() {
     await keepAdapters(() => false)
     clearCache()
-    rangeBytes.clear()
+    rangeReads.bytes = 0
     wholeFileBytes.clear()
     forgetAssemblies()
     indexes = 0
@@ -178,8 +176,8 @@ const cache = {
 let started = false
 
 /**
- * The caches every engine in the process shares, held to `limit` bytes after
- * each call. The first engine sets the default budget.
+ * The caches every engine in the process shares, trimmed to `limit` after
+ * each call. The first engine sets the default.
  */
 export function engineCache() {
   if (!started) {

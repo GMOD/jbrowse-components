@@ -21,19 +21,21 @@ web globals the readers need and reads every byte through the host's
 `jbrowseHost.readRange(url, start, end)`.
 [ggjbrowse](https://github.com/GMOD/ggjbrowse) is the R package built on it.
 
-Between calls the engine keeps up to 256 MiB, which every engine in the process
-shares:
+Every engine in the process shares what the engine keeps between calls, under
+three bounds that share no space:
 
-- **Decoded records**, three quarters.
-- **File bytes**, one quarter: first the indexes of the adapters it keeps, each
-  weighed by the files it read whole and at least 1 MiB, then the chunks it read
-  in ranges, the least recently read file's dropped first. The adapters the last
-  call read stay whatever they weigh.
-- `engine.cache({ limit })` sets the budget in bytes, `Infinity` for none, and
+- **Decoded records:** at most `limit`, 256 MiB unless set.
+- **Chunks:** the file bytes read in ranges, under the chunk cache's own cap of
+  1000 chunks of 256 KiB.
+- **Adapters:** the ones the last call read, whatever they weigh, then the most
+  recently read others while their weight fits another `limit`. An adapter
+  weighs at least 1 MiB, and an estimate of what each file it read whole holds
+  once parsed: a BAI four times its size, a CSI five, a CRAI 12, a TBI 20.
+- `engine.cache({ limit })` sets `limit` in bytes, `Infinity` for none, and
   reports what the engine holds; `engine.clearCache()` empties it.
-- The budget counts the caches the engine keeps between calls. While a call
-  runs, the engine also holds that call's reads and tables, which one wide read
-  of a deep BAM takes to gigabytes.
+- A call's own reads and tables come on top, which one wide read of a deep BAM
+  takes to gigabytes. So does the memory of the wasm decompressors, which
+  `limit` cannot lower.
 - A host that never yields to its event loop keeps alive every object a
   `WeakRef` points to, the shared budget's evicted caches among them, so await a
   macrotask between calls. From R's V8 the engine frees them.

@@ -1,9 +1,5 @@
 import { RESOLVED_ASSEMBLIES } from './assembly.ts'
-import {
-  DEFAULT_CACHE_LIMIT,
-  MIN_ADAPTER_BYTES,
-  createTablesEngine,
-} from './index.ts'
+import { DEFAULT_CACHE_LIMIT, createTablesEngine } from './index.ts'
 import { BAM, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
@@ -17,6 +13,7 @@ const copy = (i: number) => ({
       uri: `${BAM.adapterConfig.bamLocation.uri}?copy=${i}`,
     },
   },
+  region: { refName: 'ctgA', start: 0, end: 50_000 },
 })
 
 beforeEach(async () => {
@@ -40,29 +37,22 @@ test('a read leaves what it decoded in the cache, and clearing empties it', asyn
   })
 })
 
-test('the decoded records stay within three quarters of the budget', async () => {
+test('the decoded records stay within the limit, and use all of it', async () => {
   await engine.alignments(copy(0))
   const one = (await engine.cache()).decoded
-  const limit = (one * 3) / 0.75
+  await engine.clearCache()
+  await engine.cache({ limit: 2.5 * one })
+  for (let i = 0; i < 3; i++) {
+    await engine.alignments(copy(i))
+  }
+  expect((await engine.cache()).decoded).toBe(2 * one)
+  const limit = one * 3
   await engine.cache({ limit })
   for (let i = 1; i < 8; i++) {
     await engine.alignments(copy(i))
-    expect((await engine.cache()).decoded).toBeLessThanOrEqual(limit * 0.75)
+    expect((await engine.cache()).decoded).toBeLessThanOrEqual(limit)
   }
   expect((await engine.cache({ limit: 0 })).decoded).toBeLessThanOrEqual(one)
-})
-
-test('the adapters held weigh at most a quarter of the budget, besides the last call', async () => {
-  await engine.alignments(copy(0))
-  const perCall = (await engine.cache()).adapters
-  const limit = 4 * (perCall + 2) * MIN_ADAPTER_BYTES
-  await engine.cache({ limit })
-  for (let i = 1; i < 8; i++) {
-    await engine.alignments(copy(i))
-  }
-  const held = await engine.cache()
-  expect(held.indexes).toBeLessThanOrEqual(limit / 4)
-  expect(held.adapters).toBe(perCall + 2)
 })
 
 test('the adapters the last call read stay, past any budget', async () => {

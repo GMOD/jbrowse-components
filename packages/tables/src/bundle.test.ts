@@ -15,7 +15,7 @@ import vm from 'node:vm'
 
 import { parse } from 'acorn'
 
-import { createTablesEngine } from './index.ts'
+import { MIN_ADAPTER_BYTES, createTablesEngine } from './index.ts'
 import {
   ALL_VS_ALL,
   INV_INDELS,
@@ -325,58 +325,68 @@ describe('a bare host under a budget', () => {
     },
   )
 
-  test('drops the chunks of the file it read least recently first', async () => {
-    const bam = BAM.adapterConfig.bamLocation.uri
-    const cram = CRAM.adapterConfig.cramLocation.uri
-    const readBoth = async () => {
-      await jbrowse.alignments(JSON.stringify(BAM))
-      const before = new Map(rangeBytes)
-      await jbrowse.alignments(JSON.stringify(CRAM))
-      let cramCall = 0
-      for (const [url, n] of rangeBytes) {
-        cramCall += n - (before.get(url) ?? 0)
-      }
-      return cramCall
-    }
-    const indexed = (location: { uri: string }) => ({
-      ...location,
-      uri: `${location.uri}?again`,
-    })
-    const again = async () => {
-      rangeBytes.clear()
-      const { craiLocation } = CRAM.adapterConfig
-      await jbrowse.alignments(
-        JSON.stringify({
-          ...CRAM,
-          adapterConfig: {
-            ...CRAM.adapterConfig,
-            craiLocation: indexed(craiLocation),
-          },
-        }),
-      )
-      const { index } = BAM.adapterConfig
-      await jbrowse.alignments(
-        JSON.stringify({
-          ...BAM,
-          adapterConfig: {
-            ...BAM.adapterConfig,
-            index: { ...index, location: indexed(index.location) },
-          },
-        }),
-      )
-      return { bam: rangeBytes.get(bam) ?? 0, cram: rangeBytes.get(cram) ?? 0 }
-    }
-    expect((await cache({ limit: null })).limit).toBeNull()
-    const cramCall = await readBoth()
-    const { indexes } = await cache()
-    expect(await again()).toEqual({ bam: 0, cram: 0 })
+  test('keeps the chunks it read under any limit', async () => {
+    const { bamLocation, index } = BAM.adapterConfig
+    await cache({ limit: 0 })
+    await jbrowse.alignments(JSON.stringify(BAM))
+    await jbrowse.alignments(JSON.stringify(CRAM))
+    rangeBytes.clear()
+    wholeReads.clear()
+    await jbrowse.alignments(JSON.stringify(BAM))
+    expect(wholeReads.get(index.location.uri)).toBe(1)
+    expect(rangeBytes.get(bamLocation.uri)).toBeUndefined()
+    expect((await cache()).chunks).toBeGreaterThan(0)
+  })
 
-    await jbrowse.clearCache()
-    await cache({ limit: 4 * (indexes + cramCall) })
-    await readBoth()
-    const read = await again()
-    expect(read.cram).toBe(0)
-    expect(read.bam).toBeGreaterThan(0)
+  test('keeps the files read most recently open while they fit the limit', async () => {
+    const { bamLocation, index } = BAM.adapterConfig
+    const copy = (i: number) =>
+      JSON.stringify({
+        ...BAM,
+        adapterConfig: {
+          ...BAM.adapterConfig,
+          bamLocation: { uri: `${bamLocation.uri}?copy=${i}` },
+          index: {
+            ...index,
+            location: { uri: `${index.location.uri}?copy=${i}` },
+          },
+        },
+      })
+    await cache({ limit: 3 * MIN_ADAPTER_BYTES })
+    for (let i = 0; i < 8; i++) {
+      await jbrowse.alignments(copy(i))
+    }
+    wholeReads.clear()
+    await jbrowse.alignments(copy(6))
+    expect(wholeReads.size).toBe(0)
+    await jbrowse.alignments(copy(0))
+    expect(wholeReads.get(`${index.location.uri}?copy=0`)).toBe(1)
+  })
+
+  test('weighs a tabix index by what its parse holds, not its file size', async () => {
+    const vcf = (file: string) =>
+      pathToFileURL(path.resolve('test_data/breakpoint', file)).href
+    const tbi = vcf('hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi')
+    const variants = JSON.stringify({
+      adapterConfig: {
+        type: 'VcfTabixAdapter',
+        vcfGzLocation: { uri: vcf('hs37d5.HG002-SequelII-CCS.sv.vcf.gz') },
+        index: { location: { uri: tbi } },
+      },
+      region: { refName: '1', start: 0, end: 100_000 },
+    })
+    const tbiReads = async (limit: number) => {
+      await jbrowse.clearCache()
+      wholeReads.clear()
+      await cache({ limit })
+      await jbrowse.variants(variants)
+      await jbrowse.alignments(JSON.stringify(BAM))
+      await jbrowse.variants(variants)
+      return wholeReads.get(tbi)
+    }
+    expect(statSync(fileURLToPath(tbi)).size).toBeLessThan(MIN_ADAPTER_BYTES)
+    expect(await tbiReads(4 * MIN_ADAPTER_BYTES)).toBe(2)
+    expect(await tbiReads(16 * MIN_ADAPTER_BYTES)).toBe(1)
   })
 
   test('weighs an adapter by the files it read whole', async () => {
@@ -389,15 +399,15 @@ describe('a bare host under a budget', () => {
     writeFileSync(gff, `##gff-version 3\n${lines.join('')}`)
     const size = statSync(gff).size
     const uri = pathToFileURL(gff).href
-    const features = {
+    const features = JSON.stringify({
       adapterConfig: { type: 'Gff3Adapter', gffLocation: { uri } },
       region: { refName: 'ctgA', start: 0, end: 100 },
-    }
-    await cache({ limit: 10 * 2 ** 20 })
-    await jbrowse.features(JSON.stringify(features))
+    })
+    await cache({ limit: size + MIN_ADAPTER_BYTES / 2 })
+    await jbrowse.features(features)
     expect((await cache()).indexes).toBeGreaterThanOrEqual(size)
     await jbrowse.alignments(JSON.stringify(BAM))
-    await jbrowse.features(JSON.stringify(features))
+    await jbrowse.features(features)
     expect(wholeReads.get(uri)).toBe(2)
   })
 

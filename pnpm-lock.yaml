@@ -735,6 +735,9 @@ importers:
 
   packages/tables:
     dependencies:
+      '@gmod/range-cache-filehandle':
+        specifier: ^1.5.2
+        version: 1.5.2
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
