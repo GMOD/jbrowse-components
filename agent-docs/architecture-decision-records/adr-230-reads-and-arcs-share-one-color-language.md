@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Alignments reads paint in the colors of the arcs and read cloud drawn over them, so the read categories `svSignal`, `pairing`, `split` and `spliced` get no color vocabulary of their own. Color by → Insert size and orientation and Pair orientation already paint an SV pair's reads in its arc's color and leave concordant pairs grey. `svSignal` is a facet dimension instead: Group by → SV evidence sections the reads and leaves their colors alone. Declines Idea 3 of the category-filters proposal, an `svSignal` color field"
+summary: "Alignments reads paint in the colors of the arcs and read cloud drawn over them, so the read categories `svSignal`, `pairing`, `split` and `spliced` color nothing. Color by → Insert size and orientation and Pair orientation already paint an SV pair's reads in its arc's color and leave concordant pairs grey. `svSignal` is a facet dimension instead: Group by → SV evidence sections the reads and leaves their colors alone. Declines Idea 3 of the category-filters proposal, an `svSignal` color field"
 ---
 
 # ADR-230: Reads and arcs share one color language
@@ -35,9 +35,10 @@ which his 2026-10-12 decisions had kept as a color field.
 
 ## Consequences
 
-- `color: { field: 'split' }`, `'spliced'` and `'pairing'` read the field as
-  a facet does, through the worker's attribute path, as before this ADR. No
-  menu row offers them.
+- `color: { field }` naming `split`, `spliced`, `pairing` or `svSignal` paints
+  the plain fill with a notice naming the facet (`FACET_ONLY_DIMENSIONS`).
+  These had colored through the worker's attribute path, in hashed colors no
+  arc uses. jbrowse-img refuses `color:split` and points at `facet=split`.
 
 ## Rejected alternatives
 

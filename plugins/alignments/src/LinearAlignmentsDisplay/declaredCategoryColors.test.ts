@@ -10,6 +10,7 @@ import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
   alignmentsColorProblems,
+  colorByOf,
   writtenReadCategoryColors,
 } from '../shared/alignmentsColor.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
@@ -228,6 +229,18 @@ describe('a domain that names no level says so', () => {
     ])
     expect(notices({ field: 'baseQuality' })).toHaveLength(1)
   })
+
+  test.each(['split', 'spliced', 'pairing', 'svSignal'])(
+    '%s colors nothing and names the facet',
+    field => {
+      expect(notices({ field })).toEqual([
+        `color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
+      ])
+      expect(colorByOf(alignmentsColorEncoding({ ...UNSET, field }))).toEqual({
+        type: 'normal',
+      })
+    },
+  )
 
   test('a level the field has, or a tag value, passes', () => {
     expect(notices({ field: 'pairOrientation', domain: ['RR'] })).toEqual([])

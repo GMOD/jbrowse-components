@@ -709,21 +709,21 @@ Layout & sizing:
 
 Settings written as slots, in the display's own spelling:
 
-| Write                        | Description                                                                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `facet=strand`               | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `mapq`, `tags.HP` |
-| `unit=chain`                 | What one row stands for: a `read`, or its mate and split segments chained                                                                      |
-| `showLegend=true`            | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                |
-| `showSoftClipping=true`      | Show soft-clipped bases                                                                                                                        |
-| `showCoverage=false`         | Hide the coverage subtrack                                                                                                                     |
-| `showPileup=false`           | Hide the pileup; with `coverageHeight`, a coverage-only view                                                                                   |
-| `coverageHeight=200`         | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                    |
-| `readConnectionsHeight=120`  | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                              |
-| `readConnectionsLineWidth=2` | Stroke width for read-connection arcs and lines                                                                                                |
-| `sashimiArcsHeight=120`      | Height of the sashimi arc band                                                                                                                 |
-| `minSashimiScore=3`          | Minimum reads a splice junction needs before its arc is drawn                                                                                  |
-| `arcColor=insertSize`        | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                     |
-| `maxHeight=4000`             | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                              |
+| Write                        | Description                                                                                                                                                |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`               | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
+| `unit=chain`                 | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
+| `showLegend=true`            | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
+| `showSoftClipping=true`      | Show soft-clipped bases                                                                                                                                    |
+| `showCoverage=false`         | Hide the coverage subtrack                                                                                                                                 |
+| `showPileup=false`           | Hide the pileup; with `coverageHeight`, a coverage-only view                                                                                               |
+| `coverageHeight=200`         | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
+| `readConnectionsHeight=120`  | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
+| `readConnectionsLineWidth=2` | Stroke width for read-connection arcs and lines                                                                                                            |
+| `sashimiArcsHeight=120`      | Height of the sashimi arc band                                                                                                                             |
+| `minSashimiScore=3`          | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
+| `arcColor=insertSize`        | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
+| `maxHeight=4000`             | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
 Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
 Anything else is a CSS color, painting every read with it:
@@ -736,10 +736,6 @@ Anything else is a CSS color, painting every read with it:
 | `insertSize`               | Paired-end insert size                         |
 | `pairOrientation`          | Paired-end orientation                         |
 | `insertSizeAndOrientation` | Combined insert size + orientation             |
-| `pairing`                  | Concordant, discordant, unpaired or nonPrimary |
-| `split`                    | Split reads against the rest                   |
-| `spliced`                  | Spliced reads against the rest                 |
-| `svSignal`                 | Split read, SV-size indel or discordant pair   |
 | `mateRefName`              | Reference the mate landed on                   |
 | `mateAssembly`             | Assembly the mate landed on, for synteny reads |
 | `tags.<TAG>`               | Color by any BAM tag, as `color.field=tags.HP` |

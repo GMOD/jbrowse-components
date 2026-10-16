@@ -25,6 +25,7 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type {
   COMPACTNESS_PRESETS,
   CategoryFilter,
+  FacetOnlyDimension,
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
   ReadDimension,
@@ -62,17 +63,26 @@ const ALIGNMENTS_COLOR_FIELD_LIST = [
   'insertSize',
   'pairOrientation',
   'insertSizeAndOrientation',
-  'pairing',
-  'split',
-  'spliced',
-  'svSignal',
   'mateRefName',
   'mateAssembly',
 ] as const
 const ALIGNMENTS_COLOR_FIELDS = new Set<string>(ALIGNMENTS_COLOR_FIELD_LIST)
+const FACET_ONLY_FIELD_LIST = [
+  'pairing',
+  'split',
+  'spliced',
+  'svSignal',
+] as const satisfies readonly FacetOnlyDimension[]
+const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_FIELD_LIST)
 
+export type AssertFacetOnlyFieldsListed = AssertTrue<
+  Covers<FacetOnlyDimension, typeof FACET_ONLY_FIELD_LIST>
+>
 export type AssertColorFieldsCoverReadDimensions = AssertTrue<
-  Covers<ReadDimension, typeof ALIGNMENTS_COLOR_FIELD_LIST>
+  Covers<
+    Exclude<ReadDimension, FacetOnlyDimension>,
+    typeof ALIGNMENTS_COLOR_FIELD_LIST
+  >
 >
 // `methylation` is the fill-unmarked view of the modifications field: one word
 // for the everyday CpG picture, which otherwise needs the JSON escape hatch to
@@ -698,6 +708,12 @@ const modifiers: Record<string, Modifier> = {
       } else if (category === 'alignments') {
         if (BASE_COLOR_NAMES.has(value)) {
           invalid('color', value, `a read field; baseColor:${value} draws it`)
+        } else if (FACET_ONLY_FIELDS.has(value)) {
+          invalid(
+            'color',
+            value,
+            `a field color paints; reads keep their arcs' colors, and facet=${value} groups them by ${value}`,
+          )
         } else if (ALIGNMENTS_COLOR_FIELDS.has(value)) {
           mergeColor(r, { field: value })
         } else {

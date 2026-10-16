@@ -17,6 +17,7 @@ import {
   MAPQ_UNAVAILABLE_LEVEL,
   PAIR_ORIENTATION_LEVELS,
 } from './readFieldLevels.ts'
+import { FACET_ONLY_DIMENSIONS } from './types.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { RGBColor } from '../shaders/colors.ts'
@@ -98,6 +99,8 @@ export function baseLayerOfField(field: string) {
   return LAYER_OF_FIELD.get(field)
 }
 
+const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
+
 const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
   'modifications',
   'bisulfite',
@@ -124,11 +127,19 @@ export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
  */
 export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
   const encoding = alignmentsColorEncoding(setting)
-  return typeof encoding === 'object' && LAYER_OF_FIELD.has(encoding.field)
+  if (typeof encoding !== 'object') {
+    return []
+  }
+  const { field } = encoding
+  return LAYER_OF_FIELD.has(field)
     ? [
-        `color.field: ${encoding.field} is drawn a cell per base, which baseColor paints over the reads`,
+        `color.field: ${field} is drawn a cell per base, which baseColor paints over the reads`,
       ]
-    : levelNotices(encoding)
+    : FACET_ONLY_FIELDS.has(field)
+      ? [
+          `color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
+        ]
+      : levelNotices(encoding)
 }
 
 export type AlignmentsColorEncoding = ReturnType<typeof alignmentsColorEncoding>
@@ -146,11 +157,15 @@ export function colorFieldOf(colorBy: ColorBy) {
 /**
  * The read scheme a resolved `color` selects: a preset field its own scheme,
  * `tags.XX` the tag scheme, any other name a feature attribute through the
- * same per-read bake. A constant, or a per-base variable, which `baseColor`
- * draws, paints the plain fill.
+ * same per-read bake. A constant, a per-base variable, which `baseColor`
+ * draws, or a read category only a facet answers paints the plain fill.
  */
 export function colorByOf(encoding: AlignmentsColorEncoding): ReadColorBy {
-  if (typeof encoding !== 'object' || LAYER_OF_FIELD.has(encoding.field)) {
+  if (
+    typeof encoding !== 'object' ||
+    LAYER_OF_FIELD.has(encoding.field) ||
+    FACET_ONLY_FIELDS.has(encoding.field)
+  ) {
     return { type: 'normal' }
   }
   const { field } = encoding

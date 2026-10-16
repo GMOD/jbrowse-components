@@ -409,11 +409,9 @@ describe('color routing', () => {
   })
 
   test('color names a facet dimension as a read field', () => {
-    for (const field of ['pairing', 'split', 'spliced', 'mateAssembly']) {
-      expect(
-        buildDisplaySnapshot('alignments', [`color:${field}`]).snap,
-      ).toEqual({ color: { field } })
-    }
+    expect(
+      buildDisplaySnapshot('alignments', ['color:mateAssembly']).snap,
+    ).toEqual({ color: { field: 'mateAssembly' } })
   })
 
   test('baseColor draws over the reads, so it combines with a read color', () => {
@@ -439,6 +437,14 @@ describe('color routing', () => {
     expect(() =>
       buildDisplaySnapshot('alignments', ['baseColor:strand']),
     ).toThrow(/baseQuality/)
+  })
+
+  test('a read category on color: names the facet that groups by it', () => {
+    for (const field of ['pairing', 'split', 'spliced', 'svSignal']) {
+      expect(() =>
+        buildDisplaySnapshot('alignments', [`color:${field}`]),
+      ).toThrow(`facet=${field}`)
+    }
   })
 
   test('a whole-setting slot write joins the snapshot and a member write waits for the display', () => {

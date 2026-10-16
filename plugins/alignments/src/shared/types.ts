@@ -222,6 +222,16 @@ export const READ_DIMENSIONS = [
 ] as const
 export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 
+// The read categories only a facet answers: reads keep the colors their arcs
+// paint (ADR-230), so `color` names none of them.
+export const FACET_ONLY_DIMENSIONS = [
+  'pairing',
+  'split',
+  'spliced',
+  'svSignal',
+] as const satisfies readonly ReadDimension[]
+export type FacetOnlyDimension = (typeof FACET_ONLY_DIMENSIONS)[number]
+
 // In-track stacked grouping, the `facet` object as the model and worker carry
 // it. `domain` is the section order: the keys it lists stack first, the rest
 // follow sorted. Absent means a single ungrouped section.
