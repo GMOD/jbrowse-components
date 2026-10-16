@@ -16,8 +16,8 @@ the risk allele in _SOD1_: c.118G>A changes glutamate 40 of superoxide dismutase
 to lysine (E40K), and most affected dogs are homozygous for it
 ([Awano et al. 2009](https://doi.org/10.1073/pnas.0812297106)). We put the codon
 beside a crystal structure of the E40K protein itself, then read the allele
-across the Dog10K collection, where wolves and coyotes are the control: an
-allele no wild canid has arose after domestication. We'll:
+across the Dog10K collection, with wolves and coyotes as the control, since an
+allele they share would predate domestication. We'll:
 
 - open _SOD1_ on codon 40 of the canFam4 dog assembly and launch structure 7WX0
   and an ortholog alignment from the gene's right-click menu
@@ -74,14 +74,14 @@ and:
 - right-click the transcript again and choose **Launch MSA view**, which opens
   on its **Orthologs** tab; press **Submit**
 - click **Reset Zoom**, the circular arrow at the top right of the structure, to
-  fit both chains of the 7WX0 dimer
-- hover the alignment column of residue 40
+  fit the whole structure
+- hover column 40 of the `dog_query` row in the alignment
 
 The hover lights the codon on the gene, the column in the alignment and the
 residue on the structure, and the protein view's header compares the two
 letters: glutamate in the dog genome, lysine in the crystal.
 
-<Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 on canFam4, its ortholog alignment below and 7WX0 beside. The hovered column, the codon band and Lys40 in magenta mark one position, and the header reads Structure: K, Genome: E." />
+<Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 on canFam4, its ortholog alignment below and 7WX0 beside. The hovered column, the codon band and Lys40 outlined in pink mark one position, and the header reads Structure: K, Genome: E." />
 
 ## Slicing SOD1 out of Dog10K
 
