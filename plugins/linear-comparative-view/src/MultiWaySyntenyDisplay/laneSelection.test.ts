@@ -1,9 +1,12 @@
 import {
+  laneUniverseOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
   withLaneShown,
 } from './laneSelection.ts'
+
+import type { LaneUniverseInputs } from './laneSelection.ts'
 
 // a lowercase spelling stands in for an assembly alias
 const keyOf = (name: string) => name.toLowerCase()
@@ -95,5 +98,86 @@ describe('the picker submit', () => {
         keyOf,
       ),
     ).toEqual(['a', 'z'])
+  })
+})
+
+describe('laneUniverseOf', () => {
+  const universe = (overrides: Partial<LaneUniverseInputs> = {}) =>
+    laneUniverseOf({
+      anchor: 'hg38',
+      mateNames: [],
+      declared: [],
+      trackAssemblies: [],
+      keyOf,
+      labelOf: name => name,
+      selection: undefined,
+      hidden: [],
+      featuresLoaded: true,
+      landedLanes: undefined,
+      ...overrides,
+    })
+
+  test('the anchor is never a lane, whatever its spelling', () => {
+    expect(
+      universe({ declared: [{ name: 'HG38' }, { name: 'mm10' }] }).map(
+        l => l.name,
+      ),
+    ).toEqual(['mm10'])
+  })
+
+  test('declared lanes come first, then the track’s, then mates, each once', () => {
+    expect(
+      universe({
+        declared: [{ name: 'a' }],
+        trackAssemblies: ['B', 'a'],
+        mateNames: ['c', 'b'],
+      }).map(l => l.name),
+    ).toEqual(['a', 'B', 'c'])
+  })
+
+  test('a lane is placed when a mate names it, and unplaced when the fetch asked and found none', () => {
+    const lanes = universe({
+      declared: [{ name: 'a' }, { name: 'b' }],
+      mateNames: ['a'],
+      landedLanes: ['a', 'b'],
+    })
+    expect(lanes.map(l => l.placed)).toEqual([true, false])
+  })
+
+  test('a lane the fetch did not ask for has no placed answer', () => {
+    const lanes = universe({
+      declared: [{ name: 'a' }, { name: 'b' }],
+      landedLanes: ['a'],
+    })
+    expect(lanes.map(l => l.placed)).toEqual([false, undefined])
+  })
+
+  test('before any features land no lane has a placed answer', () => {
+    expect(
+      universe({ declared: [{ name: 'a' }], featuresLoaded: false })[0]!.placed,
+    ).toBeUndefined()
+  })
+
+  test('a lane is drawn when selected and not hidden', () => {
+    const lanes = universe({
+      declared: [{ name: 'a' }, { name: 'b' }, { name: 'c' }],
+      selection: ['A', 'b'],
+      hidden: ['B'],
+    })
+    expect(lanes.map(l => [l.name, l.drawn])).toEqual([
+      ['a', true],
+      ['b', false],
+      ['c', false],
+    ])
+  })
+
+  test('a shown name replaces the declared label only where it differs from the name', () => {
+    const [lane] = universe({
+      declared: [{ name: 'a', label: 'Declared' }],
+      labelOf: () => 'Display name',
+    })
+    expect(lane!.label).toBe('Display name')
+    const [kept] = universe({ declared: [{ name: 'a', label: 'Declared' }] })
+    expect(kept!.label).toBe('Declared')
   })
 })

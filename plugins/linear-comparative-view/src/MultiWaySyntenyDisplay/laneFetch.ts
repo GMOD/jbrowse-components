@@ -1,6 +1,9 @@
+import { laneIsoformSettings } from './geneGlyph.ts'
+
 import type { LaneLinks } from './alignmentOps.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { FetchRegion } from './layoutMultiWay.ts'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { IsoformSettings } from '@jbrowse/plugin-canvas'
 import type { LodTier } from '@jbrowse/synteny-core'
@@ -119,6 +122,114 @@ export function laneFetchAwaits(
     (state.landedFor !== anchor &&
       (describing || specsCoverMate(specs, anchor)))
   )
+}
+
+export function regionKey(r: FetchRegion) {
+  return `${r.refName}:${r.start}-${r.end}`
+}
+
+export interface LaneGenesSpecInputs {
+  windows: ReadonlyMap<string, LaneWindow>
+  adapters: ReadonlyMap<string, Record<string, unknown>>
+  tracks: ReadonlyMap<string, TrackConfigEntry>
+}
+
+export function laneGenesFetchSpecsOf({
+  windows,
+  adapters,
+  tracks,
+}: LaneGenesSpecInputs) {
+  const specs: LaneGenesFetchSpec[] = []
+  for (const [assemblyName, { regions }] of windows) {
+    const adapter = adapters.get(assemblyName)
+    if (adapter) {
+      const entry = tracks.get(assemblyName)
+      const isoforms = laneIsoformSettings(entry)
+      const source = entry
+        ? `${entry.trackId}|${JSON.stringify(isoforms)}`
+        : `adapter:${JSON.stringify(adapter)}`
+      specs.push({
+        lane: assemblyName,
+        key: `${source}@${regions.map(regionKey).join(',')}`,
+        assemblyName,
+        adapterConfig: adapter,
+        regions,
+        isoforms,
+      })
+    }
+  }
+  return specs
+}
+
+export function laneGroupsFetchSpecsOf(
+  lanes: readonly string[],
+  windows: ReadonlyMap<string, LaneWindow>,
+  lodTier: LodTier,
+) {
+  return lanes.flatMap(lane => {
+    const regions = windows.get(lane)?.regions
+    return regions
+      ? [
+          {
+            lane,
+            key: `${regions.map(regionKey).join(',')}|${lodTier}`,
+            assemblyName: lane,
+            regions,
+            lodTier,
+          },
+        ]
+      : []
+  })
+}
+
+export interface LaneLinksSpecInputs {
+  pairs: readonly LanePair[]
+  windows: ReadonlyMap<string, LaneWindow>
+  rowFrames: ReadonlyMap<string, unknown>
+  anchor: string
+  onAnchor: boolean
+  lodTier: LodTier
+  nearViewport: (upperRow: number, lowerRow: number) => boolean
+}
+
+/**
+ * One spec per adjacent mate-lane pair whose gutter is on screen or within a
+ * screen of it.
+ */
+export function laneLinksFetchSpecsOf({
+  pairs,
+  windows,
+  rowFrames,
+  anchor,
+  onAnchor,
+  lodTier,
+  nearViewport,
+}: LaneLinksSpecInputs) {
+  const pairRegions = (upper: string, lower: string) => {
+    if (onAnchor) {
+      return rowFrames.get(upper) && rowFrames.get(lower)
+        ? (windows.get(anchor)?.regions ?? [])
+        : []
+    }
+    const upperWindow = windows.get(upper)
+    return upperWindow && windows.get(lower) ? upperWindow.regions : []
+  }
+  const specs: LaneLinksFetchSpec[] = []
+  for (const [i, { upper, lower, key }] of pairs.entries()) {
+    const regions = nearViewport(i + 1, i + 2) ? pairRegions(upper, lower) : []
+    if (regions.length > 0) {
+      specs.push({
+        lane: key,
+        key: `${regions.map(regionKey).join(',')}|${lodTier}`,
+        assemblyName: upper,
+        lowerAssembly: lower,
+        regions,
+        onAnchor,
+        lodTier,
+      })
+    }
+  }
+  return specs
 }
 
 /** a star source's header `anchorAssemblyName` */

@@ -1,3 +1,5 @@
+import type { DeclaredLane } from '@jbrowse/synteny-core'
+
 /** `placed` is undefined where the fetch did not ask for the lane. */
 export interface LaneChoice {
   name: string
@@ -26,6 +28,66 @@ export function laneResetLabel(
 }
 
 type KeyOf = (name: string) => string
+
+export interface LaneUniverseInputs {
+  anchor: string
+  mateNames: readonly string[]
+  declared: readonly DeclaredLane[]
+  trackAssemblies: readonly string[]
+  keyOf: KeyOf
+  labelOf: (name: string) => string
+  selection: readonly string[] | undefined
+  hidden: readonly string[]
+  featuresLoaded: boolean
+  landedLanes: readonly string[] | undefined
+}
+
+/** Every lane on offer, the anchor excluded: declared, then the track's, then mates. */
+export function laneUniverseOf({
+  anchor,
+  mateNames,
+  declared,
+  trackAssemblies,
+  keyOf,
+  labelOf,
+  selection,
+  hidden,
+  featuresLoaded,
+  landedLanes,
+}: LaneUniverseInputs): LaneChoice[] {
+  const anchorKey = keyOf(anchor)
+  const placed = new Set(mateNames.map(keyOf))
+  const chosen = selection && new Set(selection.map(keyOf))
+  const hiddenKeys = new Set(hidden.map(keyOf))
+  const asked = landedLanes && new Set(landedLanes.map(keyOf))
+  const known = (key: string) =>
+    featuresLoaded && (asked === undefined || asked.has(key))
+  const out = new Map<string, LaneChoice>()
+  const offer = (lane: DeclaredLane) => {
+    const key = keyOf(lane.name)
+    if (key !== anchorKey && !out.has(key)) {
+      const shown = labelOf(lane.name)
+      const label = shown === lane.name ? lane.label : shown
+      out.set(key, {
+        ...lane,
+        ...(label === lane.name ? {} : { label }),
+        placed: placed.has(key) || (known(key) ? false : undefined),
+        drawn:
+          (chosen === undefined || chosen.has(key)) && !hiddenKeys.has(key),
+      })
+    }
+  }
+  for (const lane of declared) {
+    offer(lane)
+  }
+  for (const name of trackAssemblies) {
+    offer({ name })
+  }
+  for (const name of mateNames) {
+    offer({ name })
+  }
+  return [...out.values()]
+}
 
 const has = (names: readonly string[], key: string, keyOf: KeyOf) =>
   names.some(name => keyOf(name) === key)

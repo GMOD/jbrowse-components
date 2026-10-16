@@ -1,15 +1,27 @@
 import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
-import { withMarkColor } from '@jbrowse/plugin-marks'
+import { toTrackConfigEntry } from '@jbrowse/core/util/tracks'
+import {
+  layerColorScale,
+  markLayerRequest,
+  stepChannels,
+  withMarkColor,
+} from '@jbrowse/plugin-marks'
+import { isThreshold } from '@jbrowse/render-core/marks'
 
-import type { HeldLane, LaneFetchSpec } from './laneFetch.ts'
-import type { FetchRegion } from './layoutMultiWay.ts'
-import type { MultiWayCell } from './multiwayRenderTypes.ts'
+import { regionKey } from './laneFetch.ts'
+import { frameSegments, laneFetchRegionMaxBp } from './layoutMultiWay.ts'
+
+import type { HeldLane, LaneFetchSpec, LaneWindow } from './laneFetch.ts'
+import type { Lane } from './laneStack.ts'
+import type { FetchRegion, Span } from './layoutMultiWay.ts'
+import type { BarLayer, MultiWayCell } from './multiwayRenderTypes.ts'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type {
   EncodedChannels,
   LayerRequest,
 } from '@jbrowse/core/util/markEncoding'
 import type { ColorSource } from '@jbrowse/plugin-marks'
-import type { BarChannels } from '@jbrowse/render-core/marks'
+import type { BarChannels, MarkColorScale } from '@jbrowse/render-core/marks'
 
 export const LANE_LAYER_GAP_PX = 2
 
@@ -61,6 +73,101 @@ export function laneLayerSpecLane(
   region: number,
 ) {
   return `${assemblyName}\u0000${layer}\u0000${region}`
+}
+
+export interface LaneLayerSourcesInputs {
+  lanes: readonly string[]
+  trackFor: (layer: number, lane: string) => AnyTrackConfig | undefined
+  templates: readonly (Record<string, unknown> | undefined)[]
+}
+
+/**
+ * Per layer, the adapter each lane reads: its named track, else the layer's
+ * template where the adapter reads a reference.
+ */
+export function laneLayerSourcesOf({
+  lanes,
+  trackFor,
+  templates,
+}: LaneLayerSourcesInputs) {
+  return templates.map((template, layer) => {
+    const out = new Map<string, LaneLayerSource>()
+    for (const lane of lanes) {
+      const track = trackFor(layer, lane)
+      if (track) {
+        out.set(lane, {
+          source: track.trackId,
+          adapterConfig: toTrackConfigEntry(track).adapter as Record<
+            string,
+            unknown
+          >,
+          template: false,
+        })
+      }
+    }
+    if (template) {
+      const source = `adapter:${JSON.stringify(template)}`
+      for (const lane of lanes) {
+        if (!out.has(lane)) {
+          out.set(lane, { source, adapterConfig: template, template: true })
+        }
+      }
+    }
+    return out
+  })
+}
+
+type LayerMark = Parameters<typeof markLayerRequest>[0]
+
+export interface LaneLayerReadsInputs {
+  layers: readonly { marks: readonly LayerMark[] }[]
+  sources: readonly Map<string, LaneLayerSource>[]
+  windows: ReadonlyMap<string, LaneWindow>
+}
+
+/** `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`. */
+export function laneLayerReadsOf({
+  layers,
+  sources,
+  windows,
+}: LaneLayerReadsInputs) {
+  const specs: LaneLayerFetchSpec[] = []
+  const pastCap = layers.map(() => false)
+  layers.forEach(({ marks }, layer) => {
+    for (const [assemblyName, window] of windows) {
+      const from = sources[layer]?.get(assemblyName)
+      if (!from) {
+        continue
+      }
+      const { regions, spanBp } = window
+      if (
+        from.template &&
+        (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
+          regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
+      ) {
+        pastCap[layer] = true
+        continue
+      }
+      const bpPerPx = laneLayerBpPerPx(window.bpPerPx)
+      const requests = marks.map(m =>
+        markLayerRequest(m, stepChannels(m.transform), bpPerPx),
+      )
+      const signature = JSON.stringify(requests)
+      regions.forEach((region, i) => {
+        specs.push({
+          lane: laneLayerSpecLane(assemblyName, layer, i),
+          key: `${from.source}@${regionKey(region)}@${bpPerPx}@${signature}`,
+          assemblyName,
+          layer,
+          adapterConfig: from.adapterConfig,
+          region,
+          bpPerPx,
+          requests,
+        })
+      })
+    }
+  })
+  return { specs, pastCap }
 }
 
 export function barChannelsOf(
@@ -187,6 +294,122 @@ export function laneLayerDomains(
 
 export function laneLayerOrigin([min, max]: [number, number]) {
   return Math.min(Math.max(0, min), max)
+}
+
+export interface LaneLayerPlacement {
+  specLane: string
+  held: HeldLaneLayer
+  row: number
+  top: number
+  height: number
+  segments: { start: number; end: number; px: Span }[]
+}
+
+export interface LaneLayerPlacementInputs {
+  lanes: readonly Lane[]
+  heights: readonly number[]
+  held: ReadonlyMap<string, HeldLaneLayer> | undefined
+  axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
+  canvasWidth: number
+}
+
+/**
+ * Each payload's region placed in its lane's own frame; a payload whose lane
+ * or contig no longer draws is left out.
+ */
+export function laneLayerPlacementsOf({
+  lanes,
+  heights,
+  held: heldByLane,
+  axisSpanOf,
+  canvasWidth,
+}: LaneLayerPlacementInputs) {
+  const rowOf = new Map(lanes.map((lane, row) => [lane.assemblyName, row]))
+  const out: LaneLayerPlacement[] = []
+  for (const [specLane, held] of heldByLane ?? []) {
+    const row = rowOf.get(held.assemblyName)
+    const lane = row === undefined ? undefined : lanes[row]
+    const height = heights[held.layer]
+    if (!lane || row === undefined || height === undefined) {
+      continue
+    }
+    const { refName, start, end } = held.region
+    const anchorPx =
+      lane.isAnchor && axisSpanOf(lane.canon(refName), start, end)
+    const segments = anchorPx
+      ? [{ start, end, px: anchorPx }]
+      : !lane.isAnchor &&
+          lane.frame &&
+          lane.canon(lane.frame.refName) === lane.canon(refName)
+        ? frameSegments(lane.frame, start, end, canvasWidth)
+        : []
+    if (segments.length) {
+      out.push({
+        specLane,
+        held,
+        row,
+        top: layerBandTops(lane.layerTop, heights)[held.layer]!,
+        height,
+        segments,
+      })
+    }
+  }
+  return out
+}
+
+export interface LaneLayerCellInputs {
+  placements: readonly LaneLayerPlacement[]
+  domains: readonly ([number, number] | undefined)[]
+  colorScales: readonly (readonly (MarkColorScale | undefined)[])[]
+  coloredLayersOf: (held: HeldLaneLayer) => EncodedChannels[]
+}
+
+export function laneLayerCellsOf({
+  placements,
+  domains,
+  colorScales,
+  coloredLayersOf,
+}: LaneLayerCellInputs) {
+  const cells = new Map<string, MultiWayCell>()
+  const layers: BarLayer[] = []
+  for (const { specLane, held, row, top, height, segments } of placements) {
+    const domain = domains[held.layer]
+    if (!domain) {
+      continue
+    }
+    coloredLayersOf(held).forEach((channels, mark) => {
+      const colorScale = layerColorScale(
+        channels,
+        colorScales[held.layer]?.[mark],
+      )
+      const cell = barCellOf(
+        channels,
+        domain,
+        colorScale && !isThreshold(colorScale) ? colorScale.lut : undefined,
+      )
+      if (cell) {
+        // one block per piece between the lane's holes, each its own cell
+        segments.forEach(({ start, end, px }, piece) => {
+          const key = `bars:${specLane}:${mark}${piece ? `:${piece}` : ''}`
+          cells.set(key, cell)
+          layers.push({
+            kind: 'bars',
+            key,
+            row,
+            top,
+            height,
+            domain,
+            origin: laneLayerOrigin(domain),
+            colorScale,
+            start,
+            end,
+            px,
+          })
+        })
+      }
+    })
+  }
+  return { cells, layers }
 }
 
 /**

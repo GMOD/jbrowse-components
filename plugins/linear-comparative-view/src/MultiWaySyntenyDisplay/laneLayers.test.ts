@@ -16,8 +16,10 @@ import {
   barChannelsOf,
   laneLayerBlockSpan,
   laneLayerBpPerPx,
+  laneLayerCellsOf,
   laneLayerDomains,
   laneLayerOrigin,
+  laneLayerPlacementsOf,
   laneLayersPx,
   layerBandTops,
 } from './laneLayers.ts'
@@ -26,7 +28,8 @@ import { drawnPx } from './multiwayRenderTypes.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { HeldLaneLayer, LaneLayerFetchSpec } from './laneLayers.ts'
-import type { RowFrame } from './layoutMultiWay.ts'
+import type { Lane } from './laneStack.ts'
+import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { LaneMap } from './multiwayRenderTypes.ts'
 import type {
   EncodedChannels,
@@ -107,6 +110,138 @@ function held(layer: number, ...values: number[][]): HeldLaneLayer {
     ),
   }
 }
+
+function laneAt(assemblyName: string, overrides: Partial<Lane> = {}): Lane {
+  return {
+    assemblyName,
+    label: assemblyName,
+    isAnchor: false,
+    frame: undefined,
+    placements: new Map(),
+    spanOf: () => undefined,
+    spansOf: () => [],
+    bpPerPx: 1,
+    canon: refName => refName,
+    baseline: [],
+    glyphTop: 0,
+    bandTop: 0,
+    layerTop: 0,
+    bandStart: 0,
+    bandEnd: 0,
+    ...overrides,
+  }
+}
+
+describe('laneLayerPlacementsOf', () => {
+  const onAxis: Span = [10, 20]
+  const inputs = {
+    lanes: [
+      laneAt('a', { isAnchor: true, layerTop: 100 }),
+      laneAt('b', { layerTop: 200 }),
+    ],
+    heights: [10, 6],
+    held: new Map([
+      ['s0', held(0, [1])],
+      ['s1', held(1, [1])],
+    ]),
+    axisSpanOf: () => onAxis,
+    canvasWidth: WIDTH,
+  }
+
+  test('an anchor payload takes the axis span, in its layer’s band', () => {
+    const [first, second] = laneLayerPlacementsOf(inputs)
+    expect(first).toMatchObject({
+      specLane: 's0',
+      row: 0,
+      top: 100,
+      height: 10,
+      segments: [{ start: 0, end: 1, px: onAxis }],
+    })
+    expect(second).toMatchObject({ specLane: 's1', top: 112, height: 6 })
+  })
+
+  test('a payload whose layer has no height, or whose lane is gone, is left out', () => {
+    const stray = new Map([
+      ['layer', held(5, [1])],
+      ['lane', { ...held(0, [1]), assemblyName: 'gone' }],
+    ])
+    expect(laneLayerPlacementsOf({ ...inputs, held: stray })).toEqual([])
+  })
+
+  test('an anchor payload off the axis is left out', () => {
+    expect(
+      laneLayerPlacementsOf({ ...inputs, axisSpanOf: () => undefined }),
+    ).toEqual([])
+  })
+
+  test('a mate lane places a payload through its frame, and nothing without one', () => {
+    const mate = { ...held(0, [1]), assemblyName: 'b' }
+    const region = { ...mate.region, refName: 'chr11', start: 69_100_000 }
+    const payload = new Map([
+      ['m', { ...mate, region: { ...region, end: 69_200_000 } }],
+    ])
+    expect(laneLayerPlacementsOf({ ...inputs, held: payload })).toEqual([])
+    const framed = {
+      ...inputs,
+      held: payload,
+      lanes: [inputs.lanes[0]!, laneAt('b', { frame: frameOf(false) })],
+    }
+    const [placed] = laneLayerPlacementsOf(framed)
+    expect(placed!.row).toBe(1)
+    expect(placed!.segments[0]).toMatchObject({
+      start: 69_100_000,
+      end: 69_200_000,
+    })
+  })
+})
+
+describe('laneLayerCellsOf', () => {
+  const placement = (pieces: number) => ({
+    specLane: 's',
+    held: held(0, [1, 2, 3]),
+    row: 2,
+    top: 5,
+    height: 10,
+    segments: Array.from({ length: pieces }, (_, i) => ({
+      start: 10 * i,
+      end: 10 * i + 5,
+      px: [20 * i, 20 * i + 10] as Span,
+    })),
+  })
+  const base = {
+    domains: [[1, 3] as [number, number]],
+    colorScales: [[undefined]],
+    coloredLayersOf: (payload: HeldLaneLayer) => payload.channels,
+  }
+
+  test('each piece between a lane’s holes is its own layer, sharing one cell', () => {
+    const { cells, layers } = laneLayerCellsOf({
+      ...base,
+      placements: [placement(2)],
+    })
+    expect(layers.map(l => l.key)).toEqual(['bars:s:0', 'bars:s:0:1'])
+    expect([...cells.keys()]).toEqual(['bars:s:0', 'bars:s:0:1'])
+    expect(cells.get('bars:s:0')).toBe(cells.get('bars:s:0:1'))
+    expect(layers[1]).toMatchObject({
+      row: 2,
+      top: 5,
+      height: 10,
+      start: 10,
+      end: 15,
+      px: [20, 30],
+    })
+  })
+
+  test('a layer with no shared domain draws nothing', () => {
+    expect(
+      laneLayerCellsOf({
+        ...base,
+        domains: [undefined],
+        placements: [placement(1)],
+      }).layers,
+    ).toEqual([])
+  })
+})
 
 describe('the shared domain', () => {
   test('is the union over every lane, per layer', () => {

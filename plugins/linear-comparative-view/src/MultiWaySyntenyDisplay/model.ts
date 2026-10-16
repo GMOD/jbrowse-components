@@ -54,14 +54,11 @@ import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
-  layerColorScale,
   markColorOf,
-  markLayerRequest,
   paintScalesOver,
   stepChannels,
 } from '@jbrowse/plugin-marks'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { isThreshold } from '@jbrowse/render-core/marks'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
 import {
   PRESET_ATTRIBUTES,
@@ -100,8 +97,7 @@ import {
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import { geneColors } from './geneColor.ts'
-import { laneIsoformSettings } from './geneGlyph.ts'
-import { annotationRank } from './laneAnnotation.ts'
+import { laneGeneTracksOf } from './laneAnnotation.ts'
 import {
   decideLaneFrames,
   frameFromDecision,
@@ -110,6 +106,9 @@ import {
 import {
   landLaneFetch,
   laneFetchAwaits,
+  laneGenesFetchSpecsOf,
+  laneGroupsFetchSpecsOf,
+  laneLinksFetchSpecsOf,
   starAnchorOf,
   staleLaneSpecs,
 } from './laneFetch.ts'
@@ -117,13 +116,12 @@ import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { releaseLaneAssembly } from './laneHolders.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
-  LANE_TEMPLATE_MAX_BP,
-  barCellOf,
-  laneLayerBpPerPx,
   coloredLaneLayer,
+  laneLayerCellsOf,
   laneLayerDomains,
-  laneLayerOrigin,
-  laneLayerSpecLane,
+  laneLayerPlacementsOf,
+  laneLayerReadsOf,
+  laneLayerSourcesOf,
   layerBandTops,
 } from './laneLayers.ts'
 import {
@@ -136,6 +134,7 @@ import {
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import {
+  laneUniverseOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
@@ -151,10 +150,8 @@ import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
-  frameSegments,
   groupFeatures,
   laneFetchRegion,
-  laneFetchRegionMaxBp,
   laneOpeningsOf,
   mergeContiguousRegions,
   rowAssembliesOf,
@@ -233,7 +230,6 @@ import type {
   TickGeometry,
 } from './multiwayGeometry.ts'
 import type {
-  BarLayer,
   LaneMap,
   MultiWayCell,
   MultiWayLayer,
@@ -309,10 +305,6 @@ function withEntry<T>(
   const { [key]: _dropped, ...rest } = record ?? {}
   const next = value === undefined ? rest : { ...rest, [key]: value }
   return Object.keys(next).length > 0 ? next : undefined
-}
-
-function regionKey(r: FetchRegion) {
-  return `${r.refName}:${r.start}-${r.end}`
 }
 
 function drawnRect(
@@ -973,47 +965,18 @@ export function stateModelFactory(
        * the anchor is never a lane
        */
       get laneUniverse(): LaneChoice[] {
-        const anchor = self.laneKey(self.anchorAssemblyName)
-        const placed = new Set<string>()
-        for (const group of self.groups) {
-          for (const name of group.mates.keys()) {
-            placed.add(self.laneKey(name))
-          }
-        }
-        const selection = self.laneSelection
-        const chosen = selection && new Set(selection.map(self.laneKey))
-        const hidden = new Set(self.hiddenLanes.map(self.laneKey))
-        const landed = self.features && self.fetchedFeatures?.lanes
-        const asked = landed && new Set(landed.map(self.laneKey))
-        const known = (key: string) =>
-          self.features !== undefined && (asked === undefined || asked.has(key))
-        const out = new Map<string, LaneChoice>()
-        const offer = (lane: DeclaredLane) => {
-          const key = self.laneKey(lane.name)
-          if (key !== anchor && !out.has(key)) {
-            const shown = this.laneLabel(lane.name)
-            const label = shown === lane.name ? lane.label : shown
-            out.set(key, {
-              ...lane,
-              ...(label === lane.name ? {} : { label }),
-              placed: placed.has(key) || (known(key) ? false : undefined),
-              drawn:
-                (chosen === undefined || chosen.has(key)) && !hidden.has(key),
-            })
-          }
-        }
-        for (const lane of self.declaredLanes ?? []) {
-          offer(lane)
-        }
-        for (const name of getTrackAssemblyNames(self.parentTrack)) {
-          offer({ name })
-        }
-        for (const group of self.groups) {
-          for (const name of group.mates.keys()) {
-            offer({ name })
-          }
-        }
-        return [...out.values()]
+        return laneUniverseOf({
+          anchor: self.anchorAssemblyName,
+          mateNames: self.groups.flatMap(group => [...group.mates.keys()]),
+          declared: self.declaredLanes ?? [],
+          trackAssemblies: getTrackAssemblyNames(self.parentTrack),
+          keyOf: self.laneKey,
+          labelOf: name => this.laneLabel(name),
+          selection: self.laneSelection,
+          hidden: self.hiddenLanes,
+          featuresLoaded: self.features !== undefined,
+          landedLanes: self.features && self.fetchedFeatures?.lanes,
+        })
       },
       /**
        * #getter
@@ -1231,43 +1194,12 @@ export function stateModelFactory(
        */
       get laneGeneTracks() {
         const entries: string[] = getConf(self, 'laneGeneTracks')
-        const lanesByKey = new Map<string, string[]>()
-        for (const lane of [self.anchorAssemblyName, ...self.rowAssemblies]) {
-          const key = self.laneKey(lane)
-          lanesByKey.set(key, [...(lanesByKey.get(key) ?? []), lane])
-        }
-        const best = new Map<string, { rank: number; track: AnyTrackConfig }>()
-        for (const track of self.sessionTracksById.values()) {
-          const names = getConfAssemblyNamesOrNone(track)
-          const type = (track.adapter as { type?: unknown } | undefined)?.type
-          const rank = annotationRank(
-            typeof type === 'string' ? type : undefined,
-          )
-          if (names.length === 1 && rank !== undefined) {
-            const key = self.laneKey(names[0]!)
-            const held = best.get(key)
-            if (
-              lanesByKey.has(key) &&
-              (held === undefined || rank < held.rank)
-            ) {
-              best.set(key, { rank, track })
-            }
-          }
-        }
-        const out = new Map<string, AnyTrackConfig>()
-        for (const [key, lanes] of lanesByKey) {
-          const track =
-            self
-              .namedLaneTracks(entries, key)
-              .find(t => getConfAssemblyNamesOrNone(t).length === 1) ??
-            best.get(key)?.track
-          if (track) {
-            for (const lane of lanes) {
-              out.set(lane, track)
-            }
-          }
-        }
-        return out
+        return laneGeneTracksOf({
+          lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
+          keyOf: self.laneKey,
+          tracks: self.sessionTracksById.values(),
+          namedTracks: key => self.namedLaneTracks(entries, key),
+        })
       },
     }))
     .views(self => ({
@@ -1747,28 +1679,11 @@ export function stateModelFactory(
     .views(self => ({
       /** #getter */
       get laneGenesFetchSpecs(): LaneGenesFetchSpec[] {
-        const tracks = self.laneGeneTrackEntries
-        const adapters = self.laneGeneAdapters
-        const specs: LaneGenesFetchSpec[] = []
-        for (const [assemblyName, { regions }] of self.laneWindows) {
-          const adapter = adapters.get(assemblyName)
-          if (adapter) {
-            const entry = tracks.get(assemblyName)
-            const isoforms = laneIsoformSettings(entry)
-            const source = entry
-              ? `${entry.trackId}|${JSON.stringify(isoforms)}`
-              : `adapter:${JSON.stringify(adapter)}`
-            specs.push({
-              lane: assemblyName,
-              key: `${source}@${regions.map(regionKey).join(',')}`,
-              assemblyName,
-              adapterConfig: adapter,
-              regions,
-              isoforms,
-            })
-          }
-        }
-        return specs
+        return laneGenesFetchSpecsOf({
+          windows: self.laneWindows,
+          adapters: self.laneGeneAdapters,
+          tracks: self.laneGeneTrackEntries,
+        })
       },
       /**
        * #getter
@@ -1776,22 +1691,12 @@ export function stateModelFactory(
        * lacks; a star source indexes its anchor alone, so it has none to give
        */
       get laneGroupsFetchSpecs(): LaneGroupsFetchSpec[] {
-        const { lodTier, laneWindows } = self
         return self.laneFetchKinds.laneRows
-          ? self.rowAssemblies.flatMap(lane => {
-              const regions = laneWindows.get(lane)?.regions
-              return regions
-                ? [
-                    {
-                      lane,
-                      key: `${regions.map(regionKey).join(',')}|${lodTier}`,
-                      assemblyName: lane,
-                      regions,
-                      lodTier,
-                    },
-                  ]
-                : []
-            })
+          ? laneGroupsFetchSpecsOf(
+              self.rowAssemblies,
+              self.laneWindows,
+              self.lodTier,
+            )
           : []
       },
       /**
@@ -1800,44 +1705,21 @@ export function stateModelFactory(
        * within a screen of it
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
-        const specs: LaneLinksFetchSpec[] = []
-        const onAnchor = self.adapterPairsOnAnchor
-        if (self.laneFetchKinds.lanePairs) {
-          const { lodTier, laneWindows, rowFrames } = self
-          const nearViewport = gutterNearViewport(
-            self.stackGeometry,
-            self.scrollTop,
-            self.height,
-          )
-          const pairRegions = (upper: string, lower: string) => {
-            if (onAnchor) {
-              return rowFrames.get(upper) && rowFrames.get(lower)
-                ? (laneWindows.get(self.anchorAssemblyName)?.regions ?? [])
-                : []
-            }
-            const upperWindow = laneWindows.get(upper)
-            return upperWindow && laneWindows.get(lower)
-              ? upperWindow.regions
-              : []
-          }
-          for (const [i, { upper, lower, key }] of self.lanePairs.entries()) {
-            const regions = nearViewport(i + 1, i + 2)
-              ? pairRegions(upper, lower)
-              : []
-            if (regions.length > 0) {
-              specs.push({
-                lane: key,
-                key: `${regions.map(regionKey).join(',')}|${lodTier}`,
-                assemblyName: upper,
-                lowerAssembly: lower,
-                regions,
-                onAnchor,
-                lodTier,
-              })
-            }
-          }
-        }
-        return specs
+        return self.laneFetchKinds.lanePairs
+          ? laneLinksFetchSpecsOf({
+              pairs: self.lanePairs,
+              windows: self.laneWindows,
+              rowFrames: self.rowFrames,
+              anchor: self.anchorAssemblyName,
+              onAnchor: self.adapterPairsOnAnchor,
+              lodTier: self.lodTier,
+              nearViewport: gutterNearViewport(
+                self.stackGeometry,
+                self.scrollTop,
+                self.height,
+              ),
+            })
+          : []
       },
     }))
     .views(self => ({
@@ -1860,39 +1742,14 @@ export function stateModelFactory(
     .views(self => ({
       /** #getter */
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
-        const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
-        return self.configuration.laneLayers.map((layer, i) => {
-          const out = new Map<string, LaneLayerSource>()
-          for (const lane of lanes) {
-            const [track] = self.namedLaneTracks(
-              layer.tracks,
+        return laneLayerSourcesOf({
+          lanes: [self.anchorAssemblyName, ...self.rowAssemblies],
+          trackFor: (layer, lane) =>
+            self.namedLaneTracks(
+              self.configuration.laneLayers[layer]!.tracks,
               self.laneKey(lane),
-            )
-            if (track) {
-              out.set(lane, {
-                source: track.trackId,
-                adapterConfig: toTrackConfigEntry(track).adapter as Record<
-                  string,
-                  unknown
-                >,
-                template: false,
-              })
-            }
-          }
-          const template = self.laneLayerTemplates[i]
-          if (template) {
-            const source = `adapter:${JSON.stringify(template)}`
-            for (const lane of lanes) {
-              if (!out.has(lane)) {
-                out.set(lane, {
-                  source,
-                  adapterConfig: template,
-                  template: true,
-                })
-              }
-            }
-          }
-          return out
+            )[0],
+          templates: self.laneLayerTemplates,
         })
       },
       /**
@@ -1900,45 +1757,11 @@ export function stateModelFactory(
        * `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP`
        */
       get laneLayerReads() {
-        const specs: LaneLayerFetchSpec[] = []
-        const layers = self.configuration.laneLayers
-        const pastCap = layers.map(() => false)
-        layers.forEach(({ marks }, layer) => {
-          const sources = this.laneLayerSources[layer]
-          for (const [assemblyName, window] of self.laneWindows) {
-            const from = sources?.get(assemblyName)
-            if (!from) {
-              continue
-            }
-            const { regions, spanBp } = window
-            if (
-              from.template &&
-              (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
-                regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
-            ) {
-              pastCap[layer] = true
-              continue
-            }
-            const bpPerPx = laneLayerBpPerPx(window.bpPerPx)
-            const requests = marks.map(m =>
-              markLayerRequest(m, stepChannels(m.transform), bpPerPx),
-            )
-            const signature = JSON.stringify(requests)
-            regions.forEach((region, i) => {
-              specs.push({
-                lane: laneLayerSpecLane(assemblyName, layer, i),
-                key: `${from.source}@${regionKey(region)}@${bpPerPx}@${signature}`,
-                assemblyName,
-                layer,
-                adapterConfig: from.adapterConfig,
-                region,
-                bpPerPx,
-                requests,
-              })
-            })
-          }
+        return laneLayerReadsOf({
+          layers: self.configuration.laneLayers,
+          sources: this.laneLayerSources,
+          windows: self.laneWindows,
         })
-        return { specs, pastCap }
       },
       /** #getter */
       get laneLayersFetchSpecs(): LaneLayerFetchSpec[] {
@@ -2441,49 +2264,14 @@ export function stateModelFactory(
        */
       get laneLayerPlacements() {
         const view = self.lgv
-        const { lanes } = self.laneStack
-        const heights = self.laneLayerHeights
-        const rowOf = new Map(
-          lanes.map((lane, row) => [lane.assemblyName, row]),
-        )
-        const out: {
-          specLane: string
-          held: HeldLaneLayer
-          row: number
-          top: number
-          height: number
-          segments: { start: number; end: number; px: Span }[]
-        }[] = []
-        for (const [specLane, held] of self.laneLayerData.held ?? []) {
-          const row = rowOf.get(held.assemblyName)
-          const lane = row === undefined ? undefined : lanes[row]
-          const height = heights[held.layer]
-          if (!lane || row === undefined || height === undefined) {
-            continue
-          }
-          const { refName, start, end } = held.region
-          const anchorPx =
-            lane.isAnchor &&
-            axisSpan(view, lane.canon(refName), start, end, self.renderOriginPx)
-          const segments = anchorPx
-            ? [{ start, end, px: anchorPx }]
-            : !lane.isAnchor &&
-                lane.frame &&
-                lane.canon(lane.frame.refName) === lane.canon(refName)
-              ? frameSegments(lane.frame, start, end, self.canvasWidth)
-              : []
-          if (segments.length) {
-            out.push({
-              specLane,
-              held,
-              row,
-              top: layerBandTops(lane.layerTop, heights)[held.layer]!,
-              height,
-              segments,
-            })
-          }
-        }
-        return out
+        return laneLayerPlacementsOf({
+          lanes: self.laneStack.lanes,
+          heights: self.laneLayerHeights,
+          held: self.laneLayerData.held,
+          axisSpanOf: (refName, start, end) =>
+            axisSpan(view, refName, start, end, self.renderOriginPx),
+          canvasWidth: self.canvasWidth,
+        })
       },
     }))
     .views(self => {
@@ -2586,57 +2374,12 @@ export function stateModelFactory(
       },
       /** #getter */
       get laneLayerCells() {
-        const cells = new Map<string, MultiWayCell>()
-        const layers: BarLayer[] = []
-        const domains = self.laneLayerDomains
-        const colorScales = this.laneLayerColorScales
-        for (const {
-          specLane,
-          held,
-          row,
-          top,
-          height,
-          segments,
-        } of self.laneLayerPlacements) {
-          const domain = domains[held.layer]
-          if (!domain) {
-            continue
-          }
-          self.coloredLayersOf(held).forEach((channels, mark) => {
-            const colorScale = layerColorScale(
-              channels,
-              colorScales[held.layer]?.[mark],
-            )
-            const cell = barCellOf(
-              channels,
-              domain,
-              colorScale && !isThreshold(colorScale)
-                ? colorScale.lut
-                : undefined,
-            )
-            if (cell) {
-              // one block per piece between the lane's holes, each its own cell
-              segments.forEach(({ start, end, px }, piece) => {
-                const key = `bars:${specLane}:${mark}${piece ? `:${piece}` : ''}`
-                cells.set(key, cell)
-                layers.push({
-                  kind: 'bars',
-                  key,
-                  row,
-                  top,
-                  height,
-                  domain,
-                  origin: laneLayerOrigin(domain),
-                  colorScale,
-                  start,
-                  end,
-                  px,
-                })
-              })
-            }
-          })
-        }
-        return { cells, layers }
+        return laneLayerCellsOf({
+          placements: self.laneLayerPlacements,
+          domains: self.laneLayerDomains,
+          colorScales: this.laneLayerColorScales,
+          coloredLayersOf: held => self.coloredLayersOf(held),
+        })
       },
       /** #getter */
       get namedCells(): ReadonlyMap<string, MultiWayCell> {
