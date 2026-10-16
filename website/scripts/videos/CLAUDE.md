@@ -7,8 +7,6 @@ both directions, and `pnpm video` runs it before filming.
 ## Framing
 
 - A spec states only its height; the width comes from `VIDEO_FRAME_DEFAULTS`.
-  Keep the viewport even on both sides: an odd height ships a pixel off, and an
-  odd width fails the encode after filming.
 - **A re-frame needs `pnpm autogen`**, since the embed reserves its box from
   `videoFrames` in `liveLinks.generated.ts`.
 - A clip's anchor id comes from its spec name, so renaming a spec breaks inbound
@@ -40,8 +38,6 @@ both directions, and `pnpm video` runs it before filming.
   `delay` after the result has drawn, whose line reads the frame.
 - One line per phase, not per click. A line that repeats the menu item or the
   typed value tells the viewer nothing the frame does not.
-- **A `say` on a `cut` step is never filmed, and its cue is dropped.** Name the
-  beat after the cut.
 - A tour that grows its first `say` must be re-filmed, or the page carries a
   caption track that 404s.
 - Nothing holds a `say` to a string the app draws: read the label out of the
