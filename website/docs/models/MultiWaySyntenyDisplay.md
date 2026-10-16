@@ -91,20 +91,11 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-featureops">**featureOps**</span><br><code>AlignmentOpsById</code> |  |
 | <span id="getter-hoveredgroupkey">**hoveredGroupKey**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-lodmode">**lodMode**</span><br><code>LodMode</code> |  |
-| <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> |  |
-| <span id="getter-lodtier">**lodTier**</span><br><code>LodTier</code> | read off the settled zoom, so a passing gesture refetches nothing |
-| <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
-| <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> |  |
-| <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
-| <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> |  |
-| <span id="getter-laneopenings">**laneOpenings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening[]</code></pre></dialog></span> | each lane's holes, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  |
 | <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  |
-| <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  |
 | <span id="getter-ribbonpaint">**ribbonPaint**</span><br><code>SyntenyColorPaint</code> |  |
-| <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> |  |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  |
 | <span id="getter-bridgeskippedlanes">**bridgeSkippedLanes**</span><br><code>boolean</code> |  |
@@ -118,9 +109,18 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-layerpx">**layerPx**</span><br><code>number</code> |  |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> |  |
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> |  |
-| <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene color deals its values into. |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | `''` while `color.value` paints |
 | <span id="getter-genesolidcolor">**geneSolidColor**</span><br><code>string &#124; undefined</code> | the constant `color.value` holds, undefined for none or a `jexl:` one |
+| <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> |  |
+| <span id="getter-lodtier">**lodTier**</span><br><code>LodTier</code> | read off the settled zoom, so a passing gesture refetches nothing |
+| <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> |  |
+| <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> |  |
+| <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> |  |
+| <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> |  |
+| <span id="getter-laneopenings">**laneOpenings**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string, refName: string) =&gt; readonly LaneOpening[]</code></pre></dialog></span> | each lane's holes, read off every fetched group rather than the viewport's, so one appears once both its pieces arrive and not as the second scrolls in |
+| <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
+| <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> |  |
+| <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene color deals its values into. |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> |  |
 | <span id="getter-lanegenecolors">**laneGeneColors**</span><br><code>ReadonlyMap&lt;string, GeneColors&gt;</code> |  |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |
@@ -297,10 +297,10 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 | <span id="action-setlanelayerdata">**setLaneLayerData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneLayer&gt;, specs: LaneFetchS…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneLayer&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setlanelinks">**setLaneLinks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchS…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setlanegroups">**setLaneGroups**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetch…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
-| <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane |
-| <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string) =&gt; void</code> |  |
+| <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
+| <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  |
 | <span id="action-sethideunlabelled">**setHideUnlabelled**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  |

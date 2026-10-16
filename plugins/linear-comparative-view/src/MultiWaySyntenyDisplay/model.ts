@@ -43,7 +43,6 @@ import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
-  colorEncodingOf,
   colorFieldOf,
   colorForField,
   colorSnapshotOf,
@@ -71,14 +70,12 @@ import {
   bandPalette,
   colorableColumns,
   declaredAttributes,
-  colorPaintOf,
   declaredLanesOf,
   featureAttributeRanges,
   lodMenuItems,
   lodTierAt,
   LodTierInfoMixin,
   orderAttributeLabels,
-  paintedField,
   trackHasLodTiers,
   widenAttributeRanges,
 } from '@jbrowse/synteny-core'
@@ -101,6 +98,7 @@ import {
   displayedRegionSpans,
 } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
+import { configSlotActions, configSlotViews } from './configSlotViews.ts'
 import { geneColors } from './geneColor.ts'
 import { laneIsoformSettings } from './geneGlyph.ts'
 import { annotationRank } from './laneAnnotation.ts'
@@ -126,7 +124,6 @@ import {
   laneLayerDomains,
   laneLayerOrigin,
   laneLayerSpecLane,
-  laneLayersPx,
   layerBandTops,
 } from './laneLayers.ts'
 import {
@@ -146,7 +143,6 @@ import {
 } from './laneSelection.ts'
 import {
   buildLanes,
-  geneLabelRowPx,
   gutterNearViewport,
   laneGeometry,
   stackReach,
@@ -194,7 +190,7 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
-import type { GeneColorSettings, GeneColors } from './geneColor.ts'
+import type { GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type {
   AnchorCoord,
@@ -265,8 +261,6 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type {
   AttributeRange,
   DeclaredLane,
-  SyntenyColorPaint,
-  LodMode,
   SyntenyColorSnapshot,
 } from '@jbrowse/synteny-core'
 import type React from 'react'
@@ -559,24 +553,12 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * takes the whole pinned order, empty meaning densest-first; merge a
-         * partial one with `mergeDomain` first
-         */
-        setDomain(domain: string[]) {
-          setConf(self, ['rows', 'domain'], domain)
-        },
-        /**
-         * #action
          * writes `rows.kept`; undefined restores `configuredLanes`, or every
          * lane
          */
         setSelectedLanes(names: readonly string[] | undefined) {
           setConf(self, ['rows', 'kept'], names ?? [])
           self.hiddenLaneNames = undefined
-        },
-        /** #action */
-        setBridgeSkippedLanes(flag: boolean) {
-          setConf(self, 'bridgeSkippedLanes', flag)
         },
         /** #action */
         setRibbonColorField(field: string) {
@@ -594,44 +576,9 @@ export function stateModelFactory(
             observeRibbonFeatures(features)
           }
         },
-        /** #action */
-        setRibbonColorDomain(domain: string[]) {
-          setConf(self, ['ribbonColor', 'domain'], domain)
-        },
-        /** #action */
-        setHideUnlabelled(flag: boolean) {
-          setConf(self, 'hideUnlabelled', flag)
-        },
-        /** #action */
-        setDrawCurves(flag: boolean) {
-          setConf(self, 'drawCurves', flag)
-        },
-        /** #action */
-        setShowLaneTicks(flag: boolean) {
-          setConf(self, 'showLaneTicks', flag)
-        },
-        /** #action */
-        setSplitStrands(flag: boolean) {
-          setConf(self, 'splitStrands', flag)
-        },
-        /** #action */
-        setInlineLaneNames(flag: boolean) {
-          setConf(self, 'inlineLaneNames', flag)
-        },
-        /** #action */
-        setShowGeneLabels(flag: boolean) {
-          setConf(self, 'showGeneLabels', flag)
-        },
-        /** #action */
-        setGeneTextField(field: string) {
-          setConf(self, 'text', field)
-        },
-        /** #action */
-        setLodMode(mode: LodMode) {
-          setConf(self, 'lodMode', mode)
-        },
       }
     })
+    .actions(configSlotActions)
     .views(self => ({
       /** #getter */
       get declaredLanes(): DeclaredLane[] | undefined {
@@ -670,11 +617,8 @@ export function stateModelFactory(
         return self.hoverTarget?.groupKey
       },
     }))
+    .views(configSlotViews)
     .views(self => ({
-      /** #getter */
-      get lodMode(): LodMode {
-        return getConf(self, 'lodMode')
-      },
       /** #getter */
       get hasLodCapableAdapter() {
         return trackHasLodTiers(self.parentTrack)
@@ -684,11 +628,11 @@ export function stateModelFactory(
        * read off the settled zoom, so a passing gesture refetches nothing
        */
       get lodTier() {
-        return lodTierAt(self, self.host.coarseBpPerPx, this.lodMode)
+        return lodTierAt(self, self.host.coarseBpPerPx, self.lodMode)
       },
       /** #getter */
       get liveLodTier() {
-        return lodTierAt(self, self.lgv.bpPerPx, this.lodMode)
+        return lodTierAt(self, self.lgv.bpPerPx, self.lodMode)
       },
     }))
     .views(self => ({
@@ -715,127 +659,25 @@ export function stateModelFactory(
         return laneOpeningsOf(this.groups)
       },
       /** #getter */
-      get ribbonColor(): string {
-        return getConf(self, ['ribbonColor', 'value'])
-      },
-      /**
-       * #getter
-       * `rows.kept` as a choice: undefined while it names no lane
-       */
-      get laneChoice(): readonly string[] | undefined {
-        const kept: readonly string[] = getConf(self, ['rows', 'kept'])
-        return kept.length ? kept : undefined
-      },
-      /** #getter */
-      get ribbonColorField(): string {
-        return paintedField({
-          scale: getConf(self, ['ribbonColor', 'scale']),
-          field: getConf(self, ['ribbonColor', 'field']),
-        })
-      },
-      /** #getter */
       get ribbonColorAttributes(): string[] {
         return colorableColumns(declaredAttributes(self.adapterConfig))
-      },
-      /** #getter */
-      get ribbonColorDomain(): string[] {
-        return getConf(self, ['ribbonColor', 'domain'])
-      },
-      /** #getter */
-      get ribbonPaint(): SyntenyColorPaint {
-        return colorPaintOf(self.configuration.ribbonColor)
       },
       /** #getter */
       get ribbonAttributeRanges(): Record<string, AttributeRange> {
         return orderAttributeLabels(
           self.seenAttributeRanges,
-          this.ribbonColorDomain,
+          self.ribbonColorDomain,
           getConf(self, ['ribbonColor', 'range']),
         )
       },
-      /** #getter */
-      get hideUnlabelled(): boolean {
-        return getConf(self, 'hideUnlabelled')
-      },
-      /** #getter */
-      get drawCurves(): boolean {
-        return getConf(self, 'drawCurves')
-      },
-      /** #getter */
-      get bridgeSkippedLanes(): boolean {
-        return getConf(self, 'bridgeSkippedLanes')
-      },
-      /** #getter */
-      get showLaneTicks(): boolean {
-        return getConf(self, 'showLaneTicks')
-      },
-      /** #getter */
-      get splitStrands(): boolean {
-        return getConf(self, 'splitStrands')
-      },
-      /** #getter */
-      get showGeneLabels(): boolean {
-        return getConf(self, 'showGeneLabels')
-      },
-      /**
-       * #getter
-       * a field, a jexl expression, or empty for the name-else-ID default
-       */
-      get geneTextField(): string {
-        return getConf(self, 'text')
-      },
-      /** #getter */
-      get inlineLaneNames(): boolean {
-        return getConf(self, 'inlineLaneNames')
-      },
-      /** #getter */
-      get geneLabelPx() {
-        return geneLabelRowPx(getConf(self, 'showGeneLabels'))
-      },
-      /** #getter */
-      get laneLayerHeights(): number[] {
-        return self.configuration.laneLayers.map(layer => layer.height)
-      },
-      /** #getter */
-      get layerPx() {
-        return laneLayersPx(this.laneLayerHeights)
-      },
-      /** #getter */
-      get geneColorSettings(): GeneColorSettings {
-        return {
-          color: colorSnapshotOf(self.configuration.color),
-          utrColor: self.configuration.utrColor,
-        }
-      },
     }))
     .views(self => ({
-      /** #getter */
-      get geneColorEncoding() {
-        return colorEncodingOf(self.geneColorSettings.color)
-      },
       /**
        * #getter
        * The slots a categorical gene color deals its values into.
        */
       get geneColorSlots() {
-        return heldColorSlots(self, this.geneColorEncoding)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * `''` while `color.value` paints
-       */
-      get geneColorField(): string {
-        return colorFieldOf(self.geneColorEncoding)?.field ?? ''
-      },
-      /**
-       * #getter
-       * the constant `color.value` holds, undefined for none or a `jexl:` one
-       */
-      get geneSolidColor(): string | undefined {
-        const raw = self.geneColorSettings.color.value
-        return raw !== undefined && !isJexl(raw) ? raw : undefined
+        return heldColorSlots(self, self.geneColorEncoding)
       },
     }))
     .views(self => {

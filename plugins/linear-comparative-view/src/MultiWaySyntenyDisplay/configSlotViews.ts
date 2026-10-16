@@ -1,0 +1,182 @@
+import { getConf, setConf } from '@jbrowse/core/configuration'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import {
+  colorEncodingOf,
+  colorFieldOf,
+  colorSnapshotOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorPaintOf, paintedField } from '@jbrowse/synteny-core'
+
+import { laneLayersPx } from './laneLayers.ts'
+import { geneLabelRowPx } from './laneStack.ts'
+
+import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { GeneColorSettings } from './geneColor.ts'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { LodMode, SyntenyColorPaint } from '@jbrowse/synteny-core'
+
+export interface ConfigSlotSelf extends IStateTreeNode {
+  configuration: Instance<MultiWaySyntenyDisplayConfigModel>
+}
+
+export function configSlotViews(self: ConfigSlotSelf) {
+  return {
+    /** #getter */
+    get lodMode(): LodMode {
+      return getConf(self, 'lodMode')
+    },
+    /** #getter */
+    get ribbonColor(): string {
+      return getConf(self, ['ribbonColor', 'value'])
+    },
+    /**
+     * #getter
+     * `rows.kept` as a choice: undefined while it names no lane
+     */
+    get laneChoice(): readonly string[] | undefined {
+      const kept: readonly string[] = getConf(self, ['rows', 'kept'])
+      return kept.length ? kept : undefined
+    },
+    /** #getter */
+    get ribbonColorField(): string {
+      return paintedField({
+        scale: getConf(self, ['ribbonColor', 'scale']),
+        field: getConf(self, ['ribbonColor', 'field']),
+      })
+    },
+    /** #getter */
+    get ribbonColorDomain(): string[] {
+      return getConf(self, ['ribbonColor', 'domain'])
+    },
+    /** #getter */
+    get ribbonPaint(): SyntenyColorPaint {
+      return colorPaintOf(self.configuration.ribbonColor)
+    },
+    /** #getter */
+    get hideUnlabelled(): boolean {
+      return getConf(self, 'hideUnlabelled')
+    },
+    /** #getter */
+    get drawCurves(): boolean {
+      return getConf(self, 'drawCurves')
+    },
+    /** #getter */
+    get bridgeSkippedLanes(): boolean {
+      return getConf(self, 'bridgeSkippedLanes')
+    },
+    /** #getter */
+    get showLaneTicks(): boolean {
+      return getConf(self, 'showLaneTicks')
+    },
+    /** #getter */
+    get splitStrands(): boolean {
+      return getConf(self, 'splitStrands')
+    },
+    /** #getter */
+    get showGeneLabels(): boolean {
+      return getConf(self, 'showGeneLabels')
+    },
+    /**
+     * #getter
+     * a field, a jexl expression, or empty for the name-else-ID default
+     */
+    get geneTextField(): string {
+      return getConf(self, 'text')
+    },
+    /** #getter */
+    get inlineLaneNames(): boolean {
+      return getConf(self, 'inlineLaneNames')
+    },
+    /** #getter */
+    get geneLabelPx() {
+      return geneLabelRowPx(getConf(self, 'showGeneLabels'))
+    },
+    /** #getter */
+    get laneLayerHeights(): number[] {
+      return self.configuration.laneLayers.map(layer => layer.height)
+    },
+    /** #getter */
+    get layerPx() {
+      return laneLayersPx(this.laneLayerHeights)
+    },
+    /** #getter */
+    get geneColorSettings(): GeneColorSettings {
+      return {
+        color: colorSnapshotOf(self.configuration.color),
+        utrColor: self.configuration.utrColor,
+      }
+    },
+    /** #getter */
+    get geneColorEncoding() {
+      return colorEncodingOf(this.geneColorSettings.color)
+    },
+    /**
+     * #getter
+     * `''` while `color.value` paints
+     */
+    get geneColorField(): string {
+      return colorFieldOf(this.geneColorEncoding)?.field ?? ''
+    },
+    /**
+     * #getter
+     * the constant `color.value` holds, undefined for none or a `jexl:` one
+     */
+    get geneSolidColor(): string | undefined {
+      const raw = this.geneColorSettings.color.value
+      return raw !== undefined && !isJexl(raw) ? raw : undefined
+    },
+  }
+}
+
+export function configSlotActions(self: ConfigSlotSelf) {
+  return {
+    /**
+     * #action
+     * takes the whole pinned order, empty meaning densest-first; merge a
+     * partial one with `mergeDomain` first
+     */
+    setDomain(domain: string[]) {
+      setConf(self, ['rows', 'domain'], domain)
+    },
+    /** #action */
+    setBridgeSkippedLanes(flag: boolean) {
+      setConf(self, 'bridgeSkippedLanes', flag)
+    },
+    /** #action */
+    setRibbonColorDomain(domain: string[]) {
+      setConf(self, ['ribbonColor', 'domain'], domain)
+    },
+    /** #action */
+    setHideUnlabelled(flag: boolean) {
+      setConf(self, 'hideUnlabelled', flag)
+    },
+    /** #action */
+    setDrawCurves(flag: boolean) {
+      setConf(self, 'drawCurves', flag)
+    },
+    /** #action */
+    setShowLaneTicks(flag: boolean) {
+      setConf(self, 'showLaneTicks', flag)
+    },
+    /** #action */
+    setSplitStrands(flag: boolean) {
+      setConf(self, 'splitStrands', flag)
+    },
+    /** #action */
+    setInlineLaneNames(flag: boolean) {
+      setConf(self, 'inlineLaneNames', flag)
+    },
+    /** #action */
+    setShowGeneLabels(flag: boolean) {
+      setConf(self, 'showGeneLabels', flag)
+    },
+    /** #action */
+    setGeneTextField(field: string) {
+      setConf(self, 'text', field)
+    },
+    /** #action */
+    setLodMode(mode: LodMode) {
+      setConf(self, 'lodMode', mode)
+    },
+  }
+}
