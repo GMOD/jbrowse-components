@@ -524,12 +524,12 @@ so `src/cache.ts` trims after every call:
 
 - **Bytes:** the decoded-bytes budget (`cacheBudgets.ts`) gets three quarters
   of `DEFAULT_CACHE_LIMIT`, 256 MiB, where a browser worker allows 1 GiB.
-- **File chunks:** the range cache counts entries, not bytes, so the engine
-  empties it once the bytes `readRange` answered since it last did pass the
-  other quarter.
+- **File chunks:** the range cache caps its entry count and keeps no byte
+  count, so the engine empties it once the bytes `readRange` answered since
+  the last emptying pass the other quarter.
 - **Adapters:** `keepRecentAdapters` keeps the `CACHED_ADAPTERS` (32) most
-  recently requested and frees the rest, so a loop over many files does not
-  keep every parsed index.
+  recently requested and frees the rest, so a loop over many files keeps the
+  parsed indexes of the last 32.
 - **`jbrowse.cache({ limit })`** sets the budget and reports what is held;
   **`jbrowse.clearCache()`** empties every cache in place. Measured from R on
   60 remote ONT CRAM reads, the process grew from 177 MB to 1325 MB before the
