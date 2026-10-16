@@ -72,8 +72,15 @@ index of its graph, by URL.
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). Click an
 **Examples** entry, or type a gene symbol or a region such as
 `chr6:32,510,001-32,600,000` into the **Gene or region** box and press **Show**.
-The page draws the window in JBrowse, with a row of buttons choosing what it
-draws:
+The page draws a map of the window: GRCh38's genes, then one row per structural
+form the haplotypes fall into, commonest first, each with its share of the
+haplotypes aligned there.
+
+<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's map, one row per structural form with its share of the haplotypes. GRCh38's own structure is one row among many, and most haplotypes fall in forms too rare to list. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
+
+**Open in JBrowse** opens the window in a JBrowse tab; once a row is clicked, it
+opens that form's haplotype as a lane instead. **More about this window** counts
+the forms, names a haplotype for each, and lists every launch:
 
 - **Graph**: the region drawn as a graph, with the structural variants each
   haplotype has under it
@@ -82,14 +89,10 @@ draws:
 - **BandageJS**: the same haplotypes in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
-**Open in full JBrowse** opens the view shown in a tab of its own. Under the
-view, a sentence counts the structural forms the 464 haplotypes fall into in the
-window, and a **Lane / Structure / Haplotypes / Share** table names the
-haplotype that stands for each form, how the form differs from GRCh38 and how
-many share it. **Haplotypes** and **BandageJS** open those lanes. A window over
-150 kb offers the graph alone.
-
-<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the Graph view drawn in the page and the structural forms its haplotypes have. The boxed button is Graph." src="/img/pangenome/genomes_hprc_loci.png" />
+A window over 150 kb offers the graph alone. The page keeps the window in its
+address, so a link such as
+[`?region=chr6:32,510,001-32,600,000`](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr6%3A32%2C510%2C001-32%2C600%2C000)
+opens the same map.
 
 ## What the graph and the page do not show {#limits}
 
@@ -106,9 +109,9 @@ below. We measured each on HPRC release 2.1 in October 2026.
   does not align across a window gets no lane, and the page counts them: "116
   haplotypes are not aligned at any of them and have no lane" at FLNA / EMD,
   where those are the haplotypes without an X chromosome. Elsewhere the sequence
-  exists in the assembly and the graph leaves it out. At NPHP1, 326 of the 462
-  haplotypes are aligned at two of the window's four sites and not at the rest,
-  so the commonest lane reads "not aligned at 2 sites".
+  exists in the assembly and the graph leaves it out. At NPHP1 most haplotypes
+  are aligned at only some of the window's sites, so the map's commonest row
+  reads "not aligned".
 - **The VCF has no record for the largest events.** HPRC removes every site with
   an allele over 100 kb from the VCF and keeps the smaller sites nested inside
   it. The **Variants** launch therefore cannot show UGT2B17's 117 kb deletion,
@@ -119,10 +122,9 @@ below. We measured each on HPRC release 2.1 in October 2026.
 - **The Structure column is a summary.** A size is rounded to two figures, and a
   state fewer than 5 haplotypes have is folded into the commonest one. At a
   complex locus a row reads "14 size changes, largest a 10 kb deletion", which
-  says little, and the HLA / MHC example has 34 forms of which the commonest
-  holds 11% of haplotypes and the page lists 8. Two rows can have the same words
-  for changes at different sites: four of PRSS1 / PRSS2's lanes read "20 kb
-  insertion".
+  says little, and at the HLA / MHC example the page lists the commonest 8 forms
+  of dozens. Two rows can have the same words for changes at different sites:
+  PRSS1 / PRSS2 has more than one row reading "20 kb insertion".
 - **A size in the table can be wrong where sites nest.** A restored site's size
   is what the sites inside it leave unexplained. That subtraction checked out
   for 92.5% of the cases we could test and gave a size the haplotype does not
@@ -136,11 +138,12 @@ below. We measured each on HPRC release 2.1 in October 2026.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
-Press **chr1** among the **Whole chromosomes** links under the box. Zoomed out
-past the graph adapter's `coarse` level, JBrowse draws one node per bubble, so
-the whole chromosome fits. A curve of segments per bubble (how many pieces of
-sequence each bubble holds) shows how much the haplotypes disagree at each
-locus.
+Open
+[chr1 on the HPRC page](https://genomes.jbrowse.org/pangenomes/hprc/?region=chr1)
+and press **Open in JBrowse**. Zoomed out past the graph adapter's `coarse`
+level, JBrowse draws one node per bubble, so the whole chromosome fits. A curve
+of segments per bubble (how many pieces of sequence each bubble holds) shows how
+much the haplotypes disagree at each locus.
 
 <Figure caption="GRCh38 chr1 with the cytogenetic bands, three loci the HPRC pages open, and two tracks built from the graph's bubbles. The blue curve is segments per bubble; the second track draws one node per bubble as gold blocks. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
@@ -149,10 +152,10 @@ overview and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-Click the **HLA / MHC** example on the HPRC page, then **Open in full JBrowse**.
-The Graph view opens three tracks: genes, the graph in the force-directed
-layout, and under it a matrix of the structural variants each haplotype has, one
-row per haplotype. Then:
+Click the **HLA / MHC** example on the HPRC page, then **Open in JBrowse**. The
+Graph launch opens three tracks: genes, the graph in the force-directed layout,
+and under it a matrix of the structural variants each haplotype has, one row per
+haplotype. Then:
 
 - Hide the variant matrix in the track selector, leaving the genes over the
   graph.
@@ -208,7 +211,7 @@ haplotype's allele at every bubble: a record is one allele written against
 GRCh38, and each sample's genotype holds a 1 for each of its haplotypes with
 that allele. We'll add it to the graph launch's session:
 
-```json addtrack loc=chr6:31,980,000-32,050,000
+```json addtrack loc=chr6:32,500,000-32,560,000
 {
   "type": "VariantTrack",
   "trackId": "hprc2_pgbi_grch38",

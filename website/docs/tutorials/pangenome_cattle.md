@@ -108,10 +108,10 @@ tabix-indexed segments and links and the overview.
 
 ## Overview of chr23 with one node per variant region
 
-Click **chr23** on the **Whole chromosomes** line of the
-[portal page](https://genomes.jbrowse.org/pangenomes/bovine). The whole
-chromosome opens with the graph drawn as one node per bubble, a stretch where
-the assemblies' paths split and rejoin.
+Open
+[chr23 on the portal page](https://genomes.jbrowse.org/pangenomes/bovine/?region=chr23)
+and press **Open in JBrowse**. The whole chromosome opens with the graph drawn
+as one node per bubble, a stretch where the assemblies' paths split and rejoin.
 
 <Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with one node per bubble. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
 

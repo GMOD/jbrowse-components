@@ -100,9 +100,9 @@ adds it, and the config below is the one to adapt for your own graph:
 ## CFH: haplotypes missing two genes
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
-**CFH / CFHR** example, the complement factor H gene cluster, then
-**Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006), such as
-HG00253's second haplotype, breaks across both genes.
+**CFH / CFHR** example, the complement factor H gene cluster. Under **More about
+this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
+et al. 2006), such as HG00253's second haplotype, breaks across both genes.
 
 <Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. HG00253's second haplotype lacks CFHR3 and CFHR1, and its lane breaks across both." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 

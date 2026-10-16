@@ -16,9 +16,9 @@ export const PORTAL_CONFIG = encodeURIComponent(
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
-// The answer's view switcher, which opens on Graph, and the frame it draws in.
-const GRAPH_VIEW_BUTTON = '[aria-label="View"] button[aria-pressed="true"]'
-const ANSWER_FRAME = 'iframe.ui-embed'
+// The answer's map of structural forms, and its button into JBrowse.
+const FORMS_MAP = '.ui-lanes'
+const OPEN_IN_JBROWSE = 'a.ui-open'
 
 // The Graph launch as the tutorial's reader has it after hiding the variant
 // matrix under the graph, as its C4 step says: genes over the graph. `loc` and
@@ -119,25 +119,23 @@ export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
 }
 
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
-  // The answer arrives after the page: its section holds the view switcher, the
-  // Graph launch drawn in a frame, and the structural forms read from the
-  // sidecar.
+  // The answer arrives after the page: the window's map of structural forms,
+  // read from the sidecar, over the button that opens the window in JBrowse.
   {
     mode: 'url',
     name: 'pangenome/genomes_hprc_loci',
     noSession: true,
     url: HPRC_MHC_ANSWER,
-    readySelector: GRAPH_VIEW_BUTTON,
-    readyFrame: ANSWER_FRAME,
+    readySelector: FORMS_MAP,
     readyTimeout: 180000,
     viewportWidth: 1100,
-    viewportHeight: 2205,
+    viewportHeight: 850,
     liveLabel: 'Open the HPRC page',
     diffThreshold: 0.02,
     annotations: [
       {
         type: 'box',
-        anchor: { selector: GRAPH_VIEW_BUTTON },
+        anchor: { selector: OPEN_IN_JBROWSE },
         strokeWidth: 3,
       },
     ],

@@ -1388,7 +1388,7 @@ export const figureFrames: Record<
   },
   "pangenome/genomes_hprc_loci": {
     "width": 1100,
-    "height": 2205
+    "height": 850
   },
   "about_track": {
     "width": 1500,
