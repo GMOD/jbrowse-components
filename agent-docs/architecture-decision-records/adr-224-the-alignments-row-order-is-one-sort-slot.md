@@ -46,3 +46,11 @@ One fewer slot, and the setters no longer coordinate. A column sort on another
 chromosome now falls back to `position` rather than to whatever `layoutOrder`
 held; the menu could not reach that combination. `sortedBy` and `layoutOrder` in
 a v5-beta config or session warn on load and are dropped (ADR-221).
+
+## Amendment (2026-10-16): `sort` is a plot word
+
+`sort` joins `PLOT_VOCABULARY`, so "Edit plot..." shows and writes the row
+order beside `facet` and `color`, and a plot example can stack split reads
+first. Before, the plot refused `{ "sort": "split" }` as a key outside it,
+though the row order is as much a grammar setting as the facet beside it.
+LGVSyntenyDisplay's `sort` joins its plot the same way.

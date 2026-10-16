@@ -43,3 +43,11 @@ test.each([
     expect(display.notices).toEqual(problems)
   },
 )
+
+test('the row order is part of the plot', () => {
+  const display = createDisplay()
+  expect(display.plotKeys).toContain('sort')
+  display.applyPlot({ sort: 'split' })
+  expect(display.plot).toMatchObject({ sort: 'split' })
+  expect(display.layoutOrder).toBe('split')
+})

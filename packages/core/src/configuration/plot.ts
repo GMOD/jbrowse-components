@@ -40,6 +40,7 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   transform: 'the steps run over the features before any mark',
   unit: 'the unit one row draws: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',
+  sort: 'the order the rows stack in: one over the whole window, or by a column at one base',
   rows: 'the rows: their field or order, labels, focus and tree',
   rowColor: 'the color of each row, by a row attribute',
   color: 'the color',
