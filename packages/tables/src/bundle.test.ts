@@ -37,6 +37,11 @@ import { fromWire } from './wire.ts'
 // A host with no web globals at all, as R's V8 is: an empty vm context, less
 // the `Intl` R's V8 is built without, where the only thing the bundle is
 // handed is a synchronous byte reader.
+const rangeBytes = new Map<string, number>()
+const wholeReads = new Map<string, number>()
+const add = (counts: Map<string, number>, url: string, n: number) =>
+  counts.set(url, (counts.get(url) ?? 0) + n)
+
 function readRange(url: string, start: number, end: number) {
   const file = fileURLToPath(url)
   const size = statSync(file).size
@@ -45,7 +50,13 @@ function readRange(url: string, start: number, end: number) {
   const fd = openSync(file, 'r')
   readSync(fd, bytes, 0, bytes.length, start)
   closeSync(fd)
-  return { status: end < 0 && start === 0 ? 200 : 206, size, bytes }
+  const whole = end < 0 && start === 0
+  if (whole) {
+    add(wholeReads, url, 1)
+  } else {
+    add(rangeBytes, url, bytes.length)
+  }
+  return { status: whole ? 200 : 206, size, bytes }
 }
 
 let jbrowse: {
@@ -268,26 +279,118 @@ test('the bundle stacks a multi-genome PAF as the engine does, in a bare host', 
   }
 })
 
-test('the file bytes a bare host read stay within a quarter of the budget', async () => {
-  const cache = async (args = {}) =>
-    JSON.parse(await jbrowse.cache(JSON.stringify(args))) as {
-      limit: number
-      read: number
-    }
-  const { limit } = await cache()
-  await cache({ limit: 400_000 })
-  for (const args of [BAM, CRAM, METHYLATED]) {
-    await jbrowse.alignments(JSON.stringify(args))
-    expect((await cache()).read).toBeLessThanOrEqual(100_000)
-  }
-  await jbrowse.clearCache()
-  await jbrowse.features(JSON.stringify(GFF3))
-  expect((await cache()).read).toBeGreaterThan(0)
-  expect(JSON.parse(await jbrowse.clearCache())).toEqual({
-    limit: 400_000,
-    decoded: 0,
-    read: 0,
-    adapters: 0,
+interface CacheUse {
+  limit: number | null
+  decoded: number
+  chunks: number
+  indexes: number
+  adapters: number
+}
+const cache = async (args = {}) =>
+  JSON.parse(await jbrowse.cache(JSON.stringify(args))) as CacheUse
+
+describe('a bare host under a budget', () => {
+  let limit: number | null
+  beforeAll(async () => {
+    ;({ limit } = await cache())
   })
-  await cache({ limit })
+  beforeEach(async () => {
+    await jbrowse.clearCache()
+    rangeBytes.clear()
+    wholeReads.clear()
+  })
+  afterAll(async () => {
+    await jbrowse.clearCache()
+    await cache({ limit })
+  })
+
+  test('drops the chunks of the file it read least recently first', async () => {
+    const bam = BAM.adapterConfig.bamLocation.uri
+    const cram = CRAM.adapterConfig.cramLocation.uri
+    const readBoth = async () => {
+      await jbrowse.alignments(JSON.stringify(BAM))
+      const before = new Map(rangeBytes)
+      await jbrowse.alignments(JSON.stringify(CRAM))
+      let cramCall = 0
+      for (const [url, n] of rangeBytes) {
+        cramCall += n - (before.get(url) ?? 0)
+      }
+      return cramCall
+    }
+    const indexed = (location: { uri: string }) => ({
+      ...location,
+      uri: `${location.uri}?again`,
+    })
+    const again = async () => {
+      rangeBytes.clear()
+      const { craiLocation } = CRAM.adapterConfig
+      await jbrowse.alignments(
+        JSON.stringify({
+          ...CRAM,
+          adapterConfig: {
+            ...CRAM.adapterConfig,
+            craiLocation: indexed(craiLocation),
+          },
+        }),
+      )
+      const { index } = BAM.adapterConfig
+      await jbrowse.alignments(
+        JSON.stringify({
+          ...BAM,
+          adapterConfig: {
+            ...BAM.adapterConfig,
+            index: { ...index, location: indexed(index.location) },
+          },
+        }),
+      )
+      return { bam: rangeBytes.get(bam) ?? 0, cram: rangeBytes.get(cram) ?? 0 }
+    }
+    expect((await cache({ limit: null })).limit).toBeNull()
+    const cramCall = await readBoth()
+    const { indexes } = await cache()
+    expect(await again()).toEqual({ bam: 0, cram: 0 })
+
+    await jbrowse.clearCache()
+    await cache({ limit: 4 * (indexes + cramCall) })
+    await readBoth()
+    const read = await again()
+    expect(read.cram).toBe(0)
+    expect(read.bam).toBeGreaterThan(0)
+  })
+
+  test('weighs an adapter by the files it read whole', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'tables-'))
+    const gff = path.join(dir, 'big.gff3')
+    const lines = Array.from(
+      { length: 50_000 },
+      (_, i) => `ctgA\tt\tgene\t${i + 1}\t${i + 10}\t.\t+\t.\tID=g${i}\n`,
+    )
+    writeFileSync(gff, `##gff-version 3\n${lines.join('')}`)
+    const size = statSync(gff).size
+    const uri = pathToFileURL(gff).href
+    const features = {
+      adapterConfig: { type: 'Gff3Adapter', gffLocation: { uri } },
+      region: { refName: 'ctgA', start: 0, end: 100 },
+    }
+    await cache({ limit: 14 * 2 ** 20 })
+    await jbrowse.features(JSON.stringify(features))
+    expect((await cache()).indexes).toBeGreaterThanOrEqual(size)
+    await jbrowse.alignments(JSON.stringify(BAM))
+    await jbrowse.features(JSON.stringify(features))
+    expect(wholeReads.get(uri)).toBe(2)
+  })
+
+  test('clearing empties every cache and keeps the budget', async () => {
+    await cache({ limit: 64 * 2 ** 20 })
+    await jbrowse.features(JSON.stringify(GFF3))
+    expect((await cache()).chunks).toBeGreaterThan(0)
+    expect(JSON.parse(await jbrowse.clearCache())).toEqual({
+      limit: 64 * 2 ** 20,
+      decoded: 0,
+      chunks: 0,
+      indexes: 0,
+      adapters: 0,
+      assemblies: 0,
+    })
+  })
 })

@@ -11,5 +11,6 @@ export {
   CachedFilehandle,
   RemoteFileWithRangeCache,
   clearCache,
+  clearCacheFor,
   sweepIdleCache,
 } from '@gmod/range-cache-filehandle'

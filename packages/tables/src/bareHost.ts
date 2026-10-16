@@ -286,9 +286,7 @@ let readRange: ReadRange = () => {
 function rangeOf(headers: unknown) {
   const v = new HeadersShim(headers).get('range')
   const m = v ? /bytes=(\d+)-(\d*)/.exec(v) : null
-  return m
-    ? ([Number(m[1]), m[2] ? Number(m[2]) : -1] as const)
-    : ([0, -1] as const)
+  return m ? ([Number(m[1]), m[2] ? Number(m[2]) : -1] as const) : undefined
 }
 
 // A bridge such as V8's console.r.call wraps each scalar in an array
@@ -296,18 +294,34 @@ function one<T>(v: unknown) {
   return (Array.isArray(v) ? v[0] : v) as T
 }
 
-let hostBytes = 0
+/**
+ * The bytes the host answered to each URL's range requests, which the chunk
+ * cache keeps, least recently read first. The engine deletes a URL's entry
+ * when it drops that URL's chunks.
+ */
+export const rangeBytes = new Map<string, number>()
 
-/** How many bytes the host's `readRange` has answered in all. */
-export function hostBytesRead() {
-  return hostBytes
-}
+/**
+ * The size of each file the host last read whole: an index, or a file an
+ * adapter parses whole, either of which the adapter keeps.
+ */
+export const wholeFileBytes = new Map<string, number>()
 
-function fetchFromHost(url: string, start: number, end: number) {
+function fetchFromHost(
+  url: string,
+  range: readonly [number, number] | undefined,
+) {
+  const [start, end] = range ?? [0, -1]
   const r = readRange(url, start, end) as Record<keyof HostRange, unknown>
   const body = one<Uint8Array | string | undefined>(r.bytes) ?? ''
   const bytes = typeof body === 'string' ? fromBase64(body) : body
-  hostBytes += bytes.length
+  if (range) {
+    const before = rangeBytes.get(url) ?? 0
+    rangeBytes.delete(url)
+    rangeBytes.set(url, before + bytes.length)
+  } else {
+    wholeFileBytes.set(url, bytes.length)
+  }
   return {
     status: one<number>(r.status),
     size: one<number>(r.size),
@@ -320,14 +334,15 @@ export async function fetchShim(
   init?: { headers?: unknown },
 ) {
   const url = String(input)
-  const [start, end] = rangeOf(init?.headers)
+  const range = rangeOf(init?.headers)
+  const [start] = range ?? [0]
   const data = /^data:[^,]*;base64,/.exec(url)
   const { status, size, bytes } = data
     ? (() => {
         const b = fromBase64(url.slice(data[0].length))
         return { status: 200, size: b.length, bytes: b }
       })()
-    : fetchFromHost(url, start, end)
+    : fetchFromHost(url, range)
   // a range starting at or past the end of the file is unsatisfiable, as a
   // server answers it; a 206 naming an end before its start is refused
   const past = !data && start > 0 && start >= size

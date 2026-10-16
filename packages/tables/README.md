@@ -21,6 +21,19 @@ web globals the readers need and reads every byte through the host's
 `jbrowseHost.readRange(url, start, end)`.
 [ggjbrowse](https://github.com/GMOD/ggjbrowse) is the R package built on it.
 
-Between calls the engine keeps up to 256 MiB of decoded records and file bytes,
-and the 32 adapters it read most recently. `engine.cache({ limit })` sets the
-budget in bytes and reports what it holds; `engine.clearCache()` empties it.
+Between calls the engine keeps up to 256 MiB, which every engine in the process
+shares:
+
+- **Decoded records**, three quarters.
+- **File bytes**, one quarter: first the indexes of the adapters it keeps, each
+  weighed by the files it read whole and at least 1 MiB, then the chunks it read
+  in ranges, the least recently read file's dropped first. The adapters the last
+  call read stay whatever they weigh.
+- `engine.cache({ limit })` sets the budget in bytes, `Infinity` for none, and
+  reports what the engine holds; `engine.clearCache()` empties it.
+- The budget counts the caches the engine keeps between calls. While a call
+  runs, the engine also holds that call's reads and tables, which one wide read
+  of a deep BAM takes to gigabytes.
+- A host that never yields to its event loop keeps alive every object a
+  `WeakRef` points to, the shared budget's evicted caches among them, so await a
+  macrotask between calls. From R's V8 the engine frees them.

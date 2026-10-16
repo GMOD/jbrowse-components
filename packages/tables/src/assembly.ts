@@ -88,20 +88,41 @@ async function resolveAssembly(
   }
 }
 
+/** How many resolved assemblies the engine keeps, the most recently read. */
+export const RESOLVED_ASSEMBLIES = 16
+
+const resolved = new Map<string, Promise<ResolvedAssembly>>()
+
+export function resolvedAssemblies() {
+  return resolved.size
+}
+
+export function forgetAssemblies() {
+  resolved.clear()
+}
+
 /**
- * Resolves assemblies as the browser's assembly does, each once: the sequence
- * adapter config, the contigs it lists, and every name the alias file gives a
- * contig mapped to its canonical name (`buildRefNameMaps`).
+ * Resolves assemblies as the browser's assembly does: the sequence adapter
+ * config, the contigs it lists, and every name the alias file gives a contig
+ * mapped to its canonical name (`buildRefNameMaps`). Every engine shares the
+ * {@link RESOLVED_ASSEMBLIES} most recently read.
  */
 export function assemblyResolver(pluginManager: PluginManager) {
-  const resolved = new Map<string, Promise<ResolvedAssembly>>()
   return (config: AssemblyConfig) => {
     const key = JSON.stringify(config)
-    let assembly = resolved.get(key)
-    if (!assembly) {
-      assembly = resolveAssembly(pluginManager, config)
-      resolved.set(key, assembly)
-      assembly.catch(() => resolved.delete(key))
+    const assembly = resolved.get(key) ?? resolveAssembly(pluginManager, config)
+    resolved.delete(key)
+    resolved.set(key, assembly)
+    assembly.catch(() => {
+      if (resolved.get(key) === assembly) {
+        resolved.delete(key)
+      }
+    })
+    for (const oldest of resolved.keys()) {
+      if (resolved.size <= RESOLVED_ASSEMBLIES) {
+        break
+      }
+      resolved.delete(oldest)
     }
     return assembly
   }

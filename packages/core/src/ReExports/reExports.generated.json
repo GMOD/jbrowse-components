@@ -1010,11 +1010,12 @@
       "names": [
         "READS_REFERENCE",
         "adapterConfigCacheKey",
+        "adapterRequests",
         "cachedAdapterCount",
         "clearAdapterCache",
         "freeAdapterResources",
         "getAdapter",
-        "keepRecentAdapters"
+        "keepAdapters"
       ],
       "worker": "real"
     },
@@ -3194,6 +3195,7 @@
         "CachedFilehandle",
         "RemoteFileWithRangeCache",
         "clearCache",
+        "clearCacheFor",
         "sweepIdleCache"
       ],
       "worker": "real"

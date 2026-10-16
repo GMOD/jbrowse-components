@@ -5,7 +5,8 @@ import { toWire } from './wire.ts'
 
 // The bundle's interface to a bare host: `jbrowse.<table>(argsJson)` resolves
 // to the tables' JSON as `toWire` writes it, and leaves their bytes in
-// `jbrowseBytes`, a Uint8Array, until the next call.
+// `jbrowseBytes`, a Uint8Array, until the next call. JSON has no Infinity, so
+// a cache limit of null means none, both ways.
 
 const send = (value: unknown) => {
   const { json, bytes } = toWire(value)
@@ -14,6 +15,9 @@ const send = (value: unknown) => {
 }
 
 const engine = createTablesEngine()
+
+const cacheArgs = ({ limit }: { limit?: number | null }) =>
+  limit === undefined ? {} : { limit: limit ?? Infinity }
 
 ;(globalThis as Record<string, unknown>).jbrowse = {
   alignments: async (args: string) =>
@@ -36,6 +40,6 @@ const engine = createTablesEngine()
   regions: async (args: string) => send(await engine.regions(JSON.parse(args))),
   alignmentColors: () => send(alignmentColors()),
   cache: async (args: string) =>
-    JSON.stringify(await engine.cache(JSON.parse(args))),
+    JSON.stringify(await engine.cache(cacheArgs(JSON.parse(args)))),
   clearCache: async () => JSON.stringify(await engine.clearCache()),
 }

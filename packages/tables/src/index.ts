@@ -84,7 +84,7 @@ export type { AssemblyConfig } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
-export { CACHED_ADAPTERS, DEFAULT_CACHE_LIMIT } from './cache.ts'
+export { DEFAULT_CACHE_LIMIT, MIN_ADAPTER_BYTES } from './cache.ts'
 export type { CacheUse } from './cache.ts'
 
 interface RegionArgs {
@@ -222,8 +222,8 @@ class TablesPlugin extends Plugin {
 /**
  * A plugin manager holding only the adapters the tables read through, and the
  * table functions over it. Each returns columns: one array per field, so a
- * host reads each table as a data frame. Each call leaves the caches within
- * their budget (`cache`).
+ * host reads each table as a data frame. Each call leaves the caches, which
+ * every engine in the process shares, within their budget (`cache`).
  */
 export function createTablesEngine() {
   const pluginManager = new PluginManager([
@@ -234,17 +234,12 @@ export function createTablesEngine() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  let assemblyOf = assemblyResolver(pluginManager)
+  const assemblyOf = assemblyResolver(pluginManager)
   const cache = engineCache()
   const trimmed =
     <A extends unknown[], R>(f: (...args: A) => Promise<R>) =>
-    async (...args: A) => {
-      try {
-        return await f(...args)
-      } finally {
-        await cache.trim()
-      }
-    }
+    (...args: A) =>
+      cache.within(() => f(...args))
   const named = async <A extends RegionArgs>({
     assembly,
     ...args
@@ -358,7 +353,7 @@ export function createTablesEngine() {
     }),
     /**
      * What the caches hold, after setting their budget to `limit` bytes where
-     * given: a smaller budget evicts at once.
+     * given, `Infinity` for none: a smaller budget evicts at once.
      */
     cache: async ({ limit }: { limit?: number } = {}) =>
       limit === undefined ? cache.held() : cache.setLimit(limit),
@@ -366,9 +361,6 @@ export function createTablesEngine() {
      * Empties every cache, resolved assemblies included, so the next call
      * reads its files again.
      */
-    clearCache: async () => {
-      assemblyOf = assemblyResolver(pluginManager)
-      return cache.clear()
-    },
+    clearCache: () => cache.clear(),
   }
 }

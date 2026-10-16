@@ -47,9 +47,11 @@ interface AdapterCacheEntry {
 // CoreFreeResources RPC reaches when the last track holding an adapter config is
 // closed (releaseAdapterSession). The browser sets no size bound: an adapter
 // whose track stays open lives as long as its worker, by design. A host with no
-// tracks to close bounds it with keepRecentAdapters. Ordered least recently
+// tracks to close bounds it with keepAdapters. Ordered least recently
 // requested first.
 let adapterCache = new Map<string, Promise<AdapterCacheEntry>>()
+let requests = 0
+const lastRequests = new WeakMap<AdapterCacheEntry, number>()
 
 /** stores a promise in the cache and auto-evicts if it rejects */
 function storeWithEvict(key: string, p: Promise<AdapterCacheEntry>) {
@@ -157,6 +159,7 @@ export async function getAdapter(
     sequenceAdapter,
   )
   ret.sessionIds.add(sessionId)
+  lastRequests.set(ret, ++requests)
   return ret
 }
 
@@ -222,25 +225,33 @@ function evict(cacheKey: string, entry: Promise<AdapterCacheEntry>) {
   }
 }
 
+/** How many adapter requests the cache has answered. */
+export function adapterRequests() {
+  return requests
+}
+
 /**
- * Evict every cached adapter but the `count` most recently requested, each
- * told to free what it holds, whatever sessions claim it. For a host with no
- * tracks to close, such as `@jbrowse/tables`, which would otherwise keep an
- * adapter, its parsed index and its share of the decoded-bytes budget for
- * every file it ever read.
+ * Evict every cached adapter `keep` declines, each told to free what it holds,
+ * whatever sessions claim it. `keep` sees the settled adapters most recently
+ * requested first, each with the {@link adapterRequests} count at its latest
+ * request. For a host with no tracks to close, such as `@jbrowse/tables`,
+ * which would otherwise keep an adapter, its parsed index and its share of the
+ * decoded-bytes budget for every file it ever read.
  */
-export async function keepRecentAdapters(count: number) {
-  const stale = [...adapterCache].slice(
-    0,
-    Math.max(0, adapterCache.size - count),
+export async function keepAdapters(
+  keep: (dataAdapter: AnyDataAdapter, lastRequest: number) => boolean,
+) {
+  const cached = [...adapterCache].reverse()
+  const settled = await Promise.all(
+    cached.map(([, entry]) => entry.catch(() => undefined)),
   )
-  for (const [cacheKey, entry] of stale) {
-    evict(cacheKey, entry)
-  }
-  for (const [, entry] of stale) {
-    const evicted = await entry.catch(() => undefined)
-    evicted?.dataAdapter.freeResources()
-  }
+  cached.forEach(([cacheKey, entry], i) => {
+    const adapter = settled[i]
+    if (adapter && !keep(adapter.dataAdapter, lastRequests.get(adapter) ?? 0)) {
+      evict(cacheKey, entry)
+      adapter.dataAdapter.freeResources()
+    }
+  })
 }
 
 /** How many adapters the cache holds, failed and pending ones included. */
