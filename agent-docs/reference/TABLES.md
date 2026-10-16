@@ -451,8 +451,8 @@ of the display's that it can't rebuild:
   display's facet.
 - **Scale output:** each mark's `color` is what the display's `color` object
   resolves to. The display's scale has already run, so a host draws the
-  column through an identity scale (ggjbrowse classes it `jbrowse_color`,
-  whose `scale_type` is identity).
+  column as it is (ggjbrowse paints it as `I(color)`, which trains no
+  scale).
 - **Guides:** `legend` and the other keys are that scale's guide, a label
   per color. `ramps` are its color bars (`rampKeyOf`): the stops the display
   samples, as `offset`, `color` and `opacity`, and the end labels its bar

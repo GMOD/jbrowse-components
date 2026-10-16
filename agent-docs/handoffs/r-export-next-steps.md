@@ -39,10 +39,9 @@ Still open, smaller:
 
 - `inherit.aes = FALSE` drops plot-level aesthetics.
 - A join on `features` does not reach `geom_jbrowse_glyphs`' other tables.
-- `scale_*_jbrowse` take no `name`/`...`.
 - A bad contig among several loci, and a reversed or overlong locus, pass
   silently.
-- `width` vs `px_per_bp`, and `min_reads` vs `min_junction_reads`.
+- `width` vs `px_per_bp`.
 - Printed regions are 0-based.
 - `jbrowse_sequence` takes no locus.
 - Two tracks on different contigs with the same span stack under one label.
