@@ -296,12 +296,10 @@ export function computeVisibleLabels(
         interbaseYs,
         interbaseLengths,
         interbaseTypes,
+        softclipBasePositions,
+        softclipBaseYs,
+        softclipBaseBases,
       } = rpcData
-      // Per-base soft-clip sequence; only populated when "show soft clipping" is
-      // enabled. When present and zoomed in enough for letters, the per-base loop
-      // below draws the clipped bases, so the (S<len>) summary is suppressed.
-      const { softclipBasePositions, softclipBaseYs, softclipBaseBases } =
-        rpcData
       const hasSoftclipBases = softclipBasePositions.length > 0
       // Zoomed out, the only thing this loop can emit is the count on a 'large'
       // insertion — small-insertion `(N)`, clip summaries and the SNP letters

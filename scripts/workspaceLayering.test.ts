@@ -118,6 +118,7 @@ describe('workspace layering', () => {
       '@jbrowse/tables -> @jbrowse/plugin-bed',
       '@jbrowse/tables -> @jbrowse/plugin-canvas',
       '@jbrowse/tables -> @jbrowse/plugin-comparative-adapters',
+      '@jbrowse/tables -> @jbrowse/plugin-config',
       '@jbrowse/tables -> @jbrowse/plugin-dotplot-view',
       '@jbrowse/tables -> @jbrowse/plugin-gff3',
       '@jbrowse/tables -> @jbrowse/plugin-gtf',

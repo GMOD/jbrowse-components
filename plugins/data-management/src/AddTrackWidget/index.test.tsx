@@ -400,14 +400,13 @@ test('handles undefined view gracefully', () => {
     widget: stateModelFactory(pluginManager),
   })
 
-  const session = SessionModel.create({
+  const { widget } = SessionModel.create({
     widget: {
       type: 'AddTrackWidget',
       // no view reference
     },
   })
 
-  const { widget } = session
   // Should not throw when view is undefined
   expect(widget.assembly).toBeUndefined()
 })

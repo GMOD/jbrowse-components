@@ -1839,7 +1839,7 @@ test('navToLocString with human assembly', async () => {
     view: LinearGenomeModel,
   })
 
-  const model = HumanSession.create({
+  const { view } = HumanSession.create({
     configuration: {},
     assemblyManager: {
       assemblies: {
@@ -1853,7 +1853,6 @@ test('navToLocString with human assembly', async () => {
       type: 'LinearGenomeView',
     },
   })
-  const { view } = model
 
   view.setWidth(800)
   view.setDisplayedRegions(hg38Regions.slice(0, 1))
