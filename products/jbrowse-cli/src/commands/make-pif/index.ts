@@ -56,7 +56,7 @@ export async function run(args?: string[]) {
   const description = 'creates pairwise indexed PAF (PIF), with bgzip and tabix'
 
   const examples = [
-    '# creates input.pif.gz and input.pif.gz.tbi in the same directory',
+    '# creates input.pif.gz and input.pif.gz.tbi in the current directory',
     '$ jbrowse make-pif input.paf',
     '',
     '# specify the output file, also creates output.pif.gz.tbi',
