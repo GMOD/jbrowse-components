@@ -161,6 +161,12 @@ look.
 | the `displayPhase` states | `DisplayChromeOverlayProvider` | `plainChromeOverlays` | `DisplayChromeBase` |
 | the bottom-right ambient controls | `TrackControlProvider` | `plainTrackControl` | each display's own body |
 
+- **An overlay takes plain props, never the display model.** `chromeOverlaySlots.tsx`
+  reads the model, one observer per overlay so a status tick re-renders only
+  its slot, and states the two rules every set used to copy: a byte-gate error
+  gets no `onRetry`, and every callback checks `isLiveModel` first. A rule an
+  overlay set would otherwise repeat goes in a slot.
+
 - **The view's own states are not a seam.** `loading`, `error` and `ready` are
   plain getters. An embedder writing `view.ready ? tracks : null` turns a 404 on a
   sequence file into a silent empty box. Read `error` before `loading`.

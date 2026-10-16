@@ -29,10 +29,9 @@ palette before reaching for a fourth context".
 
 The fetch status now goes through the seam, and the design question this entry
 posed turned out not to be one. Its two states *are* `DisplayChromeOverlays`
-entries — `Loading` and `BackgroundProgress` — and `ComparativeStatusModel`
-already satisfies both of their model shapes structurally, both being
-`{statusMessage?, statusProgress?}`. So it needed no new contract and no second
-one: `synteny-core` depends on `@jbrowse/display-ui`, reads
+entries — `Loading` and `BackgroundProgress` — which take plain props, filled
+from `ComparativeStatusModel` by display-kit's `LoadingSlot` and inline for the
+chip. So it needed no new contract and no second one: `synteny-core` depends on `@jbrowse/display-ui`, reads
 `useChromeOverlayOverride()`, and falls back to a Material pair it binds itself
 (a package cannot depend on `plugin-linear-genome-view`'s bindings).
 `ComparativeFetchStatus.test.tsx` pins both directions.
@@ -71,8 +70,7 @@ because `DisplayChromeOverlays` and its provider lived in
 alone, so the component could not read that context. The contract is
 `@jbrowse/display-ui` now — a package, with no UI-toolkit dependency and no
 plugin above it — so `synteny-core` depends on it like anything else, and the
-prop types it names are the four structural model shapes that moved with it
-rather than LGV display models.
+prop types it names are plain props rather than LGV display models.
 
 **The loading-time census is wired in, so this list is no longer invisible.**
 `recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's

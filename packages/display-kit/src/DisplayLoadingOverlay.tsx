@@ -1,28 +1,26 @@
 import LoadingOverlay from '@jbrowse/core/ui/LoadingOverlay'
 import { observer } from 'mobx-react'
 
-import type { DisplayLoadingOverlayModel } from '@jbrowse/display-ui'
+import type { LoadingProps } from '@jbrowse/display-ui'
 
 const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
-  model,
   visible,
   immediate,
-}: {
-  model: DisplayLoadingOverlayModel
-  visible: boolean
-  immediate?: boolean
-}) {
+  message,
+  progress,
+  canceled,
+  onCancel,
+  onRetry,
+}: LoadingProps) {
   return (
     <LoadingOverlay
-      statusMessage={model.statusMessage}
-      progress={model.statusProgress}
+      statusMessage={message}
+      progress={progress}
       isVisible={visible}
       immediate={immediate}
-      canceled={model.fetchCanceled}
-      onCancel={
-        model.cancelFetchByUser ? () => model.cancelFetchByUser?.() : undefined
-      }
-      onRetry={model.reload ? () => model.reload?.() : undefined}
+      canceled={canceled}
+      onCancel={onCancel}
+      onRetry={onRetry}
     />
   )
 })

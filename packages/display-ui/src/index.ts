@@ -22,11 +22,12 @@ export {
 } from './chromeOverlayContext.ts'
 export { default as plainChromeOverlays } from './plainChromeOverlays.tsx'
 export type {
-  DisplayBackgroundProgressModel,
+  BackgroundProgressProps,
   DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
-  TooLargeMessageModel,
+  ErrorBarProps,
+  LoadingProps,
+  RenderErrorProps,
+  TooLargeProps,
 } from './chromeOverlays.ts'
 
 // The bottom-right controls.

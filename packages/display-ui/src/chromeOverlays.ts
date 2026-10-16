@@ -1,108 +1,102 @@
 import type { ComponentType } from 'react'
 
-// The model each overlay is handed, declared here so a host writing an overlay
-// set can name them without importing an implementation. Structural: a display
-// satisfies one by having the fields.
-
-/** What `ErrorBar` reads: a failed fetch, and the way to run it again. */
-export interface DisplayErrorBarModel {
+/** What `RenderError` draws: a render-backend failure and the re-init. */
+export interface RenderErrorProps {
   error: unknown
-  reload: () => void
+  onRetry: () => void
+  height: number
 }
 
-/** What `Loading` reads. Everything is optional — a display that reports no
- * progress and offers no cancel still gets a scrim. */
-export interface DisplayLoadingOverlayModel {
-  statusMessage?: string
-  statusProgress?: number
-  fetchCanceled?: boolean
-  cancelFetchByUser?: () => void
-  reload?: () => void
+/**
+ * What `TooLarge` draws: the byte gate's banner text and the way past it.
+ * `onForceLoad` is the whole point of the state; without it the region is
+ * unreachable for the rest of the session.
+ */
+export interface TooLargeProps {
+  message: string
+  onForceLoad: () => void
 }
 
-/** What `BackgroundProgress` reads: the status channel for work with no fetch
- * behind it, while the phase is `ready`. */
-export interface DisplayBackgroundProgressModel {
-  statusMessage?: string
-  statusProgress?: number
+/**
+ * What `ErrorBar` draws: a failed fetch. No `onRetry` means a Retry cannot
+ * clear it (the byte gate tripped inside the fetch), so draw the message as
+ * information.
+ */
+export interface ErrorBarProps {
+  error: unknown
+  onRetry?: () => void
 }
 
-/** What `TooLarge` reads. `forceLoad` is the whole point of the state — see the
- * entry below. */
-export interface TooLargeMessageModel {
-  regionTooLargeReason: string
-  zoomCanReleaseGate: boolean
-  forceLoad: () => void
+/**
+ * What `Loading` draws. A display that reports no progress and offers no cancel
+ * passes neither, and still gets a scrim. `canceled` swaps Cancel for Retry.
+ */
+export interface LoadingProps {
+  visible: boolean
+  immediate?: boolean
+  message?: string
+  progress?: number
+  canceled?: boolean
+  onCancel?: () => void
+  onRetry?: () => void
 }
 
-// The five components that draw `displayPhase`'s terminal and overlay states.
-// `DisplayChromeBase` decides which renders; this interface keeps it ignorant
-// of what they render, and so free of MUI: an embedder with its own design
-// system supplies plain markup and ships no ThemeProvider. Every import above
-// is type-only, so this module pulls no runtime dependency.
-//
-// A replacement set must render something for each state; four test systems
-// key on the testids in `plainChromeOverlays.tsx`.
-//
-// `ErrorBar`, `Loading` and `BackgroundProgress` are portalled as a group into
-// the LGV's per-track overlay layer, which is `pointer-events: none`, so
-// anything of yours the user clicks sets `pointer-events: auto` on its own
-// positioned box. `BackgroundProgress` alone does not own its box; see its
-// entry.
+/** What `BackgroundProgress` draws: work with no fetch behind it. */
+export interface BackgroundProgressProps {
+  message?: string
+  progress?: number
+}
+
+/**
+ * The five components that draw `displayPhase`'s terminal and overlay states.
+ * `DisplayChromeBase` decides which renders, reads the display model, and hands
+ * each plain values and callbacks, so a set needs no model, no MobX and no UI
+ * toolkit: an embedder with their own design system supplies plain markup and
+ * ships no ThemeProvider. Every import above is type-only, so this module pulls
+ * no runtime dependency.
+ *
+ * A replacement set must render something for each state; four test systems
+ * key on the testids in `plainChromeOverlays.tsx`.
+ *
+ * `ErrorBar`, `Loading` and `BackgroundProgress` are portalled as a group into
+ * the LGV's per-track overlay layer, which is `pointer-events: none`, so
+ * anything of yours the user clicks sets `pointer-events: auto` on its own
+ * positioned box. `BackgroundProgress` alone does not own its box; see its
+ * entry.
+ */
 export interface DisplayChromeOverlays {
   /**
    * GPU/render-backend failure. A subtree-replacing terminal state: the canvas
    * unmounts and the backend disposes, so this owns the full display area.
    */
-  RenderError: ComponentType<{
-    error: unknown
-    onRetry: () => void
-    height: number
-  }>
-  /**
-   * The byte gate tripped. Also subtree-replacing. Must offer `model.forceLoad`
-   * or the region becomes unreachable for the rest of the session.
-   */
-  TooLarge: ComponentType<{ model: TooLargeMessageModel }>
+  RenderError: ComponentType<RenderErrorProps>
+  /** The byte gate tripped. Also subtree-replacing. */
+  TooLarge: ComponentType<TooLargeProps>
   /**
    * Fetch error, drawn *over* a live canvas rather than replacing it. Mounted
-   * unconditionally like the two below, so `visible` (`displayPhase ===
-   * 'error'`) is the gate -- don't re-derive it from `model.error`, which is
-   * the same subtraction `displayPhase` exists to retire.
+   * only while the phase is `error`.
    */
-  ErrorBar: ComponentType<{ model: DisplayErrorBarModel; visible: boolean }>
+  ErrorBar: ComponentType<ErrorBarProps>
   /**
-   * The loading scrim. `visible` is `displayPhase` `loading` or `canceled`,
-   * the second drawn from `model.fetchCanceled` with Retry in place of Cancel;
-   * `immediate` asks it to skip its anti-flash delay because nothing is painted
+   * The loading scrim, `visible` in the `loading` and `canceled` phases;
+   * `immediate` asks it to skip any anti-flash delay because nothing is painted
    * yet.
    *
-   * Mounted unconditionally, so it must handle `visible === false` itself — and
-   * that is load-bearing rather than a style choice: the anti-flash delay is
-   * component state, so a chrome that mounted this only while loading would
-   * restart the timer on every activation and never reach it. Keep any
-   * replacement mountable-while-hidden for the same reason.
+   * Mounted unconditionally, so it handles `visible === false` itself. An
+   * anti-flash delay is component state, so a chrome that mounted this only
+   * while loading would restart the timer on every activation and never reach
+   * it. Keep any replacement mountable-while-hidden for the same reason.
    */
-  Loading: ComponentType<{
-    model: DisplayLoadingOverlayModel
-    visible: boolean
-    immediate?: boolean
-  }>
+  Loading: ComponentType<LoadingProps>
   /**
-   * Status for work with no fetch behind it, while the phase is `ready`.
-   * Mounted unconditionally; gates on `visible` itself.
+   * Status for work with no fetch behind it, mounted only while that work
+   * runs: in the LGV chrome, a status message set while the phase is `ready`.
    *
    * **The one state that does not own its own box.** The chrome anchors the
-   * bottom-right corner and lays this out there, because that corner is shared
-   * with the display's own control row (`BottomRightIndicators`) and two boxes
-   * claiming it independently is exactly what they used to do — each pinning
-   * itself to `bottom: 2; right: 2` of the same overlay layer, the controls
-   * winning on z-index and the status text vanishing underneath. So render an
-   * **in-flow** chip: no `position`, no `inset`, no corner offsets. Sizing and
-   * colors are yours; placement is not. See `bottomRightCorner.ts`.
+   * bottom-right corner and lays this out there, sharing it with the display's
+   * own control row (`BottomRightIndicators`). So render an **in-flow** chip:
+   * no `position`, no `inset`, no corner offsets. Sizing and colors are yours;
+   * placement is not. See `bottomRightCorner.ts`.
    */
-  BackgroundProgress: ComponentType<{
-    model: DisplayBackgroundProgressModel
-    visible: boolean
-  }>
+  BackgroundProgress: ComponentType<BackgroundProgressProps>
 }

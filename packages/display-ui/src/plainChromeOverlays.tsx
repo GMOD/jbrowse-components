@@ -1,4 +1,3 @@
-import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 // the subpath, not the `@jbrowse/core/ui` barrel: this file is the MUI-free
 // chrome, and gpuFallback.ts is React-free for exactly that reason
 import {
@@ -10,16 +9,15 @@ import {
 import { progressLabel } from '@jbrowse/core/util/progress'
 import { observer } from 'mobx-react'
 
-import { isLiveModel } from './isLiveModel.ts'
-import { tooLargeBannerText } from './tooLargeBannerText.ts'
 import Tooltip from './tooltip/Tooltip.tsx'
 
 import type {
-  DisplayBackgroundProgressModel,
+  BackgroundProgressProps,
   DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
-  TooLargeMessageModel,
+  ErrorBarProps,
+  LoadingProps,
+  RenderErrorProps,
+  TooLargeProps,
 } from './chromeOverlays.ts'
 
 // A dependency-free `DisplayChromeOverlays` for embedders who don't want MUI:
@@ -159,11 +157,7 @@ const PlainRenderError = observer(function PlainRenderError({
   error,
   onRetry,
   height,
-}: {
-  error: unknown
-  onRetry: () => void
-  height: number
-}) {
+}: RenderErrorProps) {
   return (
     <div style={banner(height)} role="alert">
       <span style={{ wordBreak: 'break-word' }}>{errorText(error)}</span>
@@ -202,30 +196,13 @@ const PlainRenderError = observer(function PlainRenderError({
 })
 
 const PlainTooLarge = observer(function PlainTooLarge({
-  model,
-}: {
-  model: TooLargeMessageModel
-}) {
+  message,
+  onForceLoad,
+}: TooLargeProps) {
   return (
     <div style={banner()} role="status">
-      <span style={{ wordBreak: 'break-word' }}>
-        {tooLargeBannerText(model.regionTooLargeReason, {
-          zoomCanRelease: model.zoomCanReleaseGate,
-        })}
-      </span>
-      <button
-        type="button"
-        style={button}
-        onClick={() => {
-          // the banner unmounts the canvas, so a click landing after the track
-          // was closed would otherwise call an action on a dead node. Not bare
-          // `isAlive` — this model may be the plain object the contract invites,
-          // which that throws on. See isLiveModel.ts.
-          if (isLiveModel(model)) {
-            model.forceLoad()
-          }
-        }}
-      >
+      <span style={{ wordBreak: 'break-word' }}>{message}</span>
+      <button type="button" style={button} onClick={onForceLoad}>
         Force load
       </button>
     </div>
@@ -233,36 +210,23 @@ const PlainTooLarge = observer(function PlainTooLarge({
 })
 
 const PlainErrorBar = observer(function PlainErrorBar({
-  model,
-  visible,
-}: {
-  model: DisplayErrorBarModel
-  visible: boolean
-}) {
-  const { error } = model
-  if (!visible || !error) {
-    return null
-  }
-  return isRegionTooLargeError(error) ? (
-    <div style={overlayBox} role="status">
-      <div style={chip}>
-        <span style={{ wordBreak: 'break-word' }}>{error.message}</span>
-      </div>
-    </div>
-  ) : (
-    <div style={overlayBox} role="alert">
+  error,
+  onRetry,
+}: ErrorBarProps) {
+  return (
+    <div style={overlayBox} role={onRetry ? 'alert' : 'status'}>
       <div style={chip}>
         <span style={{ wordBreak: 'break-word' }}>{errorText(error)}</span>
-        <button
-          type="button"
-          style={button}
-          data-testid="reload_button"
-          onClick={() => {
-            model.reload()
-          }}
-        >
-          Retry
-        </button>
+        {onRetry ? (
+          <button
+            type="button"
+            style={button}
+            data-testid="reload_button"
+            onClick={onRetry}
+          >
+            Retry
+          </button>
+        ) : null}
       </div>
     </div>
   )
@@ -272,39 +236,34 @@ const PlainErrorBar = observer(function PlainErrorBar({
 // judgment JBrowse made for its own UI, and an embedder pacing their own
 // loading affordances shouldn't inherit it invisibly. Wrap this if you want it.
 const PlainLoading = observer(function PlainLoading({
-  model,
   visible,
-}: {
-  model: DisplayLoadingOverlayModel
-  visible: boolean
-  immediate?: boolean
-}) {
+  message,
+  progress,
+  canceled,
+  onCancel,
+  onRetry,
+}: LoadingProps) {
   if (!visible) {
     return null
   }
-  const { statusMessage, statusProgress, fetchCanceled } = model
   return (
     <div
       style={overlayBox}
-      data-testid={
-        fetchCanceled ? 'loading-overlay-canceled' : 'loading-overlay'
-      }
+      data-testid={canceled ? 'loading-overlay-canceled' : 'loading-overlay'}
     >
       <div
         style={{ ...chip, display: 'flex', alignItems: 'center' }}
         role="status"
       >
-        {fetchCanceled ? (
+        {canceled ? (
           <>
             <span>Loading canceled</span>
-            {model.reload ? (
+            {onRetry ? (
               <button
                 type="button"
                 style={button}
                 data-testid="loading-overlay-retry"
-                onClick={() => {
-                  model.reload?.()
-                }}
+                onClick={onRetry}
               >
                 Retry
               </button>
@@ -317,21 +276,19 @@ const PlainLoading = observer(function PlainLoading({
                 own indeterminate cue — the Material one animates LoadingDots
                 there, and a static string is the plain equivalent. */}
             <span>
-              {statusProgress === undefined
-                ? `${statusMessage || 'Loading'}...`
-                : progressLabel(statusMessage || 'Loading', statusProgress)}
+              {progress === undefined
+                ? `${message || 'Loading'}...`
+                : progressLabel(message || 'Loading', progress)}
             </span>
-            {statusProgress === undefined ? null : (
-              <ProgressBar fraction={statusProgress} />
+            {progress === undefined ? null : (
+              <ProgressBar fraction={progress} />
             )}
-            {model.cancelFetchByUser ? (
+            {onCancel ? (
               <button
                 type="button"
                 style={button}
                 data-testid="loading-overlay-cancel"
-                onClick={() => {
-                  model.cancelFetchByUser?.()
-                }}
+                onClick={onCancel}
               >
                 Cancel
               </button>
@@ -344,28 +301,20 @@ const PlainLoading = observer(function PlainLoading({
 })
 
 const PlainBackgroundProgress = observer(function PlainBackgroundProgress({
-  model,
-  visible,
-}: {
-  model: DisplayBackgroundProgressModel
-  visible: boolean
-}) {
-  // The only state that renders no positioned box of its own: the chrome
-  // anchors the bottom-right corner and shares it with the display's control
-  // row, so this is laid out there. Claiming `inset: 0` here would collapse
-  // against that box, and pinning to the corner would sit under the row.
-  return visible && model.statusMessage ? (
+  message,
+  progress,
+}: BackgroundProgressProps) {
+  // in-flow: the chrome anchors the corner it shares with the control row
+  return (
     <div
       style={{ ...chip, display: 'flex', alignItems: 'center' }}
       role="status"
       data-testid="progress-chip"
     >
-      <span>{progressLabel(model.statusMessage, model.statusProgress)}</span>
-      {model.statusProgress === undefined ? null : (
-        <ProgressBar fraction={model.statusProgress} />
-      )}
+      <span>{progressLabel(message || 'Loading', progress)}</span>
+      {progress === undefined ? null : <ProgressBar fraction={progress} />}
     </div>
-  ) : null
+  )
 })
 
 /**

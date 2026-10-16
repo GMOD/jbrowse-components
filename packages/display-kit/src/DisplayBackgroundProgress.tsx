@@ -3,29 +3,25 @@
 import ProgressChip from '@jbrowse/core/ui/ProgressChip'
 import { observer } from 'mobx-react'
 
-import type { DisplayBackgroundProgressModel } from '@jbrowse/display-ui'
+import type { BackgroundProgressProps } from '@jbrowse/display-ui'
 
 /**
  * The status channel for work that runs while the display is `ready`:
  * clustering, sorting, anything that reports through `setStatusMessage` without
  * a fetch behind it. A corner chip rather than the scrim, because the drawn
- * rows underneath stay usable. `visible` is `phase === 'ready'`, so the scrim
- * and the chip never show the same message together.
+ * rows underneath stay usable.
  */
 const DisplayBackgroundProgress = observer(function DisplayBackgroundProgress({
-  model,
-  visible,
-}: {
-  model: DisplayBackgroundProgressModel
-  visible: boolean
-}) {
-  return visible && model.statusMessage ? (
+  message,
+  progress,
+}: BackgroundProgressProps) {
+  return (
     <ProgressChip
-      status={{ message: model.statusMessage, fraction: model.statusProgress }}
+      status={{ message, fraction: progress }}
       // the chrome anchors the corner it shares with the display's control row
       anchored={false}
     />
-  ) : null
+  )
 })
 
 export default DisplayBackgroundProgress

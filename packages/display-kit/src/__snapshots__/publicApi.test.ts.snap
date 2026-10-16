@@ -38,6 +38,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./TrackHeightMixin",
   "./TriangleMatrixMixin",
   "./TriangleMatrixSvgLayer",
+  "./chromeOverlaySlots",
   "./coarseTier",
   "./coarseTierPhase",
   "./colorByMenu",

@@ -1,23 +1,17 @@
-import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import ErrorBar from '@jbrowse/core/ui/ErrorBar'
 import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
 
-import type { DisplayErrorBarModel } from '@jbrowse/display-ui'
+import type { ErrorBarProps } from '@jbrowse/display-ui'
 
 const DisplayErrorBar = observer(function DisplayErrorBar({
-  model,
-  visible,
-}: {
-  model: DisplayErrorBarModel
-  visible: boolean
-}) {
-  const { error } = model
-  if (!visible || !error) {
-    return null
-  }
-  return isRegionTooLargeError(error) ? (
+  error,
+  onRetry,
+}: ErrorBarProps) {
+  return onRetry ? (
+    <ErrorBar error={error} onRetry={onRetry} />
+  ) : (
     <div
       style={{
         position: 'absolute',
@@ -28,15 +22,11 @@ const DisplayErrorBar = observer(function DisplayErrorBar({
         pointerEvents: 'auto',
       }}
     >
-      <BlockMsg severity="info" message={error.message} />
+      <BlockMsg
+        severity="info"
+        message={error instanceof Error ? error.message : String(error)}
+      />
     </div>
-  ) : (
-    <ErrorBar
-      error={error}
-      onRetry={() => {
-        model.reload()
-      }}
-    />
   )
 })
 

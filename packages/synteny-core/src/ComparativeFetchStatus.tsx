@@ -2,6 +2,7 @@
 // display's first load would otherwise pull whole
 import ProgressChip from '@jbrowse/core/ui/ProgressChip'
 import DisplayLoadingOverlay from '@jbrowse/display-kit/DisplayLoadingOverlay'
+import { LoadingSlot } from '@jbrowse/display-kit/chromeOverlaySlots'
 import { useChromeOverlayOverride } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
@@ -10,7 +11,7 @@ import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 /**
  * What the shared status reads: `ComparativeFetchMixin`'s `loading` and
  * `refetching`, plus the status channel. The last three are the overlay's two
- * buttons, required here where `DisplayLoadingOverlayModel` has them optional,
+ * buttons, required here where the loading slot has them optional,
  * so a display cannot lose its Cancel and Retry by composing the wrong thing.
  */
 export interface ComparativeStatusModel {
@@ -29,17 +30,10 @@ const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
   {
     Loading: DisplayLoadingOverlay,
     BackgroundProgress: observer(function BackgroundProgress({
-      model,
-      visible,
+      message,
+      progress,
     }) {
-      return visible ? (
-        <ProgressChip
-          status={{
-            message: model.statusMessage,
-            fraction: model.statusProgress,
-          }}
-        />
-      ) : null
+      return <ProgressChip status={{ message, fraction: progress }} />
     }),
   }
 
@@ -59,8 +53,7 @@ const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
  * renders neither of these.
  *
  * Both states go through the bring-your-own seam: they are two of the five
- * `DisplayChromeOverlays` entries, and `ComparativeStatusModel` satisfies both
- * model shapes structurally.
+ * `DisplayChromeOverlays` entries.
  */
 const ComparativeFetchStatus = observer(function ComparativeFetchStatus({
   display,
@@ -72,8 +65,18 @@ const ComparativeFetchStatus = observer(function ComparativeFetchStatus({
   const { loading, refetching } = display
   return (
     <>
-      <Loading model={display} visible={loading} immediate />
-      <BackgroundProgress model={display} visible={refetching} />
+      <LoadingSlot
+        model={display}
+        Loading={Loading}
+        visible={loading}
+        immediate
+      />
+      {refetching ? (
+        <BackgroundProgress
+          message={display.statusMessage}
+          progress={display.statusProgress}
+        />
+      ) : null}
     </>
   )
 })

@@ -8,8 +8,8 @@ import { observer } from 'mobx-react'
 
 import type {
   DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
+  ErrorBarProps,
+  LoadingProps,
 } from '@jbrowse/display-ui'
 
 const pill: React.CSSProperties = {
@@ -59,51 +59,32 @@ const Pill = observer(function Pill({
 })
 
 const MyErrorBar = observer(function MyErrorBar({
-  model,
-  visible,
-}: {
-  model: DisplayErrorBarModel
-  visible: boolean
-}) {
-  return visible && model.error ? (
-    <div role="alert">
-      <Pill
-        action={{
-          label: 'Try again',
-          run: () => {
-            model.reload()
-          },
-        }}
-      >
-        {model.error instanceof Error
-          ? model.error.message
-          : String(model.error)}
+  error,
+  onRetry,
+}: ErrorBarProps) {
+  return (
+    <div role={onRetry ? 'alert' : 'status'}>
+      <Pill action={onRetry ? { label: 'Try again', run: onRetry } : undefined}>
+        {error instanceof Error ? error.message : String(error)}
       </Pill>
     </div>
-  ) : null
+  )
 })
 
 const MyLoading = observer(function MyLoading({
-  model,
   visible,
-}: {
-  model: DisplayLoadingOverlayModel
-  visible: boolean
-}) {
-  const { statusMessage, fetchCanceled, reload, cancelFetchByUser } = model
-  return !visible ? null : fetchCanceled ? (
-    <Pill action={reload ? { label: 'Resume', run: reload } : undefined}>
+  message,
+  canceled,
+  onCancel,
+  onRetry,
+}: LoadingProps) {
+  return !visible ? null : canceled ? (
+    <Pill action={onRetry ? { label: 'Resume', run: onRetry } : undefined}>
       Stopped
     </Pill>
   ) : (
-    <Pill
-      action={
-        cancelFetchByUser
-          ? { label: 'Stop', run: cancelFetchByUser }
-          : undefined
-      }
-    >
-      {statusMessage || 'Loading…'}
+    <Pill action={onCancel ? { label: 'Stop', run: onCancel } : undefined}>
+      {message || 'Loading…'}
     </Pill>
   )
 })

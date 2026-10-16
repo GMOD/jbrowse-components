@@ -70,8 +70,8 @@ test('not mounting it leaves JBrowse its own Material look', async () => {
 })
 
 test('overlays can be replaced without giving up the plain corner control', async () => {
-  const MyErrorBar = function MyErrorBar({ visible }: { visible: boolean }) {
-    return visible ? <div data-testid="my-error-bar" /> : null
+  const MyErrorBar = function MyErrorBar() {
+    return <div data-testid="my-error-bar" />
   }
   const mine: DisplayChromeOverlays = {
     ...plainChromeOverlays,

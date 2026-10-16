@@ -74,13 +74,14 @@ export {
   useTrackControlMenu,
 } from '@jbrowse/display-ui'
 export type {
-  DisplayBackgroundProgressModel,
+  BackgroundProgressProps,
   DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
+  ErrorBarProps,
   LegendItem,
   LegendSection,
-  TooLargeMessageModel,
+  LoadingProps,
+  RenderErrorProps,
+  TooLargeProps,
   TrackControlComponent,
   TrackControlIcon,
   TrackControlMenu,

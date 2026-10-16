@@ -4100,6 +4100,19 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-kit/chromeOverlaySlots": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "BackgroundProgressSlot",
+        "ErrorBarSlot",
+        "LoadingSlot",
+        "TooLargeSlot"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
     "@jbrowse/display-kit/coarseTier": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4769,8 +4782,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@mui/material",
-        "react-dom"
+        "@mui/material"
       ]
     },
     "@jbrowse/display-kit/TrackControl": {

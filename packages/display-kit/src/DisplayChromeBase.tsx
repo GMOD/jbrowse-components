@@ -18,29 +18,34 @@ import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
 import ReplacedDisplay from './ReplacedDisplay.tsx'
 import { isAxisHost } from './axisHost.ts'
+import {
+  BackgroundProgressSlot,
+  ErrorBarSlot,
+  LoadingSlot,
+  TooLargeSlot,
+} from './chromeOverlaySlots.tsx'
 import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
 import { useAnimationFrames } from './useAnimationFrames.ts'
 
+import type {
+  ErrorSource,
+  StatusSource,
+  TooLargeSource,
+} from './chromeOverlaySlots.tsx'
 import type { AnimationHost } from './useAnimationFrames.ts'
 import type {
   MouseState,
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
-import type {
-  DisplayBackgroundProgressModel,
-  DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
-  TooLargeMessageModel,
-} from '@jbrowse/display-ui'
+import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, MouseEventHandler, ReactNode } from 'react'
 
-// What the chrome reads itself, plus what each overlay reads, composed from the
-// overlays' own model types so the two cannot drift. `renderError` and
+// What the chrome reads itself, plus what its overlay slots read, composed from
+// the slots' own source types so the two cannot drift. `renderError` and
 // `setRenderError` are `RenderLifecycleModel`'s, intersected in below.
 export type ChromeModel = {
   displayPhase: DisplayPhase
@@ -54,10 +59,9 @@ export type ChromeModel = {
   configuration: { displayId: string }
   height: number
 } & AnimationHost &
-  DisplayErrorBarModel &
-  TooLargeMessageModel &
-  DisplayLoadingOverlayModel &
-  DisplayBackgroundProgressModel
+  ErrorSource &
+  TooLargeSource &
+  StatusSource
 
 export interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -198,7 +202,7 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
   if (phase === 'tooLarge') {
     return (
       <ReplacedDisplay model={model} phase={phase}>
-        <TooLarge model={model} />
+        <TooLargeSlot model={model} TooLarge={TooLarge} />
       </ReplacedDisplay>
     )
   }
@@ -264,9 +268,12 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
           LGV's inter-region masks would stripe them (ADR-058). One portal for
           the group, so every overlay set inherits it. */}
       <TrackOverlayPortal>
-        <ErrorBar model={model} visible={phase === 'error'} />
-        <Loading
+        {phase === 'error' ? (
+          <ErrorBarSlot model={model} ErrorBar={ErrorBar} />
+        ) : null}
+        <LoadingSlot
           model={model}
+          Loading={Loading}
           visible={phase === 'loading' || phase === 'canceled'}
           // nothing painted yet, so nothing for the indicator to flash over
           immediate={!drawn}
@@ -291,7 +298,11 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
         >
           {/* Bare, with no wrapper: a wrapper would stay a zero-height flex
               item and spend the `gap`, lifting the control row 4px. */}
-          <BackgroundProgress model={model} visible={phase === 'ready'} />
+          <BackgroundProgressSlot
+            model={model}
+            BackgroundProgress={BackgroundProgress}
+            visible={phase === 'ready'}
+          />
         </div>
       </TrackOverlayPortal>
       {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
