@@ -296,13 +296,22 @@ function one<T>(v: unknown) {
   return (Array.isArray(v) ? v[0] : v) as T
 }
 
+let hostBytes = 0
+
+/** How many bytes the host's `readRange` has answered in all. */
+export function hostBytesRead() {
+  return hostBytes
+}
+
 function fetchFromHost(url: string, start: number, end: number) {
   const r = readRange(url, start, end) as Record<keyof HostRange, unknown>
   const body = one<Uint8Array | string | undefined>(r.bytes) ?? ''
+  const bytes = typeof body === 'string' ? fromBase64(body) : body
+  hostBytes += bytes.length
   return {
     status: one<number>(r.status),
     size: one<number>(r.size),
-    bytes: typeof body === 'string' ? fromBase64(body) : body,
+    bytes,
   }
 }
 

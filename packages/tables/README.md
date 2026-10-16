@@ -20,3 +20,7 @@ ECMAScript host, such as R's V8: one file with no imports, which installs the
 web globals the readers need and reads every byte through the host's
 `jbrowseHost.readRange(url, start, end)`.
 [ggjbrowse](https://github.com/GMOD/ggjbrowse) is the R package built on it.
+
+Between calls the engine keeps up to 256 MiB of decoded records and file bytes,
+and the 32 adapters it read most recently. `engine.cache({ limit })` sets the
+budget in bytes and reports what it holds; `engine.clearCache()` empties it.

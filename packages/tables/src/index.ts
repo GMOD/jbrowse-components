@@ -35,6 +35,7 @@ import {
 } from '@jbrowse/plugin-wiggle/tables'
 
 import { assemblyResolver, renameRegions } from './assembly.ts'
+import { engineCache } from './cache.ts'
 import { fileRegions } from './fileRegions.ts'
 
 import type { AssemblyConfig, TablesRegion } from './assembly.ts'
@@ -83,6 +84,8 @@ export type { AssemblyConfig } from './assembly.ts'
 export { alignmentColors } from './colors.ts'
 export { installBareHostGlobals } from './bareHost.ts'
 export type { HostRange, ReadRange } from './bareHost.ts'
+export { CACHED_ADAPTERS, DEFAULT_CACHE_LIMIT } from './cache.ts'
+export type { CacheUse } from './cache.ts'
 
 interface RegionArgs {
   adapterConfig: Record<string, unknown>
@@ -219,7 +222,8 @@ class TablesPlugin extends Plugin {
 /**
  * A plugin manager holding only the adapters the tables read through, and the
  * table functions over it. Each returns columns: one array per field, so a
- * host reads each table as a data frame.
+ * host reads each table as a data frame. Each call leaves the caches within
+ * their budget (`cache`).
  */
 export function createTablesEngine() {
   const pluginManager = new PluginManager([
@@ -230,7 +234,17 @@ export function createTablesEngine() {
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
-  const assemblyOf = assemblyResolver(pluginManager)
+  let assemblyOf = assemblyResolver(pluginManager)
+  const cache = engineCache()
+  const trimmed =
+    <A extends unknown[], R>(f: (...args: A) => Promise<R>) =>
+    async (...args: A) => {
+      try {
+        return await f(...args)
+      } finally {
+        await cache.trim()
+      }
+    }
   const named = async <A extends RegionArgs>({
     assembly,
     ...args
@@ -258,14 +272,18 @@ export function createTablesEngine() {
     }
   }
   return {
-    alignments: (args: WithAssembly<AlignmentTablesArgs> & RowLimit) =>
+    alignments: trimmed((args: WithAssembly<AlignmentTablesArgs> & RowLimit) =>
       onContig(args, alignmentTables),
-    features: (args: WithAssembly<FeatureTablesArgs> & RowLimit) =>
+    ),
+    features: trimmed((args: WithAssembly<FeatureTablesArgs> & RowLimit) =>
       onContig(args, featureAndRecordTables),
-    wiggle: (args: WithAssembly<WiggleTablesArgs> & RowLimit) =>
+    ),
+    wiggle: trimmed((args: WithAssembly<WiggleTablesArgs> & RowLimit) =>
       onContig(args, wiggleTables),
-    variants: (args: WithAssembly<VariantTablesArgs> & RowLimit) =>
+    ),
+    variants: trimmed((args: WithAssembly<VariantTablesArgs> & RowLimit) =>
       onContig(args, variantTables),
+    ),
     /**
      * Each contig a file lists, from 0 to the end of the contig: the regions
      * a read of the whole file reads, under the file's own spelling. The end
@@ -274,57 +292,83 @@ export function createTablesEngine() {
      * addresses. `lengthKnown` says which, and `hasData` whether the file
      * holds records there, null where its index cannot tell.
      */
-    fileRegions: async ({
-      adapterConfig,
-      assembly,
-    }: {
-      adapterConfig: Record<string, unknown>
-      assembly?: AssemblyConfig
-    }) =>
-      fileRegions(
-        pluginManager,
+    fileRegions: trimmed(
+      async ({
         adapterConfig,
-        assembly ? await assemblyOf(assembly) : undefined,
-      ),
+        assembly,
+      }: {
+        adapterConfig: Record<string, unknown>
+        assembly?: AssemblyConfig
+      }) =>
+        fileRegions(
+          pluginManager,
+          adapterConfig,
+          assembly ? await assemblyOf(assembly) : undefined,
+        ),
+    ),
     variantDensityAlpha,
-    synteny: (args: SyntenyTablesArgs) => syntenyTables(pluginManager, args),
-    dotplot: (args: DotplotTablesArgs) => dotplotTables(pluginManager, args),
-    contigs: (args: ContigTablesArgs) => contigTables(pluginManager, args),
-    multiway: (args: MultiWayTablesArgs) => multiwayTables(pluginManager, args),
-    sequence: async ({
-      assembly,
-      ...args
-    }: WithAssembly<{
-      sequenceAdapter?: Record<string, unknown>
-      region: TablesRegion
-    }>) => {
-      const { sequenceAdapter, region } = assembly
-        ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
-        : args
-      if (!sequenceAdapter) {
-        throw new Error(
-          'a sequence reads through a sequenceAdapter, or an assembly with a sequence',
-        )
-      }
-      return referenceSequence(pluginManager, {
-        sequenceAdapter,
-        region: {
-          ...region,
-          refName: region.originalRefName ?? region.refName,
-        },
-      })
-    },
+    synteny: trimmed((args: SyntenyTablesArgs) =>
+      syntenyTables(pluginManager, args),
+    ),
+    dotplot: trimmed((args: DotplotTablesArgs) =>
+      dotplotTables(pluginManager, args),
+    ),
+    contigs: trimmed((args: ContigTablesArgs) =>
+      contigTables(pluginManager, args),
+    ),
+    multiway: trimmed((args: MultiWayTablesArgs) =>
+      multiwayTables(pluginManager, args),
+    ),
+    sequence: trimmed(
+      async ({
+        assembly,
+        ...args
+      }: WithAssembly<{
+        sequenceAdapter?: Record<string, unknown>
+        region: TablesRegion
+      }>) => {
+        const { sequenceAdapter, region } = assembly
+          ? await renameRegions(pluginManager, args, await assemblyOf(assembly))
+          : args
+        if (!sequenceAdapter) {
+          throw new Error(
+            'a sequence reads through a sequenceAdapter, or an assembly with a sequence',
+          )
+        }
+        return referenceSequence(pluginManager, {
+          sequenceAdapter,
+          region: {
+            ...region,
+            refName: region.originalRefName ?? region.refName,
+          },
+        })
+      },
+    ),
     /**
      * The contigs an assembly's sequence lists, named as the sequence file
      * names them.
      */
-    regions: async ({ assembly }: { assembly: AssemblyConfig }) => {
+    regions: trimmed(async ({ assembly }: { assembly: AssemblyConfig }) => {
       const { regions } = await assemblyOf(assembly)
       return {
         refName: regions.map(r => r.refName),
         start: regions.map(r => r.start),
         end: regions.map(r => r.end),
       }
+    }),
+    /**
+     * What the caches hold, after setting their budget to `limit` bytes where
+     * given: a smaller budget evicts at once.
+     */
+    cache: async ({ limit }: { limit?: number } = {}) =>
+      limit === undefined ? cache.held() : cache.setLimit(limit),
+    /**
+     * Empties every cache, resolved assemblies included, so the next call
+     * reads its files again.
+     */
+    clearCache: async () => {
+      assemblyOf = assemblyResolver(pluginManager)
+      return cache.clear()
     },
   }
 }

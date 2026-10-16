@@ -52,5 +52,8 @@ import { SharedBudget } from '@gmod/shared-read-cache'
  * why this used to be two budgets named for their units: a million records
  * could not be added to bytes, and never bound long-read data either, where a
  * 6 MB slice counted as 37.
+ *
+ * `@jbrowse/tables` lowers the limit for a host such as R, which keeps no
+ * track open to pan (`packages/tables/src/cache.ts`).
  */
 export const decompressedBytesBudget = new SharedBudget(1024 * 2 ** 20)

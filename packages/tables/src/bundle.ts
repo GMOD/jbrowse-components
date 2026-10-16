@@ -35,4 +35,7 @@ const engine = createTablesEngine()
     send(await engine.fileRegions(JSON.parse(args))),
   regions: async (args: string) => send(await engine.regions(JSON.parse(args))),
   alignmentColors: () => send(alignmentColors()),
+  cache: async (args: string) =>
+    JSON.stringify(await engine.cache(JSON.parse(args))),
+  clearCache: async () => JSON.stringify(await engine.clearCache()),
 }

@@ -58,6 +58,8 @@ let jbrowse: {
   contigs: (args: string) => Promise<string>
   multiway: (args: string) => Promise<string>
   regions: (args: string) => Promise<string>
+  cache: (args: string) => Promise<string>
+  clearCache: () => Promise<string>
 }
 let code: string
 
@@ -264,4 +266,28 @@ test('the bundle stacks a multi-genome PAF as the engine does, in a bare host', 
     expect(bare.alignments).toEqual(direct.alignments)
     expect(bare.legend).toEqual(direct.legend)
   }
+})
+
+test('the file bytes a bare host read stay within a quarter of the budget', async () => {
+  const cache = async (args = {}) =>
+    JSON.parse(await jbrowse.cache(JSON.stringify(args))) as {
+      limit: number
+      read: number
+    }
+  const { limit } = await cache()
+  await cache({ limit: 400_000 })
+  for (const args of [BAM, CRAM, METHYLATED]) {
+    await jbrowse.alignments(JSON.stringify(args))
+    expect((await cache()).read).toBeLessThanOrEqual(100_000)
+  }
+  await jbrowse.clearCache()
+  await jbrowse.features(JSON.stringify(GFF3))
+  expect((await cache()).read).toBeGreaterThan(0)
+  expect(JSON.parse(await jbrowse.clearCache())).toEqual({
+    limit: 400_000,
+    decoded: 0,
+    read: 0,
+    adapters: 0,
+  })
+  await cache({ limit })
 })

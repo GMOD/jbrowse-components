@@ -517,6 +517,24 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
   a binary string: the raw control bytes in it broke R's Windows check, so the
   build escapes every other byte, and `bundle.test.ts` holds both.
 
+### What the engine keeps between calls
+
+A browser worker frees an adapter when its track closes. A host has no tracks,
+so `src/cache.ts` trims after every call:
+
+- **Bytes:** the decoded-bytes budget (`cacheBudgets.ts`) gets three quarters
+  of `DEFAULT_CACHE_LIMIT`, 256 MiB, where a browser worker allows 1 GiB.
+- **File chunks:** the range cache counts entries, not bytes, so the engine
+  empties it once the bytes `readRange` answered since it last did pass the
+  other quarter.
+- **Adapters:** `keepRecentAdapters` keeps the `CACHED_ADAPTERS` (32) most
+  recently requested and frees the rest, so a loop over many files does not
+  keep every parsed index.
+- **`jbrowse.cache({ limit })`** sets the budget and reports what is held;
+  **`jbrowse.clearCache()`** empties every cache in place. Measured from R on
+  60 remote ONT CRAM reads, the process grew from 177 MB to 1325 MB before the
+  trim and levelled at about 680 MB after it.
+
 ## Hooks: who notices a break
 
 Downstream repos build against a jbrowse-components checkout beside them and
