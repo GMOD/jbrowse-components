@@ -180,6 +180,7 @@ Wolf 0 63
 ## See also
 
 - [](/docs/tutorials/protein_variants_sickle_cell)
+- [](/docs/tutorials/protein_variants_seedless_grape)
 - [](/docs/tutorials/dog10k_lof)
 - [](/docs/tutorials/genomes_proteins)
 

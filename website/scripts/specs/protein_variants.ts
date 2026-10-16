@@ -18,6 +18,9 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 //   184/3186, village dogs 34/618. chr31:27,122,819 C>T is alternate in 0.96 of
 //   wolf, 0.79 of breed and 0.92 of village dog chromosomes. NCBI orthologs at
 //   residue 40: Glu in mammals, Asp in birds, Pro in fish, Lys in axolotl.
+//   AGL11 codon 197 chr18:32,255,717-32,255,719 (minus strand), CGC Arg in
+//   Pinot Noir; A0A217EJJ0 (cv. Sultanina) has Leu. AlphaFold v6 pLDDT 57.6 at
+//   197, mean 94.8 over residues 1-60. UniRef alignment: Arg in 16 of 20 rows.
 
 interface ViewJson {
   init?: object
@@ -175,6 +178,10 @@ function sod1Session(options: SessionOptions) {
   )
 }
 
+const AGL11_SESSION = readSession('protein_browser_agl11.session.json')
+const GRAPE_GENES = 'GCF_030704535.1-ncbiRefSeqCurated'
+const AGL11_R197 = 'chr18:32,255,718'
+
 export const proteinVariantSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -296,6 +303,28 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dx: 120,
         dy: 0,
       },
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/agl11_codon_hover',
+    url: linkedSession(
+      AGL11_SESSION,
+      'https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json',
+      'AGL11 orthologs',
+      { row: 'wine_grape_query', start: 182, end: 212 },
+      {
+        loc: 'chr18:32255673-32255763[rev]',
+        tracks: [{ trackId: GRAPE_GENES, height: 60 }],
+      },
+    ),
+    ...READY,
+    actions: hoverAlignment({ dy: 24 }),
+    annotations: [
+      codonCallout('Codon 197, CGC in Pinot Noir', GRAPE_GENES, AGL11_R197),
+      structureCallout(
+        'Leu197 outlined in pink, where the model turns from blue to yellow and orange',
+      ),
     ],
   },
 ]

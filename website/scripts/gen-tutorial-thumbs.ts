@@ -327,6 +327,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.62, 0.98],
     position: 'center',
   },
+  protein_variants_seedless_grape: {
+    src: 'protein/agl11_codon_hover.png',
+    band: [0.45, 0.75],
+    xband: [0.62, 0.92],
+    position: 'center',
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',

@@ -145,7 +145,10 @@ Each step on this page works on any gene the protein browser opens:
 
 - the chips under the search box open other organisms on a residue each, from
   _M. tuberculosis_ _rpoB_ to dog _SOD1_, on genomes.jbrowse.org's GenArk
-  assemblies.
+  assemblies. [Part 2](/docs/tutorials/protein_variants_dog_myelopathy) takes
+  dog _SOD1_ onto the assembly its population callset uses, and
+  [part 3](/docs/tutorials/protein_variants_seedless_grape) reads a grapevine
+  gene on an AlphaFold model
 - **Launch protein view** in a gene's right-click menu picks the structure
   yourself, and its **File or URL** tab takes a PDB or mmCIF of your own, such
   as a ColabFold or AlphaFold model
@@ -154,6 +157,8 @@ Each step on this page works on any gene the protein browser opens:
 
 ## See also
 
+- [](/docs/tutorials/protein_variants_dog_myelopathy)
+- [](/docs/tutorials/protein_variants_seedless_grape)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/tp53_structures)
 - [](/docs/tutorials/population_genomics)

@@ -151,6 +151,7 @@ export const TUTORIAL_ORDER = [
   'tp53_structures',
   'protein_variants_sickle_cell',
   'protein_variants_dog_myelopathy',
+  'protein_variants_seedless_grape',
   'gene_prediction_review',
   'gene_density',
   'organelle_map',

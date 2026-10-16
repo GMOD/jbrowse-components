@@ -1,0 +1,220 @@
+{
+  "name": "Gene explorer: MADS5",
+  "views": [
+    {
+      "id": "lgv-MADS5",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "init": {
+        "assembly": "GCF_030704535.1",
+        "loc": "chr18:32261288-32261549[rev] chr18:32257080-32257241[rev] chr18:32256752-32256893[rev] chr18:32256446-32256625[rev] chr18:32256097-32256218[rev] chr18:32255961-32256082[rev] chr18:32255600-32255837[rev] chr18:32255117-32255200[rev]",
+        "tracks": ["GCF_030704535.1-ncbiRefSeqCurated"]
+      }
+    },
+    {
+      "id": "msa-MADS5",
+      "type": "MsaView",
+      "connectedViewId": "lgv-MADS5",
+      "connectedFeature": {
+        "uniqueId": "NM_001281189.1",
+        "type": "mRNA",
+        "refName": "chr18",
+        "start": 32255156,
+        "end": 32261509,
+        "strand": -1,
+        "name": "NM_001281189.1",
+        "subfeatures": [
+          {
+            "type": "CDS",
+            "start": 32255156,
+            "end": 32255160,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 32255639,
+            "end": 32255797,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 32256000,
+            "end": 32256042,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 32256136,
+            "end": 32256178,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 32256485,
+            "end": 32256585,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 32256791,
+            "end": 32256853,
+            "strand": -1,
+            "phase": 0
+          },
+          {
+            "type": "CDS",
+            "start": 32257119,
+            "end": 32257201,
+            "strand": -1,
+            "phase": 1
+          },
+          {
+            "type": "CDS",
+            "start": 32261327,
+            "end": 32261509,
+            "strand": -1,
+            "phase": 0
+          }
+        ]
+      },
+      "uniprotId": "A0A217EJJ0",
+      "colorSchemeName": "percent_identity_dynamic",
+      "labelsAlignRight": true,
+      "treeAreaWidth": 200,
+      "allowedGappyness": 50,
+      "orthologParams": {
+        "taxId": 29760,
+        "geneCandidates": ["A0A217EJJ0", "MADS5"],
+        "source": "uniref",
+        "msaAlgorithm": "browser",
+        "maxSpecies": 100,
+        "proteinSequence": "MGRGKIEIKRIENTTNRQVTFCKRRNGLLKKAYELSVLCDAEVALIVFSSRGRVYEYSNNNIKSTIDRYKKASSDSTNGGFTMEINAQYYQQESAKLRQQIQMLQNSNRHLMGDSLASLTVKELKQLENRLERGITRIRSKKHELLLAEIEYLQKREIELENESVYLRTKIAEVERLQQANMVSTHEFNAIQALVSRNFFQPNMIEGGSTGYPLHDKKVLHLG"
+      }
+    },
+    {
+      "id": "protein-MADS5-A0A217EJJ0",
+      "type": "ProteinView",
+      "height": 500,
+      "zoomToBaseLevel": false,
+      "colorScheme": "plddt-confidence",
+      "structures": [
+        {
+          "uniprotId": "A0A217EJJ0",
+          "feature": {
+            "uniqueId": "NM_001281189.1",
+            "type": "mRNA",
+            "refName": "chr18",
+            "start": 32255156,
+            "end": 32261509,
+            "strand": -1,
+            "name": "NM_001281189.1",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 32255156,
+                "end": 32255160,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 32255639,
+                "end": 32255797,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 32256000,
+                "end": 32256042,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 32256136,
+                "end": 32256178,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 32256485,
+                "end": 32256585,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 32256791,
+                "end": 32256853,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 32257119,
+                "end": 32257201,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 32261327,
+                "end": 32261509,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MGRGKIEIKRIENTTNRQVTFCKRRNGLLKKAYELSVLCDAEVALIVFSSRGRVYEYSNNNIKSTIDRYKKASSDSTNGGFTMEINAQYYQQESAKLRQQIQMLQNSNRHLMGDSLASLTVKELKQLENRLERGITRIRSKKHELLLAEIEYLQKREIELENESVYLRTKIAEVERLQQANMVSTHEFNAIQALVSRNFFQPNMIEGGSTGYPLHDKKVLHLG",
+          "connectedViewId": "lgv-MADS5",
+          "initialTranscriptResidues": [
+            {
+              "start": 197,
+              "end": 197
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-left",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-left",
+        "size": 58,
+        "tabs": [
+          {
+            "id": "tab-left",
+            "viewIds": ["lgv-MADS5", "msa-MADS5"]
+          }
+        ],
+        "activeTabId": "tab-left"
+      },
+      {
+        "id": "panel-right",
+        "size": 42,
+        "tabs": [
+          {
+            "id": "tab-right",
+            "viewIds": ["protein-MADS5-A0A217EJJ0"]
+          }
+        ],
+        "activeTabId": "tab-right"
+      }
+    ]
+  }
+}
