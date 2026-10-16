@@ -1010,9 +1010,11 @@
       "names": [
         "READS_REFERENCE",
         "adapterConfigCacheKey",
+        "cachedAdapterCount",
         "clearAdapterCache",
         "freeAdapterResources",
-        "getAdapter"
+        "getAdapter",
+        "keepRecentAdapters"
       ],
       "worker": "real"
     },

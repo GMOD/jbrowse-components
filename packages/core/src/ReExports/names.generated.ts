@@ -152,7 +152,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/data_adapters/BaseAdapter/stats': ['aggregateQuantitativeStats', 'blankStats', 'calculateFeatureDensityStats'],
   '@jbrowse/core/data_adapters/BaseAdapter/types': [],
   '@jbrowse/core/data_adapters/BaseAdapter/zoomRange': [],
-  '@jbrowse/core/data_adapters/dataAdapterCache': ['READS_REFERENCE', 'adapterConfigCacheKey', 'clearAdapterCache', 'freeAdapterResources', 'getAdapter'],
+  '@jbrowse/core/data_adapters/dataAdapterCache': ['READS_REFERENCE', 'adapterConfigCacheKey', 'cachedAdapterCount', 'clearAdapterCache', 'freeAdapterResources', 'getAdapter', 'keepRecentAdapters'],
   '@jbrowse/core/data_adapters/getFeatureAdapter': ['getFeatureAdapter', 'getFeatureAdapterOrThrow'],
   '@jbrowse/core/data_adapters/getSequenceSubAdapter': ['getSequenceSubAdapter'],
   '@jbrowse/core/pluggableElementTypes': ['AdapterType', 'AddTrackWorkflowType', 'BaseConnectionModelFactory', 'BaseDisplay', 'BaseInternetAccountConfig', 'BaseViewModel', 'ConnectionType', 'DisplayType', 'InternetAccount', 'InternetAccountType', 'RpcMethodType', 'RpcMethodTypeWithRenameRegion', 'RpcMethodTypeWithRenameRegions', 'TextSearchAdapterType', 'TrackType', 'ViewType', 'WidgetType', 'addDisplayMenuItems', 'addViewMenuItems', 'baseConnectionConfig', 'createBaseTrackConfig', 'createBaseTrackModel', 'extendDisplayType', 'extendViewType', 'preprocessTrackConfigSnapshot'],
