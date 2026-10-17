@@ -137,14 +137,19 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
   No `tooltip` channel either: each display's hover prints its own fields,
   and a plot naming them waits on one whose hover prints the wrong ones.
-- **A band is one config object, with a filter of its own**
+- **A band is one config object**
   ([ADR-231](../architecture-decision-records/adr-231-an-alignments-band-is-one-config-object.md)).
   The alignments `coverage`, `pileup`, `sashimi` and `readConnections`, and
   MAF's `coverage` and `conservation`, each hold `show`, `height` and
-  `placement` meaning the same in every band, and a predicate on a band's
-  rows is that band's `filter`, spelt as the read filter. `show` toggles a
-  band, a layer or part of a mark, or the arcs' context pairs, and nothing
-  else.
+  `placement` meaning the same in every band. `show` toggles a band, a layer
+  or part of a mark, or the arcs' context pairs, and nothing else.
+- **A predicate lives where what it selects lives**
+  ([ADR-232](../architecture-decision-records/adr-232-a-predicate-lives-where-what-it-selects-lives.md)).
+  The alignments display's `filter` holds its tests on reads and on the data
+  derived from them, `filter.junctions` and `filter.connections`, and every
+  part drawing junctions or connections reads them: the sashimi arcs and the
+  tables engine's junctions, and the arcs, the read cloud and the curved
+  connectors over the pileup.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.

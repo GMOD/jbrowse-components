@@ -149,7 +149,7 @@ for (let i = 0; i < SPLIT_MOLECULES; i++) {
 // eight arcs, which is what a translocation looks like on paired-end data, and
 // it is why the support floor counts over a window (`clusteredInterchromSupport`)
 // instead of at a coordinate -- both sides cluster within 200 bp, so the fan
-// survives the default `readConnections.filter.minInterchromReads` of 2 that an
+// survives the default `filter.connections.minInterchromReads` of 2 that an
 // exact count would wipe.
 //
 // ctgA read forward, ctgB read reverse, so the outer (5', read-leading) edges

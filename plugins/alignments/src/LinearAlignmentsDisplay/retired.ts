@@ -5,7 +5,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
-import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
+import {
+  alignmentsFilterConfigSchema,
+  readFilterMembers,
+} from './alignmentsFilterConfigSchema.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
@@ -168,7 +171,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * as `retired` declares them. v4's `colorBy` named a scheme and held the
  * modification settings, which are the `color` or `baseColor` object's field
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
- * arc classes under the draw verb, which are `readConnections.filter`
+ * arc classes under the draw verb, which are `filter.connections`
  * categories now; its read size and layout cap are `pileup`'s `readHeight`
  * and `maxLayoutHeight`; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
@@ -180,12 +183,10 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
   drawInter: v =>
-    v === false
-      ? { readConnections: { filter: { interchrom: 'exclude' } } }
-      : {},
+    v === false ? { filter: { connections: { interchrom: 'exclude' } } } : {},
   drawLongRange: v =>
     v === false
-      ? { readConnections: { filter: { offscreenMates: 'exclude' } } }
+      ? { filter: { connections: { offscreenMates: 'exclude' } } }
       : {},
   filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),
@@ -236,18 +237,17 @@ function sortSlot(value: unknown): DisplayEntry {
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
 // the feature went rather than moved.
-const readFilterMeta = getConfigurationSchemaMetadata(readFilterConfigSchema)!
+const filterMeta = getConfigurationSchemaMetadata(alignmentsFilterConfigSchema)!
 
-// A v4 filterBy was the whole filter, so its lift names every member it leaves
-// out as unset: merged over a sub-node's or another view's, it replaces that
-// filter rather than inheriting its tag filter.
+// A v4 filterBy was the whole read filter, so its lift names every read member
+// it leaves out as unset: merged over a sub-node's or another view's, it
+// replaces those members rather than inheriting a tag filter. It never spoke
+// for `junctions` or `connections`, which keep what they were.
 function wholeFilterOf(value: unknown): DisplayEntry {
   return {
     filter: {
-      ...Object.fromEntries(
-        Object.keys(readFilterMeta.definition).map(member => [member, null]),
-      ),
-      ...(isObject(value) ? liftRetiredSpellings(readFilterMeta, value) : {}),
+      ...Object.fromEntries(readFilterMembers.map(member => [member, null])),
+      ...(isObject(value) ? liftRetiredSpellings(filterMeta, value) : {}),
     },
   }
 }

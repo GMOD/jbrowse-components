@@ -8,14 +8,14 @@ import { visibleRegionJunctions } from './computeOverlay.ts'
 import { mergeJunctions } from './junctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { SashimiFilter } from '../../shared/types.ts'
+import type { JunctionFilter } from '../../shared/types.ts'
 import type { RegionInfo } from '../arcs/arcTypes.ts'
 
 export interface TestDisplayedRegion extends RegionInfo {
   reversed?: boolean
 }
 
-export interface ComputeSashimiArcsOpts extends SashimiFilter {
+export interface ComputeSashimiArcsOpts extends JunctionFilter {
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>
   visibleRegions: {
     refName: string

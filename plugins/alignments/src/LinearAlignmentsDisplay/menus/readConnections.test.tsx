@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { DEFAULT_MIN_INTERCHROM_READS } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { Facet, ReadConnectionsFilter } from '../../shared/types.ts'
+import type { Facet, ConnectionFilter } from '../../shared/types.ts'
 import type {
   ReadConnectionsMark,
   ReadConnectionsMode,
@@ -31,11 +31,11 @@ function makeModel() {
     setReadConnectionsPlacement(placement: ReadConnectionsPlacement) {
       this.readConnectionsPlacement = placement
     },
-    readConnectionsFilter: {
+    connectionFilter: {
       minInterchromReads: DEFAULT_MIN_INTERCHROM_READS,
-    } as ReadConnectionsFilter,
-    setReadConnectionsFilter(patch: Partial<ReadConnectionsFilter>) {
-      this.readConnectionsFilter = { ...this.readConnectionsFilter, ...patch }
+    } as ConnectionFilter,
+    setConnectionFilter(patch: Partial<ConnectionFilter>) {
+      this.connectionFilter = { ...this.connectionFilter, ...patch }
     },
     showConnectors: false,
     setShowConnectors(v: boolean) {
@@ -72,14 +72,13 @@ function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
   )
 }
 
-const BAND_ROWS = [
-  'Show ordinary pairs',
-  'Arc placement',
+const FILTER_ROWS = [
   'Off-screen mate connections',
   'Inter-chromosomal pairs',
   'Min reads at a breakpoint',
-  'Arc line width',
 ]
+
+const BAND_ROWS = ['Show ordinary pairs', 'Arc placement', 'Arc line width']
 
 function topLabels(model: ReturnType<typeof makeModel>) {
   return resolveSubMenu(getReadConnectionsMenuItem(model)).map(i =>
@@ -183,16 +182,49 @@ describe('the arc / read cloud band rows', () => {
     checkboxByLabel(model, 'Above coverage').onClick()
     expect(model.readConnectionsPlacement).toBe('up')
   })
+})
+
+// `filter.connections` reaches the band and the curved connectors alike, so
+// its rows live while either draws
+describe('the connection filter rows', () => {
+  test('sit under their own heading, ahead of the band rows', () => {
+    const labels = topLabels(makeModel())
+    const heading = labels.indexOf('Which connections draw')
+    expect(heading).toBeGreaterThan(-1)
+    expect(
+      labels.slice(heading + 1, labels.indexOf('Arc / read cloud band')),
+    ).toEqual(FILTER_ROWS)
+  })
+
+  test('are disabled while neither the band nor the connectors draw', () => {
+    const model = makeModel()
+    for (const label of FILTER_ROWS) {
+      const row = bandRow(model, label)
+      expect(row.disabled).toBe(true)
+      expect(row.disabledHelpText).toBeTruthy()
+    }
+  })
+
+  test('are enabled by the curved connectors with the band off', () => {
+    const model = makeModel()
+    model.showConnectors = true
+    for (const label of FILTER_ROWS) {
+      expect(bandRow(model, label).disabled).toBe(false)
+    }
+    for (const label of BAND_ROWS) {
+      expect(bandRow(model, label).disabled).toBe(true)
+    }
+  })
 
   test('each connection category is one All / Only / Hide choice', () => {
     const model = makeModel()
     model.drawnReadConnections = 'arc'
     checkboxByLabel(model, 'Only inter-chromosomal pairs').onClick()
-    expect(model.readConnectionsFilter.interchrom).toBe('only')
+    expect(model.connectionFilter.interchrom).toBe('only')
     expect(topLabels(model)).toContain('Inter-chromosomal pairs — only')
     checkboxByLabel(model, 'Hide off-screen mate connections').onClick()
-    expect(model.readConnectionsFilter.offscreenMates).toBe('exclude')
-    expect(model.readConnectionsFilter.interchrom).toBe('only')
+    expect(model.connectionFilter.offscreenMates).toBe('exclude')
+    expect(model.connectionFilter.interchrom).toBe('only')
   })
 })
 

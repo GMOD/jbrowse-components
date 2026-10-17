@@ -1,9 +1,6 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type {
-  ArcColorField,
-  ReadConnectionsFilter,
-} from '../../shared/types.ts'
+import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
 // settings that gate it, the pending form a read pair or split junction takes
@@ -59,7 +56,7 @@ export interface ArcSettings {
   // with: a cluster's own size for an arc, the coalesced total for a tick. See
   // `pushLine` for why testing a tick's addends instead let a display setting
   // change the count the hover reported.
-  filter?: Partial<ReadConnectionsFilter>
+  filter?: Partial<ConnectionFilter>
   // Whether the band draws its ordinary pairs, each mode by its own rule:
   // concordant flags for arcs (`isConcordantPairRead`, shared with the
   // `svSignal` read filter), a modal |TLEN| for the cloud. Unset is
@@ -316,6 +313,6 @@ export type CanonicalRefName = (refName: string) => string
 // which segments a read has, so a chain builder handed this whole struct would
 // have to be given values for fields it cannot read.
 export interface ArcChainContext {
-  filter: Pick<Partial<ReadConnectionsFilter>, 'interchrom' | 'offscreenMates'>
+  filter: Pick<Partial<ConnectionFilter>, 'interchrom' | 'offscreenMates'>
   canonicalRefName: CanonicalRefName
 }

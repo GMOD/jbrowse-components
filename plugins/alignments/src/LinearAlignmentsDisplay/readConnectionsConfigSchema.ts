@@ -6,7 +6,6 @@ import {
   READ_CONNECTIONS_MARKS,
   READ_CONNECTIONS_PLACEMENTS,
 } from './constants.ts'
-import { readConnectionsFilterConfigSchema } from './readConnectionsFilterConfigSchema.ts'
 
 /**
  * #config ReadConnections
@@ -14,7 +13,8 @@ import { readConnectionsFilterConfigSchema } from './readConnectionsFilterConfig
  * The alignments display's `readConnections` setting: the band of
  * connections between mates and split segments, drawn as arcs or as the read
  * cloud, which plots each pair at its insert size. The connectors drawn over
- * the pileup's own rows are `pileup.showConnectors`.
+ * the pileup's own rows are `pileup.showConnectors`, and which connections
+ * either draws is the display's `filter.connections`.
  *
  * #example
  * ```js
@@ -30,11 +30,8 @@ import { readConnectionsFilterConfigSchema } from './readConnectionsFilterConfig
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: {
- *     show: true,
- *     showOrdinaryPairs: false,
- *     filter: { interchrom: 'only' },
- *   },
+ *   readConnections: { show: true, showOrdinaryPairs: false },
+ *   filter: { connections: { interchrom: 'only' } },
  * }
  * ```
  */
@@ -112,12 +109,6 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       description:
         'draw the ordinary pairs beside the ones carrying a category: concordant pairs as arcs, pairs of modal insert size in the cloud; unset follows the mark',
     },
-    /**
-     * #slot filter
-     * The connections drawn: `interchrom`, `offscreenMates` and
-     * `minInterchromReads` (default 2).
-     */
-    filter: readConnectionsFilterConfigSchema,
   },
   { closed: true, plot: true },
 )

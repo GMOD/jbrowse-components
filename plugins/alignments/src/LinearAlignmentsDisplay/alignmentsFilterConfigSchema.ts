@@ -1,25 +1,30 @@
 import {
   ConfigurationSchema,
+  getConfigurationSchemaMetadata,
+  isBareConfigurationSchemaType,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { defaultFilterFlags } from '../shared/util.ts'
+import { CATEGORY_FILTERS } from './categoryFilters.ts'
+import { connectionFilterConfigSchema } from './connectionFilterConfigSchema.ts'
+import { junctionFilterConfigSchema } from './junctionFilterConfigSchema.ts'
 import { tagFilterConfigSchema } from './tagFilterConfigSchema.ts'
 
 import type { ReadFilter } from '../shared/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export const CATEGORY_FILTERS = ['only', 'exclude'] as const
-
 /**
- * #config ReadFilter
+ * #config AlignmentsFilter
  * #category display
- * Every read filter of the alignments display in one object, its `filter`
- * slot: the SAM flag masks, a minimum mapping quality, a read name, the tag
- * filters a read has to pass every one of, and the four read categories, each
- * `only`, `exclude` or unset for unfiltered. The default excludes unmapped,
- * QC-failed and duplicate reads (flag 1540).
+ * Every test the alignments display applies, in one object, its `filter`
+ * slot, read by every part that draws the data a test names. The read members
+ * are the SAM flag masks, a minimum mapping quality, a read name, the tags a
+ * read has to carry, and the four read categories, each `only`, `exclude` or
+ * unset for unfiltered; the default excludes unmapped, QC-failed and duplicate
+ * reads (flag 1540). `junctions` tests the splice junctions and `connections`
+ * the connections between mates and split segments.
  *
  * #example
  * ```js
@@ -29,11 +34,17 @@ export const CATEGORY_FILTERS = ['only', 'exclude'] as const
  * { type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
  * ```
  * ```js
- * { type: 'LinearAlignmentsDisplay', filter: { tagFilters: [{ tag: 'HP', value: '1' }] } }
+ * { type: 'LinearAlignmentsDisplay', filter: { tags: [{ tag: 'HP', value: '1' }] } }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
+ * }
  * ```
  */
-export const readFilterConfigSchema = ConfigurationSchema(
-  'ReadFilter',
+export const alignmentsFilterConfigSchema = ConfigurationSchema(
+  'AlignmentsFilter',
   {
     /**
      * #slot
@@ -73,7 +84,7 @@ export const readFilterConfigSchema = ConfigurationSchema(
      * The tags a read has to carry, every one of them: a `{ tag, value }`
      * each, the value `*` or unset passing any read with the tag.
      */
-    tagFilters: types.array(tagFilterConfigSchema),
+    tags: types.array(tagFilterConfigSchema),
     /**
      * #slot
      * `only`, `exclude`, or unset for unfiltered: reads whose CIGAR carries a reference skip.
@@ -110,27 +121,47 @@ export const readFilterConfigSchema = ConfigurationSchema(
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description: 'only, exclude, or unset for unfiltered',
     },
+    /**
+     * #slot junctions
+     * The splice junctions drawn: `minReads` (default 2) and `nonCanonical`.
+     */
+    junctions: junctionFilterConfigSchema,
+    /**
+     * #slot connections
+     * The connections drawn: `interchrom`, `offscreenMates` and
+     * `minInterchromReads` (default 2).
+     */
+    connections: connectionFilterConfigSchema,
   },
   {
     closed: true,
     plot: true,
     // a v4 session held one tag filter under the singular name
     retired: {
-      tagFilter: (value: unknown) => ({ tagFilters: [value] }),
+      tagFilter: (value: unknown) => ({ tags: [value] }),
     },
   },
 )
 
-/** The filter as the worker, the menus and the dialog read it, each slot at its default where unset. */
+const { definition } = getConfigurationSchemaMetadata(
+  alignmentsFilterConfigSchema,
+)!
+
+/** The read members' names: every member but the `junctions` and `connections` objects. */
+export const readFilterMembers = Object.keys(definition).filter(
+  member => !isBareConfigurationSchemaType(definition[member]),
+) as (keyof ReadFilter)[]
+
+/** The read members, as the worker, the menus and the dialog read them, each at its default where unset. */
 export function readFilterOf(
-  filter: Instance<typeof readFilterConfigSchema>,
+  filter: Instance<typeof alignmentsFilterConfigSchema>,
 ): ReadFilter {
   return {
     flagInclude: readConfObject(filter, 'flagInclude'),
     flagExclude: readConfObject(filter, 'flagExclude'),
     minMapq: readConfObject(filter, 'minMapq'),
     readName: readConfObject(filter, 'readName'),
-    tagFilters: readConfObject(filter, 'tagFilters'),
+    tags: readConfObject(filter, 'tags'),
     spliced: readConfObject(filter, 'spliced'),
     svSignal: readConfObject(filter, 'svSignal'),
     singletons: readConfObject(filter, 'singletons'),

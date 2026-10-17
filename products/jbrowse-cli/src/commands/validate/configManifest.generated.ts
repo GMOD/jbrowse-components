@@ -3559,7 +3559,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "ReadFilterConfigurationSchema",
+          "type": "AlignmentsFilterConfigurationSchema",
           "subSlots": [
             {
               "name": "flagInclude",
@@ -3578,7 +3578,7 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             },
             {
-              "name": "tagFilters",
+              "name": "tags",
               "type": "TagFilterConfigurationSchema[]",
               "subSlots": [
                 {
@@ -3606,6 +3606,38 @@ export const configManifest: ConfigManifest = {
             {
               "name": "split",
               "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "junctions",
+              "type": "JunctionFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minReads",
+                  "type": "number"
+                },
+                {
+                  "name": "nonCanonical",
+                  "type": "(CategoryFilter | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "connections",
+              "type": "ConnectionFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "interchrom",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "offscreenMates",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "minInterchromReads",
+                  "type": "number"
+                }
+              ]
             }
           ]
         },
@@ -3926,14 +3958,8 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "filter",
-              "type": "CoverageFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minAlleleFraction",
-                  "type": "number"
-                }
-              ]
+              "name": "minAlleleFraction",
+              "type": "number"
             }
           ]
         },
@@ -3998,20 +4024,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "showCounts",
               "type": "boolean"
-            },
-            {
-              "name": "filter",
-              "type": "SashimiFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minReads",
-                  "type": "number"
-                },
-                {
-                  "name": "nonCanonical",
-                  "type": "(CategoryFilter | undefined)"
-                }
-              ]
             }
           ]
         },
@@ -4052,24 +4064,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "showOrdinaryPairs",
               "type": "(boolean | undefined)"
-            },
-            {
-              "name": "filter",
-              "type": "ReadConnectionsFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "interchrom",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "offscreenMates",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "minInterchromReads",
-                  "type": "number"
-                }
-              ]
             }
           ]
         }
@@ -4336,7 +4330,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "ReadFilterConfigurationSchema",
+          "type": "AlignmentsFilterConfigurationSchema",
           "subSlots": [
             {
               "name": "flagInclude",
@@ -4355,7 +4349,7 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             },
             {
-              "name": "tagFilters",
+              "name": "tags",
               "type": "TagFilterConfigurationSchema[]",
               "subSlots": [
                 {
@@ -4383,6 +4377,38 @@ export const configManifest: ConfigManifest = {
             {
               "name": "split",
               "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "junctions",
+              "type": "JunctionFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minReads",
+                  "type": "number"
+                },
+                {
+                  "name": "nonCanonical",
+                  "type": "(CategoryFilter | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "connections",
+              "type": "ConnectionFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "interchrom",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "offscreenMates",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "minInterchromReads",
+                  "type": "number"
+                }
+              ]
             }
           ]
         },
@@ -4704,14 +4730,8 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "filter",
-              "type": "CoverageFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minAlleleFraction",
-                  "type": "number"
-                }
-              ]
+              "name": "minAlleleFraction",
+              "type": "number"
             }
           ]
         },
@@ -4776,20 +4796,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "showCounts",
               "type": "boolean"
-            },
-            {
-              "name": "filter",
-              "type": "SashimiFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minReads",
-                  "type": "number"
-                },
-                {
-                  "name": "nonCanonical",
-                  "type": "(CategoryFilter | undefined)"
-                }
-              ]
             }
           ]
         },
@@ -4830,24 +4836,6 @@ export const configManifest: ConfigManifest = {
             {
               "name": "showOrdinaryPairs",
               "type": "(boolean | undefined)"
-            },
-            {
-              "name": "filter",
-              "type": "ReadConnectionsFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "interchrom",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "offscreenMates",
-                  "type": "(CategoryFilter | undefined)"
-                },
-                {
-                  "name": "minInterchromReads",
-                  "type": "number"
-                }
-              ]
             }
           ]
         },
@@ -6725,14 +6713,8 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "filter",
-              "type": "CoverageFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minAlleleFraction",
-                  "type": "number"
-                }
-              ]
+              "name": "minAlleleFraction",
+              "type": "number"
             }
           ]
         },

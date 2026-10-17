@@ -14,7 +14,7 @@ import {
 import { categoryFilterItem } from './categoryFilterItem.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
-import type { ReadConnectionsFilter } from '../../shared/types.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type {
   AlignmentsUnit,
   ReadConnectionsMode,
@@ -30,8 +30,8 @@ interface ReadConnectionsModel {
   setDrawnReadConnections: (mode: ReadConnectionsMode) => void
   readConnectionsPlacement: ReadConnectionsPlacement
   setReadConnectionsPlacement: (placement: ReadConnectionsPlacement) => void
-  readConnectionsFilter: ReadConnectionsFilter
-  setReadConnectionsFilter: (patch: Partial<ReadConnectionsFilter>) => void
+  connectionFilter: ConnectionFilter
+  setConnectionFilter: (patch: Partial<ConnectionFilter>) => void
   showOrdinaryPairs: boolean
   setShowOrdinaryPairs: (show?: boolean) => void
   showConnectors: boolean
@@ -74,7 +74,13 @@ export function getReadConnectionsMenuItem(
     disabled: model.drawnReadConnections === 'off',
     disabledHelpText: 'Choose "Read arcs" or "Read cloud" first',
   }
-  const filter = model.readConnectionsFilter
+  // `filter.connections` reaches the band and the curved connectors alike
+  const filterGate = {
+    disabled: model.drawnReadConnections === 'off' && !model.showConnectors,
+    disabledHelpText:
+      'Choose "Read arcs" or "Read cloud", or use curved connectors, first',
+  }
+  const filter = model.connectionFilter
   const subMenu: MenuItem[] = [
     checkboxItem(
       'View as pairs / link supplementary alignments',
@@ -109,6 +115,67 @@ export function getReadConnectionsMenuItem(
           'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it. A connection between two different displayed regions is drawn this way whatever this is set to, since the per-region pass cannot reach across one.',
       },
     ),
+    ...withSubHeader('Which connections draw', [
+      categoryFilterItem(
+        {
+          noun: 'Off-screen mate connections',
+          all: 'All connections',
+          only: 'Only off-screen mate connections',
+          exclude: 'Hide off-screen mate connections',
+          helpText:
+            'Connections to a read whose mate or split segment is elsewhere on this chromosome and not loaded in the current view; the arc renders as vertical lines at this zoom. A curved connector joins two loaded reads, so it is never one. Inter-chromosomal partners have their own filter below.',
+        },
+        filter.offscreenMates,
+        offscreenMates => {
+          model.setConnectionFilter({ offscreenMates })
+        },
+        filterGate,
+      ),
+      categoryFilterItem(
+        {
+          noun: 'Inter-chromosomal pairs',
+          all: 'All connections',
+          only: 'Only inter-chromosomal pairs',
+          exclude: 'Hide inter-chromosomal pairs',
+          helpText:
+            'Reads whose mate — or split-read segment — maps to a different chromosome. Drawn as an arc, or as a curved connector over the pileup, when both chromosomes are displayed, and as a breakpoint tick otherwise. Independent of the off-screen filter above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
+        },
+        filter.interchrom,
+        interchrom => {
+          model.setConnectionFilter({ interchrom })
+        },
+        filterGate,
+      ),
+      {
+        ...makeSizeSubMenu({
+          label: 'Inter-chromosomal evidence',
+          title: 'Min reads at a breakpoint',
+          help: 'Hide an inter-chromosomal connection unless this many read pairs support its breakpoint, counted over one fragment length on both sides. 1 shows every connection.',
+          // Support is counted over a window, not at an exact base: mates
+          // straddle a breakpoint rather than landing on it. See
+          // `clusteredInterchromSupport`.
+          //
+          // Linear and small-topped, unlike sashimi's log slider to 10,000:
+          // this counts read PAIRS spanning a breakpoint, which even at 300x is
+          // tens. Tier 4 (rebuilds `arcsByGroup`), so a live onChange is fine.
+          scale: 'linear',
+          min: 1,
+          max: 20,
+          format: n => (n === 1 ? 'all' : `${n}`),
+          getValue: () => filter.minInterchromReads,
+          isDefault: filter.minInterchromReads === DEFAULT_MIN_INTERCHROM_READS,
+          onChange: minInterchromReads => {
+            model.setConnectionFilter({ minInterchromReads })
+          },
+          onReset: () => {
+            model.setConnectionFilter({
+              minInterchromReads: DEFAULT_MIN_INTERCHROM_READS,
+            })
+          },
+        }),
+        ...filterGate,
+      },
+    ]),
     ...withSubHeader('Arc / read cloud band', [
       toggleItem(
         'Show ordinary pairs',
@@ -132,65 +199,6 @@ export function getReadConnectionsMenuItem(
             model.setReadConnectionsPlacement(placement)
           },
         ),
-        ...bandGate,
-      },
-      categoryFilterItem(
-        {
-          noun: 'Off-screen mate connections',
-          all: 'All connections',
-          only: 'Only off-screen mate connections',
-          exclude: 'Hide off-screen mate connections',
-          helpText:
-            'Connections to a read whose mate or split segment is elsewhere on this chromosome and not loaded in the current view; the arc renders as vertical lines at this zoom. Inter-chromosomal partners have their own filter below.',
-        },
-        filter.offscreenMates,
-        offscreenMates => {
-          model.setReadConnectionsFilter({ offscreenMates })
-        },
-        bandGate,
-      ),
-      categoryFilterItem(
-        {
-          noun: 'Inter-chromosomal pairs',
-          all: 'All connections',
-          only: 'Only inter-chromosomal pairs',
-          exclude: 'Hide inter-chromosomal pairs',
-          helpText:
-            'Reads whose mate — or split-read segment — maps to a different chromosome. Drawn as an arc when both chromosomes are displayed and as a breakpoint tick otherwise. Independent of the off-screen filter above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
-        },
-        filter.interchrom,
-        interchrom => {
-          model.setReadConnectionsFilter({ interchrom })
-        },
-        bandGate,
-      ),
-      {
-        ...makeSizeSubMenu({
-          label: 'Inter-chromosomal evidence',
-          title: 'Min reads at a breakpoint',
-          help: 'Hide an inter-chromosomal connection unless this many read pairs support its breakpoint, counted over one fragment length on both sides. 1 shows every connection.',
-          // Support is counted over a window, not at an exact base: mates
-          // straddle a breakpoint rather than landing on it. See
-          // `clusteredInterchromSupport`.
-          //
-          // Linear and small-topped, unlike sashimi's log slider to 10,000:
-          // this counts read PAIRS spanning a breakpoint, which even at 300x is
-          // tens. Tier 4 (rebuilds `arcsByGroup`), so a live onChange is fine.
-          scale: 'linear',
-          min: 1,
-          max: 20,
-          format: n => (n === 1 ? 'all' : `${n}`),
-          getValue: () => filter.minInterchromReads,
-          isDefault: filter.minInterchromReads === DEFAULT_MIN_INTERCHROM_READS,
-          onChange: minInterchromReads => {
-            model.setReadConnectionsFilter({ minInterchromReads })
-          },
-          onReset: () => {
-            model.setReadConnectionsFilter({
-              minInterchromReads: DEFAULT_MIN_INTERCHROM_READS,
-            })
-          },
-        }),
         ...bandGate,
       },
       {

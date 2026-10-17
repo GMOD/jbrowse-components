@@ -976,12 +976,10 @@ config schema's `retired`:
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
   drawInter: v =>
-    v === false
-      ? { readConnections: { filter: { interchrom: 'exclude' } } }
-      : {},
+    v === false ? { filter: { connections: { interchrom: 'exclude' } } } : {},
   drawLongRange: v =>
     v === false
-      ? { readConnections: { filter: { offscreenMates: 'exclude' } } }
+      ? { filter: { connections: { offscreenMates: 'exclude' } } }
       : {},
   filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),

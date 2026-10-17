@@ -30,7 +30,7 @@ import {
 } from './motif.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { SashimiFilter } from '../../shared/types.ts'
+import type { JunctionFilter } from '../../shared/types.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'up' draws every arc over the
@@ -208,7 +208,7 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
 // past the fetched reference.
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
-  { minReads, nonCanonical }: SashimiFilter,
+  { minReads, nonCanonical }: JunctionFilter,
 ) {
   const out = new Map<string, MergedJunction>()
   for (const {

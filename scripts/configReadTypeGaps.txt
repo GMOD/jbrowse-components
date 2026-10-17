@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 77 unchecked in source, 184 in tests,
-# of 1370 total config accessor calls. The gate counts source only.
+# 76 unchecked in source, 179 in tests,
+# of 1406 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1228	readConfObject('adapter')
@@ -94,8 +94,8 @@ packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.tes
 packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx  (1)
   122	getConf('adapter')
 packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (2)
-  167	getConf('name')
-  201	getConf('adapter')
+  168	getConf('name')
+  202	getConf('adapter')
 packages/core/src/pluggableElementTypes/models/components/SaveTrackData.tsx  (1)
   82	getConf('trackId')
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (12)  [test]
@@ -168,12 +168,12 @@ packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
   37	getConf('y')
 plugins/alignments/src/consensus/index.ts  (1)
   57	getConf('name')
-plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts  (1)
-  132	readConfObject('tagFilters')
+plugins/alignments/src/LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts  (1)
+  164	readConfObject('tags')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
   140	getConf('adapter')
 plugins/alignments/src/tables.ts  (1)
-  379	readConfObject('descending')
+  499	readConfObject('descending')
 plugins/authentication/src/tokenEntryModelFactory.ts  (1)
   53	getConf('validateWithHEAD')
 plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
@@ -183,11 +183,11 @@ plugins/canvas/src/LinearBasicDisplay/filters.test.ts  (1)  [test]
 plugins/canvas/src/LinearBasicDisplay/searchResultHighlight.ts  (1)
   51	readConfObject('trackId')
 plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (1)
-  253	readConfObject('rowGroups')
+  232	readConfObject('rowGroups')
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/CircularView/model.ts  (1)
-  1164	readConfObject('trackId')
+  1232	readConfObject('trackId')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
@@ -227,14 +227,14 @@ plugins/data-management/src/UCSCTrackHubConnection/doConnect.ts  (2)
   71	getConf('hubTxtLocation')
   123	getConf('assemblyNames')
 plugins/gccontent/src/GCContentTrack/gcTrack.test.ts  (2)  [test]
-  91	readConfObject('gcMode')
-  166	readConfObject('aggregate')
+  93	readConfObject('gcMode')
+  181	readConfObject('aggregate')
 plugins/gccontent/src/GCContentTrack/index.ts  (3)
-  45	readConfObject('windowSize')
-  51	readConfObject('windowDelta')
-  57	readConfObject('gcMode')
+  47	readConfObject('windowSize')
+  53	readConfObject('windowDelta')
+  59	readConfObject('gcMode')
 plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
-  56	readConfObject('ldAdapter')
+  57	readConfObject('ldAdapter')
 plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts  (1)
   36	readConfObject('namesIndexLocation')
 plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts  (1)
@@ -246,9 +246,8 @@ plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (1
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
   108	readConfObject('trackId')
   115	readConfObject('trackId')
-plugins/linear-genome-view/src/LinearGenomeView/rExport/exportLinearView.ts  (2)
-  66	readConfObject('adapter')
-  93	readConfObject('adapter')
+plugins/linear-genome-view/src/LinearGenomeView/rExport/exportLinearView.ts  (1)
+  71	readConfObject('adapter')
 plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
   98	getConf('color')
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
@@ -285,12 +284,7 @@ plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   34	getConf('origin')
 products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
   352	readConfObject('adapter')
-products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (11)  [test]
-  188	getConf('showCoverage')
-  201	getConf('showCoverage')
-  211	getConf('readConnections')
-  212	getConf('showPileup')
-  213	getConf('showCoverage')
+products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (6)  [test]
   433	getConf('height')
   434	getConf('extent')
   518	getConf('marks')
@@ -326,7 +320,7 @@ products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
   156	readConfObject('name')
   265	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.ts  (1)
-  496	readConfObject('preConfiguredSessions')
+  462	readConfObject('preConfiguredSessions')
 products/jbrowse-web/src/schemaTests/LegacyConfigKeysLoadSilently.test.ts  (2)  [test]
   324	readConfObject('cytobandLocation')
   328	readConfObject('useNameOverride')

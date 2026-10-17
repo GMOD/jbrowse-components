@@ -4,15 +4,14 @@ import {
   makeScoreAxisMenuItem,
 } from '@jbrowse/wiggle-core'
 
-import type { CoverageFilter } from './coverageBandConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 export interface CoverageMenuModel extends ScoreScaleModel {
   id: string
   showCoverage: boolean
-  coverageFilter: CoverageFilter
-  setCoverageFilter: (patch: Partial<CoverageFilter>) => void
+  coverageMinAlleleFraction: number
+  setCoverageMinAlleleFraction: (fraction: number) => void
 }
 
 // Fractions rather than a free-entry dialog: the useful settings are an order
@@ -66,9 +65,9 @@ export function getCoverageMenuItems(model: CoverageMenuModel): MenuItem[] {
       disabledHelpText: BAND_HIDDEN_HELP,
       subMenu: radioItems(
         SNP_FREQUENCY_OPTIONS,
-        nearestSnpFrequencyOption(model.coverageFilter.minAlleleFraction),
+        nearestSnpFrequencyOption(model.coverageMinAlleleFraction),
         v => {
-          model.setCoverageFilter({ minAlleleFraction: Number(v) })
+          model.setCoverageMinAlleleFraction(Number(v))
         },
       ),
     },

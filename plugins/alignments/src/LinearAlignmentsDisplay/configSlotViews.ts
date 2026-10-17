@@ -17,9 +17,12 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
+import {
+  readFilterMembers,
+  readFilterOf,
+} from './alignmentsFilterConfigSchema.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
 import { drawnReadConnectionsOf } from './constants.ts'
-import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
   AlignmentsColorEncoding,
@@ -29,13 +32,13 @@ import type {
   ArcColorField,
   BaseLayer,
   ColorSchemeType,
-  ReadConnectionsFilter,
+  ConnectionFilter,
   ReadFilter,
   Facet,
   LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
-  SashimiFilter,
+  JunctionFilter,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
@@ -45,7 +48,6 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
-import type { CoverageFilter } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -116,14 +118,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['coverage', 'showInterbaseIndicators'])
     },
     /** #getter */
-    get coverageFilter(): CoverageFilter {
-      return {
-        minAlleleFraction: getConf(self, [
-          'coverage',
-          'filter',
-          'minAlleleFraction',
-        ]),
-      }
+    get coverageMinAlleleFraction(): number {
+      return getConf(self, ['coverage', 'minAlleleFraction'])
     },
     /** #getter */
     get showPileup(): boolean {
@@ -184,10 +180,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['sashimi', 'showCounts'])
     },
     /** #getter */
-    get sashimiFilter(): SashimiFilter {
+    get junctionFilter(): JunctionFilter {
       return {
-        minReads: getConf(self, ['sashimi', 'filter', 'minReads']),
-        nonCanonical: getConf(self, ['sashimi', 'filter', 'nonCanonical']),
+        minReads: getConf(self, ['filter', 'junctions', 'minReads']),
+        nonCanonical: getConf(self, ['filter', 'junctions', 'nonCanonical']),
       }
     },
     /** #getter */
@@ -239,17 +235,17 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * a breakpoint (`clusteredInterchromSupport`), since a mate-pair
      * breakpoint is not localized to a base.
      */
-    get readConnectionsFilter(): ReadConnectionsFilter {
+    get connectionFilter(): ConnectionFilter {
       return {
-        interchrom: getConf(self, ['readConnections', 'filter', 'interchrom']),
+        interchrom: getConf(self, ['filter', 'connections', 'interchrom']),
         offscreenMates: getConf(self, [
-          'readConnections',
           'filter',
+          'connections',
           'offscreenMates',
         ]),
         minInterchromReads: getConf(self, [
-          'readConnections',
           'filter',
+          'connections',
           'minInterchromReads',
         ]),
       }
@@ -404,14 +400,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
 }
 
 // One member at a time, so a patch leaves the members it does not name as
-// they were; `undefined` clears a category back to unfiltered.
+// they were, the `junctions` and `connections` objects among them; `undefined`
+// clears a category back to unfiltered.
 function patchFilter(
   self: ConfigSlotSelf,
-  band: 'coverage' | 'sashimi' | 'readConnections',
+  path: readonly string[],
   patch: object,
 ) {
   for (const [member, value] of Object.entries(patch)) {
-    setConf(self, [band, 'filter', member] as never, value)
+    setConf(self, ['filter', ...path, member] as never, value)
   }
 }
 
@@ -419,9 +416,26 @@ export function configSlotActions(self: ConfigSlotSelf) {
   return {
     /**
      * #action
+     * Writes every read member, one `filterBy` leaves out back to its
+     * default, and leaves `filter.junctions` and `filter.connections` as
+     * they are. A key that is no read member is refused before any lands.
      */
-    setReadFilter(filterBy: ReadFilter) {
-      setConf(self, 'filter', filterBy)
+    setReadFilter(filterBy: Partial<ReadFilter>) {
+      const stray = Object.keys(filterBy).filter(
+        key => !readFilterMembers.includes(key as keyof ReadFilter),
+      )
+      if (stray.length > 0) {
+        throw new Error(
+          `setReadFilter takes ${readFilterMembers.join(', ')}, not ${stray.join(', ')}`,
+        )
+      }
+      patchFilter(
+        self,
+        [],
+        Object.fromEntries(
+          readFilterMembers.map(member => [member, filterBy[member]]),
+        ),
+      )
     },
 
     /**
@@ -441,8 +455,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setCoverageFilter(patch: Partial<CoverageFilter>) {
-      patchFilter(self, 'coverage', patch)
+    setCoverageMinAlleleFraction(fraction: number) {
+      setConf(self, ['coverage', 'minAlleleFraction'], fraction)
     },
 
     /**
@@ -509,8 +523,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setSashimiFilter(patch: Partial<SashimiFilter>) {
-      patchFilter(self, 'sashimi', patch)
+    setJunctionFilter(patch: Partial<JunctionFilter>) {
+      patchFilter(self, ['junctions'], patch)
     },
 
     /**
@@ -561,8 +575,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setReadConnectionsFilter(patch: Partial<ReadConnectionsFilter>) {
-      patchFilter(self, 'readConnections', patch)
+    setConnectionFilter(patch: Partial<ConnectionFilter>) {
+      patchFilter(self, ['connections'], patch)
     },
   }
 }

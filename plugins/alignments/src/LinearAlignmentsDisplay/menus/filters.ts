@@ -29,7 +29,7 @@ interface FiltersModel {
 // default, hence the compare against it rather than against 0), plus one per tag
 // filter, one for a read name and one per read category in effect.
 function activeFilterCount(filterBy: ReadFilter) {
-  const { flagInclude, flagExclude, minMapq, readName, tagFilters } = filterBy
+  const { flagInclude, flagExclude, minMapq, readName, tags } = filterBy
   return (
     (flagInclude === defaultFilterFlags.flagInclude &&
     flagExclude === defaultFilterFlags.flagExclude
@@ -37,7 +37,7 @@ function activeFilterCount(filterBy: ReadFilter) {
       : 1) +
     (minMapq === undefined ? 0 : 1) +
     (readName === undefined || readName === '' ? 0 : 1) +
-    (tagFilters?.length ?? 0) +
+    (tags?.length ?? 0) +
     activeReadCategoryCount(filterBy)
   )
 }

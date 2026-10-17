@@ -3,7 +3,7 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
-import type { SashimiFilter } from '../../shared/types.ts'
+import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 
 function makeModel() {
@@ -19,9 +19,9 @@ function makeModel() {
     setSashimiPlacement(mode: SashimiPlacement) {
       this.sashimiPlacement = mode
     },
-    sashimiFilter: { minReads: DEFAULT_MIN_SASHIMI_READS } as SashimiFilter,
-    setSashimiFilter(patch: Partial<SashimiFilter>) {
-      this.sashimiFilter = { ...this.sashimiFilter, ...patch }
+    junctionFilter: { minReads: DEFAULT_MIN_SASHIMI_READS } as JunctionFilter,
+    setJunctionFilter(patch: Partial<JunctionFilter>) {
+      this.junctionFilter = { ...this.junctionFilter, ...patch }
     },
   }
 }
@@ -124,12 +124,12 @@ describe('sashimi menu', () => {
       row.onClick()
     }
     choose('Hide non-canonical junctions')
-    expect(model.sashimiFilter.nonCanonical).toBe('exclude')
+    expect(model.junctionFilter.nonCanonical).toBe('exclude')
     expect(labels(model)).toContain('Non-canonical junctions — hidden')
     choose('Only non-canonical junctions')
-    expect(model.sashimiFilter.nonCanonical).toBe('only')
+    expect(model.junctionFilter.nonCanonical).toBe('only')
     choose('All junctions')
-    expect(model.sashimiFilter.nonCanonical).toBeUndefined()
+    expect(model.junctionFilter.nonCanonical).toBeUndefined()
   })
 
   test('placement submenu checks the active mode and switches on click', () => {

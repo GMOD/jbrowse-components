@@ -440,7 +440,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
                 // minimize crossings (vs the default 'up', which stacks them all
                 // above)
                 placement: 'auto',
-                filter: {
+              },
+              filter: {
+                junctions: {
                   // The unfiltered pileup draws 159 distinct junctions, and 122 of
                   // them carry 1-2 reads — nanopore aligner noise, much of it splice
                   // sites shifted a few bp off a real one (e.g. 87958024 vs the true

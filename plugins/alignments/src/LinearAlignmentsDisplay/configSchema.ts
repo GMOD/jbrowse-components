@@ -8,12 +8,12 @@ import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
+import { alignmentsFilterConfigSchema } from './alignmentsFilterConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import { ALIGNMENTS_UNITS } from './constants.ts'
 import { pileupConfigSchema } from './pileupConfigSchema.ts'
 import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
-import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
@@ -97,11 +97,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/rnaseq.bam' },
  *   displayDefaults: {
  *     coverage: { height: 80 },
- *     sashimi: {
- *       placement: 'auto',
- *       showCounts: true,
- *       filter: { minReads: 5, nonCanonical: 'exclude' },
- *     },
+ *     sashimi: { placement: 'auto', showCounts: true },
+ *     filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
  *   },
  * }
  * ```
@@ -141,9 +138,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Every read filter, in one object: the flag masks, a read name, tag
-       * filters, and the four read categories. It runs before every band, so
-       * coverage counts only the reads it passes.
+       * Every test the display applies, in one object, read by every part
+       * that draws the data a test names: the read members (the flag masks, a
+       * read name, `tags`, and the four read categories), which run before
+       * every band, so coverage counts only the reads they pass;
+       * `junctions`, the splice junctions the sashimi arcs and their counts
+       * draw; and `connections`, the connections the arcs, the read cloud and
+       * the connectors over the pileup draw.
        *
        * default filter flags is exclude 1540
        * read unmapped (0x4)
@@ -155,7 +156,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * SV-size indels and the discordant pairs. `svSignal`, `singletons`,
        * `split` and `spliced`.
        */
-      filter: readFilterConfigSchema,
+      filter: alignmentsFilterConfigSchema,
       /**
        * #slot facet
        * In-track stacked grouping, one labelled section per value: a read

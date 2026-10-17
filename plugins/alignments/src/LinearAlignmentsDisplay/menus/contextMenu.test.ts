@@ -511,12 +511,12 @@ test('haplotype and read-group tag filters coexist instead of clobbering', () =>
     {
       flagInclude: 0,
       flagExclude: 1540,
-      tagFilters: [{ tag: 'HP', value: '1' }],
+      tags: [{ tag: 'HP', value: '1' }],
     },
     {
       flagInclude: 0,
       flagExclude: 1540,
-      tagFilters: [
+      tags: [
         { tag: 'HP', value: '1' },
         { tag: 'RG', value: 'lib1' },
       ],
@@ -530,7 +530,7 @@ test('re-filtering the same tag replaces its value, not duplicates', () => {
     readFilter: {
       flagInclude: 0,
       flagExclude: 1540,
-      tagFilters: [{ tag: 'HP', value: '1' }],
+      tags: [{ tag: 'HP', value: '1' }],
     },
   })
   findSubMenu(run(model), 'Filter')
@@ -540,7 +540,7 @@ test('re-filtering the same tag replaces its value, not duplicates', () => {
     {
       flagInclude: 0,
       flagExclude: 1540,
-      tagFilters: [{ tag: 'HP', value: '2' }],
+      tags: [{ tag: 'HP', value: '2' }],
     },
   ])
 })
@@ -557,7 +557,7 @@ test('clear appears only when a read/tag filter is active and keeps flags', () =
       flagInclude: 0,
       flagExclude: 1540,
       readName: undefined,
-      tagFilters: undefined,
+      tags: undefined,
     },
   ])
 })

@@ -113,7 +113,7 @@ From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSigna
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  |
 | <span id="getter-showalignments">**showAlignments**</span><br><code>boolean</code> |  |
 | <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  |
-| <span id="getter-coveragefilter">**coverageFilter**</span><br><code>CoverageFilter</code> |  |
+| <span id="getter-coverageminallelefraction">**coverageMinAlleleFraction**</span><br><code>number</code> |  |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
 | <span id="getter-showconservation">**showConservation**</span><br><code>boolean</code> |  |
 | <span id="getter-conservationheight">**conservationHeight**</span><br><code>number</code> |  |
@@ -291,7 +291,7 @@ From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbyt
 | <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "infe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "viridis") =&gt; void</code></pre></dialog></span> | Paint identity along a named ramp, clearing a written `range`, which would win over it. |
 | <span id="action-setshowasuppercase">**setShowAsUpperCase**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setcoveragefilter">**setCoverageFilter**</span><br><code>(patch: Partial&lt;CoverageFilter&gt;) =&gt; void</code> |  |
+| <span id="action-setcoverageminallelefraction">**setCoverageMinAlleleFraction**</span><br><code>(fraction: number) =&gt; void</code> |  |
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  |

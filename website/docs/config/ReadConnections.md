@@ -23,18 +23,16 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  readConnections: {
-    show: true,
-    showOrdinaryPairs: false,
-    filter: { interchrom: 'only' },
-  },
+  readConnections: { show: true, showOrdinaryPairs: false },
+  filter: { connections: { interchrom: 'only' } },
 }
 ```
 
 The alignments display's `readConnections` setting: the band of
 connections between mates and split segments, drawn as arcs or as the read
 cloud, which plots each pair at its insert size. The connectors drawn over
-the pileup's own rows are `pileup.showConnectors`.
+the pileup's own rows are `pileup.showConnectors`, and which connections
+either draws is the display's `filter.connections`.
 
 ## Config slots
 
@@ -50,4 +48,3 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-linewidth">**lineWidth**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | width of each arc or line in pixels |
 | <span id="slot-color">**color**</span><br>[AlignmentsArcColor](../alignmentsarccolor) | The field the connections are colored by, `""` taking the reads' `color` field where a connection paints it. |
 | <span id="slot-showordinarypairs">**showOrdinaryPairs**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset, the mark decides: arcs draw ordinary pairs as context and the cloud leaves them out. |
-| <span id="slot-filter">**filter**</span><br>[ReadConnectionsFilter](../readconnectionsfilter) | The connections drawn: `interchrom`, `offscreenMates` and `minInterchromReads` (default 2). |

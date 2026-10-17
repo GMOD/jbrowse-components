@@ -5939,8 +5939,86 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "ReadFilter": {
-      "title": "ReadFilter",
+    "JunctionFilter": {
+      "title": "JunctionFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "minReads": {
+          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "nonCanonical": {
+          "description": "only, exclude, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ConnectionFilter": {
+      "title": "ConnectionFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "interchrom": {
+          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "offscreenMates": {
+          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "minInterchromReads": {
+          "description": "an inter-chromosomal connection draws only with at least this many reads clustered at its breakpoint, counted over one fragment length on both sides; 1 draws every one, and a split read is exempt.",
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "AlignmentsFilter": {
+      "title": "AlignmentsFilter",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -5986,7 +6064,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/PlainString"
           }
         },
-        "tagFilters": {
+        "tags": {
           "if": {
             "type": "null"
           },
@@ -6043,6 +6121,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "only",
               "exclude"
             ]
+          }
+        },
+        "junctions": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/JunctionFilter"
+          }
+        },
+        "connections": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ConnectionFilter"
           }
         }
       },
@@ -6652,27 +6746,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "CoverageFilter": {
-      "title": "CoverageFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "minAlleleFraction": {
-          "description": "an allele segment colors only with at least this share of its position's depth, so the band stops painting a sliver for every sequencing error at high depth; 0 colors every mismatch.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "CoverageBand": {
       "title": "CoverageBand",
       "type": "object",
@@ -6708,12 +6781,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "filter": {
+        "minAlleleFraction": {
+          "description": "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included.",
+          "default": 0,
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/CoverageFilter"
+            "type": "number"
           }
         }
       },
@@ -6822,39 +6897,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "SashimiFilter": {
-      "title": "SashimiFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "minReads": {
-          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "nonCanonical": {
-          "description": "only, exclude, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "Sashimi": {
       "title": "Sashimi",
       "type": "object",
@@ -6903,14 +6945,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
-        },
-        "filter": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/SashimiFilter"
-          }
         }
       },
       "patternProperties": {
@@ -6936,51 +6970,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "insertSize",
               "pairOrientation"
             ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "ReadConnectionsFilter": {
-      "title": "ReadConnectionsFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "interchrom": {
-          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc where both chromosomes are displayed and a tick at each breakpoint otherwise.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "offscreenMates": {
-          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "minInterchromReads": {
-          "description": "an inter-chromosomal connection draws only with at least this many reads clustered at its breakpoint, counted over one fragment length on both sides; 1 draws every one, and a split read is exempt.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         }
       },
@@ -7066,14 +7055,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
-        },
-        "filter": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/ReadConnectionsFilter"
-          }
         }
       },
       "patternProperties": {
@@ -7156,7 +7137,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ReadFilter"
+            "$ref": "#/$defs/AlignmentsFilter"
           }
         },
         "facet": {
@@ -8100,12 +8081,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "filter": {
+        "minAlleleFraction": {
+          "description": "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included.",
+          "default": 0,
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/CoverageFilter"
+            "type": "number"
           }
         }
       },
@@ -8189,7 +8172,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/ReadFilter"
+            "$ref": "#/$defs/AlignmentsFilter"
           }
         },
         "facet": {

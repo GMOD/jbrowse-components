@@ -40,14 +40,14 @@ test('an alignments table reports the settings its bands are composed from', asy
     ...BAM,
     display: {
       coverage: { show: false },
-      sashimi: { filter: { minReads: 5 } },
+      sashimi: { height: 50 },
       pileup: { readHeight: 3 },
     },
   })
   expect(t.settings).toMatchObject({
     coverage: { show: false, height: 45 },
     pileup: { show: true, fadeLowFrequency: true, readHeight: 3 },
-    sashimi: { height: 40, filter: { minReads: 5 } },
+    sashimi: { height: 50, showCounts: false },
     readConnections: { show: false, mark: 'arc' },
   })
 })

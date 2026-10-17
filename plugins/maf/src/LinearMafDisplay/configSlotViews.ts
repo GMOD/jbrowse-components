@@ -12,7 +12,6 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
-import type { CoverageFilter } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorSetting,
@@ -65,14 +64,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get coverageFilter(): CoverageFilter {
-      return {
-        minAlleleFraction: getConf(self, [
-          'coverage',
-          'filter',
-          'minAlleleFraction',
-        ]),
-      }
+    get coverageMinAlleleFraction(): number {
+      return getConf(self, ['coverage', 'minAlleleFraction'])
     },
     /**
      * #getter
@@ -243,10 +236,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setCoverageFilter(patch: Partial<CoverageFilter>) {
-      for (const [member, value] of Object.entries(patch)) {
-        setConf(self, ['coverage', 'filter', member] as never, value)
-      }
+    setCoverageMinAlleleFraction(fraction: number) {
+      setConf(self, ['coverage', 'minAlleleFraction'], fraction)
     },
     /**
      * #action

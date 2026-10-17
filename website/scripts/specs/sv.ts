@@ -948,19 +948,22 @@ export const svSpecs: ScreenshotSpec[] = [
               unit: 'chain',
               readConnections: {
                 show: true,
-                filter: {
-                  // Each inversion-spanning read's two split junctions land on the
-                  // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
-                  // showInterchrom/showLongRange OFF drop these reads' genuine
-                  // cross-chromosome (chr4/chrX/...) and far-flank supplementary
-                  // connectors, leaving just the clean local inversion arc. The band
-                  // only has to hold one dome ~1.2 kb wide, so it is kept shallow —
-                  // at 130 the arc was the tallest thing in the figure and the reads
-                  // it describes were pushed down to make room for it.
+                // The band only has to hold one dome ~1.2 kb wide, so it is
+                // kept shallow — at 130 the arc was the tallest thing in the
+                // figure and the reads it describes were pushed down to make
+                // room for it.
+                height: 60,
+              },
+              filter: {
+                connections: {
+                  // Each inversion-spanning read's two split junctions land on
+                  // the two breakpoints (~1.2 kb apart, on-screen) and color
+                  // magenta. Excluding these reads' genuine cross-chromosome
+                  // (chr4/chrX/...) and far-flank supplementary connections
+                  // leaves just the clean local inversion arc.
                   interchrom: 'exclude',
                   offscreenMates: 'exclude',
                 },
-                height: 60,
               },
               coverage: { height: 70 },
               // the "Not split" section runs out of rows well before the box

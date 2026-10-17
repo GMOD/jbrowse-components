@@ -1,11 +1,11 @@
 ---
-id: readfilter
-title: ReadFilter
-description: "Every read filter of the alignments display in one object, its filter slot: the SAM flag masks, a minimum mapping quality, a read name, the tag filters a read has to pass every one of, and the four…"
-sidebar_label: Display -> ReadFilter
+id: alignmentsfilter
+title: AlignmentsFilter
+description: "Every test the alignments display applies, in one object, its filter slot, read by every part that draws the data a test names."
+sidebar_label: Display -> AlignmentsFilter
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts).
 
 ## Example usage
 
@@ -18,14 +18,23 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 ```js
-{ type: 'LinearAlignmentsDisplay', filter: { tagFilters: [{ tag: 'HP', value: '1' }] } }
+{ type: 'LinearAlignmentsDisplay', filter: { tags: [{ tag: 'HP', value: '1' }] } }
 ```
 
-Every read filter of the alignments display in one object, its `filter`
-slot: the SAM flag masks, a minimum mapping quality, a read name, the tag
-filters a read has to pass every one of, and the four read categories, each
-`only`, `exclude` or unset for unfiltered. The default excludes unmapped,
-QC-failed and duplicate reads (flag 1540).
+```js
+{
+  type: 'LinearAlignmentsDisplay',
+  filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
+}
+```
+
+Every test the alignments display applies, in one object, its `filter`
+slot, read by every part that draws the data a test names. The read members
+are the SAM flag masks, a minimum mapping quality, a read name, the tags a
+read has to carry, and the four read categories, each `only`, `exclude` or
+unset for unfiltered; the default excludes unmapped, QC-failed and duplicate
+reads (flag 1540). `junctions` tests the splice junctions and `connections`
+the connections between mates and split segments.
 
 ## Config slots
 
@@ -38,8 +47,10 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-flagexclude">**flagExclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>defaultFilterFlags.flagExclude</code> | a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads |
 | <span id="slot-minmapq">**minMapq**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read |
 | <span id="slot-readname">**readName**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | the one read name shown; unset shows every read |
-| <span id="slot-tagfilters">**tagFilters**</span><br>[TagFilter](../tagfilter) | The tags a read has to carry, every one of them: a `{ tag, value }` each, the value `*` or unset passing any read with the tag. |
+| <span id="slot-tags">**tags**</span><br>[TagFilter](../tagfilter) | The tags a read has to carry, every one of them: a `{ tag, value }` each, the value `*` or unset passing any read with the tag. |
 | <span id="slot-spliced">**spliced**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose CIGAR carries a reference skip. |
 | <span id="slot-svsignal">**svSignal**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). Both ends must be placed: a read at MAPQ 0 carries no evidence, a split read counts only when some other piece in its SA tag has MAPQ above 0, and a discordant read only when its mate does, where the MQ tag records it. |
 | <span id="slot-singletons">**singletons**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads whose mate and supplementary segments are all outside the window. |
 | <span id="slot-split">**split**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads with a supplementary segment, a chimeric alignment. |
+| <span id="slot-junctions">**junctions**</span><br>[JunctionFilter](../junctionfilter) | The splice junctions drawn: `minReads` (default 2) and `nonCanonical`. |
+| <span id="slot-connections">**connections**</span><br>[ConnectionFilter](../connectionfilter) | The connections drawn: `interchrom`, `offscreenMates` and `minInterchromReads` (default 2). |

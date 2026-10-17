@@ -43,8 +43,8 @@ const bamTrack = (trackId: string, name: string, uri: string) => ({
 
 const connections = {
   type: 'LinearAlignmentsDisplay',
-  readConnections: {
-    filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
+  filter: {
+    connections: { interchrom: 'exclude', offscreenMates: 'exclude' },
   },
   coverage: { height: 60 },
   forceLoad: true,
@@ -52,7 +52,7 @@ const connections = {
 
 const illuminaPairs = {
   ...connections,
-  readConnections: { ...connections.readConnections, placement: 'down' },
+  readConnections: { placement: 'down' },
   color: { field: 'insertSizeAndOrientation' },
 }
 
@@ -167,11 +167,7 @@ const readEvidence = ({
             ...connections,
             trackId: HIFI,
             coverage: { ...connections.coverage, show: false },
-            readConnections: {
-              ...connections.readConnections,
-              show: true,
-              height: 60,
-            },
+            readConnections: { show: true, height: 60 },
             pileup: {
               // rows tall enough to show each maps-back loop
               readHeight: connectorCurves ? 6 : 3,

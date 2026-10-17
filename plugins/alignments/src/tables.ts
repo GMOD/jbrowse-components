@@ -47,6 +47,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
+import { readFilterOf } from './LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts'
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
@@ -77,7 +78,6 @@ import {
   baseQualitySpanAcrossGroups,
   presentMapqs,
 } from './LinearAlignmentsDisplay/qualitySpans.ts'
-import { readFilterOf } from './LinearAlignmentsDisplay/readFilterConfigSchema.ts'
 import { intronAlpha } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { executeRenderAlignmentData } from './RenderAlignmentDataRPC/executeRenderAlignmentData.ts'
 import {
@@ -167,7 +167,7 @@ import type {
   InterbaseTypeName,
   LayoutOrder,
   ModificationColorBy,
-  SashimiFilter,
+  JunctionFilter,
   SortColumn,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -236,7 +236,9 @@ export interface AlignmentTablesArgs {
    * `LinearAlignmentsDisplay`. The tables read its `color`, `filter`,
    * `baseColor`, `modifications`, `sort` and `facet` objects, and its four
    * bands: `coverage`, `pileup`, `sashimi` and `readConnections`, each with
-   * its own `show` and `filter`. Unset reads the default display.
+   * its own `show`. `filter` holds the tests on reads, on junctions
+   * (`filter.junctions`) and on connections (`filter.connections`). Unset
+   * reads the default display.
    */
   display?: Record<string, unknown>
   /**
@@ -363,10 +365,10 @@ function markColors(palette: ColorPalette, baseLayer: BaseLayer | undefined) {
 
 type MarkColors = ReturnType<typeof markColors>
 
-/** What the display hides of the coverage band's stacks and the sashimi arcs. */
+/** What the display leaves uncolored of the coverage band's stacks, and hides of the junctions. */
 interface MarkThresholds {
   minAlleleFraction: number
-  sashimi: SashimiFilter
+  junctions: JunctionFilter
 }
 
 function positionIn(refNames: readonly string[]): RefNamePosition {
@@ -700,7 +702,7 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * merges them: each once, with its supporting-read count, the strand its
  * reads' tags or its splice motif give it (0 where neither says), and the
  * motif where the reference was read. Every junction, down to a single
- * read, with `shown` false where the display's `sashimi.filter` hides it; a
+ * read, with `shown` false where the display's `filter.junctions` hides it; a
  * junction whose motif was never read counts as canonical, as the display
  * counts it. `arcHeight` is the apex as a fraction
  * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
@@ -737,10 +739,10 @@ function junctions(
     color: merged.map(j => paint.junction(j.strand)),
     shown: merged.map(
       j =>
-        j.count >= thresholds.sashimi.minReads &&
+        j.count >= thresholds.junctions.minReads &&
         passesCategory(
           isNonCanonicalSpliceMotif(j.motif),
-          thresholds.sashimi.nonCanonical,
+          thresholds.junctions.nonCanonical,
         ),
     ),
     arcHeight: merged.map(j =>
@@ -850,6 +852,7 @@ function readConnectionTables(
   colors: ReturnType<typeof colorReads>,
 ) {
   const band = conf.readConnections
+  const connectionFilter = conf.filter.connections
   const mode = drawnReadConnectionsOf(
     readConfObject(band, 'show'),
     readConfObject(band, 'mark'),
@@ -869,15 +872,15 @@ function readConnectionTables(
             colorField,
             cloud,
             filter: {
-              interchrom: readConfObject(band, ['filter', 'interchrom']),
-              offscreenMates: readConfObject(band, [
-                'filter',
+              interchrom: readConfObject(connectionFilter, 'interchrom'),
+              offscreenMates: readConfObject(
+                connectionFilter,
                 'offscreenMates',
-              ]),
-              minInterchromReads: readConfObject(band, [
-                'filter',
+              ),
+              minInterchromReads: readConfObject(
+                connectionFilter,
                 'minInterchromReads',
-              ]),
+              ),
             },
             showOrdinaryPairs: ordinaryPairsShown(
               readConfObject(band, 'showOrdinaryPairs'),
@@ -1375,14 +1378,14 @@ export async function alignmentTables(
   )
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {
-    minAlleleFraction: readConfObject(conf, [
-      'coverage',
-      'filter',
-      'minAlleleFraction',
-    ]),
-    sashimi: {
-      minReads: readConfObject(conf, ['sashimi', 'filter', 'minReads']),
-      nonCanonical: readConfObject(conf, ['sashimi', 'filter', 'nonCanonical']),
+    minAlleleFraction: readConfObject(conf, ['coverage', 'minAlleleFraction']),
+    junctions: {
+      minReads: readConfObject(conf, ['filter', 'junctions', 'minReads']),
+      nonCanonical: readConfObject(conf, [
+        'filter',
+        'junctions',
+        'nonCanonical',
+      ]),
     },
   }
   const band = colors.insertSizeBand

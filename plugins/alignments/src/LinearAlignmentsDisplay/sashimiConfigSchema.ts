@@ -2,23 +2,20 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { SASHIMI_PLACEMENTS } from './constants.ts'
-import { sashimiFilterConfigSchema } from './sashimiFilterConfigSchema.ts'
 
 /**
  * #config Sashimi
  * #category display
  * The alignments display's `sashimi` setting: the splice-junction arcs, drawn
- * in the coverage band, so they draw only while `coverage.show` is on.
+ * in the coverage band, so they draw only while `coverage.show` is on. Which
+ * junctions draw is the display's `filter.junctions`.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   sashimi: {
- *     placement: 'auto',
- *     showCounts: true,
- *     filter: { minReads: 5, nonCanonical: 'exclude' },
- *   },
+ *   sashimi: { placement: 'auto', showCounts: true },
+ *   filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
  * }
  * ```
  */
@@ -60,11 +57,6 @@ export const sashimiConfigSchema = ConfigurationSchema(
       defaultValue: false,
       description: 'draw the supporting-read count on each arc',
     },
-    /**
-     * #slot filter
-     * The junctions drawn: `minReads` (default 2) and `nonCanonical`.
-     */
-    filter: sashimiFilterConfigSchema,
   },
   { closed: true, plot: true },
 )

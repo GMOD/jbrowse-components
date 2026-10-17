@@ -44,7 +44,9 @@ export type ReadFilterSnapshot = {
   flagInclude?: number
   flagExclude?: number
   minMapq?: number
-  tagFilters?: { tag: string; value: string }[]
+  tags?: { tag: string; value: string }[]
+  junctions?: Record<string, unknown>
+  connections?: Record<string, unknown>
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
 
 // The read-filter half of a snapshot's `filter`, which on a feature display is
@@ -684,8 +686,8 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, tag, value) => {
       r.snap.filter = {
         ...readFilterSnapOf(r),
-        tagFilters: [
-          ...(readFilterSnapOf(r).tagFilters ?? []),
+        tags: [
+          ...(readFilterSnapOf(r).tags ?? []),
           {
             tag: parseStr('filterTag', tag, 'a SAM tag name'),
             value: value ?? '',
@@ -953,21 +955,27 @@ export async function applyDisplayOpts(
       | {
           readFilter?: ReadFilterSnapshot
           setReadFilter?: (f: unknown) => void
+          setJunctionFilter?: (f: unknown) => void
+          setConnectionFilter?: (f: unknown) => void
         }
       | undefined
     if (display?.setReadFilter) {
-      const { tagFilters, ...members } = readFilter
+      const { tags, junctions, connections, ...members } = readFilter
+      // `setReadFilter` writes the read members alone
+      if (junctions) {
+        display.setJunctionFilter?.(junctions)
+      }
+      if (connections) {
+        display.setConnectionFilter?.(connections)
+      }
       display.setReadFilter({
         ...display.readFilter,
         ...members,
         // AND-ed, like every other tag filter: a `filterTag:` on the command
         // line adds a condition to the track's own rather than replacing it.
-        ...(tagFilters
+        ...(tags
           ? {
-              tagFilters: [
-                ...(display.readFilter?.tagFilters ?? []),
-                ...tagFilters,
-              ],
+              tags: [...(display.readFilter?.tags ?? []), ...tags],
             }
           : {}),
       })

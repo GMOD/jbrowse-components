@@ -1,4 +1,4 @@
-import { namesToBlock } from '@jbrowse/alignments-core'
+import { namesToBlock, readNameAt } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -40,6 +40,7 @@ import {
 import {
   bezierConnectionLegendItems,
   bezierDipReservePx,
+  connectorFilterOf,
   enumerateBezierPairs,
   resolveConnectors,
 } from './computeOverlay.ts'
@@ -48,6 +49,7 @@ import { buildConnectorFeeds } from './connectorFeed.ts'
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type { LinkedPair } from './compute.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 
@@ -1360,5 +1362,138 @@ describe('bezierConnectionLegendItems', () => {
       bezierConnectionLegendItems([LINKED_READ_COLOR_PAIR_LR], PALETTE)[0]!
         .label,
     ).toBe('LR - Normal pair orientation')
+  })
+})
+
+// `filter.connections` as the connectors read it: the test the arc band
+// applies to the same connection
+describe('connectorFilterOf', () => {
+  const first = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR
+  const second = SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR
+  // region 0 holds an ordinary pair `w`, one mate of `m` and the primary of
+  // the split read `r`; region 1 the other mate and the supplementary
+  const twoRegions = new Map([
+    [
+      0,
+      makeData({
+        names: ['w', 'w', 'm', 'r'],
+        ids: ['w1', 'w2', 'm1', 'r-primary'],
+        flags: [first, second, first, 0],
+        strands: [1, -1, 1, 1],
+        orientations: [
+          LINKED_READ_COLOR_PAIR_LR,
+          LINKED_READ_COLOR_PAIR_LR,
+          0,
+          0,
+        ],
+        positions: [
+          [100, 200],
+          [300, 400],
+          [500, 600],
+          [2400, 2500],
+        ],
+        ys: [0, 1, 2, 3],
+        interchrom: [0, 0, 1, 0],
+      }),
+    ],
+    [
+      1,
+      makeData({
+        names: ['m', 'r'],
+        ids: ['m2', 'r-supplementary'],
+        flags: [second, SAM_FLAG_SUPPLEMENTARY],
+        strands: [-1, 1],
+        positions: [
+          [9500, 9600],
+          [9000, 9100],
+        ],
+        ys: [0, 1],
+        interchrom: [1, 0],
+      }),
+    ],
+  ])
+
+  function drawn(
+    filter: Partial<ConnectionFilter>,
+    {
+      refNames = ['chr1', 'chr2'],
+      belowFloor = () => new Set<string>(),
+    }: {
+      refNames?: string[]
+      belowFloor?: () => ReadonlySet<string>
+    } = {},
+  ) {
+    const { lines, overlayPairs } = resolveConnectors(twoRegions, {
+      lines: true,
+      scope: 'all',
+      admits: connectorFilterOf(
+        { minInterchromReads: 2, ...filter },
+        i => refNames[i],
+        belowFloor,
+      ),
+    })
+    return {
+      lines: lines.get(0)?.numLinkedReadLines ?? 0,
+      curves: overlayPairs
+        .map(({ e1 }) => readNameAt(e1.data, e1.readIdx))
+        .toSorted(),
+    }
+  }
+
+  test('unfiltered, every connection draws', () => {
+    expect(drawn({})).toEqual({ lines: 1, curves: ['m', 'r'] })
+  })
+
+  test('interchrom takes both connections whose ends are on two contigs', () => {
+    expect(drawn({ interchrom: 'exclude' })).toEqual({ lines: 1, curves: [] })
+    expect(drawn({ interchrom: 'only' })).toEqual({
+      lines: 0,
+      curves: ['m', 'r'],
+    })
+  })
+
+  test('two regions on one contig cross no chromosomes', () => {
+    expect(
+      drawn({ interchrom: 'exclude' }, { refNames: ['chr1', 'chr1'] }).curves,
+    ).toEqual(['m', 'r'])
+  })
+
+  test('a connector is never an off-screen mate', () => {
+    expect(drawn({ offscreenMates: 'only' })).toEqual({ lines: 0, curves: [] })
+    expect(drawn({ offscreenMates: 'exclude' })).toEqual(drawn({}))
+  })
+
+  test('the floor drops a mate link, and a split read is exempt', () => {
+    expect(drawn({}, { belowFloor: () => new Set(['m', 'r']) })).toEqual({
+      lines: 1,
+      curves: ['r'],
+    })
+  })
+
+  // chain layout runs no straight-line pass, and its overlay takes the filter
+  test('the filter reaches the overlay with the straight-line pass off', () => {
+    const curves = (filter: Partial<ConnectionFilter>) =>
+      resolveConnectors(twoRegions, {
+        lines: false,
+        scope: 'all',
+        admits: connectorFilterOf(
+          { minInterchromReads: 2, ...filter },
+          i => ['chr1', 'chr2'][i],
+          () => new Set(),
+        ),
+      })
+        .overlayPairs.map(({ e1 }) => readNameAt(e1.data, e1.readIdx))
+        .toSorted()
+    expect(curves({})).toEqual(['m', 'r'])
+    expect(curves({ interchrom: 'exclude' })).toEqual([])
+  })
+
+  test('a floor of 1 never asks for the band collection', () => {
+    const belowFloor = jest.fn(() => new Set(['m']))
+    expect(drawn({ minInterchromReads: 1 }, { belowFloor }).curves).toEqual([
+      'm',
+      'r',
+    ])
+    expect(belowFloor).not.toHaveBeenCalled()
   })
 })

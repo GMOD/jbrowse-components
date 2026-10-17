@@ -3,12 +3,13 @@ import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
 import { READ_CATEGORY_KEYS } from '../shared/types.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 import {
-  readFilterConfigSchema,
+  alignmentsFilterConfigSchema,
+  readFilterMembers,
   readFilterOf,
-} from './readFilterConfigSchema.ts'
+} from './alignmentsFilterConfigSchema.ts'
 
 function filterOf(snap: Record<string, unknown> = {}) {
-  return readFilterOf(readFilterConfigSchema.create(snap))
+  return readFilterOf(alignmentsFilterConfigSchema.create(snap))
 }
 
 test('a partial filter reads back with the masks filled and no category set', () => {
@@ -16,7 +17,7 @@ test('a partial filter reads back with the masks filled and no category set', ()
   expect(filter.flagInclude).toBe(defaultFilterFlags.flagInclude)
   expect(filter.flagExclude).toBe(defaultFilterFlags.flagExclude)
   expect(filter.readName).toBe('x')
-  expect(filter.tagFilters).toEqual([])
+  expect(filter.tags).toEqual([])
   for (const key of READ_CATEGORY_KEYS) {
     expect(filter[key]).toBeUndefined()
   }
@@ -27,20 +28,32 @@ test.each(READ_CATEGORY_KEYS)(
   key => {
     expect(filterOf({ [key]: 'only' })[key]).toBe('only')
     expect(filterOf({ [key]: 'exclude' })[key]).toBe('exclude')
-    expect(() => readFilterConfigSchema.create({ [key]: 'all' })).toThrow()
+    expect(() =>
+      alignmentsFilterConfigSchema.create({ [key]: 'all' }),
+    ).toThrow()
   },
 )
 
-test("a v4 session's single tagFilter lifts into tagFilters", () => {
+test("a v4 session's single tagFilter lifts into tags", () => {
   expect(
     filterOf({ split: 'only', tagFilter: { tag: 'HP', value: '1' } }),
-  ).toMatchObject({ split: 'only', tagFilters: [{ tag: 'HP', value: '1' }] })
+  ).toMatchObject({ split: 'only', tags: [{ tag: 'HP', value: '1' }] })
 })
 
 test('a write refuses a key the filter does not declare', () => {
   expect(() =>
     refusingUndeclaredKeys(() =>
-      readFilterConfigSchema.create({ flagExcludes: 4 }),
+      alignmentsFilterConfigSchema.create({ flagExcludes: 4 }),
     ),
   ).toThrow('not flagExcludes')
+})
+
+// `setReadFilter` and the v4 lift write by this list, so a read member missing
+// from it would be one neither can clear
+test('the read members are the ones readFilterOf hands the worker', () => {
+  expect(readFilterMembers.toSorted()).toEqual(
+    Object.keys(filterOf()).toSorted(),
+  )
+  expect(readFilterMembers).not.toContain('junctions')
+  expect(readFilterMembers).not.toContain('connections')
 })

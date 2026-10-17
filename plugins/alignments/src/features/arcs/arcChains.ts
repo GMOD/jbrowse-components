@@ -477,12 +477,19 @@ interface LanePendingArc {
 // lane its segments landed in, each copy carrying a fraction of the support
 // `arcStrokeScale` then drew. On the HG02768 inverted duplication that put the
 // same junction in the LR, RR and LL bands at three different widths.
+// A lane's pending arcs and, parallel to them, the QNAME each came from: the
+// key the connectors over the pileup look up a connection's floor verdict by.
+export interface LaneArcs {
+  arcs: PendingArc[]
+  names: string[]
+}
+
 export function collectPendingArcsByLane(
   readsByName: Map<string, ReadEntry[]>,
   ctx: ArcChainContext,
 ) {
-  const byLane = new Map<string, PendingArc[]>()
-  for (const entries of readsByName.values()) {
+  const byLane = new Map<string, LaneArcs>()
+  for (const [name, entries] of readsByName) {
     const laned = resolveReadGroup<ReadEntry, LanePendingArc>(entries, {
       // The fragment's own lane, not the segment's. A mate's chain is walked
       // once over every lane's records, so an inverted supplementary — which
@@ -506,7 +513,12 @@ export function collectPendingArcsByLane(
         })),
     })
     for (const { groupKey, arc } of laned) {
-      getOrCreate(byLane, groupKey, () => []).push(arc)
+      const lane = getOrCreate(byLane, groupKey, () => ({
+        arcs: [],
+        names: [],
+      }))
+      lane.arcs.push(arc)
+      lane.names.push(name)
     }
   }
   return byLane
@@ -522,5 +534,7 @@ export function collectPendingArcs(
   readsByName: Map<string, ReadEntry[]>,
   ctx: ArcChainContext,
 ) {
-  return [...collectPendingArcsByLane(readsByName, ctx).values()].flat()
+  return [...collectPendingArcsByLane(readsByName, ctx).values()].flatMap(
+    lane => lane.arcs,
+  )
 }

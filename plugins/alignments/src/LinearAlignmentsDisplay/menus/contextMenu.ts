@@ -100,10 +100,10 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
 // Set the filter for one tag while preserving filters on other tags, so quick
 // HP/RG filters (and any dialog-set tag) coexist instead of clobbering.
 function setTagFilter(self: FilterModel, tag: string, value: string) {
-  const others = (self.readFilter.tagFilters ?? []).filter(f => f.tag !== tag)
+  const others = (self.readFilter.tags ?? []).filter(f => f.tag !== tag)
   self.setReadFilter({
     ...self.readFilter,
-    tagFilters: [...others, { tag, value }],
+    tags: [...others, { tag, value }],
   })
 }
 
@@ -202,7 +202,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
   // menu's "Clear all filters" is the one that clears everything.
   const hasReadOrTagFilter =
     self.readFilter.readName !== undefined ||
-    (self.readFilter.tagFilters?.length ?? 0) > 0
+    (self.readFilter.tags?.length ?? 0) > 0
   if (hasReadOrTagFilter) {
     sub.push({
       label: 'Clear read/tag filters',
@@ -211,7 +211,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
         self.setReadFilter({
           ...self.readFilter,
           readName: undefined,
-          tagFilters: undefined,
+          tags: undefined,
         })
       },
     })

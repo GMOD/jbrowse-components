@@ -840,14 +840,14 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
 ])
 
-function filterStep(
-  value: unknown,
-  { displayType }: FieldContext,
-): FieldStep | undefined {
-  const filters = Array.isArray(value)
-    ? value.filter(f => typeof f === 'string')
-    : undefined
-  return filters?.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
+// The alignments display's `filter` is an object of read members, which the
+// read-category step reads as it reads v4's `filterBy`.
+const filterStep: FieldRecipe = (value, { displayType }) => {
+  if (!Array.isArray(value)) {
+    return readCategoryPath(value)
+  }
+  const filters = value.filter(f => typeof f === 'string')
+  return filters.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
     ? {
         path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
         note: `This figure filters on ${filters.map(f => `\`${f.replace(/^jexl:/, '')}\``).join(', ')}.`,
@@ -1102,16 +1102,16 @@ const checkbox = (label: string, note?: string): FieldRecipe => {
       : undefined
 }
 
-// `filterBy` carries every read filter, and only the read categories have a
-// click path worth writing: the flag masks and tag filters are typed into the
-// dialog rather than picked off a menu, so a figure setting one of those gets
-// the row that opens the dialog and stops there.
+// `filter`, or v4's `filterBy`, carries every read filter, and only the read
+// categories have a click path worth writing: the flag masks and tag filters
+// are typed into the dialog rather than picked off a menu, so a figure setting
+// one of those gets the row that opens the dialog and stops there.
 //
 // Every label comes off `READ_CATEGORIES`, which is what the menu builds its
 // rows from, so a renamed category cannot leave figures naming a row that is
 // gone — the "imported, cannot drift" guarantee the color-scheme table above
 // has.
-const readCategoryPath: FieldRecipe = value => {
+function readCategoryPath(value: unknown): FieldStep | undefined {
   const filter = asRecord(value)
   if (!filter) {
     return undefined
@@ -1590,16 +1590,16 @@ export const trackFields: Record<string, FieldRecipe> = {
                 : undefined,
           }
         : undefined,
-  'readConnections.filter.offscreenMates': (value, { displayType }) =>
+  'filter.connections.offscreenMates': (value, { displayType }) =>
     isAlignmentsOnlyField(displayType)
       ? categoryStep(
           `${READ_CONNECTIONS_MENU} → Off-screen mate connections`,
           value,
           'off-screen mate connections',
-          'The row stays greyed out until an arc or read-cloud overlay is on.',
+          'The row stays greyed out until an arc or read-cloud overlay, or the curved connectors, are on.',
         )
       : undefined,
-  'readConnections.filter.interchrom': (value, { displayType }) =>
+  'filter.connections.interchrom': (value, { displayType }) =>
     isAlignmentsOnlyField(displayType)
       ? categoryStep(
           `${READ_CONNECTIONS_MENU} → Inter-chromosomal pairs`,
@@ -1816,7 +1816,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // A radio list of five fractions rather than a number entry
   // (alignments-core coverageMenuItems.ts), so the recipe names the row and
   // not the value.
-  'coverage.filter.minAlleleFraction': value => {
+  'coverage.minAlleleFraction': value => {
     const row =
       typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined
     return row
@@ -1862,7 +1862,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   'sashimi.showCounts': checkbox('Sashimi arcs → Show read counts'),
   // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
   // and shown only while the arcs are.
-  'sashimi.filter.nonCanonical': value =>
+  'filter.junctions.nonCanonical': value =>
     categoryStep(
       `${TRACK_MENU} → Sashimi arcs → Non-canonical junctions`,
       value,
@@ -1877,7 +1877,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Read connections → Show ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
-  'sashimi.filter.minReads': numberField(n => ({
+  'filter.junctions.minReads': numberField(n => ({
     path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
     note: 'Hides splice junctions supported by fewer reads than this.',
   })),

@@ -8,15 +8,15 @@
 # configs with no #example (12)
 # fix: add an #example to the type’s #config JSDoc
 BamIndex
+ConnectionFilter
 HierarchicalConfigSchema
 JBrowseConfiguration
 JBrowseRootConfig
+JunctionFilter
 LinearGenomeViewConfigSchema
 LinearScoreDisplay
 PreferencesConfigSchema
-ReadConnectionsFilter
 RpcOptions
-SashimiFilter
 TabixIndex
 TagFilter
 
@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1344)
+# model members with no description (1343)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -562,8 +562,8 @@ LinearAlignmentsDisplay.colorSetting
 LinearAlignmentsDisplay.contextMenuFeature
 LinearAlignmentsDisplay.contextMenuItems
 LinearAlignmentsDisplay.coverageDisplayHeight
-LinearAlignmentsDisplay.coverageFilter
 LinearAlignmentsDisplay.coverageHeight
+LinearAlignmentsDisplay.coverageMinAlleleFraction
 LinearAlignmentsDisplay.coverageScaleType
 LinearAlignmentsDisplay.detectedModificationTypes
 LinearAlignmentsDisplay.fadeLowBaseQuality
@@ -574,6 +574,7 @@ LinearAlignmentsDisplay.fetchNeeded
 LinearAlignmentsDisplay.findFeatureInRpcData
 LinearAlignmentsDisplay.getFeatureInfoById
 LinearAlignmentsDisplay.hoveredFeature
+LinearAlignmentsDisplay.junctionFilter
 LinearAlignmentsDisplay.legendItems
 LinearAlignmentsDisplay.modificationSettings
 LinearAlignmentsDisplay.modificationThreshold
@@ -588,24 +589,22 @@ LinearAlignmentsDisplay.readFilter
 LinearAlignmentsDisplay.readIdIndexMap
 LinearAlignmentsDisplay.renderState
 LinearAlignmentsDisplay.renderSvg
-LinearAlignmentsDisplay.sashimiFilter
 LinearAlignmentsDisplay.sashimiHeight
 LinearAlignmentsDisplay.sashimiPlacement
 LinearAlignmentsDisplay.selectFeature
 LinearAlignmentsDisplay.selectFeatureById
 LinearAlignmentsDisplay.selectedFeatureId
+LinearAlignmentsDisplay.setConnectionFilter
 LinearAlignmentsDisplay.setContextMenuFeature
-LinearAlignmentsDisplay.setCoverageFilter
 LinearAlignmentsDisplay.setCoverageHeight
+LinearAlignmentsDisplay.setCoverageMinAlleleFraction
 LinearAlignmentsDisplay.setError
 LinearAlignmentsDisplay.setFadeLowBaseQuality
+LinearAlignmentsDisplay.setJunctionFilter
 LinearAlignmentsDisplay.setPileupMaxLayoutHeight
-LinearAlignmentsDisplay.setReadConnectionsFilter
 LinearAlignmentsDisplay.setReadConnectionsHeight
 LinearAlignmentsDisplay.setReadConnectionsLineWidth
 LinearAlignmentsDisplay.setReadConnectionsPlacement
-LinearAlignmentsDisplay.setReadFilter
-LinearAlignmentsDisplay.setSashimiFilter
 LinearAlignmentsDisplay.setSashimiHeight
 LinearAlignmentsDisplay.setSashimiPlacement
 LinearAlignmentsDisplay.setShowCoverage
@@ -858,14 +857,14 @@ LinearMafDisplay.coarseAdapterSlot
 LinearMafDisplay.colorField
 LinearMafDisplay.conservationHeight
 LinearMafDisplay.conservationUnit
-LinearMafDisplay.coverageFilter
 LinearMafDisplay.coverageHeight
+LinearMafDisplay.coverageMinAlleleFraction
 LinearMafDisplay.fetchCoarseTier
 LinearMafDisplay.rowIdentityAutoZoom
 LinearMafDisplay.rowProportion
 LinearMafDisplay.scrollViewportHeight
 LinearMafDisplay.setConservationUnit
-LinearMafDisplay.setCoverageFilter
+LinearMafDisplay.setCoverageMinAlleleFraction
 LinearMafDisplay.setRowIdentityAutoZoom
 LinearMafDisplay.setRowProportion
 LinearMafDisplay.setShowAlignments

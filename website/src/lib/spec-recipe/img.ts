@@ -1,5 +1,10 @@
 import { subcommandForViewType } from '../../../../products/jbrowse-img/src/modes.ts'
-import { specTrackId, specTrackSettings, specTracks } from './decode.ts'
+import {
+  nestedSettings,
+  specTrackId,
+  specTrackSettings,
+  specTracks,
+} from './decode.ts'
 
 import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
 
@@ -22,9 +27,12 @@ export function heredoc(file: string, value: unknown) {
 
 // A spec entry's display as `display:<type>`, and its other settings as one
 // JSON argument, which keeps each value's type: a `key=value` modifier reads
-// its value back from text and loses that.
+// its value back from text and loses that. The JSON nests a band's members
+// again, since jbrowse-img reads no dotted key in it.
 function trackArgs(entry: SpecTrackEntry) {
-  const { type, ...settings } = Object.fromEntries(specTrackSettings(entry))
+  const { type, ...settings } = nestedSettings(
+    Object.fromEntries(specTrackSettings(entry)),
+  )
   return [
     '--track',
     specTrackId(entry),

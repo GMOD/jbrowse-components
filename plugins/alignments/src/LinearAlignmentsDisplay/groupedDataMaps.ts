@@ -15,7 +15,7 @@ import type {
 import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
-import type { SashimiFilter } from '../shared/types.ts'
+import type { JunctionFilter } from '../shared/types.ts'
 import type { SashimiPlacement } from './constants.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
@@ -43,7 +43,7 @@ export function* eachGroup(
 }
 
 export interface SashimiSidesOpts {
-  filter: SashimiFilter
+  filter: JunctionFilter
   placement: SashimiPlacement
   // refName of the region each `rpcDataMap` key was fetched from — the display
   // reads it off `loadedRegions`, which is keyed the same way and updates with

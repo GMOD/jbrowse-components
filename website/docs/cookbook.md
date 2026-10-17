@@ -354,7 +354,7 @@ pass every `jexl:` expression, on variant tracks too:
     "filter": {
       "flagExclude": 1540,
       "flagInclude": 0,
-      "tagFilters": [{ "tag": "HP", "value": "1" }]
+      "tags": [{ "tag": "HP", "value": "1" }]
     }
   }
 }

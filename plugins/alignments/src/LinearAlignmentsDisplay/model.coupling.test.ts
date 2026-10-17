@@ -1,4 +1,4 @@
-import { namesToBlock } from '@jbrowse/alignments-core'
+import { namesToBlock, readNameAt } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -900,6 +900,89 @@ describe('curved connectors', () => {
     ])
   })
 
+  // `filter.connections` reaches the connectors with the arc band off, the
+  // inter-chromosomal floor included: a lone pair across two contigs gathers
+  // one read at its breakpoint, under the default floor of 2, and two pairs
+  // meeting at one gather two
+  test('filter.connections decides the connectors with the arc band off', () => {
+    const display = createDisplay()
+    display.view.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10_000 },
+    ])
+    display.setShowConnectors(true)
+    // `a` and `b` meet at one breakpoint from two lanes, so only the band's
+    // pooled count clears the floor for them; `lone` stands apart
+    const lane = (
+      key: string,
+      i: number,
+      reads: { name: string; start: number }[],
+    ) => ({
+      key,
+      label: key,
+      data: {
+        ...baseWorkerPileupData(reads.length),
+        ...namesToBlock(reads.map(r => r.name)),
+        readKeys: reads.map(r => `${r.name}-${i}`),
+        readPositions: Uint32Array.from(
+          reads.flatMap(r => [r.start, r.start + 100]),
+        ),
+        readFlags: new Uint16Array(reads.length).fill(i === 0 ? first : second),
+        readStrands: new Int8Array(reads.length).fill(1),
+        readInterchrom: new Uint8Array(reads.length).fill(1),
+      },
+    })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          lane('x', 0, [
+            { name: 'a', start: 100 },
+            { name: 'lone', start: 5000 },
+          ]),
+          lane('y', 0, [{ name: 'b', start: 300 }]),
+        ],
+      },
+      region(0),
+    )
+    display.setRpcData(
+      1,
+      {
+        groups: [
+          lane('x', 1, [
+            { name: 'a', start: 9000 },
+            { name: 'lone', start: 2000 },
+          ]),
+          lane('y', 1, [{ name: 'b', start: 9200 }]),
+        ],
+      },
+      region(1),
+    )
+    const drawn = () =>
+      [...display.connectorsByGroup.values()]
+        .flatMap(c => c.overlayPairs)
+        .map(({ e1 }) => readNameAt(e1.data, e1.readIdx))
+        .toSorted()
+    expect(display.drawnReadConnections).toBe('off')
+    expect(drawn()).toEqual(['a', 'b'])
+
+    display.setConnectionFilter({ minInterchromReads: 1 })
+    expect(drawn()).toEqual(['a', 'b', 'lone'])
+
+    display.setConnectionFilter({ interchrom: 'exclude' })
+    expect(drawn()).toEqual([])
+  })
+
+  test('a connection category no connector is in drops every connector', () => {
+    const display = connectorDisplay()
+    display.setConnectionFilter({ offscreenMates: 'only' })
+    expect(display.connectorsByGroup.get('')?.overlayPairs).toHaveLength(0)
+    expect(display.connectorsByGroup.get('')?.lines.size).toBe(0)
+
+    display.setConnectionFilter({ offscreenMates: 'exclude' })
+    expect(display.connectorsByGroup.get('')?.overlayPairs).toHaveLength(1)
+  })
+
   test("the key names the straight lines' color as well as the curves'", () => {
     const display = connectorDisplay()
     display.setShowLegend(true)
@@ -973,13 +1056,57 @@ describe('read categories + filter submenu', () => {
     display.setReadFilter({
       ...display.readFilter,
       readName: 'readA',
-      tagFilters: [{ tag: 'HP', value: '1' }],
+      tags: [{ tag: 'HP', value: '1' }],
       svSignal: 'exclude',
       split: 'only',
     })
     expect(
       findMenuItem(display.trackMenuItems(), 'Filter by... (4)'),
     ).toBeDefined()
+  })
+
+  // `setReadFilter` writes the read members alone, or every Filter menu click
+  // would reset the junction and connection filters
+  test('a read filter write keeps filter.junctions and filter.connections', () => {
+    const display = createDisplay()
+    display.setJunctionFilter({ minReads: 7, nonCanonical: 'exclude' })
+    display.setConnectionFilter({ interchrom: 'exclude' })
+    display.setReadFilter({ ...display.readFilter, svSignal: 'exclude' })
+    expect(display.readFilter.svSignal).toBe('exclude')
+    expect(display.junctionFilter).toEqual({
+      minReads: 7,
+      nonCanonical: 'exclude',
+    })
+    expect(display.connectionFilter.interchrom).toBe('exclude')
+  })
+
+  // jbrowse-img hands a settings bag's `filter` to this action, so a typo
+  // there is an error rather than an unfiltered export
+  test('a read filter write refuses a key that is no read member', () => {
+    const display = createDisplay()
+    expect(() => {
+      display.setReadFilter({
+        ...display.readFilter,
+        svSignal: 'only',
+        flagExcludes: 4,
+      } as never)
+    }).toThrow('not flagExcludes')
+    expect(display.readFilter.svSignal).toBeUndefined()
+  })
+
+  // the Filter menu's clear writes the default masks alone
+  test('a read member the write leaves out goes back to its default', () => {
+    const display = createDisplay()
+    display.setReadFilter({
+      ...display.readFilter,
+      readName: 'readA',
+      tags: [{ tag: 'HP', value: '1' }],
+      split: 'only',
+    })
+    display.setReadFilter({ flagInclude: 0, flagExclude: 1540 })
+    expect(display.readFilter.readName).toBeUndefined()
+    expect(display.readFilter.tags).toEqual([])
+    expect(display.readFilter.split).toBeUndefined()
   })
 })
 
@@ -1256,7 +1383,7 @@ describe('sashimi score filter releases the reserved band', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('auto')
-    display.setSashimiFilter({ minReads: 0 })
+    display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
@@ -1265,7 +1392,7 @@ describe('sashimi score filter releases the reserved band', () => {
     )
 
     // drops the 2-read junction => nothing left to cross => nothing goes down
-    display.setSashimiFilter({ minReads: 5 })
+    display.setJunctionFilter({ minReads: 5 })
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
     expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
   })
@@ -1274,13 +1401,13 @@ describe('sashimi score filter releases the reserved band', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('down')
-    display.setSashimiFilter({ minReads: 5 })
+    display.setJunctionFilter({ minReads: 5 })
     seedCrossingJunctions(display)
 
     // the 20-read junction survives and still draws below coverage
     expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
 
-    display.setSashimiFilter({ minReads: 50 })
+    display.setJunctionFilter({ minReads: 50 })
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
   })
 
@@ -1288,7 +1415,7 @@ describe('sashimi score filter releases the reserved band', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('up')
-    display.setSashimiFilter({ minReads: 0 })
+    display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
@@ -1303,7 +1430,7 @@ describe('sashimi score filter releases the reserved band', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('auto')
-    display.setSashimiFilter({ minReads: 0 })
+    display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect([...display.sashimiDownArcLanes]).toEqual([''])
@@ -1321,7 +1448,7 @@ describe('sashimi score filter releases the reserved band', () => {
     const display = createDisplay()
     display.setShowSashimi(true)
     display.setSashimiPlacement('auto')
-    display.setSashimiFilter({ minReads: 0 })
+    display.setJunctionFilter({ minReads: 0 })
     const junction = (start: number, end: number): WorkerPileupData => ({
       ...makeEmptyPileupData(),
       sashimiX1: new Uint32Array([start]),

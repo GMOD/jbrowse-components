@@ -36,6 +36,33 @@ test('a linear view is flags, with each track setting in one JSON argument', () 
   expect(recipe.dropped).toEqual(['highlight'])
 })
 
+// jbrowse-img reads no dotted key in its JSON argument
+test("a track's band and filter members reach the command nested", () => {
+  const { command } = imgRecipe(
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38',
+          loc: 'chr2:1-100',
+          tracks: [
+            {
+              trackId: 'reads',
+              coverage: { height: 90 },
+              filter: { split: 'only', junctions: { minReads: 3 } },
+            },
+          ],
+        },
+      ],
+    },
+    config,
+    1500,
+  )!
+  expect(command).toContain(
+    `--track reads '{"coverage":{"height":90},"filter":{"split":"only","junctions":{"minReads":3}}}'`,
+  )
+})
+
 test('a comparative view renders its own spec through its subcommand', () => {
   const view = { type: 'DotplotView', views: [{ assembly: 'a' }, { assembly: 'b' }] }
   const { command } = imgRecipe({ views: [view] }, config, undefined)!

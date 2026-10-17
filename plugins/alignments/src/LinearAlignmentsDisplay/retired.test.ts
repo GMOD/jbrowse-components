@@ -165,12 +165,22 @@ test("an instance's v4 filter replaces its sub-node's whole", () => {
     },
     filterBySetting: { flagInclude: 0, flagExclude: 1028 },
   }) as { filter: Record<string, unknown> }
-  expect(filter).toMatchObject({ flagExclude: 1028, tagFilters: null })
+  expect(filter).toMatchObject({ flagExclude: 1028, tags: null })
   expect(
     retiredState.lift({
       filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
     }).filter,
-  ).toMatchObject({ tagFilters: [{ tag: 'HP', value: '1' }] })
+  ).toMatchObject({ tags: [{ tag: 'HP', value: '1' }] })
+})
+
+// v4's filterBy held the read members alone, so its lift leaves a v4
+// LinearReadArcsDisplay's `drawInter` lift in `filter.connections` standing
+test('a v4 filter lift leaves the junction and connection filters', () => {
+  const { filter } = retiredState.lift({
+    filterBySetting: { flagInclude: 0, flagExclude: 1028 },
+  }) as { filter: Record<string, unknown> }
+  expect(filter).not.toHaveProperty('junctions')
+  expect(filter).not.toHaveProperty('connections')
 })
 
 test('a v4 sort carries into sort by its v5 name, counted from 0', () => {

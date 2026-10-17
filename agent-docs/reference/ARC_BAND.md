@@ -28,8 +28,10 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
   size. Arc mode draws the arc unvalued (`arcCrossLink`), half as tall as its
   feet are apart, since it has no genomic radius.
-- **`readConnections.filter.interchrom` and `minInterchromReads` gate both marks** from one hoisted
-  condition, so neither mark escapes the setting or the mismapping floor.
+- **`filter.connections.interchrom` and `minInterchromReads` gate both marks** from one hoisted
+  condition, so neither mark escapes the setting or the mismapping floor. The
+  curved connectors over the pileup take the same verdict from the collection
+  stage (`collectArcs`' `belowFloor`), by QNAME, even with the band off.
 - **The hover needs two refNames.** `formatArcTooltip` builds a range from the
   min and max of the two bp, which across chromosomes names one chromosome with a
   coordinate from the other. `endRefName` switches it to two positions and no

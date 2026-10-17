@@ -721,7 +721,7 @@ Settings written as slots, in the display's own spelling:
 | `readConnections.height=120`             | Height of the arcs' or read cloud's own band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                  |
 | `readConnections.lineWidth=2`            | Stroke width for read-connection arcs and lines                                                                                                            |
 | `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
-| `sashimi.filter.minReads=3`              | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
+| `filter.junctions.minReads=3`            | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
 | `readConnections.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
 | `pileup.maxLayoutHeight=4000`            | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 

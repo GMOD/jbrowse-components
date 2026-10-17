@@ -1,9 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { coverageFilterConfigSchema } from './coverageFilterConfigSchema.ts'
-
-export type { CoverageFilter } from './coverageFilterConfigSchema.ts'
-
 /**
  * #config CoverageBand
  * #category display
@@ -49,10 +45,17 @@ export const coverageBandConfigSchema = ConfigurationSchema(
         'draw the insertion and clip count bars and their indicator triangles',
     },
     /**
-     * #slot filter
-     * The allele segments the band colors: `minAlleleFraction`.
+     * #slot
+     * A color rule, beside the pileup's `fadeLowFrequency`, which fades its
+     * marks by the same per-base share through a depth-dependent threshold.
+     * The band's grey depth bar shows through where a segment is not colored.
      */
-    filter: coverageFilterConfigSchema,
+    minAlleleFraction: {
+      type: 'number',
+      defaultValue: 0,
+      description:
+        "an allele segment colors only with at least this share of its position's depth; 0 colors every mismatch, sequencing errors included",
+    },
   },
   { closed: true, plot: true },
 )

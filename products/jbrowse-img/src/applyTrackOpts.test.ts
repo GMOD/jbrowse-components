@@ -266,7 +266,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
     const { snap } = buildDisplaySnapshot('alignments', [
       'showLegend=true',
       'pileup.maxLayoutHeight=4000',
-      'sashimi.filter.minReads=3',
+      'filter.junctions.minReads=3',
       'sashimi.height=120',
       'readConnections.color.field=insertSize',
     ])
@@ -369,7 +369,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
       ]).snap.filter,
     ).toEqual({
       flagInclude: 2,
-      tagFilters: [
+      tags: [
         { tag: 'HP', value: '1' },
         { tag: 'RG', value: 'lane3' },
       ],

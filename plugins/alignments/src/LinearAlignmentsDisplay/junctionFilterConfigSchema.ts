@@ -1,18 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { CATEGORY_FILTERS } from './readFilterConfigSchema.ts'
+import { CATEGORY_FILTERS } from './categoryFilters.ts'
 
 /**
- * #config SashimiFilter
+ * #config JunctionFilter
  * #category display
- * The junctions the sashimi arcs draw, the alignments display's
- * `sashimi.filter`: a supporting-read floor, and the non-canonical junctions
- * as a category, `only`, `exclude` or unset for unfiltered, as a read category
- * is in `filter`.
+ * The splice junctions the alignments display draws, its `filter.junctions`:
+ * a supporting-read floor, and the non-canonical junctions as a category,
+ * `only`, `exclude` or unset for unfiltered, as a read category is. Every
+ * part that draws junctions reads it: the sashimi arcs, their read counts and
+ * the tables engine's junctions.
  */
-export const sashimiFilterConfigSchema = ConfigurationSchema(
-  'SashimiFilter',
+export const junctionFilterConfigSchema = ConfigurationSchema(
+  'JunctionFilter',
   {
     /**
      * #slot

@@ -5,7 +5,7 @@ import AltRouteIcon from '@mui/icons-material/AltRoute'
 import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
 import { categoryFilterItem } from './categoryFilterItem.ts'
 
-import type { SashimiFilter } from '../../shared/types.ts'
+import type { JunctionFilter } from '../../shared/types.ts'
 import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -24,8 +24,8 @@ interface SashimiModel {
   setShowSashimiCounts: (show: boolean) => void
   sashimiPlacement: SashimiPlacement
   setSashimiPlacement: (placement: SashimiPlacement) => void
-  sashimiFilter: SashimiFilter
-  setSashimiFilter: (patch: Partial<SashimiFilter>) => void
+  junctionFilter: JunctionFilter
+  setJunctionFilter: (patch: Partial<JunctionFilter>) => void
 }
 
 // All sashimi (splice-junction arc) controls in one place. The counts,
@@ -89,9 +89,9 @@ export function getSashimiMenuItem(model: SashimiModel) {
               only: 'Only non-canonical junctions',
               exclude: 'Hide non-canonical junctions',
             },
-            model.sashimiFilter.nonCanonical,
+            model.junctionFilter.nonCanonical,
             nonCanonical => {
-              model.setSashimiFilter({ nonCanonical })
+              model.setJunctionFilter({ nonCanonical })
             },
           ),
           makeSizeSubMenu({
@@ -106,14 +106,14 @@ export function getSashimiMenuItem(model: SashimiModel) {
             min: 1,
             max: 10_000,
             format: n => `${n}`,
-            getValue: () => model.sashimiFilter.minReads,
+            getValue: () => model.junctionFilter.minReads,
             isDefault:
-              model.sashimiFilter.minReads === DEFAULT_MIN_SASHIMI_READS,
+              model.junctionFilter.minReads === DEFAULT_MIN_SASHIMI_READS,
             onChange: minReads => {
-              model.setSashimiFilter({ minReads })
+              model.setJunctionFilter({ minReads })
             },
             onReset: () => {
-              model.setSashimiFilter({ minReads: DEFAULT_MIN_SASHIMI_READS })
+              model.setJunctionFilter({ minReads: DEFAULT_MIN_SASHIMI_READS })
             },
           }),
         ]

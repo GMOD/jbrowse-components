@@ -13,18 +13,18 @@ function create(snapshot: Record<string, unknown>) {
 
 // v4.3.0's LinearReadArcsDisplay wrote these two under the draw verb, so a
 // released config can carry them
-test('the v4 draw verbs lift onto the read-connection filter', () => {
+test('the v4 draw verbs lift onto the connection filter', () => {
   const conf = create({ drawInter: false, drawLongRange: false })
+  expect(readConfObject(conf, ['filter', 'connections', 'interchrom'])).toBe(
+    'exclude',
+  )
   expect(
-    readConfObject(conf, ['readConnections', 'filter', 'interchrom']),
-  ).toBe('exclude')
-  expect(
-    readConfObject(conf, ['readConnections', 'filter', 'offscreenMates']),
+    readConfObject(conf, ['filter', 'connections', 'offscreenMates']),
   ).toBe('exclude')
   expect(
     readConfObject(create({ drawInter: true }), [
-      'readConnections',
       'filter',
+      'connections',
       'interchrom',
     ]),
   ).toBeUndefined()
@@ -33,11 +33,11 @@ test('the v4 draw verbs lift onto the read-connection filter', () => {
 test('the current spelling beside a retired one wins', () => {
   const conf = create({
     drawInter: false,
-    readConnections: { filter: { interchrom: 'only' } },
+    filter: { connections: { interchrom: 'only' } },
   })
-  expect(
-    readConfObject(conf, ['readConnections', 'filter', 'interchrom']),
-  ).toBe('only')
+  expect(readConfObject(conf, ['filter', 'connections', 'interchrom'])).toBe(
+    'only',
+  )
 })
 
 test('mismatchAlpha lifts onto pileup.fadeLowBaseQuality, top level and renderer', () => {

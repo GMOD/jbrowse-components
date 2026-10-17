@@ -162,16 +162,16 @@ export interface TagFilter {
  */
 export type CategoryFilter = 'only' | 'exclude'
 
-/** The junctions the sashimi arcs draw: the display's `sashimiFilter`. */
-export interface SashimiFilter {
+/** The junctions the display draws: its `filter.junctions`, read as `junctionFilter`. */
+export interface JunctionFilter {
   minReads: number
   // A junction whose motif was never read off the reference is canonical here,
   // since only a known motif is evidence against it.
   nonCanonical?: CategoryFilter
 }
 
-/** The connections the arcs and the read cloud draw: `readConnectionsFilter`. */
-export interface ReadConnectionsFilter {
+/** The connections the display draws: its `filter.connections`, read as `connectionFilter`. */
+export interface ConnectionFilter {
   interchrom?: CategoryFilter
   // a mate on the same chromosome outside the loaded window
   offscreenMates?: CategoryFilter
@@ -190,7 +190,7 @@ export interface ReadFilter {
   // Multiple tag filters are AND-ed (a read must pass every one). Kept plural so
   // independent quick-filters like HP (haplotype) and RG (read group) coexist
   // instead of clobbering each other.
-  tagFilters?: TagFilter[]
+  tags?: TagFilter[]
   // The four read categories, one vocabulary (see `CategoryFilter`) because to a
   // user they are one kind of question — which reads do I want. They apply at
   // two different points, though, and the split is not arbitrary: `spliced` is

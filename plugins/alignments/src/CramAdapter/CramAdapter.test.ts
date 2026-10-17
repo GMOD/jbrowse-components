@@ -198,12 +198,12 @@ test('getFeatures threads its signal into the cram read as a signal', async () =
 // tag filter has to read it the way the details panel does
 test('a read-group tag filter keeps only that group', async () => {
   const adapter = makeAdapter('../../../../test_data/volvox/volvox-rg.cram')
-  const reads = (tagFilters?: { tag: string; value: string }[]) =>
+  const reads = (tags?: { tag: string; value: string }[]) =>
     firstValueFrom(
       adapter
         .getFeatures(
           { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
-          { filterBy: { flagInclude: 0, flagExclude: 0, tagFilters } },
+          { filterBy: { flagInclude: 0, flagExclude: 0, tags } },
         )
         .pipe(toArray()),
     )
@@ -229,7 +229,7 @@ test('an RG tag filter on a CRAM with no read groups keeps no read', async () =>
           filterBy: {
             flagInclude: 0,
             flagExclude: 0,
-            tagFilters: [{ tag: 'RG', value: '4' }],
+            tags: [{ tag: 'RG', value: '4' }],
           },
         },
       )

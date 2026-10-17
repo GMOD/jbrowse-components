@@ -81,7 +81,7 @@ function twoContigDisplay(
   // The mismapping floor, off. It defaults to 2 reads clustered at one
   // breakpoint, so a one-read fixture draws NOTHING — no arc and no tick — and
   // every case here would pass its assertion on an empty section list.
-  display.setReadConnectionsFilter({ minInterchromReads: 1 })
+  display.setConnectionFilter({ minInterchromReads: 1 })
   display.setRpcData(
     0,
     {

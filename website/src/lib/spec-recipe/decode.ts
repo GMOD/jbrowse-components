@@ -80,7 +80,9 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // A graph track's `pane` is flattened the same way: its keys are the graph's
 // settings, each one a control of its own. So is each band object of the
 // alignments and MAF displays (`coverage`, `sashimi`, ...), to one entry per
-// member under its dotted path, `coverage.show`, `sashimi.filter.minReads`.
+// member under its dotted path, `coverage.show`, and so are the junction and
+// connection objects of the alignments display's `filter`,
+// `filter.junctions.minReads`.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
@@ -106,7 +108,29 @@ export function flatSettings(settings: Record<string, unknown>) {
 function settingEntries(key: string, value: unknown): [string, unknown][] {
   return BAND_OBJECTS.has(key) && isPlainObject(value)
     ? bandEntries(key, value)
-    : [[key, value]]
+    : key === 'filter' && isPlainObject(value)
+      ? filterEntries(value)
+      : [[key, value]]
+}
+
+// The read members stay one `filter` entry, as the Filter menu reads them;
+// each member of `junctions` and `connections` is a row of its own in the
+// sashimi and read connections menus.
+function filterEntries(filter: Record<string, unknown>): [string, unknown][] {
+  const members = Object.entries(filter)
+  const read = members.filter(([, value]) => !isPlainObject(value))
+  return [
+    ...(read.length
+      ? [['filter', Object.fromEntries(read)] as [string, unknown]]
+      : []),
+    ...members.flatMap(([member, value]) =>
+      isPlainObject(value)
+        ? Object.entries(value).map(
+            ([sub, v]) => [`filter.${member}.${sub}`, v] as [string, unknown],
+          )
+        : [],
+    ),
+  ]
 }
 
 /** The inverse of `flatSettings`, for a predicate the plugin owns. */
@@ -124,7 +148,12 @@ export function nestedSettings(entries: Record<string, unknown>) {
         value === 'off' ? { show: false } : { show: true, mark: value },
       )
     } else if (path.length === 0) {
-      out[key] = value
+      // a copy, which a later dotted member is written into rather than the
+      // caller's object; one read first, `filter.junctions.minReads`, keeps
+      // its place
+      out[key] = isPlainObject(value)
+        ? { ...value, ...(isPlainObject(out[key]) ? out[key] : {}) }
+        : value
     } else {
       let node = band(head)
       for (const segment of path.slice(0, -1)) {
@@ -148,13 +177,12 @@ const BAND_OBJECTS = new Set([
 
 // A band's `show` and `mark` are one radio on the read connections ("None",
 // "Read arcs", "Read cloud"), so they come out as the one `readConnections`
-// entry that radio writes; a band's `filter` is flattened one level further,
-// one entry per category or floor.
+// entry that radio writes.
 function bandEntries(
   band: string,
   members: Record<string, unknown>,
 ): [string, unknown][] {
-  const { show, mark, filter, ...rest } = members
+  const { show, mark, ...rest } = members
   const drawn: [string, unknown][] =
     band === 'readConnections' && show !== undefined
       ? [[band, show === true ? (mark ?? 'arc') : 'off']]
@@ -171,12 +199,6 @@ function bandEntries(
     ...Object.entries(rest).map(
       ([member, value]) => [`${band}.${member}`, value] as [string, unknown],
     ),
-    ...(isPlainObject(filter)
-      ? Object.entries(filter).map(
-          ([member, value]) =>
-            [`${band}.filter.${member}`, value] as [string, unknown],
-        )
-      : []),
   ]
 }
 

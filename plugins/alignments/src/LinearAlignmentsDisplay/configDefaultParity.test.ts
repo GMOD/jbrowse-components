@@ -29,17 +29,17 @@ function displayConf() {
   })
 }
 
-test('the sashimi menu constant is the sashimi.filter.minReads default', () => {
-  expect(readConfObject(displayConf(), ['sashimi', 'filter', 'minReads'])).toBe(
-    DEFAULT_MIN_SASHIMI_READS,
-  )
+test('the sashimi menu constant is the filter.junctions.minReads default', () => {
+  expect(
+    readConfObject(displayConf(), ['filter', 'junctions', 'minReads']),
+  ).toBe(DEFAULT_MIN_SASHIMI_READS)
 })
 
-test('the arc menu constant is the readConnections.filter.minInterchromReads default', () => {
+test('the arc menu constant is the filter.connections.minInterchromReads default', () => {
   expect(
     readConfObject(displayConf(), [
-      'readConnections',
       'filter',
+      'connections',
       'minInterchromReads',
     ]),
   ).toBe(DEFAULT_MIN_INTERCHROM_READS)

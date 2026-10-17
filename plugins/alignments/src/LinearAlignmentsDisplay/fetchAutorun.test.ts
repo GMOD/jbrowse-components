@@ -578,7 +578,9 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
-  it('does NOT refetch when arc draw settings change', async () => {
+  // The worker takes the read members alone (`readFilterOf`), so the
+  // junction and connection members are main-thread tests
+  it('does NOT refetch when a junction or connection filter changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -590,8 +592,10 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setReadConnectionsFilter({ interchrom: 'exclude' })
-    display.setReadConnectionsFilter({ offscreenMates: 'exclude' })
+    display.setConnectionFilter({ interchrom: 'exclude' })
+    display.setConnectionFilter({ offscreenMates: 'exclude' })
+    display.setConnectionFilter({ minInterchromReads: 5 })
+    display.setJunctionFilter({ minReads: 5, nonCanonical: 'exclude' })
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 

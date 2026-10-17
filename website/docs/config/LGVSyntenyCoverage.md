@@ -31,4 +31,4 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span class="slot-group">Inherited from [CoverageBand](../coverageband)</span> | <span class="slot-group-count">3 slots</span> |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>45</code> | height of the coverage band in pixels |
 | <span id="slot-showinterbaseindicators">**showInterbaseIndicators**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the insertion and clip count bars and their indicator triangles |
-| <span id="slot-filter">**filter**</span><br>[CoverageFilter](../coveragefilter) | The allele segments the band colors: `minAlleleFraction`. |
+| <span id="slot-minallelefraction">**minAlleleFraction**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | A color rule, beside the pileup's `fadeLowFrequency`, which fades its marks by the same per-base share through a depth-dependent threshold. The band's grey depth bar shows through where a segment is not colored. |

@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "step 3 of ADR-232's order of work (steps 1 and 2 are built): `filter.junctions` and `filter.connections` on the alignments `ReadFilter` in place of `sashimi.filter` and `readConnections.filter`, with `setReadFilter` (`plugins/alignments/src/LinearAlignmentsDisplay/configSlotViews.ts`) writing member by member first, so a Filter menu click keeps them"
+  first_move: "step 4 of ADR-232's order of work (steps 1 to 3 are built): `filter` becomes an object on the canvas, mark and multi-sample variant displays, its `expressions` member taking the jexl list, with every `Array.isArray(filter)` reader the step names moving in the same commit"
 ---
 
 # ADR-232's config renames land before 5.0.0

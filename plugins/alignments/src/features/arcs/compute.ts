@@ -173,7 +173,7 @@ interface ArcInputs {
 // The filter plus the refName normalizer, in the one shape pending-arc emission
 // takes them. Both entry points build it, so neither can hand the chainer a
 // different filter from the other.
-function arcChainContext(settings: ArcSettings): ArcChainContext {
+function arcChainContext(settings: ArcCollectionSettings): ArcChainContext {
   return {
     filter: settings.filter ?? {},
     canonicalRefName: settings.canonicalRefName ?? (refName => refName),
@@ -197,7 +197,7 @@ function collectArcInputs(
 // of `getArcColorType`. `stats` sizes only the interchromosomal clustering
 // window; an arc's insert class reads its own region's band (`arc.stats`),
 // since each region's fetch samples one and the reads are filled by it.
-interface ArcScale {
+export interface ArcScale {
   hasPaired: boolean
   stats: InsertSizeBand | undefined
 }
@@ -772,7 +772,7 @@ function resolveArcs(
 function interchromClusters(
   pendingArcs: PendingArc[],
   { stats }: ArcScale,
-  { filter = {} }: ArcSettings,
+  { filter = {} }: ArcCollectionSettings,
 ): InterchromClusters {
   return filter.interchrom !== 'exclude'
     ? clusteredInterchromSupport(
@@ -871,6 +871,39 @@ export function computeArcsByGroup(
   regions: ArcRegions,
   settings: ArcSettings,
 ): ArcsByGroupResult {
+  return resolveArcsByGroup(
+    collectArcs(rawDataByGroup, regions.loaded, settings),
+    regions,
+    settings,
+  )
+}
+
+/**
+ * `computeArcsByGroup`'s first half, which the connectors over the pileup
+ * read too: every lane's pending arcs, the pooled scale, the
+ * inter-chromosomal clusters, and the QNAMEs whose mate-link connection
+ * gathers fewer reads at its breakpoint than `minInterchromReads`, the
+ * verdict the band's arc gate reaches for the same connection.
+ */
+export interface ArcCollection {
+  lanes: { key: string; pending: PendingArc[] }[]
+  scale: ArcScale
+  clusters: InterchromClusters
+  belowFloor: ReadonlySet<string>
+}
+
+// The settings collection reads, so a color or mark change resolves again
+// without collecting again.
+export type ArcCollectionSettings = Pick<
+  ArcSettings,
+  'filter' | 'canonicalRefName'
+>
+
+export function collectArcs(
+  rawDataByGroup: ReadonlyMap<string, Map<number, WorkerPileupData>>,
+  loaded: RegionInfo[],
+  settings: ArcCollectionSettings,
+): ArcCollection {
   // COLLECTION IS POOLED, resolution is per lane. Grouping partitions reads for
   // drawing and says nothing about which molecule carries which junction, so
   // chaining one lane at a time counted a read once per lane its segments
@@ -879,27 +912,50 @@ export function computeArcsByGroup(
   // still gets its (empty) entry below, since the band reservation reads
   // `byGroup` for every group the display drew.
   const arcsByLane = collectPendingArcsByLane(
-    groupLaneReadsByName(rawDataByGroup, regions.loaded),
+    groupLaneReadsByName(rawDataByGroup, loaded),
     arcChainContext(settings),
   )
   const scale = poolArcScale(
     [...rawDataByGroup.values()].map(rawMap => computePairingInfo(rawMap)),
   )
+  const keys = [...rawDataByGroup.keys()]
+  const lanes = keys.map(key => ({
+    key,
+    pending: arcsByLane.get(key)?.arcs ?? [],
+  }))
+  const pending = lanes.flatMap(lane => lane.pending)
+  const names = keys.flatMap(key => arcsByLane.get(key)?.names ?? [])
+  const clusters = interchromClusters(pending, scale, settings)
+  const { minInterchromReads = 1 } = settings.filter ?? {}
+  const belowFloor = new Set<string>()
+  for (const [i, arc] of pending.entries()) {
+    const cluster = clusters.clusterOf[i] ?? -1
+    if (
+      cluster >= 0 &&
+      !clearsInterchromFloor(
+        arc.isSplit,
+        clusters.sizeOf[cluster]!,
+        minInterchromReads,
+      )
+    ) {
+      belowFloor.add(names[i]!)
+    }
+  }
+  return { lanes, scale, clusters, belowFloor }
+}
+
+/** `computeArcsByGroup`'s second half: the band's feeds from a collection. */
+export function resolveArcsByGroup(
+  { lanes, scale, clusters }: ArcCollection,
+  regions: ArcRegions,
+  settings: ArcSettings,
+): ArcsByGroupResult {
   const byGroup = new Map<string, Map<number, ArcsUploadData>>()
   const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
   const inkGroupKeys = new Set<string>()
   const colorSlots = new Set<number>()
   let interchromFromMatePair = false
   let maxFlatArcSpanBp = 0
-  const lanes = [...rawDataByGroup.keys()].map(key => ({
-    key,
-    pending: arcsByLane.get(key) ?? [],
-  }))
-  const clusters = interchromClusters(
-    lanes.flatMap(lane => lane.pending),
-    scale,
-    settings,
-  )
   let offset = 0
   for (const { key, pending } of lanes) {
     const { arcs, crossRegion, lines, ...resolved } = resolveArcs(

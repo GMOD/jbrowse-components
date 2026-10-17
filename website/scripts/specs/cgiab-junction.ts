@@ -43,8 +43,8 @@ const reads = {
   trackId: READS,
   type: 'LinearAlignmentsDisplay',
   pileup: { readHeight: 1 },
-  readConnections: {
-    filter: {
+  filter: {
+    connections: {
       // only connections with both ends on screen
       offscreenMates: 'exclude',
     },
@@ -195,11 +195,7 @@ export const junctionScaffold = (
                 color: { field: 'pairOrientation' },
                 showLegend: true,
                 pileup: { readHeight: 2 },
-                readConnections: {
-                  ...reads.readConnections,
-                  show: true,
-                  height: 70,
-                },
+                readConnections: { show: true, height: 70 },
                 height: 690,
               },
             ],

@@ -255,6 +255,9 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 - A read-category edit still refetches: the worker compacts the reads, and
   Idea 2 leaves the category filters in the worker.
 - The tables engine exports no connectors.
+- Chain layout's cross-region links read no filter: they join one molecule's
+  alignments, as its connecting lines do, and draw with the curved connectors
+  off.
 - `hideSelfAlignments` and `hideUnlabelled` keep their names, and MAF's
   `showReferenceRow` stays a top-level toggle of the row the worker named as
   the reference; `rows.kept` is the reader's own selection.

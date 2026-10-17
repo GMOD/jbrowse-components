@@ -19,6 +19,10 @@ function fakeView(configured: ReadFilterSnapshot = {}) {
     setReadFilter(f: unknown) {
       this.readFilter = f as typeof this.readFilter
     },
+    junctionFilter: {} as Record<string, unknown>,
+    setJunctionFilter(f: Record<string, unknown>) {
+      this.junctionFilter = { ...this.junctionFilter, ...f }
+    },
   }
   const calls: unknown[] = []
   const view = {
@@ -52,13 +56,25 @@ test('an omitted half of flags keeps the configured mask, as the doc claims', as
 
 test('a tag filter is a second condition, not a replacement', async () => {
   const { view, display } = fakeView({
-    tagFilters: [{ tag: 'HP', value: '1' }],
+    tags: [{ tag: 'HP', value: '1' }],
   })
   await applyDisplayOpts(view, 't', 'alignments', ['filterTag:RG:lane3'])
-  expect(display.readFilter.tagFilters).toEqual([
+  expect(display.readFilter.tags).toEqual([
     { tag: 'HP', value: '1' },
     { tag: 'RG', value: 'lane3' },
   ])
+})
+
+// the display's read filter setter writes the read members alone
+test('a junction filter in a settings bag reaches its own setter', async () => {
+  const { view, display } = fakeView()
+  await applyDisplayOpts(view, 't', 'alignments', [
+    '{"filter":{"junctions":{"minReads":5}}}',
+    'split:only',
+  ])
+  expect(display.junctionFilter).toEqual({ minReads: 5 })
+  expect(display.readFilter).toMatchObject({ split: 'only' })
+  expect(display.readFilter).not.toHaveProperty('junctions')
 })
 
 test('filterBy is kept out of the snapshot showTrack replaces slots from', async () => {

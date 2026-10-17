@@ -198,9 +198,9 @@ interface TagRow {
   value: string
 }
 
-function tagRowsOf(tagFilters: ReadFilter['tagFilters']): TagRow[] {
-  return tagFilters?.length
-    ? tagFilters.map((f, id) => ({ id, tag: f.tag, value: f.value ?? '' }))
+function tagRowsOf(tags: ReadFilter['tags']): TagRow[] {
+  return tags?.length
+    ? tags.map((f, id) => ({ id, tag: f.tag, value: f.value ?? '' }))
     : [{ id: 0, tag: '', value: '' }]
 }
 
@@ -347,7 +347,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const { readFilter } = model
   const [flagInclude, setFlagInclude] = useState(readFilter.flagInclude)
   const [flagExclude, setFlagExclude] = useState(readFilter.flagExclude)
-  const [tagRows, setTagRows] = useState(() => tagRowsOf(readFilter.tagFilters))
+  const [tagRows, setTagRows] = useState(() => tagRowsOf(readFilter.tags))
   const [readName, setReadName] = useState(readFilter.readName ?? '')
   const [minMapq, setMinMapq] = useState(
     readFilter.minMapq === undefined ? '' : `${readFilter.minMapq}`,
@@ -366,7 +366,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const handleSubmit = () => {
     // An empty value box means `*`, the "carries this tag" spelling
     // (filterTagValue); a literal '' would match no read and empty the track.
-    const tagFilters = tagRows
+    const tags = tagRows
       .filter(r => r.tag !== '')
       .map(r => ({ tag: r.tag, value: r.value === '' ? '*' : r.value }))
     model.setReadFilter({
@@ -385,7 +385,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
         minMapq === '' || !Number.isFinite(Number(minMapq))
           ? undefined
           : Number(minMapq),
-      tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
+      tags: tags.length > 0 ? tags : undefined,
     })
     handleClose()
   }

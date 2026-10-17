@@ -85,7 +85,10 @@ export type { FacetOnlyDimension, ReadDimension } from './shared/types.ts'
 // consumers' .d.ts — see scripts/check-declaration-leaks.ts.
 export type { ArcsUploadData } from './features/arcs/types.ts'
 export type { CrossRegionArc } from './features/arcs/arcTypes.ts'
-export type { ArcsByGroupResult } from './features/arcs/compute.ts'
+export type {
+  ArcCollection,
+  ArcsByGroupResult,
+} from './features/arcs/compute.ts'
 export type { ArcBandFeed } from './features/arcs/bandFeed.ts'
 export type { SashimiBandFeed } from './features/sashimi/bandFeed.ts'
 export type { ConnectorFeed } from './features/linkedReads/connectorFeed.ts'
@@ -162,8 +165,8 @@ export type {
   Facet,
   ModificationColorBy,
   ReadColorBy,
-  ReadConnectionsFilter,
-  SashimiFilter,
+  ConnectionFilter,
+  JunctionFilter,
   SortColumn,
   TagColorScale,
   WorkerFacet,

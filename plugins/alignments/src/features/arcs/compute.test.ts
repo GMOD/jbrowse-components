@@ -22,7 +22,11 @@ import {
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
-import { computeArcsByGroup, computeArcsFromPileupData } from './compute.ts'
+import {
+  collectArcs,
+  computeArcsByGroup,
+  computeArcsFromPileupData,
+} from './compute.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -351,6 +355,24 @@ describe('computeArcsFromPileupData', () => {
         expect(ticks.numArcLines).toBe(1)
         expect([...ticks.arcLineSupport]).toEqual([2])
       }
+    })
+
+    // The connectors over the pileup look the verdict up by QNAME
+    // (`connectorFilterOf`), so they drop what the band drops
+    test('collection names the reads whose breakpoint falls below the floor', () => {
+      const data = scattered([2000, 2130, 6000], [5000, 5140, 900_000], {
+        upper: 600,
+        lower: 100,
+      })
+      const belowFloor = (minInterchromReads: number) =>
+        [
+          ...collectArcs(new Map([['', new Map([[0, data]])]]), regions, {
+            filter: { minInterchromReads },
+          }).belowFloor,
+        ].toSorted()
+      expect(belowFloor(1)).toEqual([])
+      expect(belowFloor(2)).toEqual(['read2'])
+      expect(belowFloor(3)).toEqual(['read0', 'read1', 'read2'])
     })
 
     // Half a junction can be reached by more than one, which is the case a

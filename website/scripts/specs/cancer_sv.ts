@@ -1524,16 +1524,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             // saying how many molecules the fan is: 40-odd near-identical curves
             // and four look alike.
             show: true,
-            filter: {
+            height: 90,
+          },
+          filter: {
+            // a read whose chr9 alignment has a chr22 supplementary IS the
+            // fusion's support, so every remaining row crosses the junction
+            split: 'only',
+            connections: {
               // arcs whose other end is outside both windows were a fan of thin
               // lines leaving the frame
               offscreenMates: 'exclude',
             },
-            height: 90,
           },
-          // a read whose chr9 alignment has a chr22 supplementary IS the
-          // fusion's support, so every remaining row crosses the junction
-          filterBy: { split: 'only' },
           unit: 'chain',
           // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
           // red/pink on the left but not on the right" (review). Under

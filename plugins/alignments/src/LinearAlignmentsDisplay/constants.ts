@@ -64,7 +64,7 @@ export {
 // junctions, which are dominated by alignment noise and unreadable at the 1px
 // stroke `strokeWidthForCount` floors them to. Lets the menu's reset/is-default
 // check name the default instead of hardcoding a bare 2. Must match
-// `sashimi.filter.minReads`' default in sashimiFilterConfigSchema.ts, which spells
+// `filter.junctions.minReads`' default in junctionFilterConfigSchema.ts, which spells
 // the same number as a literal so the config docgen can render it (it reads the
 // AST node's source text, so a reference here would publish as the identifier).
 export const DEFAULT_MIN_SASHIMI_READS = 2
@@ -72,7 +72,7 @@ export const DEFAULT_MIN_SASHIMI_READS = 2
 // Default reads a translocation breakpoint must gather before its connector
 // ticks are drawn. Same shape and the same reason as the sashimi floor above —
 // single-read marks are dominated by mismapping — and spelled as a literal in
-// `readConnectionsFilterConfigSchema.ts` for the same docgen reason. Keep the
+// `connectionFilterConfigSchema.ts` for the same docgen reason. Keep the
 // two in step.
 //
 // What differs is how the reads are COUNTED: over a window of one fragment

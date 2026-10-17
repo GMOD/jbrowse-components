@@ -28,7 +28,7 @@ Paths are under `plugins/alignments/src/` unless they say otherwise.
 One worker call per displayed region:
 
 1. **Adapter parse:** `dropsRead` (`shared/util.ts`) drops by flag masks,
-   `readName`, `tagFilters` and `spliced`.
+   `readName`, `tags` and `spliced`.
 2. **`sampleFeatures`:** dedupe, then `minMapq` per record.
 3. **Insert-size stats** (`computePairedInsertSizeStats`) over that sample.
 4. **`selectChains`:** `singletons`, `svSignal` and `split` per chain grouped
@@ -62,7 +62,7 @@ coverage whole. A user who wants one category's depth facets by it.
 
 | Thins coverage (which reads count) | Leaves it whole (which reads are drawn) |
 | --- | --- |
-| `flagInclude`, `flagExclude`, `minMapq`, `tagFilters` | `svSignal`, `split`, `spliced`, `singletons`, `readName` |
+| `flagInclude`, `flagExclude`, `minMapq`, `tags` | `svSignal`, `split`, `spliced`, `singletons`, `readName` |
 
 **The worker change**, after ADR-112's rule that a layer owns its transform:
 

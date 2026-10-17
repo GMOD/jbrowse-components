@@ -181,7 +181,7 @@ function strandSpecificSpec(): ScreenshotSpec {
             height: 120,
           },
           pileup: { maxLayoutHeight: 2000 },
-          sashimi: { filter: { minReads: 3 } },
+          filter: { junctions: { minReads: 3 } },
           // LOG on the coverage band (reviewer). RPL7A is a ribosomal protein
           // running ~100x the surfeit genes beside it, so on a linear axis its
           // exons are the only thing with height and SURF1/SURF2 read as having
@@ -1577,7 +1577,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           type: 'LinearAlignmentsDisplay',
           coverage: { height: 120 },
           pileup: { maxLayoutHeight: 2000 },
-          sashimi: { filter: { minReads: 3 } },
+          filter: { junctions: { minReads: 3 } },
           height: 460,
         },
       ],
@@ -1612,8 +1612,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             // coverage band, the pileup viewport = height - coverageHeight
             height: 120,
           },
-          sashimi: {
-            filter: {
+          filter: {
+            junctions: {
               // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
               // the spurious forward-strand sashimi arcs are single-/2-read
               // aligner noise (correct XS-tag strand, just low support). A
@@ -1686,7 +1686,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           type: 'LinearAlignmentsDisplay',
           pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 120 },
-          sashimi: { filter: { minReads: 3 } },
+          filter: { junctions: { minReads: 3 } },
           height: 420,
           ...display,
         },
@@ -1717,7 +1717,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         suffix: 'canonical_only',
         display: {
-          sashimi: { filter: { nonCanonical: 'exclude' } },
+          filter: { junctions: { nonCanonical: 'exclude' } },
         },
       },
     ] as const

@@ -62,10 +62,11 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, compareStructural, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
-import { computeArcsByGroup } from '../features/arcs/compute.ts'
+import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
 import {
   bezierConnectionLegendItems,
   bezierDipReservePx,
+  connectorFilterOf,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
@@ -1042,7 +1043,7 @@ export default function stateModelFactory(
            */
           get sashimiDownKeysByGroup() {
             return buildSashimiDownKeys(self.rpcDataMap, {
-              filter: self.sashimiFilter,
+              filter: self.junctionFilter,
               placement: self.sashimiPlacement,
               refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
               hidden: self.hiddenGroupKeys,
@@ -1310,6 +1311,7 @@ export default function stateModelFactory(
                 lines: self.showLinkedReadLines,
                 scope: self.bezierArcScope,
                 canonicalRefName: this.canonicalRefName,
+                admits: self.showConnectors ? this.connectorFilter : undefined,
               },
               key =>
                 stacksRows(
@@ -1318,6 +1320,22 @@ export default function stateModelFactory(
                   this.groupRowCaps,
                   self.collapsedGroups,
                 ),
+            )
+          },
+
+          /**
+           * #getter
+           * Which pairs the connectors draw under `filter.connections`. The
+           * inter-chromosomal floor comes from the arc band's collection
+           * stage, which runs only once a connector crosses chromosomes. The
+           * chain layout's own cross-region links read no filter, as its
+           * connecting lines do not.
+           */
+          get connectorFilter() {
+            return connectorFilterOf(
+              self.connectionFilter,
+              i => self.loadedRegions.get(i)?.refName,
+              () => this.arcCollection.belowFloor,
             )
           },
 
@@ -1612,7 +1630,7 @@ export default function stateModelFactory(
            * #getter
            * THE arc resolution: both halves from one pass, read through
            * `arcsByGroup` (arcs inside one region) or `crossRegionArcsByGroup`
-           * (arcs joining two). `computeArcsByGroup` owns the whole fan-out
+           * (arcs joining two). `resolveArcsByGroup` owns the whole fan-out
            * because the pooled arc scale (`poolArcScale`) describes the fetch,
            * not a lane. Hidden lanes must stay out: the cross-group scans
            * (`arcsYDomainBp`, `arcLegendCategories`) walk every entry.
@@ -1631,21 +1649,33 @@ export default function stateModelFactory(
                 maxFlatArcSpanBp: 0,
               }
             }
-            const settings = {
-              colorField: self.readConnectionsColorField,
-              cloud: self.drawnReadConnections === 'cloud',
-              filter: self.readConnectionsFilter,
-              showOrdinaryPairs: self.showOrdinaryPairs,
-              canonicalRefName: this.canonicalRefName,
-            }
-            return computeArcsByGroup(
-              this.rawDataByGroup,
+            return resolveArcsByGroup(
+              this.arcCollection,
               {
                 loaded: this.loadedRegionInfos,
                 displayed: this.displayedRegionInfos,
               },
-              settings,
+              {
+                colorField: self.readConnectionsColorField,
+                cloud: self.drawnReadConnections === 'cloud',
+                filter: self.connectionFilter,
+                showOrdinaryPairs: self.showOrdinaryPairs,
+                canonicalRefName: this.canonicalRefName,
+              },
             )
+          },
+
+          /**
+           * #getter
+           * The collection half of `arcsResult` (`collectArcs`), which the
+           * connectors read for the inter-chromosomal floor with the band
+           * off, so both marks drop the same connections.
+           */
+          get arcCollection() {
+            return collectArcs(this.rawDataByGroup, this.loadedRegionInfos, {
+              filter: self.connectionFilter,
+              canonicalRefName: this.canonicalRefName,
+            })
           },
 
           /**
@@ -2225,7 +2255,7 @@ export default function stateModelFactory(
             if (!self.showSashimi || !view.initialized) {
               return []
             }
-            const filter = self.sashimiFilter
+            const filter = self.junctionFilter
             const regions = junctionRegions.get()
             return self.renderSections.map(sec => ({
               groupKey: sec.groupKey,
@@ -2502,7 +2532,7 @@ export default function stateModelFactory(
               self.coverageDepthDomain?.[1] ?? 0,
               self.symlogConstant,
             ),
-            coverageMinAlleleFraction: self.coverageFilter.minAlleleFraction,
+            coverageMinAlleleFraction: self.coverageMinAlleleFraction,
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequencyMismatches: self.fadeLowFrequency,
@@ -2705,7 +2735,7 @@ export default function stateModelFactory(
           if (self.drawnReadConnections !== 'cloud') {
             return undefined
           }
-          // Maxed across every group and both halves by `computeArcsByGroup`,
+          // Maxed across every group and both halves by `resolveArcsByGroup`,
           // so all sections share one Y-domain. The largest INSERT SIZE, not
           // the largest drawn Y: the insert-size scale in `valueScales` labels
           // its top tick with this number, and the cloud's ±8% jitter would

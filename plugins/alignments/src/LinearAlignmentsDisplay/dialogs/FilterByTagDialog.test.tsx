@@ -38,7 +38,7 @@ test('a tag with no value filters for reads carrying it, not for an empty value'
   })
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
-    expect.objectContaining({ tagFilters: [{ tag: 'HP', value: '*' }] }),
+    expect.objectContaining({ tags: [{ tag: 'HP', value: '*' }] }),
   )
   // and that is the value that keeps a tagged read rather than dropping it
   expect(filterTagValue('1', '*')).toBe(false)
@@ -71,7 +71,7 @@ test('an explicit value is stored as typed', () => {
   })
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
-    expect.objectContaining({ tagFilters: [{ tag: 'HP', value: '2' }] }),
+    expect.objectContaining({ tags: [{ tag: 'HP', value: '2' }] }),
   )
 })
 
@@ -79,7 +79,7 @@ test('no tag name stores no tag filter', () => {
   const { setReadFilter } = renderDialog()
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
-    expect.objectContaining({ tagFilters: undefined }),
+    expect.objectContaining({ tags: undefined }),
   )
 })
 
@@ -87,7 +87,7 @@ test('no tag name stores no tag filter', () => {
 // never applies a filter it does not show.
 test('every tag filter is listed, and one can be removed', () => {
   const { setReadFilter } = renderDialog({
-    tagFilters: [
+    tags: [
       { tag: 'HP', value: '1' },
       { tag: 'RG', value: 'x' },
     ],
@@ -97,13 +97,13 @@ test('every tag filter is listed, and one can be removed', () => {
   fireEvent.click(screen.getAllByLabelText('Remove tag filter')[0]!)
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
-    expect.objectContaining({ tagFilters: [{ tag: 'RG', value: 'x' }] }),
+    expect.objectContaining({ tags: [{ tag: 'RG', value: 'x' }] }),
   )
 })
 
 test('tag filters beyond the first survive a submit', () => {
   const { setReadFilter } = renderDialog({
-    tagFilters: [
+    tags: [
       { tag: 'HP', value: '1' },
       { tag: 'RG', value: 'x' },
     ],
@@ -111,7 +111,7 @@ test('tag filters beyond the first survive a submit', () => {
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
-      tagFilters: [
+      tags: [
         { tag: 'HP', value: '1' },
         { tag: 'RG', value: 'x' },
       ],

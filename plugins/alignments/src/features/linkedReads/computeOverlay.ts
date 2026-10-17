@@ -1,4 +1,4 @@
-import { spanOf } from '@jbrowse/alignments-core'
+import { readNameAt, spanOf } from '@jbrowse/alignments-core'
 import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 import { discordantDipPx } from '@jbrowse/sv-core'
 
@@ -9,6 +9,7 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
   LINKED_READ_COLOR_MAPS_BACK,
   connectionLabel,
@@ -21,6 +22,7 @@ import {
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
@@ -151,6 +153,36 @@ export function enumerateBezierPairs(
   return out
 }
 
+/**
+ * Whether the connectors draw a pair under `filter.connections`, by the test
+ * the arc band applies to the same connection. A connector joins two laid-out
+ * reads, so it is never an off-screen mate, and it crosses chromosomes when
+ * its two ends' regions do. Such a mate link draws only when the band's
+ * collection stage counted `minInterchromReads` at its breakpoint, the QNAMEs
+ * `belowFloor` returns; a split read is exempt, as on the band.
+ */
+export function connectorFilterOf(
+  { interchrom, offscreenMates, minInterchromReads }: ConnectionFilter,
+  refNameAt: (displayedRegionIndex: number) => string | undefined,
+  belowFloor: () => ReadonlySet<string>,
+) {
+  return ({ e1, e2, c }: LinkedPair) => {
+    const crossesChromosomes =
+      e1.displayedRegionIndex !== e2.displayedRegionIndex &&
+      refNameAt(e1.displayedRegionIndex) !== refNameAt(e2.displayedRegionIndex)
+    return (
+      passesCategory(crossesChromosomes, interchrom) &&
+      passesCategory(false, offscreenMates) &&
+      !(
+        crossesChromosomes &&
+        !c.isSplit &&
+        minInterchromReads > 1 &&
+        belowFloor().has(readNameAt(e1.data, e1.readIdx))
+      )
+    )
+  }
+}
+
 export interface GroupConnectors {
   // the straight-line pass's records, by displayed region index
   lines: ReadonlyMap<number, LinkedReadLinesUploadData>
@@ -162,7 +194,8 @@ const NO_LINES: ReadonlyMap<number, LinkedReadLinesUploadData> = new Map()
 
 // Every connector of one group, from one walk of its reads: the straight-line
 // pass takes `isGpuLinkedReadLine` pairs when `lines` is on, and the overlay
-// what its scope admits of the rest.
+// what its scope admits of the rest. `admits` (`connectorFilterOf`) drops a
+// pair from both.
 //
 // `canonicalRefName` turns on the SA walk that finds hidden segments; without
 // it no pair has any, and a junction across unfetched segments would be drawn
@@ -173,22 +206,27 @@ export function resolveConnectors(
     lines,
     scope,
     canonicalRefName,
+    admits,
   }: {
     lines: boolean
     scope: BezierArcScope
     canonicalRefName?: CanonicalRefName
+    admits?: (pair: LinkedPair) => boolean
   },
 ): GroupConnectors {
   if (!lines) {
+    const pairs = enumerateBezierPairs(map, scope, canonicalRefName)
     return {
       lines: NO_LINES,
-      overlayPairs: enumerateBezierPairs(map, scope, canonicalRefName),
+      overlayPairs: admits ? pairs.filter(admits) : pairs,
     }
   }
   const straight: LinkedPair[] = []
   const rest: LinkedPair[] = []
   for (const pair of iterLinkedPairs(map, canonicalRefName)) {
-    ;(isGpuLinkedReadLine(pair) ? straight : rest).push(pair)
+    if (!admits || admits(pair)) {
+      ;(isGpuLinkedReadLine(pair) ? straight : rest).push(pair)
+    }
   }
   return {
     lines: linkedReadLinesByRegion(straight),

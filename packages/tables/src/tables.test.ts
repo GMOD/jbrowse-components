@@ -945,14 +945,14 @@ test('a junction says whether the display shows it, its arc height and its strok
   const floor = Math.max(...count)
   const t = await engine.alignments({
     ...SPLICED,
-    display: { sashimi: { filter: { minReads: floor } } },
+    display: { filter: { junctions: { minReads: floor } } },
   })
   expect(t.junctions.count).toEqual(count)
   expect(t.junctions.shown).toEqual(count.map(c => c >= floor))
   expect(t.junctions.shown).toContain(false)
   const hidden = await engine.alignments({
     ...SPLICED,
-    display: { sashimi: { filter: { nonCanonical: 'exclude' } } },
+    display: { filter: { junctions: { nonCanonical: 'exclude' } } },
   })
   expect(hidden.junctions.shown).toEqual(
     all.junctions.motif.map(m => m !== 'non-canonical'),
@@ -974,12 +974,12 @@ test('a junction says whether the display shows it, its arc height and its strok
   })
 })
 
-test('an allele segment is shown where its share of the depth reaches coverage.filter.minAlleleFraction', async () => {
+test('an allele segment is shown where its share of the depth reaches coverage.minAlleleFraction', async () => {
   const all = await engine.alignments(BAM)
   expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)
   const t = await engine.alignments({
     ...BAM,
-    display: { coverage: { filter: { minAlleleFraction: 0.5 } } },
+    display: { coverage: { minAlleleFraction: 0.5 } },
   })
   expect(t.alleleCoverage.shown).toEqual(
     t.alleleCoverage.from.map(
@@ -994,14 +994,13 @@ test('config is the display’s resolved config, the slots the call set and the 
   const t = await engine.alignments({
     ...BAM,
     display: {
-      sashimi: { filter: { minReads: 5 } },
+      filter: { junctions: { minReads: 5 } },
       color: { field: 'strand' },
     },
   })
-  expect(t.config.sashimi).toMatchObject({ filter: { minReads: 5 } })
+  expect(t.config.filter).toMatchObject({ junctions: { minReads: 5 } })
   expect((t.config.color as { field: string }).field).toBe('strand')
   expect(t.config.coverage).toMatchObject({ height: 45, show: true })
-  expect(t.settings.sashimi).toMatchObject({ filter: { minReads: 5 } })
   const display = { height: 150 }
   const others = [
     [await engine.features({ ...GFF3, display }), 'heightMode', 'fit'],

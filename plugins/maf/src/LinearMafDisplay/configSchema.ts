@@ -163,7 +163,7 @@ export default function configSchemaF() {
       /**
        * #slot coverage
        * The coverage band: `show`, `height`, `showInterbaseIndicators` and
-       * `filter.minAlleleFraction`, as the alignments display spells it.
+       * `minAlleleFraction`, as the alignments display spells it.
        */
       coverage: coverageBandConfigSchema,
       /**

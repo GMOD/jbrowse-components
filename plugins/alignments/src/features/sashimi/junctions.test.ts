@@ -5,7 +5,7 @@ import {
   SPLICE_MOTIF_NON_CANONICAL,
 } from './motif.ts'
 
-import type { CategoryFilter, SashimiFilter } from '../../shared/types.ts'
+import type { CategoryFilter, JunctionFilter } from '../../shared/types.ts'
 import type { RegionJunctions, SashimiPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
@@ -19,7 +19,7 @@ interface JunctionDetail {
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
-const keep = (minReads = 0, nonCanonical?: CategoryFilter): SashimiFilter => ({
+const keep = (minReads = 0, nonCanonical?: CategoryFilter): JunctionFilter => ({
   minReads,
   nonCanonical,
 })

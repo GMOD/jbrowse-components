@@ -120,11 +120,11 @@ copied.
   sashimi band's own strand key, over the junctions shown) and
   `interbaseLegend` come back as `legend` does, each with its title, keying
   only what the tables paint.
-- `junctions` has `shown`, true where the junction passes `sashimi.filter`
+- `junctions` has `shown`, true where the junction passes `filter.junctions`
   (the browser counts a junction whose motif it never read as canonical), `arcHeight`
   (`sashimiArcHeightFraction`) and `strokeWidth` (`sashimiStrokeWidth`, in
   px). `alleleCoverage` has `shown`, true where the allele's share of the
-  depth reaches `coverage.filter.minAlleleFraction`, the coverageSnp shader's
+  depth reaches `coverage.minAlleleFraction`, the coverageSnp shader's
   test.
 - `readPitch` gives the read height (`pileup.readHeight`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
@@ -207,7 +207,7 @@ worker ships it: `insertions` (position, length, sequence, read), `clips`
 as the sashimi band merges them (start, end, supporting-read count, strand off
 the reads' tags or the splice motif, and the motif where the region's sequence
 covers both ends), every junction down to a single read, with `shown`
-marking the ones the display's `sashimi.filter` keeps. `alignmentColors` names the
+marking the ones the display's `filter.junctions` keeps. `alignmentColors` names the
 insertion, soft-clip and hard-clip colors beside the rest. A mismatch, gap,
 insertion or clip carries `fade`, the worker's own frequency byte: its share
 of the depth at its site, zeroed below the display's depth-dependent
