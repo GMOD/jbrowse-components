@@ -161,8 +161,10 @@ cost is linear in lanes.
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the
-  scrolled window are asked for (`gutterNearViewport`): on the HPRC graph each
-  pair cut alone costs 70-660 ms of worker time, so 463 lanes took minutes.
+  scrolled window are asked for (`gutterNearViewport`): a pair costs a walk
+  lane 20 ms at AMY1 (150 kb) and 80 ms at MHC (1 Mb) on the weighted-subsequence
+  aligner (graph plugin 7.1.13, ada, 2026-10-16), against 0.5-1.9 s per pair at
+  MHC 1 Mb before it, so 463 lanes took minutes.
 - **Composing a lane pair through the anchor** was built and removed. It drew a neighbour comparison the source
   never states, with a tooltip as its only disclosure: a reversed lane colored
   both gutters touching it, and sequence two lanes share and the anchor lacks
