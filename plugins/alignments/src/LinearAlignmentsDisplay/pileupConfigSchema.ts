@@ -39,7 +39,7 @@ export const pileupConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    maxHeight: {
+    maxLayoutHeight: {
       type: 'number',
       defaultValue: 6000,
       description:

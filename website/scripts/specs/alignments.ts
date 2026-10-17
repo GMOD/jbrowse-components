@@ -180,7 +180,7 @@ function strandSpecificSpec(): ScreenshotSpec {
             // unreadable column down the left of the band
             height: 120,
           },
-          pileup: { maxHeight: 2000 },
+          pileup: { maxLayoutHeight: 2000 },
           sashimi: { filter: { minReads: 3 } },
           // LOG on the coverage band (reviewer). RPL7A is a ribosomal protein
           // running ~100x the surfeit genes beside it, so on a linear axis its
@@ -1576,7 +1576,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
           coverage: { height: 120 },
-          pileup: { maxHeight: 2000 },
+          pileup: { maxLayoutHeight: 2000 },
           sashimi: { filter: { minReads: 3 } },
           height: 460,
         },
@@ -1605,7 +1605,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          pileup: { readHeight: 3, maxHeight: 2000 },
+          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: {
             // taller SNPCoverage band + shorter pileup viewport + shorter
             // browser: coverageHeight is the LinearAlignmentsDisplay
@@ -1684,7 +1684,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          pileup: { readHeight: 3, maxHeight: 2000 },
+          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 120 },
           sashimi: { filter: { minReads: 3 } },
           height: 420,
@@ -1733,7 +1733,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          pileup: { readHeight: 3, maxHeight: 2000 },
+          pileup: { readHeight: 3, maxLayoutHeight: 2000 },
           coverage: { height: 160 },
           height: 380,
           ...display,

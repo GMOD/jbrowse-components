@@ -105,7 +105,7 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
   )
 }
 
-// The display-wide `maxHeight` cap, and the cap a lane's own height override
+// The `pileup.maxLayoutHeight` cap, and the cap a lane's own height override
 // sets. Two names rather than one `{rows, source}` literal per call site, so the
 // policy is stated where the cap is built and the layout only has to carry it.
 export function ceilingCap(rows: number): RowCap {
@@ -125,7 +125,7 @@ function overrideCap(rows: number): RowCap {
  * differ.
  *
  * A tie is the ceiling, because the expand the `'budget'` answer offers banks an
- * override OF `maxHeight`: where the slice already equals the ceiling, expanding
+ * override OF `pileup.maxLayoutHeight`: where the slice already equals the ceiling, expanding
  * hands back the identical cap and not one extra read appears.
  */
 export function tighterCap(budgetRows: number, ceilingRows: number): RowCap {
@@ -437,7 +437,7 @@ export function layoutGroupRowCounts(
   return counts
 }
 
-// How many rows the uncollapsed groups need, laid out uncapped. `maxHeight`
+// How many rows the uncollapsed groups need, laid out uncapped. `pileup.maxLayoutHeight`
 // bounds the counting pass only — NOT the current read height, so the fit
 // autorun that writes `featureHeight` can't feed back into the count it is
 // derived from. Its own computed on the model because a drag frame moves the

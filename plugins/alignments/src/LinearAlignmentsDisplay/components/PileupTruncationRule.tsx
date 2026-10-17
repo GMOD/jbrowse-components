@@ -5,11 +5,11 @@ import { contentScreenY, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
-// Where a pileup clipped by the display-wide `maxHeight` stops: a hairline
+// Where a pileup clipped by `pileup.maxLayoutHeight` stops: a hairline
 // across the bottom of the laid-out rows, captioned, scrolling with the reads.
 //
 // This used to be a `warning`-toned chip pinned in the bottom-right corner whose
-// press set `maxHeight` to 1,000,000. Both halves were wrong, and the press was
+// press set `pileup.maxLayoutHeight` to 1,000,000. Both halves were wrong, and the press was
 // the worse one: it writes a CONFIG SLOT, so a single click committed the track
 // to laying out every read at every locus, the notice then vanished, and the
 // only way back was a dialog in the track menu. Reported as having been

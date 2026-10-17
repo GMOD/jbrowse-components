@@ -13,8 +13,8 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 const PixelHeightDialog = lazy(() => import('../dialogs/PixelHeightDialog.tsx'))
 
 interface MaxHeightModel {
-  pileupMaxHeight: number
-  setPileupMaxHeight: (height?: number) => void
+  pileupMaxLayoutHeight: number
+  setPileupMaxLayoutHeight: (height?: number) => void
 }
 
 // The pileup row cap: how tall the stack may grow before reads are dropped.
@@ -30,9 +30,9 @@ function getMaxHeightMenuItem(model: MaxHeightModel) {
           description:
             'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
           label: 'Max layout height (px)',
-          initialValue: model.pileupMaxHeight,
+          initialValue: model.pileupMaxLayoutHeight,
           onSubmit: (height: number) => {
-            model.setPileupMaxHeight(height)
+            model.setPileupMaxLayoutHeight(height)
           },
           handleClose,
         },

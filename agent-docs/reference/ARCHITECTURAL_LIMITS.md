@@ -45,7 +45,7 @@ one device and has no per-canvas cap.
 
 Limit checks are per buffer and per texture; nothing sums uploaded bytes across
 displays, so OOM is reportable, not preventable. ADR-035 settled that
-`maxHeight` bounds pixels, not GPU memory. **WebGL2 is the stricter HAL**: it
+`pileup.maxLayoutHeight` bounds pixels, not GPU memory. **WebGL2 is the stricter HAL**: it
 refuses past the fixed `MAX_VERTEX_BUFFER_BYTES` (256 MiB) where WebGPU uses the
 adapter maximum, so a region can banner on WebGL2 and render on WebGPU. We
 accept that direction, since the unguarded WebGL2 failure is a dropped context

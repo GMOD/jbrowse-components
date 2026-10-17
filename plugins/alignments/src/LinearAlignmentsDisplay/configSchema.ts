@@ -125,7 +125,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         heightMode:
           'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `pileup.readHeight` and scrolls; `grow` expands the track to show every read at that height; `fit` squeezes reads so every uncollapsed section fills the display without scrolling',
         growMaxHeight:
-          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight)',
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight)',
       }),
       /**
        * #slot
@@ -239,7 +239,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       coverage: coverageBandConfigSchema,
       /**
        * #slot pileup
-       * The stacked reads: `show`, `readHeight` (default 7), `maxHeight`, and
+       * The stacked reads: `show`, `readHeight` (default 7), `maxLayoutHeight`, and
        * the parts drawn on each read.
        */
       pileup: pileupConfigSchema,

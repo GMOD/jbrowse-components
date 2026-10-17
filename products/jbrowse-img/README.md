@@ -714,7 +714,7 @@ Settings written as slots, in the display's own spelling:
 | `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
 | `sashimi.filter.minReads=3`              | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
 | `readConnections.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
-| `pileup.maxHeight=4000`                  | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
+| `pileup.maxLayoutHeight=4000`            | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
 Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
 Anything else is a CSS color, painting every read with it:

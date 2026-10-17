@@ -115,13 +115,13 @@ const anyCeilingClipped = (display: ReturnType<typeof seed>) =>
 
 // A grouping can yield one section (one strand represented, a tag with a single
 // value). That section is labelled and collapsible, but it lays out against the
-// display-wide `maxHeight` cap, exactly as an ungrouped pileup does — there is
+// `pileup.maxLayoutHeight` cap, exactly as an ungrouped pileup does — there is
 // no viewport split to expand out of. The chip's expand button banked an
-// override of that same `maxHeight`, so it showed no extra read while silencing
+// override of that same `pileup.maxLayoutHeight`, so it showed no extra read while silencing
 // both truncation signals.
-test('a lone section clipped at maxHeight offers the banner, not the chip', () => {
+test('a lone section clipped at pileup.maxLayoutHeight offers the banner, not the chip', () => {
   const display = seed([{ key: '1', label: 'HP: 1', n: 40 }])
-  display.setPileupMaxHeight(40)
+  display.setPileupMaxLayoutHeight(40)
 
   expect(display.showsGroupLabels).toBe(true)
   expect(display.isGrouped).toBe(false)
@@ -131,12 +131,12 @@ test('a lone section clipped at maxHeight offers the banner, not the chip', () =
 })
 
 // The banner's own action, which is the one that helps here.
-test('raising maxHeight lays out the rows the ceiling was hiding', () => {
+test('raising pileup.maxLayoutHeight lays out the rows the ceiling was hiding', () => {
   const display = seed([{ key: '1', label: 'HP: 1', n: 40 }])
-  display.setPileupMaxHeight(40)
+  display.setPileupMaxLayoutHeight(40)
   const clipped = rowsIn(display, 0)
 
-  display.setPileupMaxHeight(6000)
+  display.setPileupMaxLayoutHeight(6000)
   expect(rowsIn(display, 0)).toBeGreaterThan(clipped)
   expect(anyCeilingClipped(display)).toBe(false)
 })
@@ -148,7 +148,7 @@ test('a lane clipped by its viewport slice offers the chip', () => {
     { key: '1', label: 'HP: 1', n: 40 },
     { key: '2', label: 'HP: 2', n: 40 },
   ])
-  display.setPileupMaxHeight(400)
+  display.setPileupMaxLayoutHeight(400)
   expect(display.isGrouped).toBe(true)
   expect(clippedBy(display, '1')).toBe('budget')
 
@@ -163,12 +163,12 @@ test('a lane clipped by its viewport slice offers the chip', () => {
 // A stacked lane can still hit the display-wide ceiling, where expanding it is
 // the same no-op. The banner has to speak for that case too — it used to be
 // gated on there being at most one group, so nothing surfaced it at all.
-test('a stacked lane clipped at maxHeight raises the banner', () => {
+test('a stacked lane clipped at pileup.maxLayoutHeight raises the banner', () => {
   const display = seed([
     { key: '1', label: 'HP: 1', n: 400 },
     { key: '2', label: 'HP: 2', n: 400 },
   ])
-  display.setPileupMaxHeight(40)
+  display.setPileupMaxLayoutHeight(40)
   expect(display.isGrouped).toBe(true)
   expect(clippedBy(display, '1')).toBe('ceiling')
   expect(expandable(display, '1')).toBe(false)
@@ -179,7 +179,7 @@ test('a stacked lane clipped at maxHeight raises the banner', () => {
 // banner offering to raise it is noise.
 test('the truncation banner steps aside with the pileup hidden', () => {
   const display = seed([{ key: '1', label: 'HP: 1', n: 40 }])
-  display.setPileupMaxHeight(40)
+  display.setPileupMaxLayoutHeight(40)
   expect(anyCeilingClipped(display)).toBe(true)
 
   display.setShowPileup(false)
@@ -237,7 +237,7 @@ test('a lane clipped by its own override raises nothing', () => {
     { key: '1', label: 'HP: 1', n: 400 },
     { key: '2', label: 'HP: 2', n: 400 },
   ])
-  display.setPileupMaxHeight(40)
+  display.setPileupMaxLayoutHeight(40)
   expect(clippedBy(display, '1')).toBe('ceiling')
 
   display.toggleGroupExpanded('1')
@@ -287,7 +287,7 @@ test('fit ignores a banked height override rather than clipping under it', () =>
     { key: '1', label: 'HP: 1', n: 400 },
     { key: '2', label: 'HP: 2', n: 400 },
   ])
-  display.setPileupMaxHeight(4000)
+  display.setPileupMaxLayoutHeight(4000)
   display.resizeGroupHeight('1', -100)
   expect(clippedBy(display, '1')).toBe('override')
 
@@ -315,7 +315,7 @@ test('a height drag inside one row keeps the layout', () => {
     { key: '1', label: 'HP: 1', n: 400 },
     { key: '2', label: 'HP: 2', n: 400 },
   ])
-  display.setPileupMaxHeight(4000)
+  display.setPileupMaxLayoutHeight(4000)
   display.toggleGroupExpanded('1')
   const { rowHeight } = display
   const px = display.groupHeightOverrides.get('1')!

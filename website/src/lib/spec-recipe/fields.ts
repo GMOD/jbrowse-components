@@ -1881,7 +1881,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
     note: 'Hides splice junctions supported by fewer reads than this.',
   })),
-  'pileup.maxHeight': numberField(n => ({
+  'pileup.maxLayoutHeight': numberField(n => ({
     path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
   })),
   // Two inline sliders under the multi-sample variant "Filter by..." submenu

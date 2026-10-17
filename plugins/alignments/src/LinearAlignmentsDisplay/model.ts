@@ -413,7 +413,7 @@ export default function stateModelFactory(
            * #volatile
            * Per-group pileup height override in px, keyed by group key and
            * dropped with `collapsedGroups`. Absent keys fall back to the
-           * display-wide `maxHeight`.
+           * `pileup.maxLayoutHeight`.
            */
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
@@ -1203,19 +1203,22 @@ export default function stateModelFactory(
           get fitRows(): number {
             return fitRowCount(
               this.groupLayoutContext,
-              self.pileupMaxHeight,
+              self.pileupMaxLayoutHeight,
               self.collapsedGroups,
             )
           },
 
           /**
            * #getter
-           * The `maxHeight` ceiling in rows. While fitting it is clamped to the
+           * The `pileup.maxLayoutHeight` ceiling in rows. While fitting it is clamped to the
            * rows the pileup needs, so the quotient holds steady across drag
            * frames and the layout does not re-place every row.
            */
           get fitCeilingRows(): number {
-            const ceiling = maxRowsFor(self.pileupMaxHeight, this.rowHeight)
+            const ceiling = maxRowsFor(
+              self.pileupMaxLayoutHeight,
+              this.rowHeight,
+            )
             return this.isFitting ? Math.min(ceiling, this.fitRows) : ceiling
           },
 
@@ -2454,7 +2457,7 @@ export default function stateModelFactory(
          * #getter
          * The read height that makes every uncollapsed group's reads fill the
          * display without scrolling (`fittedReadPitch`). The uncapped row count
-         * uses a fixed `maxHeight`-row cap, independent of `featureHeight`, so
+         * uses a fixed `pileup.maxLayoutHeight`-row cap, independent of `featureHeight`, so
          * the fit autorun that writes `featureHeight` cannot feed back into it.
          * Reads `fitTargetHeight`, not the reactive `height` getter — the
          * anti-cycle rule `laidOutByGroup` follows.
@@ -3113,7 +3116,7 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Expand a fit-to-viewport group to the full `maxHeight` cap, or, if
+           * Expand a fit-to-viewport group to the full `pileup.maxLayoutHeight` cap, or, if
            * it already carries an override, drop it to return the group to the
            * fit budget. Expanding overflows the viewport, which engages the
            * pileup scroll. Pairs with `groupHeightOverrides`.
@@ -3122,7 +3125,7 @@ export default function stateModelFactory(
             if (self.groupMaxHeightOverrides.has(key)) {
               self.groupMaxHeightOverrides.delete(key)
             } else {
-              self.groupMaxHeightOverrides.set(key, self.pileupMaxHeight)
+              self.groupMaxHeightOverrides.set(key, self.pileupMaxLayoutHeight)
             }
           },
 
@@ -3166,8 +3169,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setPileupMaxHeight(height?: number) {
-            setConf(self, ['pileup', 'maxHeight'], height)
+          setPileupMaxLayoutHeight(height?: number) {
+            setConf(self, ['pileup', 'maxLayoutHeight'], height)
             self.scrollTop = 0
           },
 

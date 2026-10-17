@@ -3950,7 +3950,7 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "maxHeight",
+              "name": "maxLayoutHeight",
               "type": "number"
             },
             {
@@ -4728,7 +4728,7 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "maxHeight",
+              "name": "maxLayoutHeight",
               "type": "number"
             },
             {

@@ -130,7 +130,7 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
   const { height, maxHeight, mismatchAlpha, hideMismatches } = pileup
   const slots = {
     ...(height !== undefined ? { readHeight: height } : {}),
-    ...(maxHeight !== undefined ? { maxHeight } : {}),
+    ...(maxHeight !== undefined ? { maxLayoutHeight: maxHeight } : {}),
     ...(mismatchAlpha !== undefined
       ? { fadeLowBaseQuality: mismatchAlpha }
       : {}),
@@ -164,7 +164,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
  * arc classes under the draw verb, which are `readConnections.filter`
  * categories now; its read size and layout cap are `pileup`'s `readHeight`
- * and `maxHeight`; its `jexlFilters` has no slot, since
+ * and `maxLayoutHeight`; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
  * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
@@ -192,7 +192,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   jitter: () => ({}),
   lineWidth: v => ({ readConnections: { lineWidth: v } }),
   featureHeight: v => ({ pileup: { readHeight: v } }),
-  maxHeight: v => ({ pileup: { maxHeight: v } }),
+  maxHeight: v => ({ pileup: { maxLayoutHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { showMismatches: !v } }),
   mismatchAlpha: v => ({ pileup: { fadeLowBaseQuality: v } }),
@@ -236,7 +236,7 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   filterBy: value => ({ filter: value }),
   filterBySetting: value => ({ filter: value }),
   sortedBy: sortSlot,
-  trackMaxHeight: value => ({ pileup: { maxHeight: value } }),
+  trackMaxHeight: value => ({ pileup: { maxLayoutHeight: value } }),
   hideMismatchesSetting: value => ({ pileup: { showMismatches: !value } }),
 }
 

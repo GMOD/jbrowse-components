@@ -302,7 +302,7 @@ const byDisplay = (type: string) =>
 // A key whose value a current slot takes lands there, which the console line
 // alone cannot show.
 test.each([
-  ['LinearAlignmentsDisplay', ['pileup', 'maxHeight'], 10],
+  ['LinearAlignmentsDisplay', ['pileup', 'maxLayoutHeight'], 10],
   ['LinearAlignmentsDisplay', ['coverage', 'height'], 40],
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMin'], 0],
   ['LinearSNPCoverageDisplay', ['scales', 'y', 'domainMax'], 100],

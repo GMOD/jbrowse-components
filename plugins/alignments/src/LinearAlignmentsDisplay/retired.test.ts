@@ -148,7 +148,7 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
     filter: { flagInclude: 0, flagExclude: 1540 },
-    pileup: { maxHeight: 900, showMismatches: false },
+    pileup: { maxLayoutHeight: 900, showMismatches: false },
   })
 })
 

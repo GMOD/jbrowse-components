@@ -6747,7 +6747,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "maxHeight": {
+        "maxLayoutHeight": {
           "description": "the tallest the pileup's layout grows in pixels; reads past it are not stacked, and coverage still counts them. Not the display's growMaxHeight, which caps how tall the track grows.",
           "default": 6000,
           "if": {
@@ -7018,7 +7018,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "height of the read-connection band in pixels.",
+          "description": "height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height.",
           "default": 35,
           "if": {
             "type": "null"
@@ -7129,7 +7129,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight).",
+          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
           "default": 800,
           "if": {
             "type": "null"
@@ -8162,7 +8162,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight).",
+          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight).",
           "default": 800,
           "if": {
             "type": "null"

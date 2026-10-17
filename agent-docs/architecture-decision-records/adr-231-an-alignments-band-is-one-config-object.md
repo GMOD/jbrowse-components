@@ -40,7 +40,7 @@ state was judged as the spelling users keep.
   | Band              | Members                                                                                                        |
   | ----------------- | -------------------------------------------------------------------------------------------------------------- |
   | `coverage`        | `show`, `height`, `showInterbaseIndicators`, `filter.minAlleleFraction`                                        |
-  | `pileup`          | `show`, `readHeight`, `maxHeight`, `showMismatches`, `showSoftClipping`, `showOutline`, `showConnectors`, `fadeLowBaseQuality`, `fadeLowFrequency` |
+  | `pileup`          | `show`, `readHeight`, `maxLayoutHeight`, `showMismatches`, `showSoftClipping`, `showOutline`, `showConnectors`, `fadeLowBaseQuality`, `fadeLowFrequency` |
   | `sashimi`         | `show`, `height`, `placement` (`up`, `down`, `auto`), `showCounts`, `filter.minReads`, `filter.nonCanonical`   |
   | `readConnections` | `show`, `mark` (`arc`, `cloud`), `height`, `placement` (`up`, `down`), `lineWidth`, `color`, `showOrdinaryPairs`, `filter.interchrom`, `filter.offscreenMates`, `filter.minInterchromReads` |
 
@@ -76,6 +76,9 @@ state was judged as the spelling users keep.
 - **`readConnections.color` takes `{ field }` and refuses a bare string**,
   since the reads' `color` reads a bare string as a constant colour; one key
   one level apart cannot read it both ways.
+- **`pileup.maxLayoutHeight`** is the layout cap, the menu's "Set max layout
+  height", so the pileup holds no `maxHeight` to read as its band height
+  beside the display's `growMaxHeight`.
 - **`scales` stays top-level** though only the coverage band draws against an
   axis: `scales.y` is spelt the same on the wiggle, MAF and alignments
   displays, and the axis panel and Edit plot write it there.
@@ -94,6 +97,9 @@ state was judged as the spelling users keep.
 | One opacity object for the two fades | Each fades by one variable; the object would hold two booleans under another name |
 | `pileup.rowHeight` for `readHeight` | `rowHeight` is the row pitch here (`featureHeight + featureSpacing`) and on MAF, where 0 means fit; `readHeight` is each read glyph's height, under `unit: 'chain'` and in a collapsed section too |
 | `sashimi.showLabels` for `showCounts` | Canvas and LD `showLabels` are enums, so the word would take two types; `showCounts` names the text it prints, as `showGeneLabels` does |
+| `facet.collapse` for `collapseSections` | `facet` has a string shorthand, so a share link writing `facet: 'HP'` replaces it whole and would reset the collapse |
+| `pileup.sort` | The top level holds the read-level grammar, `filter`, `unit`, `facet`, `sort` and `color`; `sort` orders the reads the pileup stacks as `unit` decides what one of its rows is, and the two stay together |
+| `readConnections.color.field` unset in place of `''` | Every color object spells an absent field `''` (display-kit's color schema, `baseColor`), so the arcs keep it |
 | A jexl expression in place of the `show` booleans | Each toggles a layer for the whole display, so an expression reading no datum is a constant. Where a datum exists, a band's `filter` over junctions or connections, an opt-in expression could join the members at no cost when unnamed, as the canvas and mark displays' `filter` takes jexl; no figure has asked for a predicate the members cannot state |
 
 ## Consequences

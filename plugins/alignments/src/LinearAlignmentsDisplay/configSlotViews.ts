@@ -140,8 +140,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['pileup', 'readHeight'])
     },
     /** #getter */
-    get pileupMaxHeight(): number {
-      return getConf(self, ['pileup', 'maxHeight'])
+    get pileupMaxLayoutHeight(): number {
+      return getConf(self, ['pileup', 'maxLayoutHeight'])
     },
     /** #getter */
     get showMismatches(): boolean {

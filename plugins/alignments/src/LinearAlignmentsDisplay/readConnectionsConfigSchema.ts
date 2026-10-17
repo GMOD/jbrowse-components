@@ -73,7 +73,8 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
       // separation between insert sizes; at 25 they were too flat to separate.
       // Kept above the 20px drag floor (clampBandHeight).
       defaultValue: 35,
-      description: 'height of the read-connection band in pixels',
+      description:
+        "height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height",
     },
     /**
      * #slot
