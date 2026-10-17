@@ -253,17 +253,18 @@ export function categoricalScale<T>(
       i === slot || isNear?.(entries[slot]!, entry) ? [i] : [],
     ))
   const rank = new Map(listed.map((value, i) => [value, i]))
-  const listedTaken = new Set(listed.flatMap((_, i) => twinsOf(i % size)))
+  const listedSlots = listed.map((_, i) => i % size)
+  const listedTaken = new Set(listedSlots.flatMap(twinsOf))
   const tiers =
     listed.length > 0
       ? [[0, size] as const]
       : [[0, base.length] as const, [base.length, size] as const]
   // the entry least like any of `avoid`, first in slot order on a tie
-  const farthest = (avoid: readonly number[]) => {
+  const farthest = (avoid: ReadonlySet<number>) => {
     let best = -1
     let bestGap = -1
     for (let slot = 0; slot < size; slot++) {
-      if (!avoid.includes(slot)) {
+      if (!avoid.has(slot)) {
         let gap = Infinity
         for (const s of avoid) {
           gap = Math.min(gap, distance!(entries[slot]!, entries[s]!))
@@ -279,7 +280,7 @@ export function categoricalScale<T>(
   const deal = (
     value: string,
     taken: ReadonlySet<number>,
-    avoid: readonly number[] = [],
+    avoid: ReadonlySet<number> = new Set(),
   ) => {
     for (const [from, to] of tiers) {
       const inTier =
@@ -292,8 +293,35 @@ export function categoricalScale<T>(
         return from + freeSlot(value, to - from, inTier)
       }
     }
-    const far = distance && avoid.length > 0 ? farthest(avoid) : -1
+    const far = distance && avoid.size > 0 ? farthest(avoid) : -1
     return far >= 0 ? far : valueSlot(value, tiers[0]![1])
+  }
+  // the slots a deal avoids, per batch or for `held` as a whole, grown as
+  // values are dealt so n new values read the batch once rather than n times;
+  // a deal elsewhere into a shared `held` changes its size and starts afresh
+  const avoiding = new WeakMap<
+    ReadonlySet<string> | HeldSlots,
+    { heldSize: number; slots: Set<number> }
+  >()
+  const avoidedBy = (held: HeldSlots, among?: ReadonlySet<string>) => {
+    const cached = avoiding.get(among ?? held)
+    if (cached?.heldSize === held.size) {
+      return cached.slots
+    }
+    const slots = new Set(listedSlots)
+    if (among) {
+      for (const value of among) {
+        const s = held.get(value)
+        if (s !== undefined) {
+          slots.add(s)
+        }
+      }
+    } else {
+      for (const s of held.values()) {
+        slots.add(s)
+      }
+    }
+    return slots
   }
   const pick = (value: string, among?: ReadonlySet<string>) => {
     const i = rank.get(value)
@@ -305,15 +333,7 @@ export function categoricalScale<T>(
     }
     let slot = held.get(value)
     if (slot === undefined) {
-      const avoid = [
-        ...listed.map((_, i) => i % size),
-        ...(among
-          ? [...among].flatMap(key => {
-              const s = held.get(key)
-              return s === undefined ? [] : [s]
-            })
-          : held.values()),
-      ]
+      const avoid = avoidedBy(held, among)
       const taken = new Set(listedTaken)
       for (const s of avoid) {
         for (const twin of twinsOf(s)) {
@@ -322,6 +342,10 @@ export function categoricalScale<T>(
       }
       slot = deal(value, taken, avoid)
       held.set(value, slot)
+      if (!among || among.has(value)) {
+        avoid.add(slot)
+      }
+      avoiding.set(among ?? held, { heldSize: held.size, slots: avoid })
     }
     return entries[slot]!
   }

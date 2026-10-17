@@ -124,6 +124,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
 | <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> |  |
 | <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene color deals its values into. |
+| <span id="getter-dealtgenecolorslots">**dealtGeneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | `geneColorSlots` once every value the boxes and lane genes show is dealt as one batch, so the two take colors apart whichever lands first |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> |  |
 | <span id="getter-lanegenecolors">**laneGeneColors**</span><br><code>ReadonlyMap&lt;string, GeneColors&gt;</code> |  |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A categorical color's deal (ADR-205) keeps the values on screen together apart by perceptual difference: two palette entries are twins under a CIEDE2000 difference of 15 (`DEAL_COLOR_DIFFERENCE`, `colorDifference`) rather than OKLab 0.05, and a value with no free entry takes the entry farthest from the ones it avoids, not its raw hash. A display that deals everything it shows at once (`dealShownKeyColors`, `CategoricalScale.among`) avoids only those values' colors, so a session's earlier values do not use up the palette; the multi-way display deals every lane's genes so. `dealKeyColors`, which the canvas, mark and variant displays call per region, still avoids every held color. Held colors still never move, and the map is still shared per session and never persisted. Amends ADR-205"
+summary: "A categorical color's deal (ADR-205) keeps the values on screen together apart by perceptual difference: two palette entries are twins under a CIEDE2000 difference of 15 (`DEAL_COLOR_DIFFERENCE`, `colorDifference`) rather than OKLab 0.05, and a value with no free entry takes the entry farthest from the ones it avoids, not its raw hash. A display that deals everything it shows at once (`dealShownKeyColors`, `CategoricalScale.among`) avoids only those values' colors, so a session's earlier values do not use up the palette; the multi-way display deals every lane's genes and named boxes so. `dealKeyColors`, which the canvas, mark and variant displays call per region, still avoids every held color. Held colors still never move, and the map is still shared per session and never persisted. Amends ADR-205"
 ---
 
 # ADR-233: A categorical deal keeps the colors on screen apart
@@ -48,9 +48,11 @@ investigation, 2026-10-17) found the case typical:
   (`categoricalScale`'s `distance`), first in slot order on a tie, instead of
   its hash. A scale with no `distance` (the mark display's shapes) keeps the
   hash.
-- **The multi-way display deals every lane's genes as one shown batch** before
-  any lane paints (`dealGeneColors`), which ADR-205 left to feature order. A
-  cluster field deals as it paints.
+- **The multi-way display deals every lane's genes and named boxes as one
+  shown batch** before any of them paints (`dealtGeneColorSlots`), which
+  ADR-205 left to feature order. Boxes join because a pan's records land
+  before its lane genes, and dealt alone they took look-alike colors the genes
+  then kept. A cluster field deals as it paints.
 
 ## Consequences
 

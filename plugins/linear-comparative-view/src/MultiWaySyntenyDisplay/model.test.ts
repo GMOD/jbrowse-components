@@ -677,6 +677,37 @@ test('the genes on screen, colored by name, take colors that read apart', () => 
   }
 })
 
+test('named boxes landing before their genes take colors that read apart', () => {
+  const display = createDisplay()
+  const names = ['DDT', 'GSTT1', 'GSTT2', 'GSTT2B', 'GSTT3P', 'GSTT4']
+  display.colorByField(FEATURE_NAME_FIELD)
+  anchorGenes(
+    display,
+    Array.from({ length: 60 }, (_, i) =>
+      namedGene(`seen${i}`, `SEEN${i}`, i * 10, i * 10 + 5),
+    ),
+  )
+  expect(anchorGeneFills(display)).toHaveLength(60)
+  anchorGenes(display, [])
+  const records = names.map((name, i) =>
+    mateRecord(`r${i}`, 'volvox_random', name),
+  )
+  display.setFeatures(records)
+  const boxFills = records.map(r => display.boxColors.fill(r, undefined).css)
+  for (const [i, a] of boxFills.entries()) {
+    for (const b of boxFills.slice(i + 1)) {
+      expect(colorDifference(a, b)).toBeGreaterThanOrEqual(
+        DEAL_COLOR_DIFFERENCE,
+      )
+    }
+  }
+  anchorGenes(
+    display,
+    names.map((name, i) => namedGene(`g${i}`, name, i * 100, i * 100 + 50)),
+  )
+  expect(anchorGeneFills(display).map(([, css]) => css)).toEqual(boxFills)
+})
+
 test('gene names the hash puts on one color each take their own', () => {
   const display = createDisplay()
   anchorGenes(display, [

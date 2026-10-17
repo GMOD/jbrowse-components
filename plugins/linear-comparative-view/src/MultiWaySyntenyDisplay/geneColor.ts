@@ -37,9 +37,9 @@ export interface GeneColors {
 }
 
 /**
- * Deals the values every lane's `features` carry under a painting field as
- * one batch, before any lane paints, so the genes on screen together take
- * colors apart whichever lane reads first. A cluster field deals as it paints.
+ * Deals the values `features` carry under a painting field as one batch, so
+ * the genes and boxes on screen together take colors apart whichever paints
+ * first. A cluster field deals as it paints.
  */
 export function dealGeneColors(
   encoding: string | undefined | FieldColorEncoding,

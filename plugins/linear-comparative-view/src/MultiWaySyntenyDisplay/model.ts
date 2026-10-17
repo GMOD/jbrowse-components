@@ -711,6 +711,27 @@ export function stateModelFactory(
         return heldColorSlots(self, self.geneColorEncoding)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * `geneColorSlots` once every value the boxes and lane genes show is
+       * dealt as one batch, so the two take colors apart whichever lands first
+       */
+      get dealtGeneColorSlots() {
+        dealGeneColors(
+          self.geneColorEncoding,
+          self.geneColorSlots,
+          getEnv(self).pluginManager.jexl,
+          [
+            ...(self.features ?? []),
+            ...[...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
+              genes.map(gene => gene.feature),
+            ),
+          ],
+        )
+        return self.geneColorSlots
+      },
+    }))
     .views(self => {
       const { jexl } = getEnv(self).pluginManager
       // a fresh resolver per data identity and settings, since each memoizes
@@ -734,7 +755,7 @@ export function stateModelFactory(
                 self.geneColorEncoding,
                 self.geneColorSettings.utrColor,
                 jexl,
-                self.geneColorSlots,
+                self.dealtGeneColorSlots,
               ),
             }
       }
@@ -748,14 +769,6 @@ export function stateModelFactory(
         },
         /** #getter */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
-          dealGeneColors(
-            self.geneColorEncoding,
-            self.geneColorSlots,
-            jexl,
-            [...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
-              genes.map(gene => gene.feature),
-            ),
-          )
           lanes = new Map(
             [...(self.laneGenes.held ?? [])].map(([lane, held]) => [
               lane,
