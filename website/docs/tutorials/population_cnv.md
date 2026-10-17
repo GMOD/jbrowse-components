@@ -50,7 +50,8 @@ lab at the University of Michigan
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. Run QuicK-mer2 on your own samples covers a cohort of
+your own.
 
 | What it is                                                           | File                                                                                                   |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |

@@ -74,7 +74,7 @@ the C-GIAB FTP, and the assemblies are on NIST's S3 bucket. The
 [build script](#reproduce-it-end-to-end) takes these files from their URLs, over
 200 GB and hours of download. The page's commands build local files from them,
 and the tracks over those read them from disk; every other track reads a hosted
-copy.
+copy. Each step takes your own tumor and normal reads in place of HG008's.
 
 The reference and the reads:
 

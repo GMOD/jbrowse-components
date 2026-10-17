@@ -45,7 +45,8 @@ Ag1000G phase 2 AR1
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The PLINK steps take your own VCF in place of the Ag1000G
+slice.
 
 | What it is                                                                                                                                                                                             | File                                                                                                           |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |

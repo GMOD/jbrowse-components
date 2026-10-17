@@ -32,7 +32,8 @@ release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. Applying the mappability check to another locus repeats
+it on your own locus and reads.
 
 | What it is                                                                                                                        | File                                                                                                                                                                                                  |
 | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

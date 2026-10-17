@@ -41,7 +41,8 @@ epigenomes.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. The merge
+step takes your own per-cell-type segmentation BEDs.
 
 | What it is                                                                                           | File                                                                                                                                                              |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |

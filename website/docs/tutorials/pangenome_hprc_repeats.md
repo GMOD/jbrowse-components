@@ -77,7 +77,9 @@ at _ABCA7_.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The tandem-repeat VCF step takes your own graph and
+repeat interval, and the TRGT step your own aligned HiFi reads and repeat
+catalogue.
 
 | What it is                                                              | File                                                                                                                                                                     |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

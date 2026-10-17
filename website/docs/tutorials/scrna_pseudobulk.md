@@ -39,7 +39,8 @@ writing the BAM to disk.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. Generating
+per-cell-type BigWigs takes your own barcoded BAM and barcode table.
 
 | What it is                                                           | File                                                                                                                                              |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |

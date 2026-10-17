@@ -46,7 +46,8 @@ hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. The chain
+steps take your own liftOver chains.
 
 | What it is                                                                     | File                                                                   |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

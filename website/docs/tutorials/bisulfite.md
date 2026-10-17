@@ -57,7 +57,8 @@ European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. Producing
+the BAM takes your own bisulfite FASTQ and reference.
 
 | What it is                                                                            | File                                                                                                            |
 | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |

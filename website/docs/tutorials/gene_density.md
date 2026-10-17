@@ -51,7 +51,7 @@ per-kilobase bigWig beside each file.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The counting step takes any GFF3 or BED of your own.
 
 | What it is                                                     | File                                                                                         |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

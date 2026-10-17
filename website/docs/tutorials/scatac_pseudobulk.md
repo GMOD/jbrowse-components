@@ -34,6 +34,8 @@ clustered and cell-type-labeled by the SnapATAC2 pipeline.
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) downloads the
 dataset through SnapATAC2 (about 800 MB, ten minutes) to rebuild them.
+Pseudobulk BigWigs from ArchR, a barcoded BAM or a fragments file covers your
+own cells.
 
 | What it is                                                                                      | File                                                                                                            |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |

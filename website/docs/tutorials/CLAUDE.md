@@ -96,15 +96,17 @@ follows is what no check sees.
   these files to follow the page" when every track reads a hosted result, "run
   [the build script] first, or follow the same commands on your own files" when
   the tracks read local files it writes, and the mixed form when both occur.
-  Never "nothing to download by hand", which hides all three. State the cost
-  (size, time, memory) when it passes about 1 GB or ten minutes, and mark a file
-  the script streams "streamed and never downloaded". It lists only what the
-  page's commands or script download, as one two-column table: **What it is**
-  (what reads it, in the reader's terms) and **File** (a link whose text is the
-  file name). A source read by URL goes in a `<details>` summarised "Read by URL
-  (no download needed)"; our own hub configs and rehosted results are cut. Past
-  ten rows, split into labelled groups; `check-data-sources` holds the shape
-  (two intro paragraphs at most, nothing after the last table).
+  Never "nothing to download by hand", which hides all three. The data is an
+  example, so a page that hosts its results also names the step that takes the
+  reader's own files. State the cost (size, time, memory) when it passes about 1
+  GB or ten minutes, and mark a file the script streams "streamed and never
+  downloaded". It lists only what the page's commands or script download, as one
+  two-column table: **What it is** (what reads it, in the reader's terms) and
+  **File** (a link whose text is the file name). A source read by URL goes in a
+  `<details>` summarised "Read by URL (no download needed)"; our own hub configs
+  and rehosted results are cut. Past ten rows, split into labelled groups;
+  `check-data-sources` holds the shape (two intro paragraphs at most, nothing
+  after the last table).
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
 - A Reproduce section does not mean the script fetches the data. Read how the
   script gets each file before writing the sentence.

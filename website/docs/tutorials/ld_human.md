@@ -59,7 +59,8 @@ called natively on GRCh38.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The cutting, PLINK and plink2 steps take your own phased
+VCF in place of the 1000 Genomes slice.
 
 | What it is                                                                                                                      | File                                                                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

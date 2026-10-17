@@ -65,7 +65,8 @@ CLI.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. Producing an
+all-vs-all PAF takes your own set of assemblies.
 
 | What it is | File                                                                                                                  |
 | ---------- | --------------------------------------------------------------------------------------------------------------------- |

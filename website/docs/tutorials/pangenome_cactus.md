@@ -68,7 +68,8 @@ accession. K12 is the `--reference` backbone the other four align onto.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself.
+[build script](#reproduce-it-end-to-end) fetches everything itself. Building the
+graph takes your own set of assemblies.
 
 | What it is                                                         | File                                                                                                                  |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |

@@ -56,7 +56,8 @@ density bigWig the build script makes of them.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The last section, Your own pair of genomes, lists what a
+pair of your own needs.
 
 | What it is                 | File                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------- |

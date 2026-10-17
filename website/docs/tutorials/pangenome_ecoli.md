@@ -68,7 +68,8 @@ assemblies by accession with the NCBI `datasets` CLI. The nanopore reads are the
 one file to download by hand, with the `curl` under
 [Testing the CPZ-55 depth trough with nanopore reads](#testing-the-cpz-55-depth-trough-with-nanopore-reads).
 The page's commands build local graph files from the assemblies, and the tracks
-over those read them from disk; every other track reads a hosted copy.
+over those read them from disk; every other track reads a hosted copy. Building
+the graph takes your own set of assemblies.
 
 | What it is                                               | File                                                                                                                  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |

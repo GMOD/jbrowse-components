@@ -52,7 +52,8 @@ Alu rows cut out.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. Your own RepeatMasker BED and genome FASTA go through the
+same steps: the build script takes them as arguments.
 
 | What it is                                                    | File                                                                                         |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

@@ -51,7 +51,7 @@ with Progressive Cactus (Armstrong et al. 2020).
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results.
+rebuild those results. The chain steps take your own chains.
 
 | What it is                                                                                                | File                                                                              |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
