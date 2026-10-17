@@ -83,9 +83,11 @@ what no check sees.
 ## Page structure
 
 - `## Prerequisites` comes under the opening paragraph: a bulleted list, then
-  one `bash` fence that installs the listed tools in a line or two
-  (`cargo install gfa-to-tabix`, `conda install -c bioconda …`). The intro gets
-  its own heading.
+  the install fence, generated from a
+  `<!-- TUTORIAL_INSTALL tool,tool START -->` marker pair out of
+  `website/scripts/api-docs/tutorialInstall.json` (apt and conda lines, plus
+  cargo, pip and npm). A tool with no packaged install stays a bullet with a
+  link. The intro gets its own heading.
 - **`## Where the data comes from` lists only what the page's commands or script
   download**, one flat bullet per file ending in the raw URL, under one sentence
   saying who fetches them; the bullet's own label says what reads the file, with

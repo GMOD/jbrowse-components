@@ -37,10 +37,17 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index) to serve
   them from a gbz-base database
 
+<!-- TUTORIAL_INSTALL htslib,bcftools,pigz,gfa-to-tabix,gfatools,minigraph,vg,gbz-base,gbz-haplotype-index START -->
+
 ```bash
-cargo install gfa-to-tabix gbz-base gbz-haplotype-index
+# Debian/Ubuntu
+sudo apt install tabix bcftools pigz
+# or conda, which also has gfatools, minigraph, vg
 conda install -c bioconda -c conda-forge htslib bcftools pigz gfatools minigraph vg
+cargo install gfa-to-tabix gbz-base gbz-haplotype-index
 ```
+
+<!-- TUTORIAL_INSTALL htslib,bcftools,pigz,gfa-to-tabix,gfatools,minigraph,vg,gbz-base,gbz-haplotype-index END -->
 
 ## Where the data comes from
 

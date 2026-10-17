@@ -20,8 +20,17 @@ axis, and _PAX5_, a B-cell gene with genic enhancers only in B cells.
 - `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
 - `jq`, for the Roadmap tissue groups only
 
-On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
-comes from [nodejs.org](https://nodejs.org/).
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
 
 ## Where the data comes from
 

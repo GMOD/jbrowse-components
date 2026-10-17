@@ -1,0 +1,41 @@
+{
+  "bcftools": { "apt": "bcftools", "conda": "bcftools" },
+  "bedtools": { "apt": "bedtools", "conda": "bedtools" },
+  "diamond": { "apt": "diamond-aligner", "conda": "diamond" },
+  "duckdb": { "conda": "duckdb" },
+  "gffread": { "apt": "gffread", "conda": "gffread" },
+  "htslib": { "apt": "tabix", "conda": "htslib" },
+  "last": { "apt": "last-align", "conda": "last" },
+  "minigraph": { "conda": "minigraph" },
+  "minimap2": { "apt": "minimap2", "conda": "minimap2" },
+  "node": { "apt": "nodejs", "conda": "nodejs" },
+  "pigz": { "apt": "pigz", "conda": "pigz" },
+  "samtools": { "apt": "samtools", "conda": "samtools" },
+  "vcftools": { "apt": "vcftools", "conda": "vcftools" },
+
+  "bedGraphToBigWig": { "conda": "ucsc-bedgraphtobigwig" },
+  "bigWigToBedGraph": { "conda": "ucsc-bigwigtobedgraph" },
+  "datasets": { "conda": "ncbi-datasets-cli" },
+  "gfatools": { "conda": "gfatools" },
+  "hificnv": { "conda": "hificnv" },
+  "liftOver": { "conda": "ucsc-liftover" },
+  "mcscanx": { "conda": "mcscanx" },
+  "megadepth": { "conda": "megadepth" },
+  "orthofinder": { "conda": "orthofinder" },
+  "plink": { "conda": "plink" },
+  "plink2": { "conda": "plink2" },
+  "syri": { "conda": "syri" },
+  "trgt": { "conda": "trgt" },
+  "vg": { "conda": "vg" },
+
+  "gbz-base": { "cargo": "gbz-base" },
+  "gbz-haplotype-index": { "cargo": "gbz-haplotype-index" },
+  "gfa-to-tabix": { "cargo": "gfa-to-tabix" },
+
+  "biopython": { "pip": "biopython" },
+  "jcvi": { "pip": "jcvi" },
+  "whatshap": { "pip": "whatshap" },
+
+  "jbrowse-cli": { "npm": "@jbrowse/cli" },
+  "jbrowse-img": { "npm": "@jbrowse/img" }
+}

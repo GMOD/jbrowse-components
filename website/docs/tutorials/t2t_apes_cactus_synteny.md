@@ -26,10 +26,22 @@ aligned bases out of the file.
 
 - [chain2paf](https://github.com/AndreaGuarracino/chain2paf), built with
   `cargo install --path .` from its checkout
-- The JBrowse CLI (`npm install -g @jbrowse/cli`), for `jbrowse make-pif`
+- The [JBrowse CLI](/docs/cli), for `jbrowse make-pif`
 - htslib (`tabix`) and `python3`, for the check at the end
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
+
+<!-- TUTORIAL_INSTALL htslib,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda
+conda install -c bioconda -c conda-forge htslib
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,jbrowse-cli END -->
 
 ## Where the data comes from
 

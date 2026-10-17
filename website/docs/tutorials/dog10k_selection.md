@@ -34,11 +34,19 @@ a major reason. In the Dog10K collection of sequenced dogs and wolves, we:
 - `python3`
 - htslib (`tabix`)
 
-On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it; the
-packaged `bcftools` is linked against libcurl, so it can read the remote
-callset. The scripts write local files, which
-[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
-through **Add track**.
+<!-- TUTORIAL_INSTALL bcftools,htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install bcftools tabix
+# or conda
+conda install -c bioconda -c conda-forge bcftools htslib
+```
+
+<!-- TUTORIAL_INSTALL bcftools,htslib END -->
+
+The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
+opens by path and JBrowse Web takes through **Add track**.
 
 ## Where the data comes from
 

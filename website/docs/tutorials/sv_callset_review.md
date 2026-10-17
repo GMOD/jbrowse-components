@@ -20,9 +20,13 @@ control.
 - a JBrowse for [the last section](#opening-a-call-in-the-browser)
   ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop))
 
+<!-- TUTORIAL_INSTALL jbrowse-img START -->
+
 ```bash
 npm install -g @jbrowse/img
 ```
+
+<!-- TUTORIAL_INSTALL jbrowse-img END -->
 
 ## Where the data comes from
 

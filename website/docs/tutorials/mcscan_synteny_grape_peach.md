@@ -30,9 +30,18 @@ then into a dotplot.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
-aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
-comes from [nodejs.org](https://nodejs.org/).
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,jcvi,last START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs last-align
+# or conda
+conda install -c bioconda -c conda-forge samtools htslib nodejs last
+pip install jcvi
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,jcvi,last END -->
 
 ## Where the data comes from
 

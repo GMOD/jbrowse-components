@@ -40,6 +40,14 @@ lane as a deletion.
   [Whole-genome synteny from a GFA's walks](#whole-genome-synteny-from-a-gfas-walks):
   `python3` and the [JBrowse CLI](/docs/cli) for `make-pif`
 
+<!-- TUTORIAL_INSTALL jbrowse-cli START -->
+
+```bash
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL jbrowse-cli END -->
+
 ## Where the data comes from
 
 The [build script](#reproduce-it-end-to-end) takes these files from

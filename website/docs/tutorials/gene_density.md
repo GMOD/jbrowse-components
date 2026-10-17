@@ -26,6 +26,18 @@ then zoom in to see the genes themselves.
   `make-density` runs
 - htslib (`bgzip`, `tabix`), for the counts at the end
 
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda, which also has bedGraphToBigWig
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
+
 ## Where the data comes from
 
 The figures read UCSC's hg38 annotation tables, rehosted by

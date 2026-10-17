@@ -27,6 +27,18 @@ from a JSON `marks` list; it is experimental, and its config shape may change.
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
 
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda, which also has bedGraphToBigWig
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
+
 ## Where the data comes from
 
 UCSC's hg38 RepeatMasker table, rehosted by

@@ -30,6 +30,18 @@ GenArk hub config, has a RepeatMasker track to try.
   conversion
 - `node`, for the [JBrowse CLI](/docs/cli), which both of those need too
 
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge samtools htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
+
 ## Where the data comes from
 
 The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on

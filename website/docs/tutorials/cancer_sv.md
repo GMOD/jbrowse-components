@@ -27,9 +27,17 @@ synteny view.
 - `python3`
 - a GRCh38 FASTA, and roughly 40 GB of free disk
 
-On Debian/Ubuntu, `apt install samtools minimap2 python3` covers three of those;
-`bedGraphToBigWig` is a single static binary from UCSC and `node`, for the CLI,
-comes from [nodejs.org](https://nodejs.org/).
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix minimap2 nodejs
+# or conda, which also has bedGraphToBigWig
+conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs ucsc-bedgraphtobigwig
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig END -->
 
 ## Where the data comes from
 

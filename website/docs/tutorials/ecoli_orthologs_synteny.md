@@ -28,6 +28,17 @@ ribbon.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+<!-- TUTORIAL_INSTALL htslib,datasets START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda, which also has datasets
+conda install -c bioconda -c conda-forge htslib ncbi-datasets-cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,datasets END -->
+
 ## Where the data comes from
 
 Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:

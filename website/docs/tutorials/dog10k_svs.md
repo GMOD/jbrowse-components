@@ -32,10 +32,19 @@ in:
 - the UCSC `liftOver` binary for the OMIA track, which the build script fetches
   itself
 
-On Debian/Ubuntu, `apt install bcftools samtools minimap2 tabix curl python3`
-covers the rest. The scripts write local files, which
-[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
-through **Add track**.
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools tabix minimap2
+# or conda
+conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 END -->
+
+The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
+opens by path and JBrowse Web takes through **Add track**.
 
 ## Where the data comes from
 

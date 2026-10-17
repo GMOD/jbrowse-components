@@ -25,6 +25,18 @@ closes a sequence its assembly marks as circular, leaving no gap at its origin.
 - samtools, for the FASTA index
 - htslib (`bgzip`, `tabix`), for the GFF3 index
 
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge samtools htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
+
 ## Where the data comes from
 
 NC_012920.1 is the revised Cambridge Reference Sequence of the human

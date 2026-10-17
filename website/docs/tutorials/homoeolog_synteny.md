@@ -30,6 +30,19 @@ from a protein self-alignment, and `kaks_from_pairs.py` measures the rates.
 [Selection pressure between two genomes](/docs/tutorials/selection_pressure)
 covers installing jcvi and what dN/dS measures.
 
+<!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install diamond-aligner nodejs
+# or conda
+conda install -c bioconda -c conda-forge diamond nodejs
+pip install jcvi biopython
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython END -->
+
 ## Where the data comes from
 
 Oat cultivar Williams

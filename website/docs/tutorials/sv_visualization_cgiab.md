@@ -49,6 +49,18 @@ Building your own instance needs:
   - `bedGraphToBigWig` from the
     [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
 
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,megadepth,hificnv START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools tabix minimap2 nodejs
+# or conda, which also has bedGraphToBigWig, megadepth, hificnv
+conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2 nodejs ucsc-bedgraphtobigwig megadepth hificnv
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,megadepth,hificnv END -->
+
 ## Where the data comes from
 
 HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on

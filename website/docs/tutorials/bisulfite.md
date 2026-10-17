@@ -30,6 +30,18 @@ caller runs first.
   optional aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs
+# or conda, which also has bedGraphToBigWig, datasets
+conda install -c bioconda -c conda-forge samtools htslib nodejs ucsc-bedgraphtobigwig ncbi-datasets-cli
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets END -->
+
 ## Where the data comes from
 
 TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the

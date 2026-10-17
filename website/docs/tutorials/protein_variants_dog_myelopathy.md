@@ -38,6 +38,17 @@ ourselves on canFam4.
 - `bcftools` built with libcurl, and htslib (`tabix`)
 - `curl`
 
+<!-- TUTORIAL_INSTALL bcftools,htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install bcftools tabix
+# or conda
+conda install -c bioconda -c conda-forge bcftools htslib
+```
+
+<!-- TUTORIAL_INSTALL bcftools,htslib END -->
+
 ## Where the data comes from
 
 The Dog10K consortium's public share

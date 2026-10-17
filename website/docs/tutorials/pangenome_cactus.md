@@ -40,10 +40,18 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
 
-On Debian/Ubuntu, `apt install samtools tabix unzip wget python3` covers five of
-those; `cargo install gfa-to-tabix` installs `gfa-to-tabix`, bioconda packages
-`gfatools`, and `datasets` and `bedGraphToBigWig` are each a
-[single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/).
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfatools,gfa-to-tabix START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs
+# or conda, which also has bedGraphToBigWig, datasets, gfatools
+conda install -c bioconda -c conda-forge samtools htslib nodejs ucsc-bedgraphtobigwig ncbi-datasets-cli gfatools
+cargo install gfa-to-tabix
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfatools,gfa-to-tabix END -->
 
 ## Where the data comes from
 

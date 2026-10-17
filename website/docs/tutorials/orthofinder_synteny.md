@@ -21,8 +21,8 @@ vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
 
 - [OrthoFinder](https://github.com/davidemms/OrthoFinder) with
   [DIAMOND](https://github.com/bbuchfink/diamond) on `PATH` as `orthofinder`
-- [MCScanX](https://github.com/wyp1125/MCScanX) (`MCScanX_h`; bioconda
-  `mcscanx`), for the [collinear blocks](#collinear-blocks)
+- [MCScanX](https://github.com/wyp1125/MCScanX) (`MCScanX_h`), for the
+  [collinear blocks](#collinear-blocks)
 - `python3`, htslib (`bgzip`, `tabix`), `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
@@ -31,6 +31,18 @@ vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
   [your own genomes](#your-own-genomes) only
 - A running JBrowse instance ([web](/docs/quickstart_web) or
   [desktop](/docs/quickstart_desktop))
+
+<!-- TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix diamond-aligner gffread nodejs
+# or conda, which also has datasets, mcscanx, orthofinder
+conda install -c bioconda -c conda-forge htslib diamond gffread nodejs ncbi-datasets-cli mcscanx orthofinder
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder END -->
 
 ## Where the data comes from
 

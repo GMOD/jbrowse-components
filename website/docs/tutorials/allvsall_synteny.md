@@ -39,6 +39,18 @@ genomes in a fixed order.
 - `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix minimap2 nodejs
+# or conda, which also has datasets
+conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs ncbi-datasets-cli
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets END -->
+
 ## Where the data comes from
 
 Five _E. coli_ RefSeq assemblies, each fetched by accession with the `datasets`

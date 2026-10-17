@@ -29,6 +29,18 @@ ring value back from the indexed alignment file and the bigWig they came from.
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node` for
   the [JBrowse CLI](/docs/cli)
 
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,bigWigToBedGraph START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda, which also has bedGraphToBigWig, bigWigToBedGraph
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig ucsc-bigwigtobedgraph
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,bigWigToBedGraph END -->
+
 ## Where the data comes from
 
 UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene

@@ -26,6 +26,18 @@ and its README documents every option.
 - to build a portal over your own genome: Node 23+, pnpm, htslib for `tabix`,
   and the JBrowse CLI
 
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
+
 ## Where the data comes from
 
 Tiberius predictions over GRCh38

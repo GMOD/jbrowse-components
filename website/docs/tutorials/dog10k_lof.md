@@ -30,11 +30,19 @@ across every canid in the collection.
 - `samtools` built with libcurl, for the build script's CRAM cross-check on the
   copy-number track, which is not a step on this page
 
-On Debian/Ubuntu, `apt install bcftools samtools tabix curl python3` covers it;
-the packaged builds are linked against libcurl, so both can read the remote
-callset and CRAMs. The scripts write local files, which
-[JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
-through **Add track**.
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools tabix
+# or conda
+conda install -c bioconda -c conda-forge samtools bcftools htslib
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib END -->
+
+The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
+opens by path and JBrowse Web takes through **Add track**.
 
 ## Where the data comes from
 

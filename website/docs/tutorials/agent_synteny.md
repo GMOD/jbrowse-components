@@ -28,6 +28,18 @@ Typed one at a time, the requests ask the agent to:
 - [minimap2](https://github.com/lh3/minimap2)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install minimap2 nodejs
+# or conda
+conda install -c bioconda -c conda-forge minimap2 nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli END -->
+
 ## Where the data comes from
 
 The assemblies are two GenArk genomes

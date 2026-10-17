@@ -29,6 +29,18 @@ of one synteny view and zoomed to a conserved block. Then we:
 - [gffread](https://github.com/gpertea/gffread)
 - `samtools`
 
+<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools gffread last-align
+# or conda, which also has datasets
+conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli last
+pip install jcvi
+```
+
+<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last END -->
+
 ## Where the data comes from
 
 Seven RefSeq assemblies, one per species, each fetched by accession with the

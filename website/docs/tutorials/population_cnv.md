@@ -26,6 +26,17 @@ time, so the second half of the page packs the values into one Zarr store.
   [samples of your own](#your-own-samples)
 - `samtools` and `bedGraphToBigWig`, to turn QuicK-mer2's output into a bigWig
 
+<!-- TUTORIAL_INSTALL samtools,node,bedGraphToBigWig START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools nodejs
+# or conda, which also has bedGraphToBigWig
+conda install -c bioconda -c conda-forge samtools nodejs ucsc-bedgraphtobigwig
+```
+
+<!-- TUTORIAL_INSTALL samtools,node,bedGraphToBigWig END -->
+
 ## Where the data comes from
 
 QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd

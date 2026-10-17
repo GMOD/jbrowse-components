@@ -30,6 +30,19 @@ jcvi compiles C extensions at install time, and the compile fails on some Python
 versions. If `pip install jcvi` fails, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gives an interpreter it builds on.
 
+<!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix diamond-aligner nodejs
+# or conda
+conda install -c bioconda -c conda-forge htslib diamond nodejs
+pip install jcvi biopython
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython END -->
+
 ## Where the data comes from
 
 The assemblies are

@@ -27,6 +27,18 @@ is experimental and its config shape may change.
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for the build
   script
 
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge samtools bcftools htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,node,jbrowse-cli END -->
+
 ## Where the data comes from
 
 1000 Genomes high-coverage release

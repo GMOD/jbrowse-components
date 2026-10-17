@@ -23,6 +23,7 @@ import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
 import { writeShaderShapeDocs } from './generateShaderShapeDocs.ts'
 import { writeSlotTypeDocs } from './generateSlotTypeDocs.ts'
+import { writeTutorialInstallDocs } from './generateTutorialInstallDocs.ts'
 
 import type { SourceCorpus } from './util.ts'
 
@@ -87,6 +88,7 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
     write: writeGraphPluginDocs,
   },
   { label: 'Mark rule table', write: writeMarkRuleDocs },
+  { label: 'Tutorial install fences', write: writeTutorialInstallDocs },
   {
     // The index of every other entry in this list, and of the marker blocks the
     // whole-repo scan in generate.ts writes. Its source is the docs' own marker

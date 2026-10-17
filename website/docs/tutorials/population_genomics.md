@@ -39,11 +39,17 @@ dm6, read the _Cyp6g1_ sweep against the genes, then read the inversion.
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), to pack a
   bedGraph into a bigWig
 
-On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
-but `node` and `bedGraphToBigWig`, a
-[single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
-Homebrew has the first three tools (`brew install vcftools bcftools htslib`),
-and [bioconda](https://bioconda.github.io/) has all four.
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools tabix vcftools nodejs
+# or conda, which also has bedGraphToBigWig
+conda install -c bioconda -c conda-forge samtools bcftools htslib vcftools nodejs ucsc-bedgraphtobigwig
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig END -->
 
 ## Where the data comes from
 

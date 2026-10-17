@@ -40,9 +40,18 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
 
-`apt install samtools tabix unzip python3` covers four of those on
-Debian/Ubuntu, and `datasets` and `bedGraphToBigWig` are each a
-[single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/).
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix minimap2 nodejs
+# or conda, which also has bedGraphToBigWig, datasets
+conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs ucsc-bedgraphtobigwig ncbi-datasets-cli
+cargo install gfa-to-tabix
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->
 
 ## Where the data comes from
 

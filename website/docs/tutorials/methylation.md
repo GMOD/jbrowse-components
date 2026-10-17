@@ -27,6 +27,14 @@ domain.
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
   that have no `HP` tag
 
+<!-- TUTORIAL_INSTALL whatshap START -->
+
+```bash
+pip install whatshap
+```
+
+<!-- TUTORIAL_INSTALL whatshap END -->
+
 ## Where the data comes from
 
 The files are region slices of public

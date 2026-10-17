@@ -33,6 +33,18 @@ With that view we:
   [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst track and the
   frequency filter[^plink19]
 
+<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install bcftools tabix nodejs
+# or conda, which also has bedGraphToBigWig, plink, plink2
+conda install -c bioconda -c conda-forge bcftools htslib nodejs ucsc-bedgraphtobigwig plink plink2
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 END -->
+
 ## Where the data comes from
 
 1000 Genomes 30x high-coverage from NYGC

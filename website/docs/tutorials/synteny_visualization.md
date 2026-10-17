@@ -27,8 +27,17 @@ The other aligns every genome against every other in one minimap2 run, and
 - `python3`, which the build script uses to copy the hub configs
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-On Debian/Ubuntu, `apt install minimap2` covers the aligner, and `node` comes
-from [nodejs.org](https://nodejs.org/).
+<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install minimap2 nodejs
+# or conda
+conda install -c bioconda -c conda-forge minimap2 nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli END -->
 
 ## Where the data comes from
 

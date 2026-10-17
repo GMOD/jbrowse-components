@@ -55,6 +55,18 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
   libcurl, [`minimap2`](https://github.com/lh3/minimap2), `python3` and Node.js
   for `npx`
 
+<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,gbz-base START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools bcftools minimap2 nodejs
+# or conda, which also has duckdb, trgt
+conda install -c bioconda -c conda-forge samtools bcftools minimap2 duckdb nodejs trgt
+cargo install gbz-base
+```
+
+<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,gbz-base END -->
+
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT

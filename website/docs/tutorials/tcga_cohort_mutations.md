@@ -19,6 +19,14 @@ subtype shares line up.
   [desktop quickstart](/docs/quickstart_desktop)) and the
   [JBrowse CLI](/docs/cli)
 
+<!-- TUTORIAL_INSTALL jbrowse-cli START -->
+
+```bash
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL jbrowse-cli END -->
+
 ## Where the data comes from
 
 TCGA-BRCA open-access somatic mutation calls from the GDC

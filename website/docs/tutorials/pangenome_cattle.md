@@ -38,6 +38,17 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`vg`](https://github.com/vgteam/vg), to
   [deconstruct](#hspa1a-in-the-graph-and-the-callset) the graph into a callset
 
+<!-- TUTORIAL_INSTALL htslib,vg START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda, which also has vg
+conda install -c bioconda -c conda-forge htslib vg
+```
+
+<!-- TUTORIAL_INSTALL htslib,vg END -->
+
 ## Where the data comes from
 
 The [OMIA build script](#the-celtic-polled-allele) fetches OMIA's dump, and the

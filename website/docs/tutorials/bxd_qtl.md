@@ -25,7 +25,16 @@ peak set it.
   ([web quickstart](/docs/quickstart_web) or
   [desktop quickstart](/docs/quickstart_desktop))
 
-On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it.
+<!-- TUTORIAL_INSTALL htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda
+conda install -c bioconda -c conda-forge htslib
+```
+
+<!-- TUTORIAL_INSTALL htslib END -->
 
 ## Where the data comes from
 

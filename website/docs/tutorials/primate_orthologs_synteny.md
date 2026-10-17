@@ -25,6 +25,15 @@ neighbourhood and a 17q window across the eight primates, then human chromosome
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+<!-- TUTORIAL_INSTALL datasets START -->
+
+```bash
+# conda
+conda install -c bioconda -c conda-forge ncbi-datasets-cli
+```
+
+<!-- TUTORIAL_INSTALL datasets END -->
+
 ## Where the data comes from
 
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the

@@ -184,7 +184,13 @@ for (const file of readdirSync(tutorials).sort()) {
     continue
   }
   pages++
-  const fences = [...src.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)```/g)]
+  // The generated install fence shows no tool running, so the fences come from
+  // the page without it
+  const shown = src.replaceAll(
+    /<!-- TUTORIAL_INSTALL \S+ START -->[\s\S]*?<!-- TUTORIAL_INSTALL \S+ END -->/g,
+    '',
+  )
+  const fences = [...shown.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)```/g)]
   const runnable = fences
     .filter(f => /^(bash|python|r)$/i.test(f[1]!))
     .map(f => f[2]!)

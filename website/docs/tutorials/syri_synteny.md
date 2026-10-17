@@ -36,6 +36,17 @@ draw that file two ways:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,datasets,syri START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix minimap2
+# or conda, which also has datasets, syri
+conda install -c bioconda -c conda-forge samtools htslib minimap2 ncbi-datasets-cli syri
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,datasets,syri END -->
+
 ## Where the data comes from
 
 TAIR10 for Columbia, and the chromosome-level assemblies of five more accessions

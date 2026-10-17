@@ -26,6 +26,17 @@ file.
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+<!-- TUTORIAL_INSTALL htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda
+conda install -c bioconda -c conda-forge htslib
+```
+
+<!-- TUTORIAL_INSTALL htslib END -->
+
 ## Where the data comes from
 
 UCSC's pairwise liftOver chains from hg38 (Kent et al. 2003), each converted to

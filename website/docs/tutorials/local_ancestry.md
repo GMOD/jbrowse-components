@@ -29,9 +29,19 @@ paint the result as one colored row per haplotype (one copy of a chromosome).
 - htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-On Debian/Ubuntu, `apt install bcftools tabix curl python3 default-jre` covers
-all of it, including a `bcftools` linked against libcurl. `flare.jar` is a
-single download from FLARE's
+<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install bcftools tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge bcftools htslib nodejs
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli END -->
+
+`flare.jar` is a single download from FLARE's
 [releases page](https://github.com/browning-lab/flare/releases). The painted BED
 is a local file, so [JBrowse Desktop](/docs/quickstart_desktop) opens it by
 path, while JBrowse Web needs it served.

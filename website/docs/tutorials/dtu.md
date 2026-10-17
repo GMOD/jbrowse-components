@@ -24,6 +24,17 @@ by it.
 - htslib (`bgzip`, `tabix`)
 - R with satuRn, SummarizedExperiment, edgeR and limma, all Bioconductor
 
+<!-- TUTORIAL_INSTALL htslib START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda
+conda install -c bioconda -c conda-forge htslib
+```
+
+<!-- TUTORIAL_INSTALL htslib END -->
+
 ## Where the data comes from
 
 ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified

@@ -33,6 +33,18 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
 ```
 
+<!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix
+# or conda, which also has bedGraphToBigWig, liftOver
+conda install -c bioconda -c conda-forge samtools htslib ucsc-bedgraphtobigwig ucsc-liftover
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver END -->
+
 ## Where the data comes from
 
 Four PacBio Iso-Seq runs from [ENCODE](https://www.encodeproject.org/), two

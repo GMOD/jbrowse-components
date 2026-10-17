@@ -23,8 +23,18 @@ haplotype, so a meiotic crossover reads as a color change along the row.
 - `node`
 - htslib (`bgzip`, `tabix`)
 
-On Debian/Ubuntu, `apt install tabix python3 default-jre` covers most of it;
-`node` comes from [nodejs.org](https://nodejs.org/), and `hap-ibd.jar` is a
+<!-- TUTORIAL_INSTALL htslib,node START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix nodejs
+# or conda
+conda install -c bioconda -c conda-forge htslib nodejs
+```
+
+<!-- TUTORIAL_INSTALL htslib,node END -->
+
+On Debian/Ubuntu, `apt install default-jre` installs Java. `hap-ibd.jar` is a
 single download from its
 [releases page](https://github.com/browning-lab/hap-ibd/releases).
 

@@ -41,6 +41,17 @@ leaves out which strains have them.
 - [`minigraph`](https://github.com/lh3/minigraph), to build a graph like this
   one
 
+<!-- TUTORIAL_INSTALL htslib,minigraph START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda, which also has minigraph
+conda install -c bioconda -c conda-forge htslib minigraph
+```
+
+<!-- TUTORIAL_INSTALL htslib,minigraph END -->
+
 ## Where the data comes from
 
 The reference is UCSC's mm39 and the strains are the Mouse Genomes Project

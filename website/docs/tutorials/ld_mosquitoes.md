@@ -25,6 +25,18 @@ it.
 - `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools tabix nodejs
+# or conda, which also has plink2
+conda install -c bioconda -c conda-forge samtools htslib nodejs plink2
+npm install -g @jbrowse/cli
+```
+
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 END -->
+
 ## Where the data comes from
 
 Ag1000G phase 2 AR1
