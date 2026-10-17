@@ -13,6 +13,7 @@ import {
   frameSegments,
   frameSpan,
   groupFeatures,
+  laneIndelsOf,
   laneOpeningsOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
@@ -470,6 +471,52 @@ describe('a deletion the lane carries against the anchor', () => {
     )
     expect(moved.min).toBeCloseTo(frame.min, 6)
     expect(moved.max).toBeCloseTo(frame.max, 6)
+  })
+})
+
+describe('an insertion the lane carries against the anchor', () => {
+  const [ref, at] = CARRIERS['HG01123.1']
+  const runs = (insertedBp: number, records: [string, string]) =>
+    groupFeatures([
+      piece(
+        'ins/0',
+        WINDOW_START,
+        WINDOW_START + 40_000,
+        [{ assemblyName: 'HG01123.1', refName: ref, start: at }],
+        1,
+        records[0],
+      ),
+      piece(
+        'ins/1',
+        WINDOW_START + 40_000,
+        WINDOW_END,
+        [
+          {
+            assemblyName: 'HG01123.1',
+            refName: ref,
+            start: at + 40_000 + insertedBp,
+          },
+        ],
+        1,
+        records[1],
+      ),
+    ])
+
+  test('lists one between two runs of one record, at its breakpoint, its length', () => {
+    const { openings, insertions } = laneIndelsOf(runs(30_000, ['r', 'r']))
+    expect(insertions('HG01123.1', ref)).toEqual([
+      { at: at + 40_000, bp: 30_000 },
+    ])
+    expect(openings('HG01123.1', ref)).toEqual([])
+  })
+
+  test('lists none under SPLIT_AT_GAP_BP, nor between two records', () => {
+    expect(
+      laneIndelsOf(runs(9_999, ['r', 'r'])).insertions('HG01123.1', ref),
+    ).toEqual([])
+    expect(
+      laneIndelsOf(runs(30_000, ['r', 's'])).insertions('HG01123.1', ref),
+    ).toEqual([])
   })
 })
 

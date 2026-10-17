@@ -13,6 +13,7 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
+  changesChipWidth,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
@@ -115,6 +116,8 @@ const LaneHeaders = observer(function LaneHeaders({
     padding: `0 ${INLINE_CHIP_PAD_PX}px`,
     borderRadius: 2,
   }
+
+  const changesWidth = changesChipWidth(rows)
 
   const startDrag = (assemblyName: string, event: React.MouseEvent) => {
     event.stopPropagation()
@@ -262,9 +265,32 @@ const LaneHeaders = observer(function LaneHeaders({
           >
             ⋮
           </button>
+          {row.changes ? (
+            <span
+              data-testid={`multiway-lane-changes-${row.assemblyName}`}
+              title={`against ${row.changes.anchor}`}
+              style={{
+                marginLeft: 'auto',
+                width: changesWidth,
+                boxSizing: 'border-box',
+                padding: `0 ${INLINE_CHIP_PAD_PX}px`,
+                border: `1px solid ${bandPalette.text.secondary}`,
+                borderRadius: 2,
+                background: bandGroundColor(),
+                color: bandInk().text,
+                textShadow: 'none',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                pointerEvents: 'all',
+                flex: '0 0 auto',
+              }}
+            >
+              {row.changes.text}
+            </span>
+          ) : null}
           <span
             style={{
-              marginLeft: 'auto',
+              marginLeft: row.changes ? undefined : 'auto',
               color: bandPalette.text.secondary,
               flex: '0 0 auto',
               ...(row.inline ? inlineChip : {}),

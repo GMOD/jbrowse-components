@@ -147,6 +147,16 @@ cost is linear in lanes.
 - **Lane names**: `rows.labels` names a lane by any spelling of its assembly
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
   label a source's header declares (`laneLabel`).
+- **Lane changes chip**: the header lists the holes, and the insertions of
+  `SPLIT_AT_GAP_BP` or more between two runs of one record, that the shown
+  frame meets, largest first, two then a count, in the HPRC portal's words
+  (`laneIndelsOf`, `laneHeaderRows`). It never pairs a deletion with an
+  insertion as a shift, since that infers an allele
+  ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
+- **The chip lists no insertion that two records state.** HPRC's walk lanes
+  and `hprc_multiway_gfa.pif.gz` both write HG00099#1's 54 kb GSTT1 insertion
+  as a lane gap between records, so at GSTT1 the chip names only the 37 kb
+  deletion beside it.
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the

@@ -6,6 +6,7 @@ import {
   INLINE_CHIP_OPACITY,
   INLINE_CHIP_PAD_PX,
   LABEL_FONT_SIZE,
+  changesChipWidth,
   labelBoxTop,
 } from '../laneHeader.ts'
 import { GENE_LABEL_HALO_PX } from '../laneLabels.ts'
@@ -43,6 +44,44 @@ function SvgInlineChip({
 }
 
 const BADGE_PAD_PX = 3
+const CHANGES_GAP_PX = 4
+
+function SvgChangesChip({
+  text,
+  anchor,
+  right,
+  width,
+  y,
+}: {
+  text: string
+  anchor: string
+  right: number
+  width: number
+  y: number
+}) {
+  return (
+    <g data-testid="multiway-lane-changes">
+      <title>{`against ${anchor}`}</title>
+      <rect
+        x={right - width}
+        y={labelBoxTop(y) - 0.5}
+        width={width}
+        height={LABEL_FONT_SIZE + 1}
+        rx={2}
+        fill={bandGroundColor()}
+        stroke={bandPalette.text.secondary}
+      />
+      <text
+        x={right - width + INLINE_CHIP_PAD_PX}
+        y={y}
+        fontSize={LABEL_FONT_SIZE}
+        fill={bandInk().text}
+      >
+        {text}
+      </text>
+    </g>
+  )
+}
 
 export function SvgLaneHeaders({
   rows,
@@ -56,6 +95,7 @@ export function SvgLaneHeaders({
     halo: bandGroundColor(),
     haloWidth: GENE_LABEL_HALO_PX * 2,
   }
+  const changesWidth = changesChipWidth(rows)
   return (
     <>
       {rows.map(row => {
@@ -99,6 +139,21 @@ export function SvgLaneHeaders({
             <SvgHaloText {...text} x={labelX} y={row.y} fill={bandInk().text}>
               {row.label}
             </SvgHaloText>
+            {row.changes ? (
+              <SvgChangesChip
+                text={row.changes.text}
+                anchor={row.changes.anchor}
+                right={
+                  width -
+                  2 -
+                  (row.scale
+                    ? measureText(row.scale, LABEL_FONT_SIZE) + CHANGES_GAP_PX
+                    : 0)
+                }
+                width={changesWidth}
+                y={row.y}
+              />
+            ) : null}
             {row.scale ? (
               <>
                 {row.inline ? (

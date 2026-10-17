@@ -152,7 +152,7 @@ import {
   clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
-  laneOpeningsOf,
+  laneIndelsOf,
   mergeContiguousRegions,
   rowAssembliesOf,
   tickIntervalFor,
@@ -643,12 +643,26 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * each lane's holes, read off every fetched group rather than the
-       * viewport's, so one appears once both its pieces arrive and not as
-       * the second scrolls in
+       * each lane's deletions and insertions against the anchor, read off
+       * every fetched group rather than the viewport's, so one appears once
+       * both its pieces arrive and not as the second scrolls in
+       */
+      get laneIndels() {
+        return laneIndelsOf(this.groups)
+      },
+      /**
+       * #getter
+       * each lane's holes, one per deletion in `laneIndels`
        */
       get laneOpenings() {
-        return laneOpeningsOf(this.groups)
+        return this.laneIndels.openings
+      },
+      /**
+       * #getter
+       * each lane's insertions in `laneIndels`, which open nothing
+       */
+      get laneInsertions() {
+        return this.laneIndels.insertions
       },
       /** #getter */
       get ribbonColorAttributes(): string[] {
@@ -1872,6 +1886,7 @@ export function stateModelFactory(
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
+          self.laneInsertions,
         )
       },
       /**

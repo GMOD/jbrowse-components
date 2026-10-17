@@ -1,9 +1,10 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
+import { measureText } from '@jbrowse/core/util/measureText'
 
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { LaneBlock } from './layoutMultiWay.ts'
+import type { LaneBlock, LaneInsertion } from './layoutMultiWay.ts'
 
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
@@ -47,6 +48,56 @@ export interface LaneHeaderRow {
   inline: boolean
   /** the genome this lane's ribbons are read against, where it is not the lane above */
   against?: string
+  /** the deletions and insertions against the anchor the shown frame meets */
+  changes?: { text: string; anchor: string }
+}
+
+const LISTED_CHANGES = 2
+
+function bpText(n: number) {
+  return n >= 1_000_000
+    ? `${Number((n / 1_000_000).toPrecision(2))} Mb`
+    : n >= 1000
+      ? `${Number((n / 1000).toPrecision(2))} kb`
+      : `${n} bp`
+}
+
+function laneChanges(
+  lane: Pick<Lane, 'frame' | 'canon'>,
+  insertions: readonly LaneInsertion[],
+) {
+  const { frame } = lane
+  const region = laneRegion(lane)
+  if (!frame || !region) {
+    return undefined
+  }
+  const { start, end } = region
+  const changes = [
+    ...frameOpenings(frame)
+      .filter(({ at }) => at >= start && at <= end)
+      .map(({ bp }) => ({ bp, kind: 'deletion' })),
+    ...insertions
+      .filter(({ at, bp }) => at <= end && at + bp >= start)
+      .map(({ bp }) => ({ bp, kind: 'insertion' })),
+  ].sort((a, b) => b.bp - a.bp)
+  const listed = changes
+    .slice(0, LISTED_CHANGES)
+    .map(({ bp, kind }) => `${bpText(bp)} ${kind}`)
+  const more = changes.length - listed.length
+  return listed.length
+    ? [...listed, ...(more ? [`${more} more`] : [])].join(', ')
+    : undefined
+}
+
+/** one width for every lane's changes chip, so the chips line up */
+export function changesChipWidth(rows: readonly LaneHeaderRow[]) {
+  const widest = Math.max(
+    0,
+    ...rows.map(row =>
+      row.changes ? measureText(row.changes.text, LABEL_FONT_SIZE) : 0,
+    ),
+  )
+  return widest + 2 * INLINE_CHIP_PAD_PX
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
@@ -97,8 +148,13 @@ export function laneHeaderRows(
   inlineGlyphHeight?: number,
   /** names the anchor on each mate lane that is read against it */
   against?: string,
+  insertionsOf: (
+    assemblyName: string,
+    refName: string,
+  ) => readonly LaneInsertion[] = () => [],
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
+  const anchor = lanes.find(lane => lane.isAnchor)?.label
   return lanes.map(lane => {
     const where = lane.isAnchor
       ? anchorWhere
@@ -114,6 +170,8 @@ export function laneHeaderRows(
     const alsoAt = frame?.alsoAt.length
       ? `· also at ${frame.alsoAt.map(block => blockLocString(lane, frame.refName, block)).join(', ')}`
       : undefined
+    const changes =
+      frame && laneChanges(lane, insertionsOf(lane.assemblyName, frame.refName))
     return {
       assemblyName: lane.assemblyName,
       label: inline
@@ -126,6 +184,8 @@ export function laneHeaderRows(
       isAnchor: lane.isAnchor,
       inline,
       against: lane.isAnchor ? undefined : against,
+      changes:
+        changes && anchor !== undefined ? { text: changes, anchor } : undefined,
     }
   })
 }

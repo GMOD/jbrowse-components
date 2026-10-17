@@ -95,7 +95,17 @@ export interface LaneOpening {
   bp: number
 }
 
+/**
+ * `bp` of lane sequence the anchor lacks, from lane bp `at`: an insertion one
+ * alignment record carries between two of its runs. It opens nothing.
+ */
+export interface LaneInsertion {
+  at: number
+  bp: number
+}
+
 const NO_OPENINGS: readonly LaneOpening[] = []
+const NO_INSERTIONS: readonly LaneInsertion[] = []
 
 /** a stretch of a lane's contig, in lane bp */
 export interface LaneBlock {
@@ -237,14 +247,16 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
 }
 
 /**
- * Where two pieces of a lane abut, or nearly, while their anchor ends sit at
- * least `SPLIT_AT_GAP_BP` further apart, and the gap is a deletion: the two
- * pieces are one alignment record, or the lane places the anchor between them
- * nowhere. Two records meeting where that stretch went elsewhere in the lane
- * are a rearrangement's breakpoint, whose anchor distance runs to megabases.
- * Named records are genes, whose spacing says nothing about a deletion.
+ * Openings: where two pieces of a lane abut, or nearly, while their anchor
+ * ends sit at least `SPLIT_AT_GAP_BP` further apart, and the gap is a
+ * deletion: the two pieces are one alignment record, or the lane places the
+ * anchor between them nowhere. Two records meeting where that stretch went
+ * elsewhere in the lane are a rearrangement's breakpoint, whose anchor
+ * distance runs to megabases. Insertions: where two runs of one record sit
+ * `SPLIT_AT_GAP_BP` or more further apart in the lane than on the anchor.
+ * Named records are genes, whose spacing says nothing about either.
  */
-export function laneOpeningsOf(groups: MultiWayGroup[]) {
+export function laneIndelsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
     string,
     { lane: MatePlacement; anchor: MultiWayPlacement }[]
@@ -265,17 +277,22 @@ export function laneOpeningsOf(groups: MultiWayGroup[]) {
     }
   }
   const placedAnchor = placedAnchorOf(groups)
-  const byLane = new Map<string, LaneOpening[]>()
+  const openingsByLane = new Map<string, LaneOpening[]>()
+  const insertionsByLane = new Map<string, LaneInsertion[]>()
   for (const [key, list] of pieces) {
     const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
     const openings: LaneOpening[] = []
+    const insertions: LaneInsertion[] = []
     forEachLaneGap(list, (left, right, laneGap, anchorGap) => {
+      if (anchorGap === undefined) {
+        return
+      }
+      const record = oneRecord(left.lane, right.lane)
       if (
-        anchorGap !== undefined &&
         laneGap >= 0 &&
         anchorGap - laneGap >= SPLIT_AT_GAP_BP &&
-        (oneRecord(left.lane, right.lane) ||
+        (record ||
           !placedAnchor(
             assemblyName,
             left.anchor.refName,
@@ -284,14 +301,34 @@ export function laneOpeningsOf(groups: MultiWayGroup[]) {
           ))
       ) {
         openings.push({ at: left.lane.end, bp: anchorGap - laneGap })
+      } else if (
+        record &&
+        anchorGap >= 0 &&
+        laneGap - anchorGap >= SPLIT_AT_GAP_BP
+      ) {
+        insertions.push({ at: left.lane.end, bp: laneGap - anchorGap })
       }
     })
     if (openings.length) {
-      byLane.set(key, openings)
+      openingsByLane.set(key, openings)
+    }
+    if (insertions.length) {
+      insertionsByLane.set(key, insertions)
     }
   }
-  return (assemblyName: string, refName: string): readonly LaneOpening[] =>
-    byLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS
+  return {
+    openings: (assemblyName: string, refName: string): readonly LaneOpening[] =>
+      openingsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS,
+    insertions: (
+      assemblyName: string,
+      refName: string,
+    ): readonly LaneInsertion[] =>
+      insertionsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_INSERTIONS,
+  }
+}
+
+export function laneOpeningsOf(groups: MultiWayGroup[]) {
+  return laneIndelsOf(groups).openings
 }
 
 function matesOf(feature: Feature): SyntenyGroupedMate[] {

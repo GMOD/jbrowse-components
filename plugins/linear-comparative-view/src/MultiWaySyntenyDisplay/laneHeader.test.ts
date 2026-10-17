@@ -174,3 +174,64 @@ describe('a name on the gene row', () => {
     expect(top + LABEL_FONT_SIZE).toBeCloseTo(lane.glyphTop + 5 + 1)
   })
 })
+
+describe('the changes chip', () => {
+  // in opened bp, so the frame shows lane bp 0..152,000 around two holes
+  const lane = mateLane({
+    frame: {
+      min: 0,
+      max: 200_000,
+      openings: [
+        { at: 10_000, bp: 18_000 },
+        { at: 50_000, bp: 30_000 },
+        { at: 400_000, bp: 1_234_567 },
+      ],
+    },
+  })
+  const changesOf = (insertions: { at: number; bp: number }[]) =>
+    laneHeaderRows(
+      [anchorLane, lane],
+      2000,
+      '',
+      undefined,
+      undefined,
+      (assemblyName, refName) =>
+        assemblyName === 'peach' && refName === 'Pp1' ? insertions : [],
+    ).map(row => row.changes)
+
+  test('lists what the shown frame meets, largest first, two then a count', () => {
+    expect(
+      changesOf([
+        { at: 20_000, bp: 54_000 },
+        { at: 140_000, bp: 11_000 },
+        { at: 300_000, bp: 90_000 },
+      ]),
+    ).toEqual([
+      undefined,
+      { text: '54 kb insertion, 30 kb deletion, 2 more', anchor: 'grape' },
+    ])
+  })
+
+  test('names two changes without a count, in the portal’s units', () => {
+    expect(changesOf([])[1]?.text).toBe('30 kb deletion, 18 kb deletion')
+    const wide = mateLane({
+      frame: {
+        min: 0,
+        max: 2_000_000,
+        openings: [{ at: 1000, bp: 1_234_567 }],
+      },
+    })
+    expect(laneHeaderRows([anchorLane, wide], 2000, '')[1]!.changes).toEqual({
+      text: '1.2 Mb deletion',
+      anchor: 'grape',
+    })
+  })
+
+  test('is absent from the anchor and from a lane whose frame meets no change', () => {
+    expect(
+      laneHeaderRows([anchorLane, mateLane({})], 2000, '').map(
+        row => row.changes,
+      ),
+    ).toEqual([undefined, undefined])
+  })
+})
