@@ -34,15 +34,16 @@ clustered and cell-type-labeled by the SnapATAC2 pipeline.
 The [build script](#reproduce-it-end-to-end) downloads the dataset through
 SnapATAC2, so there is nothing to download by hand.
 
-- the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
-  downloads and caches:
-  https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html
+| What it is                                                                                      | File                                                                                                            |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| The annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")` downloads and caches | [snapatac2.datasets.pbmc5k.html](https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- CATlas' published hg38 per-cell-type accessibility BigWigs from:
-  https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/
+| What it is                                                      | File                                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| CATlas' published hg38 per-cell-type accessibility BigWigs from | [bw/](https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/) |
 
 </details>
 

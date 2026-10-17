@@ -30,18 +30,14 @@ and the protein3d plugin fetches these files when a link opens.
 <details>
 <summary>The files</summary>
 
-- the AlphaFold model of p53, UniProt P04637:
-  https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif
-- the p53 core domain bound to DNA, PDB 1TUP:
-  https://files.rcsb.org/download/1TUP.cif
-- the p53 transactivation peptide bound to MDM2, PDB 1YCR:
-  https://files.rcsb.org/download/1YCR.cif
-- the p53 transactivation domain bound to CBP, solved by NMR, PDB 2L14:
-  https://files.rcsb.org/download/2L14.cif
-- UniProt's feature annotation of p53, the domain and variant tracks:
-  https://rest.uniprot.org/uniprotkb/P04637.gff
-- SIFTS, which maps where each crystal's residues sit in the UniProt sequence:
-  https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/1tup
+| What it is                                                                  | File                                                                                     |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| The AlphaFold model of p53, UniProt P04637                                  | [AF-P04637-F1-model_v6.cif](https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif) |
+| The p53 core domain bound to DNA, PDB 1TUP                                  | [1TUP.cif](https://files.rcsb.org/download/1TUP.cif)                                     |
+| The p53 transactivation peptide bound to MDM2, PDB 1YCR                     | [1YCR.cif](https://files.rcsb.org/download/1YCR.cif)                                     |
+| The p53 transactivation domain bound to CBP, solved by NMR, PDB 2L14        | [2L14.cif](https://files.rcsb.org/download/2L14.cif)                                     |
+| UniProt's feature annotation of p53, the domain and variant tracks          | [P04637.gff](https://rest.uniprot.org/uniprotkb/P04637.gff)                              |
+| SIFTS, which maps where each crystal's residues sit in the UniProt sequence | [1tup](https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/1tup)                             |
 
 </details>
 

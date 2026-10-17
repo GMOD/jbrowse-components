@@ -1,7 +1,7 @@
-// Every tutorial's `## The data` stays a short intro and a flat
-// bullet list: at most two intro paragraphs, nothing after the last list, and a
-// paragraph between lists (a labelled group) only past ten bullets. Blocks
-// inside `<details>` are exempt.
+// Every tutorial's data section stays a short intro and one table of files: at
+// most two intro paragraphs, nothing after the last table, and a paragraph
+// between tables (a labelled group) only past ten rows. Blocks inside
+// `<details>` are exempt.
 //
 // Run: `pnpm check-data-sources`.
 import { readFileSync } from 'node:fs'
@@ -14,7 +14,8 @@ const MAX_UNGROUPED_BULLETS = 10
 const MAX_INTRO_PARAGRAPHS = 2
 
 function sectionProblems(src: string) {
-  const section = /^## The data\n([\s\S]*?)(?=^## )/m.exec(src)
+  const section =
+    /^## (?:The data|Download the data)\n([\s\S]*?)(?=^## )/m.exec(src)
   if (!section) {
     return []
   }
@@ -23,8 +24,10 @@ function sectionProblems(src: string) {
     .split(/\n\s*\n/)
     .map(b => b.trim())
     .filter(Boolean)
-  const isList = blocks.map(b => b.startsWith('- '))
-  const bullets = blocks.flatMap(b => b.match(/^- /gm) ?? []).length
+  const isList = blocks.map(b => b.startsWith('| ') || b.startsWith('- '))
+  const bullets = blocks.flatMap(
+    b => b.match(/^(- |\| (?!What it is|---))/gm) ?? [],
+  ).length
   const firstList = isList.indexOf(true)
   const lastList = isList.lastIndexOf(true)
   const problems: string[] = []

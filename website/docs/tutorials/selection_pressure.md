@@ -55,14 +55,12 @@ release 116.
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- human gene models:
-  https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz
-- human coding sequence:
-  https://ftp.ensembl.org/pub/release-116/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz
-- rhesus macaque gene models:
-  https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
-- rhesus macaque coding sequence:
-  https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
+| What it is                     | File                                                                                                                                          |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Human gene models              | [Homo_sapiens.GRCh38.116.gff3.gz](https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz)                  |
+| Human coding sequence          | [Homo_sapiens.GRCh38.cds.all.fa.gz](https://ftp.ensembl.org/pub/release-116/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz)         |
+| Rhesus macaque gene models     | [Macaca_mulatta.Mmul_10.116.gff3.gz](https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz)          |
+| Rhesus macaque coding sequence | [Macaca_mulatta.Mmul_10.cds.all.fa.gz](https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz) |
 
 ## What dN/dS says
 

@@ -64,28 +64,23 @@ accession. K12 is the `--reference` backbone the other four align onto.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- K12:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
-- Sakai:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/
-- CFT073:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/
-- NCTC86:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
-- IAI39:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
-- KTa004 short reads mapped through the finished graph, forward mate:
-  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz
-- KTa004 short reads, reverse mate:
-  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz
+| What it is                                                         | File                                                                                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| K12                                                                | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
+| Sakai                                                              | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
+| CFT073                                                             | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
+| NCTC86                                                             | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
+| IAI39                                                              | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
+| KTa004 short reads mapped through the finished graph, forward mate | [DRR063408_1.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz)                    |
+| KTa004 short reads, reverse mate                                   | [DRR063408_2.fastq.gz](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz)                    |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the graph's segments, tabix-indexed, which the graph track below reads:
-  https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz
-- the graph's links:
-  https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz
+| What it is                                                             | File                                                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| The graph's segments, tabix-indexed, which the graph track below reads | [ecoli_cactus.segs.bed.gz](https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz)   |
+| The graph's links                                                      | [ecoli_cactus.links.bed.gz](https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz) |
 
 </details>
 

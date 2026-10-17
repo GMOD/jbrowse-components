@@ -48,11 +48,10 @@ chr1 only.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- the phased trio VCF:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
-- the GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field`
-  variant, since the trio VCF calls its chromosome `1` rather than `chr1`:
-  https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip
+| What it is                                                                                                                                      | File                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The phased trio VCF                                                                                                                             | [HG02024_VN049_KHVTrio.chr1.vcf.gz](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz) |
+| The GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field` variant, since the trio VCF calls its chromosome `1` rather than `chr1` | [plink.GRCh38.map.zip](https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip)                                          |
 
 ## Loading the hg38 assembly
 

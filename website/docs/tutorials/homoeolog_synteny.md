@@ -53,10 +53,10 @@ Ensembl Plants release 63 as
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- the annotation the self-alignment runs on:
-  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz
-- the CDS the proteome is translated from:
-  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz
+| What it is                                | File                                                                                                                                                                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The annotation the self-alignment runs on | [Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz)            |
+| The CDS the proteome is translated from   | [Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz) |
 
 ## Oat subgenomes and homoeologs
 

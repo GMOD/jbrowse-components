@@ -38,14 +38,11 @@ files by URL.
 <details>
 <summary>The files</summary>
 
-- the diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`,
-  `chr1_PATERNAL`):
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
-- the Q100 project's maternal-to-paternal chain:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz
-- the JHU Liftoff v0.6 gene models, maternal haplotype (the paternal file sits
-  beside it, `PAT` in place of `MAT`):
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz
+| What it is                                                                                                       | File                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`, `chr1_PATERNAL`)                       | [hg002v1.2.fasta.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz)                                                    |
+| The Q100 project's maternal-to-paternal chain                                                                    | [hg002v1.2_to_other_haplotype.chain.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz)      |
+| The JHU Liftoff v0.6 gene models, maternal haplotype (the paternal file sits beside it, `PAT` in place of `MAT`) | [hg002v1.1.MAT.loff.v0.6.gff.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz) |
 
 </details>
 

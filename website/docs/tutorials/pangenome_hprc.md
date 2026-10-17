@@ -58,12 +58,11 @@ index of its graph, by URL.
 <details>
 <summary>The files</summary>
 
-- the structural-variant graph (`sv.gfa`) the index files are cut from:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the phased VCF, one record per allele, 462 haplotypes:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
-- the multiple alignment of every haplotype against GRCh38:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
+| What it is                                                           | File                                                                                                                                                                                         |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The structural-variant graph (`sv.gfa`) the index files are cut from | [hprc-v2.1-mc-grch38.sv.gfa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz)     |
+| The phased VCF, one record per allele, 462 haplotypes                | [hprc-v2.1-mc-grch38.pgbi.vcf.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz) |
+| The multiple alignment of every haplotype against GRCh38             | [hprc-v2.1-mc-grch38.full.maf.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz) |
 
 </details>
 

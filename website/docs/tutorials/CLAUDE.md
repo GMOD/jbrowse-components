@@ -93,12 +93,12 @@ follows is what no check sees.
   fence of `wget -c` lines, one comment per file giving its size, and otherwise
   `## The data`, whose second sentence says who fetches the files (the build
   script, or the track configs by URL). It lists only what the page's commands
-  or script download: one flat bullet per file ending in the raw URL, labelled
-  with what reads it, no per-group paragraphs. A source read by URL goes in a
-  `<details>` summarised "Read by URL (no download needed)"; our own hub configs
-  and rehosted results are cut. Past ten bullets, split into labelled groups;
-  `check-data-sources` holds the shape (two intro paragraphs at most, nothing
-  after the last list).
+  or script download, as one two-column table: **What it is** (what reads it, in
+  the reader's terms) and **File** (a link whose text is the file name). A
+  source read by URL goes in a `<details>` summarised "Read by URL (no download
+  needed)"; our own hub configs and rehosted results are cut. Past ten rows,
+  split into labelled groups; `check-data-sources` holds the shape (two intro
+  paragraphs at most, nothing after the last table).
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
 - A Reproduce section does not mean the script fetches the data. Read how the
   script gets each file before writing the sentence.

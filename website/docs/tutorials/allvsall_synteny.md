@@ -62,16 +62,13 @@ CLI.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- K12:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
-- Sakai:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/
-- CFT073:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/
-- NCTC86:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
-- IAI39:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
+| What it is | File                                                                                                                  |
+| ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| K12        | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)       |
+| Sakai      | [GCF_000008865.2_ASM886v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/)       |
+| CFT073     | [GCF_000007445.1_ASM744v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/)       |
+| NCTC86     | [GCF_002007705.1_ASM200770v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/) |
+| IAI39      | [GCF_000026345.1_ASM2634v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/)     |
 
 ## Producing an all-vs-all PAF
 

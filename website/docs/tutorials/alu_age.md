@@ -51,10 +51,10 @@ Alu rows cut out.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- RepeatMasker, UCSC's `rmsk` table as BED with a column header:
-  https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
-- reference lengths, for the bigWig header:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
+| What it is                                                    | File                                                                                         |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| RepeatMasker, UCSC's `rmsk` table as BED with a column header | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz)                                     |
+| Reference lengths, for the bigWig header                      | [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes) |
 
 ## Plotting each Alu copy's divergence at one locus
 

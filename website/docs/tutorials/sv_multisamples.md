@@ -34,21 +34,14 @@ Nothing to download: the track configs below read these files by URL.
 <details>
 <summary>The files</summary>
 
-- the ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the
-  demo reads a byte-for-byte copy on jbrowse.org[^ebi]:
-  https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
-- HG00113 (homozygous alt) high-coverage CRAM:
-  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram
-- HG00096 (heterozygous) high-coverage CRAM:
-  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram
-- HG00097 (homozygous reference) high-coverage CRAM:
-  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram
-- HG02768 high-coverage CRAM, for the complex call:
-  https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242423/HG02768.final.cram
-- QuicK-mer2 copy number for the cohort, the store the
-  [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
-  of chunks that 404s at its root, and the adapter takes it as its `uri`:
-  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+| What it is                                                                                                                                                                                                 | File                                                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| The ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the demo reads a byte-for-byte copy on jbrowse.org[^ebi]                                                                        | [1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz](https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz) |
+| HG00113 (homozygous alt) high-coverage CRAM                                                                                                                                                                | [HG00113.final.cram](https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram)                       |
+| HG00096 (heterozygous) high-coverage CRAM                                                                                                                                                                  | [HG00096.final.cram](https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram)                       |
+| HG00097 (homozygous reference) high-coverage CRAM                                                                                                                                                          | [HG00097.final.cram](https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram)                       |
+| HG02768 high-coverage CRAM, for the complex call                                                                                                                                                           | [HG02768.final.cram](https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/ERR3242423/HG02768.final.cram)         |
+| QuicK-mer2 copy number for the cohort, the store the [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory of chunks that 404s at its root, and the adapter takes it as its `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                           |
 
 </details>
 

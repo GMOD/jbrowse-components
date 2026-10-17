@@ -48,12 +48,11 @@ GRCh38.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- NA12878's 30x CRAM, index beside it:
-  https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
-- the release's structural-variant callset:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
-- UCSC's GRCh38 cytoband table, rehosted:
-  https://jbrowse.org/genomes/GRCh38/cytoBand.txt
+| What it is                               | File                                                                                                                                                                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NA12878's 30x CRAM, index beside it      | [NA12878.final.cram](https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram)                                                                                                                         |
+| The release's structural-variant callset | [1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz) |
+| UCSC's GRCh38 cytoband table, rehosted   | [cytoBand.txt](https://jbrowse.org/genomes/GRCh38/cytoBand.txt)                                                                                                                                                                                |
 
 ## Loading hg38
 

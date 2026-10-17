@@ -54,18 +54,18 @@ The [build script](#reproduce-it-end-to-end) takes these files from
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) by URL, so there is
 nothing to download by hand.
 
-- the release's minigraph-cactus graph as a GFA:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
-- the assemblies:
-  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
-- the CAT gene annotation index, one GFF3 per haplotype:
-  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+| What it is                                            | File                                                                                                                                                                                |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The release's minigraph-cactus graph as a GFA         | [hprc-v2.1-mc-grch38.gfa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz)  |
+| The assemblies                                        | [assemblies_release2_v1.0.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv)            |
+| The CAT gene annotation index, one GFF3 per haplotype | [cat_genes_hprc_r2_v1.3.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- our tabix index files of the graph's haplotype walks and bubbles, with the
-  exact build recorded beside them: https://jbrowse.org/demos/hprc/README.txt
+| What it is                                                                                                  | File                                                    |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Our tabix index files of the graph's haplotype walks and bubbles, with the exact build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
 
 </details>
 

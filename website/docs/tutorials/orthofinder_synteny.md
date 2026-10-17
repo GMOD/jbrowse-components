@@ -54,16 +54,12 @@ Each set takes its protein FASTA and GFF3 files from one Ensembl division.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- **`vertebrates`**, Ensembl release 113:
-  https://ftp.ensembl.org/pub/release-113/
-- **`wheat`**, **`solanaceae`** and **`grasses`**, Ensembl Plants release 63:
-  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
-- **`drosophila`**, Ensembl Metazoa release 63:
-  https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/
-- **Sequence reports**, fetched from NCBI by accession: _T. timopheevii_
-  GCA_963921465.1, tomato GCA_000188115.5, and the non-melanogaster flies
-  GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and GCA_030788295.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/
+| What it is                                                                                                                                                                                                           | File                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **`vertebrates`**, Ensembl release 113                                                                                                                                                                               | [release-113/](https://ftp.ensembl.org/pub/release-113/)                    |
+| **`wheat`**, **`solanaceae`** and **`grasses`**, Ensembl Plants release 63                                                                                                                                           | [release-63/](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/)  |
+| **`drosophila`**, Ensembl Metazoa release 63                                                                                                                                                                         | [release-63/](https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/) |
+| **Sequence reports**, fetched from NCBI by accession: _T. timopheevii_ GCA_963921465.1, tomato GCA_000188115.5, and the non-melanogaster flies GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and GCA_030788295.1 | [GCA/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/)                       |
 
 ## The wheat set: six genomes of one polyploid history {#wheat}
 

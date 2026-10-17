@@ -69,9 +69,10 @@ wget -c $B.gbz.db
 <details>
 <summary>Other files (no download needed)</summary>
 
-- the base-level GFA:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
-- the finished files, for comparison: https://jbrowse.org/demos/hprc/README.txt
+| What it is                         | File                                                                                                                                                                               |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The base-level GFA                 | [hprc-v2.1-mc-grch38.gfa.gz](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz) |
+| The finished files, for comparison | [README.txt](https://jbrowse.org/demos/hprc/README.txt)                                                                                                                            |
 
 </details>
 

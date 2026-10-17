@@ -41,23 +41,19 @@ epigenomes.
 The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
 nothing to download by hand.
 
-- the nine ENCODE Broad HMM segmentation BEDs, one per cell type, merged into
-  the multi-row file below:
-  http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/
-- the Roadmap segmentations, fetched either individually or as the whole
-  127-epigenome tarball:
-  https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/
-- the row labels, tissue groups and tissue colors, `EID_metadata.tab`:
-  https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab
-- the state colors, since the Roadmap segmentations themselves have none:
-  https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab
+| What it is                                                                                           | File                                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The nine ENCODE Broad HMM segmentation BEDs, one per cell type, merged into the multi-row file below | [wgEncodeBroadHmm/](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)                                                                   |
+| The Roadmap segmentations, fetched either individually or as the whole 127-epigenome tarball         | [final/](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/)                                             |
+| The row labels, tissue groups and tissue colors, `EID_metadata.tab`                                  | [EID_metadata.tab](https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab)                                                                      |
+| The state colors, since the Roadmap segmentations themselves have none                               | [colormap_15_coreMarks.tab](https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- both merged files, rehosted as bigBeds so the tracks below load without the
-  build: https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb and
-  https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb
+| What it is                                                                        | File                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Both merged files, rehosted as bigBeds so the tracks below load without the build | [wgEncodeBroadHmm.multirow.bb](https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb)<br>[roadmap_15state_127epigenomes.bb](https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb) |
 
 </details>
 

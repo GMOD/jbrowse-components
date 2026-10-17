@@ -61,10 +61,10 @@ The [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) has
 lifted to dm6. The [build script](#reproduce-it-end-to-end) fetches these files,
 so there is nothing to download by hand.
 
-- the DGRP freeze-2 genotype calls:
-  https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
-- the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype
-  record: https://dgrpool.epfl.ch/phenotypes/1520/download
+| What it is                                                                       | File                                                                                                                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The DGRP freeze-2 genotype calls                                                 | [DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz](https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz) |
+| The `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype record | [download](https://dgrpool.epfl.ch/phenotypes/1520/download)                                                                                     |
 
 ## Building Fst, π and Tajima's D bigWigs with vcftools
 

@@ -44,12 +44,11 @@ BXD consensus genotypes and QTL scans from GeneNetwork
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the BXD consensus genotypes, 198 strains:
-  https://gn1.genenetwork.org/genotypes/BXD.geno
-- the coat-color scan (trait 11280), from GeneNetwork's mapping API:
-  https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280
-- the coat-color scores per strain, from GeneNetwork's sample-data API:
-  https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280
+| What it is                                                           | File                                                                                            |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| The BXD consensus genotypes, 198 strains                             | [BXD.geno](https://gn1.genenetwork.org/genotypes/BXD.geno)                                      |
+| The coat-color scan (trait 11280), from GeneNetwork's mapping API    | [mapping](https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280) |
+| The coat-color scores per strain, from GeneNetwork's sample-data API | [11280](https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280)                        |
 
 ## Reading GeneNetwork's BXD genotype file
 

@@ -51,21 +51,15 @@ All but the last file come from the ONT COLO829 open-data release and its
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- COLO829 tumor reads (ONT R10, haplotagged):
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
-- COLO829BL matched normal reads:
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
-- the somatic SV calls this page works from:
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz
-- mosdepth coverage regions, tumor:
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz
-- mosdepth coverage regions, normal:
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz
-- the GRCh38 build the CRAM decodes against, and the der(3) (derivative
-  chromosome 3) contig aligns to:
-  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
-- the COLO829 somatic SV truth set, lifted to GRCh38:
-  https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content
+| What it is                                                                                           | File                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| COLO829 tumor reads (ONT R10, haplotagged)                                                           | [COLO829_tumor.ht.cram](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram)                                                         |
+| COLO829BL matched normal reads                                                                       | [PAU59807.d052sup4305mCG_5hmCGvHg38.bam](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam)                        |
+| The somatic SV calls this page works from                                                            | [COLO829.wf-somatic-sv.vcf.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz)                                           |
+| Mosdepth coverage regions, tumor                                                                     | [COLO829_tumor.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz)                       |
+| Mosdepth coverage regions, normal                                                                    | [COLO829_normal.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz)                     |
+| The GRCh38 build the CRAM decodes against, and the der(3) (derivative chromosome 3) contig aligns to | [GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta) |
+| The COLO829 somatic SV truth set, lifted to GRCh38                                                   | [content](https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content)                                                                             |
 
 ## COLO829 and its coverage tracks
 

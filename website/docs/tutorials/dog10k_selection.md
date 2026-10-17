@@ -57,13 +57,11 @@ directly over HTTP with no local copy of either callset.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- the phased imputation panel, scored window by window for the Fst scan:
-  https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
-- the SNV/indel callset the _IGF1_ window is sliced from:
-  https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
-- the sample table, which the scripts derive the breed groups and the wolf
-  outgroup from:
-  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
+| What it is                                                                             | File                                                                                                                                                            |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The phased imputation panel, scored window by window for the Fst scan                  | [AutoAndXPAR.Dog10K.phased.bcf](https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf)                                |
+| The SNV/indel callset the _IGF1_ window is sliced from                                 | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The sample table, which the scripts derive the breed groups and the wolf outgroup from | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 

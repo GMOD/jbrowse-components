@@ -47,22 +47,16 @@ the annotation and sequence report for each genome.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- human, GRCh38.p14:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/
-- chimpanzee:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/775/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/
-- bonobo:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/289/425/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/
-- gorilla:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/281/585/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/
-- Sumatran orangutan:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/655/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/
-- Bornean orangutan:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/625/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/
-- siamang:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/
-- rhesus macaque, T2T-MMU8v2.0:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/
+| What it is                   | File                                                                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Human, GRCh38.p14            | [GCF_000001405.40_GRCh38.p14/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/)                         |
+| Chimpanzee                   | [GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/858/775/GCF_028858775.2_NHGRI_mPanTro3-v2.1_pri/) |
+| Bonobo                       | [GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/289/425/GCF_029289425.2_NHGRI_mPanPan1-v2.1_pri/) |
+| Gorilla                      | [GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/029/281/585/GCF_029281585.2_NHGRI_mGorGor1-v2.1_pri/) |
+| Sumatran orangutan           | [GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/655/GCF_028885655.2_NHGRI_mPonAbe1-v2.1_pri/) |
+| Bornean orangutan            | [GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/625/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/) |
+| Siamang                      | [GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/) |
+| Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2_T2T-MMU8v2.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/)                       |
 
 ## An ortholog table joined on gene names
 

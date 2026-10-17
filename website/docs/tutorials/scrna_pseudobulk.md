@@ -40,10 +40,10 @@ writing the BAM to disk.
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the barcoded alignments, which the script reads by region over HTTPS:
-  https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
-- the filtered feature-barcode matrix the clustering runs on:
-  https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5
+| What it is                                                           | File                                                                                                                                              |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The barcoded alignments, which the script reads by region over HTTPS | [5k_pbmc_v3_possorted_genome_bam.bam](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam)           |
+| The filtered feature-barcode matrix the clustering runs on           | [5k_pbmc_v3_filtered_feature_bc_matrix.h5](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5) |
 
 ## Loading GRCh38
 

@@ -53,10 +53,10 @@ Nothing to download: the agent fetches both sequences itself.
 <details>
 <summary>The files</summary>
 
-- _D. simulans_ sequence, which the agent downloads to align:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
-- _D. mauritiana_ sequence, which the agent downloads to align:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz
+| What it is                                                   | File                                                                                                                |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| _D. simulans_ sequence, which the agent downloads to align   | [GCF_016746395.2.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz) |
+| _D. mauritiana_ sequence, which the agent downloads to align | [GCF_004382145.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz) |
 
 </details>
 

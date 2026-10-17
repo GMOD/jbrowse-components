@@ -33,33 +33,25 @@ release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
-  no CORS headers and so cannot be loaded as a track:
-  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
-- the same sample aligned to T2T-CHM13:
-  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
+| What it is                                                                                                                        | File                                                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves no CORS headers and so cannot be loaded as a track | [GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam)    |
+| The same sample aligned to T2T-CHM13                                                                                              | [GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- Umap k100 multi-read mappability:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw
-- gnomAD v3 mean genome coverage:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw
-- GIAB's low-mappability and segmental-duplication regions:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/GIAB/alllowmapandsegdupregions.bb
-- ENCODE's blacklist:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/encBlacklist.bb
-- the GRC's exclusion list:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/grcExclusions.bb
-- UCSC's problematic-regions comments:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/comments.bb
-- the DGV merged CNV catalogue:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb
-- the 1000 Genomes ONT long-read SV callset:
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb
-- NA12878 at 30x, GRCh38, the read track added to the session:
-  https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
+| What it is                                                  | File                                                                                                                                  |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Umap k100 multi-read mappability                            | [k100.Umap.MultiTrackMappability.bw](https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw) |
+| GnomAD v3 mean genome coverage                              | [gnomad.coverage.mean.bw](https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw)                |
+| GIAB's low-mappability and segmental-duplication regions    | [alllowmapandsegdupregions.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/GIAB/alllowmapandsegdupregions.bb)               |
+| ENCODE's blacklist                                          | [encBlacklist.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/encBlacklist.bb)                                              |
+| The GRC's exclusion list                                    | [grcExclusions.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/grcExclusions.bb)                                            |
+| UCSC's problematic-regions comments                         | [comments.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/comments.bb)                                                      |
+| The DGV merged CNV catalogue                                | [dgvMerged.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb)                                                            |
+| The 1000 Genomes ONT long-read SV callset                   | [1kgOnt.bb](https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb)                                                                 |
+| NA12878 at 30x, GRCh38, the read track added to the session | [NA12878.final.cram](https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram)                |
 
 </details>
 

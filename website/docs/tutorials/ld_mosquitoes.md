@@ -45,18 +45,12 @@ Ag1000G phase 2 AR1
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the phased haplotypes and their sample list for chromosome arm 2L, which the
-  commands subset to one population at a time:
-  https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/
-- the sample metadata the population lists come from, `CMgam` (Cameroon) and
-  `GAgam` (Gabon):
-  https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt
-- the AgamP4 reference and its gene models, which the gene track reads:
-  https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
-- the 2La tag SNPs, the ~200 positions whose allele marks which arrangement a
-  chromosome has, which each mosquito's karyotype is scored from
-  ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
-  https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
+| What it is                                                                                                                                                                                             | File                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| The phased haplotypes and their sample list for chromosome arm 2L, which the commands subset to one population at a time                                                                               | [shapeit/](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/)                    |
+| The sample metadata the population lists come from, `CMgam` (Cameroon) and `GAgam` (Gabon)                                                                                                             | [samples.meta.txt](https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt)            |
+| The AgamP4 reference and its gene models, which the gene track reads                                                                                                                                   | [genome/](https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/)                                          |
+| The 2La tag SNPs, the ~200 positions whose allele marks which arrangement a chromosome has, which each mosquito's karyotype is scored from ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)) | [2La_targets.txt](https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt) |
 
 ## Loading the AgamP4 assembly and genes
 

@@ -57,14 +57,11 @@ called natively on GRCh38.
 The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
 nothing to download by hand.
 
-- phased chromosome 2:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
-- the release's own unrelated set, whose SAMPLE_NAME column is
-  `unrelated.samples`:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/1000G_2504_high_coverage.sequence.index
-- populations and superpopulations, narrowed to that unrelated set for
-  `panel.samples` (EUR) and `rest.samples` (everything else):
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
+| What it is                                                                                                                      | File                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phased chromosome 2                                                                                                             | [1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz) |
+| The release's own unrelated set, whose SAMPLE_NAME column is `unrelated.samples`                                                | [1000G_2504_high_coverage.sequence.index](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/1000G_2504_high_coverage.sequence.index)                                                                                                                 |
+| Populations and superpopulations, narrowed to that unrelated set for `panel.samples` (EUR) and `rest.samples` (everything else) | [20130606_g1k_3202_samples_ped_population.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt)                                                                                                       |
 
 ## Loading the hg38 assembly
 

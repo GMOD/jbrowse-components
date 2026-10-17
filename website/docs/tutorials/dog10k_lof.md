@@ -53,17 +53,13 @@ directly over HTTP with no local copy of the 397 GB callset.
 The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
 so there is nothing to download by hand.
 
-- the SNV/indel callset the gene is sliced from, 397 GB over 1,987 canids:
-  https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
-- the sample table, breed and category per animal:
-  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
-- the reference sequence the stop codon is derived from, over UCSC's canFam4
-  REST API:
-  https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr30;start=38258000;end=38265000
-- the RefSeq gene structure that same derivation reads exon boundaries from:
-  https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000
-- the 15 published CRAMs the copy-number track validates callset depth against:
-  https://kiddlabshare.med.umich.edu/dog10K/cram-share/
+| What it is                                                                          | File                                                                                                                                                            |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The SNV/indel callset the gene is sliced from, 397 GB over 1,987 canids             | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The sample table, breed and category per animal                                     | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
+| The reference sequence the stop codon is derived from, over UCSC's canFam4 REST API | [sequence](https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr30;start=38258000;end=38265000)                                                 |
+| The RefSeq gene structure that same derivation reads exon boundaries from           | [track](https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000)                               |
+| The 15 published CRAMs the copy-number track validates callset depth against        | [cram-share/](https://kiddlabshare.med.umich.edu/dog10K/cram-share/)                                                                                            |
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 

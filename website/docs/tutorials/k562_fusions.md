@@ -57,23 +57,16 @@ breakpoints on hg19.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- K562 PacBio Iso-Seq, ENCODE `ENCFF433YKW`:
-  https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF092NLB`:
-  https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF515YRZ`:
-  https://www.encodeproject.org/files/ENCFF515YRZ/@@download/ENCFF515YRZ.bam
-- K562 PacBio Iso-Seq, ENCODE `ENCFF475XQX`:
-  https://www.encodeproject.org/files/ENCFF475XQX/@@download/ENCFF475XQX.bam
-- K562 STAR-Fusion calls (DepMap 24Q4, `OmicsFusionFiltered.csv`):
-  https://ndownloader.figshare.com/files/51065693
-- K562 copy-number segments (DepMap 24Q4 WGS, `OmicsCNSegmentsProfile.csv`):
-  https://ndownloader.figshare.com/files/51065333
-- K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to
-  hg38 by the build script):
-  https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz
-- the hg19-to-hg38 chain the lift uses:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz
+| What it is                                                                                             | File                                                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| K562 PacBio Iso-Seq, ENCODE `ENCFF433YKW`                                                              | [ENCFF433YKW.bam](https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam)                 |
+| K562 PacBio Iso-Seq, ENCODE `ENCFF092NLB`                                                              | [ENCFF092NLB.bam](https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam)                 |
+| K562 PacBio Iso-Seq, ENCODE `ENCFF515YRZ`                                                              | [ENCFF515YRZ.bam](https://www.encodeproject.org/files/ENCFF515YRZ/@@download/ENCFF515YRZ.bam)                 |
+| K562 PacBio Iso-Seq, ENCODE `ENCFF475XQX`                                                              | [ENCFF475XQX.bam](https://www.encodeproject.org/files/ENCFF475XQX/@@download/ENCFF475XQX.bam)                 |
+| K562 STAR-Fusion calls (DepMap 24Q4, `OmicsFusionFiltered.csv`)                                        | [51065693](https://ndownloader.figshare.com/files/51065693)                                                   |
+| K562 copy-number segments (DepMap 24Q4 WGS, `OmicsCNSegmentsProfile.csv`)                              | [51065333](https://ndownloader.figshare.com/files/51065333)                                                   |
+| K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to hg38 by the build script) | [ENCFF863MPP.vcf.gz](https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz)           |
+| The hg19-to-hg38 chain the lift uses                                                                   | [hg19ToHg38.over.chain.gz](https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz) |
 
 ## Cutting K562 out of DepMap and lifting its breakpoints to hg38
 

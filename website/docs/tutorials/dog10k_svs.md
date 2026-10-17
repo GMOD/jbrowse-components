@@ -55,31 +55,17 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
 so there is nothing to download by hand.
 
-- the Zenodo Paragraph callset, 5.9 GB, with the _NHEJ1_ deletion and the
-  _RNASE1_ insertion:
-  https://zenodo.org/api/records/14968874/files/Dog10k_manta_paragraph.vcf.gz/content
-- the Michigan Manta aggregate callset, 1.08 GB, with the _AMY2B_ duplication
-  and the _FGF4_ intron records:
-  https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
-- the sample table, breed and category per animal, behind every figure on this
-  page:
-  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
-- OMIA's own dump, curating the Collie eye anomaly record independently of
-  either callset: https://omia.org/static/omia.sql.gz
-- the canFam3-to-canFam4 chain that lifts OMIA's coordinates:
-  https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCanFam4.over.chain.gz
-- the `UU_Cfam_GSD_1.0` gene annotation from
-  [genomes.jbrowse.org's canFam4](https://genomes.jbrowse.org/ucsc/canFam4/),
-  checking the _FGF4_ records against the gene's introns and drawing the
-  parent-gene track in the synteny figure:
-  https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
-- the CFA18 retrocopy, MF040222, fetched from GenBank:
-  https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040222&rettype=fasta&retmode=text
-- the CFA12 retrocopy, MF040221, fetched from GenBank:
-  https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040221&rettype=fasta&retmode=text
-- the _FGF4_ parent-locus sequence the two retrocopies are aligned against, over
-  UCSC's canFam4 REST API:
-  https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr18;start=48865000;end=48876000
+| What it is                                                                                                                                                                                                                            | File                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The Zenodo Paragraph callset, 5.9 GB, with the _NHEJ1_ deletion and the _RNASE1_ insertion                                                                                                                                            | [content](https://zenodo.org/api/records/14968874/files/Dog10k_manta_paragraph.vcf.gz/content)                                                                  |
+| The Michigan Manta aggregate callset, 1.08 GB, with the _AMY2B_ duplication and the _FGF4_ intron records                                                                                                                             | [SV-genotype-v2.merge.agg_only.08032022.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz)    |
+| The sample table, breed and category per animal, behind every figure on this page                                                                                                                                                     | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
+| OMIA's own dump, curating the Collie eye anomaly record independently of either callset                                                                                                                                               | [omia.sql.gz](https://omia.org/static/omia.sql.gz)                                                                                                              |
+| The canFam3-to-canFam4 chain that lifts OMIA's coordinates                                                                                                                                                                            | [canFam3ToCanFam4.over.chain.gz](https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCanFam4.over.chain.gz)                                    |
+| The `UU_Cfam_GSD_1.0` gene annotation from [genomes.jbrowse.org's canFam4](https://genomes.jbrowse.org/ucsc/canFam4/), checking the _FGF4_ records against the gene's introns and drawing the parent-gene track in the synteny figure | [ncbiRefSeq.gff.gz](https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz)                                                                                         |
+| The CFA18 retrocopy, MF040222, fetched from GenBank                                                                                                                                                                                   | [efetch.fcgi](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040222&rettype=fasta&retmode=text)                                      |
+| The CFA12 retrocopy, MF040221, fetched from GenBank                                                                                                                                                                                   | [efetch.fcgi](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MF040221&rettype=fasta&retmode=text)                                      |
+| The _FGF4_ parent-locus sequence the two retrocopies are aligned against, over UCSC's canFam4 REST API                                                                                                                                | [sequence](https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr18;start=48865000;end=48876000)                                                 |
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 

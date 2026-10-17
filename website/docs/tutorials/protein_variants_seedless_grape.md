@@ -41,12 +41,11 @@ URL.
 <details>
 <summary>The files</summary>
 
-- the Pinot Noir 40024 reference and its NCBI RefSeq genes, through UCSC's
-  GenArk hub GCF_030704535.1:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/
-- the AlphaFold model of A0A217EJJ0, with its per-residue confidence:
-  https://alphafold.ebi.ac.uk/entry/A0A217EJJ0
-- UniRef, the rows of the alignment: https://www.uniprot.org/help/uniref
+| What it is                                                                                          | File                                                                                      |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| The Pinot Noir 40024 reference and its NCBI RefSeq genes, through UCSC's GenArk hub GCF_030704535.1 | [GCF_030704535.1/](https://hgdownload.soe.ucsc.edu/hubs/GCF/030/704/535/GCF_030704535.1/) |
+| The AlphaFold model of A0A217EJJ0, with its per-residue confidence                                  | [A0A217EJJ0](https://alphafold.ebi.ac.uk/entry/A0A217EJJ0)                                |
+| UniRef, the rows of the alignment                                                                   | [uniref](https://www.uniprot.org/help/uniref)                                             |
 
 </details>
 

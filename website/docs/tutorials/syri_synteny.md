@@ -59,18 +59,14 @@ the first three the ones a figure in the plotsr paper stacks.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- Col-0, GCF_000001735.4:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
-- Ler, GCA_902460285.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/285/GCA_902460285.1_Arabidopsis_thaliana_Ler/
-- Cvi-0, GCA_902460275.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/275/GCA_902460275.1_Arabidopsis_thaliana_Cvi-0/
-- Eri-1, GCA_902460315.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/315/GCA_902460315.1_Arabidopsis_thaliana_Eri-1/
-- Kyo, GCA_902460305.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/305/GCA_902460305.1_Arabidopsis_thaliana_Kyo/
-- Sha, GCA_902460295.1:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/295/GCA_902460295.1_Arabidopsis_thaliana_Sha/
+| What it is             | File                                                                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Col-0, GCF_000001735.4 | [GCF_000001735.4_TAIR10.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/)                                     |
+| Ler, GCA_902460285.1   | [GCA_902460285.1_Arabidopsis_thaliana_Ler/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/285/GCA_902460285.1_Arabidopsis_thaliana_Ler/)     |
+| Cvi-0, GCA_902460275.1 | [GCA_902460275.1_Arabidopsis_thaliana_Cvi-0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/275/GCA_902460275.1_Arabidopsis_thaliana_Cvi-0/) |
+| Eri-1, GCA_902460315.1 | [GCA_902460315.1_Arabidopsis_thaliana_Eri-1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/315/GCA_902460315.1_Arabidopsis_thaliana_Eri-1/) |
+| Kyo, GCA_902460305.1   | [GCA_902460305.1_Arabidopsis_thaliana_Kyo/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/305/GCA_902460305.1_Arabidopsis_thaliana_Kyo/)     |
+| Sha, GCA_902460295.1   | [GCA_902460295.1_Arabidopsis_thaliana_Sha/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/902/460/295/GCA_902460295.1_Arabidopsis_thaliana_Sha/)     |
 
 ## Aligning a pair and running SyRI
 

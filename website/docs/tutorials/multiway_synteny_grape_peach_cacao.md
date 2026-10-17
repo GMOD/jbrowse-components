@@ -52,20 +52,15 @@ Seven RefSeq assemblies, one per species, each fetched by accession with the
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- grape:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/
-- peach:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/346/465/GCF_000346465.2_Prunus_persica_NCBIv2/
-- cacao:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/208/745/GCF_000208745.1_Criollo_cocoa_genome_V2/
-- arabidopsis:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
-- poplar:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/775/GCF_000002775.5_P.trichocarpa_v4.1/
-- tomato:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/
-- citrus:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/
+| What it is  | File                                                                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Grape       | [GCF_030704535.1_ASM3070453v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/)                       |
+| Peach       | [GCF_000346465.2_Prunus_persica_NCBIv2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/346/465/GCF_000346465.2_Prunus_persica_NCBIv2/)     |
+| Cacao       | [GCF_000208745.1_Criollo_cocoa_genome_V2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/208/745/GCF_000208745.1_Criollo_cocoa_genome_V2/) |
+| Arabidopsis | [GCF_000001735.4_TAIR10.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/)                               |
+| Poplar      | [GCF_000002775.5_P.trichocarpa_v4.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/002/775/GCF_000002775.5_P.trichocarpa_v4.1/)           |
+| Tomato      | [GCF_036512215.1_SLM_r2.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/)                               |
+| Citrus      | [GCF_000493195.1_Citrus_clementina_v1.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/)   |
 
 ## What a `.blocks` file is
 

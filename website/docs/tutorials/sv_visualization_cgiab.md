@@ -73,37 +73,30 @@ there is nothing to download by hand.
 
 The reference and the reads:
 
-- the C-GIAB reference build (GRCh38 with decoys and masked regions):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz
-- the tumor/normal PacBio HiFi reads (Revio run, 116x tumor, 35x normal):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/
+| What it is                                                             | File                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The C-GIAB reference build (GRCh38 with decoys and masked regions)     | [GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz) |
+| The tumor/normal PacBio HiFi reads (Revio run, 116x tumor, 35x normal) | [PacBio_Revio_20240125/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/)                                                                                                                 |
 
 The somatic call sets, one per group that published one:
 
-- the V0.5 draft benchmark SV and CNV calls:
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/
-- Severus somatic SVs (HiFi):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz
-- the minda ensemble SVs (HiFi, ONT and Illumina callers):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf
-- DRAGEN's somatic SV and CNV calls (Illumina):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/
-- NYGC's somatic SVs, annotated CNV segments and BIC-seq2 log2 ratio (Illumina):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/
-- Wakhan's haplotype-specific copy number and LOH segments (HiFi phased with
-  Hi-C):
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/
-- the earlier Wakhan run's Clair3 tumor small-variant calls:
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz
-- the normal's germline calls:
-  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+| What it is                                                                       | File                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The V0.5 draft benchmark SV and CNV calls                                        | [NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/)                    |
+| Severus somatic SVs (HiFi)                                                       | [severus_somatic.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz)                                                       |
+| The minda ensemble SVs (HiFi, ONT and Illumina callers)                          | [HG008_minda_ensemble.vcf](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf)                                                            |
+| DRAGEN's somatic SV and CNV calls (Illumina)                                     | [standard/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/)                                                                                          |
+| NYGC's somatic SVs, annotated CNV segments and BIC-seq2 log2 ratio (Illumina)    | [GRCh38-GIABv3/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/)                                                                                 |
+| Wakhan's haplotype-specific copy number and LOH segments (HiFi phased with Hi-C) | [bed_output/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/)                                                                                     |
+| The earlier Wakhan run's Clair3 tumor small-variant calls                        | [merge_output_tumor.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz)                                                  |
+| The normal's germline calls                                                      | [HG008-N-P.GRCh38.deepvariant.phased.vcf.gz](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz) |
 
 The assemblies:
 
-- the T2T tumor assembly, v3.2:
-  https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
-- the matched normal assembly, v6.3, which the build script leaves out:
-  https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
+| What it is                                                           | File                                                                                                                                                |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The T2T tumor assembly, v3.2                                         | [HG008T_v3.2.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz) |
+| The matched normal assembly, v6.3, which the build script leaves out | [HG008N_v6.3.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz) |
 
 ## HG008, a pancreatic tumor and its matched normal
 

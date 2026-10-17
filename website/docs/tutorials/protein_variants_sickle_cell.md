@@ -39,16 +39,13 @@ read these files by URL.
 <details>
 <summary>The files</summary>
 
-- sickle haemoglobin, deoxy form, PDB 2HBS:
-  https://files.rcsb.org/download/2HBS.cif
-- the NHGRI-EBI GWAS Catalog, which UCSC distributes as its GWAS Catalog track
-  and the hosted hg38 config loads: https://www.ebi.ac.uk/gwas/
-- the 1000 Genomes 30x callset for chr11, 3,202 genomes:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/
-- the population and superpopulation of each of those genomes:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
-- NCBI's ortholog report, the rows of the alignment:
-  https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
+| What it is                                                                                                    | File                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sickle haemoglobin, deoxy form, PDB 2HBS                                                                      | [2HBS.cif](https://files.rcsb.org/download/2HBS.cif)                                                                                                                              |
+| The NHGRI-EBI GWAS Catalog, which UCSC distributes as its GWAS Catalog track and the hosted hg38 config loads | [gwas/](https://www.ebi.ac.uk/gwas/)                                                                                                                                              |
+| The 1000 Genomes 30x callset for chr11, 3,202 genomes                                                         | [20220422_3202_phased_SNV_INDEL_SV/](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/)             |
+| The population and superpopulation of each of those genomes                                                   | [20130606_g1k_3202_samples_ped_population.txt](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt) |
+| NCBI's ortholog report, the rows of the alignment                                                             | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/)                                                                                               |
 
 </details>
 

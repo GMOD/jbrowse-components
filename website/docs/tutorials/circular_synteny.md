@@ -53,16 +53,17 @@ density bigWig the build script makes of them.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- RefSeq curated genes, hg38:
-  https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
-- RefSeq curated genes, mm39:
-  https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz
+| What it is                 | File                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| RefSeq curated genes, hg38 | [ncbiRefSeqCurated.gff.gz](https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz) |
+| RefSeq curated genes, mm39 | [ncbiRefSeqCurated.gff.gz](https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the chain:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
+| What it is | File                                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| The chain  | [hg38ToMm39.over.chain.gz](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz) |
 
 </details>
 

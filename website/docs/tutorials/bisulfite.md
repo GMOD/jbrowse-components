@@ -53,11 +53,10 @@ European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the TAIR10 reference the reads align to, fetched by accession with the
-  `datasets` CLI:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
-- the WGBS run's paired-end reads:
-  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/
+| What it is                                                                            | File                                                                                                            |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| The TAIR10 reference the reads align to, fetched by accession with the `datasets` CLI | [GCF_000001735.4_TAIR10.1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/) |
+| The WGBS run's paired-end reads                                                       | [DRR029742/](https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/)                                            |
 
 ## What bisulfite data looks like
 

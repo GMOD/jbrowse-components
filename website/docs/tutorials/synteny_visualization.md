@@ -51,12 +51,11 @@ RefSeq genes.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- 26695 GCF_000307795.1 sequence:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz
-- CHC155 GCF_025998455.1 sequence:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz
-- J99 GCF_000982695.1 sequence:
-  https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz
+| What it is                      | File                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 26695 GCF_000307795.1 sequence  | [GCF_000307795.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz) |
+| CHC155 GCF_025998455.1 sequence | [GCF_025998455.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz) |
+| J99 GCF_000982695.1 sequence    | [GCF_000982695.1.fa.gz](https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz) |
 
 ## Aligning the assemblies
 

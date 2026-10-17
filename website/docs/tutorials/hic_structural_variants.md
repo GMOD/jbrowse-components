@@ -37,18 +37,14 @@ files by URL.
 <details>
 <summary>The files</summary>
 
-- GM12878 in situ Hi-C (ENCSR410MDC):
-  https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
-- K562 in situ Hi-C (ENCSR545YBD):
-  https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic
-- GM12878 contact domains (Arrowhead):
-  https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz
-- GM12878 loops (HiCCUPS):
-  https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz
-- GM12878 compartment eigenvector:
-  https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
-- K562 compartment eigenvector:
-  https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
+| What it is                          | File                                                                                                                                |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| GM12878 in situ Hi-C (ENCSR410MDC)  | [ENCFF053VBX.hic](https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic)           |
+| K562 in situ Hi-C (ENCSR545YBD)     | [ENCFF080DPJ.hic](https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic)           |
+| GM12878 contact domains (Arrowhead) | [ENCFF301CUL.bedpe.gz](https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz) |
+| GM12878 loops (HiCCUPS)             | [ENCFF712NKX.bedpe.gz](https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz) |
+| GM12878 compartment eigenvector     | [ENCFF661LPK.bigWig](https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig)     |
+| K562 compartment eigenvector        | [ENCFF699RSL.bigWig](https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig)     |
 
 </details>
 

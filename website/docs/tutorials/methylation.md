@@ -47,16 +47,11 @@ from these files.
 <details>
 <summary>The files</summary>
 
-- the HP1 bedMethyl (per-CpG methylation fractions) from the
-  `wf-human-variation` sup run on HG002, restricted to `m` (5mC) rows and cut to
-  the SNRPN locus, and to chr15:22,000,000-27,000,000 for the last section:
-  https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
-- the HP2 bedMethyl from that same run:
-  https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
-- the reads, from the HG002 sup basecalls, sliced to the same locus and
-  haplotagged with `whatshap haplotag` against the phased SNP calls from that
-  same `wf-human-variation` run:
-  https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
+| What it is                                                                                                                                                                                                         | File                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The HP1 bedMethyl (per-CpG methylation fractions) from the `wf-human-variation` sup run on HG002, restricted to `m` (5mC) rows and cut to the SNRPN locus, and to chr15:22,000,000-27,000,000 for the last section | [SAMPLE.wf_mods.1.bedmethyl.gz](https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz) |
+| The HP2 bedMethyl from that same run                                                                                                                                                                               | [SAMPLE.wf_mods.2.bedmethyl.gz](https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz) |
+| The reads, from the HG002 sup basecalls, sliced to the same locus and haplotagged with `whatshap haplotag` against the phased SNP calls from that same `wf-human-variation` run                                    | [PAO83395.pass.cram](https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram)                                                          |
 
 </details>
 

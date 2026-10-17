@@ -35,10 +35,10 @@ needed.
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- primary-tumor segment calls for 1104 tumors, queried and downloaded through
-  the GDC API: https://api.gdc.cancer.gov/files
-- per-tumor clinical annotation, from harmonized case fields and each case's
-  clinical XML: https://api.gdc.cancer.gov/cases
+| What it is                                                                              | File                                      |
+| --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Primary-tumor segment calls for 1104 tumors, queried and downloaded through the GDC API | [files](https://api.gdc.cancer.gov/files) |
+| Per-tumor clinical annotation, from harmonized case fields and each case's clinical XML | [cases](https://api.gdc.cancer.gov/cases) |
 
 ## The segment BED format, one call per line
 

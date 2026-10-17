@@ -30,10 +30,9 @@ Nothing to download: the track configs below read these files by URL.
 <details>
 <summary>The files</summary>
 
-- the paired-end stranded RNA-seq alignments behind every short-read figure on
-  this page, from the sample files listed at
-  [RSeQC](https://rseqc.sourceforge.net/):
-  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam
+| What it is                                                                                                                                                      | File                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The paired-end stranded RNA-seq alignments behind every short-read figure on this page, from the sample files listed at [RSeQC](https://rseqc.sourceforge.net/) | [Pairend_StrandSpecific_51mer_Human_hg19.bam](https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam) |
 
 </details>
 

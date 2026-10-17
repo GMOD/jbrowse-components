@@ -22,6 +22,9 @@
     margin: 1.25rem 0;
     font-size: 0.9rem;
   }
+  .prose :global(td a) {
+    overflow-wrap: anywhere;
+  }
   .prose :global(th),
   .prose :global(td) {
     border: 1px solid var(--color-border);
@@ -72,24 +75,6 @@
   .prose :global(h3:hover .heading-anchor),
   .prose :global(h4:hover .heading-anchor) {
     opacity: 1;
-  }
-
-  .prose :global(.data-urls-toggle) {
-    margin-right: 0.4rem;
-  }
-  .prose :global(.data-urls-label) {
-    font-size: 0.85rem;
-    cursor: pointer;
-  }
-  .prose :global(.data-urls .url-full) {
-    display: none;
-    word-break: break-all;
-  }
-  .prose :global(.data-urls-toggle:checked ~ .data-urls .url-short) {
-    display: none;
-  }
-  .prose :global(.data-urls-toggle:checked ~ .data-urls .url-full) {
-    display: inline;
   }
 
   /* The docs' link base: color only, so the prose rule above is what adds the

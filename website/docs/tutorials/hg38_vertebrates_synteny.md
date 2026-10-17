@@ -47,28 +47,23 @@ hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- UCSC's liftOver folder for hg38, one `hg38To<Genome>.over.chain.gz` per
-  genome: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/
+| What it is                                                                     | File                                                                   |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| UCSC's liftOver folder for hg38, one `hg38To<Genome>.over.chain.gz` per genome | [liftOver/](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/) |
 
 <details>
 <summary>The same chains as indexed alignments (no download needed)</summary>
 
-- chimpanzee, [panTro6](https://genomes.jbrowse.org/ucsc/panTro6/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz
-- gorilla, [gorGor6](https://genomes.jbrowse.org/ucsc/gorGor6/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToGorGor6.over.pif.gz
-- orangutan, [ponAbe3](https://genomes.jbrowse.org/ucsc/ponAbe3/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPonAbe3.over.pif.gz
-- rhesus macaque, [rheMac10](https://genomes.jbrowse.org/ucsc/rheMac10/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToRheMac10.over.pif.gz
-- marmoset, [calJac4](https://genomes.jbrowse.org/ucsc/calJac4/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz
-- mouse, [mm39](https://genomes.jbrowse.org/ucsc/mm39/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
-- dog, [canFam6](https://genomes.jbrowse.org/ucsc/canFam6/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCanFam6.over.pif.gz
-- cow, [bosTau9](https://genomes.jbrowse.org/ucsc/bosTau9/):
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz
+| What it is                                                             | File                                                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Chimpanzee, [panTro6](https://genomes.jbrowse.org/ucsc/panTro6/)       | [hg38ToPanTro6.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz)   |
+| Gorilla, [gorGor6](https://genomes.jbrowse.org/ucsc/gorGor6/)          | [hg38ToGorGor6.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToGorGor6.over.pif.gz)   |
+| Orangutan, [ponAbe3](https://genomes.jbrowse.org/ucsc/ponAbe3/)        | [hg38ToPonAbe3.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPonAbe3.over.pif.gz)   |
+| Rhesus macaque, [rheMac10](https://genomes.jbrowse.org/ucsc/rheMac10/) | [hg38ToRheMac10.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToRheMac10.over.pif.gz) |
+| Marmoset, [calJac4](https://genomes.jbrowse.org/ucsc/calJac4/)         | [hg38ToCalJac4.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz)   |
+| Mouse, [mm39](https://genomes.jbrowse.org/ucsc/mm39/)                  | [hg38ToMm39.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz)         |
+| Dog, [canFam6](https://genomes.jbrowse.org/ucsc/canFam6/)              | [hg38ToCanFam6.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCanFam6.over.pif.gz)   |
+| Cow, [bosTau9](https://genomes.jbrowse.org/ucsc/bosTau9/)              | [hg38ToBosTau9.over.pif.gz](https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz)   |
 
 </details>
 

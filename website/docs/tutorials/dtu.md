@@ -43,28 +43,17 @@ with RSEM against GENCODE v29.
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- eight RSEM per-transcript quantification tables, the four muscle donors then
-  the four liver donors:
-  https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv,
-  https://www.encodeproject.org/files/ENCFF172SLW/@@download/ENCFF172SLW.tsv,
-  https://www.encodeproject.org/files/ENCFF140GJI/@@download/ENCFF140GJI.tsv,
-  https://www.encodeproject.org/files/ENCFF576DOG/@@download/ENCFF576DOG.tsv,
-  https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv,
-  https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv,
-  https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv,
-  https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv
-- the GENCODE v29 annotation those quantifications were made against:
-  https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
+| What it is                                                                                                      | File                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Eight RSEM per-transcript quantification tables, the four muscle donors then the four liver donors: , , , , , , | [ENCFF353NZM.tsv](https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv)<br>[ENCFF172SLW.tsv](https://www.encodeproject.org/files/ENCFF172SLW/@@download/ENCFF172SLW.tsv)<br>[ENCFF140GJI.tsv](https://www.encodeproject.org/files/ENCFF140GJI/@@download/ENCFF140GJI.tsv)<br>[ENCFF576DOG.tsv](https://www.encodeproject.org/files/ENCFF576DOG/@@download/ENCFF576DOG.tsv)<br>[ENCFF996LRE.tsv](https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv)<br>[ENCFF641ADT.tsv](https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv)<br>[ENCFF392VYD.tsv](https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv)<br>[ENCFF383KWZ.tsv](https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv) |
+| The GENCODE v29 annotation those quantifications were made against                                              | [gencode.v29.annotation.gff3.gz](https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the four coverage bigWigs the demo's track config loads, one donor per tissue,
-  plus and minus strand:
-  https://www.encodeproject.org/files/ENCFF007ZBY/@@download/ENCFF007ZBY.bigWig,
-  https://www.encodeproject.org/files/ENCFF518WGP/@@download/ENCFF518WGP.bigWig,
-  https://www.encodeproject.org/files/ENCFF565QRM/@@download/ENCFF565QRM.bigWig,
-  https://www.encodeproject.org/files/ENCFF253OSP/@@download/ENCFF253OSP.bigWig
+| What it is                                                                                                | File                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The four coverage bigWigs the demo's track config loads, one donor per tissue, plus and minus strand: , , | [ENCFF007ZBY.bigWig](https://www.encodeproject.org/files/ENCFF007ZBY/@@download/ENCFF007ZBY.bigWig)<br>[ENCFF518WGP.bigWig](https://www.encodeproject.org/files/ENCFF518WGP/@@download/ENCFF518WGP.bigWig)<br>[ENCFF565QRM.bigWig](https://www.encodeproject.org/files/ENCFF565QRM/@@download/ENCFF565QRM.bigWig)<br>[ENCFF253OSP.bigWig](https://www.encodeproject.org/files/ENCFF253OSP/@@download/ENCFF253OSP.bigWig) |
 
 </details>
 

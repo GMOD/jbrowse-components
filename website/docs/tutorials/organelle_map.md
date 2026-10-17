@@ -43,10 +43,10 @@ NC_012920.1 is the revised Cambridge Reference Sequence of the human
 mitochondrion (Andrews et al. 1999). The commands below fetch both files from
 NCBI, so there is nothing to download by hand.
 
-- the sequence as FASTA:
-  https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_012920.1&rettype=fasta
-- the annotation as GFF3:
-  https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_012920.1
+| What it is             | File                                                                                                             |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| The sequence as FASTA  | [efetch.fcgi](https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_012920.1&rettype=fasta) |
+| The annotation as GFF3 | [viewer.cgi](https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_012920.1)              |
 
 ## Downloading the sequence and its genes
 

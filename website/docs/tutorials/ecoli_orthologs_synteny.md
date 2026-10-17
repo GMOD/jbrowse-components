@@ -53,16 +53,13 @@ under the same accessions (MG1655 is the strain those pages call K12). The
 [build script](#reproduce-it-end-to-end) pins and fetches every accession, so
 there is nothing to download by hand; the anchor and the four Shigella are:
 
-- K-12 MG1655:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
-- Shigella flexneri 301:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/925/GCF_000006925.2_ASM692v2/
-- Shigella dysenteriae Sd197:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/005/GCF_000012005.1_ASM1200v1/
-- Shigella boydii Sb227:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/025/GCF_000012025.1_ASM1202v1/
-- Shigella sonnei 53G:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/283/715/GCF_000283715.1_ASM28371v1/
+| What it is                 | File                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| K-12 MG1655                | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)     |
+| Shigella flexneri 301      | [GCF_000006925.2_ASM692v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/925/GCF_000006925.2_ASM692v2/)     |
+| Shigella dysenteriae Sd197 | [GCF_000012005.1_ASM1200v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/005/GCF_000012005.1_ASM1200v1/)   |
+| Shigella boydii Sb227      | [GCF_000012025.1_ASM1202v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/025/GCF_000012025.1_ASM1202v1/)   |
+| Shigella sonnei 53G        | [GCF_000283715.1_ASM28371v1/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/283/715/GCF_000283715.1_ASM28371v1/) |
 
 ## A join on the gene symbols
 

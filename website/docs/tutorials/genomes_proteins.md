@@ -38,20 +38,16 @@ services, per gene, when you open a session.
 <details>
 <summary>The files</summary>
 
-- AlphaFold DB, the predicted structures: https://alphafold.ebi.ac.uk/
-- PDBe, the experimental structures: https://www.ebi.ac.uk/pdbe/
-- UniProt, the protein each gene encodes and the projected Domains, Chains,
-  Mutations and AA Modifications tracks: https://www.uniprot.org/
-- InterPro, the protein browser's domain map and the Pfam seed alignments:
-  https://www.ebi.ac.uk/interpro/
-- PDBe-KB, the protein browser's partner and ligand lists:
-  https://www.ebi.ac.uk/pdbe/pdbe-kb/
-- UniRef, the cluster a protein with no NCBI orthologs is aligned with:
-  https://www.uniprot.org/help/uniref
-- NCBI's ortholog report, the rows of an ortholog alignment:
-  https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
-- NCBI's Conserved Domain Database, the alignment's domain overlay:
-  https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
+| What it is                                                                                                      | File                                                                                |
+| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| AlphaFold DB, the predicted structures                                                                          | [alphafold.ebi.ac.uk](https://alphafold.ebi.ac.uk/)                                 |
+| PDBe, the experimental structures                                                                               | [pdbe/](https://www.ebi.ac.uk/pdbe/)                                                |
+| UniProt, the protein each gene encodes and the projected Domains, Chains, Mutations and AA Modifications tracks | [www.uniprot.org](https://www.uniprot.org/)                                         |
+| InterPro, the protein browser's domain map and the Pfam seed alignments                                         | [interpro/](https://www.ebi.ac.uk/interpro/)                                        |
+| PDBe-KB, the protein browser's partner and ligand lists                                                         | [pdbe-kb/](https://www.ebi.ac.uk/pdbe/pdbe-kb/)                                     |
+| UniRef, the cluster a protein with no NCBI orthologs is aligned with                                            | [uniref](https://www.uniprot.org/help/uniref)                                       |
+| NCBI's ortholog report, the rows of an ortholog alignment                                                       | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/) |
+| NCBI's Conserved Domain Database, the alignment's domain overlay                                                | [cdd.shtml](https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml)                   |
 
 </details>
 

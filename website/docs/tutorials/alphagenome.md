@@ -38,12 +38,10 @@ Nothing to download: the plugin reads both stored predictions by URL.
 <details>
 <summary>The files</summary>
 
-- the reference prediction over chr1:46,700,048..47,748,623, all eleven output
-  types, K562 and GM12878:
-  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval
-- the variant prediction, the same window scored for the Jurkat insertion
-  upstream of _TAL1_ in CD34+ common myeloid progenitors:
-  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34
+| What it is                                                                                                                     | File                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| The reference prediction over chr1:46,700,048..47,748,623, all eleven output types, K562 and GM12878                           | [demo-tal1-interval](https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval)         |
+| The variant prediction, the same window scored for the Jurkat insertion upstream of _TAL1_ in CD34+ common myeloid progenitors | [demo-tal1-variant-cd34](https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34) |
 
 </details>
 

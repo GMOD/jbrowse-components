@@ -56,17 +56,18 @@ The Dog10K consortium's public share
 commands below read these files from their URLs, so there is nothing to download
 by hand.
 
-- the SNV callset, 397 GB over 1,987 canids on canFam4 (UU_Cfam_GSD_1.0):
-  https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
-- the sample table, breed and category per animal:
-  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
+| What it is                                                             | File                                                                                                                                                            |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The SNV callset, 397 GB over 1,987 canids on canFam4 (UU_Cfam_GSD_1.0) | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The sample table, breed and category per animal                        | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- canine SOD1 E40K, PDB 7WX0: https://files.rcsb.org/download/7WX0.cif
-- NCBI's ortholog report, the rows of the alignment:
-  https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
+| What it is                                        | File                                                                                |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Canine SOD1 E40K, PDB 7WX0                        | [7WX0.cif](https://files.rcsb.org/download/7WX0.cif)                                |
+| NCBI's ortholog report, the rows of the alignment | [rest-api/](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/) |
 
 </details>
 

@@ -50,12 +50,11 @@ per-kilobase bigWig beside each file.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- RefSeq curated genes, UCSC's `ncbiRefSeqCurated` table as GFF3:
-  https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
-- RepeatMasker, UCSC's `rmsk` table as BED with a column header:
-  https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
-- reference lengths, for the bigWig header:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
+| What it is                                                     | File                                                                                         |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| RefSeq curated genes, UCSC's `ncbiRefSeqCurated` table as GFF3 | [ncbiRefSeqCurated.gff.gz](https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz)           |
+| RepeatMasker, UCSC's `rmsk` table as BED with a column header  | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz)                                     |
+| Reference lengths, for the bigWig header                       | [hg38.chrom.sizes](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes) |
 
 ## Loading hg38
 

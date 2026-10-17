@@ -55,14 +55,11 @@ canFam4 genetic map published separately.
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the phased reference panel of 1929 canids FLARE runs against:
-  https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
-- the sample table, breed and category labels the panels and targets are derived
-  from:
-  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
-- the Campbell pedigree map, transitioned onto the assembly of this panel
-  ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)):
-  https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1
+| What it is                                                                                                                            | File                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The phased reference panel of 1929 canids FLARE runs against                                                                          | [AutoAndXPAR.Dog10K.phased.bcf](https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf)                                |
+| The sample table, breed and category labels the panels and targets are derived from                                                   | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
+| The Campbell pedigree map, transitioned onto the assembly of this panel ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)) | [campbell_sex_average_canFam4.tar.gz](https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1)                                 |
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 

@@ -54,25 +54,19 @@ conda install -c bioconda -c conda-forge htslib vg
 The [OMIA build script](#the-celtic-polled-allele) fetches OMIA's dump, and the
 track configs below read the hosted files by URL.
 
-- OMIA's database dump, the source of the curated variant track:
-  https://omia.org/static/omia.sql.gz
+| What it is                                                    | File                                               |
+| ------------------------------------------------------------- | -------------------------------------------------- |
+| OMIA's database dump, the source of the curated variant track | [omia.sql.gz](https://omia.org/static/omia.sql.gz) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the segment and link index:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz
-  and
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.links.bed.gz
-- the bubble index, where assemblies' paths split and rejoin:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
-- the allele inventory, one row per alternative sequence at a bubble:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
-- the overview used for whole chromosomes, with variants under 10 kb folded into
-  the reference:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.segs.bed.gz
-  and
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz
+| What it is                                                                                   | File                                                                                                                                                                                                                                                                                             |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The segment and link index                                                                   | [bovine-arsucd12-minigraph.segs.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz)<br>[bovine-arsucd12-minigraph.links.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.links.bed.gz)                                         |
+| The bubble index, where assemblies' paths split and rejoin                                   | [bovine-arsucd12-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz)                                                                                                                                                                  |
+| The allele inventory, one row per alternative sequence at a bubble                           | [bovine-arsucd12-minigraph.alleles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz)                                                                                                                                                                  |
+| The overview used for whole chromosomes, with variants under 10 kb folded into the reference | [bovine-arsucd12-minigraph.fold10000.segs.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.segs.bed.gz)<br>[bovine-arsucd12-minigraph.fold10000.links.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz) |
 
 </details>
 

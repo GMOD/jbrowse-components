@@ -51,14 +51,12 @@ genomes and gene annotations, Ensembl Plants release 58.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- grape (Vitis_vinifera, PN40024.v4) genome and CDS FASTA:
-  http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/vitis_vinifera/
-- grape gene annotation:
-  http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/vitis_vinifera/
-- peach (Prunus_persica, Prunus_persica_NCBIv2) genome and CDS FASTA:
-  http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/prunus_persica/
-- peach gene annotation:
-  http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/prunus_persica/
+| What it is                                                         | File                                                                                         |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| Grape (Vitis_vinifera, PN40024.v4) genome and CDS FASTA            | [vitis_vinifera/](http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/vitis_vinifera/) |
+| Grape gene annotation                                              | [vitis_vinifera/](http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/vitis_vinifera/)  |
+| Peach (Prunus_persica, Prunus_persica_NCBIv2) genome and CDS FASTA | [prunus_persica/](http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/prunus_persica/) |
+| Peach gene annotation                                              | [prunus_persica/](http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/prunus_persica/)  |
 
 ## What `.anchors` and `.anchors.simple` hold
 

@@ -51,15 +51,16 @@ with Progressive Cactus (Armstrong et al. 2020).
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- Chains between every pair of genomes in the 8-way alignment, one
-  `<genome>_vs_<genome>.chain.gz` per pair:
-  https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains/
+| What it is                                                                                                | File                                                                              |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Chains between every pair of genomes in the 8-way alignment, one `<genome>_vs_<genome>.chain.gz` per pair | [chains/](https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/8-t2t-apes-2023v2/chains/) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- The twelve pairs the track uses, as one indexed alignment:
-  https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz
+| What it is                                                | File                                                                 |
+| --------------------------------------------------------- | -------------------------------------------------------------------- |
+| The twelve pairs the track uses, as one indexed alignment | [apes.pif.gz](https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz) |
 
 </details>
 

@@ -54,12 +54,10 @@ as its FASTA and RepeatMasker's `.out`.
 <details>
 <summary>The files</summary>
 
-- hg38, read by the tabix command under
-  [Checking the rows against the file](#checking-the-rows-against-the-file):
-  https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
-- dm6, the file the diff under
-  [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built
-  conversion against: https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
+| What it is                                                                                                              | File                                                     |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Hg38, read by the tabix command under [Checking the rows against the file](#checking-the-rows-against-the-file)         | [rmsk.bed.gz](https://jbrowse.org/ucsc/hg38/rmsk.bed.gz) |
+| Dm6, the file the diff under [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built conversion against | [rmsk.bed.gz](https://jbrowse.org/ucsc/dm6/rmsk.bed.gz)  |
 
 </details>
 

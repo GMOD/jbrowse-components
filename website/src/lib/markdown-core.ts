@@ -10,7 +10,6 @@ import { ensureAutogenIndex } from './autogen-links.ts'
 import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeBaseUrls from './rehype-base-urls.ts'
 import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
-import rehypeDataUrls from './rehype-data-urls.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeLightbox from './rehype-lightbox.ts'
 import rehypeShiki from './rehype-shiki.ts'
@@ -78,7 +77,6 @@ export function createRenderMarkdown({
     .use(rehypeTrailingSlash)
     .use(rehypeBaseUrls, { base: baseUrl })
     .use(rehypeSlug)
-    .use(rehypeDataUrls)
     .use(rehypeCollectToc)
     .use(rehypeHeadingLinks)
     .use(rehypeStringify, { allowDangerousHtml: true })

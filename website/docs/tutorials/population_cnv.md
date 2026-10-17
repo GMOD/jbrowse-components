@@ -49,22 +49,17 @@ lab at the University of Michigan
 The [build script](#reproduce-it-end-to-end) fetches these files, so there is
 nothing to download by hand.
 
-- the sample list across 26 populations, from the lab's UCSC track hub:
-  https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
+| What it is                                                           | File                                                                                                   |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| The sample list across 26 populations, from the lab's UCSC track hub | [kmer-1kg.trackDb.txt](https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
-  unmodified because the lab's download share is offline. Each file sits under
-  its population, so HG00551 and HG00553 are
-  https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw
-  and
-  https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
-- the same values packed into one Zarr store for the
-  [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of
-  chunks that 404s at its root, and the URL is what an adapter takes as `uri`:
-  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+| What it is                                                                                                                                                                                                   | File                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted unmodified because the lab's download share is offline. Each file sits under its population, so HG00551 and HG00553 are         | [HG00551.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw)<br>[HG00553.qm2.CN.1k.bw](https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw) |
+| The same values packed into one Zarr store for the [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of chunks that 404s at its root, and the URL is what an adapter takes as `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                                                                                               |
 
 </details>
 

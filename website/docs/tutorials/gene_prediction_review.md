@@ -50,12 +50,11 @@ URL.
 <details>
 <summary>The files</summary>
 
-- Tiberius gene predictions:
-  https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz
-- GENCODE 47 comprehensive annotation:
-  https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz
-- hg38 reference sequence:
-  https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+| What it is                          | File                                                                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tiberius gene predictions           | [tiberius_grch38.gff.gz](https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz)                                                                                 |
+| GENCODE 47 comprehensive annotation | [gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz](https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz) |
+| Hg38 reference sequence             | [hg38.prefix.fa.gz](https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz)                                                                                     |
 
 </details>
 

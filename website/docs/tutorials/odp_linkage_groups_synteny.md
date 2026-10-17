@@ -50,11 +50,10 @@ The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 Dryad has no direct download URL, so download the two tarballs by hand. The
 [build script](#reproduce-it-end-to-end) fetches the _Ephydatia_ assembly.
 
-- Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
-  https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47
-- The _Ephydatia_ assembly, which a script in the deposit fetches from the
-  original host:
-  https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz
+| What it is                                                                             | File                                                                                                       |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`                 | [dryad.dncjsxm47](https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47)                               |
+| The _Ephydatia_ assembly, which a script in the deposit fetches from the original host | [Emu_genome_v1.fa.gz](https://bitbucket.org/EphydatiaGenome/ephydatiagenome/downloads/Emu_genome_v1.fa.gz) |
 
 ## The linkage-group label in the ortholog table
 

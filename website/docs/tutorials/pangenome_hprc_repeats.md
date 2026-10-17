@@ -76,24 +76,20 @@ at _ABCA7_.
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
-- TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
-  https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
-- the catalogue itself:
-  https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
-- the assemblies, for the amylase build:
-  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
+| What it is                                                              | File                                                                                                                                                                     |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb | [adotto_hprc.tdb.tar](https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar)                                                                                      |
+| The catalogue itself                                                    | [adotto_repeats.hg38.bed.gz](https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz)                                                                        |
+| The assemblies, for the amylase build                                   | [assemblies_release2_v1.0.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- our tabix index files cut from the release's rGFA graph and from its haplotype
-  walks, with the build recorded beside them:
-  https://jbrowse.org/demos/hprc/README.txt
-- the release 2.1 gbz-base database, which the cut under
-  [Which copy is which](#which-copy-is-which) reads by range request:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- our companion index naming that database's haplotypes:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
+| What it is                                                                                                                | File                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Our tabix index files cut from the release's rGFA graph and from its haplotype walks, with the build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt)                                                                                                                            |
+| The release 2.1 gbz-base database, which the cut under [Which copy is which](#which-copy-is-which) reads by range request | [hprc-v2.1-mc-grch38.gbz.db](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db) |
+| Our companion index naming that database's haplotypes                                                                     | [hprc-v2.1-mc-grch38.haplotype-index.f3.db](https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db)                                                              |
 
 </details>
 
