@@ -36,7 +36,7 @@ where the Pinot Noir genome codes arginine.
 ## The data
 
 Nothing to download: the protein browser and the plugins read these files by
-URL.
+URL. _Your own model_ opens a model of your own.
 
 <details>
 <summary>The files</summary>

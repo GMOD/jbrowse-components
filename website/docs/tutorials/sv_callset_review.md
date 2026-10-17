@@ -35,7 +35,10 @@ The COLO829 somatic SV callset comes from the ONT open-data release's
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
 rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 
-Nothing to download: the commands below read this file by URL.
+Nothing to download: the commands below read this file by URL. For your own
+callset, point `--config` at a JBrowse config with the assembly and an
+alignments track, as _Rendering every tumor junction with jb2export batch_
+shows.
 
 | What it is                                | File                                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |

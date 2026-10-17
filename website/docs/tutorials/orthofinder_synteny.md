@@ -57,8 +57,9 @@ Each set takes its protein FASTA and GFF3 files from one Ensembl division.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. The
-OrthoFinder steps take your own proteomes and gene annotations.
+[build script](#reproduce-it-end-to-end) fetches everything itself. _Running
+OrthoFinder and building the blocks table_ takes a proteome per genome of your
+own.
 
 | What it is                                                                                                                                                                                                           | File                                                                        |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |

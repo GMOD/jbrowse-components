@@ -55,7 +55,9 @@ release 116.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _Producing the human-rhesus ortholog table and its rates_ on a GFF3, a
+protein FASTA and a CDS FASTA per genome of your own. The script fetches
+everything itself.
 
 | What it is                     | File                                                                                                                                          |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |

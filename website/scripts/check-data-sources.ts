@@ -31,7 +31,7 @@ function sectionProblems(src: string) {
   const firstList = isList.indexOf(true)
   const lastList = isList.lastIndexOf(true)
   const problems: string[] = []
-  if (/nothing to download by\s+hand/.test(section[1]!)) {
+  if (/nothing\s+to\s+download\s+by\s+hand/.test(section[1]!)) {
     problems.push(
       'say whether the reader needs the files: "You don\'t need these files to follow the page", "run the build script first" or "Nothing to download"',
     )

@@ -63,7 +63,8 @@ The [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) has
 205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)),
 lifted to dm6. You don't need these files to follow the page: the track configs
 below read the hosted results. The [build script](#reproduce-it-end-to-end)
-fetches them to rebuild those results. The vcftools steps take your own VCF.
+fetches them to rebuild those results. The vcftools steps take your own VCF and
+two sample lists.
 
 | What it is                                                                       | File                                                                                                                                             |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |

@@ -53,7 +53,8 @@ npm install -g @jbrowse/cli
 You don't need these files to follow the page: the HPRC launches read the hosted
 tabix indexes. The [build script](#reproduce-it-end-to-end) takes these files
 from [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) by URL to
-rebuild those indexes.
+rebuild those indexes. The config under _Configuring the haplotype lanes track_
+is the one to adapt for your own graph.
 
 | What it is                                            | File                                                                                                                                                                                |
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

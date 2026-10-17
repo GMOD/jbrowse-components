@@ -54,6 +54,8 @@ empty or simple picture.
 Nothing to download: the HPRC page's launches read the files of
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), and our tabix
 index of its graph, by URL.
+[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
+same files for a graph of your own.
 
 <details>
 <summary>The files</summary>

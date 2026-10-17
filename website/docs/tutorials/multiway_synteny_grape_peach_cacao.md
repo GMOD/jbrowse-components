@@ -55,7 +55,8 @@ Seven RefSeq assemblies, one per species, each fetched by accession with the
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _Producing grape.blocks and the BEDs with jcvi_ on a GFF3 and a FASTA per
+genome of your own. The script fetches everything itself.
 
 | What it is  | File                                                                                                                                          |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |

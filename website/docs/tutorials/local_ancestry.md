@@ -55,7 +55,8 @@ canFam4 genetic map published separately.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _The files FLARE reads and writes_ on a phased VCF, reference panels and
+genetic map of your own. The script fetches everything itself.
 
 | What it is                                                                                                                            | File                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

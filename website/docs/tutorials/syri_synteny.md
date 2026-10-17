@@ -61,7 +61,9 @@ the first three the ones a figure in the plotsr paper stacks.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _Aligning a pair and running SyRI_ on chromosome-level assemblies of your
+own whose homologous chromosomes share a name. The script fetches everything
+itself.
 
 | What it is             | File                                                                                                                                                |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |

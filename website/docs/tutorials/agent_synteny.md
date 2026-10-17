@@ -50,7 +50,9 @@ hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
 Nothing to download: the agent fetches both sequences itself, then aligns them
-in about seven minutes on 16 threads and 14 GB of memory.
+in about seven minutes on 16 threads and 14 GB of memory. For a pair of your
+own, swap in your `.pif.gz` and assemblies, as _Ask the agent to align and open
+the two genomes_ shows.
 
 <details>
 <summary>The files</summary>

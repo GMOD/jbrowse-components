@@ -33,7 +33,8 @@ assembly, and the maternal-to-paternal chain the project publishes
 Liftoff v0.6 gene models built on v1.1.
 
 Nothing to download: the track configs and the `curl` check below read these
-files by URL.
+files by URL. Two haplotypes of your own go in one FASTA, as _Loading the
+assembly and the alignment_ describes.
 
 <details>
 <summary>The files</summary>

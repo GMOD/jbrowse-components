@@ -32,7 +32,8 @@ Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.
 
 Nothing to download: the track configs and the scan script below read these
-files by URL.
+files by URL. Your own `.hic` file loads by swapping `uri` in the track config
+under _Adding the Hi-C and contact-domain tracks_.
 
 <details>
 <summary>The files</summary>

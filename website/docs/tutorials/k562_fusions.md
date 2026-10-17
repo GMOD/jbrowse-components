@@ -60,7 +60,9 @@ breakpoints on hg19.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+swap in your own long RNA reads, as _Loading hg38 and the merged Iso-Seq reads_
+shows; `depmap_to_jbrowse.py` takes any DepMap cell-line ID. The script fetches
+everything itself.
 
 | What it is                                                                                             | File                                                                                                          |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |

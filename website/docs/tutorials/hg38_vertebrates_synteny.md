@@ -46,8 +46,9 @@ hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. The chain
-steps take your own liftOver chains.
+[build script](#reproduce-it-end-to-end) fetches everything itself. To index a
+chain of your own, convert it with `chain2paf` and `make-pif`, as _LiftOver
+chains as one indexed alignment per genome_ shows.
 
 | What it is                                                                     | File                                                                   |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

@@ -42,7 +42,8 @@ The files are region slices of public
 bucket.
 
 Nothing to download: the track configs below load region slices we host, cut
-from these files.
+from these files. Reads of your own with `MM` and `ML` tags load by swapping
+`uri`, as _Per-read methylation from the alignments_ shows.
 
 <details>
 <summary>The files</summary>

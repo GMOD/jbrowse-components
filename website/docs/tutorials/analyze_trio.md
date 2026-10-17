@@ -47,7 +47,8 @@ chr1 only.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run the hap-ibd steps on the phased VCF of a trio of your own. The script
+fetches everything itself.
 
 | What it is                                                                                                                                      | File                                                                                                                                                |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |

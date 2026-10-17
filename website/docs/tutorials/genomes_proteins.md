@@ -33,7 +33,8 @@ residue picked in one view lights up in the other two. We'll:
 ## The data
 
 Nothing to download: the protein browser and the two plugins fetch from these
-services, per gene, when you open a session.
+services, per gene, when you open a session. _Adding the plugins to your own
+instance_ covers your own JBrowse.
 
 <details>
 <summary>The files</summary>

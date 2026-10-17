@@ -58,6 +58,8 @@ The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies as UCSC GenArk rehosts them.
 
 Nothing to download: the track configs below read the index files by URL.
+_Building a minigraph graph from the strain assemblies_ builds the files for
+strains of your own.
 
 <details>
 <summary>The files</summary>

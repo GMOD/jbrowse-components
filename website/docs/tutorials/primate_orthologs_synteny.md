@@ -48,7 +48,8 @@ the annotation and sequence report for each genome.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _An ortholog table joined on gene names_ over RefSeq accessions of your own.
+The script fetches everything itself.
 
 | What it is                   | File                                                                                                                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |

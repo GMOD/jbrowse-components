@@ -52,7 +52,9 @@ conda install -c bioconda -c conda-forge htslib vg
 ## The data
 
 The [OMIA build script](#the-celtic-polled-allele) fetches OMIA's dump, and the
-track configs below read the hosted files by URL.
+track configs below read the hosted files by URL. For a graph of your own, swap
+the prefix in `uri` for your `gfa-to-tabix build`, as _Load the genome and the
+graph_ shows.
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |

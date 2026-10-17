@@ -25,7 +25,8 @@ junction table as a track.
 The hg19 alignments, gene models and junction table behind the figures, hosted
 on jbrowse.org's demo bucket.
 
-Nothing to download: the track configs below read these files by URL.
+Nothing to download: the track configs below read these files by URL. _Loading
+your own RNA-seq data_ covers reads of your own.
 
 <details>
 <summary>The files</summary>

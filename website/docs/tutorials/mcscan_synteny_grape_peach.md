@@ -51,7 +51,8 @@ genomes and gene annotations, Ensembl Plants release 58.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _Producing the BEDs and anchor files with jcvi_ on a GFF3 and a CDS FASTA
+per genome of your own. The script fetches everything itself.
 
 | What it is                                                         | File                                                                                         |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |

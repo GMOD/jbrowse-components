@@ -54,7 +54,8 @@ supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+slice any tabix-indexed SV VCF of your own the same way. The script fetches
+everything itself.
 
 | What it is                                                                                                                                                                                                                            | File                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

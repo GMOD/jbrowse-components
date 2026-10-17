@@ -46,7 +46,8 @@ Tiberius predictions over GRCh38
 against GENCODE 47 and the hg38 reference.
 
 Nothing to download: the track configs and commands below read these files by
-URL.
+URL. _Building the review portal with make-portal.mjs_ builds the same portal
+over your own genome.
 
 <details>
 <summary>The files</summary>

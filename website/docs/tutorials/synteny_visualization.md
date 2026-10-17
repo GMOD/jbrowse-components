@@ -51,7 +51,8 @@ RefSeq genes.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+run _Aligning the assemblies_ on any pair of assemblies of your own. The script
+fetches everything itself.
 
 | What it is                      | File                                                                                                                |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |

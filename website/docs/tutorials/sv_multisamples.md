@@ -29,7 +29,9 @@ The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
 against CRAMs from three of the cohort's samples and QuicK-mer2 copy number for
 the whole cohort.
 
-Nothing to download: the track configs below read these files by URL.
+Nothing to download: the track configs below read these files by URL. Your own
+VCF and CRAM swap in by `uri`, as _Loading the callset, the reads and the
+copy-number store_ shows.
 
 <details>
 <summary>The files</summary>

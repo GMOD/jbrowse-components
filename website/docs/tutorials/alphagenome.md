@@ -33,7 +33,9 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
-Nothing to download: the plugin reads both stored predictions by URL.
+Nothing to download: the plugin reads both stored predictions by URL. Your own
+variants swap `uri` for a VCF or BED, as _Asking AlphaGenome for a prediction_
+shows.
 
 <details>
 <summary>The files</summary>

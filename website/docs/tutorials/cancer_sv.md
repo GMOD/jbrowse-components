@@ -53,7 +53,8 @@ All but the last file come from the ONT COLO829 open-data release and its
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-follow the same commands on your own files. It fetches everything itself.
+swap the `uri` for your own sample's reads and follow _The derivative allele_ to
+assemble a contig from them. The script fetches everything itself.
 
 | What it is                                                                                           | File                                                                                                                                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

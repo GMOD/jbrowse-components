@@ -52,9 +52,9 @@ conda install -c bioconda -c conda-forge bcftools htslib
 ## The data
 
 The Dog10K consortium's public share
-([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)). The
-commands below read these files from their URLs, so there is nothing to download
-by hand.
+([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)). Nothing to
+download: the commands below read these files by URL. The slicing step reads any
+tabix-indexed VCF over HTTP, so a callset of your own slices the same way.
 
 | What it is                                                             | File                                                                                                                                                            |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
