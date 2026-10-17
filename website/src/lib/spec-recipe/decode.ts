@@ -159,8 +159,12 @@ function bandEntries(
     band === 'readConnections' && show !== undefined
       ? [[band, show === true ? (mark ?? 'arc') : 'off']]
       : [
-          ...(show !== undefined ? [[`${band}.show`, show] as const] : []),
-          ...(mark !== undefined ? [[`${band}.mark`, mark] as const] : []),
+          ...(show !== undefined
+            ? [[`${band}.show`, show] as [string, unknown]]
+            : []),
+          ...(mark !== undefined
+            ? [[`${band}.mark`, mark] as [string, unknown]]
+            : []),
         ]
   return [
     ...drawn,
