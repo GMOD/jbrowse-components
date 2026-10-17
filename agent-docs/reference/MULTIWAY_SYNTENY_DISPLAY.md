@@ -144,6 +144,9 @@ cost is linear in lanes.
 
 ## Where things live
 
+- **Lane names**: `rows.labels` names a lane by any spelling of its assembly
+  (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
+  label a source's header declares (`laneLabel`).
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the

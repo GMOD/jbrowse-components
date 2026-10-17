@@ -953,12 +953,28 @@ export function stateModelFactory(
         }
         return out
       },
+      /**
+       * #getter
+       * `rows.labels`, keyed by `laneKey`
+       */
+      get rowLabels() {
+        const labels: Record<string, string> = getConf(self, ['rows', 'labels'])
+        return new Map(
+          Object.entries(labels).map(([name, label]) => [
+            self.laneKey(name),
+            label,
+          ]),
+        )
+      },
       /** #method */
       laneLabel(assemblyName: string) {
-        return this.holdsAssembly(assemblyName)
-          ? getSession(self).assemblyManager.getDisplayName(assemblyName)
-          : (this.declaredLaneLabels.get(self.laneKey(assemblyName)) ??
-              assemblyName)
+        const key = self.laneKey(assemblyName)
+        return (
+          this.rowLabels.get(key) ??
+          (this.holdsAssembly(assemblyName)
+            ? getSession(self).assemblyManager.getDisplayName(assemblyName)
+            : (this.declaredLaneLabels.get(key) ?? assemblyName))
+        )
       },
       /**
        * #getter

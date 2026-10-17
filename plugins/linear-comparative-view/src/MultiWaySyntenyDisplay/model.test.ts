@@ -2027,6 +2027,35 @@ test('a mate lane can become the anchor only on a source that aligns lanes to ea
   expect(graph.canReanchor).toBe(true)
 })
 
+test('rows.labels names a lane in place of its assembly, by any spelling', () => {
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
+    geneTracks: [],
+    assemblyAliases: { vr: 'volvox_random' },
+  })
+  display.setFeatures(
+    ['volvox_random', 'volvox_ins'].map(
+      (assemblyName, i) =>
+        new SimpleFeature({
+          uniqueId: `f${i}`,
+          name: `gene${i}`,
+          refName: 'ctgA',
+          start: 100,
+          end: 300,
+          strand: 1,
+          mate: { assemblyName, refName: 'ctgB', start: 100, end: 300 },
+        }),
+    ),
+  )
+  const unlabelled = display.laneLabel('volvox_ins')
+  setConf(display, ['rows', 'labels'], { vr: 'Random strain' })
+  expect(
+    Object.fromEntries(
+      display.laneStack.lanes.map(lane => [lane.assemblyName, lane.label]),
+    ),
+  ).toMatchObject({ volvox_random: 'Random strain', volvox_ins: unlabelled })
+})
+
 test('Move up reorders a lane the order names by another spelling', () => {
   const { display } = createDisplayWithSession({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_ins'],
