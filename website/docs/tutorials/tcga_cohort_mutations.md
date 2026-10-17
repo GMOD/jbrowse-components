@@ -40,10 +40,6 @@ nothing to download by hand.
 - per-tumor clinical annotation, from harmonized case fields and each case's
   clinical XML: https://api.gdc.cancer.gov/cases
 
-The build script copies the hg38 reference and the MANE gene track from the
-[hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config; that
-MANE track is the gene track the collapse-introns step below right-clicks.
-
 ## The cohort VCF and the clinical table {#what-the-two-files-hold}
 
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one

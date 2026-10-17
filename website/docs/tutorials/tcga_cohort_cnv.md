@@ -40,10 +40,6 @@ nothing to download by hand.
 - per-tumor clinical annotation, from harmonized case fields and each case's
   clinical XML: https://api.gdc.cancer.gov/cases
 
-The build script copies the hg38 reference and the MANE gene track from the
-[hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config, so it
-downloads no reference; the fence below loads GRCh38 from jbrowse.org.
-
 ## The segment BED format, one call per line
 
 The segment BED holds one copy-number call per line, with a `#`-prefixed header

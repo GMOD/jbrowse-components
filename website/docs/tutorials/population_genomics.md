@@ -66,9 +66,6 @@ so there is nothing to download by hand.
 - the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype
   record: https://dgrpool.epfl.ch/phenotypes/1520/download
 
-The dm6 assembly and gene track come from the hosted UCSC
-[hub](/docs/user_guides/hub_url).
-
 ## Building Fst, π and Tajima's D bigWigs with vcftools
 
 DGRPool records each line's `In(2L)t` arrangement

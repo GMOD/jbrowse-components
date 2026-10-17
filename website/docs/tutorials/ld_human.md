@@ -66,9 +66,6 @@ nothing to download by hand.
   `panel.samples` (EUR) and `rest.samples` (everything else):
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
 
-The gene, ClinVar and recombination tracks come from the hosted UCSC hg38
-[hub](/docs/user_guides/hub_url).
-
 ## Loading the hg38 assembly
 
 The tables, the Fst track and the haplotypes all use GRCh38 coordinates on chr2,

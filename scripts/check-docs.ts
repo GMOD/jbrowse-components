@@ -180,6 +180,12 @@ const VALIDATORS: Validator[] = [
     argv: web('check-prereq-tools.ts'),
   },
   {
+    // The data section is the first thing a reader scans for what to fetch, and
+    // drifted into stacked paragraphs and trailing asides around the bullets.
+    name: 'tutorial data sections stay a short intro and flat bullets',
+    argv: web('check-data-sources.ts'),
+  },
+  {
     // The case neither of those two sees: a tutorial that shows no command at
     // all, so its reader never learns which tool made the figure. Ratcheted
     // rather than forbidden, since a handful of pages genuinely have no tool

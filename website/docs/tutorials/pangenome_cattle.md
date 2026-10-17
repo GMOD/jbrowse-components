@@ -76,9 +76,6 @@ track configs below read the hosted files by URL.
 
 </details>
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes each
-file and how to produce it.
-
 ## Load the genome and the graph
 
 We'll load the reference the graph is anchored to, then the graph track. Swap

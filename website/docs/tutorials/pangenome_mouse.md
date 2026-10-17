@@ -82,9 +82,6 @@ Nothing to download: the track configs below read the index files by URL.
 
 </details>
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
-each file holds.
-
 ## Load the graph
 
 We'll load the reference, then the graph and its bubbles. The graph track names

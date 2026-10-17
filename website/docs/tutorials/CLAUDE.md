@@ -3,10 +3,10 @@ in tutorials, code comments included. Captions, numbers and voice:
 `website/CLAUDE.md`; page mechanics: `website/docs/CLAUDE.md`.
 
 The `check-*` scripts under `website/scripts/` (figure-actions,
-unshown-settings, unshown-tools, prereq-tools, script-commands, menu-paths,
-page-endings, and `check-build-scripts.py`) hold most page mechanics and print
-their rule when they fail; `--list` prints a ratchet's backlog. What follows is
-what no check sees.
+unshown-settings, unshown-tools, prereq-tools, data-sources, script-commands,
+menu-paths, page-endings, and `check-build-scripts.py`) hold most page mechanics
+and print their rule when they fail; `--list` prints a ratchet's backlog. What
+follows is what no check sees.
 
 ## Shape
 
@@ -93,7 +93,8 @@ what no check sees.
   saying who fetches them; the bullet's own label says what reads the file, with
   no per-group paragraphs. A source read by URL goes in a `<details>` summarised
   "Read by URL (no download needed)"; our own hub configs and rehosted results
-  are cut. Past about ten bullets, split into labelled groups.
+  are cut. Past ten bullets, split into labelled groups; `check-data-sources`
+  holds the shape (two intro paragraphs at most, nothing after the last list).
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
 - A Reproduce section does not mean the script fetches the data. Read how the
   script gets each file before writing the sentence.
