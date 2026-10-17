@@ -82,11 +82,14 @@ what no check sees.
 
 ## Page structure
 
-- `## Prerequisites` comes under the opening paragraph: a bulleted list and
-  nothing else. The intro gets its own heading.
+- `## Prerequisites` comes under the opening paragraph: a bulleted list, then
+  one `bash` fence that installs the listed tools in a line or two
+  (`cargo install gfa-to-tabix`, `conda install -c bioconda …`). The intro gets
+  its own heading.
 - **`## Where the data comes from` lists only what the page's commands or script
-  download**, one bullet per file ending in the raw URL, under one sentence
-  saying who fetches them. A source read by URL goes in a `<details>` summarised
+  download**, one flat bullet per file ending in the raw URL, under one sentence
+  saying who fetches them; the bullet's own label says what reads the file, with
+  no per-group paragraphs. A source read by URL goes in a `<details>` summarised
   "Read by URL (no download needed)"; our own hub configs and rehosted results
   are cut. Past about ten bullets, split into labelled groups.
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.

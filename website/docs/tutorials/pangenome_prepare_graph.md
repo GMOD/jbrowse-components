@@ -37,23 +37,21 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index) to serve
   them from a gbz-base database
 
+```bash
+cargo install gfa-to-tabix gbz-base gbz-haplotype-index
+conda install -c bioconda -c conda-forge htslib bcftools pigz gfatools minigraph vg
+```
+
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s Minigraph-Cactus
-graph, which every HPRC page on this site reads.
+graph, which every HPRC page on this site reads. Download these before starting:
 
-Download the SV-resolution rGFA before starting: `gfa-to-tabix build` takes the
-graph as a local file.
-
-- the SV-resolution rGFA:
+- SV-resolution rGFA, for `gfa-to-tabix build`:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-
-The gbz-base sections below read the graph in vg's format and its gbz-base
-database.
-
-- the same graph in vg's format:
+- the graph in vg's format, for the gbz-base sections:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
-- the same graph as a gbz-base database:
+- the graph as a gbz-base database, for the gbz-base sections:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 
 <details>
