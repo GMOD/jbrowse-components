@@ -4,6 +4,7 @@ import { computeLabelLeftPx, keepFeatureLabel } from '@jbrowse/plugin-canvas'
 
 import type { LaneGene } from './geneGlyph.ts'
 import type { Lane } from './laneStack.ts'
+import type { Span } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export const GENE_LABEL_FONT_PX = 10
@@ -32,7 +33,7 @@ interface Candidate extends PlacedLaneLabel {
   bottom: number
 }
 
-type LabelledLane = Pick<Lane, 'assemblyName' | 'glyphTop' | 'spanOf'>
+type LabelledLane = Pick<Lane, 'assemblyName' | 'glyphTop' | 'spansOf'>
 
 export interface NamedSpan {
   id: string
@@ -44,6 +45,16 @@ export interface NamedSpan {
 
 interface DrawnName extends NamedSpan {
   width: number
+}
+
+function widest(spans: readonly Span[]) {
+  let best: Span | undefined
+  for (const span of spans) {
+    if (!best || Math.abs(span[1] - span[0]) > Math.abs(best[1] - best[0])) {
+      best = span
+    }
+  }
+  return best
 }
 
 function drawnNames(
@@ -63,10 +74,12 @@ function drawnNames(
     }))
   for (const { feature, drawn } of genes) {
     const label = labelOf(feature)
-    const span = lane.spanOf(
-      feature.get('refName'),
-      drawn.get('start'),
-      drawn.get('end'),
+    const span = widest(
+      lane.spansOf(
+        feature.get('refName'),
+        drawn.get('start'),
+        drawn.get('end'),
+      ),
     )
     if (label && span) {
       const left = Math.min(span[0], span[1])

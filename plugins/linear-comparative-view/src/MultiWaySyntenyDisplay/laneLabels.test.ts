@@ -4,8 +4,10 @@ import { getFeatureName } from '@jbrowse/plugin-canvas'
 
 import { LaneGene } from './geneGlyph.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
+import { frameSpans } from './layoutMultiWay.ts'
 import { drawnLeftPx } from './multiwayRenderTypes.ts'
 
+import type { RowFrame } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function labelOf(feature: Feature) {
@@ -25,8 +27,9 @@ function lane(assemblyName: string, glyphTop: number) {
   return {
     assemblyName,
     glyphTop,
-    spanOf: (_refName: string, start: number, end: number) =>
-      [start, end] as [number, number],
+    spansOf: (_refName: string, start: number, end: number) => [
+      [start, end] as const,
+    ],
   }
 }
 
@@ -128,6 +131,39 @@ describe('placeLaneLabels', () => {
     })
     expect(label!.left).toBeGreaterThanOrEqual(0)
     expect(label!.left).toBeLessThan(10)
+  })
+
+  it('labels a gene cut by a hole on its widest drawn piece', () => {
+    // HG00099#1's AMYP1: one exon before a 94 kb deletion, six after it
+    const frame: RowFrame = {
+      refName: 'chr1',
+      min: 0,
+      max: 150_000,
+      flipped: false,
+      fitMin: 0,
+      fitMax: 150_000,
+      alsoOn: [],
+      alsoOnMore: 0,
+      alsoAt: [],
+      openings: [{ at: 50_000, bp: 94_000 }],
+    }
+    const [label] = placeLaneLabels({
+      lanes: [
+        {
+          assemblyName: 'a',
+          glyphTop: 20,
+          spansOf: (_refName, start, end) =>
+            frameSpans(frame, start, end, 2000),
+        },
+      ],
+      genesOf: () => [gene('AMYP1', 49_000, 55_000)],
+      labelOf,
+      glyphHeight: 10,
+      width: 2000,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(label!.left).toBeCloseTo(1920)
   })
 
   it('leaves out a nameless gene and one off the canvas', () => {

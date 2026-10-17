@@ -57,7 +57,8 @@ cost is linear in lanes.
   arrive; the decision's `pivotLaneBp` stays lane bp, so a hole appearing
   elsewhere moves only what lies beyond it. A lane-pair ribbon crossing a hole is
   cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
-  boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
+  boxes (`Lane.spansOf`, `frameSpans`); its label goes on the widest piece.
+  Gene records never open: their spacing
   is no deletion. An insertion opens nothing; its sequence draws as before.
 - **Two lanes join a group's placements only where one source row states the
   pair** (`statedTogether`, `MultiWayPlacement.row`). A table folding its rows
