@@ -1,4 +1,4 @@
-import { CHUNK_SIZE, MAX_CACHE_ENTRIES } from '@gmod/range-cache-filehandle'
+import { cachedBytes, setChunkCacheLimit } from '@gmod/range-cache-filehandle'
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import {
   adapterRequests,
@@ -10,17 +10,17 @@ import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 
 import { forgetAssemblies, resolvedAssemblies } from './assembly.ts'
-import { rangeReads, wholeFileBytes } from './bareHost.ts'
+import { wholeFileBytes } from './bareHost.ts'
 
 import type { AnyDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { UriLocation } from '@jbrowse/core/util/types'
 
 /**
- * What the engine keeps between calls, two bounds of this many bytes each:
- * the decoded records (BAM and CRAM records, tabix lines), and what the
- * adapters it keeps parsed from the files they read whole. A browser worker
- * keeps 1 GiB of records, sized for panning; a host such as R holds its own
- * copy of each table and rarely reads a region twice.
+ * What the engine keeps between calls, three bounds of this many bytes each:
+ * the decoded records (BAM and CRAM records, tabix lines), the raw file chunks
+ * beneath them, and what the adapters it keeps parsed from the files they read
+ * whole. A browser worker keeps 1 GiB of records, sized for panning; a host
+ * such as R holds its own copy of each table and rarely reads a region twice.
  */
 export const DEFAULT_CACHE_LIMIT = 256 * 2 ** 20
 
@@ -29,8 +29,6 @@ export const DEFAULT_CACHE_LIMIT = 256 * 2 ** 20
  * BAM adapter's header and caches measured 750 KiB.
  */
 export const MIN_ADAPTER_BYTES = 2 ** 20
-
-const CHUNK_CACHE_BYTES = MAX_CACHE_ENTRIES * CHUNK_SIZE
 
 /**
  * Estimates of what an adapter holds per uncompressed byte of a file it read
@@ -42,11 +40,11 @@ const PARSED_HOLDS_PER_BYTE = 10
 const INDEX = /\.(bai|csi|crai|tbi)$/i
 
 export interface CacheUse {
-  /** the bound, in bytes, on decoded records and separately on `parsed` */
+  /** the bound, in bytes, on each of `decoded`, `chunks` and `parsed` */
   limit: number
   /** bytes of decoded records held */
   decoded: number
-  /** at most the file bytes the chunk cache holds, under its 256 MiB cap */
+  /** file bytes the chunk cache holds */
   chunks: number
   /** an estimate of what the adapters held parsed from files read whole */
   parsed: number
@@ -106,7 +104,7 @@ let lastCall = 0
 const held = (): CacheUse => ({
   limit,
   decoded: decompressedBytesBudget.total,
-  chunks: Math.min(rangeReads.bytes, CHUNK_CACHE_BYTES),
+  chunks: cachedBytes(),
   parsed,
   adapters: cachedAdapterCount(),
   assemblies: resolvedAssemblies(),
@@ -145,6 +143,7 @@ function applyLimit(bytes: number) {
   }
   limit = bytes
   decompressedBytesBudget.limit = bytes
+  setChunkCacheLimit(bytes)
 }
 
 const cache = {
@@ -167,7 +166,6 @@ const cache = {
   async clear() {
     await keepAdapters(() => false)
     clearCache()
-    rangeReads.bytes = 0
     wholeFileBytes.clear()
     forgetAssemblies()
     parsed = 0

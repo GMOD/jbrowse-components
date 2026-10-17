@@ -14,6 +14,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import { gzipSync } from 'node:zlib'
 
+import { CHUNK_SIZE } from '@gmod/range-cache-filehandle'
 import { parse } from 'acorn'
 
 import { MIN_ADAPTER_BYTES, createTablesEngine } from './index.ts'
@@ -298,6 +299,7 @@ describe('a bare host under a budget', () => {
   })
   beforeEach(async () => {
     await jbrowse.clearCache()
+    await cache({ limit })
     rangeBytes.clear()
     wholeReads.clear()
   })
@@ -334,7 +336,7 @@ describe('a bare host under a budget', () => {
     expect(new Set(wholeReads.values())).toEqual(new Set([1]))
   })
 
-  test('keeps the chunks it read under any limit', async () => {
+  test('keeps no chunks under a limit of 0', async () => {
     const { bamLocation, index } = BAM.adapterConfig
     await cache({ limit: 0 })
     await jbrowse.alignments(JSON.stringify(BAM))
@@ -343,8 +345,23 @@ describe('a bare host under a budget', () => {
     wholeReads.clear()
     await jbrowse.alignments(JSON.stringify(BAM))
     expect(wholeReads.get(index.location.uri)).toBe(1)
-    expect(rangeBytes.get(bamLocation.uri)).toBeUndefined()
-    expect((await cache()).chunks).toBeGreaterThan(0)
+    expect(rangeBytes.get(bamLocation.uri)).toBeGreaterThan(0)
+    expect((await cache()).chunks).toBe(0)
+  })
+
+  test('reports the chunks it holds, and lowering the limit evicts them', async () => {
+    const { bamLocation } = BAM.adapterConfig
+    await jbrowse.alignments(JSON.stringify(BAM))
+    await jbrowse.alignments(JSON.stringify(CRAM))
+    const read = [...rangeBytes.values()].reduce((a, b) => a + b, 0)
+    expect((await cache()).chunks).toBe(read)
+    const limit = CHUNK_SIZE
+    expect(read).toBeGreaterThan(limit)
+    expect((await cache({ limit })).chunks).toBeLessThanOrEqual(limit)
+    rangeBytes.clear()
+    await jbrowse.alignments(JSON.stringify(CRAM))
+    await jbrowse.alignments(JSON.stringify(BAM))
+    expect(rangeBytes.get(bamLocation.uri)).toBeGreaterThan(0)
   })
 
   test('keeps the files read most recently open while they fit the limit', async () => {

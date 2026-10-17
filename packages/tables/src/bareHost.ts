@@ -295,12 +295,6 @@ function one<T>(v: unknown) {
 }
 
 /**
- * The bytes the host answered to range requests since the engine last emptied
- * its caches, which the chunk cache keeps up to its cap.
- */
-export const rangeReads = { bytes: 0 }
-
-/**
  * The uncompressed size of each file the host last read whole: an index, or
  * a file an adapter parses whole, either of which the adapter keeps.
  */
@@ -343,9 +337,7 @@ function fetchFromHost(
   const r = readRange(url, start, end) as Record<keyof HostRange, unknown>
   const body = one<Uint8Array | string | undefined>(r.bytes) ?? ''
   const bytes = typeof body === 'string' ? fromBase64(body) : body
-  if (range) {
-    rangeReads.bytes += bytes.length
-  } else {
+  if (!range) {
     wholeFileBytes.set(url, inflatedSize(bytes))
   }
   return {
