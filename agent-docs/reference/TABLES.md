@@ -610,6 +610,7 @@ memory:
 | One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 34.4 MiB | 9.6 MiB |
 | 20 kb of 1000x long reads | 64 MiB | 169.8 MiB | 169.8 MiB | 169.8 MiB | 64.0 MiB | 261.9 MiB | 9.3 MiB |
 | The HPRC v2.1 segs TBI, read whole | 256 MiB | 4.2 MiB | 4.2 MiB | | | 610.9 MiB | 9.1 MiB |
+| 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 0 MiB | 168.5 + 0 MiB | 127.2 MiB | 127.2 MiB | | |
 
 - **A working set wider than `limit` now reads again.** At 64 MiB the second
   pass over 75.9 MiB of chunks misses on every one, since the least recently
@@ -618,9 +619,12 @@ memory:
 - **The process holds less.** After the 1000x read at 64 MiB, heap plus
   ArrayBuffers fell from 269.8 to 164.7 MiB, and the TBI read's peak RSS from
   1318 to 717 MiB.
+- **Whole-file loops from R still level off.** After 16 distinct 24 MB plain
+  VCFs R held 757 MB RSS, and after 6 distinct 70 MB ones 1147 MB, against 752
+  and 1142 MB before.
 - **The engine still estimates what a parsed index holds.**
   [ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md](../ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md)
-  says what would replace it.
+  lists what would replace it.
 
 ## Hooks: who notices a break
 
