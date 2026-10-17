@@ -62,3 +62,12 @@ test('a v4 read size and layout cap lift into pileup', () => {
   expect(readConfObject(conf, ['pileup', 'readHeight'])).toBe(3)
   expect(readConfObject(conf, ['pileup', 'maxHeight'])).toBe(900)
 })
+
+test("a display's own v4 read size beats its renderer's", () => {
+  const conf = create({
+    featureHeight: 3,
+    renderers: { PileupRenderer: { height: 9, maxHeight: 900 } },
+  })
+  expect(readConfObject(conf, ['pileup', 'readHeight'])).toBe(3)
+  expect(readConfObject(conf, ['pileup', 'maxHeight'])).toBe(900)
+})

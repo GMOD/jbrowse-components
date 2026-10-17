@@ -184,7 +184,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
   defaultRendering: () => ({}),
-  renderers: rendererSlotsOf,
   colorScheme: () => ({}),
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
@@ -198,6 +197,9 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),
+  // last: where two lifts land on one member the first declared wins, and a
+  // display's own featureHeight or mismatchAlpha beats its renderer's
+  renderers: rendererSlotsOf,
 }
 // #endregion
 
