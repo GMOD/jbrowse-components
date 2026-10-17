@@ -9,14 +9,17 @@ import { rewriteGroupedMarkerBlocks } from './util.ts'
 // Debian/Ubuntu, conda (bioconda) for everything it carries, and one line each
 // for the language package managers. `tutorialInstall.json` holds a tool's
 // package name under each manager that has one, so a rename changes every page
-// in one commit. A tool with no packaged install stays a bullet with a link.
+// in one commit. A tool apt lacks but ships as a Linux x86_64 binary also gets
+// a wget line; one with no packaged install stays a bullet with a link.
 const MANAGERS = ['apt', 'conda', 'cargo', 'pip', 'npm'] as const
 
 type Manager = (typeof MANAGERS)[number]
 
+type Entry = Partial<Record<Manager, string>> & { download?: string[] }
+
 const REGISTRY = JSON.parse(
   fs.readFileSync(new URL('./tutorialInstall.json', import.meta.url), 'utf8'),
-) as Record<string, Partial<Record<Manager, string>>>
+) as Record<string, Entry>
 
 const COMMANDS: Record<Manager, string> = {
   apt: 'sudo apt install',
@@ -55,6 +58,17 @@ export function renderInstall(tools: string[], where: string) {
         ? `# or conda, which also has ${aptLacks.join(', ')}`
         : '# or conda'
     lines.push(heading, `${COMMANDS.conda} ${conda.join(' ')}`)
+  }
+  const urls = entries.flatMap(({ entry }) =>
+    entry.download && !entry.apt ? entry.download : [],
+  )
+  if (urls.length) {
+    const names = urls.map(u => u.split('/').pop()!)
+    lines.push(
+      '# Linux x86_64 binaries, for tools apt lacks',
+      `wget -P ~/.local/bin ${urls.join(' ')}`,
+      `chmod +x ${names.map(n => `~/.local/bin/${n}`).join(' ')}`,
+    )
   }
   for (const m of ['cargo', 'pip', 'npm'] as const) {
     const p = packages(m)

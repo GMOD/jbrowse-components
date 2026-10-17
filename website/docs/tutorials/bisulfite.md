@@ -37,6 +37,9 @@ caller runs first.
 sudo apt install samtools tabix nodejs
 # or conda, which also has bedGraphToBigWig, datasets
 conda install -c bioconda -c conda-forge samtools htslib nodejs ucsc-bedgraphtobigwig ncbi-datasets-cli
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/datasets ~/.local/bin/dataformat
 npm install -g @jbrowse/cli
 ```
 

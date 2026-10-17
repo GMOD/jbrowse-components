@@ -56,6 +56,9 @@ Building your own instance needs:
 sudo apt install samtools bcftools tabix minimap2 nodejs
 # or conda, which also has bedGraphToBigWig, megadepth, hificnv
 conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2 nodejs ucsc-bedgraphtobigwig megadepth hificnv
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli
 ```
 

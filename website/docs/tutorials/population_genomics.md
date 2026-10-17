@@ -46,6 +46,9 @@ dm6, read the _Cyp6g1_ sweep against the genes, then read the inversion.
 sudo apt install samtools bcftools tabix vcftools nodejs
 # or conda, which also has bedGraphToBigWig
 conda install -c bioconda -c conda-forge samtools bcftools htslib vcftools nodejs ucsc-bedgraphtobigwig
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli
 ```
 

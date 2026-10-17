@@ -46,6 +46,9 @@ genomes in a fixed order.
 sudo apt install samtools tabix minimap2 nodejs
 # or conda, which also has datasets
 conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs ncbi-datasets-cli
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 npm install -g @jbrowse/cli
 ```
 

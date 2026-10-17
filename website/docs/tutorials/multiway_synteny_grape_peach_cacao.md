@@ -36,6 +36,9 @@ of one synteny view and zoomed to a conserved block. Then we:
 sudo apt install samtools gffread last-align
 # or conda, which also has datasets
 conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli last
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 pip install jcvi
 ```
 

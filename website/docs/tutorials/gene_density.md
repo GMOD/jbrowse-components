@@ -33,6 +33,9 @@ then zoom in to see the genes themselves.
 sudo apt install tabix nodejs
 # or conda, which also has bedGraphToBigWig
 conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig
+# Linux x86_64 binaries, for tools apt lacks
+wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli
 ```
 
