@@ -54,7 +54,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets END -->
 
-## Where the data comes from
+## The data
 
 Five _E. coli_ RefSeq assemblies, each fetched by accession with the `datasets`
 CLI.

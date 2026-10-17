@@ -44,7 +44,7 @@ conda install -c bioconda -c conda-forge samtools bcftools htslib
 The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
 opens by path and JBrowse Web takes through **Add track**.
 
-## Where the data comes from
+## The data
 
 The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read

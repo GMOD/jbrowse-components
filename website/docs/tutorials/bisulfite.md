@@ -45,7 +45,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets END -->
 
-## Where the data comes from
+## The data
 
 TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the
 European Nucleotide Archive, `DRR029742` (paired-end 150 bp).

@@ -44,7 +44,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig,bigWigToBedGraph END -->
 
-## Where the data comes from
+## The data
 
 UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene
 sets of both genomes from genomes.jbrowse.org's copies of the UCSC hubs, and the

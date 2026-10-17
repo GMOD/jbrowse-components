@@ -22,7 +22,7 @@ ends on a complex call from the same cohort whose coverage does none of that.
   `.csi` beside it
 - CRAMs aligned to the same assembly, each with its `.crai` beside it
 
-## Where the data comes from
+## The data
 
 The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
 ([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))

@@ -38,7 +38,7 @@ On Debian/Ubuntu, `apt install default-jre` installs Java. `hap-ibd.jar` is a
 single download from its
 [releases page](https://github.com/browning-lab/hap-ibd/releases).
 
-## Where the data comes from
+## The data
 
 1000 Genomes Project phased low-coverage calls
 ([1000 Genomes Project Consortium 2015](https://doi.org/10.1038/nature15393)),

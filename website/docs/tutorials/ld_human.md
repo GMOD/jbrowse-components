@@ -48,7 +48,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 END -->
 
-## Where the data comes from
+## The data
 
 1000 Genomes 30x high-coverage from NYGC
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),

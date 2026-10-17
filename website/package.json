@@ -52,6 +52,7 @@
     "check-config-cli": "node scripts/check-config-cli.ts",
     "check-config-blocks": "node scripts/check-config-blocks.ts",
     "check-data-sources": "node scripts/check-data-sources.ts",
+    "check-install-registry": "node scripts/check-install-registry.ts",
     "check-prereq-tools": "node scripts/check-prereq-tools.ts",
     "check-session-urls": "node scripts/check-session-urls.ts",
     "check-script-commands": "node scripts/check-script-commands.ts",

@@ -43,7 +43,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 The Cactus alignment of hg38 and the T2T ape assemblies (Yoo et al. 2025), built
 with Progressive Cactus (Armstrong et al. 2020).

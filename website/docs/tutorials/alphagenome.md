@@ -26,7 +26,7 @@ model's output. We welcome your [feedback](/contact).
   the variant right-click item. In your own JBrowse,
   [load it by URL](#the-alphagenome-plugin); the sessions below already load it
 
-## Where the data comes from
+## The data
 
 We ran two predictions over the _TAL1_ locus against
 [AlphaGenome](https://www.alphagenomedocs.com/) and stored them under stable

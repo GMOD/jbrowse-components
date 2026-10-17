@@ -67,7 +67,7 @@ cargo install gbz-base
 
 <!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,gbz-base END -->
 
-## Where the data comes from
+## The data
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
 genotypes of 100 of its samples (Dolzhenko et al. 2024), 94 of which have a call

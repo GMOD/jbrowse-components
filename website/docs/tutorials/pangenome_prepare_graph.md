@@ -49,17 +49,22 @@ cargo install gfa-to-tabix gbz-base gbz-haplotype-index
 
 <!-- TUTORIAL_INSTALL htslib,bcftools,pigz,gfa-to-tabix,gfatools,minigraph,vg,gbz-base,gbz-haplotype-index END -->
 
-## Where the data comes from
+## Download the data
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s Minigraph-Cactus
-graph, which every HPRC page on this site reads. Download these before starting:
+The input is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s
+Minigraph-Cactus graph. `gfa-to-tabix build` reads the rGFA as a local file; the
+gbz-base sections read the other two. Fetch the rGFA first and the rest when you
+reach those sections:
 
-- SV-resolution rGFA, for `gfa-to-tabix build`:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the graph in vg's format, for the gbz-base sections:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
-- the graph as a gbz-base database, for the gbz-base sections:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
+```bash
+B=https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38
+# SV-resolution rGFA, 0.8 GB
+wget -c $B.sv.gfa.gz
+# the graph in vg's format, 5.5 GB
+wget -c $B.gbz
+# the same graph as a gbz-base database, 10 GB
+wget -c $B.gbz.db
+```
 
 <details>
 <summary>Other files (no download needed)</summary>

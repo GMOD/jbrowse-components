@@ -26,7 +26,7 @@ compartment calls at _EBF1_, a gene B cells depend on for their identity.
 - `curl`, for the same
   [scan script](#ranking-chr9-chr22-contact-bins-with-juicer_tools)
 
-## Where the data comes from
+## The data
 
 Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.

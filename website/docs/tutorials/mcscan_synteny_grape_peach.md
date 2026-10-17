@@ -43,7 +43,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,jcvi,last END -->
 
-## Where the data comes from
+## The data
 
 Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
 genomes and gene annotations, Ensembl Plants release 58.

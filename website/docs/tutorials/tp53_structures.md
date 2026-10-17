@@ -22,7 +22,7 @@ transcript, and Mol\* draws the structures.
   [install it from the plugin store](/docs/user_guides/plugin_store); the hosted
   config the links open already loads it
 
-## Where the data comes from
+## The data
 
 Nothing to download: the links open a hosted hg38 config with NCBI RefSeq genes,
 and the protein3d plugin fetches these files when a link opens.

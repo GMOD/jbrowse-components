@@ -26,7 +26,7 @@ marker genes.
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-## Where the data comes from
+## The data
 
 SnapATAC2's annotated release of the 10x 5k PBMC scATAC dataset, already
 clustered and cell-type-labeled by the SnapATAC2 pipeline.

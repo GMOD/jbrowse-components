@@ -48,7 +48,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver END -->
 
-## Where the data comes from
+## The data
 
 Four PacBio Iso-Seq runs from [ENCODE](https://www.encodeproject.org/), two
 tables out of [DepMap](https://depmap.org/portal/)'s 24Q4 release, and the DNA

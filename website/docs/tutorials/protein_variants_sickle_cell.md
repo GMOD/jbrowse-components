@@ -31,7 +31,7 @@ changes, in a crystal structure of sickle haemoglobin. We'll:
   [plugin store](/docs/user_guides/plugin_store); genomes.jbrowse.org already
   loads them
 
-## Where the data comes from
+## The data
 
 Nothing to download: the protein browser, the plugins and the track config below
 read these files by URL.

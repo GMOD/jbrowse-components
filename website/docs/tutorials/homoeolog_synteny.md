@@ -43,7 +43,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython END -->
 
-## Where the data comes from
+## The data
 
 Oat cultivar Williams
 ([Peng et al. 2022](https://doi.org/10.1038/s41588-022-01127-7)), annotated by

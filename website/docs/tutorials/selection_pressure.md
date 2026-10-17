@@ -43,7 +43,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython END -->
 
-## Where the data comes from
+## The data
 
 The assemblies are
 [GCA_000001405.29](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_000001405.29/)

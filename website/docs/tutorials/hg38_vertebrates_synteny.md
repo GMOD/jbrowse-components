@@ -37,7 +37,7 @@ conda install -c bioconda -c conda-forge htslib
 
 <!-- TUTORIAL_INSTALL htslib END -->
 
-## Where the data comes from
+## The data
 
 UCSC's pairwise liftOver chains from hg38 (Kent et al. 2003), each converted to
 an indexed PAF and rehosted beside the hub configs

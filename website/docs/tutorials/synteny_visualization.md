@@ -39,7 +39,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 Three _H. pylori_ RefSeq assemblies and their genome hubs on genomes.jbrowse.org
 ([26695](https://genomes.jbrowse.org/accession/GCF_000307795.1/),

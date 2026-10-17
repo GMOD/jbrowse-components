@@ -56,7 +56,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->
 
-## Where the data comes from
+## The data
 
 The [build script](#reproduce-it-end-to-end) fetches the five _E. coli_ RefSeq
 assemblies by accession with the NCBI `datasets` CLI. The nanopore reads are the

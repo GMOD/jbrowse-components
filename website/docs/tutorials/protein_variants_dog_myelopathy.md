@@ -49,7 +49,7 @@ conda install -c bioconda -c conda-forge bcftools htslib
 
 <!-- TUTORIAL_INSTALL bcftools,htslib END -->
 
-## Where the data comes from
+## The data
 
 The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)). The

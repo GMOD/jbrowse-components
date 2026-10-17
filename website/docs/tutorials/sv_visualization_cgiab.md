@@ -64,7 +64,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,megadepth,hificnv END -->
 
-## Where the data comes from
+## The data
 
 HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on
 the C-GIAB FTP, and the assemblies are on NIST's S3 bucket. The

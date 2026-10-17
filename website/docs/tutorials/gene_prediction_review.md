@@ -38,7 +38,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 Tiberius predictions over GRCh38
 ([Gabriel et al. 2024](https://doi.org/10.1093/bioinformatics/btae685)), read

@@ -42,7 +42,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 
 <!-- TUTORIAL_INSTALL htslib,datasets END -->
 
-## Where the data comes from
+## The data
 
 Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:
 the classic reference strains across phylogroups A, B1, B2, D and E, four

@@ -26,7 +26,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 TCGA-BRCA, from the GDC's open-access **Masked Copy Number Segment** files
 (Affymetrix SNP 6.0, harmonized to GRCh38), so no dbGaP application or token is

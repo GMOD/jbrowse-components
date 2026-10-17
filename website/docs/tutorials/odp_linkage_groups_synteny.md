@@ -42,7 +42,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,node,jbrowse-cli END -->
 
-## Where the data comes from
+## Download the data
 
 The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 2023, released CC0.

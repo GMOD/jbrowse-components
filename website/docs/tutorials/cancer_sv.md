@@ -42,7 +42,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig END -->
 
-## Where the data comes from
+## The data
 
 All but the last file come from the ONT COLO829 open-data release and its
 `wf-somatic-variation` run; the last is the multi-platform truth set

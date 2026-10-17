@@ -32,7 +32,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's nine-cell-type
 ENCODE Broad HMM set, and the Roadmap Epigenomics compendium across 127

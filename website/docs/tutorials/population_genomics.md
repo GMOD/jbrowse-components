@@ -54,7 +54,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig END -->
 
-## Where the data comes from
+## The data
 
 The [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) has
 205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)),

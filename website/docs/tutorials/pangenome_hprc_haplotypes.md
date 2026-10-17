@@ -48,7 +48,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 The [build script](#reproduce-it-end-to-end) takes these files from
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) by URL, so there is

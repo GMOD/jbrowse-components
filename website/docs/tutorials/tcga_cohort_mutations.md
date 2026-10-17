@@ -27,7 +27,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 TCGA-BRCA open-access somatic mutation calls from the GDC
 ([TCGA 2012](https://doi.org/10.1038/nature11412)).

@@ -23,7 +23,7 @@ window from the same sample.
 - to re-measure the numbers on this page, the tools listed under
   [Reproduce it end to end](#reproduce-it-end-to-end)
 
-## Where the data comes from
+## The data
 
 The hosted tracks are files already wired into the
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hg38 config. The reads come

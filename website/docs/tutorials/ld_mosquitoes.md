@@ -37,7 +37,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 END -->
 
-## Where the data comes from
+## The data
 
 Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)).

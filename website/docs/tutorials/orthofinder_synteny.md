@@ -47,7 +47,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder END -->
 
-## Where the data comes from
+## The data
 
 Each set takes its protein FASTA and GFF3 files from one Ensembl division.
 

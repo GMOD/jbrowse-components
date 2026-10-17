@@ -56,7 +56,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfatools,gfa-to-tabix END -->
 
-## Where the data comes from
+## The data
 
 The five _E. coli_ RefSeq assemblies come from the NCBI datasets CLI by
 accession. K12 is the `--reference` backbone the other four align onto.

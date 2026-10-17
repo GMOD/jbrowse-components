@@ -3,7 +3,7 @@ import { getText } from './hast-utils.ts'
 import type { Element, Root, RootContent } from 'hast'
 import type { Plugin } from 'unified'
 
-const SECTION = 'Where the data comes from'
+const SECTION = 'The data'
 
 function shorten(url: string) {
   try {

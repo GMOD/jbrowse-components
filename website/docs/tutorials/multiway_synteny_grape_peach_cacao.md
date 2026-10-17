@@ -44,7 +44,7 @@ pip install jcvi
 
 <!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last END -->
 
-## Where the data comes from
+## The data
 
 Seven RefSeq assemblies, one per species, each fetched by accession with the
 `datasets` CLI.

@@ -18,7 +18,7 @@ function page(sectionLinks: Element[]): Root {
   return {
     type: 'root',
     children: [
-      el('h2', [{ type: 'text', value: 'Where the data comes from' }]),
+      el('h2', [{ type: 'text', value: 'The data' }]),
       el('ul', sectionLinks.map(a => el('li', [a]))),
       el('h2', [{ type: 'text', value: 'Next' }]),
       el('p', [link('https://example.org/data/elsewhere.bed')]),

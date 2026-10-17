@@ -52,7 +52,7 @@ conda install -c bioconda -c conda-forge htslib minigraph
 
 <!-- TUTORIAL_INSTALL htslib,minigraph END -->
 
-## Where the data comes from
+## The data
 
 The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies as UCSC GenArk rehosts them.

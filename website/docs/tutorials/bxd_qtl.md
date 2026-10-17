@@ -36,7 +36,7 @@ conda install -c bioconda -c conda-forge htslib
 
 <!-- TUTORIAL_INSTALL htslib END -->
 
-## Where the data comes from
+## The data
 
 BXD consensus genotypes and QTL scans from GeneNetwork
 ([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).

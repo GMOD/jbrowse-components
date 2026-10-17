@@ -40,7 +40,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 The assemblies are two GenArk genomes
 ([_D. simulans_](https://genomes.jbrowse.org/accession/GCF_016746395.2/),

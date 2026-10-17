@@ -37,7 +37,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 
 <!-- TUTORIAL_INSTALL datasets END -->
 
-## Where the data comes from
+## The data
 
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
 current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo

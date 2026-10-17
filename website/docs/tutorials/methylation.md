@@ -35,7 +35,7 @@ pip install whatshap
 
 <!-- TUTORIAL_INSTALL whatshap END -->
 
-## Where the data comes from
+## The data
 
 The files are region slices of public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3

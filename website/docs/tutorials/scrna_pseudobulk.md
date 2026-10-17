@@ -30,7 +30,7 @@ the pooled rows.
   [the Zarr store](#per-cell-coverage-rows-from-a-zarr-store). In your own
   JBrowse, load it by the URL that section gives
 
-## Where the data comes from
+## The data
 
 10x Genomics'
 [5k PBMC v3](https://www.10xgenomics.com/datasets/5-k-peripheral-blood-mononuclear-cells-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-1-standard-3-0-2)

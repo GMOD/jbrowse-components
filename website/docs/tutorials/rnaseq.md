@@ -20,7 +20,7 @@ junction table as a track.
 - a JBrowse instance to load it into: the [web quickstart](/docs/quickstart_web)
   or the [desktop quickstart](/docs/quickstart_desktop)
 
-## Where the data comes from
+## The data
 
 The hg19 alignments, gene models and junction table behind the figures, hosted
 on jbrowse.org's demo bucket.

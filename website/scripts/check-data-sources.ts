@@ -1,4 +1,4 @@
-// Every tutorial's `## Where the data comes from` stays a short intro and a flat
+// Every tutorial's `## The data` stays a short intro and a flat
 // bullet list: at most two intro paragraphs, nothing after the last list, and a
 // paragraph between lists (a labelled group) only past ten bullets. Blocks
 // inside `<details>` are exempt.
@@ -14,7 +14,7 @@ const MAX_UNGROUPED_BULLETS = 10
 const MAX_INTRO_PARAGRAPHS = 2
 
 function sectionProblems(src: string) {
-  const section = /^## Where the data comes from\n([\s\S]*?)(?=^## )/m.exec(src)
+  const section = /^## The data\n([\s\S]*?)(?=^## )/m.exec(src)
   if (!section) {
     return []
   }
@@ -60,5 +60,5 @@ const errors = pages.flatMap(file =>
 )
 reportProblems(
   errors,
-  `${pages.length} tutorials keep "Where the data comes from" short and flat.`,
+  `${pages.length} tutorials keep "The data" short and flat.`,
 )

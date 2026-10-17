@@ -37,7 +37,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 NC_012920.1 is the revised Cambridge Reference Sequence of the human
 mitochondrion (Andrews et al. 1999). The commands below fetch both files from

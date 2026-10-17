@@ -49,7 +49,7 @@ empty or simple picture.
 - for [the alignment](#the-same-alleles-as-aligned-bases) on your own data:
   [taffy](https://github.com/ComparativeGenomicsToolkit/taffy)
 
-## Where the data comes from
+## The data
 
 Nothing to download: the HPRC page's launches read the files of
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), and our tabix

@@ -42,7 +42,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
 jbrowse.org.

@@ -40,7 +40,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 
 <!-- TUTORIAL_INSTALL samtools,node,bedGraphToBigWig END -->
 
-## Where the data comes from
+## The data
 
 QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
 lab at the University of Michigan

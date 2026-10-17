@@ -50,7 +50,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 
 <!-- TUTORIAL_INSTALL samtools,htslib,minimap2,datasets,syri END -->
 
-## Where the data comes from
+## The data
 
 TAIR10 for Columbia, and the chromosome-level assemblies of five more accessions
 from [Jiao and Schneeberger 2020](https://doi.org/10.1038/s41467-020-14779-y),

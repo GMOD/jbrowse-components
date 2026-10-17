@@ -88,13 +88,17 @@ follows is what no check sees.
   `website/scripts/api-docs/tutorialInstall.json` (apt and conda lines, a Linux
   wget line for binaries apt lacks, plus cargo, pip and npm). A tool with no
   packaged install stays a bullet with a link. The intro gets its own heading.
-- **`## Where the data comes from` lists only what the page's commands or script
-  download**, one flat bullet per file ending in the raw URL, under one sentence
-  saying who fetches them; the bullet's own label says what reads the file, with
-  no per-group paragraphs. A source read by URL goes in a `<details>` summarised
-  "Read by URL (no download needed)"; our own hub configs and rehosted results
-  are cut. Past ten bullets, split into labelled groups; `check-data-sources`
-  holds the shape (two intro paragraphs at most, nothing after the last list).
+- **The data section tells the reader what to do.** Its heading is
+  `## Download the data` when the reader fetches files by hand, with a `bash`
+  fence of `wget -c` lines, one comment per file giving its size, and otherwise
+  `## The data`, whose second sentence says who fetches the files (the build
+  script, or the track configs by URL). It lists only what the page's commands
+  or script download: one flat bullet per file ending in the raw URL, labelled
+  with what reads it, no per-group paragraphs. A source read by URL goes in a
+  `<details>` summarised "Read by URL (no download needed)"; our own hub configs
+  and rehosted results are cut. Past ten bullets, split into labelled groups;
+  `check-data-sources` holds the shape (two intro paragraphs at most, nothing
+  after the last list).
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
 - A Reproduce section does not mean the script fetches the data. Read how the
   script gets each file before writing the sentence.

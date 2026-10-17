@@ -39,7 +39,7 @@ npm install -g @jbrowse/cli
 
 <!-- TUTORIAL_INSTALL samtools,bcftools,htslib,node,jbrowse-cli END -->
 
-## Where the data comes from
+## The data
 
 1000 Genomes high-coverage release
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),

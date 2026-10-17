@@ -25,7 +25,7 @@ and:
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-## Where the data comes from
+## The data
 
 T2T-HG002 v1.2, the [Q100 project](https://github.com/marbl/HG002)'s diploid
 assembly, and the maternal-to-paternal chain the project publishes

@@ -33,7 +33,7 @@ where the Pinot Noir genome codes arginine.
   [plugin store](/docs/user_guides/plugin_store); genomes.jbrowse.org already
   loads them
 
-## Where the data comes from
+## The data
 
 Nothing to download: the protein browser and the plugins read these files by
 URL.

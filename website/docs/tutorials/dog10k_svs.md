@@ -46,7 +46,7 @@ conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2
 The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
 opens by path and JBrowse Web takes through **Add track**.
 
-## Where the data comes from
+## The data
 
 Two Dog10K structural-variant callsets from Schall & Kidd
 ([2025](https://doi.org/10.1093/gbe/evaf173)), read directly over HTTP, plus

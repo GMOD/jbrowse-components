@@ -35,7 +35,7 @@ conda install -c bioconda -c conda-forge htslib
 
 <!-- TUTORIAL_INSTALL htslib END -->
 
-## Where the data comes from
+## The data
 
 ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
 with RSEM against GENCODE v29.

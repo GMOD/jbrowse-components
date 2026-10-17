@@ -46,7 +46,7 @@ npm install -g @jbrowse/cli
 is a local file, so [JBrowse Desktop](/docs/quickstart_desktop) opens it by
 path, while JBrowse Web needs it served.
 
-## Where the data comes from
+## The data
 
 The Dog10K consortium's public phased reference panel
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), plus a

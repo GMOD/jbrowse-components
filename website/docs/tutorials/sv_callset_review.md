@@ -28,7 +28,7 @@ npm install -g @jbrowse/img
 
 <!-- TUTORIAL_INSTALL jbrowse-img END -->
 
-## Where the data comes from
+## The data
 
 The COLO829 somatic SV callset comes from the ONT open-data release's
 `wf-somatic-variation` run
