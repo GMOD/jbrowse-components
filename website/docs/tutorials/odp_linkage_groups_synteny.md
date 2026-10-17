@@ -35,8 +35,9 @@ several chromosomes.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

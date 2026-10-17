@@ -37,11 +37,15 @@ vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix diamond-aligner gffread nodejs
-# or conda, which also has datasets, mcscanx, orthofinder
-conda install -c bioconda -c conda-forge htslib diamond gffread nodejs ncbi-datasets-cli mcscanx orthofinder
-# Linux x86_64 binaries, for tools apt lacks
-wget -P ~/.local/bin https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge htslib diamond gffread nodejs \
+  ncbi-datasets-cli mcscanx orthofinder
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
+# any platform
 npm install -g @jbrowse/cli
 ```
 

@@ -39,7 +39,7 @@ a major reason. In the Dog10K collection of sequenced dogs and wolves, we:
 ```bash
 # Debian/Ubuntu
 sudo apt install bcftools tabix
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge bcftools htslib
 ```
 

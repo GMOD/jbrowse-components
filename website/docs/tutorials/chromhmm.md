@@ -25,8 +25,9 @@ axis, and _PAX5_, a B-cell gene with genic enhancers only in B cells.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

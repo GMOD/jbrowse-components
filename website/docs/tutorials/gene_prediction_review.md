@@ -31,8 +31,9 @@ and its README documents every option.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

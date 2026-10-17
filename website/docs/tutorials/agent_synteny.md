@@ -33,8 +33,9 @@ Typed one at a time, the requests ask the agent to:
 ```bash
 # Debian/Ubuntu
 sudo apt install minimap2 nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge minimap2 nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

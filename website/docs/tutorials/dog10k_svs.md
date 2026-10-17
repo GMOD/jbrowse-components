@@ -37,7 +37,7 @@ in:
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools bcftools tabix minimap2
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2
 ```
 

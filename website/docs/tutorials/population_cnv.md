@@ -31,10 +31,12 @@ time, so the second half of the page packs the values into one Zarr store.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools nodejs
-# or conda, which also has bedGraphToBigWig
-conda install -c bioconda -c conda-forge samtools nodejs ucsc-bedgraphtobigwig
-# Linux x86_64 binaries, for tools apt lacks
-wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge samtools nodejs \
+  ucsc-bedgraphtobigwig
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
 chmod +x ~/.local/bin/bedGraphToBigWig
 ```
 

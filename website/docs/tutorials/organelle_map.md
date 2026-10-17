@@ -30,8 +30,9 @@ closes a sequence its assembly marks as circular, leaving no gap at its origin.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

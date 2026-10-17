@@ -35,8 +35,9 @@ covers installing jcvi and what dN/dS measures.
 ```bash
 # Debian/Ubuntu
 sudo apt install diamond-aligner nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge diamond nodejs
+# any platform
 pip install jcvi biopython
 npm install -g @jbrowse/cli
 ```

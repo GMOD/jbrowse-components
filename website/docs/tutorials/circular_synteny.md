@@ -34,11 +34,15 @@ ring value back from the indexed alignment file and the bigWig they came from.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
-# or conda, which also has bedGraphToBigWig, bigWigToBedGraph
-conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig ucsc-bigwigtobedgraph
-# Linux x86_64 binaries, for tools apt lacks
-wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge htslib nodejs ucsc-bedgraphtobigwig \
+  ucsc-bigwigtobedgraph
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
 chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/bigWigToBedGraph
+# any platform
 npm install -g @jbrowse/cli
 ```
 

@@ -36,8 +36,9 @@ aligned bases out of the file.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib
+# any platform
 npm install -g @jbrowse/cli
 ```
 

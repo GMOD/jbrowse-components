@@ -35,7 +35,7 @@ across every canid in the collection.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools bcftools tabix
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools bcftools htslib
 ```
 

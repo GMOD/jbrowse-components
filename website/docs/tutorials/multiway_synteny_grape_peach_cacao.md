@@ -34,11 +34,15 @@ of one synteny view and zoomed to a conserved block. Then we:
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools gffread last-align
-# or conda, which also has datasets
-conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli last
-# Linux x86_64 binaries, for tools apt lacks
-wget -P ~/.local/bin https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge samtools gffread ncbi-datasets-cli \
+  last
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
+# any platform
 pip install jcvi
 ```
 

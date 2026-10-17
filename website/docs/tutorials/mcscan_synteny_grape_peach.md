@@ -35,8 +35,9 @@ then into a dotplot.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix nodejs last-align
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs last
+# any platform
 pip install jcvi
 npm install -g @jbrowse/cli
 ```

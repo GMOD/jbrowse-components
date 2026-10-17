@@ -35,8 +35,9 @@ GenArk hub config, has a RepeatMasker track to try.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

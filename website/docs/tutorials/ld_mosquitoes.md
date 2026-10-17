@@ -30,8 +30,9 @@ it.
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix nodejs
-# or conda, which also has plink2
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools htslib nodejs plink2
+# any platform
 npm install -g @jbrowse/cli
 ```
 

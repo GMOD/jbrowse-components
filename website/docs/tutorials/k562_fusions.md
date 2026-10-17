@@ -38,11 +38,15 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix
-# or conda, which also has bedGraphToBigWig, liftOver
-conda install -c bioconda -c conda-forge samtools htslib ucsc-bedgraphtobigwig ucsc-liftover
-# Linux x86_64 binaries, for tools apt lacks
-wget -P ~/.local/bin https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge samtools htslib \
+  ucsc-bedgraphtobigwig ucsc-liftover
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
 chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/liftOver
+# any platform
 npm install -g @jbrowse/cli
 ```
 

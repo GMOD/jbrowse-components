@@ -42,8 +42,10 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix bcftools pigz
-# or conda, which also has gfatools, minigraph, vg
-conda install -c bioconda -c conda-forge htslib bcftools pigz gfatools minigraph vg
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge htslib bcftools pigz gfatools \
+  minigraph vg
+# any platform
 cargo install gfa-to-tabix gbz-base gbz-haplotype-index
 ```
 

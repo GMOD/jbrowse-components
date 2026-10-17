@@ -28,7 +28,7 @@ haplotype, so a meiotic crossover reads as a color change along the row.
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib nodejs
 ```
 

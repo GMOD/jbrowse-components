@@ -34,8 +34,9 @@ paint the result as one colored row per haplotype (one copy of a chromosome).
 ```bash
 # Debian/Ubuntu
 sudo apt install bcftools tabix nodejs
-# or conda
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge bcftools htslib nodejs
+# any platform
 npm install -g @jbrowse/cli
 ```
 

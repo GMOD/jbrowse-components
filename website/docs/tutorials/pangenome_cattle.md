@@ -43,7 +43,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix
-# or conda, which also has vg
+# or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib vg
 ```
 
