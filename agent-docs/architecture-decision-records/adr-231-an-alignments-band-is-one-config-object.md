@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments display's settings group by band: `coverage`, `pileup`, `sashimi` and `readConnections` are closed config objects holding `show`, `height`, `placement` where the band has one, and a `filter` of their own, beside the display-wide `filter`, `unit`, `facet`, `sort` and `color`. A predicate on a band's rows leaves `show*` for that band's `filter`, spelt as the read filter is (`min<Measure>` floors, `only | exclude | unset` categories), so `show` only ever toggles a band or a part of a mark. MAF takes the shared `coverage` object and a `conservation` one. Overturns GRAMMAR_OF_GRAPHICS.md's 'no filter object per alignments layer' (2026-10-16 morning) and the flat band convention for these two displays"
+summary: "The alignments display's settings group by band: `coverage`, `pileup`, `sashimi` and `readConnections` are closed config objects holding `show`, `height`, `placement` where the band has one, and a `filter` of their own, beside the display-wide `filter`, `unit`, `facet`, `sort` and `color`. A predicate on a band's rows leaves `show*` for that band's `filter`, spelt as the read filter is (`min<Measure>` floors, `only | exclude | unset` categories), so `show` only toggles a drawn thing: a band, a layer or part of a mark, or the arcs' context pairs. MAF takes the shared `coverage` object and a `conservation` one. Overturns GRAMMAR_OF_GRAPHICS.md's 'no filter object per alignments layer' (2026-10-16 morning) and the flat band convention for these two displays"
 ---
 
 # ADR-231: An alignments band is one config object
@@ -40,10 +40,19 @@ state was judged as the spelling users keep.
   | Band              | Members                                                                                                        |
   | ----------------- | -------------------------------------------------------------------------------------------------------------- |
   | `coverage`        | `show`, `height`, `showInterbaseIndicators`, `filter.minAlleleFraction`                                        |
-  | `pileup`          | `show`, `readHeight`, `maxHeight`, `showMismatches`, `showSoftClipping`, `showOutline`, `showConnectors`, `fadeLowQuality`, `fadeLowFrequency` |
+  | `pileup`          | `show`, `readHeight`, `maxHeight`, `showMismatches`, `showSoftClipping`, `showOutline`, `showConnectors`, `fadeLowBaseQuality`, `fadeLowFrequency` |
   | `sashimi`         | `show`, `height`, `placement` (`up`, `down`, `auto`), `showCounts`, `filter.minReads`, `filter.nonCanonical`   |
   | `readConnections` | `show`, `mark` (`arc`, `cloud`), `height`, `placement` (`up`, `down`), `lineWidth`, `color`, `showOrdinaryPairs`, `filter.interchrom`, `filter.offscreenMates`, `filter.minInterchromReads` |
 
+- **`show` is a boolean because the layer set is fixed.** Each one toggles
+  a band, a layer in it (`showMismatches`, `showInterbaseIndicators`,
+  `showConnectors`, `showCounts`), a part of a mark (`showOutline`,
+  `showSoftClipping`, which switches the read's extent between its aligned
+  and clipped ends) or a context layer (`showOrdinaryPairs`). A grammar spells
+  an absent layer by omission; on a fixed set, a boolean is that spelling, as
+  ggplot2's `se = FALSE` and Vega-Lite's `point: true` are, and a list would
+  rename the booleans (ADR-096). The fades are opacity rules, booleans for the
+  reason in GRAMMAR_OF_GRAPHICS.md's "Fewer channels".
 - **A band's `filter` is spelt as the read filter**: a floor is
   `min<Measure>`, a category is `only | exclude | unset`, and members AND.
   `only` is new on the three categories and costs one comparison each
@@ -64,6 +73,12 @@ state was judged as the spelling users keep.
   narrows `coverage.show` to off.
 - **`PLOT_VOCABULARY` names the bands** and drops `arcColor`, so Edit plot and
   an agent's `plot` see whether arcs draw.
+- **`readConnections.color` takes `{ field }` and refuses a bare string**,
+  since the reads' `color` reads a bare string as a constant colour; one key
+  one level apart cannot read it both ways.
+- **`scales` stays top-level** though only the coverage band draws against an
+  axis: `scales.y` is spelt the same on the wiggle, MAF and alignments
+  displays, and the axis panel and Edit plot write it there.
 - **Menus write band members**: each category is the read filters'
   All / Only / Hide radio submenu (`categoryFilterItem`), and the SV-channel
   preset applies a config-shaped delta through `applyDisplaySettings`.
@@ -77,6 +92,9 @@ state was judged as the spelling users keep.
 | `readConnections.filter.ordinaryPairs` | See the decision: the default depends on the mark |
 | A shorthand on a band object | A settings bag replaces a shorthand object whole (`getConf.ts`), so a share link writing one member would reset the band's height |
 | One opacity object for the two fades | Each fades by one variable; the object would hold two booleans under another name |
+| `pileup.rowHeight` for `readHeight` | `rowHeight` is the row pitch here (`featureHeight + featureSpacing`) and on MAF, where 0 means fit; `readHeight` is each read glyph's height, under `unit: 'chain'` and in a collapsed section too |
+| `sashimi.showLabels` for `showCounts` | Canvas and LD `showLabels` are enums, so the word would take two types; `showCounts` names the text it prints, as `showGeneLabels` does |
+| A jexl expression in place of the `show` booleans | Each toggles a layer for the whole display, so an expression reading no datum is a constant. Where a datum exists, a band's `filter` over junctions or connections, an opt-in expression could join the members at no cost when unnamed, as the canvas and mark displays' `filter` takes jexl; no figure has asked for a predicate the members cannot state |
 
 ## Consequences
 
@@ -97,4 +115,10 @@ state was judged as the spelling users keep.
   `settings` and passes slot names through, and needs the same update.
 - The multi-sample variant display's `showVariantLane`/`variantLaneHeight`
   still follow the flat convention; the external graph plugin writes them, so
-  they move in their own change.
+  they move in their own change. MAF's `showAlignments` stays flat beside its
+  `coverage` and `conservation`, since its rows' `rowHeight` and
+  `showRowLabels` are the tree sidebar's shared slots and would move with them.
+- Settings bags combined before a config node exists (a track's
+  `displayDefaults` into its `displays`, two views' state into one track
+  config) merge through `mergeConfSettings`, which keeps `applyConfSettings`'
+  rule: a namespace member by member, a channel whole.

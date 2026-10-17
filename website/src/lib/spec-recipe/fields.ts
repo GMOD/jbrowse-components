@@ -1615,7 +1615,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   'readConnections.color': (value, { displayType }) => {
-    const field = typeof value === 'string' ? value : asRecord(value)?.field
+    const field = asRecord(value)?.field
     const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
     return label && displayType === 'LinearAlignmentsDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }

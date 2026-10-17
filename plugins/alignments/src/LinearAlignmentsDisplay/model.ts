@@ -1109,7 +1109,7 @@ export default function stateModelFactory(
             return {
               ...this.bandHeights,
               showCoverage: self.showCoverage,
-              readConnections: self.drawnReadConnections,
+              drawnReadConnections: self.drawnReadConnections,
               readConnectionsDown: self.readConnectionsPlacement === 'down',
               showSashimi: self.showSashimi,
             }
@@ -2062,7 +2062,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
-            fadeLowQualityMismatches: self.fadeLowQuality,
+            fadeLowQualityMismatches: self.fadeLowBaseQuality,
             scrollTop: self.scrollTop,
           })
         },
@@ -2503,7 +2503,7 @@ export default function stateModelFactory(
             sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
             fadeLowFrequencyMismatches: self.fadeLowFrequency,
-            fadeLowQualityMismatches: self.fadeLowQuality,
+            fadeLowQualityMismatches: self.fadeLowBaseQuality,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,

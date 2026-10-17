@@ -63,7 +63,7 @@ function makeState(
     canvasHeight: 600,
     colors: {} as RenderState['colors'],
     chainMode: false,
-    readConnections: 'off',
+    drawnReadConnections: 'off',
     showLinkedReadLines: false,
     collapseSections: false,
     pileupTopOffset: 50,
@@ -116,7 +116,7 @@ describe('computeArcBand', () => {
   it('is undefined when readConnectionsHeight is 0', () => {
     expect(
       computeArcBand(
-        makeState({ readConnections: 'arc', readConnectionsHeight: 0 }),
+        makeState({ drawnReadConnections: 'arc', readConnectionsHeight: 0 }),
       ),
     ).toBeUndefined()
   })
@@ -125,7 +125,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           coverageReservedPx: 80,
         }),
@@ -137,7 +137,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           coverageReservedPx: 0,
         }),
@@ -153,7 +153,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           coverageReservedPx: 80,
           coverageYOffset: 5,
@@ -169,7 +169,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           coverageReservedPx: 0,
           coverageYOffset: 5,
@@ -182,7 +182,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
           coverageReservedPx: 80,
@@ -195,7 +195,7 @@ describe('computeArcBand', () => {
     expect(
       computeArcBand(
         makeState({
-          readConnections: 'arc',
+          drawnReadConnections: 'arc',
           readConnectionsHeight: 60,
           readConnectionsDown: true,
           coverageReservedPx: 0,

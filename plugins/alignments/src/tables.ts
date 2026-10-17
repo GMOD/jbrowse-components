@@ -62,6 +62,7 @@ import {
 import { buildColorPaletteFromPalette } from './LinearAlignmentsDisplay/components/alignmentComponentUtils.ts'
 import { buildLaidOutChainMap } from './LinearAlignmentsDisplay/computeChainLayout.ts'
 import displayConfigSchemaFactory from './LinearAlignmentsDisplay/configSchema.ts'
+import { drawnReadConnectionsOf } from './LinearAlignmentsDisplay/constants.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -151,10 +152,6 @@ import { getColorForModification } from './util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
-import type {
-  ReadConnectionsMark,
-  ReadConnectionsMode,
-} from './LinearAlignmentsDisplay/constants.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   LaidOutPileupData,
@@ -853,8 +850,10 @@ function readConnectionTables(
   colors: ReturnType<typeof colorReads>,
 ) {
   const band = conf.readConnections
-  const mark: ReadConnectionsMark = readConfObject(band, 'mark')
-  const mode: ReadConnectionsMode = readConfObject(band, 'show') ? mark : 'off'
+  const mode = drawnReadConnectionsOf(
+    readConfObject(band, 'show'),
+    readConfObject(band, 'mark'),
+  )
   const cloud = mode === 'cloud'
   const colorField = arcColorFieldOf(
     readConfObject(band, ['color', 'field']),

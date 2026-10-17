@@ -39,6 +39,13 @@ export const READ_CONNECTIONS_OPTIONS = [
 export type ReadConnectionsMode =
   (typeof READ_CONNECTIONS_OPTIONS)[number]['value']
 
+export function drawnReadConnectionsOf(
+  show: boolean,
+  mark: ReadConnectionsMark,
+): ReadConnectionsMode {
+  return show ? mark : 'off'
+}
+
 // Which side of the coverage band a layer draws on (`sashimi.placement`,
 // `readConnections.placement`): up over it, or down in a band below it. Each
 // layer holds its own setting, and only sashimi has 'auto',

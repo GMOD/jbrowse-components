@@ -6787,7 +6787,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showConnectors": {
-          "description": "draw a curved connector from each read to its mate or split segment.",
+          "description": "draw a connector over the pileup from each read to its mate or split segment: a straight line for a normal pair within one displayed region, a curve otherwise. Under unit: 'chain' a link between displayed regions curves either way. The arc and read-cloud band is readConnections.",
           "default": false,
           "if": {
             "type": "null"
@@ -6796,8 +6796,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "fadeLowQuality": {
-          "description": "fade each mismatch base by its Phred base quality.",
+        "fadeLowBaseQuality": {
+          "description": "fade each mismatch base by its Phred base quality: opaque from 50 up, fading linearly below.",
           "default": false,
           "if": {
             "type": "null"
@@ -6807,7 +6807,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "fadeLowFrequency": {
-          "description": "fade the sub-pixel mismatches, insertions and clip bars that fall below the depth-dependent frequency threshold; off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
+          "description": "fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position carrying it: one every read carries stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
           "default": true,
           "if": {
             "type": "null"
@@ -6920,45 +6920,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "AlignmentsArcColor": {
       "title": "AlignmentsArcColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "field": {
+          "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
           "default": "",
-          "enum": [
-            "",
-            "insertSizeAndOrientation",
-            "insertSize",
-            "pairOrientation"
-          ],
-          "type": "string"
-        },
-        {
-          "title": "AlignmentsArcColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "field": {
-              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "",
-                  "insertSizeAndOrientation",
-                  "insertSize",
-                  "pairOrientation"
-                ]
-              }
-            }
+          "if": {
+            "type": "null"
           },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
+          "else": {
+            "enum": [
+              "",
+              "insertSizeAndOrientation",
+              "insertSize",
+              "pairOrientation"
+            ]
+          }
         }
-      ]
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "ReadConnectionsFilter": {
       "title": "ReadConnectionsFilter",
@@ -7319,10 +7303,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderers": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "colorScheme": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -7392,6 +7372,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "flipStrandLongReadChains": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderers": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -8376,10 +8360,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderers": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "colorScheme": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8449,6 +8429,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "flipStrandLongReadChains": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderers": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -15296,9 +15280,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/defaultRendering"
             },
-            "renderers": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers"
-            },
             "colorScheme": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme"
             },
@@ -15352,6 +15333,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "flipStrandLongReadChains": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/flipStrandLongReadChains"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -18477,9 +18461,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "defaultRendering": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/defaultRendering"
             },
-            "renderers": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers"
-            },
             "colorScheme": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme"
             },
@@ -18533,6 +18514,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "flipStrandLongReadChains": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers"
             },
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"

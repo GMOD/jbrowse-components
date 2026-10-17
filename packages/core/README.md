@@ -1354,6 +1354,23 @@ ends answer once.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### mergeConfSettings
+
+Two settings bags for one schema as one, `over` written after `under` the way
+`applyConfSettings` writes a bag: a namespace's object merges member by member
+at any depth, and a slot or a channel takes `over`'s value whole. For combining
+snapshots before any config node exists, as a track's `displayDefaults` folds
+into its `displays`.
+
+```js
+import { mergeConfSettings } from '@jbrowse/core/configuration'
+
+// type signature
+(schema: unknown, under: Record<string, unknown>, over: Record<string, unknown>) => { [x: string]: unknown; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
 ### MISCONFIGURED_ABGR
 
 The misconfiguration grey packed as the encoder paints it: a `jexl:` color that

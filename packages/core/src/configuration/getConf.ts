@@ -147,8 +147,9 @@ export interface ConfSettingsReport {
 // bag replaces it whole: `{ field }` after `{ field, domain }` is a facet with
 // no domain, and a merge would leave the old domain standing.
 function namespaceMetadata(member: unknown) {
-  const meta =
-    isStateTreeNode(member) || isType(member)
+  const meta = isStateTreeNode(member)
+    ? getConfigurationSchemaMetadata(getType(member))
+    : isType(member)
       ? getConfigurationSchemaMetadata(member)
       : undefined
   return meta?.options.shorthand === undefined ? meta : undefined

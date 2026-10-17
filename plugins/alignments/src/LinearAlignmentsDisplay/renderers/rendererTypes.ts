@@ -200,7 +200,7 @@ export interface ArcBandInput {
    */
   coverageReservedPx: number
   coverageYOffset: number
-  readConnections: ReadConnectionsMode
+  drawnReadConnections: ReadConnectionsMode
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
 }
@@ -212,7 +212,7 @@ export interface ArcBandInput {
 export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   const covH = state.coverageReservedPx
   const h = state.readConnectionsHeight ?? 0
-  if (state.readConnections === 'off' || h === 0) {
+  if (state.drawnReadConnections === 'off' || h === 0) {
     return undefined
   }
   if (state.readConnectionsDown) {

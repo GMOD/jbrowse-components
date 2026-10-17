@@ -148,7 +148,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `pileupDisplay` | moved into a current slot |
 | `snpCoverageDisplay` | moved into a current slot |
 | `defaultRendering` | ignored |
-| `renderers` | moved into a current slot |
 | `colorScheme` | ignored |
 | `scaleType` | moved into a current slot |
 | `autoscale` | moved into a current slot |
@@ -167,3 +166,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `hideLargeIndels` | ignored |
 | `minSubfeatureWidth` | ignored |
 | `flipStrandLongReadChains` | ignored |
+| `renderers` | moved into a current slot |

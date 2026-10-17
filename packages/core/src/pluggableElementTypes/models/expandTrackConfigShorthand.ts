@@ -84,7 +84,7 @@ export function collectDisplayOverrides(
         mergeConfSettings(
           displaySchemas.get(name),
           overrides.get(name) ?? {},
-          members,
+          members ?? {},
         ),
       )
     }

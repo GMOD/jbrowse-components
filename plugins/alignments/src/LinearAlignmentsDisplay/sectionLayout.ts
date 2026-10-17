@@ -122,12 +122,12 @@ export function stackedBandGain<T>(
 // `computeStackedSections` (per-section stacking) read it, and `computeArcBand`,
 // which decides where the arcs actually draw, must agree with both.
 export function reservesArcsBand(s: {
-  readConnections: ReadConnectionsMode
+  drawnReadConnections: ReadConnectionsMode
   readConnectionsDown?: boolean
   showCoverage: boolean
 }) {
   return (
-    s.readConnections !== 'off' &&
+    s.drawnReadConnections !== 'off' &&
     ((s.readConnectionsDown ?? false) || !s.showCoverage)
   )
 }
@@ -147,7 +147,7 @@ export function reservesArcsBand(s: {
 export interface BelowCoverageBandsInput {
   showCoverage: boolean
   coverageHeight: number
-  readConnections: ReadConnectionsMode
+  drawnReadConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   readConnectionsHeight: number
   showSashimi: boolean
@@ -241,7 +241,7 @@ export interface SectionBandOpts {
   rowHeight: number
   showCoverage?: boolean
   coverageYOffset?: number
-  readConnections?: ReadConnectionsMode
+  drawnReadConnections?: ReadConnectionsMode
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
   showSashimi?: boolean
@@ -275,7 +275,7 @@ export function computeStackedSections(
   const settings: BelowCoverageBandsSettings = {
     showCoverage: opts.showCoverage ?? true,
     coverageHeight: opts.coverageHeight,
-    readConnections: opts.readConnections ?? 'off',
+    drawnReadConnections: opts.drawnReadConnections ?? 'off',
     readConnectionsDown: opts.readConnectionsDown ?? false,
     readConnectionsHeight: opts.readConnectionsHeight ?? 0,
     showSashimi: opts.showSashimi ?? false,

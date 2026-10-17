@@ -11,13 +11,14 @@ import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
  * the reads' `color` field where it is one an arc paints (`insertSize`,
  * `pairOrientation`, `insertSizeAndOrientation`), and paint
  * `insertSizeAndOrientation` under any other. A field of its own colors the
- * arcs whatever the reads show. A string is the field.
+ * arcs whatever the reads show. A bare string is refused rather than read as
+ * the field, since the reads' `color` reads one as a constant.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: { show: true, color: 'pairOrientation' },
+ *   readConnections: { show: true, color: { field: 'pairOrientation' } },
  * }
  * ```
  * ```js
@@ -45,5 +46,17 @@ export const alignmentsArcColorConfigSchema = ConfigurationSchema(
         "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it",
     },
   },
-  { shorthand: 'field', closed: true },
+  {
+    closed: true,
+    // no shorthand lifted a bare string, so it arrives here as written
+    preProcessSnapshot: snap => {
+      const written: unknown = snap
+      if (typeof written === 'string') {
+        throw new Error(
+          `readConnections.color takes { "field": "${written}" }, not a bare string`,
+        )
+      }
+      return snap
+    },
+  },
 )

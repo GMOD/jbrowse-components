@@ -126,25 +126,25 @@ describe('alignments fit-to-display-height', () => {
   })
 })
 
-// pileup.fadeLowQuality fades mismatch bases by their per-base Phred quality, and
+// pileup.fadeLowBaseQuality fades mismatch bases by their per-base Phred quality, and
 // reaches the renderers via renderState (tier-4 rerender).
-describe('alignments pileup.fadeLowQuality (fade by base quality)', () => {
+describe('alignments pileup.fadeLowBaseQuality (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.fadeLowQuality).toBe(false)
+    expect(display.fadeLowBaseQuality).toBe(false)
   })
 
-  it('setFadeLowQuality sets the config slot on and off', () => {
+  it('setFadeLowBaseQuality sets the config slot on and off', () => {
     const { display } = createDisplay()
-    display.setFadeLowQuality(true)
-    expect(display.fadeLowQuality).toBe(true)
-    display.setFadeLowQuality(false)
-    expect(display.fadeLowQuality).toBe(false)
+    display.setFadeLowBaseQuality(true)
+    expect(display.fadeLowBaseQuality).toBe(true)
+    display.setFadeLowBaseQuality(false)
+    expect(display.fadeLowBaseQuality).toBe(false)
   })
 
   it('follows a config default', () => {
-    const { display } = createDisplay({ pileup: { fadeLowQuality: true } })
-    expect(display.fadeLowQuality).toBe(true)
+    const { display } = createDisplay({ pileup: { fadeLowBaseQuality: true } })
+    expect(display.fadeLowBaseQuality).toBe(true)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -152,7 +152,7 @@ describe('alignments pileup.fadeLowQuality (fade by base quality)', () => {
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show...')
     clickMenuItem(show, 'Fade low quality mismatches')
-    expect(display.fadeLowQuality).toBe(true)
+    expect(display.fadeLowBaseQuality).toBe(true)
   })
 })
 

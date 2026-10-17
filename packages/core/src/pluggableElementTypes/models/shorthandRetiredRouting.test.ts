@@ -94,6 +94,7 @@ test('an explicit entry still wins over the members a lift answers', () => {
     mergeOverridesIntoDisplays(
       [{ type: 'SecondDisplay', displayId: 't-SecondDisplay', size: 3 }],
       overrides,
+      schemas,
     ),
   ).toEqual([{ type: 'SecondDisplay', displayId: 't-SecondDisplay', size: 3 }])
 })

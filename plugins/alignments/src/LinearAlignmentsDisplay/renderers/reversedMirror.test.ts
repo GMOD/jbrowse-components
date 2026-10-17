@@ -274,7 +274,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     chainMode: false,
     showLinkedReadLines: false,
     readConnectionsLineWidth: 1,
-    readConnections: 'off',
+    drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,
     showOutline: false,

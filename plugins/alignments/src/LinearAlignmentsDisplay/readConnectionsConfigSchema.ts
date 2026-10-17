@@ -13,13 +13,18 @@ import { readConnectionsFilterConfigSchema } from './readConnectionsFilterConfig
  * #category display
  * The alignments display's `readConnections` setting: the band of
  * connections between mates and split segments, drawn as arcs or as the read
- * cloud, which plots each pair at its insert size.
+ * cloud, which plots each pair at its insert size. The connectors drawn over
+ * the pileup's own rows are `pileup.showConnectors`.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: { show: true, mark: 'cloud', color: 'insertSize' },
+ *   readConnections: {
+ *     show: true,
+ *     mark: 'cloud',
+ *     color: { field: 'insertSize' },
+ *   },
  * }
  * ```
  * ```js

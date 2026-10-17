@@ -988,7 +988,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
   defaultRendering: () => ({}),
-  renderers: rendererSlotsOf,
   colorScheme: () => ({}),
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
@@ -998,10 +997,13 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   maxHeight: v => ({ pileup: { maxHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { showMismatches: !v } }),
-  mismatchAlpha: v => ({ pileup: { fadeLowQuality: v } }),
+  mismatchAlpha: v => ({ pileup: { fadeLowBaseQuality: v } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),
+  // last: where two lifts land on one member the first declared wins, and a
+  // display's own featureHeight or mismatchAlpha beats its renderer's
+  renderers: rendererSlotsOf,
 }
 ```
 

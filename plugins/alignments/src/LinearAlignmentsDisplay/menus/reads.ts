@@ -23,8 +23,8 @@ interface ReadsModel extends CollapseSectionsModel, HiddenGroupsModel {
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  fadeLowQuality: boolean
-  setFadeLowQuality: (value: boolean) => void
+  fadeLowBaseQuality: boolean
+  setFadeLowBaseQuality: (value: boolean) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -84,9 +84,13 @@ export function getReadsMenuItems(model: ReadsModel) {
           'the line joining them is what says they are one read.',
       },
     ),
-    toggleItem('Fade low quality mismatches', model.fadeLowQuality, fade => {
-      model.setFadeLowQuality(fade)
-    }),
+    toggleItem(
+      'Fade low quality mismatches',
+      model.fadeLowBaseQuality,
+      fade => {
+        model.setFadeLowBaseQuality(fade)
+      },
+    ),
     // The worker forces soft clipping off in chain mode
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing.

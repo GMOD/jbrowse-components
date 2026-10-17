@@ -131,7 +131,9 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
   const slots = {
     ...(height !== undefined ? { readHeight: height } : {}),
     ...(maxHeight !== undefined ? { maxHeight } : {}),
-    ...(mismatchAlpha !== undefined ? { fadeLowQuality: mismatchAlpha } : {}),
+    ...(mismatchAlpha !== undefined
+      ? { fadeLowBaseQuality: mismatchAlpha }
+      : {}),
     ...(hideMismatches !== undefined
       ? { showMismatches: !hideMismatches }
       : {}),
@@ -193,7 +195,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   maxHeight: v => ({ pileup: { maxHeight: v } }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ pileup: { showMismatches: !v } }),
-  mismatchAlpha: v => ({ pileup: { fadeLowQuality: v } }),
+  mismatchAlpha: v => ({ pileup: { fadeLowBaseQuality: v } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),

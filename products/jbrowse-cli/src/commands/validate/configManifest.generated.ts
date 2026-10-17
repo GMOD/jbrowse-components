@@ -3970,7 +3970,7 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "fadeLowQuality",
+              "name": "fadeLowBaseQuality",
               "type": "boolean"
             },
             {
@@ -4047,10 +4047,7 @@ export const configManifest: ConfigManifest = {
                   "name": "field",
                   "type": "AlignmentsArcColorField"
                 }
-              ],
-              "shorthand": {
-                "string": "field"
-              }
+              ]
             },
             {
               "name": "showOrdinaryPairs",
@@ -4089,7 +4086,6 @@ export const configManifest: ConfigManifest = {
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
-        "renderers",
         "colorScheme",
         "scaleType",
         "autoscale",
@@ -4107,7 +4103,8 @@ export const configManifest: ConfigManifest = {
         "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
-        "flipStrandLongReadChains"
+        "flipStrandLongReadChains",
+        "renderers"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -4751,7 +4748,7 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "fadeLowQuality",
+              "name": "fadeLowBaseQuality",
               "type": "boolean"
             },
             {
@@ -4828,10 +4825,7 @@ export const configManifest: ConfigManifest = {
                   "name": "field",
                   "type": "AlignmentsArcColorField"
                 }
-              ],
-              "shorthand": {
-                "string": "field"
-              }
+              ]
             },
             {
               "name": "showOrdinaryPairs",
@@ -4878,7 +4872,6 @@ export const configManifest: ConfigManifest = {
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
-        "renderers",
         "colorScheme",
         "scaleType",
         "autoscale",
@@ -4896,7 +4889,8 @@ export const configManifest: ConfigManifest = {
         "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
-        "flipStrandLongReadChains"
+        "flipStrandLongReadChains",
+        "renderers"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

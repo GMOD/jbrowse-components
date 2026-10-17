@@ -867,7 +867,13 @@ export async function applyDisplayOpts(
   // SV evidence takes the top rows, split reads first (`svSignalTier`). A
   // track saying otherwise keeps it.
   if (joined && category === 'alignments') {
-    snap.readConnections = { show: true, mark: 'arc', ...snap.readConnections }
+    if (snap.readConnections?.show === undefined) {
+      snap.readConnections = {
+        show: true,
+        mark: 'arc',
+        ...snap.readConnections,
+      }
+    }
     snap.sort ??= 'svSignal'
   }
 

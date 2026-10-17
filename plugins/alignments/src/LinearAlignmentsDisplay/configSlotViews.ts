@@ -18,6 +18,7 @@ import {
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf } from './alignmentsSortConfigSchema.ts'
+import { drawnReadConnectionsOf } from './constants.ts'
 import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
@@ -155,8 +156,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, ['pileup', 'showConnectors'])
     },
     /** #getter */
-    get fadeLowQuality(): boolean {
-      return getConf(self, ['pileup', 'fadeLowQuality'])
+    get fadeLowBaseQuality(): boolean {
+      return getConf(self, ['pileup', 'fadeLowBaseQuality'])
     },
     /** #getter */
     get fadeLowFrequency(): boolean {
@@ -202,7 +203,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * The mark the read-connection band draws, or 'off' while it is hidden.
      */
     get drawnReadConnections(): ReadConnectionsMode {
-      return this.showReadConnections ? this.readConnectionsMark : 'off'
+      return drawnReadConnectionsOf(
+        this.showReadConnections,
+        this.readConnectionsMark,
+      )
     },
     /** #getter */
     get readConnectionsHeight(): number {
@@ -474,8 +478,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setFadeLowQuality(value: boolean) {
-      setConf(self, ['pileup', 'fadeLowQuality'], value)
+    setFadeLowBaseQuality(value: boolean) {
+      setConf(self, ['pileup', 'fadeLowBaseQuality'], value)
     },
 
     /**

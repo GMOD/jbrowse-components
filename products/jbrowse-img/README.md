@@ -700,21 +700,21 @@ Layout & sizing:
 
 Settings written as slots, in the display's own spelling:
 
-| Write                              | Description                                                                                                                                                |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `facet=strand`                     | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
-| `unit=chain`                       | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
-| `showLegend=true`                  | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
-| `pileup.showSoftClipping=true`     | Show soft-clipped bases                                                                                                                                    |
-| `coverage.show=false`              | Hide the coverage subtrack                                                                                                                                 |
-| `pileup.show=false`                | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
-| `coverage.height=200`              | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
-| `readConnections.height=120`       | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
-| `readConnections.lineWidth=2`      | Stroke width for read-connection arcs and lines                                                                                                            |
-| `sashimi.height=120`               | Height of the sashimi arc band                                                                                                                             |
-| `sashimi.filter.minReads=3`        | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
-| `readConnections.color=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
-| `pileup.maxHeight=4000`            | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
+| Write                                    | Description                                                                                                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`                           | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
+| `unit=chain`                             | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
+| `showLegend=true`                        | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
+| `pileup.showSoftClipping=true`           | Show soft-clipped bases                                                                                                                                    |
+| `coverage.show=false`                    | Hide the coverage subtrack                                                                                                                                 |
+| `pileup.show=false`                      | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
+| `coverage.height=200`                    | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
+| `readConnections.height=120`             | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
+| `readConnections.lineWidth=2`            | Stroke width for read-connection arcs and lines                                                                                                            |
+| `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
+| `sashimi.filter.minReads=3`              | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
+| `readConnections.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
+| `pileup.maxHeight=4000`                  | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
 Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
 Anything else is a CSS color, painting every read with it:

@@ -40,17 +40,17 @@ test('the current spelling beside a retired one wins', () => {
   ).toBe('only')
 })
 
-test('mismatchAlpha lifts onto pileup.fadeLowQuality, top level and renderer', () => {
+test('mismatchAlpha lifts onto pileup.fadeLowBaseQuality, top level and renderer', () => {
   expect(
     readConfObject(create({ mismatchAlpha: true }), [
       'pileup',
-      'fadeLowQuality',
+      'fadeLowBaseQuality',
     ]),
   ).toBe(true)
   expect(
     readConfObject(
       create({ renderers: { PileupRenderer: { mismatchAlpha: true } } }),
-      ['pileup', 'fadeLowQuality'],
+      ['pileup', 'fadeLowBaseQuality'],
     ),
   ).toBe(true)
 })
@@ -70,4 +70,18 @@ test("a display's own v4 read size beats its renderer's", () => {
   })
   expect(readConfObject(conf, ['pileup', 'readHeight'])).toBe(3)
   expect(readConfObject(conf, ['pileup', 'maxHeight'])).toBe(900)
+})
+
+// The reads' `color` reads a bare string as a constant, so the arcs' color
+// refuses one rather than read it as a field
+test('readConnections.color takes { field }, never a bare string', () => {
+  expect(() => create({ readConnections: { color: 'insertSize' } })).toThrow(
+    'readConnections.color takes { "field": "insertSize" }',
+  )
+  expect(
+    readConfObject(
+      create({ readConnections: { color: { field: 'insertSize' } } }),
+      ['readConnections', 'color', 'field'],
+    ),
+  ).toBe('insertSize')
 })

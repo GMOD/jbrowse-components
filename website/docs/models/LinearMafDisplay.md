@@ -29,7 +29,7 @@ height in px (or `0` to stretch rows to fill the track height):
       type: 'LinearMafDisplay',
       displayId: 'multiz-LinearMafDisplay',
       rowHeight: 16,
-      showCoverage: true,
+      coverage: { show: true },
     },
   ],
 }

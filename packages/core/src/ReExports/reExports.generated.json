@@ -914,6 +914,7 @@
         "liftPlot",
         "liftRetiredSpellings",
         "makeSlotFacade",
+        "mergeConfSettings",
         "mergeFormatCallbacks",
         "parsePlot",
         "partitionAdvanced",

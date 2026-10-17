@@ -128,7 +128,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
   Canvas2D painters' color batching. The alignments mismatch fades
-  (`pileup.fadeLowQuality`, `pileup.fadeLowFrequency`) stay booleans:
+  (`pileup.fadeLowBaseQuality`, `pileup.fadeLowFrequency`) stay booleans:
   each fades by one variable, so an `opacity` object would take one legal
   value. `encoding.size` maps a width through the
   `size` lane on the link alone
@@ -143,7 +143,8 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   MAF's `coverage` and `conservation`, each hold `show`, `height` and
   `placement` meaning the same in every band, and a predicate on a band's
   rows is that band's `filter`, spelt as the read filter. `show` toggles a
-  band or a mark's part and nothing else.
+  band, a layer or part of a mark, or the arcs' context pairs, and nothing
+  else.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.

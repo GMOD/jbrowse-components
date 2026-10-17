@@ -79,15 +79,16 @@ export const pileupConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        'draw a curved connector from each read to its mate or split segment',
+        "draw a connector over the pileup from each read to its mate or split segment: a straight line for a normal pair within one displayed region, a curve otherwise. Under unit: 'chain' a link between displayed regions curves either way. The arc and read-cloud band is readConnections",
     },
     /**
      * #slot
      */
-    fadeLowQuality: {
+    fadeLowBaseQuality: {
       type: 'boolean',
       defaultValue: false,
-      description: 'fade each mismatch base by its Phred base quality',
+      description:
+        'fade each mismatch base by its Phred base quality: opaque from 50 up, fading linearly below',
     },
     /**
      * #slot
@@ -96,7 +97,7 @@ export const pileupConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
       description:
-        'fade the sub-pixel mismatches, insertions and clip bars that fall below the depth-dependent frequency threshold; off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline)',
+        'fade each sub-pixel mismatch, insertion, deletion and clip mark by the share of reads at its position carrying it: one every read carries stays opaque, and one under the depth-dependent noise threshold drops to the sub-pixel floor and, past one base per pixel, takes no clicks. Off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline)',
       advanced: true,
     },
   },

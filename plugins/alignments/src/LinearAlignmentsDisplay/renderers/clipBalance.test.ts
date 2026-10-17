@@ -183,7 +183,7 @@ function state(): RenderState {
     collapseSections: false,
     readConnectionsLineWidth: 1,
     linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],
-    readConnections: 'off',
+    drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,
     showOutline: false,

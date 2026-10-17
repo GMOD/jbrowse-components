@@ -114,7 +114,7 @@ test('a section is emitted per lane, and the zip puts each one back on its own l
     showCoverage: false,
     coverageHeight: 0,
     coverageYOffset: 0,
-    readConnections: 'off',
+    drawnReadConnections: 'off',
     readConnectionsDown: false,
     readConnectionsHeight: 0,
     rowHeight: 10,
