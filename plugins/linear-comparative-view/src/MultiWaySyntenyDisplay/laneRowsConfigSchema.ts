@@ -11,6 +11,9 @@ import { types } from '@jbrowse/mobx-state-tree'
  * lists the lanes that stack first, in order, the rest following densest-first
  * so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
  * names the lanes drawn, empty drawing the track's lanes or every lane.
+ * Haplotype lanes read off a graph follow by structure instead, so lanes
+ * whose deletions and insertions against the anchor match sit together, in an
+ * order worked out once per window.
  *
  * #example
  * ```js

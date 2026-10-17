@@ -82,8 +82,9 @@ function fetchPhases(
       })
       return { features: dedupe(features, r => r.id()), ops }
     },
-    commit: ({ features, ops }, { anchor, haplotypes }) => {
+    commit: ({ features, ops }, { regions, anchor, haplotypes }) => {
       self.setFeatures(features, anchor, haplotypes, ops)
+      self.holdLaneOrder(regions)
     },
   }
 }

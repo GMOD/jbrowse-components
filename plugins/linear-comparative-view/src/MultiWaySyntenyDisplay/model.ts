@@ -292,6 +292,19 @@ interface MultiWayVolatiles {
   laneMotionClockMs: number
   laneMotionHalfway: ReadonlySet<string>
   laneDragPx: ReadonlyMap<string, number>
+  heldLaneOrder: HeldLaneOrder | undefined
+}
+
+/**
+ * The structure order haplotype lanes read off a graph stack by while no
+ * order is pinned, worked out once per window and lane selection so a pan
+ * never reshuffles it
+ */
+interface HeldLaneOrder {
+  anchor: string
+  window: FetchRegion[]
+  drawn: string[]
+  lanes: string[]
 }
 
 const NO_GENES: LaneGene[] = []
@@ -422,6 +435,12 @@ export function stateModelFactory(
       laneTransitions: new Map(),
       /** #volatile */
       laneMotionClockMs: 0,
+      /**
+       * #volatile
+       * the structure order graph haplotype lanes stack by while nothing pins
+       * one, with the window and lane selection it was worked out on
+       */
+      heldLaneOrder: undefined,
       /** #volatile */
       laneMotionHalfway: new Set(),
       /** #volatile */
@@ -1018,7 +1037,10 @@ export function stateModelFactory(
             .filter(lane => lane.drawn)
             .map(lane => self.laneKey(lane.name)),
         )
-        return rowAssembliesOf(self.groups, self.domain, self.laneKey).filter(
+        const preferred = self.domain.length
+          ? self.domain
+          : (self.heldLaneOrder?.lanes ?? [])
+        return rowAssembliesOf(self.groups, preferred, self.laneKey).filter(
           assemblyName => drawn.has(self.laneKey(assemblyName)),
         )
       },
@@ -1079,6 +1101,47 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * runs when the anchor fetch lands on `regions`. Haplotype lanes read
+       * off a graph stack by structure while no order is pinned, worked out
+       * again only once a fetch leaves the window it was worked out on or the
+       * lane selection changes, so panning never reshuffles the stack
+       */
+      holdLaneOrder(regions: FetchRegion[]) {
+        const { features, featureOps } = self
+        if (
+          !features ||
+          !self.adapterCapabilities.includes('lanePairsOnAnchor') ||
+          !self.laneFetchKinds.lanePairs
+        ) {
+          self.heldLaneOrder = undefined
+          return
+        }
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        const drawn = (self.laneSelection ?? []).map(self.laneKey).sort()
+        const held = self.heldLaneOrder
+        const onWindow = regions.some(r =>
+          held?.window.some(
+            w => w.refName === r.refName && w.start < r.end && r.start < w.end,
+          ),
+        )
+        if (
+          held?.anchor === anchor &&
+          held.drawn.join('\t') === drawn.join('\t') &&
+          onWindow
+        ) {
+          return
+        }
+        self.heldLaneOrder = {
+          anchor,
+          window: regions,
+          drawn,
+          lanes: structureOrder(laneProfiles(features, featureOps)).map(
+            self.laneKey,
+          ),
+        }
+      },
       /** #action */
       chooseLanes(names: string[]) {
         self.setSelectedLanes(

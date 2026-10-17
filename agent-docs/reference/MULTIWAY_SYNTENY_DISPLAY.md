@@ -99,6 +99,14 @@ cost is linear in lanes.
   first-seen order, so `ComparativeAdapterBase` emits per-region streams in region
   order and `MultiGenomeIndexedPAFAdapter` sorts reads by `fileOffset`. Tied lanes
   do not reorder with network arrival.
+- **Haplotype lanes read off a graph stack by structure** where nothing pins the
+  order (`holdLaneOrder`, `structureOrder`; sources with `lanePairsOnAnchor`).
+  A ribbon joins neighbours only, and densest-first or the portal's
+  commonest-first panel put two different structures in nearly every pair. The
+  order is worked out when the anchor fetch lands and held until a fetch leaves
+  that window or the lane selection changes, so a pan never reshuffles the
+  stack. Cross-species stacks keep densest-first, the order the grape
+  tutorial's lane-ordering section starts from.
 - **A star launch seeds from the display's lanes** (`lanePanelsForRegion`) and
   offers **Repeat ⟨anchor⟩ between panels** so every band is a direct pair. A
   stacked view has no notion of "every level anchored on the hub", and mate-vs-mate

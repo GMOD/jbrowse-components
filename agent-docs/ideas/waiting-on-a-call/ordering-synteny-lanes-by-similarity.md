@@ -23,6 +23,11 @@ reads it. So nothing needs building to CONSUME an order — the open question is
 only where one comes from, and a first cut can write `domain` from a track
 menu item without touching the layout at all.
 
+Haplotype lanes read off a graph already take the profile ordering as their
+default (`holdLaneOrder`, reference/MULTIWAY_SYNTENY_DISPLAY.md), and **Order
+lanes by structure** writes it into `domain` for any alignment source. What
+stays open below is the gene-group seriation and the cross-species case.
+
 ## A ribbon joins adjacent lanes, so this is seriation
 
 `rowAssembliesOf`'s comment states the structural fact: "a ribbon connects

@@ -55,6 +55,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-renderoriginpx">**renderOriginPx**</span><br><code>number</code> | the view's `offsetPx` the stack was last laid out against |
 | <span id="volatile-lanetransitions">**laneTransitions**</span><br><code>Map&lt;string, LaneTransition&gt;</code> |  |
 | <span id="volatile-lanemotionclockms">**laneMotionClockMs**</span><br><code>number</code> |  |
+| <span id="volatile-heldlaneorder">**heldLaneOrder**</span><br><code>HeldLaneOrder &#124; undefined</code> | the structure order graph haplotype lanes stack by while nothing pins one, with the window and lane selection it was worked out on |
 | <span id="volatile-lanemotionhalfway">**laneMotionHalfway**</span><br><code>ReadonlySet&lt;string&gt;</code> |  |
 | <span id="volatile-lanedragpx">**laneDragPx**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> |  |
 
@@ -313,6 +314,7 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  |
 | <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  |
+| <span id="action-holdlaneorder">**holdLaneOrder**</span><br><code>(regions: FetchRegion[]) =&gt; void</code> | runs when the anchor fetch lands on `regions`. Haplotype lanes read off a graph stack by structure while no order is pinned, worked out again only once a fetch leaves the window it was worked out on or the lane selection changes, so panning never reshuffles the stack |
 | <span id="action-chooselanes">**chooseLanes**</span><br><code>(names: string[]) =&gt; void</code> |  |
 | <span id="action-hidelane">**hideLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
 | <span id="action-showlane">**showLane**</span><br><code>(assemblyName: string) =&gt; void</code> |  |
