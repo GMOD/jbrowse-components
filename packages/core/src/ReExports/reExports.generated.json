@@ -1616,12 +1616,15 @@
     "@jbrowse/core/ui/colors": {
       "package": "@jbrowse/core",
       "names": [
+        "DEAL_COLOR_DIFFERENCE",
         "categoricalColor",
         "categoricalColorScale",
         "categoricalPalette",
         "categoricalScale",
         "categoricalValueColor",
         "category10",
+        "ciede2000",
+        "colorDifference",
         "getQueryColor",
         "hashString",
         "paletteColors",
@@ -2744,6 +2747,7 @@
         "SV_TYPE_FIELD",
         "categoricalField",
         "dealKeyColors",
+        "dealShownKeyColors",
         "heldSlotsOf",
         "keyNames"
       ],

@@ -11,7 +11,10 @@ Accepted (2026-10-03). Amends
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md),
 [ADR-136](adr-136-a-legend-follows-its-scale-and-a-color-slot-is-a-color.md)
 and [ADR-156](adr-156-the-feature-color-takes-a-threshold.md) where they
-describe "Pin distinct colors".
+describe "Pin distinct colors". Amended by
+[ADR-233](adr-233-a-categorical-deal-keeps-the-colors-on-screen-apart.md): twins
+are CIEDE2000 15 apart, a batch deals around its own colors, and a value with no
+free entry takes the farthest one rather than its hash.
 
 ## Context
 

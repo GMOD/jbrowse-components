@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -33,6 +34,32 @@ export interface GeneColorSettings {
 export interface GeneColors {
   fill: (feature: Feature, cluster: string | undefined) => PaintedFill
   utr: (feature: Feature) => number
+}
+
+/**
+ * Deals the values every lane's `features` carry under a painting field as
+ * one batch, before any lane paints, so the genes on screen together take
+ * colors apart whichever lane reads first. A cluster field deals as it paints.
+ */
+export function dealGeneColors(
+  encoding: string | undefined | FieldColorEncoding,
+  held: HeldSlots | undefined,
+  jexl: JexlInstance,
+  features: Iterable<Feature>,
+) {
+  const field = colorFieldOf(encoding, held)
+  if (field && field.field !== CLUSTER_FIELD) {
+    const read = fieldReader(field.field, jexl)
+    const keys: string[] = []
+    for (const feature of features) {
+      try {
+        keys.push(field.key(read(feature)))
+      } catch {
+        // a jexl field that throws on a feature paints it no value
+      }
+    }
+    dealShownKeyColors(field, keys)
+  }
 }
 
 function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {

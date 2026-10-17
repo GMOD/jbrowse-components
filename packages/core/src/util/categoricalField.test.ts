@@ -1,7 +1,9 @@
+import { DEAL_COLOR_DIFFERENCE, colorDifference } from '../ui/colors.ts'
 import {
   NO_VALUE_LABEL,
   categoricalField,
   dealKeyColors,
+  dealShownKeyColors,
   heldSlotsOf,
   keyNames,
 } from './categoricalField.ts'
@@ -141,4 +143,22 @@ test('an owner keeps one held map per key until the owner goes', () => {
   expect(heldSlotsOf(owner, 'k')).toBe(heldSlotsOf(owner, 'k'))
   expect(heldSlotsOf(owner, 'k')).not.toBe(heldSlotsOf(owner, 'j'))
   expect(heldSlotsOf({}, 'k')).not.toBe(heldSlotsOf(owner, 'k'))
+})
+
+test('dealShownKeyColors deals what is shown apart even after the session has held many', () => {
+  const held = new Map<string, number>()
+  const field = categoricalField('name', { held })
+  for (let i = 0; i < 60; i++) {
+    field.color(`seen${i}`)
+  }
+  const keys = ['AMY1A', 'AMY1B', 'AMY1C', 'AMY2A', 'AMY2B', 'AMYP1', 'RNPC3']
+  dealShownKeyColors(field, keys)
+  const colors = keys.map(key => field.color(key))
+  for (const [i, a] of colors.entries()) {
+    for (const b of colors.slice(i + 1)) {
+      expect(colorDifference(a, b)).toBeGreaterThanOrEqual(
+        DEAL_COLOR_DIFFERENCE,
+      )
+    }
+  }
 })

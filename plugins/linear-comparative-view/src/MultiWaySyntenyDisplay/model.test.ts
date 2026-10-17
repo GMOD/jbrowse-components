@@ -1,5 +1,6 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { setConf } from '@jbrowse/core/configuration'
+import { DEAL_COLOR_DIFFERENCE, colorDifference } from '@jbrowse/core/ui/colors'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
@@ -637,6 +638,43 @@ test('Name colors and keys a gene that carries only an ID by its ID', () => {
   expect(display.colorScales.find(s => s.id === 'genes')?.title).toBe(
     'Gene name',
   )
+})
+
+test('the genes on screen, colored by name, take colors that read apart', () => {
+  const display = createDisplay()
+  const names = [
+    'CABIN1',
+    'DDT',
+    'DDTL',
+    'GSTT1',
+    'GSTT2',
+    'GSTT2B',
+    'GSTT3P',
+    'GSTT4',
+    'LOC100652871',
+    'LOC105372959',
+  ]
+  display.colorByField(FEATURE_NAME_FIELD)
+  anchorGenes(
+    display,
+    Array.from({ length: 60 }, (_, i) =>
+      namedGene(`seen${i}`, `SEEN${i}`, i * 10, i * 10 + 5),
+    ),
+  )
+  expect(anchorGeneFills(display)).toHaveLength(60)
+  anchorGenes(
+    display,
+    names.map((name, i) => namedGene(`g${i}`, name, i * 100, i * 100 + 50)),
+  )
+  const fills = anchorGeneFills(display).map(([, css]) => css!)
+  expect(fills).toHaveLength(names.length)
+  for (const [i, a] of fills.entries()) {
+    for (const b of fills.slice(i + 1)) {
+      expect(colorDifference(a, b)).toBeGreaterThanOrEqual(
+        DEAL_COLOR_DIFFERENCE,
+      )
+    }
+  }
 })
 
 test('gene names the hash puts on one color each take their own', () => {

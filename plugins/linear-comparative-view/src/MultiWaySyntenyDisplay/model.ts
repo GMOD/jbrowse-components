@@ -96,7 +96,7 @@ import {
 } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { configSlotActions, configSlotViews } from './configSlotViews.ts'
-import { geneColors } from './geneColor.ts'
+import { dealGeneColors, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
 import {
   decideLaneFrames,
@@ -748,6 +748,14 @@ export function stateModelFactory(
         },
         /** #getter */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
+          dealGeneColors(
+            self.geneColorEncoding,
+            self.geneColorSlots,
+            jexl,
+            [...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
+              genes.map(gene => gene.feature),
+            ),
+          )
           lanes = new Map(
             [...(self.laneGenes.held ?? [])].map(([lane, held]) => [
               lane,

@@ -410,6 +410,21 @@ import { colorAt } from '@jbrowse/core/util/markEncoding'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+### colorDifference
+
+The CIEDE2000 difference between two CSS colors, in CIELAB as CSS `lab()` reads
+it. About 2 is a just noticeable difference between large patches side by side;
+small marks matched to a key's swatches need far more.
+
+```js
+import { colorDifference } from '@jbrowse/core/ui/colors'
+
+// type signature
+(a: string, b: string) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/colors.ts)
+
 ### ColorEncoding
 
 How a mark's `color` channel resolves. A CSS color or a `jexl:` expression
@@ -560,11 +575,28 @@ import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
 ### dealKeyColors
 
 Deals `keys` their colors in `field.compare` order, so the colors a set of keys
-first seen together takes do not depend on the order they arrive in. A no-op for
-a field that deals nothing.
+first seen together takes do not depend on the order they arrive in. Each new
+key avoids every color the session has dealt, so one region of several can deal
+its own keys. A no-op for a field that deals nothing.
 
 ```js
 import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
+
+// type signature
+(field: CategoricalField, keys: Iterable<string>) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
+
+### dealShownKeyColors
+
+`dealKeyColors` for `keys` that are every value a display shows: each new key
+avoids only these keys' colors, so the values a session met elsewhere do not use
+up the palette for the ones on screen. Dealing one region of several this way
+can put a value on the color of one in the region beside it.
+
+```js
+import { dealShownKeyColors } from '@jbrowse/core/util/categoricalField'
 
 // type signature
 (field: CategoricalField, keys: Iterable<string>) => void

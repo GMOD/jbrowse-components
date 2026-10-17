@@ -3,7 +3,7 @@ import { NO_CATEGORY_COLOR } from './color/index.ts'
 import { universalPresetOf } from './colorScale.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 
-import type { HeldSlots } from '../ui/colors.ts'
+import type { CategoricalScale, HeldSlots } from '../ui/colors.ts'
 
 /** #api */
 export const STRAND_FIELD = 'strand'
@@ -47,6 +47,8 @@ export interface CategoricalField {
   label: (key: string) => string
   sectionLabel: (key: string) => string
   color: (key: string) => string
+  /** `key`'s color dealt with `batch`, as `dealKeyColors` deals one */
+  colorAmong?: (key: string, batch: ReadonlySet<string>) => string
 }
 
 /**
@@ -105,7 +107,7 @@ export function categoricalField(
   const declared = keyNames(order, labels)
   const own = vocabulary && keyNames(ownOrder, vocabulary.labels)
   const named = (key: string) => declared.get(key) ?? own?.get(key)
-  let colorOf: ((key: string) => string) | undefined
+  let colorOf: CategoricalScale<string> | undefined
   return {
     field,
     domain: order,
@@ -123,6 +125,13 @@ export function categoricalField(
       colorOf ??= categoricalColorScale(paired, colors, held)
       return colorOf(key)
     },
+    colorAmong: (key, batch) => {
+      if (key === '') {
+        return NO_CATEGORY_COLOR
+      }
+      colorOf ??= categoricalColorScale(paired, colors, held)
+      return colorOf.among(key, batch)
+    },
   }
 }
 
@@ -130,11 +139,34 @@ export function categoricalField(
  * #api
  * Deals `keys` their colors in `field.compare` order, so the colors a set
  * of keys first seen together takes do not depend on the order they arrive
- * in. A no-op for a field that deals nothing.
+ * in. Each new key avoids every color the session has dealt, so one region
+ * of several can deal its own keys. A no-op for a field that deals nothing.
  */
 export function dealKeyColors(field: CategoricalField, keys: Iterable<string>) {
   for (const key of [...new Set(keys)].sort(field.compare)) {
     field.color(key)
+  }
+}
+
+/**
+ * #api
+ * `dealKeyColors` for `keys` that are every value a display shows: each new
+ * key avoids only these keys' colors, so the values a session met elsewhere
+ * do not use up the palette for the ones on screen. Dealing one region of
+ * several this way can put a value on the color of one in the region beside
+ * it.
+ */
+export function dealShownKeyColors(
+  field: CategoricalField,
+  keys: Iterable<string>,
+) {
+  const batch = new Set(keys)
+  for (const key of [...batch].sort(field.compare)) {
+    if (field.colorAmong) {
+      field.colorAmong(key, batch)
+    } else {
+      field.color(key)
+    }
   }
 }
 

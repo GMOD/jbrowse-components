@@ -117,10 +117,11 @@ export const paletteColors = {
  * on purpose: an attribute palette-by hashes the VALUE (stable across
  * re-palettes), while a by-position painter has no value to hash and wraps.
  *
- * **It holds 14 pairs `similarColors` calls the same** — five schemes' blues,
- * oranges, greens, reds and pinks. A dealt scale (`categoricalScale`'s `held`)
- * steps over a twin of a color already dealt, so they cost a track only once
- * it has more values than the 30 distinct entries.
+ * **It holds 59 pairs within `DEAL_COLOR_DIFFERENCE`**, nine of its entries
+ * greens or teals. A dealt scale (`categoricalScale`'s `held`) steps over a
+ * twin of a color dealt in the same batch, so about 15 values on screen
+ * together take colors that read apart, and past that each takes the entry
+ * farthest from the rest.
  *
  * The near-twins bite a `domain` instead, which spends the list in order: 30
  * listed values take 30 colors and 7 of those pairs read alike. Ordering the
@@ -190,6 +191,13 @@ function freeSlot(value: string, size: number, taken: ReadonlySet<number>) {
  */
 export type HeldSlots = Map<string, number>
 
+/** A categorical scale: a value's entry, dealt alone or within a batch */
+export interface CategoricalScale<T> {
+  (value: string): T
+  /** `value`'s entry, dealt with `batch`, `dealKeyColors`'s keys */
+  among: (value: string, batch: ReadonlySet<string>) => T
+}
+
 /**
  * The categorical rule every scaled channel resolves through. The values
  * `domain` lists take `range` in order, continuing into the `fallback`
@@ -198,12 +206,16 @@ export type HeldSlots = Map<string, number>
  * value holds it or one `isNear` calls the same, and then another slot derived
  * from itself.
  *
- * With `held`, a value is dealt once, on first sight: its slot avoids every
- * slot `held` already records and their near twins as well, so values met
- * together never share an entry while the list has room, and the slot is
- * recorded so the value keeps it as others arrive. A value nothing else
- * collides with keeps the entry it takes without `held`. With no `domain`, the
- * deal spends `range` before spilling into the `fallback` entries it lacks.
+ * With `held`, a value is dealt once, on first sight: its slot avoids the
+ * slots `held` records and their near twins, so values met together never
+ * share an entry while the list has room, and the slot is recorded so the
+ * value keeps it as others arrive. Dealt within a batch (`among`), it avoids
+ * only the batch's slots, so a session's earlier values do not use up the
+ * palette for the ones on screen; dealt alone, it avoids every held slot. With
+ * no free slot, it takes the entry `distance` puts farthest from the slots it
+ * avoids, or without `distance` its own. A value nothing else collides with
+ * keeps the entry it takes without `held`. With no `domain`, the deal spends
+ * `range` before spilling into the `fallback` entries it lacks.
  */
 export function categoricalScale<T>(
   domain: readonly (string | number)[] | undefined,
@@ -211,17 +223,20 @@ export function categoricalScale<T>(
   {
     fallback = [],
     isNear,
+    distance,
     held,
   }: {
     fallback?: readonly T[]
     isNear?: (a: T, b: T) => boolean
+    distance?: (a: T, b: T) => number
     held?: HeldSlots
   } = {},
-): (value: string) => T {
+): CategoricalScale<T> {
   const base = range.length ? range : fallback
   const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
   if (listed.length === 0 && !held) {
-    return value => base[valueSlot(value, base.length)]!
+    const hashed = (value: string) => base[valueSlot(value, base.length)]!
+    return Object.assign(hashed, { among: hashed })
   }
   const seen = new Set(base.map(entryKey))
   const entries = [
@@ -243,7 +258,29 @@ export function categoricalScale<T>(
     listed.length > 0
       ? [[0, size] as const]
       : [[0, base.length] as const, [base.length, size] as const]
-  const deal = (value: string, taken: ReadonlySet<number>) => {
+  // the entry least like any of `avoid`, first in slot order on a tie
+  const farthest = (avoid: readonly number[]) => {
+    let best = -1
+    let bestGap = -1
+    for (let slot = 0; slot < size; slot++) {
+      if (!avoid.includes(slot)) {
+        let gap = Infinity
+        for (const s of avoid) {
+          gap = Math.min(gap, distance!(entries[slot]!, entries[s]!))
+        }
+        if (gap > bestGap) {
+          best = slot
+          bestGap = gap
+        }
+      }
+    }
+    return best
+  }
+  const deal = (
+    value: string,
+    taken: ReadonlySet<number>,
+    avoid: readonly number[] = [],
+  ) => {
     for (const [from, to] of tiers) {
       const inTier =
         from === 0 && to === size
@@ -255,9 +292,10 @@ export function categoricalScale<T>(
         return from + freeSlot(value, to - from, inTier)
       }
     }
-    return valueSlot(value, tiers[0]![1])
+    const far = distance && avoid.length > 0 ? farthest(avoid) : -1
+    return far >= 0 ? far : valueSlot(value, tiers[0]![1])
   }
-  return value => {
+  const pick = (value: string, among?: ReadonlySet<string>) => {
     const i = rank.get(value)
     if (i !== undefined) {
       return entries[i % size]!
@@ -267,17 +305,27 @@ export function categoricalScale<T>(
     }
     let slot = held.get(value)
     if (slot === undefined) {
+      const avoid = [
+        ...listed.map((_, i) => i % size),
+        ...(among
+          ? [...among].flatMap(key => {
+              const s = held.get(key)
+              return s === undefined ? [] : [s]
+            })
+          : held.values()),
+      ]
       const taken = new Set(listedTaken)
-      for (const s of held.values()) {
+      for (const s of avoid) {
         for (const twin of twinsOf(s)) {
           taken.add(twin)
         }
       }
-      slot = deal(value, taken)
+      slot = deal(value, taken, avoid)
       held.set(value, slot)
     }
     return entries[slot]!
   }
+  return Object.assign((value: string) => pick(value), { among: pick })
 }
 
 const oklabByColor = new Map<string, [number, number, number]>()
@@ -295,6 +343,115 @@ function oklabOf(color: string) {
   return lab
 }
 
+const labByColor = new Map<string, [number, number, number]>()
+
+function labOf(color: string) {
+  let lab = labByColor.get(color)
+  if (lab === undefined) {
+    lab = convert.xyzd50ToLab(
+      ...convert.srgbToXyzd50(...cssColorToNormalizedRgb(color)),
+    )
+    labByColor.set(color, lab)
+  }
+  return lab
+}
+
+const RAD = Math.PI / 180
+
+function hueDegrees(b: number, a: number) {
+  if (a === 0 && b === 0) {
+    return 0
+  }
+  const h = Math.atan2(b, a) / RAD
+  return h >= 0 ? h : h + 360
+}
+
+/**
+ * #api
+ * The CIEDE2000 difference between two CSS colors, in CIELAB as CSS `lab()`
+ * reads it. About 2 is a just noticeable difference between large patches side
+ * by side; small marks matched to a key's swatches need far more.
+ */
+export function colorDifference(a: string, b: string) {
+  return ciede2000(labOf(a), labOf(b))
+}
+
+/** CIEDE2000 (Sharma, Wu and Dalal 2005) between two CIELAB colors */
+export function ciede2000(
+  [L1, a1, b1]: readonly [number, number, number],
+  [L2, a2, b2]: readonly [number, number, number],
+) {
+  const cBar = (Math.hypot(a1, b1) + Math.hypot(a2, b2)) / 2
+  const g = 0.5 * (1 - Math.sqrt(cBar ** 7 / (cBar ** 7 + 25 ** 7)))
+  const a1p = (1 + g) * a1
+  const a2p = (1 + g) * a2
+  const c1p = Math.hypot(a1p, b1)
+  const c2p = Math.hypot(a2p, b2)
+  const h1p = hueDegrees(b1, a1p)
+  const h2p = hueDegrees(b2, a2p)
+  const chroma = c1p * c2p
+  let dh = 0
+  if (chroma !== 0) {
+    dh = h2p - h1p
+    if (dh > 180) {
+      dh -= 360
+    } else if (dh < -180) {
+      dh += 360
+    }
+  }
+  const dL = L2 - L1
+  const dC = c2p - c1p
+  const dH = 2 * Math.sqrt(chroma) * Math.sin((dh / 2) * RAD)
+  const lBar = (L1 + L2) / 2
+  const cBarP = (c1p + c2p) / 2
+  const hBar =
+    chroma === 0
+      ? h1p + h2p
+      : Math.abs(h1p - h2p) <= 180
+        ? (h1p + h2p) / 2
+        : h1p + h2p < 360
+          ? (h1p + h2p + 360) / 2
+          : (h1p + h2p - 360) / 2
+  const t =
+    1 -
+    0.17 * Math.cos((hBar - 30) * RAD) +
+    0.24 * Math.cos(2 * hBar * RAD) +
+    0.32 * Math.cos((3 * hBar + 6) * RAD) -
+    0.2 * Math.cos((4 * hBar - 63) * RAD)
+  const theta = 30 * Math.exp(-(((hBar - 275) / 25) ** 2))
+  const rC = 2 * Math.sqrt(cBarP ** 7 / (cBarP ** 7 + 25 ** 7))
+  const sL = 1 + (0.015 * (lBar - 50) ** 2) / Math.sqrt(20 + (lBar - 50) ** 2)
+  const sC = 1 + 0.045 * cBarP
+  const sH = 1 + 0.015 * cBarP * t
+  const rT = -Math.sin(2 * theta * RAD) * rC
+  return Math.sqrt(
+    (dL / sL) ** 2 +
+      (dC / sC) ** 2 +
+      (dH / sH) ** 2 +
+      rT * (dC / sC) * (dH / sH),
+  )
+}
+
+/**
+ * The CIEDE2000 difference under which a categorical deal treats two colors
+ * as one: every curated qualitative palette the deal draws on (tableau10,
+ * category10 and set1 without their greys) keeps its own pairs above it,
+ * while dark2's and category10's greens sit 7.8 apart.
+ */
+export const DEAL_COLOR_DIFFERENCE = 15
+
+const dealNearByPair = new Map<string, boolean>()
+
+function dealNear(a: string, b: string) {
+  const key = `${a}\u001F${b}`
+  let near = dealNearByPair.get(key)
+  if (near === undefined) {
+    near = colorDifference(a, b) < DEAL_COLOR_DIFFERENCE
+    dealNearByPair.set(key, near)
+  }
+  return near
+}
+
 /**
  * Whether two CSS colors read as one: under 0.05 apart in OKLab, where the
  * wide palette's tableau and category10 oranges sit 0.003 apart.
@@ -308,8 +465,9 @@ export function similarColors(a: string, b: string) {
 /**
  * `categoricalScale` for a color channel: `palette` (the wide palette when
  * empty) spent in `domain` order and continued into the wide palette, and an
- * unlisted value never on a listed value's color or one that reads the same,
- * nor, with `held`, on the color of a value met before it.
+ * unlisted value never on a listed value's color or one within
+ * `DEAL_COLOR_DIFFERENCE` of it, nor, with `held`, on the color of a value
+ * dealt with it.
  */
 export function categoricalColorScale(
   domain: readonly (string | number)[] | undefined,
@@ -318,7 +476,8 @@ export function categoricalColorScale(
 ) {
   return categoricalScale(domain, palette, {
     fallback: categoricalPalette,
-    isNear: similarColors,
+    isNear: dealNear,
+    distance: colorDifference,
     held,
   })
 }

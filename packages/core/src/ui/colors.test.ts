@@ -1,13 +1,19 @@
 import {
+  DEAL_COLOR_DIFFERENCE,
   categoricalColor,
   categoricalColorScale,
   categoricalPalette,
   categoricalScale,
   categoricalValueColor,
+  ciede2000,
+  colorDifference,
   paletteFromSpec,
   set1,
-  similarColors,
 } from './colors.ts'
+
+// the deal's own sense of two colors reading as one
+const dealtAlike = (a: string, b: string) =>
+  colorDifference(a, b) < DEAL_COLOR_DIFFERENCE
 
 const BIOTYPES = [
   'protein_coding',
@@ -97,7 +103,7 @@ describe('categoricalScale', () => {
         .filter(
           value =>
             before(value) !== after(value) &&
-            !similarColors(before(value), claimed),
+            !dealtAlike(before(value), claimed),
         )
       expect(moved).toEqual([])
     }
@@ -133,7 +139,7 @@ describe('categoricalColorScale', () => {
     const palette = ['#1f77b4', '#ff7f0e']
     const scale = categoricalColorScale(['protein_coding', 'lncRNA'], palette)
     for (const value of BIOTYPES.slice(2)) {
-      expect(palette.some(c => similarColors(c, scale(value)))).toBe(false)
+      expect(palette.some(c => dealtAlike(c, scale(value)))).toBe(false)
       expect(categoricalPalette).toContain(scale(value))
     }
   })
@@ -144,7 +150,7 @@ describe('categoricalColorScale', () => {
     const listed = domain.map(scale)
     for (let i = 0; i < 2000; i++) {
       const color = scale(`value${i}`)
-      expect(listed.some(c => similarColors(c, color))).toBe(false)
+      expect(listed.some(c => dealtAlike(c, color))).toBe(false)
     }
   })
 })
@@ -163,7 +169,7 @@ describe('a dealt scale', () => {
     const met: string[] = []
     let kept = 0
     for (const value of BIOTYPES) {
-      const free = !met.some(c => similarColors(c, hashed(value)))
+      const free = !met.some(c => dealtAlike(c, hashed(value)))
       met.push(dealt(value))
       if (free) {
         expect(dealt(value)).toBe(hashed(value))
@@ -172,17 +178,52 @@ describe('a dealt scale', () => {
         expect(dealt(value)).not.toBe(hashed(value))
       }
     }
-    expect(kept).toBeGreaterThan(5)
+    expect(kept).toBeGreaterThanOrEqual(5)
   })
 
-  it('deals 30 values 30 colors none of which read alike', () => {
+  it('deals a dozen values colors none of which read alike', () => {
     const dealt = categoricalColorScale(undefined, [], new Map())
-    const colors = BIOTYPES.map(dealt)
+    const colors = BIOTYPES.slice(0, 12).map(value => dealt(value))
     for (const [i, a] of colors.entries()) {
       for (const b of colors.slice(i + 1)) {
-        expect(similarColors(a, b)).toBe(false)
+        expect(dealtAlike(a, b)).toBe(false)
       }
     }
+  })
+
+  it('deals a batch around its own colors, not every color the session has held', () => {
+    const held = new Map<string, number>()
+    const scale = categoricalColorScale(undefined, [], held)
+    for (const value of [...BIOTYPES, ...BIOTYPES.map(b => `${b}_2`)]) {
+      scale(value)
+    }
+    const genes = [
+      'CABIN1',
+      'DDT',
+      'DDTL',
+      'GSTT1',
+      'GSTT2',
+      'GSTT2B',
+      'GSTT3P',
+      'GSTT4',
+      'LOC100652871',
+      'LOC105372959',
+    ]
+    const batch = new Set(genes)
+    const colors = genes.map(gene => scale.among(gene, batch))
+    for (const [i, a] of colors.entries()) {
+      for (const b of colors.slice(i + 1)) {
+        expect(dealtAlike(a, b)).toBe(false)
+      }
+    }
+  })
+
+  it('past the palette, deals a batch value the color farthest from the rest', () => {
+    const scale = categoricalColorScale(undefined, [], new Map())
+    const values = Array.from({ length: 30 }, (_, i) => `v${i}`)
+    const batch = new Set(values)
+    const colors = values.map(value => scale.among(value, batch))
+    expect(new Set(colors).size).toBe(30)
   })
 
   it('never moves a held value as others arrive', () => {
@@ -199,7 +240,7 @@ describe('a dealt scale', () => {
     expect(dealt('lncRNA')).toBe('#e41a1c')
     const others = ['protein_coding', 'snRNA', 'TEC'].map(dealt)
     expect(new Set(others).size).toBe(3)
-    expect(others.some(c => similarColors(c, '#e41a1c'))).toBe(false)
+    expect(others.some(c => dealtAlike(c, '#e41a1c'))).toBe(false)
   })
 
   it('deals a range before spilling into the wide palette', () => {
@@ -209,6 +250,27 @@ describe('a dealt scale', () => {
     expect(colors.slice(0, 2).sort()).toEqual([...range].sort())
     expect(new Set(colors).size).toBe(4)
     expect(range).not.toContain(colors[2])
+  })
+})
+
+describe('ciede2000', () => {
+  // pairs 1, 7, 17 and 25 of Sharma, Wu and Dalal (2005)
+  it.each([
+    [[50, 2.6772, -79.7751], [50, 0, -82.7485], 2.0425],
+    [[50, 0, 0], [50, -1, 2], 2.3669],
+    [[50, 2.5, 0], [73, 25, -18], 27.1492],
+    [[60.2574, -34.0099, 36.2677], [60.4626, -34.1751, 39.4387], 1.2644],
+  ] as const)('%j against %j is %d', (a, b, expected) => {
+    expect(ciede2000(a, b)).toBeCloseTo(expected, 4)
+  })
+
+  it('reads two CSS colors in CIELAB', () => {
+    expect(colorDifference('#66a61e', '#2ca02c')).toBeLessThan(
+      DEAL_COLOR_DIFFERENCE,
+    )
+    expect(colorDifference('#4e79a7', '#f28e2b')).toBeGreaterThan(
+      DEAL_COLOR_DIFFERENCE,
+    )
   })
 })
 
