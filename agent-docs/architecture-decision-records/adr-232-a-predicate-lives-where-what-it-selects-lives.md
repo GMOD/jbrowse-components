@@ -79,10 +79,16 @@ review of the revised plan.
    The tree sidebar slots stay flat: row labels draw over the plot
    (`treeSidebarConfigSchemaFields.ts:55-58`).
 4. **A schema declares its plot words.** A slot definition, a field table or a
-   sub-schema takes `plot: '<the dialog line>'`, inherited through
-   `baseConfiguration`, and `plotKeysOf` reads it. A plot word names something
-   drawn from the track's source, and its members count with it; hover
-   preferences such as `showTooltips` stay outside the plot.
+   sub-schema takes `plot: true`, inherited through `baseConfiguration` (a
+   subclass opts out with `false`); a list of sub-schemas is wrapped in
+   `plotList`, since an MST array has no options. `plotKeysOf` reads them in
+   definition order. "Edit plot..." links each key to its row in the config
+   reference, so the slot's own description is its one explanation. A plot word
+   names something drawn from the track's source, and its members count with
+   it: the channels, the bands, the mark lists and their parameters
+   (`modifications`), and the text channels (canvas `labels`, multi-way
+   `text`). Hover preferences such as `showTooltips` stay outside the plot, as
+   does `rowGroups` until the dialog should show the row grouping.
 5. **A schema with a `shorthand` declares `writes: 'whole' | 'members'`.**
    `ConfigurationSchema` throws at construction when one is missing, beside
    `checkShorthand` (`configurationSchema.ts:199`); a schema with no shorthand
@@ -187,6 +193,8 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | `sites` or `variantLane` for the variant band | Colin chose `variants`, named for what the band draws as `coverage` is |
 | A raised coverage allele floor (IGV's 0.2) | Colin: the band paints sequencing errors |
 | `expressions` on the alignments filter in 5.0 | No figure asks for a per-read expression, and adding the member later breaks nothing |
+| A dialog line per plot declaration (`plot: '<line>'`) | A second owner of each slot's description (ADR-091's objection), copied lines already listing members step 3 removes; the dialog links each key to the config reference instead |
+| Plot-word kinds compared at every depth, with an allowlist | Slot types give noise (`boolean` beside `maybeBoolean`, `color` beside `maybeColor`) and coarse kinds find nothing past the top level, where `filter` is the one mismatch step 4 removes |
 
 ## Consequences
 
@@ -206,12 +214,12 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 1. **The write mode.** `writes` on every shorthand schema, the construction
    check and the list shorthand form (`schemaTypes.ts` takes string and number
    today).
-2. **Declared plot words.** The `plot` option, `plotKeysOf` reading it, and a
-   test that a plot word is the same kind (slot, sub-schema or array, at every
-   depth) on every display declaring it, landing as a shrinking allowlist with
-   the checker unit-tested on synthetic schemas. `PLOT_VOCABULARY` leaves the
-   plugin ABI (reference/PLUGIN_ABI_STABILITY.md) in step with a graph-plugin
-   release.
+2. **Declared plot words.** The `plot` flag and `plotList`, `plotKeysOf`
+   reading them, `PlotExamples.test.ts` pinning every display's plot keys and
+   that a key is flagged on every display declaring it or on none, and the
+   graph plugin's `color`, `size`, `facet`, `rows` and `layers` flagged in its
+   own release. `PLOT_VOCABULARY` existed only in v5 betas, so its removal owes
+   no ABI entry.
 3. **The alignments filter, in one commit.** `filter.junctions`,
    `filter.connections`, `filter.tags`, `coverage.minAlleleFraction`, and:
    - `setReadFilter` (`configSlotViews.ts:423`) writes members, or every
@@ -230,14 +238,16 @@ costs a `retired` entry kept for good, so the trivial ones go now.
    variants and canvas tables, canvas `plotProblems.ts`, jbrowse-img's
    `readFilterSnapOf` and the spec-recipe's `filterStep`. LinearBasicDisplay
    redeclares the spread `filter` to add `genes`. `minorAlleleFrequencyFilter`
-   and `jexlFilters` lift.
+   and `jexlFilters` lift. The same commit adds the check that a plot word is
+   the same top-level kind (slot, sub-schema or list) on every display
+   declaring it, which `filter` fails until then.
 5. **The sashimi fallback**, with the LGVSynteny default.
 6. **The connectors' color**, a picture change shot before and after.
-7. **`variants`** on the multi-sample variant display. The names are
-   beta-only, so no lift; jb2hubs' pangenome configs and share links
+7. **`variants`** on the multi-sample variant display, flagged `plot`. The
+   names are beta-only, so no lift; jb2hubs' pangenome configs and share links
    (`website/src/components/pangenomeLinks.ts`) update in step.
-8. **MAF `alignments`**, lifting the v4 mafviewer plugin's `rowProportion`,
-   `showAllLetters` and `showAsUpperCase`.
+8. **MAF `alignments`**, flagged `plot`, lifting the v4 mafviewer plugin's
+   `rowProportion`, `showAllLetters` and `showAsUpperCase`.
 9. **The sweep's "now" rows.**
 
 ### Loose edges

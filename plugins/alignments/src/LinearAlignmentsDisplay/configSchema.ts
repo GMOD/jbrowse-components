@@ -137,6 +137,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // A chain joins by QNAME, never by a BX/MI linked-read barcode.
         description:
           'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
+        plot: true,
       },
       /**
        * #slot

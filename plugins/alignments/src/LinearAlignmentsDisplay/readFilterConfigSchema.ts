@@ -113,6 +113,7 @@ export const readFilterConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
+    plot: true,
     // a v4 session held one tag filter under the singular name
     retired: {
       tagFilter: (value: unknown) => ({ tagFilters: [value] }),

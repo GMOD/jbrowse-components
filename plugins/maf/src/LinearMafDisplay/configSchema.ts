@@ -106,6 +106,7 @@ export default function configSchemaF() {
         model: types.enumeration('MafYField', [...MAF_Y_FIELDS]),
         description:
           "the value a row's bar height shows: identity, or unset for none",
+        plot: true,
       },
       /**
        * #slot

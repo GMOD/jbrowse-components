@@ -80,7 +80,7 @@ export const alignmentsSortConfigSchema = ConfigurationSchema(
         'how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark',
     },
   },
-  { shorthand: 'type', writes: 'whole', closed: true },
+  { shorthand: 'type', writes: 'whole', closed: true, plot: true },
 )
 
 /**

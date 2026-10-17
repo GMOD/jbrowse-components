@@ -3,6 +3,8 @@ import {
   getType,
   isArrayType,
   isStateTreeNode,
+  isType,
+  unwrapType,
 } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
@@ -16,50 +18,35 @@ import {
 } from '../util/colorScale.ts'
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import { bareFormOf, shorthandTargets } from './schemaTypes.ts'
+import {
+  bareFormOf,
+  isSlotDefinitionEntry,
+  shorthandTargets,
+} from './schemaTypes.ts'
 import { refusingUndeclaredKeys } from './snapshotPreprocess.ts'
 
 import type { AnyConfigurationModel } from './types.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
+
+const plotLists = new WeakSet<IAnyType>()
 
 /**
  * #api core/configuration
- * The grammar's settings, by the slot name every display that has one gives
- * it, and what each holds: what "Edit plot..." shows and an agent reads as a
- * display's `plot`. A display's plot is the ones its config declares
- * (`plotKeysOf`).
+ * Declares a list of sub-schemas a plot setting, as `plot: true` declares a
+ * slot or a sub-schema one; an MST array type takes no options to carry the
+ * flag.
  */
-// The multi-row display's `rowGroups` is not here yet; it joins when "Edit
-// plot..." should show the row grouping.
-export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
-  marks: 'the marks drawn in order, each a mark and an encoding',
-  mark: 'the shape each value is drawn as: a bar, a point, a line or a span',
-  interpolate:
-    'the path a line takes between values: held across each bin, or centre to centre',
-  aggregate: 'the stored zoom-bin summary drawn: mean, min or max',
-  extent: "the span drawn around each bin's aggregate: its min to max, or none",
-  transform: 'the steps run over the features before any mark',
-  unit: 'the unit one row draws: a read or a chain, a sample or a haplotype',
-  facet: 'one section per value of a field',
-  sort: 'the order the rows stack in: one over the whole window, or by a column at one base',
-  rows: 'the rows: their field or order, labels, focus and tree',
-  rowColor: 'the color of each row, by a row attribute',
-  color: 'the color',
-  baseColor: 'the per-base layer over the reads',
-  ribbonColor: 'the color of the ribbons between lanes',
-  coverage: 'the coverage band: whether it draws, its height and its filter',
-  conservation: 'the conservation band: whether it draws, its height and unit',
-  pileup: 'the stacked reads: whether they draw, their height and parts',
-  sashimi:
-    'the splice-junction arcs: whether they draw, their placement and filter',
-  readConnections:
-    'the connections between mates: whether they draw, the mark, its color and filter',
-  laneLayers: 'the layers drawn over each lane',
-  scales: 'the axes, scales.y the value axis',
-  y: 'the field plotted on the value axis',
-  size: "a point's diameter or a line's width, in px",
-  origin: 'the value bars grow from',
-  filter:
-    'the tests a feature has to pass: jexl: expressions, or on an alignments display the read flags, name, tags and categories',
+export function plotList<T extends IAnyType>(type: T): T {
+  plotLists.add(unwrapType(type))
+  return type
+}
+
+function isPlotEntry(entry: unknown) {
+  return isSlotDefinitionEntry(entry)
+    ? !!entry.plot
+    : isType(entry) &&
+        (!!getConfigurationSchemaMetadata(entry)?.options.plot ||
+          plotLists.has(unwrapType(entry)))
 }
 
 /**
@@ -84,13 +71,13 @@ const LIFT_ID = 'plotLift'
 
 /**
  * #api core/configuration
- * The plot keys a display config declares.
+ * A display's plot settings, what "Edit plot..." edits and an agent reads as
+ * its `plot`: every slot, sub-schema and list its config declares with
+ * `plot`, in the order it declares them.
  */
 export function plotKeysOf(conf: AnyConfigurationModel): string[] {
   const definition = getConfigurationSchemaMetadata(conf)?.definition ?? {}
-  return Object.keys(PLOT_VOCABULARY).filter(key =>
-    Object.hasOwn(definition, key),
-  )
+  return Object.keys(definition).filter(key => isPlotEntry(definition[key]))
 }
 
 // A one-member object a shorthand would write as a bare value prints as that

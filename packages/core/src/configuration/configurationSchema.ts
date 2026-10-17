@@ -104,6 +104,13 @@ export interface ConfigurationSchemaOptions<
    */
   writes?: 'whole' | 'members'
   /**
+   * Makes this sub-schema a plot setting wherever a display declares it, one
+   * "Edit plot..." edits: a channel, a band, or another setting that changes
+   * what is drawn from the track's source. A subclass inherits it, and
+   * `false` opts one out.
+   */
+  plot?: boolean
+  /**
    * Slots a bare value sets beside `shorthand`, for a schema whose defaults
    * would hide it: LGVSyntenyColor's `field` defaults to `strand`, so its
    * `color: "steelblue"` is `{ value: "steelblue", scale: "none" }`.

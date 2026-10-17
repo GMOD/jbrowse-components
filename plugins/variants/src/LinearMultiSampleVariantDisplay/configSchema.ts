@@ -189,6 +189,7 @@ export default function configSchemaFactory() {
         defaultValue: 'sample',
         description:
           "The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype",
+        plot: true,
       },
       /**
        * #slot color

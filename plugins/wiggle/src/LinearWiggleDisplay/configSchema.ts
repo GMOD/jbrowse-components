@@ -113,6 +113,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       model: types.enumeration('WiggleMark', [...WIGGLE_MARK_NAMES]),
       defaultValue: 'bar',
       description: 'bar, point, line or span',
+      plot: true,
     },
     /**
      * #slot interpolate
@@ -125,6 +126,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       model: types.enumeration('LineInterpolation', [...LINE_INTERPOLATIONS]),
       defaultValue: 'step',
       description: 'step or linear, for a line',
+      plot: true,
     },
     /**
      * #slot rows

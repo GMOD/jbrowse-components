@@ -85,5 +85,5 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
         'the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry',
     },
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

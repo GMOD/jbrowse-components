@@ -36,11 +36,13 @@ export const wiggleConfigSchemaFields = {
     defaultValue: 0,
     description:
       "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin",
+    plot: true,
   },
   size: {
     type: 'maybeNumber',
     description:
       "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset",
+    plot: true,
   },
   maxGapMultiple: {
     type: 'number',

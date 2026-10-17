@@ -352,9 +352,9 @@ function stateModelFactory() {
     .views(self => ({
       /**
        * #getter
-       * The grammar settings this display's config declares, by slot name
-       * (`PLOT_VOCABULARY`): what "Edit plot..." edits. Empty on a display
-       * with none, which then offers no editor.
+       * The grammar settings this display's config declares with `plot`
+       * (`plotKeysOf`): what "Edit plot..." edits. Empty on a display with
+       * none, which then offers no editor.
        */
       get plotKeys(): string[] {
         return plotKeysOf((self as unknown as DisplayModel).configuration)

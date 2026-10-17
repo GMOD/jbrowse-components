@@ -350,7 +350,7 @@ export const retiredScaleSpellings = {
  * bin the display draws is placed through it.
  */
 export function scalesSchema(y: ValueScaleConfigSchema) {
-  return ConfigurationSchema('Scales', { y }, { closed: true })
+  return ConfigurationSchema('Scales', { y }, { closed: true, plot: true })
 }
 
 export type ScalesConfigSchema = ReturnType<typeof scalesSchema>

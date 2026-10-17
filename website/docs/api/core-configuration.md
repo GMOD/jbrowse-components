@@ -187,22 +187,6 @@ schema lifts, and the schema is what judges it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
-## PLOT_VOCABULARY
-
-The grammar's settings, by the slot name every display that has one gives
-it, and what each holds: what "Edit plot..." shows and an agent reads as a
-display's `plot`. A display's plot is the ones its config declares
-(`plotKeysOf`).
-
-```js
-import { PLOT_VOCABULARY } from '@jbrowse/core/configuration'
-
-// type signature
-Readonly<Record<string, string>>
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
-
 ## PlotExample
 
 A worked example of a display's plot: the text it fills the editor with,
@@ -212,13 +196,30 @@ and what it does.
 
 ## plotKeysOf
 
-The plot keys a display config declares.
+A display's plot settings, what "Edit plot..." edits and an agent reads as
+its `plot`: every slot, sub-schema and list its config declares with
+`plot`, in the order it declares them.
 
 ```js
 import { plotKeysOf } from '@jbrowse/core/configuration'
 
 // type signature
 (conf: AnyConfigurationModel) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
+## plotList
+
+Declares a list of sub-schemas a plot setting, as `plot: true` declares a
+slot or a sub-schema one; an MST array type takes no options to carry the
+flag.
+
+```js
+import { plotList } from '@jbrowse/core/configuration'
+
+// type signature
+<T extends IAnyType>(type: T) => T
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)

@@ -67,6 +67,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'field',
     writes: 'whole',
+    plot: true,
     closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'rowColor'),
   },

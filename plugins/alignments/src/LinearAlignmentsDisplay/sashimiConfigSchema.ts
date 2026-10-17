@@ -66,5 +66,5 @@ export const sashimiConfigSchema = ConfigurationSchema(
      */
     filter: sashimiFilterConfigSchema,
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

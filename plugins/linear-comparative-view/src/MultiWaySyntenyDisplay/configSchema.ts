@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -176,6 +176,7 @@ export function configSchemaFactory() {
         type: 'featureField',
         defaultValue: '',
         description: 'gene label field, or jexl expression',
+        plot: true,
       },
       /**
        * #slot
@@ -200,7 +201,7 @@ export function configSchemaFactory() {
        * Rows of data every lane draws above its genes, each from that genome's
        * own track: a GC or conservation bigWig per genome as bars, say
        */
-      laneLayers: types.array(laneLayerConfigSchema),
+      laneLayers: plotList(types.array(laneLayerConfigSchema)),
       /**
        * #slot
        */

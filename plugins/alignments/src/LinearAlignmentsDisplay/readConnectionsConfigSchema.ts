@@ -119,5 +119,5 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
      */
     filter: readConnectionsFilterConfigSchema,
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

@@ -111,6 +111,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'field',
     writes: 'whole',
+    plot: true,
     closed: true,
     fieldPresets: HIC_FIELD_PRESETS,
   },

@@ -22,6 +22,7 @@ export const jexlFilterConfigSchemaFields = {
   filter: {
     type: 'expressionArray',
     description: 'jexl: expressions a feature must pass to be drawn',
+    plot: true,
     // Empty on purpose: the slot seeds the "Filter by..." dialog, so a default
     // is an expression every user meets before writing one of their own. The
     // NCBI source-record rule that used to live here is `hideSourceFeatures` on

@@ -152,29 +152,37 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * or `{ field, domain }` with the order its sections stack in.
        */
       facet: sectionFacetConfigSchema,
-      labels: ConfigurationSchema('CanvasFeatureLabels', {
-        /**
-         * #slot labels.name
-         */
-        name: {
-          type: 'featureField',
-          description:
-            "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
-          defaultValue: FEATURE_NAME_FIELD,
+      /**
+       * #slot labels
+       * The fields a feature's name label and description line read.
+       */
+      labels: ConfigurationSchema(
+        'CanvasFeatureLabels',
+        {
+          /**
+           * #slot labels.name
+           */
+          name: {
+            type: 'featureField',
+            description:
+              "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
+            defaultValue: FEATURE_NAME_FIELD,
+          },
+          /**
+           * #slot labels.description
+           */
+          description: {
+            type: 'featureField',
+            description:
+              "the field each feature's description line reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description",
+            // `function` is the only human-readable text on structural features
+            // that carry no note; read via get() since it is a reserved word in
+            // the grammar.
+            defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
+          },
         },
-        /**
-         * #slot labels.description
-         */
-        description: {
-          type: 'featureField',
-          description:
-            "the field each feature's description line reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description",
-          // `function` is the only human-readable text on structural features
-          // that carry no note; read via get() since it is a reserved word in
-          // the grammar.
-          defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
-        },
-      }),
+        { plot: true },
+      ),
     },
     {
       /**

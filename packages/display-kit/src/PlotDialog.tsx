@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { PLOT_VOCABULARY, parsePlot } from '@jbrowse/core/configuration'
+import { parsePlot } from '@jbrowse/core/configuration'
 import {
   ExternalLink,
   MonospaceTextField,
@@ -137,11 +137,16 @@ const PlotDialog = observer(function PlotDialog({
       </div>
       <Collapse in={showHelp}>
         <DialogContentText component="div">
-          The plot as a config file writes it:
+          The plot as a config file writes it, each setting linked to its entry
+          in the config reference:
           <ul>
             {model.plotKeys.map(key => (
               <li key={key}>
-                <code>{key}</code>, {PLOT_VOCABULARY[key]}
+                <ExternalLink
+                  href={`${model.configDocsUrl}#slot-${key.toLowerCase()}`}
+                >
+                  <code>{key}</code>
+                </ExternalLink>
               </li>
             ))}
           </ul>

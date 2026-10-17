@@ -54,5 +54,5 @@ export const coverageBandConfigSchema = ConfigurationSchema(
      */
     filter: coverageFilterConfigSchema,
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "step 2 of ADR-232's order of work (step 1, the declared write mode, is built): a `plot: '<dialog line>'` option on a slot definition, a field table or a sub-schema, inherited through `baseConfiguration`, read by `plotKeysOf` in `packages/core/src/configuration/plot.ts` in place of `PLOT_VOCABULARY`"
+  first_move: "step 3 of ADR-232's order of work (steps 1 and 2 are built): `filter.junctions` and `filter.connections` on the alignments `ReadFilter` in place of `sashimi.filter` and `readConnections.filter`, with `setReadFilter` (`plugins/alignments/src/LinearAlignmentsDisplay/configSlotViews.ts`) writing member by member first, so a Filter menu click keeps them"
 ---
 
 # ADR-232's config renames land before 5.0.0

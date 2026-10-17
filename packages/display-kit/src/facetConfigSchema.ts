@@ -73,6 +73,7 @@ export const facetConfigSchema = ConfigurationSchema(
   {
     shorthand: 'field',
     writes: 'whole',
+    plot: true,
     closed: true,
     preProcessSnapshot: snap => normalizeChannel(snap, 'facet'),
   },

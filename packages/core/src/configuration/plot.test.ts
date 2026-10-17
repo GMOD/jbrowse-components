@@ -6,6 +6,7 @@ import {
   liftPlot,
   parsePlot,
   plotKeysOf,
+  plotList,
   plotOf,
   plotWrites,
   schemaPlotProblems,
@@ -17,7 +18,7 @@ const Facet = ConfigurationSchema(
     field: { type: 'string', defaultValue: '' },
     domain: { type: 'stringArray', defaultValue: [] },
   },
-  { shorthand: 'field', writes: 'whole', closed: true },
+  { shorthand: 'field', writes: 'whole', closed: true, plot: true },
 )
 
 const Axis = ConfigurationSchema(
@@ -29,7 +30,11 @@ const Axis = ConfigurationSchema(
   { closed: true },
 )
 
-const Scales = ConfigurationSchema('PlotTestScales', { y: Axis })
+const Scales = ConfigurationSchema(
+  'PlotTestScales',
+  { y: Axis },
+  { plot: true },
+)
 
 const Mark = ConfigurationSchema('PlotTestMark', {
   mark: { type: 'string', defaultValue: 'bar' },
@@ -41,8 +46,9 @@ const Display = ConfigurationSchema(
     height: { type: 'number', defaultValue: 100 },
     facet: Facet,
     scales: Scales,
-    filter: { type: 'stringArray', defaultValue: [] },
-    marks: types.stripDefault(types.array(Mark), [{ mark: 'point' }]),
+    filter: { type: 'stringArray', defaultValue: [], plot: true },
+    marks: plotList(types.stripDefault(types.array(Mark), [{ mark: 'point' }])),
+    rows: types.array(Mark),
   },
   { explicitIdentifier: 'displayId' },
 )
@@ -50,8 +56,26 @@ const Display = ConfigurationSchema(
 const display = (snap: Record<string, unknown> = {}) =>
   Display.create({ displayId: 'd', ...snap })
 
-test("a display's plot keys are the grammar's slot names it declares", () => {
-  expect(plotKeysOf(display())).toEqual(['marks', 'facet', 'scales', 'filter'])
+test("a display's plot keys are the ones it declares a plot setting, in order", () => {
+  expect(plotKeysOf(display())).toEqual(['facet', 'scales', 'filter', 'marks'])
+})
+
+test('a subclass inherits the flag, and opts out with false', () => {
+  const SubFacet = ConfigurationSchema(
+    'PlotTestSubFacet',
+    {},
+    { baseConfiguration: Facet },
+  )
+  const Unflagged = ConfigurationSchema(
+    'PlotTestUnflagged',
+    {},
+    { baseConfiguration: Facet, plot: false },
+  )
+  const conf = ConfigurationSchema('PlotTestInherits', {
+    facet: SubFacet,
+    rowColor: Unflagged,
+  }).create()
+  expect(plotKeysOf(conf)).toEqual(['facet'])
 })
 
 test('the plot is what a config file writes, a shorthand folded back', () => {
@@ -136,7 +160,11 @@ const Color = ConfigurationSchema(
     domain: { type: 'stringArray', defaultValue: [] },
     range: { type: 'stringArray', defaultValue: [] },
   },
-  { closed: true, fieldPresets: { score: { scale: 'threshold' } } },
+  {
+    closed: true,
+    plot: true,
+    fieldPresets: { score: { scale: 'threshold' } },
+  },
 )
 
 const ColorDisplay = ConfigurationSchema(

@@ -98,6 +98,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
   {
     shorthand: 'field',
     writes: 'whole',
+    plot: true,
     closed: true,
     fieldPresets: LD_FIELD_PRESETS,
   },

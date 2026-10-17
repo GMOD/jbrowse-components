@@ -46,5 +46,5 @@ export const mafConservationConfigSchema = ConfigurationSchema(
         'what one bar stands for: base, its percent identity, or codon, its amino-acid identity',
     },
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

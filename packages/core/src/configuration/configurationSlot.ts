@@ -181,6 +181,11 @@ interface ConfigSlotDefinitionCommon {
    * every slot with a `contextVariable`
    */
   advanced?: boolean
+  /**
+   * Makes this slot one of the display's plot settings, which "Edit plot..."
+   * edits: one that changes what is drawn from the track's source.
+   */
+  plot?: boolean
 }
 
 /**

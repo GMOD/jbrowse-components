@@ -198,6 +198,8 @@ export default function configSchemaF() {
        * },
        * ```
        */
+      // not a plot setting yet: it joins "Edit plot..." when the dialog should
+      // show the row grouping
       rowGroups: types.array(rowGroupConfigSchema),
       /**
        * #slot facet

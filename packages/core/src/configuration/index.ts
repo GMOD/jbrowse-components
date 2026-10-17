@@ -115,10 +115,10 @@ export {
 export type { SlotFacade } from './slotFacade.ts'
 export { fullConfSnapshot } from './fullConfSnapshot.ts'
 export {
-  PLOT_VOCABULARY,
   liftPlot,
   parsePlot,
   plotKeysOf,
+  plotList,
   plotOf,
   plotWrites,
 } from './plot.ts'

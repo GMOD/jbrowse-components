@@ -64,9 +64,137 @@ test.each(withPlot.map(({ display, conf }) => [display.name, display, conf]))(
 )
 
 test.each(withPlot.map(({ display, conf }) => [display.name, conf]))(
-  "%s's config reference page exists",
+  "%s's config reference page exists, with a row for each plot setting",
   (_name, conf) => {
     const name = getConfigurationSchemaMetadata(conf)!.name
-    expect(fs.existsSync(path.join(CONFIG_DOCS, `${name}.md`))).toBe(true)
+    const page = path.join(CONFIG_DOCS, `${name}.md`)
+    expect(fs.existsSync(page)).toBe(true)
+    const text = fs.readFileSync(page, 'utf8')
+    for (const key of plotKeysOf(conf)) {
+      expect(text).toContain(`id="slot-${key.toLowerCase()}"`)
+    }
   },
 )
+
+test("each display's plot settings", () => {
+  expect(
+    Object.fromEntries(
+      withPlot.map(({ display, conf }) => [
+        display.name,
+        plotKeysOf(conf).toSorted(),
+      ]),
+    ),
+  ).toEqual({
+    ChordVariantDisplay: ['color'],
+    LDTrackDisplay: ['color'],
+    LGVSyntenyDisplay: [
+      'baseColor',
+      'color',
+      'coverage',
+      'facet',
+      'filter',
+      'modifications',
+      'pileup',
+      'readConnections',
+      'sashimi',
+      'scales',
+      'sort',
+      'unit',
+    ],
+    LinearAlignmentsDisplay: [
+      'baseColor',
+      'color',
+      'coverage',
+      'facet',
+      'filter',
+      'modifications',
+      'pileup',
+      'readConnections',
+      'sashimi',
+      'scales',
+      'sort',
+      'unit',
+    ],
+    LinearBasicDisplay: ['color', 'facet', 'filter', 'labels'],
+    LinearHicDisplay: ['color'],
+    LinearMafDisplay: [
+      'color',
+      'conservation',
+      'coverage',
+      'rowColor',
+      'rows',
+      'scales',
+      'y',
+    ],
+    LinearManhattanDisplay: [
+      'facet',
+      'filter',
+      'marks',
+      'origin',
+      'rowColor',
+      'rows',
+      'scales',
+      'transform',
+    ],
+    LinearMarkDisplay: [
+      'facet',
+      'filter',
+      'marks',
+      'origin',
+      'rowColor',
+      'rows',
+      'scales',
+      'transform',
+    ],
+    LinearMultiRowFeatureDisplay: ['color', 'facet', 'rowColor', 'rows'],
+    LinearMultiSampleVariantDisplay: [
+      'color',
+      'facet',
+      'filter',
+      'rowColor',
+      'rows',
+      'unit',
+    ],
+    LinearVariantDisplay: ['color', 'facet', 'filter', 'labels'],
+    LinearWiggleDisplay: [
+      'aggregate',
+      'color',
+      'extent',
+      'interpolate',
+      'mark',
+      'origin',
+      'rowColor',
+      'rows',
+      'scales',
+      'size',
+      'y',
+    ],
+    MultiWaySyntenyDisplay: [
+      'color',
+      'laneLayers',
+      'ribbonColor',
+      'rows',
+      'text',
+    ],
+  })
+})
+
+// The flag travels with a shared slot, field table or sub-schema, so a key
+// one display declares by hand can miss it while every other display has it.
+test('a key is a plot setting on every display declaring it, or on none', () => {
+  const flagged = new Map<string, string[]>()
+  const unflagged = new Map<string, string[]>()
+  for (const { display, conf } of displays) {
+    const keys = new Set(plotKeysOf(conf))
+    for (const key of Object.keys(
+      getConfigurationSchemaMetadata(conf)!.definition,
+    )) {
+      const into = keys.has(key) ? flagged : unflagged
+      into.set(key, [...(into.get(key) ?? []), display.name])
+    }
+  }
+  const split = [...flagged.keys()]
+    .filter(key => unflagged.has(key))
+    .map(key => `${key}: unflagged on ${unflagged.get(key)!.join(', ')}`)
+  expect(split).toEqual([])
+})

@@ -101,5 +101,5 @@ export const pileupConfigSchema = ConfigurationSchema(
       advanced: true,
     },
   },
-  { closed: true },
+  { closed: true, plot: true },
 )

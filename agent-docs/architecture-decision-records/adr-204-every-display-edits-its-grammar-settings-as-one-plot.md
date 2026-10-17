@@ -20,9 +20,11 @@ offers the box with `color` in it. The reference sequence, linear synteny,
 dotplot and chord synteny displays still declare none.
 
 Amended 2026-10-17 by
-[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), to build
-before 5.0.0: each schema declares its plot words with a `plot` option, and
-`PLOT_VOCABULARY`, the hand list below, goes.
+[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md): a slot,
+a field table or a sub-schema declares itself a plot setting with
+`plot: true`, a list with `plotList`, and `PLOT_VOCABULARY`, the hand list
+below, is gone. The dialog links each key to its row in the config reference
+in place of the list's lines.
 
 ## Context
 

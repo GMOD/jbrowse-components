@@ -460,6 +460,7 @@ export function colorChannelOptions(
   return {
     shorthand: 'value',
     writes: 'whole' as const,
+    plot: true,
     closed: true,
     fieldPresets,
     ...(impliedField ? { impliedField } : {}),

@@ -22,12 +22,14 @@ export function aggregateConfigSchemaFields({
       defaultValue: 'mean',
       description:
         "the stored zoom-bin summary drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing",
+      plot: true,
     },
     extent: {
       type: 'stringEnum',
       model: types.enumeration('Extent', [...EXTENTS]),
       defaultValue: extent,
       description: extentDescription,
+      plot: true,
     },
   } as const
 }

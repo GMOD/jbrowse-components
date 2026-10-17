@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, plotList } from '@jbrowse/core/configuration'
 import { SHAPE_NAMES } from '@jbrowse/core/util/shapeNames'
 import {
   normalizeChannel,
@@ -389,7 +389,7 @@ const markSchema = ConfigurationSchema(
  * plot then leaves out.
  */
 export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
-  return types.stripDefault(types.array(markSchema), defaults)
+  return plotList(types.stripDefault(types.array(markSchema), defaults))
 }
 
 /**
@@ -454,7 +454,7 @@ export function configSchemaFactory() {
        * before any mark's own, after `filter`: where a field the facet
        * reads is made, such as a formula lifting a read's tag.
        */
-      transform: types.array(markTransformStep),
+      transform: plotList(types.array(markTransformStep)),
       /**
        * #slot facet
        * Labelled sections, one per value of a field, each as tall as its
@@ -514,6 +514,7 @@ export function configSchemaFactory() {
         type: 'number',
         defaultValue: 0,
         description: 'baseline value for bars',
+        plot: true,
       },
       /**
        * #slot minWidthPx
