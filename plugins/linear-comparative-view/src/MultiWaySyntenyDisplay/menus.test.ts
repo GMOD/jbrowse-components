@@ -1,4 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
 
 import { laneRegion } from './laneHeader.ts'
 import {
@@ -264,6 +265,13 @@ test('Color by heads the gene modes and the ribbon modes', () => {
   ])
   click(colorBy[2])
   expect(calls).toEqual(['gene color cluster'])
+})
+
+test('Name colors genes by the field their label reads, the name else the ID', () => {
+  const { model, calls } = trackModel()
+  const genes = genesOf(model)
+  click(genes[labelsOf(genes).indexOf('Name')])
+  expect(calls).toEqual([`gene color ${FEATURE_NAME_FIELD}`])
 })
 
 // The Genes block of Color by..., between its header and the Ribbons one

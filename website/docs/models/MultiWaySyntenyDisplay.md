@@ -198,7 +198,7 @@ From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderre
 | <span id="getter-lanegenegroups">**laneGeneGroups**</span><br><code>Map&lt;string, Map&lt;string, string&gt;&gt;</code> | per lane, each drawn gene's group, keyed by feature id |
 | <span id="getter-pinnedlabelgroups">**pinnedLabelGroups**</span><br><code>ReadonlySet&lt;string&gt;</code> |  |
 | <span id="getter-genetextof">**geneTextOf**</span><br><code>(feature: Feature) =&gt; string &#124; undefined</code> |  |
-| <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys the anchor lane alone, over the settled window |
+| <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys every lane, over the settled window, or the anchor lane alone where every lane's values would overflow the key |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> |  |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><code>LaneLayerPlacement[]</code> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out |

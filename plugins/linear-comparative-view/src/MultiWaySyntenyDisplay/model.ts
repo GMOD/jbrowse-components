@@ -51,7 +51,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
-import { getFeatureName } from '@jbrowse/plugin-canvas'
+import { FEATURE_NAME_FIELD, getFeatureName } from '@jbrowse/plugin-canvas'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   markColorOf,
@@ -157,7 +157,12 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
-import { laneColorKey, laneFieldKey, ribbonColorScales } from './legend.ts'
+import {
+  laneColorKey,
+  laneFieldKey,
+  ribbonColorScales,
+  stackGeneKey,
+} from './legend.ts'
 import { multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
@@ -230,6 +235,7 @@ import type {
   TickGeometry,
 } from './multiwayGeometry.ts'
 import type {
+  GlyphHit,
   LaneMap,
   MultiWayCell,
   MultiWayLayer,
@@ -2255,31 +2261,43 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * keys the anchor lane alone, over the settled window
+       * keys every lane, over the settled window, or the anchor lane alone
+       * where every lane's values would overflow the key
        */
       get geneColorScales(): ColorScale[] {
-        const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
-          const cell = self.laneGlyphCells.get(key)
-          return cell?.kind === 'glyphs' ? cell.data.hits : []
-        })
+        const hitsByRow = self.laneStack.lanes.map((_lane, row) =>
+          [boxesKey(row), glyphsKey(row)].flatMap(key => {
+            const cell = self.laneGlyphCells.get(key)
+            return cell?.kind === 'glyphs' ? cell.data.hits : []
+          }),
+        )
         const onScreen: Span = [0, self.canvasWidth]
         const encoding = self.geneColorEncoding
         const { title } = self.geneColorSettings.color
         const field = colorFieldOf(encoding, self.geneColorSlots)
-        if (field) {
-          return laneFieldKey(hits, onScreen, field, title)
+        const keyOf = (hits: GlyphHit[]): ColorScale[] => {
+          if (field) {
+            return laneFieldKey(
+              hits,
+              onScreen,
+              field,
+              title ??
+                (field.field === FEATURE_NAME_FIELD ? 'Gene name' : undefined),
+            )
+          }
+          const items = isJexl(encoding) ? laneColorKey(hits, onScreen) : []
+          return legendIsReadable(items, MAX_LEGEND_ENTRIES)
+            ? [
+                {
+                  kind: 'categorical',
+                  id: 'genes',
+                  title: title ?? 'Gene colors',
+                  entries: items,
+                },
+              ]
+            : []
         }
-        const items = isJexl(encoding) ? laneColorKey(hits, onScreen) : []
-        return legendIsReadable(items, MAX_LEGEND_ENTRIES)
-          ? [
-              {
-                kind: 'categorical',
-                id: 'genes',
-                title: title ?? 'Gene colors',
-                entries: items,
-              },
-            ]
-          : []
+        return stackGeneKey(hitsByRow, keyOf)
       },
     }))
     .actions(self => ({

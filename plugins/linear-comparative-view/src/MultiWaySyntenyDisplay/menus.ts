@@ -17,6 +17,7 @@ import {
   sectionRowMenuItems,
   showHiddenItems,
 } from '@jbrowse/display-kit/groupByMenu'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
 import { colorByMenuItems } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
@@ -277,7 +278,12 @@ const GENE_COLOR_FIELDS: RadioOption<string>[] = [
     helpText:
       'Each gene by the ortholog group it carries, so a group is one color down the stack. A gene no group claims is grey.',
   },
-  { value: 'name', label: 'Name', helpText: 'Each gene by its name.' },
+  {
+    value: FEATURE_NAME_FIELD,
+    label: 'Name',
+    helpText:
+      'Each gene by the name its label prints: its name, or its ID where it has none.',
+  },
   {
     value: STRAND_FIELD,
     label: 'Strand',

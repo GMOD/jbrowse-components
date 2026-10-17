@@ -7,6 +7,7 @@ import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfi
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DEFAULT_MOUSEOVER } from '../RenderFeatureDataRPC/featureMouseover.ts'
+import { FEATURE_NAME_FIELD } from '../RenderFeatureDataRPC/featureNameField.ts'
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
 import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
@@ -159,7 +160,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           type: 'featureField',
           description:
             "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
-          defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+          defaultValue: FEATURE_NAME_FIELD,
         },
         /**
          * #slot labels.description

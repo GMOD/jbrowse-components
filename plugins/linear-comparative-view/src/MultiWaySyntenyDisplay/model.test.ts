@@ -9,6 +9,7 @@ import {
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-canvas'
 import {
   categoricalColor,
   declaredLanesOf,
@@ -612,6 +613,30 @@ test('a jexl gene color is no constant', () => {
   const display = createDisplay()
   setConf(display, ['color', 'value'], "jexl:'red'")
   expect(display.geneSolidColor).toBeUndefined()
+})
+
+test('Name colors and keys a gene that carries only an ID by its ID', () => {
+  const display = createDisplay()
+  anchorGenes(display, [
+    namedGene('g1', 'GSTT2', 100, 300),
+    new LaneGene(
+      new SimpleFeature({
+        uniqueId: 'g2',
+        id: 'GSTT2B',
+        refName: 'ctgA',
+        start: 400,
+        end: 600,
+        type: 'gene',
+      }),
+    ),
+  ])
+  display.colorByField(FEATURE_NAME_FIELD)
+  const fills = anchorGeneFills(display).map(([, css]) => css)
+  expect(new Set(fills).size).toBe(2)
+  expect(geneKeyOf(display).map(e => e.label)).toEqual(['GSTT2', 'GSTT2B'])
+  expect(display.colorScales.find(s => s.id === 'genes')?.title).toBe(
+    'Gene name',
+  )
 })
 
 test('gene names the hash puts on one color each take their own', () => {

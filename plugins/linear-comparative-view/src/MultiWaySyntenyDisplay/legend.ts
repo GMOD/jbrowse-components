@@ -2,6 +2,7 @@ import {
   MAX_LEGEND_ENTRIES,
   derivedColorScale,
 } from '@jbrowse/core/util/legendCandidates'
+import { getFeatureName } from '@jbrowse/plugin-canvas'
 import {
   colorByScales,
   colorByShortLabel,
@@ -38,11 +39,10 @@ export function laneColorKey(
     (a, b) => Math.min(a.x1, a.x2) - Math.min(b.x1, b.x2),
   )
   for (const { feature, fill } of drawn) {
-    const name: unknown = feature.get('name')
+    const name = getFeatureName(feature)
     const color = fill?.css
     if (
-      typeof name === 'string' &&
-      name !== '' &&
+      name !== undefined &&
       color !== undefined &&
       !labels.has(name) &&
       !colors.has(color)
@@ -53,6 +53,20 @@ export function laneColorKey(
     }
   }
   return items
+}
+
+/**
+ * The gene key over every lane's hits, or over the anchor lane's alone where
+ * every lane's would overflow it. Across 44 strains each strain's private
+ * genes take a row and blow the bound, while a haplotype's are the genes worth
+ * keying.
+ */
+export function stackGeneKey(
+  hitsByRow: readonly (readonly GlyphHit[])[],
+  keyOf: (hits: GlyphHit[]) => ColorScale[],
+) {
+  const every = keyOf(hitsByRow.flat())
+  return every.length > 0 ? every : keyOf([...(hitsByRow[0] ?? [])])
 }
 
 export function laneFieldKey(

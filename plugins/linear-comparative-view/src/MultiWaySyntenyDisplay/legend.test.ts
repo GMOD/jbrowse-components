@@ -12,6 +12,7 @@ import {
   laneFieldKey,
   ribbonColorKey,
   ribbonColorScales,
+  stackGeneKey,
 } from './legend.ts'
 
 import type { GlyphHit } from './multiwayRenderTypes.ts'
@@ -288,4 +289,59 @@ test('hiding the unlabelled rows drops the no-value row', () => {
   expect(
     ribbonColorKey('group', ranges, { hideUnlabelled: true }).map(r => r.label),
   ).toEqual(['B1'])
+})
+
+describe('the gene key over a stack', () => {
+  const field = categoricalField('name')
+  const named = (row: number, i: number, name: string) =>
+    hit(`r${row}g${i}`, i * 10, i * 10 + 5, field.color(name), name, name)
+  const keyOf = (hits: GlyphHit[]) => laneFieldKey(hits, [0, 800], field)
+  const labels = (scales: ReturnType<typeof keyOf>) =>
+    scales
+      .flatMap(s => (s.kind === 'categorical' ? s.entries : []))
+      .map(e => e.label)
+
+  test('lists a gene only a mate lane carries', () => {
+    const key = stackGeneKey(
+      [[named(0, 0, 'GSTT2'), named(0, 1, 'GSTT4')], [named(1, 2, 'GSTT1')]],
+      keyOf,
+    )
+    expect(labels(key).toSorted()).toEqual(['GSTT1', 'GSTT2', 'GSTT4'])
+  })
+
+  test("falls back to the anchor lane's genes where every lane's overflow it", () => {
+    const strains = Array.from({ length: 40 }, (_, i) => named(1, i, `g${i}`))
+    const key = stackGeneKey(
+      [[named(0, 0, 'atpA'), named(0, 1, 'atpB')], strains],
+      keyOf,
+    )
+    expect(labels(key).toSorted()).toEqual(['atpA', 'atpB'])
+  })
+})
+
+test('a jexl color names a gene that carries only an ID by its ID', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    id: 'GSTT2B',
+    refName: 'ctgA',
+    start: 0,
+    end: 1,
+  })
+  expect(
+    laneColorKey(
+      [
+        {
+          x1: 0,
+          x2: 10,
+          y1: 0,
+          y2: 10,
+          feature: gene,
+          label: 'GSTT2B',
+          fill: { css: '#f00', packed: cssColorToABGR('#f00') },
+        },
+        hit('b', 20, 30, '#0f0', 'GSTT4'),
+      ],
+      [0, 800],
+    ).map(e => e.label),
+  ).toEqual(['GSTT2B', 'GSTT4'])
 })
