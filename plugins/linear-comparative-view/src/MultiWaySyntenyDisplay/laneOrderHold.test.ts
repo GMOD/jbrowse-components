@@ -134,11 +134,11 @@ test('a fetch off the window works the order out again', async () => {
   expect(display.rowAssemblies).toEqual(['l1', 'l3', 'l2', 'l4'])
 })
 
-test('a pinned order outranks the structure order', async () => {
+test('pinned lanes lead and the rest keep the structure order', async () => {
   const display = await displayFor('GbzBaseSyntenyAdapter')
   land(display, interleaved)
-  display.setDomain(['l3', 'l2'])
-  expect(display.rowAssemblies.slice(0, 2)).toEqual(['l3', 'l2'])
+  display.setDomain(['l3'])
+  expect(display.rowAssemblies).toEqual(['l3', 'l2', 'l4', 'l1'])
 })
 
 test.each(['PairwiseIndexedPAFAdapter', 'MCScanBlocksAdapter'])(

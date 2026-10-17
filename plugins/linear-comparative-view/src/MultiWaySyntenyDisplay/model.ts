@@ -1037,9 +1037,7 @@ export function stateModelFactory(
             .filter(lane => lane.drawn)
             .map(lane => self.laneKey(lane.name)),
         )
-        const preferred = self.domain.length
-          ? self.domain
-          : (self.heldLaneOrder?.lanes ?? [])
+        const preferred = [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])]
         return rowAssembliesOf(self.groups, preferred, self.laneKey).filter(
           assemblyName => drawn.has(self.laneKey(assemblyName)),
         )
