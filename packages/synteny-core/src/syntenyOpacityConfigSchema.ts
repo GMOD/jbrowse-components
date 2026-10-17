@@ -126,6 +126,7 @@ export const syntenyOpacityConfigSchema = ConfigurationSchema(
   },
   {
     shorthand: ['value', 'field'],
+    writes: 'whole',
     closed: true,
     // the range is written as the numbers it names and held as strings, the
     // way a threshold domain holds its cuts

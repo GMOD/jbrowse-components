@@ -52,6 +52,7 @@ export const rowsConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: rowArrangementConfigSchema,
     shorthand: 'field',
+    writes: 'whole',
   },
 )
 

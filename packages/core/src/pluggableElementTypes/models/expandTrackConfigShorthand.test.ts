@@ -17,7 +17,7 @@ const ScaledColor = ConfigurationSchema(
       model: types.enumeration('Scale', ['none', 'ld']),
     },
   },
-  { shorthand: 'value', closed: true },
+  { shorthand: 'value', writes: 'whole', closed: true },
 )
 
 // Three displays of one track: two declare `color`, one as a plain color

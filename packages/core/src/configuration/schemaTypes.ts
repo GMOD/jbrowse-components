@@ -116,15 +116,22 @@ const NUMBER_SLOT_TYPES = new Set<string>([
   'maybeNumber',
 ] satisfies ConfigSlotType[])
 
+const LIST_SLOT_TYPES = new Set<string>([
+  'stringArray',
+  'expressionArray',
+  'colorArray',
+  'stringEnumArray',
+] satisfies ConfigSlotType[])
+
 /** A bare value a schema's `shorthand` lifts. */
-export type ShorthandForm = 'string' | 'number'
+export type ShorthandForm = 'string' | 'number' | 'list'
 
 /**
  * The slot a bare value of each form lifts into, off a `shorthand` option:
- * each slot it names takes the form its own type holds, a number where it
- * holds one (`rules: [7.3]`) and a string otherwise (`color: 'red'`), so a
- * width naming `value` and `field` reads `size: 3` as the one and
- * `size: 'score'` as the other.
+ * each slot it names takes the form its own type holds, a number or a list
+ * where it holds one (`rules: [7.3]`, `filter: ['jexl:…']`) and a string
+ * otherwise (`color: 'red'`), so a width naming `value` and `field` reads
+ * `size: 3` as the one and `size: 'score'` as the other.
  */
 export function shorthandTargetsOf(
   definition: Record<string, unknown>,
@@ -139,10 +146,13 @@ export function shorthandTargetsOf(
   return Object.fromEntries(
     slots.map(slot => {
       const entry = definition[slot]
+      const type = isSlotDefinitionEntry(entry) ? entry.type : undefined
       return [
-        isSlotDefinitionEntry(entry) && NUMBER_SLOT_TYPES.has(entry.type)
+        type && NUMBER_SLOT_TYPES.has(type)
           ? 'number'
-          : 'string',
+          : type && LIST_SLOT_TYPES.has(type)
+            ? 'list'
+            : 'string',
         slot,
       ]
     }),
@@ -155,7 +165,9 @@ export function bareFormOf(value: unknown): ShorthandForm | undefined {
     ? 'string'
     : typeof value === 'number'
       ? 'number'
-      : undefined
+      : Array.isArray(value)
+        ? 'list'
+        : undefined
 }
 
 /** {@link shorthandTargetsOf} a registered schema. */

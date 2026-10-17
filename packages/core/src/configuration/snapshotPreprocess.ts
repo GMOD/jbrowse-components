@@ -206,10 +206,25 @@ export function applyRetiredSpellings(
 }
 
 /**
+ * A bare string, number or list as the members a schema's `shorthand` lifts
+ * it into, beside any `shorthandWith` slots; any other value as it came.
+ */
+export function liftShorthand(
+  schema: ConfigurationSchemaMetadata,
+  value: unknown,
+) {
+  const form = bareFormOf(value)
+  const target = form && shorthandTargets(schema)[form]
+  return target === undefined
+    ? value
+    : { ...schema.options.shorthandWith, [target]: value }
+}
+
+/**
  * What a schema does to every snapshot on its way in, whichever door it
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
- * bare string or number lifts into the `shorthand` slot taking its form, beside any
- * `shorthandWith` slots, and `null` into the empty object that clears it; a
+ * bare value lifts into the `shorthand` slot taking its form
+ * (`liftShorthand`), and `null` into the empty object that clears it; a
  * `null` member reads as unset; a `retired` spelling becomes the members that
  * replaced it; the schema's own `preProcessSnapshot` runs, which is where a
  * track folds `displayDefaults` into its displays; then a `closed` schema
@@ -224,14 +239,13 @@ export function preProcessSnapshotWith(
   snapshot: unknown,
   { routesUndeclared = false } = {},
 ): Record<string, unknown> {
-  const { shorthandWith, closed, preProcessSnapshot } = schema.options
-  const form = bareFormOf(snapshot)
-  const target = form && shorthandTargets(schema)[form]
+  const { closed, preProcessSnapshot } = schema.options
+  const bare = liftShorthand(schema, snapshot)
   const lifted =
     snapshot === null
       ? {}
-      : target !== undefined
-        ? { ...shorthandWith, [target]: snapshot }
+      : bare !== snapshot
+        ? (bare as Record<string, unknown>)
         : nullMembersAsUnset(snapshot as Record<string, unknown>)
   const named = liftRetiredSpellings(schema, lifted)
   const processed = preProcessSnapshot ? preProcessSnapshot(named) : named

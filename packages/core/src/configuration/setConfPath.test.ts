@@ -2,7 +2,12 @@ import { getSnapshot, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { applyConfSettings, readConfObject, setConf } from './index.ts'
+import {
+  applyConfSettings,
+  mergeConfSettings,
+  readConfObject,
+  setConf,
+} from './index.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -25,7 +30,7 @@ const facet = ConfigurationSchema(
     field: { type: 'string', defaultValue: '' },
     domain: { type: 'stringArray', defaultValue: [] },
   },
-  { shorthand: 'field', closed: true },
+  { shorthand: 'field', writes: 'whole', closed: true },
 )
 
 const searchIndex = ConfigurationSchema(
@@ -247,5 +252,92 @@ describe('a settings bag', () => {
     expect(report.applied).toEqual(['facet'])
     expect(report.failed.map(f => f.key)).toEqual(['height', 'scales'])
     expect(report.failed[1]!.error).toContain('no config slot "bogus"')
+  })
+})
+
+// A filter object as ADR-232 shapes one: members a bag names one by one, and a
+// list its shorthand lifts into `expressions`.
+const predicates = ConfigurationSchema(
+  'Predicates',
+  {
+    expressions: { type: 'expressionArray', defaultValue: [] },
+    minScore: { type: 'maybeNumber' },
+  },
+  { shorthand: 'expressions', writes: 'members', closed: true },
+)
+
+const range = ConfigurationSchema(
+  'Range',
+  { start: { type: 'maybeNumber' }, end: { type: 'maybeNumber' } },
+  { writes: 'whole' },
+)
+
+const filtered = ConfigurationSchema(
+  'Filtered',
+  { filter: predicates, range },
+  { closed: true },
+)
+
+describe('the declared write mode', () => {
+  test('a schema with a shorthand states one', () => {
+    expect(() =>
+      ConfigurationSchema(
+        'Undeclared',
+        { field: { type: 'string', defaultValue: '' } },
+        { shorthand: 'field' },
+      ),
+    ).toThrow("Undeclared declares a shorthand, so it declares writes: 'whole'")
+  })
+
+  test('a list shorthand lifts into the list slot', () => {
+    const node = filtered.create(
+      { filter: ['jexl:feature.score > 1'] },
+      { pluginManager },
+    )
+    expect(getSnapshot(node)).toEqual({
+      filter: { expressions: ['jexl:feature.score > 1'] },
+    })
+  })
+
+  test('a bag merges a members object, a bare list included', () => {
+    const node = filtered.create({ filter: { minScore: 5 } }, { pluginManager })
+    applyConfSettings(node, { filter: ['jexl:feature.score > 1'] })
+    expect(getSnapshot(node)).toEqual({
+      filter: { minScore: 5, expressions: ['jexl:feature.score > 1'] },
+    })
+    applyConfSettings(node, { filter: { minScore: 2 } })
+    expect(getSnapshot(node)).toEqual({
+      filter: { minScore: 2, expressions: ['jexl:feature.score > 1'] },
+    })
+    applyConfSettings(node, { filter: null })
+    expect(getSnapshot(node)).toEqual({})
+  })
+
+  test('two bags merge a members object the same way', () => {
+    expect(
+      mergeConfSettings(
+        filtered,
+        { filter: ['jexl:feature.score > 1'] },
+        { filter: { minScore: 5 } },
+      ),
+    ).toEqual({
+      filter: { expressions: ['jexl:feature.score > 1'], minScore: 5 },
+    })
+  })
+
+  test('a whole object is replaced, with or without a shorthand', () => {
+    const node = filtered.create(
+      { range: { start: 1, end: 9 } },
+      { pluginManager },
+    )
+    applyConfSettings(node, { range: { end: 4 } })
+    expect(getSnapshot(node)).toEqual({ range: { end: 4 } })
+    expect(
+      mergeConfSettings(
+        filtered,
+        { range: { start: 1, end: 9 } },
+        { range: { end: 4 } },
+      ),
+    ).toEqual({ range: { end: 4 } })
   })
 })

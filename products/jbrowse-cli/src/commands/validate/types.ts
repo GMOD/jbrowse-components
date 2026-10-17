@@ -23,11 +23,11 @@ export interface SlotEntry {
    */
   defaultEntries?: unknown[]
   /**
-   * A sub-schema slot: the member a bare string or number written in its place
-   * lifts into, by the schema's `shorthand` option (`color: "red"` is
+   * A sub-schema slot: the member a bare string, number or list written in its
+   * place lifts into, by the schema's `shorthand` option (`color: "red"` is
    * `color: { value: "red" }`, a width's `size: 3` is `{ value: 3 }`).
    */
-  shorthand?: Partial<Record<'string' | 'number', string>>
+  shorthand?: Partial<Record<'string' | 'number' | 'list', string>>
   /**
    * A color object: each field's defaults, `*` for any other field — the
    * scale while `scale` is unset and the members it reads while unwritten

@@ -95,5 +95,10 @@ export const ldColorConfigSchema = ConfigurationSchema(
       description: 'linear, the one scale; unset is linear',
     },
   },
-  { shorthand: 'field', closed: true, fieldPresets: LD_FIELD_PRESETS },
+  {
+    shorthand: 'field',
+    writes: 'whole',
+    closed: true,
+    fieldPresets: LD_FIELD_PRESETS,
+  },
 )

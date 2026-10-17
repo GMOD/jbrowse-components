@@ -287,10 +287,10 @@ function stateModelFactory() {
        * `preProcessSnapshot` (shorthand expansions and legacy-key migrations,
        * as `showTrackGeneric` applies to a session spec's inline track keys),
        * then writes the matching config slot. A key naming a channel (`facet`,
-       * `color`, `rows`, any object with a one-value shorthand) replaces the
-       * whole object, its string shorthand lifted by that schema, and `null`
-       * clears it; `scales` names members inside it and leaves the rest. Keys
-       * that are not slots
+       * `color`, `rows`, any object declaring `writes: 'whole'`) replaces the
+       * whole object, its shorthand lifted by that schema, and `null` clears
+       * it; any other object, `scales` among them, names members inside it and
+       * leaves the rest. Keys that are not slots
        * come back in `unapplied` as `{ key, reason }`, so a caller can tell a
        * misspelling from a key that has an action instead of a slot.
        *

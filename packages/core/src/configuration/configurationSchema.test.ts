@@ -898,7 +898,7 @@ describe('a null member on the create path', () => {
   const Rule = ConfigurationSchema(
     'NullRule',
     { value: { type: 'number', defaultValue: 1 } },
-    { shorthand: 'value' },
+    { shorthand: 'value', writes: 'whole' },
   )
   const Display = ConfigurationSchema('NullDisplay', {
     label: { type: 'string', defaultValue: 'hello' },
@@ -1576,6 +1576,7 @@ describe('a declared shorthand', () => {
     },
     {
       shorthand: 'field',
+      writes: 'whole',
       preProcessSnapshot: snap => {
         if (Array.isArray(snap.domain) && snap.domain.length && !snap.field) {
           throw new Error('domain needs a field')
@@ -1628,7 +1629,7 @@ describe('a shorthand naming a number slot', () => {
       value: { type: 'number', defaultValue: 0 },
       label: { type: 'string', defaultValue: '' },
     },
-    { shorthand: 'value', closed: true },
+    { shorthand: 'value', writes: 'whole', closed: true },
   )
   const Scale = ConfigurationSchema('ShorthandScale', {
     rules: types.array(Rule),
@@ -1666,7 +1667,7 @@ describe('a shorthand naming a number slot and a string slot', () => {
       value: { type: 'maybeNumber' },
       field: { type: 'string', defaultValue: '' },
     },
-    { shorthand: ['value', 'field'], closed: true },
+    { shorthand: ['value', 'field'], writes: 'whole', closed: true },
   )
 
   test('lifts each bare form into the slot taking it', () => {
@@ -1685,7 +1686,7 @@ describe('a shorthand naming a number slot and a string slot', () => {
           value: { type: 'string', defaultValue: '' },
           field: { type: 'string', defaultValue: '' },
         },
-        { shorthand: ['value', 'field'] },
+        { shorthand: ['value', 'field'], writes: 'whole' },
       ),
     ).toThrow(
       "TwoStrings's shorthand names value and field, which take the same bare form",
@@ -1701,7 +1702,12 @@ describe('a shorthand with companion slots', () => {
       field: { type: 'string', defaultValue: 'strand' },
       scale: { type: 'maybeString' },
     },
-    { shorthand: 'value', shorthandWith: { scale: 'none' }, closed: true },
+    {
+      shorthand: 'value',
+      writes: 'whole',
+      shorthandWith: { scale: 'none' },
+      closed: true,
+    },
   )
   const Display = ConfigurationSchema('ShorthandWithDisplay', { color: Color })
 
@@ -1728,7 +1734,7 @@ describe('a closed schema', () => {
       value: { type: 'color', defaultValue: 'red' },
       field: { type: 'string', defaultValue: '' },
     },
-    { shorthand: 'value', closed: true },
+    { shorthand: 'value', writes: 'whole', closed: true },
   )
   const Display = ConfigurationSchema('ClosedDisplay', { color: Color })
 
@@ -1827,7 +1833,7 @@ describe('a declared requirement', () => {
   const Color = ConfigurationSchema(
     'RequiresColor',
     { value: { type: 'color', defaultValue: 'red' } },
-    { shorthand: 'value' },
+    { shorthand: 'value', writes: 'whole' },
   )
   const Encoding = ConfigurationSchema('RequiresEncoding', {
     y: { type: 'string', defaultValue: '' },

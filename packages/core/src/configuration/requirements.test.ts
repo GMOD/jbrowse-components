@@ -9,7 +9,7 @@ const Color = ConfigurationSchema(
     value: { type: 'color', defaultValue: '' },
     field: { type: 'string', defaultValue: '' },
   },
-  { shorthand: 'value' },
+  { shorthand: 'value', writes: 'whole' },
 )
 const Encoding = ConfigurationSchema('RequirementEncoding', {
   y: { type: 'string', defaultValue: '' },

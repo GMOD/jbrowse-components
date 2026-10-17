@@ -149,7 +149,8 @@ import { liftPlot } from '@jbrowse/core/configuration'
 
 Two settings bags for one schema as one, `over` written after `under` the
 way `applyConfSettings` writes a bag: a namespace's object merges member by
-member at any depth, and a slot or a channel takes `over`'s value whole.
+member at any depth, a bare value its shorthand lifts included, and a slot
+or a channel takes `over`'s value whole.
 Each side's retired spellings lift first, at every depth, so a bag's own
 retired name still beats the other's current one. For combining snapshots
 before any config node exists, as a track's `displayDefaults` folds into

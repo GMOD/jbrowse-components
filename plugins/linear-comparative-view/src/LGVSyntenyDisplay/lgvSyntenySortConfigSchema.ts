@@ -36,6 +36,7 @@ export const lgvSyntenySortConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: alignmentsSortConfigSchema,
     shorthand: 'type',
+    writes: 'whole',
     closed: true,
   },
 )

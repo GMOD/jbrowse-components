@@ -44,5 +44,5 @@ export const markLocusSchema = ConfigurationSchema(
       description: 'sequence field; empty is the feature’s own',
     },
   },
-  { shorthand: 'pos', closed: true },
+  { shorthand: 'pos', writes: 'whole', closed: true },
 )

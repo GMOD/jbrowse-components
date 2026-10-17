@@ -17,7 +17,7 @@ const Facet = ConfigurationSchema(
     field: { type: 'string', defaultValue: '' },
     domain: { type: 'stringArray', defaultValue: [] },
   },
-  { shorthand: 'field', closed: true },
+  { shorthand: 'field', writes: 'whole', closed: true },
 )
 
 const Axis = ConfigurationSchema(

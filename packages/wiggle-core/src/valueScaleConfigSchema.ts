@@ -50,7 +50,7 @@ function valueScaleRuleSchema() {
         description: "text at the rule's right-hand end",
       },
     },
-    { shorthand: 'value', closed: true },
+    { shorthand: 'value', writes: 'whole', closed: true },
   )
 }
 

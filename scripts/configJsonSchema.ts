@@ -124,7 +124,7 @@ export interface Deps {
   /** The slot each bare form a schema's `shorthand` lifts into, as the config reader decides it. */
   shorthandTargetsOf: (
     meta: SchemaMetadata,
-  ) => Partial<Record<'string' | 'number', string>>
+  ) => Partial<Record<'string' | 'number' | 'list', string>>
   /** The CSS named colors, as the painters' table spells them. */
   cssColorNames: readonly string[]
   isType: (thing: unknown) => boolean
@@ -839,7 +839,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     // against this branch rather than the union
     const bare = Object.entries(forms.targets).map(([form, slot]) => ({
       ...valueSchema(slots[slot]),
-      type: form,
+      type: form === 'list' ? 'array' : form,
       description: `Shorthand for \`{ "${slot}": ...${companionText(meta)} }\`.`,
     }))
     const schema =

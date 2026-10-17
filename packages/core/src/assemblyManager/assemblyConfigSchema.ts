@@ -19,6 +19,7 @@ export {
 function fileAdapterShorthand(typeFor: (uri: string) => string) {
   return {
     shorthand: 'uri',
+    writes: 'whole' as const,
     preProcessSnapshot: (snap: Record<string, unknown>) =>
       expandSidecarShorthand(snap, typeFor),
   }

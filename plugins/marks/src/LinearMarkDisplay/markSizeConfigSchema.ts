@@ -88,6 +88,7 @@ export const markSizeSchema = ConfigurationSchema(
   },
   {
     shorthand: ['value', 'field'],
+    writes: 'whole',
     closed: true,
     // A range is written as numbers, the px it names; the slot holds them as
     // strings the way a threshold domain holds its cuts.

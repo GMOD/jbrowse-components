@@ -52,5 +52,5 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
       description: 'none draws no layer and keeps the field for a switch back',
     },
   },
-  { shorthand: 'field', closed: true },
+  { shorthand: 'field', writes: 'whole', closed: true },
 )

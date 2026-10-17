@@ -7,6 +7,9 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 function liftSlot(member: unknown, slot: SlotEntry): unknown {
   if (slot.subSlots) {
     const { subSlots, shorthand = {} } = slot
+    if (Array.isArray(member) && shorthand.list !== undefined) {
+      return liftToSnapshot({ [shorthand.list]: member }, subSlots)
+    }
     const lift = (item: unknown) => {
       const target =
         typeof item === 'string'
@@ -28,8 +31,9 @@ function liftSlot(member: unknown, slot: SlotEntry): unknown {
 
 /**
  * A config object as its schema holds it once loaded, defaults still left off:
- * a bare string or number lifted into the sub-schema's `shorthand` slot taking it or a string into a list of
- * one, and a number in a list of strings carried as a string. Which slot lifts
+ * a bare string, number or list lifted into the sub-schema's `shorthand` slot
+ * taking it or a string into a list of one, and a number in a list of strings
+ * carried as a string. Which slot lifts
  * what is the manifest's record of the live schemas, so a rule list written
  * against a config snapshot reads a file the way it reads the app's.
  */

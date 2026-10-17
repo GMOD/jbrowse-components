@@ -174,6 +174,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
   },
   {
     shorthand: 'field',
+    writes: 'whole',
     closed: true,
     fieldPresets: MAF_FIELD_PRESETS,
     preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>

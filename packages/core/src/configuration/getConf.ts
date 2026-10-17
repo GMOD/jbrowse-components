@@ -18,6 +18,7 @@ import {
 } from './schemaTypes.ts'
 import {
   liftRetiredSpellings,
+  liftShorthand,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
 } from './snapshotPreprocess.ts'
@@ -143,24 +144,23 @@ export interface ConfSettingsReport {
   failed: { key: string; error: string }[]
 }
 
-// A sub-schema of independent settings, whose members a bag names one by one.
-// A channel — a sub-schema with a shorthand — takes one written value, so a
-// bag replaces it whole: `{ field }` after `{ field, domain }` is a facet with
-// no domain, and a merge would leave the old domain standing.
+// A sub-schema whose members a bag names one by one: every one but a channel,
+// which declares `writes: 'whole'`.
 function namespaceMetadata(member: unknown) {
   const meta = isStateTreeNode(member)
     ? getConfigurationSchemaMetadata(getType(member))
     : isType(member)
       ? getConfigurationSchemaMetadata(member)
       : undefined
-  return meta?.options.shorthand === undefined ? meta : undefined
+  return meta?.options.writes === 'whole' ? undefined : meta
 }
 
 /**
  * #api core/configuration
  * Two settings bags for one schema as one, `over` written after `under` the
  * way `applyConfSettings` writes a bag: a namespace's object merges member by
- * member at any depth, and a slot or a channel takes `over`'s value whole.
+ * member at any depth, a bare value its shorthand lifts included, and a slot
+ * or a channel takes `over`'s value whole.
  * Each side's retired spellings lift first, at every depth, so a bag's own
  * retired name still beats the other's current one. For combining snapshots
  * before any config node exists, as a track's `displayDefaults` folds into
@@ -179,11 +179,13 @@ export function mergeConfSettings(
   const definition = meta?.definition ?? {}
   const out = { ...lift(under) }
   for (const [key, value] of Object.entries(lift(over))) {
-    const prior = out[key]
     const member = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const namespace = namespaceMetadata(member)
+    const prior = namespace ? liftShorthand(namespace, out[key]) : out[key]
+    const next = namespace ? liftShorthand(namespace, value) : value
     out[key] =
-      isPlainObject(prior) && isPlainObject(value) && namespaceMetadata(member)
-        ? mergeConfSettings(member, prior, value)
+      namespace && isPlainObject(prior) && isPlainObject(next)
+        ? mergeConfSettings(member, prior, next)
         : value
   }
   return out
@@ -195,12 +197,13 @@ function writeConfMember(
   value: unknown,
 ) {
   const member = conf[key]
-  const namespace = isPlainObject(value) ? namespaceMetadata(member) : undefined
-  if (namespace) {
+  const namespace = namespaceMetadata(member)
+  const written = namespace ? liftShorthand(namespace, value) : value
+  if (namespace && isPlainObject(written)) {
     // refused as a whole before any member lands, so a bad member leaves the
     // namespace as it was rather than half written and reported as rejected
     const members = refusingUndeclaredKeys(() => {
-      const lifted = preProcessSnapshotWith(namespace, value)
+      const lifted = preProcessSnapshotWith(namespace, written)
       getType(member).create({ ...getSnapshot(member), ...lifted })
       return lifted
     })

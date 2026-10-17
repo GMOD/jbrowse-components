@@ -459,6 +459,7 @@ export function colorChannelOptions(
 ) {
   return {
     shorthand: 'value',
+    writes: 'whole' as const,
     closed: true,
     fieldPresets,
     ...(impliedField ? { impliedField } : {}),

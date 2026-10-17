@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "step 1 of ADR-232's order of work: a `writes: 'whole' | 'members'` option required on every schema that declares a `shorthand` (`git grep -n 'shorthand:'`), checked beside `checkShorthand` in `packages/core/src/configuration/configurationSchema.ts`, with `namespaceMetadata` (`getConf.ts:150`) reading it, and a list form for a shorthand in `schemaTypes.ts`"
+  first_move: "step 2 of ADR-232's order of work (step 1, the declared write mode, is built): a `plot: '<dialog line>'` option on a slot definition, a field table or a sub-schema, inherited through `baseConfiguration`, read by `plotKeysOf` in `packages/core/src/configuration/plot.ts` in place of `PLOT_VOCABULARY`"
 ---
 
 # ADR-232's config renames land before 5.0.0

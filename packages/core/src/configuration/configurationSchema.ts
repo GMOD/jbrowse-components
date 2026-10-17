@@ -83,15 +83,26 @@ export interface ConfigurationSchemaOptions<
   views?: (self: SELF) => any
   extend?: (self: SELF) => any
   /**
-   * The slot a bare string or number snapshot lifts into, as that slot's type
-   * takes it, so `color: "red"` and `color: { value: "red" }` are one config,
-   * and `rules: [5]` is `rules: [{ value: 5 }]`; or two slots, one taking a
-   * number and one a string, so a width's `size: 3` is `{ value: 3 }` and
-   * `size: "score"` is `{ field: "score" }`. Applied before
+   * The slot a bare string, number or list snapshot lifts into, as that slot's
+   * type takes it, so `color: "red"` and `color: { value: "red" }` are one
+   * config, and `rules: [5]` is `rules: [{ value: 5 }]`; or two slots taking
+   * different forms, so a width's `size: 3` is `{ value: 3 }` and
+   * `size: "score"` is `{ field: "score" }`. A list slot takes a list, as a
+   * filter's `["jexl:…"]` is `{ expressions: [...] }`. Applied before
    * `preProcessSnapshot`, on every path a snapshot arrives by; the JSON schema,
-   * `describeSlots` and the config editor read it here.
+   * `describeSlots` and the config editor read it here. A schema declaring one
+   * declares `writes` too.
    */
   shorthand?: string | readonly string[]
+  /**
+   * How a settings bag (a share link, a session spec, an agent's call,
+   * `displayDefaults` folding into a display) writes this sub-schema. `members`,
+   * the default, names members one by one and leaves the rest. `whole` replaces
+   * the object, for one whose members are alternatives: `{ field }` written
+   * over `{ field, domain }` is a facet with no domain, where a merge would
+   * leave the old domain standing.
+   */
+  writes?: 'whole' | 'members'
   /**
    * Slots a bare value sets beside `shorthand`, for a schema whose defaults
    * would hide it: LGVSyntenyColor's `field` defaults to `strand`, so its
@@ -199,7 +210,7 @@ function mergeSchemaDefinition(
 function checkShorthand(
   modelName: string,
   definition: ConfigurationSchemaDefinition,
-  shorthand: string | readonly string[] | undefined,
+  { shorthand, writes }: MergedConfigurationSchemaOptions<any, any>,
 ) {
   const slots =
     shorthand === undefined
@@ -212,6 +223,11 @@ function checkShorthand(
   ) {
     throw new Error(
       `${modelName}'s shorthand names ${slots.join(' and ')}, which take the same bare form, so a bare value could not say which it means`,
+    )
+  }
+  if (shorthand !== undefined && writes === undefined) {
+    throw new Error(
+      `${modelName} declares a shorthand, so it declares writes: 'whole' where its members are alternatives a settings bag replaces together, or 'members' where a bag names them one by one`,
     )
   }
 }
@@ -339,7 +355,7 @@ function makeConfigurationSchemaModel<
     }
   }
   checkRequirements(modelName, schemaDefinition, options.requires ?? [])
-  checkShorthand(modelName, schemaDefinition, options.shorthand)
+  checkShorthand(modelName, schemaDefinition, options)
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)

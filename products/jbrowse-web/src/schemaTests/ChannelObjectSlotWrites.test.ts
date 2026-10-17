@@ -70,7 +70,7 @@ for (const display of pluginManager.getElementTypesInGroup('display')) {
   const { configSchema } = display as { configSchema?: IAnyType }
   for (const type of configSchema ? subSchemas(configSchema) : []) {
     const meta = getConfigurationSchemaMetadata(type)
-    if (meta?.options.shorthand !== undefined) {
+    if (meta?.options.writes === 'whole') {
       channels.set(meta.name, type as AnyConfigurationSchemaType)
     }
   }
