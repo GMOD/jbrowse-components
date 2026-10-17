@@ -949,7 +949,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   //
   // so the dosage reads straight off the coverage band: gone, halved, flat.
   //
-  // Two settings carry the figure. `showPileup: false` drops the stacked-read
+  // Two settings carry the figure. `pileup.show: false` drops the stacked-read
   // band, because at 100kb a 30x pileup is a solid mass and the coverage curve
   // is the whole subject here. And one autoscale group puts all three rows on
   // one axis: left alone each row fits its own maximum, which drew the three
@@ -1082,7 +1082,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG00097.final',
-    // 2.7x the span at 30x across three CRAMs. `showPileup: false` summarises
+    // 2.7x the span at 30x across three CRAMs. `pileup.show: false` summarises
     // rather than draws, but the reads themselves are still fetched.
     readyTimeout: 600000,
     // three 200px tracks over the grown gene lane; the run's own

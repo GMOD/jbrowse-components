@@ -717,8 +717,8 @@ Settings written as slots, in the display's own spelling:
 | `pileup.showSoftClipping=true`           | Show soft-clipped bases                                                                                                                                    |
 | `coverage.show=false`                    | Hide the coverage subtrack                                                                                                                                 |
 | `pileup.show=false`                      | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
-| `coverage.height=200`                    | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
-| `readConnections.height=120`             | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
+| `coverage.height=200`                    | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
+| `readConnections.height=120`             | Height of the arcs' or read cloud's own band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                  |
 | `readConnections.lineWidth=2`            | Stroke width for read-connection arcs and lines                                                                                                            |
 | `sashimi.height=120`                     | Height of the sashimi arc band                                                                                                                             |
 | `sashimi.filter.minReads=3`              | Minimum reads a splice junction needs before its arc is drawn                                                                                              |

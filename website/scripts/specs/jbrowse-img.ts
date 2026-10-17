@@ -684,7 +684,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // `showPileup=false` collapses an alignments track to its coverage band alone — the
+  // `pileup.show=false` collapses an alignments track to its coverage band alone — the
   // same data as `alignments_pileup` above with the pileup hidden, which is
   // what makes the pair worth showing together.
   cliSpec('snpcov', [

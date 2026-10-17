@@ -1,5 +1,11 @@
-import { applyRetiredSpellings } from '@jbrowse/core/configuration'
+import {
+  applyRetiredSpellings,
+  getConfigurationSchemaMetadata,
+  liftRetiredSpellings,
+} from '@jbrowse/core/configuration'
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
+
+import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
@@ -230,11 +236,27 @@ function sortSlot(value: unknown): DisplayEntry {
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
 // the feature went rather than moved.
+const readFilterMeta = getConfigurationSchemaMetadata(readFilterConfigSchema)!
+
+// A v4 filterBy was the whole filter, so its lift names every member it leaves
+// out as unset: merged over a sub-node's or another view's, it replaces that
+// filter rather than inheriting its tag filter.
+function wholeFilterOf(value: unknown): DisplayEntry {
+  return {
+    filter: {
+      ...Object.fromEntries(
+        Object.keys(readFilterMeta.definition).map(member => [member, null]),
+      ),
+      ...(isObject(value) ? liftRetiredSpellings(readFilterMeta, value) : {}),
+    },
+  }
+}
+
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,
-  filterBy: value => ({ filter: value }),
-  filterBySetting: value => ({ filter: value }),
+  filterBy: wholeFilterOf,
+  filterBySetting: wholeFilterOf,
   sortedBy: sortSlot,
   trackMaxHeight: value => ({ pileup: { maxLayoutHeight: value } }),
   hideMismatchesSetting: value => ({ pileup: { showMismatches: !value } }),

@@ -26,10 +26,14 @@ const ScaledColor = ConfigurationSchema(
 const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
   [
     'LinearBasicDisplay',
-    ConfigurationSchema('LinearBasicDisplay', {
-      color: { type: 'color', defaultValue: 'goldenrod' },
-      height: { type: 'number', defaultValue: 100 },
-    }),
+    ConfigurationSchema(
+      'LinearBasicDisplay',
+      {
+        color: { type: 'color', defaultValue: 'goldenrod' },
+        height: { type: 'number', defaultValue: 100 },
+      },
+      { retired: { legacyHeight: height => ({ height }) } },
+    ),
   ],
   [
     'LinearManhattanDisplay',
@@ -145,6 +149,16 @@ describe('mergeOverridesIntoDisplays', () => {
         displaySchemas,
       ),
     ).toEqual([{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'green' }])
+  })
+
+  test("an entry's retired spelling still beats the shorthand's current one", () => {
+    expect(
+      mergeOverridesIntoDisplays(
+        [{ type: 'LinearBasicDisplay', legacyHeight: 9 }],
+        new Map([['LinearBasicDisplay', { height: 3 }]]),
+        displaySchemas,
+      ),
+    ).toEqual([{ type: 'LinearBasicDisplay', height: 9 }])
   })
 
   test('a namespace merges member by member, a channel is replaced whole', () => {

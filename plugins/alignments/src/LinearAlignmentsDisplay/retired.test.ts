@@ -128,7 +128,7 @@ test('lifts the settings off the pre-4.x nested sub-nodes', () => {
     }),
   ).toEqual({
     baseColor: { field: 'modifications' },
-    filter: { flagInclude: 0, flagExclude: 1536 },
+    filter: expect.objectContaining({ flagInclude: 0, flagExclude: 1536 }),
   })
   expect(retiredState.keys).toEqual(
     expect.arrayContaining(['PileupDisplay', 'SNPCoverageDisplay']),
@@ -147,9 +147,30 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
     }),
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
-    filter: { flagInclude: 0, flagExclude: 1540 },
+    filter: expect.objectContaining({ flagInclude: 0, flagExclude: 1540 }),
     pileup: { maxLayoutHeight: 900, showMismatches: false },
   })
+})
+
+// a v4 filterBy was the whole filter, so the display's own replaces the
+// sub-node's rather than inheriting its tag filter
+test("an instance's v4 filter replaces its sub-node's whole", () => {
+  const { filter } = retiredState.lift({
+    PileupDisplay: {
+      filterBySetting: {
+        flagInclude: 0,
+        flagExclude: 1540,
+        tagFilter: { tag: 'HP', value: '1' },
+      },
+    },
+    filterBySetting: { flagInclude: 0, flagExclude: 1028 },
+  }) as { filter: Record<string, unknown> }
+  expect(filter).toMatchObject({ flagExclude: 1028, tagFilters: null })
+  expect(
+    retiredState.lift({
+      filterBySetting: { tagFilter: { tag: 'HP', value: '1' } },
+    }).filter,
+  ).toMatchObject({ tagFilters: [{ tag: 'HP', value: '1' }] })
 })
 
 test('a v4 sort carries into sort by its v5 name, counted from 0', () => {

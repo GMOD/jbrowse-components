@@ -17,6 +17,7 @@ import {
   isConstantEntry,
 } from './schemaTypes.ts'
 import {
+  liftRetiredSpellings,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
 } from './snapshotPreprocess.ts'
@@ -160,19 +161,24 @@ function namespaceMetadata(member: unknown) {
  * Two settings bags for one schema as one, `over` written after `under` the
  * way `applyConfSettings` writes a bag: a namespace's object merges member by
  * member at any depth, and a slot or a channel takes `over`'s value whole.
- * For combining snapshots before any config node exists, as a track's
- * `displayDefaults` folds into its `displays`.
+ * Each side's retired spellings lift first, at every depth, so a bag's own
+ * retired name still beats the other's current one. For combining snapshots
+ * before any config node exists, as a track's `displayDefaults` folds into
+ * its `displays`.
  */
 export function mergeConfSettings(
   schema: unknown,
   under: Record<string, unknown>,
   over: Record<string, unknown>,
 ) {
-  const definition =
-    (isType(schema) ? getConfigurationSchemaMetadata(schema) : undefined)
-      ?.definition ?? {}
-  const out = { ...under }
-  for (const [key, value] of Object.entries(over)) {
+  const meta = isType(schema)
+    ? getConfigurationSchemaMetadata(schema)
+    : undefined
+  const lift = (bag: Record<string, unknown>) =>
+    meta ? liftRetiredSpellings(meta, bag) : bag
+  const definition = meta?.definition ?? {}
+  const out = { ...lift(under) }
+  for (const [key, value] of Object.entries(lift(over))) {
     const prior = out[key]
     const member = Object.hasOwn(definition, key) ? definition[key] : undefined
     out[key] =
