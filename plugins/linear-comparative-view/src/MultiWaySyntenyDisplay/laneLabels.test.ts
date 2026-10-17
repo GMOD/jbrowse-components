@@ -188,7 +188,7 @@ describe('placeLaneLabels', () => {
     expect(labels.map(l => l.text)).toEqual(['G', 'Potri.001G'])
   })
 
-  it("keeps a pinned group's name however crowded, ahead of its neighbours", () => {
+  it("keeps a pinned group's name however crowded, and slides a neighbour past it", () => {
     const genes = [
       gene('A', 100, 110),
       gene('CROWDED', 112, 114),
@@ -206,9 +206,63 @@ describe('placeLaneLabels', () => {
       fontFamily: 'sans-serif',
     })
     expect(labels.map(l => [l.text, l.pinned])).toEqual([
-      ['CROWDED', true],
       ['A', false],
+      ['CROWDED', true],
+      ['B', false],
     ])
+  })
+
+  // HG00128#1 at GSTT1, in the figure's css px: GSTT3P's name at its own left
+  // edge covered the left edge of GSTT2, which sits inside it
+  it('slides a blocked name along its own gene, the tightest fit placed first', () => {
+    const labels = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => [
+        gene('GSTT2B', 156, 198),
+        gene('DDTL', 256, 279),
+        gene('DDT', 295, 330),
+        gene('GSTT3P', 350, 499),
+        gene('GSTT2', 386, 428),
+        gene('GSTT4', 560, 638),
+      ],
+      labelOf,
+      glyphHeight: 10,
+      width: 1296,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(labels.map(l => [l.text, Math.round(l.left)])).toEqual([
+      ['GSTT2B', 156],
+      ['DDTL', 256],
+      ['DDT', 295],
+      ['GSTT2', 386],
+      ['GSTT3P', 420],
+      ['GSTT4', 560],
+    ])
+  })
+
+  it('places a hovered name first, at its start, however much room it has', () => {
+    const labels = placeLaneLabels({
+      lanes: [lane('a', 20)],
+      genesOf: () => [gene('GSTT3P', 350, 499), gene('GSTT2', 386, 428)],
+      labelOf,
+      groupsOf: () => new Map([['GSTT3P', 'g1']]),
+      pinnedGroups: new Set(['g1']),
+      glyphHeight: 10,
+      width: 1296,
+      height: 200,
+      fontFamily: 'sans-serif',
+    })
+    expect(labels.map(l => [l.text, Math.round(l.left)])).toEqual([
+      ['GSTT3P', 350],
+      ['GSTT2', 395],
+    ])
+  })
+
+  it('drops a blocked name once its gene has no free slot left', () => {
+    expect(
+      place({ a: [gene('OUTERGENE', 100, 200), gene('INNERGENE', 110, 175)] }),
+    ).toEqual(['INNERGENE'])
   })
 })
 

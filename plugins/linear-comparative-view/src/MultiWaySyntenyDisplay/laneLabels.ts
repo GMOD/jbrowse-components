@@ -1,5 +1,4 @@
 import { measureText } from '@jbrowse/core/util/measureText'
-import { cullOverlappingLabels } from '@jbrowse/display-ui'
 import { computeLabelLeftPx, keepFeatureLabel } from '@jbrowse/plugin-canvas'
 
 import type { LaneGene } from './geneGlyph.ts'
@@ -29,8 +28,7 @@ export interface PlacedLaneLabel {
 }
 
 interface Candidate extends PlacedLaneLabel {
-  right: number
-  bottom: number
+  maxLeft: number
 }
 
 type LabelledLane = Pick<Lane, 'assemblyName' | 'glyphTop' | 'spansOf'>
@@ -108,6 +106,44 @@ function roomRightOf(names: readonly NamedSpan[], i: number) {
   return Infinity
 }
 
+function slideToFreeSlots(
+  candidates: Candidate[],
+  width: number,
+  height: number,
+) {
+  const gap = 2 * GENE_LABEL_HALO_PX
+  const rows = new Map<number, PlacedLaneLabel[]>()
+  candidates.sort(
+    (a, b) =>
+      Number(b.pinned) - Number(a.pinned) ||
+      a.maxLeft - a.left - (b.maxLeft - b.left) ||
+      a.left - b.left,
+  )
+  for (const { maxLeft, ...c } of candidates) {
+    const taken = rows.get(c.row) ?? []
+    let left = c.left
+    for (const t of taken) {
+      if (t.left - gap < left + c.width && t.left + t.width + gap > left) {
+        left = t.left + t.width + gap
+      }
+    }
+    if (
+      left >= 0 &&
+      left <= maxLeft &&
+      left + c.width <= width &&
+      c.top >= 0 &&
+      c.top + GENE_LABEL_FONT_PX <= height
+    ) {
+      const at = taken.findIndex(t => t.left > left)
+      taken.splice(at < 0 ? taken.length : at, 0, { ...c, left })
+      rows.set(c.row, taken)
+    }
+  }
+  return [...rows.entries()]
+    .sort(([a], [b]) => a - b)
+    .flatMap(([, taken]) => taken)
+}
+
 export function placeLaneLabels({
   lanes,
   genesOf,
@@ -165,37 +201,16 @@ export function placeLaneLabels({
           text: n.name,
           pinned,
           left,
-          right: left + textWidth,
+          maxLeft:
+            textWidth <= n.right - n.left
+              ? Math.min(n.right, width) - textWidth
+              : left,
           top,
-          bottom: top + GENE_LABEL_FONT_PX,
           width: textWidth,
           row,
         })
       }
     })
   }
-  const kept = cullOverlappingLabels(
-    candidates.filter(c => c.pinned),
-    width,
-    height,
-    GENE_LABEL_HALO_PX,
-  )
-  const gap = 2 * GENE_LABEL_HALO_PX
-  const clear = (c: Candidate) =>
-    !kept.some(
-      k =>
-        k.left - gap < c.right &&
-        k.right + gap > c.left &&
-        k.top - gap < c.bottom &&
-        k.bottom + gap > c.top,
-    )
-  return [
-    ...kept,
-    ...cullOverlappingLabels(
-      candidates.filter(c => !c.pinned && clear(c)),
-      width,
-      height,
-      GENE_LABEL_HALO_PX,
-    ),
-  ].map(({ right, bottom, ...placed }) => placed)
+  return slideToFreeSlots(candidates, width, height)
 }

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A MultiWaySyntenyDisplay lane becomes a list of grammar layers drawn through its frame as a coordinate stage, the way ADR-119 draws the circle's rings, not a host of nested tracks. This reverses the collection's 'let a lane host tracks — leave it alone' call: that call priced a per-lane track container rebuilding the deleted MultiLGVSyntenyDisplay, and a layer list rebuilds none of it, since a lane keeps its one fetch lifecycle and gains marks rather than displays. Stage 1 is built: every lane prints its gene names under its glyphs, on by default behind `showGeneLabels`, decimated by the feature track's `keepFeatureLabel` and the mark display's overlap cull, which moved to display-ui as `cullOverlappingLabels`. Stage 2, gene glyphs and named-record placement boxes through `encodeFeatures`, now has its 40-lane measurement, which puts the encoder's floor at a third of the hand packer's cost, since that packer also projects every gene through its lane's frame"
+summary: "A MultiWaySyntenyDisplay lane becomes a list of grammar layers drawn through its frame as a coordinate stage, the way ADR-119 draws the circle's rings, not a host of nested tracks. This reverses the collection's 'let a lane host tracks — leave it alone' call: that call priced a per-lane track container rebuilding the deleted MultiLGVSyntenyDisplay, and a layer list rebuilds none of it, since a lane keeps its one fetch lifecycle and gains marks rather than displays. Stage 1 is built: every lane prints its gene names under its glyphs, on by default behind `showGeneLabels`, decimated by the feature track's `keepFeatureLabel`, and a name another name blocks slides along its own gene to the first free slot. Stage 2, gene glyphs and named-record placement boxes through `encodeFeatures`, now has its 40-lane measurement, which puts the encoder's floor at a third of the hand packer's cost, since that packer also projects every gene through its lane's frame"
 ---
 
 # ADR-180: A multi-way lane is a layer list under its frame
@@ -12,6 +12,19 @@ lane can print gene names and, later, carry extra rows. Reverses route (1) of
 [ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md)
 §"More than one row per genome", and settles which lanes print gene names:
 every lane, fit-or-drop.
+
+Amended 2026-10-16: the placement moves a blocked name right along its own gene,
+and drops it only where no free slot is left.
+
+- The left-to-right overlap cull (`cullOverlappingLabels`) dropped HG00128#1's
+  GSTT2 at GSTT1. GSTT2 sits inside GSTT3P, and GSTT3P's name, at its own left
+  edge, covered GSTT2's left edge though GSTT3P's gene ran 110 px past the name.
+- Placing the tightest fit first draws both, GSTT2 at its edge and GSTT3P
+  beside it.
+- The placement orders names by their room in px, which a pan changes only at
+  the screen edges, so names hold still under pan as
+  [collapsed-mode-labels](../ideas/waiting-on-a-call/collapsed-mode-labels.md)
+  requires.
 
 ## Context
 
@@ -38,13 +51,16 @@ lifecycle of its own.
 - **Names are on by default on every lane** (`showGeneLabels`, "Show gene
   labels" under Show). They sit in a row under the glyphs, which adds
   `geneLabelRowPx` to each lane's band and to the pitch floor.
-- **They decimate as the feature track does.** A name stays only where its
-  neighbours' edges leave room for it (`keepFeatureLabel`, factor 1), and of the
-  rest, one meeting a kept name's halo goes (`cullOverlappingLabels`, the rule
-  ADR-162's text mark already used, moved to display-ui). The label is
-  the `text` slot, a field or jexl expression spelt as the mark display's
-  `encoding.text`, and unset it is `getFeatureName`, the feature track's own
-  name-else-ID. A placement box prints the name its table gives the gene.
+- **They decimate as the feature track does, then slide.** A name stays only
+  where its neighbours' edges leave room for it (`keepFeatureLabel`, factor 1).
+  It starts at the left edge of its gene's widest drawn piece, since the glyph
+  cuts a gene at each hole. Where another name holds that slot, it slides right
+  along its own gene to the first free one and drops only when none is left
+  (`slideToFreeSlots`). A hovered or clicked name places first, then the one
+  with the least room to slide. The label is the `text` slot, a field or jexl
+  expression spelt as the mark display's `encoding.text`, and unset it is
+  `getFeatureName`, the feature track's own name-else-ID. A placement box
+  prints the name its table gives the gene.
 - **Screen and export share one placement**, `laneGeneLabels`: DOM text through
   `FloatingText` on screen, `SvgHaloText` in the figure.
 
