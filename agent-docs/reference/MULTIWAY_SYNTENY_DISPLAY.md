@@ -153,10 +153,11 @@ cost is linear in lanes.
   (`laneIndelsOf`, `laneHeaderRows`). It never pairs a deletion with an
   insertion as a shift, since that infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
-- **The chip lists no insertion that two records state.** HPRC's walk lanes
-  and `hprc_multiway_gfa.pif.gz` both write HG00099#1's 54 kb GSTT1 insertion
-  as a lane gap between records, so at GSTT1 the chip names only the 37 kb
-  deletion beside it.
+- **The chip lists no insertion that two records state.** The graph plugin
+  stamps one `recordId` on every run of a walk record from 7.1.12, so at GSTT1
+  HG00099#1's walk lane reads "54 kb insertion, 37 kb deletion".
+  `hprc_multiway_gfa.pif.gz` stores that insertion as a gap between separate
+  file records, so its lane names only the 37 kb deletion.
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the
