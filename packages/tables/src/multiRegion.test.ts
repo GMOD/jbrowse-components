@@ -197,7 +197,7 @@ test('a junction two regions show is listed once, naming the region at each foot
 })
 
 test('an arc whose feet two regions hold is listed once, naming both', async () => {
-  const display = { readConnections: 'arc' }
+  const display = { readConnections: { show: true } }
   const one = await engine.alignments({ ...PAIRED_INVERSION, display })
   const t = await engine.alignments({
     ...without(PAIRED_INVERSION),

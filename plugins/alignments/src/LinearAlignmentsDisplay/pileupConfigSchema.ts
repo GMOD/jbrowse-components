@@ -1,0 +1,104 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+/**
+ * #config Pileup
+ * #category display
+ * The alignments display's `pileup` setting: the band of stacked reads, its
+ * read height and layout cap, and the parts drawn on each read.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   pileup: { readHeight: 3, showSoftClipping: true },
+ * }
+ * ```
+ */
+export const pileupConfigSchema = ConfigurationSchema(
+  'Pileup',
+  {
+    /**
+     * #slot
+     */
+    show: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'draw the pileup band',
+    },
+    /**
+     * #slot
+     * The one compactness setting: the spacing between reads follows from it
+     * (`featureSpacingForHeight`), and the Normal, Compact and Super-compact
+     * presets (7, 3, 1) and the fit-mode squeeze all write or read it.
+     */
+    readHeight: {
+      type: 'number',
+      defaultValue: 7,
+      description: 'height of each read in pixels',
+    },
+    /**
+     * #slot
+     */
+    maxHeight: {
+      type: 'number',
+      defaultValue: 6000,
+      description:
+        "the tallest the pileup's layout grows in pixels; reads past it are not stacked, and coverage still counts them. Not the display's growMaxHeight, which caps how tall the track grows",
+      advanced: true,
+    },
+    /**
+     * #slot
+     */
+    showMismatches: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it says the exon blocks are one read (PILEUP_MARKS)',
+    },
+    /**
+     * #slot
+     */
+    showSoftClipping: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'draw the soft-clipped ends of each read',
+    },
+    /**
+     * #slot
+     * Unset, the outline follows the unit: drawn under `unit: 'chain'`.
+     */
+    showOutline: {
+      type: 'maybeBoolean',
+      description: 'draw an outline around each read; unset follows the unit',
+      advanced: true,
+    },
+    /**
+     * #slot
+     */
+    showConnectors: {
+      type: 'boolean',
+      defaultValue: false,
+      description:
+        'draw a curved connector from each read to its mate or split segment',
+    },
+    /**
+     * #slot
+     */
+    fadeLowQuality: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'fade each mismatch base by its Phred base quality',
+    },
+    /**
+     * #slot
+     */
+    fadeLowFrequency: {
+      type: 'boolean',
+      defaultValue: true,
+      description:
+        'fade the sub-pixel mismatches, insertions and clip bars that fall below the depth-dependent frequency threshold; off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline)',
+      advanced: true,
+    },
+  },
+  { closed: true },
+)

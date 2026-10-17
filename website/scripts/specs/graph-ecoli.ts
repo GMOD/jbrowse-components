@@ -1017,7 +1017,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               trackId: PGGB_MAF_TRACK,
               type: 'LinearMafDisplay',
               rows: { domain: PGGB_STRAIN_ROWS },
-              showCoverage: false,
+              coverage: { show: false },
               height: 110,
             },
             { ...pggbTierCut, geneTrackId: 'K12_genes', height: 190 },

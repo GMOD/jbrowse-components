@@ -56,8 +56,8 @@ const suite: TestSuite = {
         {
           trackId: 'volvox-inv-pbsim',
           displaySnapshot: {
-            showBezierConnections: true,
-            readConnections: 'arc',
+            pileup: { showConnectors: true },
+            readConnections: { show: true },
           },
         },
       ],
@@ -71,8 +71,8 @@ const suite: TestSuite = {
         {
           trackId: 'volvox-simple-inv.bam',
           displaySnapshot: {
-            showBezierConnections: true,
-            readConnections: 'arc',
+            pileup: { showConnectors: true },
+            readConnections: { show: true },
           },
         },
       ],
@@ -87,8 +87,7 @@ const suite: TestSuite = {
           trackId: 'volvox-simple-inv-paired.bam',
           displaySnapshot: {
             height: 45,
-            showCoverage: true,
-            coverageHeight: 45,
+            coverage: { show: true, height: 45 },
           },
         },
       ],
@@ -103,8 +102,7 @@ const suite: TestSuite = {
           trackId: 'volvox-inv-pbsim',
           displaySnapshot: {
             height: 45,
-            showCoverage: true,
-            coverageHeight: 45,
+            coverage: { show: true, height: 45 },
           },
         },
       ],
@@ -118,7 +116,7 @@ const suite: TestSuite = {
         {
           trackId: 'volvox-simple-inv-paired.bam',
           displaySnapshot: {
-            readConnections: 'cloud',
+            readConnections: { show: true, mark: 'cloud' },
             color: { field: 'pairOrientation' },
           },
         },

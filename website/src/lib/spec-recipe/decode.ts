@@ -78,7 +78,9 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // themselves differently.
 //
 // A graph track's `pane` is flattened the same way: its keys are the graph's
-// settings, each one a control of its own.
+// settings, each one a control of its own. So is each band object of the
+// alignments and MAF displays (`coverage`, `sashimi`, ...), to one entry per
+// member under its dotted path, `coverage.show`, `sashimi.filter.minReads`.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
@@ -91,7 +93,87 @@ export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   return Object.entries({
     ...display,
     ...(isPlainObject(pane) ? pane : {}),
-  })
+  }).flatMap(([key, value]) => settingEntries(key, value))
+}
+
+/** A display settings object as the per-field walk reads it. */
+export function flatSettings(settings: Record<string, unknown>) {
+  return Object.entries(settings).flatMap(([key, value]) =>
+    settingEntries(key, value),
+  )
+}
+
+function settingEntries(key: string, value: unknown): [string, unknown][] {
+  return BAND_OBJECTS.has(key) && isPlainObject(value)
+    ? bandEntries(key, value)
+    : [[key, value]]
+}
+
+/** The inverse of `flatSettings`, for a predicate the plugin owns. */
+export function nestedSettings(entries: Record<string, unknown>) {
+  const out: Record<string, unknown> = {}
+  const band = (name: string) => {
+    const held = out[name]
+    return isPlainObject(held) ? held : (out[name] = {}) as Record<string, unknown>
+  }
+  for (const [key, value] of Object.entries(entries)) {
+    const [head = key, ...path] = key.split('.')
+    if (key === 'readConnections' && typeof value === 'string') {
+      Object.assign(
+        band(key),
+        value === 'off' ? { show: false } : { show: true, mark: value },
+      )
+    } else if (path.length === 0) {
+      out[key] = value
+    } else {
+      let node = band(head)
+      for (const segment of path.slice(0, -1)) {
+        node = isPlainObject(node[segment])
+          ? (node[segment])
+          : (node[segment] = {})
+      }
+      node[path.at(-1)!] = value
+    }
+  }
+  return out
+}
+
+const BAND_OBJECTS = new Set([
+  'coverage',
+  'pileup',
+  'sashimi',
+  'readConnections',
+  'conservation',
+])
+
+// A band's `show` and `mark` are one radio on the read connections ("None",
+// "Read arcs", "Read cloud"), so they come out as the one `readConnections`
+// entry that radio writes; a band's `filter` is flattened one level further,
+// one entry per category or floor.
+function bandEntries(
+  band: string,
+  members: Record<string, unknown>,
+): [string, unknown][] {
+  const { show, mark, filter, ...rest } = members
+  const drawn: [string, unknown][] =
+    band === 'readConnections' && show !== undefined
+      ? [[band, show === true ? (mark ?? 'arc') : 'off']]
+      : [
+          ...(show !== undefined ? [[`${band}.show`, show] as const] : []),
+          ...(mark !== undefined ? [[`${band}.mark`, mark] as const] : []),
+        ]
+  return [
+    ...drawn,
+    ...Object.entries(rest).map(
+      ([member, value]) => [`${band}.${member}`, value] as [string, unknown],
+    ),
+    ...(isPlainObject(filter)
+      ? Object.entries(filter).map(
+          ([member, value]) =>
+            [`${band}.filter.${member}`, value] as [string, unknown],
+        )
+      : []),
+  ]
 }
 
 // The display a track entry names, when it names one — inline as `type` or

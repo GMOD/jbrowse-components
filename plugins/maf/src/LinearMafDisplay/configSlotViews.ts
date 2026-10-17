@@ -10,8 +10,9 @@ import { sourceChromRankColors } from './components/drawSourceChrom.ts'
 import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
-import type { ConservationMode } from './conservationModes.ts'
+import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
+import type { CoverageFilter } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
   ColorSetting,
@@ -47,7 +48,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get showCoverage(): boolean {
-      return getConf(self, 'showCoverage')
+      return getConf(self, ['coverage', 'show'])
     },
     /**
      * #getter
@@ -59,37 +60,43 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get coverageHeight(): number {
-      return getConf(self, 'coverageHeight')
+      return getConf(self, ['coverage', 'height'])
     },
     /**
      * #getter
      */
-    get coverageSnpMinFrequency(): number {
-      return getConf(self, 'coverageSnpMinFrequency')
+    get coverageFilter(): CoverageFilter {
+      return {
+        minAlleleFraction: getConf(self, [
+          'coverage',
+          'filter',
+          'minAlleleFraction',
+        ]),
+      }
     },
     /**
      * #getter
      */
     get showInterbaseIndicators(): boolean {
-      return getConf(self, 'showInterbaseIndicators')
+      return getConf(self, ['coverage', 'showInterbaseIndicators'])
     },
     /**
      * #getter
      */
     get showConservation(): boolean {
-      return getConf(self, 'showConservation')
+      return getConf(self, ['conservation', 'show'])
     },
     /**
      * #getter
      */
     get conservationHeight(): number {
-      return getConf(self, 'conservationHeight')
+      return getConf(self, ['conservation', 'height'])
     },
     /**
      * #getter
      */
-    get conservationMode(): ConservationMode {
-      return getConf(self, 'conservationMode')
+    get conservationUnit(): ConservationUnit {
+      return getConf(self, ['conservation', 'unit'])
     },
     /**
      * #getter
@@ -231,19 +238,21 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowCoverage(arg: boolean) {
-      setConf(self, 'showCoverage', arg)
+      setConf(self, ['coverage', 'show'], arg)
     },
     /**
      * #action
      */
-    setCoverageSnpMinFrequency(fraction: number) {
-      setConf(self, 'coverageSnpMinFrequency', fraction)
+    setCoverageFilter(patch: Partial<CoverageFilter>) {
+      for (const [member, value] of Object.entries(patch)) {
+        setConf(self, ['coverage', 'filter', member] as never, value)
+      }
     },
     /**
      * #action
      */
     setShowInterbaseIndicators(arg: boolean) {
-      setConf(self, 'showInterbaseIndicators', arg)
+      setConf(self, ['coverage', 'showInterbaseIndicators'], arg)
     },
     /**
      * #action
@@ -255,13 +264,13 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowConservation(arg: boolean) {
-      setConf(self, 'showConservation', arg)
+      setConf(self, ['conservation', 'show'], arg)
     },
     /**
      * #action
      */
-    setConservationMode(arg: ConservationMode) {
-      setConf(self, 'conservationMode', arg)
+    setConservationUnit(arg: ConservationUnit) {
+      setConf(self, ['conservation', 'unit'], arg)
     },
     /**
      * #action

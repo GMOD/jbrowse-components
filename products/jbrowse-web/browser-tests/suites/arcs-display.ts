@@ -148,7 +148,7 @@ function translocationArcsTest({
                 trackId: 'volvox_translocation',
                 displaySnapshot: {
                   type: 'LinearAlignmentsDisplay',
-                  readConnections: 'arc',
+                  readConnections: { show: true },
                 },
               },
             ],
@@ -206,7 +206,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'arc',
+            readConnections: { show: true },
           },
         },
       ],
@@ -232,7 +232,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'cloud',
+            readConnections: { show: true, mark: 'cloud' },
           },
         },
       ],
@@ -255,8 +255,7 @@ const suite: TestSuite = {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'cloud',
-            readConnectionsDown: false,
+            readConnections: { show: true, mark: 'cloud', placement: 'up' },
           },
         },
       ],
@@ -282,14 +281,16 @@ const suite: TestSuite = {
           trackId: 'volvox_sv',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'arc',
-            // A TALL band, because the difference this pins is vertical. At the
-            // default height the whole band is a few px and a leaning arc and a
-            // vertical leg differ by 0.71% of the capture — under the 5% gate,
-            // so the golden passed with the threshold reverted and pinned
-            // nothing. Measured, not guessed: that is what the first version of
-            // this case did.
-            readConnectionsHeight: 160,
+            readConnections: {
+              show: true,
+              // A TALL band, because the difference this pins is vertical. At the
+              // default height the whole band is a few px and a leaning arc and a
+              // vertical leg differ by 0.71% of the capture — under the 5% gate,
+              // so the golden passed with the threshold reverted and pinned
+              // nothing. Measured, not guessed: that is what the first version of
+              // this case did.
+              height: 160,
+            },
           },
         },
       ],

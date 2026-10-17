@@ -22,17 +22,17 @@ default is left out, as it would be in a config file. Show help lists the
 settings, each with a line saying what it holds. Which settings appear depends
 on the display:
 
-| Display                              | Settings                                                                            |
-| ------------------------------------ | ----------------------------------------------------------------------------------- |
-| Feature, single-sample variant       | `facet`, `color`, `filter`                                                          |
-| Multi-row feature                    | `facet`, `rows`, `rowColor`, `color`                                                |
-| Multi-sample variant                 | `unit`, `facet`, `rows`, `rowColor`, `color`, `filter`                              |
-| Alignments, synteny in a genome view | `unit`, `facet`, `color`, `baseColor`, `arcColor`, `scales`, `filter`               |
-| Quantitative                         | `mark`, `interpolate`, `rows`, `rowColor`, `color`, `scales`, `y`, `size`, `origin` |
-| Multiple alignment (MAF)             | `rows`, `rowColor`, `color`, `y`                                                    |
-| Hi-C, linkage disequilibrium (LD)    | `color`                                                                             |
-| Multi-way synteny                    | `rows`, `color`, `ribbonColor`, `laneLayers`                                        |
-| Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`     |
+| Display                              | Settings                                                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Feature, single-sample variant       | `facet`, `color`, `filter`                                                                                    |
+| Multi-row feature                    | `facet`, `rows`, `rowColor`, `color`                                                                          |
+| Multi-sample variant                 | `unit`, `facet`, `rows`, `rowColor`, `color`, `filter`                                                        |
+| Alignments, synteny in a genome view | `unit`, `facet`, `color`, `baseColor`, `scales`, `filter`, `coverage`, `pileup`, `sashimi`, `readConnections` |
+| Quantitative                         | `mark`, `interpolate`, `rows`, `rowColor`, `color`, `scales`, `y`, `size`, `origin`                           |
+| Multiple alignment (MAF)             | `rows`, `rowColor`, `color`, `y`, `coverage`, `conservation`                                                  |
+| Hi-C, linkage disequilibrium (LD)    | `color`                                                                                                       |
+| Multi-way synteny                    | `rows`, `color`, `ribbonColor`, `laneLayers`                                                                  |
+| Mark plot, Manhattan                 | `marks`, `transform`, `facet`, `rows`, `rowColor`, `scales`, `origin`, `filter`                               |
 
 The circular view's chord variant display has a plot too, `color`; its Edit plot
 row is under the view menu's Tracks entry, since a track on the circle has no

@@ -515,7 +515,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bam',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
     'sashimi:auto',
-    'coverageHeight=170',
+    'coverage.height=170',
     // LOG, because junction depth here spans three orders of magnitude: the
     // last exon peaks near 4000 and the first two sit in the low hundreds, so a
     // linear axis drew them as a flat line and the band was one spike with the
@@ -554,7 +554,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // below it, so the section divider says which reads carry the SV rather
     // than leaving the reader to pick the colored ones out of a single stack.
     'facet=split',
-    'coverageHeight=80',
+    'coverage.height=80',
     // grouping stacks two coverage lanes and truncates the "Not split" lane at
     // a row boundary, so the whole SV signal fits well under the 820 the
     // ungrouped stack needed — at 820 the bottom third was empty
@@ -692,8 +692,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'data/volvox/volvox.fa',
     '--bam',
     'data/volvox/volvox-sorted.bam',
-    'showPileup=false',
-    'coverageHeight=200',
+    'pileup.show=false',
+    'coverage.height=200',
     'height:200',
     '--loc',
     'ctgA:1-20000',

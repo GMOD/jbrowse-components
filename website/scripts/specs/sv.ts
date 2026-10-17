@@ -670,9 +670,11 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           trackId: 'volvox-long-reads-sv-bam',
           type: 'LinearAlignmentsDisplay',
-          // taller coverage band so the clip-indicator ticks above it are
-          // large enough to read (default coverageHeight is 45)
-          coverageHeight: 120,
+          coverage: {
+            // taller coverage band so the clip-indicator ticks above it are
+            // large enough to read (default coverageHeight is 45)
+            height: 120,
+          },
         },
       ],
     }),
@@ -718,16 +720,20 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'HG02768.final',
               type: 'LinearAlignmentsDisplay',
               unit: 'chain',
-              readConnections: 'arc',
-              // arcs drawn below the coverage band (reviewer)
-              readConnectionsDown: true,
-              // An arc's apex height in px is its genomic span in px (the band
-              // maps availH px to availH/pxPerBp bp), clamped to the band. At
-              // 3600bp over ~1030px the concordant pairs alone want ~115px, so
-              // the 40px default clipped every arc to the ceiling and the band
-              // was one solid mass. 200 lets the concordant domes resolve below
-              // the discordant pairs spanning the 1.3kb duplication.
-              readConnectionsHeight: 200,
+              readConnections: {
+                show: true,
+                // arcs drawn below the coverage band (reviewer)
+                placement: 'down',
+                // An arc's apex height in px is its genomic span in px (the band
+                // maps availH px to availH/pxPerBp bp), clamped to the band. At
+                // 3600bp over ~1030px the concordant pairs alone want ~115px, so
+                // the 40px default clipped every arc to the ceiling and the band
+                // was one solid mass. 200 lets the concordant domes resolve below
+                // the discordant pairs spanning the 1.3kb duplication.
+                height: 200,
+              },
+              coverage: { height: 120 },
+              pileup: { readHeight: 3 },
               // COMPACT READS (reviewer: "show reads compact"), which is the
               // COMPACTNESS_PRESETS 'compact' height. It was 9 -- raised so the
               // minority LL/RR pairs read as bars rather than slivers -- and
@@ -742,8 +748,6 @@ export const svSpecs: ScreenshotSpec[] = [
               // layout, so a track short by any amount scrolls away exactly the
               // thing the figure is about.
               heightMode: 'grow',
-              coverageHeight: 120,
-              featureHeight: 3,
               color: { field: 'pairOrientation' },
               // legend is opt-in now; show the pair-orientation key so the
               // inversion color signature is readable
@@ -870,17 +874,19 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG02768.final',
               type: 'LinearAlignmentsDisplay',
-              showPileup: false,
+              pileup: { show: false },
+              readConnections: {
+                show: true,
+                placement: 'down',
+                showOrdinaryPairs: false,
+                height: 90,
+              },
+              coverage: { height: 60 },
               facet: 'pairOrientation',
-              readConnections: 'arc',
-              readConnectionsDown: true,
-              showOrdinaryPairs: false,
-              // No `arcColor` or `color`, so the arcs paint
+              // No `readConnections.color` or `color`, so the arcs paint
               // insertSizeAndOrientation, and the legend is what says what the
               // four bands' arc colors mean.
               showLegend: true,
-              coverageHeight: 60,
-              readConnectionsHeight: 90,
               // the five bands' own stack, so the track box ends where the last
               // one does. A taller one pads the frame from inside, which neither
               // the clipped-below-the-fold report nor the blank-below-content
@@ -940,22 +946,26 @@ export const svSpecs: ScreenshotSpec[] = [
               // segments, so the reverse-strand core paints its flipped-strand
               // color inline between the forward flanks.
               unit: 'chain',
-              readConnections: 'arc',
-              // Each inversion-spanning read's two split junctions land on the
-              // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
-              // showInterchrom/showLongRange OFF drop these reads' genuine
-              // cross-chromosome (chr4/chrX/...) and far-flank supplementary
-              // connectors, leaving just the clean local inversion arc. The band
-              // only has to hold one dome ~1.2 kb wide, so it is kept shallow —
-              // at 130 the arc was the tallest thing in the figure and the reads
-              // it describes were pushed down to make room for it.
-              showInterchrom: false,
-              showLongRange: false,
-              readConnectionsHeight: 60,
+              readConnections: {
+                show: true,
+                filter: {
+                  // Each inversion-spanning read's two split junctions land on the
+                  // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
+                  // showInterchrom/showLongRange OFF drop these reads' genuine
+                  // cross-chromosome (chr4/chrX/...) and far-flank supplementary
+                  // connectors, leaving just the clean local inversion arc. The band
+                  // only has to hold one dome ~1.2 kb wide, so it is kept shallow —
+                  // at 130 the arc was the tallest thing in the figure and the reads
+                  // it describes were pushed down to make room for it.
+                  interchrom: 'exclude',
+                  offscreenMates: 'exclude',
+                },
+                height: 60,
+              },
+              coverage: { height: 70 },
               // the "Not split" section runs out of rows well before the box
               // does, so the last ~180px of an 800px track was empty
               height: 620,
-              coverageHeight: 70,
               color: { field: 'pairOrientation' },
               // THE KEY TO THE COLORS (reviewer: "show legend"). The figure's
               // whole claim is a strand flip -- the reverse core painting a
@@ -1536,7 +1546,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // key on LinearAlignmentsDisplay. The 0 gap follows from the
               // height via featureSpacingForHeight; it is not a slot
               height: 300,
-              featureHeight: 3,
+              pileup: { readHeight: 3 },
               // sort reads by the base at the screen-center column
               sort: {
                 type: 'basePair',
@@ -1622,7 +1632,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008t_pacbio_full',
               type: 'LinearAlignmentsDisplay',
               height: 260,
-              featureHeight: 5,
+              pileup: { readHeight: 5 },
               forceLoad: true,
               sort: {
                 type: 'basePair',
@@ -1637,7 +1647,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // which menu row sets it.
               type: 'LinearAlignmentsDisplay',
               height: 260,
-              featureHeight: 5,
+              pileup: { readHeight: 5 },
               forceLoad: true,
               sort: {
                 type: 'basePair',
@@ -2159,7 +2169,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // reads' own deletion-spanning gaps still show as the few thin
               // lines crossing the empty stretch.
               heightMode: 'fixed',
-              featureHeight: 1,
+              pileup: { readHeight: 1 },
               height: 160,
             },
             benchmarkCnvLane(),

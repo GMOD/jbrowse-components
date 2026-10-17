@@ -12,14 +12,11 @@ export {
 } from './featureSize.ts'
 export { getFiltersMenuItems } from './filters.ts'
 export {
-  collapseGroupRowsItems,
+  collapseSectionsItems,
   groupByRadioMenuItem,
   hiddenGroupsItems,
 } from './groupByMenu.ts'
-export type {
-  CollapseGroupRowsModel,
-  HiddenGroupsModel,
-} from './groupByMenu.ts'
+export type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'

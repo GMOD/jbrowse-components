@@ -44,7 +44,7 @@ function down(...junctions: [string, number, number][]) {
 
 const baseOpts = (
   rpcData: PileupDataResult,
-  minSashimiScore: number,
+  minReads: number,
 ): ComputeSashimiArcsOpts => ({
   rpcDataMap: new Map([[0, rpcData]]),
   visibleRegions: [{ refName: 'chr1', displayedRegionIndex: 0 }],
@@ -52,13 +52,12 @@ const baseOpts = (
   // fires — every test below is about geometry, and the cull has its own.
   viewWidthPx: 10_000,
   coverageHeight: 100,
-  sashimiArcsHeight: 40,
-  minSashimiScore,
-  showNonCanonicalJunctions: true,
+  sashimiHeight: 40,
+  minReads,
   downJunctionKeys: down(),
 })
 
-test('shows all arcs when minSashimiScore is 0', () => {
+test('shows all arcs when minReads is 0', () => {
   const arcs = computeSashimiArcs(baseOpts(makeData([1, 5, 10]), 0))
   expect(arcs.map(a => a.score)).toEqual([1, 5, 10])
 })
@@ -73,12 +72,12 @@ test('arcs are emitted heaviest-last, whatever order the junctions arrived in', 
   expect(arcs.map(a => a.score)).toEqual([1, 40, 200])
 })
 
-test('filters arcs below minSashimiScore', () => {
+test('filters arcs below minReads', () => {
   const arcs = computeSashimiArcs(baseOpts(makeData([1, 5, 10]), 5))
   expect(arcs.map(a => a.score)).toEqual([5, 10])
 })
 
-test('keeps arcs whose count equals minSashimiScore (>= boundary)', () => {
+test('keeps arcs whose count equals minReads (>= boundary)', () => {
   const arcs = computeSashimiArcs(baseOpts(makeData([4, 5]), 5))
   expect(arcs.map(a => a.score)).toEqual([5])
 })
@@ -172,13 +171,13 @@ test('the deepest down arc keeps its label inside the clipped strip', () => {
 
 test('a sashimi band shorter than its label clearance labels nothing', () => {
   // Same failure mode as the too-short coverage band below: nothing floors a
-  // config-declared `sashimiArcsHeight`, and a band under the clearance made the
+  // config-declared `sashimiHeight`, and a band under the clearance made the
   // drawable height negative, curving every down arc up through the coverage
   // histogram. The mark draws no arc in such a band (`sashimiBandsOf`), so no
   // count stands there either.
   const arcs = computeSashimiArcs({
     ...baseOpts(makeData([5]), 0),
-    sashimiArcsHeight: 3,
+    sashimiHeight: 3,
     downJunctionKeys: down(['chr1', 100, 200]),
   })
   expect(arcs[0]!.label).toBeUndefined()

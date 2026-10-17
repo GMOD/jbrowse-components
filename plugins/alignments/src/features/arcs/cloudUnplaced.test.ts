@@ -22,7 +22,7 @@ import {
 } from './shapes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { RegionInfo } from './arcTypes.ts'
+import type { ArcSettings, RegionInfo } from './arcTypes.ts'
 
 // The read cloud draws a bar only where the view can place BOTH of a
 // connection's ends. A partner outside every loaded region has no second pixel
@@ -62,9 +62,8 @@ function loneMateAt(mateBp: number, tlen: number, readBp = 1000) {
 const CLOUD = {
   colorField: 'insertSizeAndOrientation' as const,
   cloud: true,
-  showInterchrom: false,
-  showLongRange: true,
-}
+  filter: { interchrom: 'exclude' },
+} satisfies ArcSettings
 
 function region(start: number, end: number, displayedRegionIndex = 0) {
   return { refName: 'chr1', start, end, displayedRegionIndex }

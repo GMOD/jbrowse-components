@@ -227,7 +227,7 @@ export function windowFor(arc: PendingArc, mateWindowBp: number) {
  * The trade, so it can be dialled back if a deep short-read view gets noisy: a
  * chimeric alignment to another contig is itself a mismapping mode, and those
  * now draw at support 1 — the base stroke width, the thinnest mark the band has,
- * and still behind "Show inter-chromosomal pairs". Making the exemption
+ * and still behind the inter-chromosomal filter. Making the exemption
  * conditional on `hasPaired` was the alternative considered; it ties an
  * evidence-kind rule to a dataset-wide property, and a paired library whose
  * chimeric reads carry the real signal is exactly the cancer case.

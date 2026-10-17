@@ -1,10 +1,15 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
+import { DEFAULT_MIN_INTERCHROM_READS } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { Facet } from '../../shared/types.ts'
+import type { Facet, ReadConnectionsFilter } from '../../shared/types.ts'
+import type {
+  ReadConnectionsMark,
+  ReadConnectionsMode,
+  ReadConnectionsPlacement,
+} from '../constants.ts'
 
 function makeModel() {
   return {
@@ -12,47 +17,47 @@ function makeModel() {
     setUnit(unit: 'read' | 'chain') {
       this.unit = unit
     },
-    readConnections: 'off' as 'off' | 'arc' | 'cloud',
-    setReadConnections(mode?: 'off' | 'arc' | 'cloud') {
-      this.readConnections = mode ?? 'off'
+    drawnReadConnections: 'off' as ReadConnectionsMode,
+    setDrawnReadConnections(mode: ReadConnectionsMode) {
+      this.drawnReadConnections = mode
     },
-    readConnectionsDown: false,
-    setReadConnectionsDown(v: boolean) {
-      this.readConnectionsDown = v
+    get showReadConnections() {
+      return this.drawnReadConnections !== 'off'
     },
-    showLongRange: true,
-    setShowLongRange(v: boolean) {
-      this.showLongRange = v
+    get readConnectionsMark(): ReadConnectionsMark {
+      return this.drawnReadConnections === 'cloud' ? 'cloud' : 'arc'
     },
-    showInterchrom: true,
-    setShowInterchrom(v: boolean) {
-      this.showInterchrom = v
+    readConnectionsPlacement: 'down' as ReadConnectionsPlacement,
+    setReadConnectionsPlacement(placement: ReadConnectionsPlacement) {
+      this.readConnectionsPlacement = placement
     },
-    showBezierConnections: false,
-    setShowBezierConnections(v: boolean) {
-      this.showBezierConnections = v
+    readConnectionsFilter: {
+      minInterchromReads: DEFAULT_MIN_INTERCHROM_READS,
+    } as ReadConnectionsFilter,
+    setReadConnectionsFilter(patch: Partial<ReadConnectionsFilter>) {
+      this.readConnectionsFilter = { ...this.readConnectionsFilter, ...patch }
+    },
+    showConnectors: false,
+    setShowConnectors(v: boolean) {
+      this.showConnectors = v
     },
     showOrdinaryPairs: true,
     setShowOrdinaryPairs(v?: boolean) {
       this.showOrdinaryPairs = v ?? true
     },
-    minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
-    setMinInterchromSupport(v: number) {
-      this.minInterchromSupport = v
-    },
     readConnectionsLineWidth: 1,
     setReadConnectionsLineWidth(v: number) {
       this.readConnectionsLineWidth = v
     },
-    // The SV-channel row is served from this menu, so its two settings from
+    // The SV-channel row is served from this menu, so its settings from
     // outside it are on the mock as well.
     showPileup: true,
-    setShowPileup(v: boolean) {
-      this.showPileup = v
-    },
     facet: undefined as Facet | undefined,
     setFacet(v?: Facet) {
       this.facet = v
+    },
+    applyDisplaySettings(settings: Record<string, unknown>) {
+      return settings
     },
   }
 }
@@ -68,10 +73,10 @@ function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 const BAND_ROWS = [
-  'Draw arcs below coverage band',
   'Show ordinary pairs',
-  'Show off-screen mate connections',
-  'Show inter-chromosomal pairs',
+  'Arc placement',
+  'Off-screen mate connections',
+  'Inter-chromosomal pairs',
   'Min reads at a breakpoint',
   'Arc line width',
 ]
@@ -120,20 +125,20 @@ describe('read connections menu', () => {
       ['None', 'off'],
     ] as const) {
       checkboxByLabel(model, label).onClick()
-      expect(model.readConnections).toBe(mode)
+      expect(model.drawnReadConnections).toBe(mode)
     }
   })
 
-  test('exactly one overlay row is checked, reflecting readConnections', () => {
+  test('exactly one overlay row is checked, reflecting the drawn mark', () => {
     const model = makeModel()
     const checked = () =>
       (['None', 'Read arcs', 'Read cloud'] as const).filter(
         label => checkboxByLabel(model, label).checked,
       )
     expect(checked()).toEqual(['None'])
-    model.readConnections = 'arc'
+    model.drawnReadConnections = 'arc'
     expect(checked()).toEqual(['Read arcs'])
-    model.readConnections = 'cloud'
+    model.drawnReadConnections = 'cloud'
     expect(checked()).toEqual(['Read cloud'])
   })
 
@@ -171,12 +176,23 @@ describe('the arc / read cloud band rows', () => {
 
   test('are enabled and functional when arcs are on', () => {
     const model = makeModel()
-    model.readConnections = 'arc'
+    model.drawnReadConnections = 'arc'
     for (const label of BAND_ROWS) {
       expect(bandRow(model, label).disabled).toBe(false)
     }
-    checkboxByLabel(model, 'Draw arcs below coverage band').onClick()
-    expect(model.readConnectionsDown).toBe(true)
+    checkboxByLabel(model, 'Above coverage').onClick()
+    expect(model.readConnectionsPlacement).toBe('up')
+  })
+
+  test('each connection category is one All / Only / Hide choice', () => {
+    const model = makeModel()
+    model.drawnReadConnections = 'arc'
+    checkboxByLabel(model, 'Only inter-chromosomal pairs').onClick()
+    expect(model.readConnectionsFilter.interchrom).toBe('only')
+    expect(topLabels(model)).toContain('Inter-chromosomal pairs — only')
+    checkboxByLabel(model, 'Hide off-screen mate connections').onClick()
+    expect(model.readConnectionsFilter.offscreenMates).toBe('exclude')
+    expect(model.readConnectionsFilter.interchrom).toBe('only')
   })
 })
 
@@ -192,7 +208,7 @@ test('every toggle keeps the menu open', () => {
   expect(toggles.every(i => staysOpenOnClick(i))).toBe(true)
 })
 
-// The `readConnectionsLineWidth` slot had a setter and no way to reach it: every
+// `readConnections.lineWidth` had a setter and no way to reach it: every
 // renderer and the SVG export read the width, and nothing in the UI wrote one.
 describe('arc line width row', () => {
   function lineWidthRow(model: ReturnType<typeof makeModel>) {
@@ -208,7 +224,7 @@ describe('arc line width row', () => {
   // first paint is its Suspense fallback.
   test('the slider writes the width the renderers read', async () => {
     const model = makeModel()
-    model.readConnections = 'arc'
+    model.drawnReadConnections = 'arc'
     render(<>{lineWidthRow(model).render(() => {})}</>)
 
     const input = (

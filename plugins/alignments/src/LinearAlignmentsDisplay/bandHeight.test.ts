@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { bootAlignmentsDisplay } from './testUtils.ts'
 
 // Builds a real LinearAlignmentsDisplay so the floor is exercised through the
@@ -21,7 +23,7 @@ describe('resizable band height floor', () => {
 
   it('leaves a band config declared below the floor where it is', () => {
     const display = createDisplay()
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     // the regression: this flooring at 20 made the first drag jump the band up
     // to 20 before it honored the +1
     display.setCoverageHeight(6)
@@ -30,14 +32,14 @@ describe('resizable band height floor', () => {
 
   it('still refuses to shrink a below-floor band further', () => {
     const display = createDisplay()
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     display.setCoverageHeight(3)
     expect(display.coverageHeight).toBe(5)
   })
 
   it('restores the 20 floor once a below-floor band is dragged past it', () => {
     const display = createDisplay()
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     display.setCoverageHeight(25)
     expect(display.coverageHeight).toBe(25)
     display.setCoverageHeight(10)
@@ -57,23 +59,23 @@ describe('resizable band height floor', () => {
 
   it('brings a band already over its ceiling back inside', () => {
     const display = createDisplay()
-    display.configuration.setSlot('coverageHeight', 5000)
+    setConf(display, ['coverage', 'height'], 5000)
     display.setCoverageHeight(4999)
     expect(display.coverageHeight).toBe(display.height - 20)
   })
 
   it('applies the same rule to the sashimi and read-connection bands', () => {
     const display = createDisplay()
-    display.setSashimiArcsHeight(10)
-    expect(display.sashimiArcsHeight).toBe(20)
+    display.setSashimiHeight(10)
+    expect(display.sashimiHeight).toBe(20)
     display.setReadConnectionsHeight(10)
     expect(display.readConnectionsHeight).toBe(20)
 
-    display.configuration.setSlot('sashimiArcsHeight', 8)
-    display.setSashimiArcsHeight(9)
-    expect(display.sashimiArcsHeight).toBe(9)
+    setConf(display, ['sashimi', 'height'], 8)
+    display.setSashimiHeight(9)
+    expect(display.sashimiHeight).toBe(9)
 
-    display.configuration.setSlot('readConnectionsHeight', 8)
+    setConf(display, ['readConnections', 'height'], 8)
     display.setReadConnectionsHeight(9)
     expect(display.readConnectionsHeight).toBe(9)
   })
@@ -87,13 +89,13 @@ describe('resizable band height floor', () => {
 describe('a stated band height past its ceiling', () => {
   it('is drawn at the height the layout reserves', () => {
     const display = createDisplay()
-    display.configuration.setSlot('coverageHeight', 5000)
-    display.configuration.setSlot('sashimiArcsHeight', 5000)
-    display.configuration.setSlot('readConnectionsHeight', 5000)
+    setConf(display, ['coverage', 'height'], 5000)
+    setConf(display, ['sashimi', 'height'], 5000)
+    setConf(display, ['readConnections', 'height'], 5000)
     const ceiling = display.fitTargetHeight - 20
     expect(display.bandHeights).toEqual({
       coverageHeight: ceiling,
-      sashimiArcsHeight: ceiling,
+      sashimiHeight: ceiling,
       readConnectionsHeight: ceiling,
     })
     expect(display.sections.sections[0]!.coverageHeight).toBe(ceiling)

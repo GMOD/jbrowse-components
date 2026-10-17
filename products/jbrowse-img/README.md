@@ -282,7 +282,7 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
-`coverageHeight=` makes the coverage/sashimi band tall so the arcs are legible,
+`coverage.height=` makes the coverage/sashimi band tall so the arcs are legible,
 and `scales.y.type=log` is what puts every exon on the plot: RNA-seq depth here
 spans three orders of magnitude, so on a linear axis the tallest exon is the
 only one with any height and the arcs land over a flat line. This
@@ -294,7 +294,7 @@ arcs, with the spliced read pairs (green mate lines) below:
 
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
-  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight=170 scales.y.type=log featureHeight:super-compact height:420 \
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverage.height=170 scales.y.type=log featureHeight:super-compact height:420 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
@@ -318,7 +318,7 @@ S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain facet=split coverageHeight=80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
@@ -425,13 +425,13 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 co
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
 ## read-cloud SV view — the read cloud overlays the coverage band, so use
-## coverageHeight to make the panel tall (NOT readConnectionsHeight, which only sizes
-## the regular up/down arcs panel). The read cloud disappears if showCoverage=false.
-jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight=300 \
-  readConnectionsLineWidth=2 height:600 --loc chr1:1-50000
+## coverage.height to make the panel tall (NOT readConnections.height, which only sizes
+## the regular up/down arcs panel). The read cloud disappears if coverage.show=false.
+jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverage.height=300 \
+  readConnections.lineWidth=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one
-## read share a row, joined by a connecting line. showBezierConnections=true is
+## read share a row, joined by a connecting line. pileup.showConnectors=true is
 ## the separate curved-connector overlay and leaves the layout an ordinary pileup.
 ## Add both to curve the connectors that cross between displayed regions, which
 ## the per-region line pass cannot draw.
@@ -700,21 +700,21 @@ Layout & sizing:
 
 Settings written as slots, in the display's own spelling:
 
-| Write                        | Description                                                                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `facet=strand`               | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
-| `unit=chain`                 | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
-| `showLegend=true`            | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
-| `showSoftClipping=true`      | Show soft-clipped bases                                                                                                                                    |
-| `showCoverage=false`         | Hide the coverage subtrack                                                                                                                                 |
-| `showPileup=false`           | Hide the pileup; with `coverageHeight`, a coverage-only view                                                                                               |
-| `coverageHeight=200`         | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
-| `readConnectionsHeight=120`  | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
-| `readConnectionsLineWidth=2` | Stroke width for read-connection arcs and lines                                                                                                            |
-| `sashimiArcsHeight=120`      | Height of the sashimi arc band                                                                                                                             |
-| `minSashimiScore=3`          | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
-| `arcColor=insertSize`        | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
-| `maxHeight=4000`             | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
+| Write                              | Description                                                                                                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`                     | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
+| `unit=chain`                       | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
+| `showLegend=true`                  | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
+| `pileup.showSoftClipping=true`     | Show soft-clipped bases                                                                                                                                    |
+| `coverage.show=false`              | Hide the coverage subtrack                                                                                                                                 |
+| `pileup.show=false`                | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
+| `coverage.height=200`              | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                                                |
+| `readConnections.height=120`       | Height of the paired-arcs panel, only for `arcs:up` / `arcs:down`                                                                                          |
+| `readConnections.lineWidth=2`      | Stroke width for read-connection arcs and lines                                                                                                            |
+| `sashimi.height=120`               | Height of the sashimi arc band                                                                                                                             |
+| `sashimi.filter.minReads=3`        | Minimum reads a splice junction needs before its arc is drawn                                                                                              |
+| `readConnections.color=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
+| `pileup.maxHeight=4000`            | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
 Available `color:` fields, except `tags.<TAG>`, which is a `color.field=` write.
 Anything else is a CSS color, painting every read with it:
@@ -1318,15 +1318,15 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-`showPileup=false` collapses the alignments display down to coverage-only; size
-the coverage band with `coverageHeight=N` to match `height:N`, the overall track
-height. Reproducible with the bundled volvox alignments:
+`pileup.show=false` collapses the alignments display down to coverage-only; size
+the coverage band with `coverage.height=N` to match `height:N`, the overall
+track height. Reproducible with the bundled volvox alignments:
 
 <!-- jb2export: snpcov -->
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-sorted.bam showPileup=false coverageHeight=200 height:200 \
+  --bam data/volvox/volvox-sorted.bam pileup.show=false coverage.height=200 height:200 \
   --loc ctgA:1-20000 --width 1200 --out snpcov.png
 ```
 

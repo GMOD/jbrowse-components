@@ -1,120 +1,125 @@
-import { applySvChannels, getSvChannelsMenuItem } from './svChannels.ts'
-import {
-  SV_CHANNELS_ON,
-  isSvChannelsActive,
-  type SvChannelsSettings,
-} from './svChannelsPreset.ts'
+import { getConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-// `colorBy` and `readConnectionsDown` are on the mock and in neither preset: the
-// arrangement wrote both once, and the round trips below are what say it no
-// longer does. Their setters are here so that writing them would be POSSIBLE —
-// a mock missing the setter would fail the write rather than record it.
-function mockModel(initial: Partial<SvChannelsSettings> = {}) {
-  return {
-    showPileup: true,
-    facet: undefined as SvChannelsSettings['facet'],
-    // Both sides modelled honestly, because the bug lived in the gap between
-    // them: the getter always resolves ('off' when nothing is set), and only
-    // the setter can say unset. `readConnectionsWritten` is what reached the
-    // config, which is the half a resolved read cannot show.
-    readConnections: 'off' as SvChannelsSettings['readConnections'],
-    readConnectionsWritten: 'off' as string | undefined,
-    showOrdinaryPairs: true,
-    showOrdinaryPairsWritten: undefined as boolean | undefined,
-    ...initial,
-    colorBy: { type: 'modifications' as const },
-    readConnectionsDown: false,
-    setShowPileup(show: boolean) {
-      this.showPileup = show
+import { bootAlignmentsDisplay } from '../testUtils.ts'
+import { getSvChannelsMenuItem, svChannelsActive } from './svChannels.ts'
+import { SV_CHANNELS_ON, isSvChannelsActive } from './svChannelsPreset.ts'
+
+// A real display, so the preset meets the config the way the menu row writes
+// it: through `applyDisplaySettings`, member by member inside each band.
+function createDisplay(displayConfig: Record<string, unknown> = {}) {
+  console.warn = jest.fn()
+  const { baseSession, mount } = bootAlignmentsDisplay({
+    trackConfig: {
+      displays: [
+        { type: 'LinearAlignmentsDisplay', displayId: 'd1', ...displayConfig },
+      ],
     },
-    setFacet(facet?: SvChannelsSettings['facet']) {
-      this.facet = facet
-    },
-    setReadConnections(mode?: SvChannelsSettings['readConnections']) {
-      this.readConnectionsWritten = mode
-      this.readConnections = mode ?? 'off'
-    },
-    setReadConnectionsDown(down: boolean) {
-      this.readConnectionsDown = down
-    },
-    setShowOrdinaryPairs(show?: boolean) {
-      this.showOrdinaryPairsWritten = show
-      this.showOrdinaryPairs = show ?? this.readConnections !== 'cloud'
-    },
-  }
+  })
+  const Session = baseSession.volatile(() => ({ rpcManager: {} }))
+  return mount(Session, { configuration: 'd1' }).display
+}
+
+function clickRow(display: ReturnType<typeof createDisplay>) {
+  getSvChannelsMenuItem(display).onClick()
 }
 
 test('the preset writes all four settings, not a subset', () => {
-  const model = mockModel()
-  applySvChannels(model, SV_CHANNELS_ON)
-  expect(model.showPileup).toBe(false)
-  expect(model.facet).toEqual({ field: 'pairOrientation' })
-  expect(model.readConnections).toBe('arc')
-  expect(model.showOrdinaryPairs).toBe(false)
+  const display = createDisplay()
+  clickRow(display)
+  expect(display.showPileup).toBe(false)
+  expect(display.facet).toMatchObject({ field: 'pairOrientation' })
+  expect(display.drawnReadConnections).toBe('arc')
+  expect(display.showOrdinaryPairs).toBe(false)
 })
 
 // Spelled out rather than compared against SV_CHANNELS_OFF: asserting a model
-// against the constant that produced it can only ever pass, and the values this
-// pins are exactly the ones that were wrong while it did.
+// against the constant that produced it can only ever pass.
 test('clicking the menu row turns the arrangement on, then back off', () => {
-  const model = mockModel()
-  expect(getSvChannelsMenuItem(model).checked).toBe(false)
+  const display = createDisplay()
+  expect(getSvChannelsMenuItem(display).checked).toBe(false)
 
-  getSvChannelsMenuItem(model).onClick()
-  expect(isSvChannelsActive(model)).toBe(true)
-  expect(getSvChannelsMenuItem(model).checked).toBe(true)
+  clickRow(display)
+  expect(svChannelsActive(display)).toBe(true)
+  expect(getSvChannelsMenuItem(display).checked).toBe(true)
 
-  getSvChannelsMenuItem(model).onClick()
-  expect(isSvChannelsActive(model)).toBe(false)
-  expect(model.showPileup).toBe(true)
-  expect(model.facet).toBeUndefined()
-  expect(model.showOrdinaryPairs).toBe(true)
-  expect(model.showOrdinaryPairsWritten).toBeUndefined()
+  clickRow(display)
+  expect(svChannelsActive(display)).toBe(false)
+  expect(display.showPileup).toBe(true)
+  expect(display.facet).toBeUndefined()
+  expect(display.drawnReadConnections).toBe('off')
+  expect(display.showOrdinaryPairs).toBe(true)
 })
 
-// UNSET, not 'off', so the slot goes back to its schema default.
-test('leaving the arrangement unsets read connections rather than writing off', () => {
-  const model = mockModel()
-  getSvChannelsMenuItem(model).onClick()
-  expect(model.readConnectionsWritten).toBe('arc')
-
-  getSvChannelsMenuItem(model).onClick()
-  expect(model.readConnectionsWritten).toBeUndefined()
-  // and the track still READS as off, so the picture is what leaving it means
-  expect(model.readConnections).toBe('off')
+// UNSET, not false, so each member goes back to its schema default.
+test('leaving the arrangement unsets what it wrote', () => {
+  const display = createDisplay()
+  clickRow(display)
+  clickRow(display)
+  const conf = display.configuration
+  expect(getSnapshot(conf.readConnections)).not.toHaveProperty('show')
+  expect(getSnapshot(conf.readConnections)).not.toHaveProperty(
+    'showOrdinaryPairs',
+  )
+  expect(getSnapshot(conf.pileup)).not.toHaveProperty('show')
 })
 
+test('the round trip leaves the read color and the placement alone', () => {
+  const display = createDisplay({
+    color: { field: 'tags.HP' },
+    readConnections: { placement: 'up' },
+  })
+  clickRow(display)
+  clickRow(display)
+  expect(getConf(display, ['color', 'field'])).toBe('tags.HP')
+  expect(display.readConnectionsPlacement).toBe('up')
+})
+
+const ON = {
+  pileup: { show: false },
+  facet: { field: 'pairOrientation' },
+  readConnections: { show: true, mark: 'arc', showOrdinaryPairs: false },
+} as const
+
+test('the preset reads as itself', () => {
+  expect(isSvChannelsActive(SV_CHANNELS_ON)).toBe(true)
+  expect(isSvChannelsActive(ON)).toBe(true)
+})
+
+// One case per matched member, so dropping any single comparison from
+// `isSvChannelsActive` fails a test rather than passing on the others.
 test.each([
-  ['the color scheme', 'colorBy', { type: 'modifications' }],
-  ['which side the arcs hang on', 'readConnectionsDown', false],
-] as const)('the round trip leaves %s alone', (_what, key, expected) => {
-  const model = mockModel()
-  getSvChannelsMenuItem(model).onClick()
-  expect(model[key]).toEqual(expected)
-
-  getSvChannelsMenuItem(model).onClick()
-  expect(model[key]).toEqual(expected)
+  ['pileup.show', { ...ON, pileup: { show: true } }],
+  ['facet', { ...ON, facet: { field: 'strand' } }],
+  [
+    'readConnections.show',
+    { ...ON, readConnections: { ...ON.readConnections, show: false } },
+  ],
+  [
+    'readConnections.mark',
+    {
+      ...ON,
+      readConnections: { ...ON.readConnections, mark: 'cloud' as const },
+    },
+  ],
+  [
+    'readConnections.showOrdinaryPairs',
+    {
+      ...ON,
+      readConnections: { ...ON.readConnections, showOrdinaryPairs: true },
+    },
+  ],
+])('changing %s alone leaves the arrangement', (_name, settings) => {
+  expect(isSvChannelsActive(settings)).toBe(false)
 })
 
-// One case per matched field, so dropping any single comparison from
-// `isSvChannelsActive` fails a test rather than passing on the other three.
-test.each([
-  ['showPileup', { showPileup: true }],
-  ['facet', { facet: { field: 'strand' } }],
-  ['readConnections', { readConnections: 'cloud' as const }],
-  ['showOrdinaryPairs', { showOrdinaryPairs: true }],
-])('changing %s alone leaves the arrangement', (_name, override) => {
-  const model = mockModel({ ...SV_CHANNELS_ON, ...override })
-  expect(isSvChannelsActive(model)).toBe(false)
+test('a spec spelling the facet as its field string still matches', () => {
+  expect(isSvChannelsActive({ ...ON, facet: 'pairOrientation' })).toBe(true)
 })
 
 test('flipping the arcs above the coverage stays in the arrangement', () => {
-  const model = mockModel(SV_CHANNELS_ON)
-  model.setReadConnectionsDown(true)
-  expect(isSvChannelsActive(model)).toBe(true)
-})
-
-test('an ungrouped display does not read as grouped by pair orientation', () => {
-  const model = mockModel({ ...SV_CHANNELS_ON, facet: undefined })
-  expect(isSvChannelsActive(model)).toBe(false)
+  const display = createDisplay()
+  clickRow(display)
+  display.setReadConnectionsPlacement('up')
+  expect(svChannelsActive(display)).toBe(true)
 })

@@ -8,32 +8,40 @@ import {
 } from './svChannelsPreset.ts'
 
 import type { Facet } from '../../shared/types.ts'
-import type { ReadConnectionsMode } from '../constants.ts'
-import type { SvChannelsSettings, SvChannelsWrite } from './svChannelsPreset.ts'
+import type { ReadConnectionsMark } from '../constants.ts'
 
-export interface SvChannelsModel extends SvChannelsSettings {
-  setShowPileup: (show: boolean) => void
+export interface SvChannelsModel {
+  showPileup: boolean
+  facet: Facet | undefined
+  showReadConnections: boolean
+  readConnectionsMark: ReadConnectionsMark
+  showOrdinaryPairs: boolean
   setFacet: (facet?: Facet) => void
-  setReadConnections: (mode?: ReadConnectionsMode) => void
-  setShowOrdinaryPairs: (show?: boolean) => void
+  applyDisplaySettings: (settings: Record<string, unknown>) => unknown
 }
 
-export function applySvChannels(
-  model: SvChannelsModel,
-  settings: SvChannelsWrite,
-) {
-  model.setShowPileup(settings.showPileup)
-  model.setFacet(settings.facet)
-  model.setReadConnections(settings.readConnections)
-  model.setShowOrdinaryPairs(settings.showOrdinaryPairs)
+export function svChannelsActive(model: SvChannelsModel) {
+  return isSvChannelsActive({
+    pileup: { show: model.showPileup },
+    facet: model.facet,
+    readConnections: {
+      show: model.showReadConnections,
+      mark: model.readConnectionsMark,
+      showOrdinaryPairs: model.showOrdinaryPairs,
+    },
+  })
 }
 
 export function getSvChannelsMenuItem(model: SvChannelsModel) {
   return toggleItem(
     SV_CHANNELS_LABEL,
-    isSvChannelsActive(model),
+    svChannelsActive(model),
     on => {
-      applySvChannels(model, on ? SV_CHANNELS_ON : SV_CHANNELS_OFF)
+      // the facet through its own setter, which also resets the scroll and
+      // carries a section order across a regrouping on the same field
+      const { facet, ...bands } = on ? SV_CHANNELS_ON : SV_CHANNELS_OFF
+      model.setFacet(facet ? { ...facet } : undefined)
+      model.applyDisplaySettings(bands)
     },
     {
       helpText:

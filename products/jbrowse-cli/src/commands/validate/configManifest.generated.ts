@@ -3546,10 +3546,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "featureHeight",
-          "type": "number"
-        },
-        {
           "name": "heightMode",
           "type": "heightMode"
         },
@@ -3558,20 +3554,116 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "readConnectionsLineWidth",
-          "type": "number"
+          "name": "unit",
+          "type": "AlignmentsUnit"
         },
         {
-          "name": "showSashimiLabels",
+          "name": "filter",
+          "type": "ReadFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "flagInclude",
+              "type": "number"
+            },
+            {
+              "name": "flagExclude",
+              "type": "number"
+            },
+            {
+              "name": "minMapq",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "readName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tagFilters",
+              "type": "TagFilterConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "tag",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "type": "(string | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "spliced",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "svSignal",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "singletons",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "split",
+              "type": "(CategoryFilter | undefined)"
+            }
+          ]
+        },
+        {
+          "name": "facet",
+          "type": "SectionFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ],
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "collapseSections",
           "type": "boolean"
         },
         {
-          "name": "showNonCanonicalJunctions",
-          "type": "boolean"
-        },
-        {
-          "name": "maxHeight",
-          "type": "number"
+          "name": "sort",
+          "type": "AlignmentsSortConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "AlignmentsSortType"
+            },
+            {
+              "name": "pos",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "refName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tag",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "within",
+              "type": "(number | undefined)"
+            }
+          ],
+          "shorthand": {
+            "string": "type"
+          }
         },
         {
           "name": "color",
@@ -3741,85 +3833,6 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "filter",
-          "type": "ReadFilterConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "flagInclude",
-              "type": "number"
-            },
-            {
-              "name": "flagExclude",
-              "type": "number"
-            },
-            {
-              "name": "minMapq",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "readName",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "tagFilters",
-              "type": "TagFilterConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "tag",
-                  "type": "string"
-                },
-                {
-                  "name": "value",
-                  "type": "(string | undefined)"
-                }
-              ]
-            },
-            {
-              "name": "spliced",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "svSignal",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "singletons",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "split",
-              "type": "(CategoryFilter | undefined)"
-            }
-          ]
-        },
-        {
-          "name": "facet",
-          "type": "SectionFacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "hidden",
-              "type": "string[]",
-              "liftsNumbers": true
-            }
-          ],
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "collapseGroupRows",
-          "type": "boolean"
-        },
-        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -3893,142 +3906,175 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "fadeLowQualityMismatches",
-          "type": "boolean"
-        },
-        {
-          "name": "fadeLowFrequencyMismatches",
-          "type": "boolean"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },
         {
-          "name": "sort",
-          "type": "AlignmentsSortConfigurationSchema",
+          "name": "coverage",
+          "type": "CoverageBandConfigurationSchema",
           "subSlots": [
             {
-              "name": "type",
-              "type": "AlignmentsSortType"
+              "name": "show",
+              "type": "boolean"
             },
             {
-              "name": "pos",
-              "type": "(number | undefined)"
+              "name": "height",
+              "type": "number"
             },
             {
-              "name": "refName",
-              "type": "(string | undefined)"
+              "name": "showInterbaseIndicators",
+              "type": "boolean"
             },
             {
-              "name": "tag",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "within",
-              "type": "(number | undefined)"
+              "name": "filter",
+              "type": "CoverageFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minAlleleFraction",
+                  "type": "number"
+                }
+              ]
             }
-          ],
-          "shorthand": {
-            "string": "type"
-          }
+          ]
         },
         {
-          "name": "showOutline",
-          "type": "(boolean | undefined)"
-        },
-        {
-          "name": "unit",
-          "type": "AlignmentsUnit"
-        },
-        {
-          "name": "showBezierConnections",
-          "type": "boolean"
-        },
-        {
-          "name": "showCoverage",
-          "type": "boolean"
-        },
-        {
-          "name": "showPileup",
-          "type": "boolean"
-        },
-        {
-          "name": "coverageHeight",
-          "type": "number"
-        },
-        {
-          "name": "coverageSnpMinFrequency",
-          "type": "number"
-        },
-        {
-          "name": "showMismatches",
-          "type": "boolean"
-        },
-        {
-          "name": "showInterbaseIndicators",
-          "type": "boolean"
-        },
-        {
-          "name": "showInterchrom",
-          "type": "boolean"
-        },
-        {
-          "name": "showOrdinaryPairs",
-          "type": "(boolean | undefined)"
-        },
-        {
-          "name": "minInterchromSupport",
-          "type": "number"
-        },
-        {
-          "name": "showLongRange",
-          "type": "boolean"
-        },
-        {
-          "name": "arcColor",
-          "type": "AlignmentsArcColorConfigurationSchema",
+          "name": "pileup",
+          "type": "PileupConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "AlignmentsArcColorField"
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "readHeight",
+              "type": "number"
+            },
+            {
+              "name": "maxHeight",
+              "type": "number"
+            },
+            {
+              "name": "showMismatches",
+              "type": "boolean"
+            },
+            {
+              "name": "showSoftClipping",
+              "type": "boolean"
+            },
+            {
+              "name": "showOutline",
+              "type": "(boolean | undefined)"
+            },
+            {
+              "name": "showConnectors",
+              "type": "boolean"
+            },
+            {
+              "name": "fadeLowQuality",
+              "type": "boolean"
+            },
+            {
+              "name": "fadeLowFrequency",
+              "type": "boolean"
             }
-          ],
-          "shorthand": {
-            "string": "field"
-          }
+          ]
+        },
+        {
+          "name": "sashimi",
+          "type": "SashimiConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "placement",
+              "type": "SashimiPlacement"
+            },
+            {
+              "name": "showCounts",
+              "type": "boolean"
+            },
+            {
+              "name": "filter",
+              "type": "SashimiFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minReads",
+                  "type": "number"
+                },
+                {
+                  "name": "nonCanonical",
+                  "type": "(CategoryFilter | undefined)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "readConnections",
-          "type": "ReadConnectionsMode"
-        },
-        {
-          "name": "readConnectionsDown",
-          "type": "boolean"
-        },
-        {
-          "name": "showSashimiArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "sashimiArcsMode",
-          "type": "SashimiArcsMode"
-        },
-        {
-          "name": "minSashimiScore",
-          "type": "number"
-        },
-        {
-          "name": "sashimiArcsHeight",
-          "type": "number"
-        },
-        {
-          "name": "readConnectionsHeight",
-          "type": "number"
-        },
-        {
-          "name": "showSoftClipping",
-          "type": "boolean"
+          "type": "ReadConnectionsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "mark",
+              "type": "ReadConnectionsMark"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "placement",
+              "type": "ReadConnectionsPlacement"
+            },
+            {
+              "name": "lineWidth",
+              "type": "number"
+            },
+            {
+              "name": "color",
+              "type": "AlignmentsArcColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "AlignmentsArcColorField"
+                }
+              ],
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "showOrdinaryPairs",
+              "type": "(boolean | undefined)"
+            },
+            {
+              "name": "filter",
+              "type": "ReadConnectionsFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "interchrom",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "offscreenMates",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "minInterchromReads",
+                  "type": "number"
+                }
+              ]
+            }
+          ]
         }
       ],
       "legacyKeys": [
@@ -4054,6 +4100,8 @@ export const configManifest: ConfigManifest = {
         "multiTicks",
         "jitter",
         "lineWidth",
+        "featureHeight",
+        "maxHeight",
         "hideSmallIndels",
         "hideMismatches",
         "mismatchAlpha",
@@ -4278,10 +4326,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "featureHeight",
-          "type": "number"
-        },
-        {
           "name": "heightMode",
           "type": "heightMode"
         },
@@ -4290,20 +4334,116 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "readConnectionsLineWidth",
-          "type": "number"
+          "name": "unit",
+          "type": "AlignmentsUnit"
         },
         {
-          "name": "showSashimiLabels",
+          "name": "filter",
+          "type": "ReadFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "flagInclude",
+              "type": "number"
+            },
+            {
+              "name": "flagExclude",
+              "type": "number"
+            },
+            {
+              "name": "minMapq",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "readName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tagFilters",
+              "type": "TagFilterConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "tag",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "type": "(string | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "spliced",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "svSignal",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "singletons",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "split",
+              "type": "(CategoryFilter | undefined)"
+            }
+          ]
+        },
+        {
+          "name": "facet",
+          "type": "SectionFacetConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
+              "type": "string[]",
+              "liftsNumbers": true
+            }
+          ],
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "collapseSections",
           "type": "boolean"
         },
         {
-          "name": "showNonCanonicalJunctions",
-          "type": "boolean"
-        },
-        {
-          "name": "maxHeight",
-          "type": "number"
+          "name": "sort",
+          "type": "LGVSyntenySortConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "LGVSyntenySortType"
+            },
+            {
+              "name": "pos",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "refName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tag",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "within",
+              "type": "(number | undefined)"
+            }
+          ],
+          "shorthand": {
+            "string": "type"
+          }
         },
         {
           "name": "color",
@@ -4474,85 +4614,6 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "filter",
-          "type": "ReadFilterConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "flagInclude",
-              "type": "number"
-            },
-            {
-              "name": "flagExclude",
-              "type": "number"
-            },
-            {
-              "name": "minMapq",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "readName",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "tagFilters",
-              "type": "TagFilterConfigurationSchema[]",
-              "subSlots": [
-                {
-                  "name": "tag",
-                  "type": "string"
-                },
-                {
-                  "name": "value",
-                  "type": "(string | undefined)"
-                }
-              ]
-            },
-            {
-              "name": "spliced",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "svSignal",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "singletons",
-              "type": "(CategoryFilter | undefined)"
-            },
-            {
-              "name": "split",
-              "type": "(CategoryFilter | undefined)"
-            }
-          ]
-        },
-        {
-          "name": "facet",
-          "type": "SectionFacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "domain",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "hidden",
-              "type": "string[]",
-              "liftsNumbers": true
-            }
-          ],
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "collapseGroupRows",
-          "type": "boolean"
-        },
-        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -4626,142 +4687,175 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "fadeLowQualityMismatches",
-          "type": "boolean"
-        },
-        {
-          "name": "fadeLowFrequencyMismatches",
-          "type": "boolean"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },
         {
-          "name": "sort",
-          "type": "LGVSyntenySortConfigurationSchema",
+          "name": "coverage",
+          "type": "LGVSyntenyCoverageConfigurationSchema",
           "subSlots": [
             {
-              "name": "type",
-              "type": "LGVSyntenySortType"
+              "name": "show",
+              "type": "boolean"
             },
             {
-              "name": "pos",
-              "type": "(number | undefined)"
+              "name": "height",
+              "type": "number"
             },
             {
-              "name": "refName",
-              "type": "(string | undefined)"
+              "name": "showInterbaseIndicators",
+              "type": "boolean"
             },
             {
-              "name": "tag",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "within",
-              "type": "(number | undefined)"
+              "name": "filter",
+              "type": "CoverageFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minAlleleFraction",
+                  "type": "number"
+                }
+              ]
             }
-          ],
-          "shorthand": {
-            "string": "type"
-          }
+          ]
         },
         {
-          "name": "showOutline",
-          "type": "(boolean | undefined)"
-        },
-        {
-          "name": "unit",
-          "type": "AlignmentsUnit"
-        },
-        {
-          "name": "showBezierConnections",
-          "type": "boolean"
-        },
-        {
-          "name": "showCoverage",
-          "type": "boolean"
-        },
-        {
-          "name": "showPileup",
-          "type": "boolean"
-        },
-        {
-          "name": "coverageHeight",
-          "type": "number"
-        },
-        {
-          "name": "coverageSnpMinFrequency",
-          "type": "number"
-        },
-        {
-          "name": "showMismatches",
-          "type": "boolean"
-        },
-        {
-          "name": "showInterbaseIndicators",
-          "type": "boolean"
-        },
-        {
-          "name": "showInterchrom",
-          "type": "boolean"
-        },
-        {
-          "name": "showOrdinaryPairs",
-          "type": "(boolean | undefined)"
-        },
-        {
-          "name": "minInterchromSupport",
-          "type": "number"
-        },
-        {
-          "name": "showLongRange",
-          "type": "boolean"
-        },
-        {
-          "name": "arcColor",
-          "type": "AlignmentsArcColorConfigurationSchema",
+          "name": "pileup",
+          "type": "PileupConfigurationSchema",
           "subSlots": [
             {
-              "name": "field",
-              "type": "AlignmentsArcColorField"
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "readHeight",
+              "type": "number"
+            },
+            {
+              "name": "maxHeight",
+              "type": "number"
+            },
+            {
+              "name": "showMismatches",
+              "type": "boolean"
+            },
+            {
+              "name": "showSoftClipping",
+              "type": "boolean"
+            },
+            {
+              "name": "showOutline",
+              "type": "(boolean | undefined)"
+            },
+            {
+              "name": "showConnectors",
+              "type": "boolean"
+            },
+            {
+              "name": "fadeLowQuality",
+              "type": "boolean"
+            },
+            {
+              "name": "fadeLowFrequency",
+              "type": "boolean"
             }
-          ],
-          "shorthand": {
-            "string": "field"
-          }
+          ]
+        },
+        {
+          "name": "sashimi",
+          "type": "SashimiConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "placement",
+              "type": "SashimiPlacement"
+            },
+            {
+              "name": "showCounts",
+              "type": "boolean"
+            },
+            {
+              "name": "filter",
+              "type": "SashimiFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minReads",
+                  "type": "number"
+                },
+                {
+                  "name": "nonCanonical",
+                  "type": "(CategoryFilter | undefined)"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "readConnections",
-          "type": "ReadConnectionsMode"
-        },
-        {
-          "name": "readConnectionsDown",
-          "type": "boolean"
-        },
-        {
-          "name": "showSashimiArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "sashimiArcsMode",
-          "type": "SashimiArcsMode"
-        },
-        {
-          "name": "minSashimiScore",
-          "type": "number"
-        },
-        {
-          "name": "sashimiArcsHeight",
-          "type": "number"
-        },
-        {
-          "name": "readConnectionsHeight",
-          "type": "number"
-        },
-        {
-          "name": "showSoftClipping",
-          "type": "boolean"
+          "type": "ReadConnectionsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "mark",
+              "type": "ReadConnectionsMark"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "placement",
+              "type": "ReadConnectionsPlacement"
+            },
+            {
+              "name": "lineWidth",
+              "type": "number"
+            },
+            {
+              "name": "color",
+              "type": "AlignmentsArcColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "AlignmentsArcColorField"
+                }
+              ],
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "showOrdinaryPairs",
+              "type": "(boolean | undefined)"
+            },
+            {
+              "name": "filter",
+              "type": "ReadConnectionsFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "interchrom",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "offscreenMates",
+                  "type": "(CategoryFilter | undefined)"
+                },
+                {
+                  "name": "minInterchromReads",
+                  "type": "number"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "lodMode",
@@ -4795,6 +4889,8 @@ export const configManifest: ConfigManifest = {
         "multiTicks",
         "jitter",
         "lineWidth",
+        "featureHeight",
+        "maxHeight",
         "hideSmallIndels",
         "hideMismatches",
         "mismatchAlpha",
@@ -6619,16 +6715,36 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showCoverage",
-          "type": "boolean"
+          "name": "coverage",
+          "type": "CoverageBandConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "showInterbaseIndicators",
+              "type": "boolean"
+            },
+            {
+              "name": "filter",
+              "type": "CoverageFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minAlleleFraction",
+                  "type": "number"
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "showAlignments",
           "type": "boolean"
-        },
-        {
-          "name": "coverageHeight",
-          "type": "number"
         },
         {
           "name": "scales",
@@ -6704,24 +6820,22 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "coverageSnpMinFrequency",
-          "type": "number"
-        },
-        {
-          "name": "showInterbaseIndicators",
-          "type": "boolean"
-        },
-        {
-          "name": "showConservation",
-          "type": "boolean"
-        },
-        {
-          "name": "conservationHeight",
-          "type": "number"
-        },
-        {
-          "name": "conservationMode",
-          "type": "MafConservationMode"
+          "name": "conservation",
+          "type": "MafConservationConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "unit",
+              "type": "MafConservationUnit"
+            }
+          ]
         },
         {
           "name": "rowIdentityAutoZoom",

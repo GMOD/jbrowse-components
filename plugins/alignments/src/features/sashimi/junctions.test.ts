@@ -5,7 +5,8 @@ import {
   SPLICE_MOTIF_NON_CANONICAL,
 } from './motif.ts'
 
-import type { RegionJunctions, SashimiArcsMode } from './junctions.ts'
+import type { CategoryFilter, SashimiFilter } from '../../shared/types.ts'
+import type { RegionJunctions, SashimiPlacement } from './junctions.ts'
 
 // [start, end, count] per junction, plus whatever this test cares about of the
 // raw strand votes and the two motif halves. An absent dinucleotide is an end
@@ -18,9 +19,9 @@ interface JunctionDetail {
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
-const keep = (minSashimiScore = 0, showNonCanonicalJunctions = true) => ({
-  minSashimiScore,
-  showNonCanonicalJunctions,
+const keep = (minReads = 0, nonCanonical?: CategoryFilter): SashimiFilter => ({
+  minReads,
+  nonCanonical,
 })
 
 function dinucleotide(bases: string | undefined) {
@@ -45,7 +46,7 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
   }
 }
 
-function down(regions: RegionJunctions[], mode: SashimiArcsMode, min = 0) {
+function down(regions: RegionJunctions[], mode: SashimiPlacement, min = 0) {
   return downJunctionKeys(mergeJunctions(regions, keep(min)).values(), mode)
 }
 
@@ -103,7 +104,7 @@ describe('mergeJunctions', () => {
     expect([...merged.keys()]).toEqual(['chr1:200:900'])
   })
 
-  test('hides a non-canonical junction only when asked, never an unread one', () => {
+  test('filters a non-canonical junction only when asked, never an unread one', () => {
     const regions = [
       region('chr1', [
         [100, 500, 9, { donor: 'AA', acceptor: 'CC' }],
@@ -111,14 +112,19 @@ describe('mergeJunctions', () => {
         [300, 700, 9],
       ]),
     ]
-    expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([
+    expect([...mergeJunctions(regions, keep(0)).keys()]).toEqual([
       'chr1:100:500',
       'chr1:200:900',
       'chr1:300:700',
     ])
-    expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([
+    expect([...mergeJunctions(regions, keep(0, 'exclude')).keys()]).toEqual([
       'chr1:200:900',
       'chr1:300:700',
+    ])
+    // 'only' keeps the junction KNOWN to be non-canonical; an unread motif is
+    // no evidence either way, so it counts as canonical here too.
+    expect([...mergeJunctions(regions, keep(0, 'only')).keys()]).toEqual([
+      'chr1:100:500',
     ])
   })
 
@@ -136,9 +142,11 @@ describe('mergeJunctions', () => {
       [classified, unread],
       [unread, classified],
     ]) {
-      expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([])
+      expect([...mergeJunctions(regions, keep(0, 'exclude')).keys()]).toEqual(
+        [],
+      )
       // And with the filter off it is one junction carrying both answers.
-      expect([...mergeJunctions(regions, keep(0, true)).values()]).toEqual([
+      expect([...mergeJunctions(regions, keep(0)).values()]).toEqual([
         {
           key: 'chr1:100:1100',
           refName: 'chr1',

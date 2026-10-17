@@ -42,11 +42,15 @@ const chrome = (height: number, { hideAppBar }: Chrome) => ({
 const reads = {
   trackId: READS,
   type: 'LinearAlignmentsDisplay',
-  featureHeight: 1,
+  pileup: { readHeight: 1 },
+  readConnections: {
+    filter: {
+      // only connections with both ends on screen
+      offscreenMates: 'exclude',
+    },
+  },
   height: 200,
   forceLoad: true,
-  // only connections with both ends on screen
-  showLongRange: false,
 }
 
 // A breakpoint is sub-pixel at every scale here, so each band is widened to a
@@ -190,9 +194,12 @@ export const junctionScaffold = (
                 // legend names beside the unsplit reads
                 color: { field: 'pairOrientation' },
                 showLegend: true,
-                featureHeight: 2,
-                readConnections: 'arc',
-                readConnectionsHeight: 70,
+                pileup: { readHeight: 2 },
+                readConnections: {
+                  ...reads.readConnections,
+                  show: true,
+                  height: 70,
+                },
                 height: 690,
               },
             ],

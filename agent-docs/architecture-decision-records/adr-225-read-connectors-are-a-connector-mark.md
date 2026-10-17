@@ -22,7 +22,7 @@ across segments nothing fetched, a read that maps back over itself — was
 `PileupBezierOverlay`: a React SVG layer whose `computePileupBezierArcs`
 re-projected every pair to screen px on every pan frame, with its own hover,
 thicken and select handlers, and `PileupBezierArcsSvg` repeating the paths for
-the export. It draws whenever "Use curved connectors" (`showBezierConnections`)
+the export. It draws whenever "Use curved connectors" (`showConnectors`)
 is on, and in chain mode for the pairs that cross a region seam.
 
 Measured on the GPU rung this machine's users get (headed Chrome, WebGL2), the

@@ -205,16 +205,18 @@ const panel = (loc: string) => ({
       // told what dark blue means, which is exactly the caption-rescues-the-figure
       // failure the house rule names.
       showLegend: true,
-      // Compact rows (review: "consider setting compact featureheight"), and it
-      // is the aggregate that gains. At the default height the lane ran out of
-      // rows and printed "Max layout height reached", so the pileup was a
-      // cropped sample of the evidence with no way to tell how much had been
-      // dropped -- which is the opposite of conveying aggregate quality. The
-      // row gap that pairs with a small height is derived, not set here (see
-      // featureSpacingForHeight), the same as cancer_sv's SUPER_COMPACT.
-      // Nothing in this figure is read one read at a time: the claim is the
-      // color of the whole block.
-      featureHeight: 2,
+      pileup: {
+        // Compact rows (review: "consider setting compact featureheight"), and it
+        // is the aggregate that gains. At the default height the lane ran out of
+        // rows and printed "Max layout height reached", so the pileup was a
+        // cropped sample of the evidence with no way to tell how much had been
+        // dropped -- which is the opposite of conveying aggregate quality. The
+        // row gap that pairs with a small height is derived, not set here (see
+        // featureSpacingForHeight), the same as cancer_sv's SUPER_COMPACT.
+        // Nothing in this figure is read one read at a time: the claim is the
+        // color of the whole block.
+        readHeight: 2,
+      },
       height: 300,
       // 100 kb of a 30x CRAM is past the byte gate, and a capture has nobody to
       // click the banner. Same reason as the 650 kb frame below.

@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { treeSidebarOffset } from '@jbrowse/tree-sidebar'
 
 import { DEFAULTS } from './displayDefaults.ts'
@@ -146,7 +147,7 @@ describe('resizable band height floor', () => {
 
   it('leaves a band config declared below the floor where it is', () => {
     const display = setup(10, 15)
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     // the regression: flooring at a bare 20 made this first +1 drag jump the
     // band up to 20 before it honored the delta
     display.resizeCoverageHeight(+1)
@@ -155,14 +156,14 @@ describe('resizable band height floor', () => {
 
   it('still refuses to shrink a below-floor band further', () => {
     const display = setup(10, 15)
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     display.resizeCoverageHeight(-1)
     expect(display.coverageHeight).toBe(5)
   })
 
   it('restores the 20 floor once a below-floor band is dragged past it', () => {
     const display = setup(10, 15)
-    display.configuration.setSlot('coverageHeight', 5)
+    setConf(display, ['coverage', 'height'], 5)
     display.resizeCoverageHeight(+20)
     expect(display.coverageHeight).toBe(25)
     display.resizeCoverageHeight(-100)
@@ -175,7 +176,7 @@ describe('resizable band height floor', () => {
     display.resizeConservationHeight(-100)
     expect(display.conservationHeight).toBe(20)
 
-    display.configuration.setSlot('conservationHeight', 8)
+    setConf(display, ['conservation', 'height'], 8)
     display.resizeConservationHeight(+1)
     expect(display.conservationHeight).toBe(9)
   })

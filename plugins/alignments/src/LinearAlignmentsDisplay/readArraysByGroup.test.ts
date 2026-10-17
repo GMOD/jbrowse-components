@@ -63,7 +63,7 @@ function seed(n: number) {
 // in the arrays, and its rect is the overflow row the pileup draws it on.
 test('a read past the row cap keeps a rect, on the overflow row', () => {
   const display = seed(40)
-  display.setMaxHeight(40)
+  display.setPileupMaxHeight(40)
 
   expect(display.readArraysByGroup.get('')?.get(0)?.readKeys).toHaveLength(40)
   const tops = Array.from(

@@ -59,7 +59,7 @@ const Settings = observer(function Settings({
           max={12}
           value={display.featureHeight}
           onChange={event => {
-            display.setFeatureHeight(Number(event.target.value))
+            display.setReadHeight(Number(event.target.value))
           }}
         />{' '}
         {display.featureHeight}px

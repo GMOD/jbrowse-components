@@ -58,7 +58,7 @@ function scene(
     canvasWidth: 1000,
     canvasHeight: 300,
     coverageHeight: 100,
-    sashimiArcsHeight: 40,
+    sashimiHeight: 40,
     linkRegions: layout.linkRegions,
     sections: [
       {
@@ -120,7 +120,7 @@ describe('sashimiBandsOf', () => {
   it('draws no side whose band has no height', () => {
     const base = makeTestRenderState({
       coverageHeight: 4,
-      sashimiArcsHeight: 3,
+      sashimiHeight: 3,
     })
     expect(
       sashimiBandsOf(base, { ...base.sections[0]!, sashimiBandTop: 10 }),
@@ -128,7 +128,7 @@ describe('sashimiBandsOf', () => {
   })
 
   it('draws no down side in a section that reserved no strip', () => {
-    const base = makeTestRenderState({ sashimiArcsHeight: 40 })
+    const base = makeTestRenderState({ sashimiHeight: 40 })
     expect(sashimiBandsOf(base, base.sections[0]!).down).toBeUndefined()
   })
 })

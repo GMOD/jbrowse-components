@@ -74,7 +74,7 @@ function splitArcs(
       lanes.map(lane => ['', lane] as const),
       regions,
     ),
-    { showLongRange: true, showInterchrom: true, canonicalRefName: r => r },
+    { filter: {}, canonicalRefName: r => r },
   ).filter(arc => arc.isSplit)
 }
 

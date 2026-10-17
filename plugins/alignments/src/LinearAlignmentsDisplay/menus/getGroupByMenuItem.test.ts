@@ -16,7 +16,7 @@ function makeModel(opts?: { field?: string; unit?: AlignmentsUnit }) {
 }
 
 // Dimensions only — the submenu is radios end to end (the collapse toggle moved
-// to "Show...", see `collapseGroupRowsItems`), so nothing needs filtering out.
+// to "Show...", see `collapseSectionsItems`), so nothing needs filtering out.
 function radios(model: GroupByMenuModel) {
   return getGroupByMenuItem(model).subMenu
 }

@@ -10,7 +10,7 @@ import { tagFilterConfigSchema } from './tagFilterConfigSchema.ts'
 import type { ReadFilter } from '../shared/types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-const CATEGORY_FILTERS = ['only', 'exclude'] as const
+export const CATEGORY_FILTERS = ['only', 'exclude'] as const
 
 /**
  * #config ReadFilter

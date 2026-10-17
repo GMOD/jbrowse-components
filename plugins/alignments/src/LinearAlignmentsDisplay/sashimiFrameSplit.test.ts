@@ -67,7 +67,7 @@ function identityCounter<T>() {
 function panningDisplay() {
   const { view, display } = createTestAlignmentsDisplay()
   view.setNewView(10, 0)
-  display.setShowSashimiArcs(true)
+  display.setShowSashimi(true)
   display.setShowCoverage(true)
   return { view, display }
 }
@@ -110,7 +110,7 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
 // a pan re-projects, and only while they are shown.
 test('with count labels on, a pan re-projects the labels alone', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiLabels(true)
+  display.setShowSashimiCounts(true)
   seedJunctions(display)
 
   const feeds = identityCounter<unknown>()
@@ -131,14 +131,14 @@ test('with count labels on, a pan re-projects the labels alone', () => {
   expect(display.sashimiLabels).toHaveLength(2)
 })
 
-// The DNA case, which is most alignments tracks: `showSashimiArcs` resolves on
+// The DNA case, which is most alignments tracks: `showSashimi` resolves on
 // wherever coverage draws, so every one of them evaluates this pipeline, and a
 // track whose reads carry no skip gap has nothing for it to draw. One shared
 // empty array is what lets `SashimiLabelsOverlay`'s observer stop on `===`
 // instead of reconciling a list of empty sections per frame.
 test('a track with no junctions hands the overlay the same empty array', () => {
   const { view, display } = panningDisplay()
-  display.setShowSashimiLabels(true)
+  display.setShowSashimiCounts(true)
   display.setRpcData(
     0,
     {
@@ -174,7 +174,7 @@ test('a track with no junctions hands the overlay the same empty array', () => {
 // buffer, once per pan frame.
 test('read connections on: a pan leaves the band feeds the same object', () => {
   const { view, display } = panningDisplay()
-  display.setReadConnections('arc')
+  display.setDrawnReadConnections('arc')
   seedJunctions(display)
 
   const feeds = identityCounter<unknown>()

@@ -549,8 +549,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               type: 'LinearMafDisplay',
               height: 460,
               color: 'codon',
-              showConservation: true,
-              conservationMode: 'codon',
+              conservation: { show: true, unit: 'codon' },
               rows: { kept: HG38_470WAY_30 },
               // Same reason as `maf_470way`: the gate is live below 20kb now.
               // The focus narrows the rows *drawn*, not the download — the

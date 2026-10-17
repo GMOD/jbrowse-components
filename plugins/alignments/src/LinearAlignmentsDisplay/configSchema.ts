@@ -1,3 +1,4 @@
+import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
@@ -5,18 +6,16 @@ import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfi
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
-import {
-  ALIGNMENTS_UNITS,
-  READ_CONNECTIONS_MODES,
-  SASHIMI_ARCS_MODES,
-} from './constants.ts'
+import { ALIGNMENTS_UNITS } from './constants.ts'
+import { pileupConfigSchema } from './pileupConfigSchema.ts'
+import { readConnectionsConfigSchema } from './readConnectionsConfigSchema.ts'
 import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
+import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -24,8 +23,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearAlignmentsDisplay
  * #category display
- * Draws the reads of an `AlignmentsTrack` as a pileup under a coverage
- * histogram.
+ * Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
+ * histogram with the sashimi arcs over it, the read connections, and the
+ * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
+ * and `pileup`, holding whether it draws, its height and its own filter; the
+ * settings every band shares, the read `filter`, `unit`, `facet`, `sort` and
+ * `color`, sit beside them.
  *
  * #example
  * Minimal BAM track — no display override needed for defaults. See the
@@ -74,10 +77,31 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
  *   displayDefaults: {
  *     height: 400,
- *     showSoftClipping: true,
  *     unit: 'chain',
  *     color: { field: 'pairOrientation' },
- *     readConnections: 'arc',
+ *     pileup: { showSoftClipping: true },
+ *     readConnections: { show: true },
+ *   },
+ * }
+ * ```
+ *
+ * #example
+ * RNA-seq — sashimi arcs placed to avoid crossings, labelled with their read
+ * counts, dropping junctions under five reads and the non-canonical ones:
+ * ```js
+ * {
+ *   type: 'AlignmentsTrack',
+ *   trackId: 'rnaseq',
+ *   name: 'RNA-seq',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'BamAdapter', uri: 'https://example.com/rnaseq.bam' },
+ *   displayDefaults: {
+ *     coverage: { height: 80 },
+ *     sashimi: {
+ *       placement: 'auto',
+ *       showCounts: true,
+ *       filter: { minReads: 5, nonCanonical: 'exclude' },
+ *     },
  *   },
  * }
  * ```
@@ -89,94 +113,36 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      // The single "compactness" axis. Spacing between reads is derived from
-      // this (`featureSpacingForHeight`), not stored — the presets (7/3/1) and
-      // the fit-mode squeeze all key off this one value.
-      featureHeight: {
-        type: 'number',
-        description: 'Height of each feature (read) in pixels. Defaults to 7',
-        defaultValue: 7,
-      },
-      // `growMaxHeight` rides along, so both of `HeightModeMixin`'s slots are
-      // declared here at once. It is NOT the `maxHeight` layout cap below.
-      ...heightModeConfigSchemaFields({
-        heightMode:
-          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
-        growMaxHeight:
-          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
-      }),
-      /**
-       * #slot
-       */
-      readConnectionsLineWidth: {
-        type: 'number',
-        defaultValue: 1,
-        description: 'Line width for read-connection arcs/lines in pixels',
-      },
-      /**
-       * #slot
-       */
-      showSashimiLabels: {
-        type: 'boolean',
-        description: 'Draw the supporting-read count on each sashimi arc',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      showNonCanonicalJunctions: {
-        type: 'boolean',
-        description:
-          'Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       */
-      // NOT the grow ceiling (`growMaxHeight`, above). This caps how much is
-      // laid out; that caps how tall `grow` mode sizes the track. Two different
-      // limits, don't conflate them.
-      maxHeight: {
-        type: 'number',
-        defaultValue: 6000,
-        description:
-          'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
       height: {
         type: 'number',
         defaultValue: 250,
         description:
-          'Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does',
+          'Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does',
       },
+      // `growMaxHeight` rides along, so both of `HeightModeMixin`'s slots are
+      // declared here at once.
+      ...heightModeConfigSchemaFields({
+        heightMode:
+          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `pileup.readHeight` and scrolls; `grow` expands the track to show every read at that height; `fit` squeezes reads so every uncollapsed section fills the display without scrolling',
+        growMaxHeight:
+          'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight)',
+      }),
       /**
-       * #slot color
-       * The read fill: `"steelblue"` paints every read, `{ field: "strand" }`
-       * a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM
-       * tag.
+       * #slot
        */
-      color: alignmentsColorConfigSchema,
-      /**
-       * #slot baseColor
-       * The per-base layer drawn over the reads, whatever fills them:
-       * `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or
-       * `"base"`.
-       */
-      baseColor: alignmentsBaseColorConfigSchema,
-      /**
-       * #slot modifications
-       * Settings for the `modifications` and `bisulfite` color fields:
-       * `threshold` (percent, default 10), `unmodified`,
-       * `cytosineContext` and `shownModifications`.
-       */
-      modifications: alignmentsModificationsConfigSchema,
+      unit: {
+        type: 'stringEnum',
+        model: types.enumeration('AlignmentsUnit', [...ALIGNMENTS_UNITS]),
+        defaultValue: 'read',
+        // A chain joins by QNAME, never by a BX/MI linked-read barcode.
+        description:
+          'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
+      },
       /**
        * #slot
        * Every read filter, in one object: the flag masks, a read name, tag
-       * filters, and the four read categories.
+       * filters, and the four read categories. It runs before every band, so
+       * coverage counts only the reads it passes.
        *
        * default filter flags is exclude 1540
        * read unmapped (0x4)
@@ -200,17 +166,44 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       facet: sectionFacetConfigSchema,
       /**
        * #slot
-       * Only consulted while `facet` is in effect. Collapsing trades the
-       * per-group stack for one lane per group, with overlap depth carried by
-       * the tint shading instead of by row count — the compact reading for a
-       * track with many groups (an all-vs-all synteny track's mate genomes). A
-       * group expanded from its label chip opts back out and draws a true stack.
+       * Only consulted while `facet` is in effect. Collapsing trades each
+       * section's stack for one row, with overlap depth carried by the tint
+       * shading instead of by row count — the compact reading for a track with
+       * many sections (an all-vs-all synteny track's mate genomes). A section
+       * expanded from its label chip opts back out and draws a true stack.
        */
-      collapseGroupRows: {
+      collapseSections: {
         type: 'boolean',
         defaultValue: false,
-        description: 'Draw each group as a single row rather than a stack',
+        description:
+          'Draw each facet section as a single row rather than a stack',
       },
+      /**
+       * #slot sort
+       * The pileup's row order: a whole-window order (`position`, `length`, `spliced`, `split`) or a column sort at one base (`{ type: "strand", pos, refName }`).
+       */
+      sort: alignmentsSortConfigSchema,
+      /**
+       * #slot color
+       * The read fill: `"steelblue"` paints every read, `{ field: "strand" }`
+       * a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM
+       * tag.
+       */
+      color: alignmentsColorConfigSchema,
+      /**
+       * #slot baseColor
+       * The per-base layer drawn over the reads, whatever fills them:
+       * `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or
+       * `"base"`.
+       */
+      baseColor: alignmentsBaseColorConfigSchema,
+      /**
+       * #slot modifications
+       * Settings for the `modifications` and `bisulfite` color fields:
+       * `threshold` (percent, default 10), `unmodified`,
+       * `cytosineContext` and `shownModifications`.
+       */
+      modifications: alignmentsModificationsConfigSchema,
       /**
        * #slot scales
        * The coverage band's value scale — the one thing on this display drawn
@@ -231,242 +224,38 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      fadeLowQualityMismatches: {
-        type: 'boolean',
-        description:
-          'Fade mismatch bases by their per-base Phred quality. Defaults to off',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       */
-      fadeLowFrequencyMismatches: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline)',
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
       showLegend: {
         type: 'boolean',
         description: 'Show the color-scheme legend overlay. Defaults to off',
         defaultValue: false,
       },
       /**
-       * #slot sort
-       * The pileup's row order: a whole-window order (`position`, `length`, `spliced`, `split`) or a column sort at one base (`{ type: "strand", pos, refName }`).
+       * #slot coverage
+       * The coverage histogram band: `show`, `height` (default 45),
+       * `showInterbaseIndicators` and `filter.minAlleleFraction`, a flat floor
+       * on each allele segment's share of its position's depth, distinct from
+       * `pileup.fadeLowFrequency`.
        */
-      sort: alignmentsSortConfigSchema,
+      coverage: coverageBandConfigSchema,
       /**
-       * #slot
-       * null = auto: outline is drawn only under `unit: 'chain'`. Set
-       * true/false to force it on or off regardless of mode.
+       * #slot pileup
+       * The stacked reads: `show`, `readHeight` (default 7), `maxHeight`, and
+       * the parts drawn on each read.
        */
-      showOutline: {
-        type: 'maybeBoolean',
-        description: 'Draw an outline around each read (unset = auto by mode)',
-        advanced: true,
-      },
+      pileup: pileupConfigSchema,
       /**
-       * #slot
+       * #slot sashimi
+       * The splice-junction arcs, drawn in the coverage band: `show`,
+       * `height`, `placement`, `showCounts` and `filter`.
        */
-      unit: {
-        type: 'stringEnum',
-        model: types.enumeration('AlignmentsUnit', [...ALIGNMENTS_UNITS]),
-        defaultValue: 'read',
-        // A chain joins by QNAME, never by a BX/MI linked-read barcode.
-        description:
-          'The unit one row draws: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row)',
-      },
+      sashimi: sashimiConfigSchema,
       /**
-       * #slot
+       * #slot readConnections
+       * The connections between mates and split segments: `show` (default
+       * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
+       * `color`, `showOrdinaryPairs` and `filter`.
        */
-      showBezierConnections: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw paired-read connection curves over the pileup',
-      },
-      /**
-       * #slot
-       */
-      showCoverage: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw the coverage histogram band',
-      },
-      /**
-       * #slot
-       */
-      showPileup: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw the stacked-read pileup band',
-      },
-      /**
-       * #slot
-       */
-      coverageHeight: {
-        type: 'number',
-        defaultValue: 45,
-        description: 'Height of the coverage band in pixels',
-      },
-      /**
-       * #slot
-       */
-      coverageSnpMinFrequency: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `fadeLowFrequencyMismatches`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden",
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      showMismatches: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS)',
-      },
-      /**
-       * #slot
-       */
-      showInterbaseIndicators: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Draw interbase insertion/clip count bars and indicator triangles',
-      },
-      /**
-       * #slot
-       */
-      showInterchrom: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw inter-chromosomal read-connection arcs',
-      },
-      /**
-       * #slot
-       */
-      showOrdinaryPairs: {
-        type: 'maybeBoolean',
-        description:
-          'Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out',
-      },
-      /**
-       * #slot
-       */
-      minInterchromSupport: {
-        type: 'number',
-        // Reads are counted over a window of one fragment length on BOTH sides,
-        // not at a coordinate — a mate-pair breakpoint is not localized to a
-        // base. See `clusteredInterchromSupport`. 1 draws every connection.
-        defaultValue: 2,
-        description:
-          'Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint',
-      },
-      /**
-       * #slot
-       */
-      showLongRange: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw long-range read-connection arcs',
-      },
-      /**
-       * #slot arcColor
-       * The field the read-connection arcs and the read cloud are colored by:
-       * `"pairOrientation"` paints them by pair orientation whatever the reads
-       * show, and `""` takes the reads' `color` field where an arc paints it.
-       */
-      arcColor: alignmentsArcColorConfigSchema,
-      /**
-       * #slot
-       */
-      readConnections: {
-        type: 'stringEnum',
-        model: types.enumeration('ReadConnectionsMode', [
-          ...READ_CONNECTIONS_MODES,
-        ]),
-        defaultValue: 'off',
-        description:
-          'Read-connection rendering mode (mate pairs + split reads)',
-      },
-      /**
-       * #slot
-       */
-      readConnectionsDown: {
-        type: 'boolean',
-        description:
-          'Draw read connections below the coverage band. Defaults to on',
-        defaultValue: true,
-      },
-      /**
-       * #slot
-       */
-      showSashimiArcs: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw sashimi (splice-junction) arcs',
-      },
-      /**
-       * #slot
-       */
-      sashimiArcsMode: {
-        type: 'stringEnum',
-        model: types.enumeration('SashimiArcsMode', [...SASHIMI_ARCS_MODES]),
-        defaultValue: 'up',
-        description: 'Sashimi junction-arc placement',
-      },
-      /**
-       * #slot
-       */
-      minSashimiScore: {
-        type: 'number',
-        // Hides single-read junctions; set 0 to show every arc. Spelled as a
-        // literal, not DEFAULT_MIN_SASHIMI_SCORE: the config docgen renders this
-        // default by reading the AST node's source text, so a constant reference
-        // publishes the identifier name instead of the value. Keep the two in
-        // step — `constants.ts` names the same number for the menu's reset.
-        defaultValue: 2,
-        description:
-          'Hide sashimi arcs with fewer than this many supporting reads',
-      },
-      /**
-       * #slot
-       */
-      sashimiArcsHeight: {
-        type: 'number',
-        defaultValue: 40,
-        description: 'Height of the sashimi-arc band in pixels',
-      },
-      /**
-       * #slot
-       */
-      readConnectionsHeight: {
-        type: 'number',
-        // Arcs scale to whatever band they get, so this only buys apex
-        // separation between insert sizes. It was dropped to 25 alongside the
-        // per-section reservation, but that reservation is what fixed the
-        // grouped stack — a lane drawing no arcs now gets no band at all, so
-        // only the lanes that use the height pay for it, and at 25 the arcs
-        // were too flat to separate. Kept above the 20px drag floor
-        // (clampBandHeight).
-        defaultValue: 35,
-        description: 'Height of the read-connection band in pixels',
-      },
-      /**
-       * #slot
-       */
-      showSoftClipping: {
-        type: 'boolean',
-        description: 'Draw soft-clipped read portions. Defaults to off',
-        defaultValue: false,
-      },
+      readConnections: readConnectionsConfigSchema,
     },
     {
       /**

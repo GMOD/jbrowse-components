@@ -1,28 +1,27 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
+import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
-import type { SashimiArcsMode } from '../constants.ts'
+import type { SashimiFilter } from '../../shared/types.ts'
+import type { SashimiPlacement } from '../constants.ts'
 
 function makeModel() {
   return {
     showCoverage: true,
-    showSashimiArcs: false,
-    setShowSashimiArcs(v: boolean) {
-      this.showSashimiArcs = v
+    showSashimi: false,
+    setShowSashimi(v: boolean) {
+      this.showSashimi = v
     },
-    showSashimiLabels: false,
-    setShowSashimiLabels() {},
-    sashimiArcsMode: 'auto' as SashimiArcsMode,
-    setSashimiArcsMode(mode: SashimiArcsMode) {
-      this.sashimiArcsMode = mode
+    showSashimiCounts: false,
+    setShowSashimiCounts() {},
+    sashimiPlacement: 'auto' as SashimiPlacement,
+    setSashimiPlacement(mode: SashimiPlacement) {
+      this.sashimiPlacement = mode
     },
-    minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
-    setMinSashimiScore() {},
-    showNonCanonicalJunctions: true,
-    setShowNonCanonicalJunctions(v: boolean) {
-      this.showNonCanonicalJunctions = v
+    sashimiFilter: { minReads: DEFAULT_MIN_SASHIMI_READS } as SashimiFilter,
+    setSashimiFilter(patch: Partial<SashimiFilter>) {
+      this.sashimiFilter = { ...this.sashimiFilter, ...patch }
     },
   }
 }
@@ -49,14 +48,14 @@ describe('sashimi menu', () => {
     })
   })
 
-  test('labels, placement, and the two filters appear when arcs are on', () => {
+  test('counts, placement, and the two filters appear when arcs are on', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
+    model.showSashimi = true
     expect(labels(model)).toEqual([
       'Show sashimi arcs',
-      'Show labels',
-      'Hide non-canonical junctions',
+      'Show read counts',
       'Arc placement',
+      'Non-canonical junctions',
       'Min read support',
     ])
   })
@@ -67,7 +66,7 @@ describe('sashimi menu', () => {
   // setting dropped in beside its subject would satisfy while breaking this.
   test('every checkbox precedes every submenu', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
+    model.showSashimi = true
     const shapes = resolveSubMenu(getSashimiMenuItem(model)).map(i =>
       'subMenu' in i ? 'submenu' : 'checkbox',
     )
@@ -82,7 +81,7 @@ describe('sashimi menu', () => {
   // panel — the last two naming the motif that junction actually has.
   test('no row carries a "?"', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
+    model.showSashimi = true
     const withHelp = resolveSubMenu(getSashimiMenuItem(model)).filter(
       i => 'helpText' in i && i.helpText,
     )
@@ -91,7 +90,7 @@ describe('sashimi menu', () => {
 
   test('the read-support floor is a submenu holding its slider', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
+    model.showSashimi = true
     const floor = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Min read support',
     )
@@ -105,22 +104,37 @@ describe('sashimi menu', () => {
     ])
   })
 
-  test('"Hide non-canonical junctions" toggles', () => {
+  test('"Non-canonical junctions" is one All / Only / Hide choice', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
-    const row = resolveSubMenu(getSashimiMenuItem(model)).find(
-      i => 'label' in i && i.label === 'Hide non-canonical junctions',
-    )
-    if (!row || !('onClick' in row)) {
-      throw new Error('no non-canonical row')
+    model.showSashimi = true
+    const choose = (label: string) => {
+      const group = resolveSubMenu(getSashimiMenuItem(model)).find(
+        i =>
+          'label' in i && String(i.label).startsWith('Non-canonical junctions'),
+      )
+      if (!group || !('subMenu' in group)) {
+        throw new Error('no non-canonical submenu')
+      }
+      const row = resolveSubMenu(group).find(
+        i => 'label' in i && i.label === label,
+      )
+      if (!row || !('onClick' in row)) {
+        throw new Error(`no ${label} row`)
+      }
+      row.onClick()
     }
-    row.onClick()
-    expect(model.showNonCanonicalJunctions).toBe(false)
+    choose('Hide non-canonical junctions')
+    expect(model.sashimiFilter.nonCanonical).toBe('exclude')
+    expect(labels(model)).toContain('Non-canonical junctions — hidden')
+    choose('Only non-canonical junctions')
+    expect(model.sashimiFilter.nonCanonical).toBe('only')
+    choose('All junctions')
+    expect(model.sashimiFilter.nonCanonical).toBeUndefined()
   })
 
   test('placement submenu checks the active mode and switches on click', () => {
     const model = makeModel()
-    model.showSashimiArcs = true
+    model.showSashimi = true
     const placement = resolveSubMenu(getSashimiMenuItem(model)).find(
       i => 'label' in i && i.label === 'Arc placement',
     )
@@ -134,6 +148,6 @@ describe('sashimi menu', () => {
       throw new Error('no below-coverage item')
     }
     below.onClick()
-    expect(model.sashimiArcsMode).toBe('down')
+    expect(model.sashimiPlacement).toBe('down')
   })
 })

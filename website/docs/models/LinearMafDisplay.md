@@ -113,11 +113,11 @@ From [FetchMixin](../fetchmixin): <span id="volatile-activesignal">[`activeSigna
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  |
 | <span id="getter-showalignments">**showAlignments**</span><br><code>boolean</code> |  |
 | <span id="getter-coverageheight">**coverageHeight**</span><br><code>number</code> |  |
-| <span id="getter-coveragesnpminfrequency">**coverageSnpMinFrequency**</span><br><code>number</code> |  |
+| <span id="getter-coveragefilter">**coverageFilter**</span><br><code>CoverageFilter</code> |  |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
 | <span id="getter-showconservation">**showConservation**</span><br><code>boolean</code> |  |
 | <span id="getter-conservationheight">**conservationHeight**</span><br><code>number</code> |  |
-| <span id="getter-conservationmode">**conservationMode**</span><br><code>"base" &#124; "codon"</code> |  |
+| <span id="getter-conservationunit">**conservationUnit**</span><br><code>"base" &#124; "codon"</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>"base" &#124; "chromosome" &#124; "codon" &#124; "identity" &#124; "mismatch"</code> |  |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting &amp; { value: undefined; }</code> | The `color` object as written, with the key's labels and title. |
 | <span id="getter-colorencoding">**colorEncoding**</span><br><code>FieldColorEncoding</code> | The `color` object as it paints, through its field's preset: one scale per field, so `scale` is never written. |
@@ -291,11 +291,11 @@ From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbyt
 | <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "infe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "viridis") =&gt; void</code></pre></dialog></span> | Paint identity along a named ramp, clearing a written `range`, which would win over it. |
 | <span id="action-setshowasuppercase">**setShowAsUpperCase**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setcoveragesnpminfrequency">**setCoverageSnpMinFrequency**</span><br><code>(fraction: number) =&gt; void</code> |  |
+| <span id="action-setcoveragefilter">**setCoverageFilter**</span><br><code>(patch: Partial&lt;CoverageFilter&gt;) =&gt; void</code> |  |
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setconservationmode">**setConservationMode**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  |
+| <span id="action-setconservationunit">**setConservationUnit**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  |
 | <span id="action-setyfield">**setYField**</span><br><code>(field: "identity" &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setrowidentityautozoom">**setRowIdentityAutoZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowannotations">**setShowAnnotations**</span><br><code>(arg: boolean) =&gt; void</code> |  |

@@ -5909,6 +5909,244 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "TagFilter": {
+      "title": "TagFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tag": {
+          "description": "the SAM tag, HP or RG.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "value": {
+          "description": "the value the tag has to hold; unset passes any read carrying the tag.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ReadFilter": {
+      "title": "ReadFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tagFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "flagInclude": {
+          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "flagExclude": {
+          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
+          "default": 1540,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "minMapq": {
+          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "readName": {
+          "description": "the one read name shown; unset shows every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "tagFilters": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TagFilter"
+            }
+          }
+        },
+        "spliced": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "svSignal": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "singletons": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "split": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "AlignmentsSort": {
+      "title": "AlignmentsSort",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "position",
+          "enum": [
+            "position",
+            "length",
+            "spliced",
+            "split",
+            "svSignal",
+            "strand",
+            "basePair",
+            "tag",
+            "mapq",
+            "pairOrientation",
+            "insertion",
+            "softclip",
+            "hardclip"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "AlignmentsSort",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "default": "position",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "position",
+                  "length",
+                  "spliced",
+                  "split",
+                  "svSignal",
+                  "strand",
+                  "basePair",
+                  "tag",
+                  "mapq",
+                  "pairOrientation",
+                  "insertion",
+                  "softclip",
+                  "hardclip"
+                ]
+              }
+            },
+            "pos": {
+              "description": "a column sort's 0-based position.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "refName": {
+              "description": "a column sort's reference sequence.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "tag": {
+              "description": "the SAM tag a tag sort ranks by.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "AlignmentsColor": {
       "title": "AlignmentsColor",
       "anyOf": [
@@ -6223,148 +6461,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "TagFilter": {
-      "title": "TagFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tag": {
-          "description": "the SAM tag, HP or RG.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "value": {
-          "description": "the value the tag has to hold; unset passes any read carrying the tag.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "ReadFilter": {
-      "title": "ReadFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "tagFilter": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "flagInclude": {
-          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "flagExclude": {
-          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
-          "default": 1540,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "minMapq": {
-          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "readName": {
-          "description": "the one read name shown; unset shows every read.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "tagFilters": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TagFilter"
-            }
-          }
-        },
-        "spliced": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "svSignal": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "singletons": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        },
-        "split": {
-          "description": "only, exclude, or unset for unfiltered.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "ValueScaleRule": {
       "title": "ValueScaleRule",
       "anyOf": [
@@ -6556,101 +6652,271 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "AlignmentsSort": {
-      "title": "AlignmentsSort",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
-          "default": "position",
-          "enum": [
-            "position",
-            "length",
-            "spliced",
-            "split",
-            "svSignal",
-            "strand",
-            "basePair",
-            "tag",
-            "mapq",
-            "pairOrientation",
-            "insertion",
-            "softclip",
-            "hardclip"
-          ],
-          "type": "string"
-        },
-        {
-          "title": "AlignmentsSort",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
-              "default": "position",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "position",
-                  "length",
-                  "spliced",
-                  "split",
-                  "svSignal",
-                  "strand",
-                  "basePair",
-                  "tag",
-                  "mapq",
-                  "pairOrientation",
-                  "insertion",
-                  "softclip",
-                  "hardclip"
-                ]
-              }
-            },
-            "pos": {
-              "description": "a column sort's 0-based position.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            },
-            "refName": {
-              "description": "a column sort's reference sequence.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "tag": {
-              "description": "the SAM tag a tag sort ranks by.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "within": {
-              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            }
+    "CoverageFilter": {
+      "title": "CoverageFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "minAlleleFraction": {
+          "description": "an allele segment colors only with at least this share of its position's depth, so the band stops painting a sliver for every sequencing error at high depth; 0 colors every mismatch.",
+          "default": 0,
+          "if": {
+            "type": "null"
           },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
+          "else": {
+            "type": "number"
+          }
         }
-      ]
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "CoverageBand": {
+      "title": "CoverageBand",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the coverage band.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the coverage band in pixels.",
+          "default": 45,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "showInterbaseIndicators": {
+          "description": "draw the insertion and clip count bars and their indicator triangles.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CoverageFilter"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Pileup": {
+      "title": "Pileup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the pileup band.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "readHeight": {
+          "description": "height of each read in pixels.",
+          "default": 7,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "maxHeight": {
+          "description": "the tallest the pileup's layout grows in pixels; reads past it are not stacked, and coverage still counts them. Not the display's growMaxHeight, which caps how tall the track grows.",
+          "default": 6000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "showMismatches": {
+          "description": "draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. The line joining a spliced read across its introns draws either way, since it says the exon blocks are one read (PILEUP_MARKS).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showSoftClipping": {
+          "description": "draw the soft-clipped ends of each read.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showOutline": {
+          "description": "draw an outline around each read; unset follows the unit.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showConnectors": {
+          "description": "draw a curved connector from each read to its mate or split segment.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "fadeLowQuality": {
+          "description": "fade each mismatch base by its Phred base quality.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "fadeLowFrequency": {
+          "description": "fade the sub-pixel mismatches, insertions and clip bars that fall below the depth-dependent frequency threshold; off draws them all at full opacity. The coverage band is not faded (see runCoveragePipeline).",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "SashimiFilter": {
+      "title": "SashimiFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "minReads": {
+          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "nonCanonical": {
+          "description": "only, exclude, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Sashimi": {
+      "title": "Sashimi",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the sashimi arcs.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the strip below coverage that down arcs draw in, in pixels.",
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "placement": {
+          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another.",
+          "default": "up",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "up",
+              "down",
+              "auto"
+            ]
+          }
+        },
+        "showCounts": {
+          "description": "draw the supporting-read count on each arc.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SashimiFilter"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "AlignmentsArcColor": {
       "title": "AlignmentsArcColor",
@@ -6694,6 +6960,143 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "ReadConnectionsFilter": {
+      "title": "ReadConnectionsFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "interchrom": {
+          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc where both chromosomes are displayed and a tick at each breakpoint otherwise.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "offscreenMates": {
+          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "minInterchromReads": {
+          "description": "an inter-chromosomal connection draws only with at least this many reads clustered at its breakpoint, counted over one fragment length on both sides; 1 draws every one, and a split read is exempt.",
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ReadConnections": {
+      "title": "ReadConnections",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the read connections.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "mark": {
+          "description": "arc, or cloud: a flat line at each pair's insert size.",
+          "default": "arc",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "arc",
+              "cloud"
+            ]
+          }
+        },
+        "height": {
+          "description": "height of the read-connection band in pixels.",
+          "default": 35,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "placement": {
+          "description": "where the connections draw: up over the coverage band, or down in a band of their own below it.",
+          "default": "down",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "up",
+              "down"
+            ]
+          }
+        },
+        "lineWidth": {
+          "description": "width of each arc or line in pixels.",
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsArcColor"
+          }
+        },
+        "showOrdinaryPairs": {
+          "description": "draw the ordinary pairs beside the ones carrying a category: concordant pairs as arcs, pairs of modal insert size in the cloud; unset follows the mark.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ReadConnectionsFilter"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearAlignmentsDisplaySlots": {
       "type": "object",
       "properties": {
@@ -6718,7 +7121,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
+          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.",
           "default": 250,
           "if": {
             "type": "null"
@@ -6727,18 +7130,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "featureHeight": {
-          "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "default": 7,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`pileup.readHeight\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -6752,7 +7145,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
+          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight).",
           "default": 800,
           "if": {
             "type": "null"
@@ -6761,18 +7154,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "readConnectionsLineWidth": {
-          "description": "Line width for read-connection arcs/lines in pixels.",
-          "default": 1,
+        "unit": {
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
+          "default": "read",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "enum": [
+              "read",
+              "chain"
+            ]
           }
         },
-        "showSashimiLabels": {
-          "description": "Draw the supporting-read count on each sashimi arc.",
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ReadFilter"
+          }
+        },
+        "facet": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SectionFacet"
+          }
+        },
+        "collapseSections": {
+          "description": "Draw each facet section as a single row rather than a stack.",
           "default": false,
           "if": {
             "type": "null"
@@ -6781,24 +7193,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showNonCanonicalJunctions": {
-          "description": "Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays.",
-          "default": true,
+        "sort": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "maxHeight": {
-          "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "default": 6000,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
+            "$ref": "#/$defs/AlignmentsSort"
           }
         },
         "color": {
@@ -6825,58 +7225,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsModifications"
           }
         },
-        "filter": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/ReadFilter"
-          }
-        },
-        "facet": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/SectionFacet"
-          }
-        },
-        "collapseGroupRows": {
-          "description": "Draw each group as a single row rather than a stack.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "scales": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/Scales"
-          }
-        },
-        "fadeLowQualityMismatches": {
-          "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "fadeLowFrequencyMismatches": {
-          "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "showLegend": {
@@ -6889,239 +7243,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "sort": {
+        "coverage": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/AlignmentsSort"
+            "$ref": "#/$defs/CoverageBand"
           }
         },
-        "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode).",
+        "pileup": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/Pileup"
           }
         },
-        "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
-          "default": "read",
+        "sashimi": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "read",
-              "chain"
-            ]
-          }
-        },
-        "showBezierConnections": {
-          "description": "Draw paired-read connection curves over the pileup.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showCoverage": {
-          "description": "Draw the coverage histogram band.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showPileup": {
-          "description": "Draw the stacked-read pileup band.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "coverageHeight": {
-          "description": "Height of the coverage band in pixels.",
-          "default": 45,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFrequencyMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showMismatches": {
-          "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showInterbaseIndicators": {
-          "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showInterchrom": {
-          "description": "Draw inter-chromosomal read-connection arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showOrdinaryPairs": {
-          "description": "Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "minInterchromSupport": {
-          "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showLongRange": {
-          "description": "Draw long-range read-connection arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "arcColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsArcColor"
+            "$ref": "#/$defs/Sashimi"
           }
         },
         "readConnections": {
-          "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "default": "off",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "off",
-              "arc",
-              "cloud"
-            ]
-          }
-        },
-        "readConnectionsDown": {
-          "description": "Draw read connections below the coverage band. Defaults to on.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showSashimiArcs": {
-          "description": "Draw sashimi (splice-junction) arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "sashimiArcsMode": {
-          "description": "Sashimi junction-arc placement.",
-          "default": "up",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "up",
-              "down",
-              "auto"
-            ]
-          }
-        },
-        "minSashimiScore": {
-          "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "sashimiArcsHeight": {
-          "description": "Height of the sashimi-arc band in pixels.",
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "readConnectionsHeight": {
-          "description": "Height of the read-connection band in pixels.",
-          "default": 35,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showSoftClipping": {
-          "description": "Draw soft-clipped read portions. Defaults to off.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/ReadConnections"
           }
         },
         "maxFeatureScreenDensity": {
@@ -7209,6 +7360,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "lineWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "featureHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -7627,6 +7786,102 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "LGVSyntenySort": {
+      "title": "LGVSyntenySort",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "length",
+          "enum": [
+            "position",
+            "length",
+            "spliced",
+            "split",
+            "svSignal",
+            "strand",
+            "basePair",
+            "tag",
+            "mapq",
+            "pairOrientation",
+            "insertion",
+            "softclip",
+            "hardclip"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "LGVSyntenySort",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "default": "length",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "position",
+                  "length",
+                  "spliced",
+                  "split",
+                  "svSignal",
+                  "strand",
+                  "basePair",
+                  "tag",
+                  "mapq",
+                  "pairOrientation",
+                  "insertion",
+                  "softclip",
+                  "hardclip"
+                ]
+              }
+            },
+            "pos": {
+              "description": "a column sort's 0-based position.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "refName": {
+              "description": "a column sort's reference sequence.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "tag": {
+              "description": "the SAM tag a tag sort ranks by.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "within": {
+              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LGVSyntenyColor": {
       "title": "LGVSyntenyColor",
       "anyOf": [
@@ -7826,101 +8081,54 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "LGVSyntenySort": {
-      "title": "LGVSyntenySort",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
-          "default": "length",
-          "enum": [
-            "position",
-            "length",
-            "spliced",
-            "split",
-            "svSignal",
-            "strand",
-            "basePair",
-            "tag",
-            "mapq",
-            "pairOrientation",
-            "insertion",
-            "softclip",
-            "hardclip"
-          ],
-          "type": "string"
+    "LGVSyntenyCoverage": {
+      "title": "LGVSyntenyCoverage",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the coverage band.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
-        {
-          "title": "LGVSyntenySort",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "type": {
-              "description": "position, length, spliced, split or svSignal order the whole window; strand, basePair, mapq, pairOrientation, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
-              "default": "length",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "position",
-                  "length",
-                  "spliced",
-                  "split",
-                  "svSignal",
-                  "strand",
-                  "basePair",
-                  "tag",
-                  "mapq",
-                  "pairOrientation",
-                  "insertion",
-                  "softclip",
-                  "hardclip"
-                ]
-              }
-            },
-            "pos": {
-              "description": "a column sort's 0-based position.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            },
-            "refName": {
-              "description": "a column sort's reference sequence.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "tag": {
-              "description": "the SAM tag a tag sort ranks by.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "within": {
-              "description": "how many bases either side of pos an insertion, softclip or hardclip sort still ranks a mark.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "number"
-              }
-            }
+        "height": {
+          "description": "height of the coverage band in pixels.",
+          "default": 45,
+          "if": {
+            "type": "null"
           },
-          "patternProperties": {
-            "^_+comment": {}
+          "else": {
+            "type": "number"
+          }
+        },
+        "showInterbaseIndicators": {
+          "description": "draw the insertion and clip count bars and their indicator triangles.",
+          "default": true,
+          "if": {
+            "type": "null"
           },
-          "additionalProperties": false
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "filter": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CoverageFilter"
+          }
         }
-      ]
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "LGVSyntenyDisplaySlots": {
       "type": "object",
@@ -7946,7 +8154,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
+          "description": "Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.",
           "default": 250,
           "if": {
             "type": "null"
@@ -7955,18 +8163,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "featureHeight": {
-          "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "default": 7,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "heightMode": {
-          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
+          "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`pileup.readHeight\` and scrolls; \`grow\` expands the track to show every read at that height; \`fit\` squeezes reads so every uncollapsed section fills the display without scrolling.",
           "default": "fixed",
           "if": {
             "type": "null"
@@ -7980,7 +8178,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "growMaxHeight": {
-          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
+          "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxHeight).",
           "default": 800,
           "if": {
             "type": "null"
@@ -7989,28 +8187,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "readConnectionsLineWidth": {
-          "description": "Line width for read-connection arcs/lines in pixels.",
-          "default": 1,
+        "unit": {
+          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
+          "default": "read",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "enum": [
+              "read",
+              "chain"
+            ]
           }
         },
-        "showSashimiLabels": {
-          "description": "Draw the supporting-read count on each sashimi arc.",
-          "default": false,
+        "filter": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/ReadFilter"
           }
         },
-        "showNonCanonicalJunctions": {
-          "description": "Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays.",
+        "facet": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/SectionFacet"
+          }
+        },
+        "collapseSections": {
+          "description": "Draw each facet section as a single row rather than a stack.",
           "default": true,
           "if": {
             "type": "null"
@@ -8019,14 +8226,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "maxHeight": {
-          "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "default": 6000,
+        "sort": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/LGVSyntenySort"
           }
         },
         "color": {
@@ -8053,58 +8258,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsModifications"
           }
         },
-        "filter": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/ReadFilter"
-          }
-        },
-        "facet": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/SectionFacet"
-          }
-        },
-        "collapseGroupRows": {
-          "description": "Draw each group as a single row rather than a stack.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "scales": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/Scales"
-          }
-        },
-        "fadeLowQualityMismatches": {
-          "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "fadeLowFrequencyMismatches": {
-          "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "showLegend": {
@@ -8117,239 +8276,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "sort": {
+        "coverage": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/LGVSyntenySort"
+            "$ref": "#/$defs/LGVSyntenyCoverage"
           }
         },
-        "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode).",
+        "pileup": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/Pileup"
           }
         },
-        "unit": {
-          "description": "The unit one row draws: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
-          "default": "read",
+        "sashimi": {
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "read",
-              "chain"
-            ]
-          }
-        },
-        "showBezierConnections": {
-          "description": "Draw paired-read connection curves over the pileup.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showCoverage": {
-          "description": "Draw the coverage histogram band.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showPileup": {
-          "description": "Draw the stacked-read pileup band.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "coverageHeight": {
-          "description": "Height of the coverage band in pixels.",
-          "default": 45,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFrequencyMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showMismatches": {
-          "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showInterbaseIndicators": {
-          "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showInterchrom": {
-          "description": "Draw inter-chromosomal read-connection arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showOrdinaryPairs": {
-          "description": "Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "minInterchromSupport": {
-          "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showLongRange": {
-          "description": "Draw long-range read-connection arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "arcColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsArcColor"
+            "$ref": "#/$defs/Sashimi"
           }
         },
         "readConnections": {
-          "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "default": "off",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": [
-              "off",
-              "arc",
-              "cloud"
-            ]
-          }
-        },
-        "readConnectionsDown": {
-          "description": "Draw read connections below the coverage band. Defaults to on.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showSashimiArcs": {
-          "description": "Draw sashimi (splice-junction) arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "sashimiArcsMode": {
-          "description": "Sashimi junction-arc placement.",
-          "default": "up",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "up",
-              "down",
-              "auto"
-            ]
-          }
-        },
-        "minSashimiScore": {
-          "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "sashimiArcsHeight": {
-          "description": "Height of the sashimi-arc band in pixels.",
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "readConnectionsHeight": {
-          "description": "Height of the read-connection band in pixels.",
-          "default": 35,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showSoftClipping": {
-          "description": "Draw soft-clipped read portions. Defaults to off.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/ReadConnections"
           }
         },
         "lodMode": {
@@ -8461,6 +8417,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "lineWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "featureHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -12783,6 +12747,50 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MafConservation": {
+      "title": "MafConservation",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the conservation band.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the conservation band in pixels.",
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "unit": {
+          "description": "what one bar stands for: base, its percent identity, or codon, its amino-acid identity.",
+          "default": "base",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "base",
+              "codon"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMafDisplaySlots": {
       "type": "object",
       "properties": {
@@ -12939,14 +12947,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showCoverage": {
-          "description": "show the coverage band.",
-          "default": true,
+        "coverage": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/CoverageBand"
           }
         },
         "showAlignments": {
@@ -12959,16 +12965,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "coverageHeight": {
-          "description": "height of the coverage band in px.",
-          "default": 45,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "scales": {
           "if": {
             "type": "null"
@@ -12977,57 +12973,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Scales"
           }
         },
-        "coverageSnpMinFrequency": {
-          "description": "hide a coverage-band allele segment whose share of that position's depth is below this fraction; 0 colors every mismatch.",
-          "default": 0,
+        "conservation": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
-          }
-        },
-        "showInterbaseIndicators": {
-          "description": "draw the coverage band's insertion count bars and indicator triangles.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showConservation": {
-          "description": "show the conservation band.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "conservationHeight": {
-          "description": "height of the conservation band in px.",
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "conservationMode": {
-          "description": "conservation band resolution: base or codon.",
-          "default": "base",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "base",
-              "codon"
-            ]
+            "$ref": "#/$defs/MafConservation"
           }
         },
         "rowIdentityAutoZoom": {
@@ -15208,35 +15159,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "featureHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
-            },
             "heightMode": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/heightMode"
             },
             "growMaxHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/growMaxHeight"
             },
-            "readConnectionsLineWidth": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsLineWidth"
-            },
-            "showSashimiLabels": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSashimiLabels"
-            },
-            "showNonCanonicalJunctions": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showNonCanonicalJunctions"
-            },
-            "maxHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
-            },
-            "color": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/color"
-            },
-            "baseColor": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/baseColor"
-            },
-            "modifications": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
+            "unit": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/unit"
             },
             "filter": {
               "anyOf": [
@@ -15258,8 +15188,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "collapseGroupRows": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseGroupRows"
+            "collapseSections": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseSections"
+            },
+            "sort": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
+            },
+            "color": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/color"
+            },
+            "baseColor": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/baseColor"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
             },
             "scales": {
               "anyOf": [
@@ -15271,12 +15213,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "fadeLowQualityMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowQualityMismatches"
-            },
-            "fadeLowFrequencyMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowFrequencyMismatches"
-            },
             "showLegend": {
               "anyOf": [
                 {
@@ -15287,74 +15223,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "sort": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
+            "coverage": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/coverage"
             },
-            "showOutline": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOutline"
+            "pileup": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileup"
             },
-            "unit": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/unit"
-            },
-            "showBezierConnections": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showBezierConnections"
-            },
-            "showCoverage": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showCoverage"
-            },
-            "showPileup": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showPileup"
-            },
-            "coverageHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/coverageHeight"
-            },
-            "coverageSnpMinFrequency": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/coverageSnpMinFrequency"
-            },
-            "showMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showMismatches"
-            },
-            "showInterbaseIndicators": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterbaseIndicators"
-            },
-            "showInterchrom": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterchrom"
-            },
-            "showOrdinaryPairs": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOrdinaryPairs"
-            },
-            "minInterchromSupport": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minInterchromSupport"
-            },
-            "showLongRange": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showLongRange"
-            },
-            "arcColor": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/arcColor"
+            "sashimi": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
             },
             "readConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
-            },
-            "readConnectionsDown": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsDown"
-            },
-            "showSashimiArcs": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSashimiArcs"
-            },
-            "sashimiArcsMode": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimiArcsMode"
-            },
-            "minSashimiScore": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSashimiScore"
-            },
-            "sashimiArcsHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimiArcsHeight"
-            },
-            "readConnectionsHeight": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnectionsHeight"
-            },
-            "showSoftClipping": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSoftClipping"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -15449,6 +15328,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "lineWidth": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/lineWidth"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
             },
             "hideSmallIndels": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideSmallIndels"
@@ -17879,14 +17764,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "showCoverage": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showCoverage"
+            "coverage": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverage"
             },
             "showAlignments": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAlignments"
-            },
-            "coverageHeight": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverageHeight"
             },
             "scales": {
               "anyOf": [
@@ -17898,20 +17780,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "coverageSnpMinFrequency": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverageSnpMinFrequency"
-            },
-            "showInterbaseIndicators": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInterbaseIndicators"
-            },
-            "showConservation": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showConservation"
-            },
-            "conservationHeight": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservationHeight"
-            },
-            "conservationMode": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservationMode"
+            "conservation": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/conservation"
             },
             "rowIdentityAutoZoom": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityAutoZoom"
@@ -18435,42 +18305,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "featureHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
-            },
             "heightMode": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/heightMode"
             },
             "growMaxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/growMaxHeight"
             },
-            "readConnectionsLineWidth": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsLineWidth"
-            },
-            "showSashimiLabels": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiLabels"
-            },
-            "showNonCanonicalJunctions": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showNonCanonicalJunctions"
-            },
-            "maxHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
-            },
-            "color": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/color"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
-                }
-              ]
-            },
-            "baseColor": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/baseColor"
-            },
-            "modifications": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"
+            "unit": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/unit"
             },
             "filter": {
               "anyOf": [
@@ -18492,8 +18334,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "collapseGroupRows": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseGroupRows"
+            "collapseSections": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseSections"
+            },
+            "sort": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sort"
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/color"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/color"
+                }
+              ]
+            },
+            "baseColor": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/baseColor"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"
             },
             "scales": {
               "anyOf": [
@@ -18504,12 +18365,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/scales"
                 }
               ]
-            },
-            "fadeLowQualityMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowQualityMismatches"
-            },
-            "fadeLowFrequencyMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowFrequencyMismatches"
             },
             "showLegend": {
               "anyOf": [
@@ -18524,74 +18379,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "sort": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sort"
+            "coverage": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverage"
             },
-            "showOutline": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"
+            "pileup": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileup"
             },
-            "unit": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/unit"
-            },
-            "showBezierConnections": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showBezierConnections"
-            },
-            "showCoverage": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showCoverage"
-            },
-            "showPileup": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showPileup"
-            },
-            "coverageHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageHeight"
-            },
-            "coverageSnpMinFrequency": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/coverageSnpMinFrequency"
-            },
-            "showMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showMismatches"
-            },
-            "showInterbaseIndicators": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterbaseIndicators"
-            },
-            "showInterchrom": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterchrom"
-            },
-            "showOrdinaryPairs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOrdinaryPairs"
-            },
-            "minInterchromSupport": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"
-            },
-            "showLongRange": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLongRange"
-            },
-            "arcColor": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColor"
+            "sashimi": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimi"
             },
             "readConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"
-            },
-            "readConnectionsDown": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsDown"
-            },
-            "showSashimiArcs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiArcs"
-            },
-            "sashimiArcsMode": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsMode"
-            },
-            "minSashimiScore": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSashimiScore"
-            },
-            "sashimiArcsHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimiArcsHeight"
-            },
-            "readConnectionsHeight": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnectionsHeight"
-            },
-            "showSoftClipping": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSoftClipping"
             },
             "lodMode": {
               "anyOf": [
@@ -18711,6 +18509,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "lineWidth": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lineWidth"
+            },
+            "featureHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
             },
             "hideSmallIndels": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSmallIndels"

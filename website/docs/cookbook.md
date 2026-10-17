@@ -349,7 +349,7 @@ pass every `jexl:` expression, on variant tracks too:
   "displayDefaults": {
     "height": 400,
     "color": { "field": "mapq" },
-    "showSoftClipping": true,
+    "pileup": { "showSoftClipping": true },
     "facet": { "field": "tags.HP", "domain": ["2", "1"] },
     "filter": {
       "flagExclude": 1540,

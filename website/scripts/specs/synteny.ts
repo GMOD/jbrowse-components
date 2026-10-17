@@ -578,7 +578,7 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
             type: 'LGVSyntenyDisplay',
             facet: 'mateAssembly',
             hideSelfAlignments: true,
-            featureHeight: 14,
+            pileup: { readHeight: 14 },
             height: 135,
           },
         ],
@@ -613,7 +613,7 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
             type: 'LGVSyntenyDisplay',
             facet: 'mateAssembly',
             hideSelfAlignments: true,
-            featureHeight: 14,
+            pileup: { readHeight: 14 },
             height: 135,
           },
           {
@@ -953,15 +953,17 @@ export function ecoliOneVsAllUrl(levelHeight: number) {
                   // is built with `minimap2 -X`, which skips each sequence's
                   // own diagonal — so it is hidden rather than explained away.
                   hideSelfAlignments: true,
-                  // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
-                  // of inter-strain SNPs, each drawn at a 1px floor, painted
-                  // every lane a solid brown-and-purple wall and buried the
-                  // block structure the figure is about.
-                  showMismatches: false,
-                  // Thicker than the default bar: at 3.2kb/px the information
-                  // is the WHITE, and a 3px gap in a 7px bar is not a gap
-                  // anyone sees.
-                  featureHeight: 20,
+                  pileup: {
+                    // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
+                    // of inter-strain SNPs, each drawn at a 1px floor, painted
+                    // every lane a solid brown-and-purple wall and buried the
+                    // block structure the figure is about.
+                    showMismatches: false,
+                    // Thicker than the default bar: at 3.2kb/px the information
+                    // is the WHITE, and a 3px gap in a 7px bar is not a gap
+                    // anyone sees.
+                    readHeight: 20,
+                  },
                   height: 100,
                 },
               ],
@@ -1358,9 +1360,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'LGVSyntenyDisplay',
                 facet: 'mateAssembly',
-                // an anchor block is short at this zoom, and what the figure is
-                // about is which lane has one, so the bars get some thickness
-                featureHeight: 14,
+                pileup: {
+                  // an anchor block is short at this zoom, and what the figure is
+                  // about is which lane has one, so the bars get some thickness
+                  readHeight: 14,
+                },
                 // SIX lanes now, not two (review: "it would be cool if we had
                 // even more plants"). At 90 the last of them was cut off by the
                 // lane's own bottom edge; 200 left 108 px of empty lane under
@@ -3378,10 +3382,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // reviewer read it as missing data. Hidden, the figure is the
                 // four lanes it is actually about.
                 hideSelfAlignments: true,
-                // Same thicker bar as the whole-genome figure below, and for
-                // the same reason: what the reader is asked to find is where a
-                // lane STOPS, and a 7px bar makes that a hairline.
-                featureHeight: 14,
+                pileup: {
+                  // Same thicker bar as the whole-genome figure below, and for
+                  // the same reason: what the reader is asked to find is where a
+                  // lane STOPS, and a 7px bar makes that a hairline.
+                  readHeight: 14,
+                },
                 // One row per strain (the LGVSyntenyDisplay default), so the
                 // track is its five lanes and nothing else. Stacked, four
                 // groups already needed 210px, almost all of it empty: the row
@@ -4094,7 +4100,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // at a big one.
               trackId: 'hg38_to_panTro6_liftOver',
               type: 'LGVSyntenyDisplay',
-              collapseGroupRows: false,
+              collapseSections: false,
               // one row: this window sits inside a single chromosome-scale
               // chain, so the rest of the display would be empty canvas under
               // the menu
@@ -5156,7 +5162,7 @@ export const syntenyVideoFixtures = {
               trackId: 'grape_peach_cacao_blocks',
               type: 'LGVSyntenyDisplay',
               facet: 'mateAssembly',
-              featureHeight: 14,
+              pileup: { readHeight: 14 },
               height: 140,
             },
           ],
@@ -5222,7 +5228,7 @@ export const syntenyVideoFixtures = {
   // `synteny_hg38_hs1_tnnt3` is of, so the clip ends where the page's last two
   // figures start and the ribbon settings section has something to change.
   //
-  // Stacked rather than collapsed (`collapseGroupRows`, which this display
+  // Stacked rather than collapsed (`collapseSections`, which this display
   // defaults to true so an all-vs-all track draws a lane per mate): three chain
   // blocks cover this window and the collapsed row merges them, so a right-click
   // would land on whichever fragment is under the cursor. Stacked, the
@@ -5245,8 +5251,8 @@ export const syntenyVideoFixtures = {
           {
             trackId: 'hg38_to_hs1_liftOver',
             type: 'LGVSyntenyDisplay',
-            collapseGroupRows: false,
-            featureHeight: 14,
+            collapseSections: false,
+            pileup: { readHeight: 14 },
             height: 70,
           },
         ],

@@ -150,8 +150,8 @@ export interface BelowCoverageBandsInput {
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   readConnectionsHeight: number
-  showSashimiArcs: boolean
-  sashimiArcsHeight: number
+  showSashimi: boolean
+  sashimiHeight: number
   // Whether any lane has arc-band ink (`inkGroupKeys`) — the data half of the
   // reserve rule, which `computeStackedSections` applies per lane and this
   // pooled geometry applies across them. Both halves, or the global bottom
@@ -169,11 +169,11 @@ export interface BelowCoverageBandsInput {
 // The single spelling of that rule, read by `belowCoverageBandsGeometry` (global
 // geometry, fit budget) and `computeStackedSections` (per-section stacking).
 function reservesSashimiBand(s: {
-  showSashimiArcs: boolean
+  showSashimi: boolean
   showCoverage: boolean
   hasSashimiDownArcs: boolean
 }) {
-  return s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
+  return s.showSashimi && s.showCoverage && s.hasSashimiDownArcs
 }
 
 // The settings half alone, with neither data half answered. The pooled geometry
@@ -192,7 +192,7 @@ export type BelowCoverageBandsSettings = Omit<
 // grouping routinely leaves lanes with nothing bound for one — the 'Not split'
 // lane has no arc, an unspliced lane no junction — and `computeStackedSections`
 // gives those lanes no strip. Charging them for it withholds
-// `readConnectionsHeight` (or `sashimiArcsHeight`) per arc-less lane from the
+// `readConnectionsHeight` (or `sashimiHeight`) per arc-less lane from the
 // rows and leaves exactly that much dead space at the bottom of a mode whose
 // promise is filling the display.
 export function totalBelowCoverageOverhead(
@@ -218,7 +218,7 @@ export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   const { top, reserved, bottom } = stackBands(BAND_ORDER, {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
     arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
-    sashimi: { active: hasSashimiBand, height: s.sashimiArcsHeight },
+    sashimi: { active: hasSashimiBand, height: s.sashimiHeight },
   })
   return {
     // The coverage band's reserved height, 0 when off — what the render state
@@ -244,8 +244,8 @@ export interface SectionBandOpts {
   readConnections?: ReadConnectionsMode
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
-  showSashimiArcs?: boolean
-  sashimiArcsHeight?: number
+  showSashimi?: boolean
+  sashimiHeight?: number
   // Floor on the distance to the next section's top, so a section shorter than
   // its own label chip still leaves room for it (the chip is anchored at the
   // section top, so without this consecutive chips overlap). Only the stacking
@@ -278,8 +278,8 @@ export function computeStackedSections(
     readConnections: opts.readConnections ?? 'off',
     readConnectionsDown: opts.readConnectionsDown ?? false,
     readConnectionsHeight: opts.readConnectionsHeight ?? 0,
-    showSashimiArcs: opts.showSashimiArcs ?? false,
-    sashimiArcsHeight: opts.sashimiArcsHeight ?? 0,
+    showSashimi: opts.showSashimi ?? false,
+    sashimiHeight: opts.sashimiHeight ?? 0,
   }
   const arcBand = computeArcBand({
     ...settings,

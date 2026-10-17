@@ -118,8 +118,8 @@ test('a section is emitted per lane, and the zip puts each one back on its own l
     readConnectionsDown: false,
     readConnectionsHeight: 0,
     rowHeight: 10,
-    showSashimiArcs: false,
-    sashimiArcsHeight: 0,
+    showSashimi: false,
+    sashimiHeight: 0,
     minSectionHeight: 0,
   })
   expect(sections).toHaveLength(2)

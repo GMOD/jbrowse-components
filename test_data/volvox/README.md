@@ -19,7 +19,7 @@ reasoning; this is the map:
 | group | what                                                           | records | draws as                                                                             |
 | ----- | -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------ |
 | 1     | split-read junction ctgA:20,000 ↔ ctgB:3,000, identical coords | 6 × 2   | **one** arc, support 6 — `arcKey` coalesces on the exact coordinate                  |
-| 2     | mate-pair translocation, ctgA 19,800–19,975 ↔ ctgB 2,900–3,075 | 8 pairs | a fan of 8 arcs; both sides cluster, so it clears `minInterchromSupport: 2`          |
+| 2     | mate-pair translocation, ctgA 19,800–19,975 ↔ ctgB 2,900–3,075 | 8 pairs | a fan of 8 arcs; both sides cluster, so it clears `minInterchromReads: 2`            |
 | 3     | decoy pairs ctgA:20,050–20,070 ↔ ctgB:5,900–5,920              | 3 pairs | 3 **ticks** on ctgA when the ctgB window is 2,500–3,500 — far foot displayed nowhere |
 | 4     | same-chromosome long-range pairs ctgA:20,000 ↔ ctgA:30,000     | 5 pairs | cross-region arcs in a two-ctgA-region view; ordinary long-insert arcs in one        |
 

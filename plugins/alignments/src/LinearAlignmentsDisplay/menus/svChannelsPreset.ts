@@ -3,28 +3,10 @@
 // recipes, which name a figure's arrangement by its menu label. Same reason
 // compactnessPresets.ts is its own module.
 
-import type { Facet } from '../../shared/types.ts'
-import type { ReadConnectionsMode } from '../constants.ts'
-
-/** What the arrangement READS, to decide whether it is in effect. */
-export interface SvChannelsSettings {
-  showPileup: boolean
-  facet: Facet | undefined
-  readConnections: ReadConnectionsMode
-  showOrdinaryPairs: boolean
-}
-
-/**
- * What a preset WRITES, which is not the same shape: the `readConnections` and
- * `showOrdinaryPairs` getters always answer, while their setters also take
- * `undefined`, meaning "back to the slot's default".
- */
-export type SvChannelsWrite = Omit<
-  SvChannelsSettings,
-  'readConnections' | 'showOrdinaryPairs'
-> & {
-  readConnections: ReadConnectionsMode | undefined
-  showOrdinaryPairs: boolean | undefined
+function member(value: unknown, key: string) {
+  return typeof value === 'object' && value !== null
+    ? (value as Record<string, unknown>)[key]
+    : undefined
 }
 
 export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
@@ -34,46 +16,49 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // the preset exists because four of them spread across three menus is not an
 // arrangement anyone finds by looking.
 //
-// `colorBy` is deliberately NOT among them, though the arrangement wrote it
-// until 2026-08-26. With the pileup hidden there are no read fills to paint,
-// and the coverage band reads `colorBy` only under a modification or bisulfite
-// scheme (executeRenderAlignmentData's `modCoverage`). What the
-// read color still reaches is the arcs, through `arcColorField`, so writing
-// it would also have repainted them.
+// `color` is deliberately NOT among them. With the pileup hidden there are no
+// read fills to paint, and the coverage band reads the color only under a
+// modification or bisulfite scheme (executeRenderAlignmentData's
+// `modCoverage`). What the read color still reaches is the arcs, through
+// `readConnectionsColorField`, so writing it would also have repainted them.
 //
-// `readConnectionsDown` is in NEITHER preset, and that is the same statement
-// `isSvChannelsActive` makes by not matching on it: which side of the coverage
-// the arcs hang on is a framing choice the arrangement has no opinion about.
-// Writing it was the read and the write disagreeing — flipping the side kept
-// the row ticked, then leaving and re-entering silently reverted the flip — and
-// on the way out it pinned an explicit `false` over a slot whose unset state
-// resolves to `true`, so a track that had never been near this menu came back
-// drawing its arcs above the coverage band.
-export const SV_CHANNELS_ON: SvChannelsWrite = {
-  showPileup: false,
+// `readConnections.placement` is in NEITHER preset, and that is the same
+// statement `isSvChannelsActive` makes by not matching on it: which side of the
+// coverage the arcs hang on is a framing choice the arrangement has no opinion
+// about. Writing it was the read and the write disagreeing — flipping the side
+// kept the row ticked, then leaving and re-entering silently reverted the flip.
+export const SV_CHANNELS_ON = {
+  pileup: { show: false },
   facet: { field: 'pairOrientation' },
-  readConnections: 'arc',
-  showOrdinaryPairs: false,
-}
+  readConnections: { show: true, mark: 'arc', showOrdinaryPairs: false },
+} as const
 
-// Leaving the arrangement UNSETS what it can unset rather than asserting a
-// state: `readConnections` and `showOrdinaryPairs` go back to inheriting, and
-// `showPileup` to its schema default, which is the closest thing it has.
+// Leaving the arrangement UNSETS what it wrote rather than asserting a state:
+// each member goes back to its default, and `readConnections.mark` stays as
+// it was.
 //
 // It is still not a restore — a tag grouping or a read cloud in place before
 // the row was ticked does not come back, since nothing banks what it displaced.
-export const SV_CHANNELS_OFF: SvChannelsWrite = {
-  showPileup: true,
-  facet: undefined,
-  readConnections: undefined,
-  showOrdinaryPairs: undefined,
-}
+export const SV_CHANNELS_OFF = {
+  pileup: { show: null },
+  facet: null,
+  readConnections: { show: null, showOrdinaryPairs: null },
+} as const
 
-export function isSvChannelsActive(current: SvChannelsSettings) {
+/**
+ * Whether settings in the config's own shape, the display's resolved values or
+ * a figure spec's, are the arrangement. A spec may spell the facet as its field.
+ */
+export function isSvChannelsActive(settings: Record<string, unknown>) {
+  const on = SV_CHANNELS_ON
+  const { facet, pileup, readConnections } = settings
   return (
-    current.showPileup === SV_CHANNELS_ON.showPileup &&
-    current.facet?.field === SV_CHANNELS_ON.facet?.field &&
-    current.readConnections === SV_CHANNELS_ON.readConnections &&
-    current.showOrdinaryPairs === SV_CHANNELS_ON.showOrdinaryPairs
+    member(pileup, 'show') === on.pileup.show &&
+    (typeof facet === 'string' ? facet : member(facet, 'field')) ===
+      on.facet.field &&
+    member(readConnections, 'show') === on.readConnections.show &&
+    member(readConnections, 'mark') === on.readConnections.mark &&
+    member(readConnections, 'showOrdinaryPairs') ===
+      on.readConnections.showOrdinaryPairs
   )
 }

@@ -92,7 +92,7 @@ The foundations:
 ## What changed since v4
 
 - One `LinearAlignmentsDisplay` draws pileup, coverage, read arcs and read cloud
-  as its slots (`readConnections: 'arc'`); `LinearPileupDisplay`,
+  as its bands (`readConnections: { show: true }`); `LinearPileupDisplay`,
   `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and
   `LinearReadCloudDisplay` are aliases of it, not types to `replaceDisplay` to.
 - A view's launch keys go directly on the view object in a spec or a snapshot;
@@ -187,8 +187,8 @@ await view.launchTrack(
 
 A variation the display owns is a setting on it: an alignments track has one
 `LinearAlignmentsDisplay` whose read arcs, read cloud and coverage are slots, so
-arcs are `applyDisplaySettings({ readConnections: 'arc' })` and `describeSlots`
-lists what else it takes.
+arcs are `applyDisplaySettings({ readConnections: { show: true } })` and
+`describeSlots` lists what else it takes.
 
 A display's grammar settings are its plot: `display.plot` lists them by slot
 name, the ones that display declares from one shared vocabulary, and

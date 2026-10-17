@@ -45,7 +45,7 @@ describe('band titles', () => {
   it('names per-base identity when codon mode has no frames to draw from', () => {
     const d = display()
     d.setShowConservation(true)
-    d.setConservationMode('codon')
+    d.setConservationUnit('codon')
     expect(d.codonConservationActive).toBe(false)
     expect(d.bandLabels[1]!.text).toBe('Conservation (% identity)')
   })
@@ -53,7 +53,7 @@ describe('band titles', () => {
   it('names amino-acid identity once the codon band can draw', () => {
     const d = withSamples(display({}))
     d.setShowConservation(true)
-    d.setConservationMode('codon')
+    d.setConservationUnit('codon')
     expect(d.codonConservationActive).toBe(true)
     expect(d.bandLabels[1]!.text).toBe('Conservation (aa identity)')
   })

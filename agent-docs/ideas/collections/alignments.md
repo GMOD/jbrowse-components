@@ -29,7 +29,7 @@ the already-thresholded byte rather than a lerp on it is the other half.
 Undecided: whether this is a default change or a setting. It moves what every
 alignments track shows at zoom-out, so it wants a measurement against the
 real-read fixtures and a golden refresh, and the escape hatch
-(`fadeLowFrequencyMismatches`) already exists to keep the old behaviour reachable.
+(`pileup.fadeLowFrequency`) already exists to keep the old behaviour reachable.
 
 **Auto-detect when to use first-of-pair strand.** The precedents are both in
 hand: sashimi already picks its own settings, and `geneGlyphMode`'s `auto` is the
@@ -56,7 +56,7 @@ already answers "is there a real SNP in this bp range" against the local depth â
 it exists for the hover tooltip at wide bpPerPx â€” so wiring it to a menu item and
 a keyboard shortcut gives variant-to-variant navigation off data already on the
 main thread. Its threshold is the caller's, so this should read the same
-`coverageSnpMinFrequency` the band's colors now do rather than inventing a
+`coverage.filter.minAlleleFraction` the band's colors now do rather than inventing a
 second notion of significant. Bounded by the fetched region, which is the honest
 limit and worth saying in the UI: "next in view", not "next in the genome".
 

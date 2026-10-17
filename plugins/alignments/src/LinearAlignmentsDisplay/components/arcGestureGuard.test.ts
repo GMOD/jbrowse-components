@@ -84,8 +84,8 @@ function setup({ down }: { down: boolean }) {
   const { view, display, session, openedWidgets } =
     createTestAlignmentsDisplay()
   applyView(view, 10, 0)
-  display.setReadConnections('arc')
-  display.setReadConnectionsDown(down)
+  display.setDrawnReadConnections('arc')
+  display.setReadConnectionsPlacement(down ? 'down' : 'up')
   display.setRpcData(
     0,
     {
@@ -164,9 +164,9 @@ function arcPixelOver(
       }
     }
   }
-  t.display.setReadConnections('off')
+  t.display.setDrawnReadConnections('off')
   const found = arcPixels.find(([x, y]) => t.hover(x, y) === underneath)
-  t.display.setReadConnections('arc')
+  t.display.setDrawnReadConnections('arc')
   return found
 }
 
@@ -183,7 +183,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
   // The control, at the same pixel: with arcs off the pileup pipeline answers
   // here, and answers with a mark that has BOTH a widget and a menu. Each
   // assertion below is the negative of one of these.
-  t.display.setReadConnections('off')
+  t.display.setDrawnReadConnections('off')
   expect(t.hover(x, y)).toBe('indicator')
   t.click(x, y)
   expect(t.openedWidgets).toHaveLength(1)
@@ -193,7 +193,7 @@ test('an arc over an interbase bar: the hover names the arc, and so do the other
 
   t.display.closeContextMenu()
   t.openedWidgets.length = 0
-  t.display.setReadConnections('arc')
+  t.display.setDrawnReadConnections('arc')
 
   expect(t.hover(x, y)).toBe('arc')
   t.click(x, y)
@@ -224,12 +224,12 @@ test('clicking an arc with nothing under it keeps the selection', () => {
     end: 1100,
   })
   t.session.setSelection(feature)
-  t.display.setReadConnections('off')
+  t.display.setDrawnReadConnections('off')
   t.click(x, y)
   expect(t.session.selection).toBeUndefined()
 
   t.session.setSelection(feature)
-  t.display.setReadConnections('arc')
+  t.display.setDrawnReadConnections('arc')
   t.click(x, y)
   expect(t.session.selection).toBe(feature)
 })

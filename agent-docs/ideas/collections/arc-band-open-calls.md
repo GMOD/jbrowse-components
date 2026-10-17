@@ -142,7 +142,7 @@ height). Reported from
 use: over a read cloud they are hard to read, because a vertical crossing every
 plotted row looks like it belongs to each of them and belongs to none.
 
-They are not numerous — `minInterchromSupport` drops 98.2% of them, leaving
+They are not numerous — `readConnections.filter.minInterchromReads` drops 98.2% of them, leaving
 about 16 in a 200 kb window at 300x ([DEEP_COVERAGE.md](../../reference/DEEP_COVERAGE.md))
 — so this is about legibility rather than density.
 

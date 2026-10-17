@@ -14,7 +14,7 @@ const twoTracks = recipeOf({
       assembly: 'volvox',
       loc: 'ctgA:1-5000',
       tracks: [
-        { trackId: 'volvox_cram', height: 300, showSoftClipping: true },
+        { trackId: 'volvox_cram', height: 300, pileup: { showSoftClipping: true } },
         { trackId: 'volvox_filtered_vcf', height: 90 },
       ],
     },

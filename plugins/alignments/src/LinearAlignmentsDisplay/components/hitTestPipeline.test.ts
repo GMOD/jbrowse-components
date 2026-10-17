@@ -122,7 +122,7 @@ function opts(
   return {
     state: makeTestRenderState({
       showInterbaseIndicators: true,
-      coverageSnpMinFrequency: 0,
+      coverageMinAlleleFraction: 0,
       pileupTopOffset: 50,
       coverageTopOffset: 0,
       featureHeight: 10,

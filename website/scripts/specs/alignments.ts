@@ -174,18 +174,20 @@ function strandSpecificSpec(): ScreenshotSpec {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
           color,
-          // 120, not the 90 this had: a log axis prints a tick per power of two
-          // rather than three round numbers, and at 90px they overlapped into an
-          // unreadable column down the left of the band
-          coverageHeight: 120,
+          coverage: {
+            // 120, not the 90 this had: a log axis prints a tick per power of two
+            // rather than three round numbers, and at 90px they overlapped into an
+            // unreadable column down the left of the band
+            height: 120,
+          },
+          pileup: { maxHeight: 2000 },
+          sashimi: { filter: { minReads: 3 } },
           // LOG on the coverage band (reviewer). RPL7A is a ribosomal protein
           // running ~100x the surfeit genes beside it, so on a linear axis its
           // exons are the only thing with height and SURF1/SURF2 read as having
           // no expression at all, which is not what the file says.
           scales: { y: { type: 'log' } },
           height: 330,
-          maxHeight: 2000,
-          minSashimiScore: 3,
         },
       ],
     }),
@@ -288,7 +290,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'volvox-long-reads-sv-bam',
           type: 'LinearAlignmentsDisplay',
-          showSoftClipping: true,
+          pileup: { showSoftClipping: true },
         },
       ],
     }),
@@ -349,8 +351,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             {
               trackId: 'volvox_sv_cram_linked',
               type: 'LinearAlignmentsDisplay',
-              readConnections: 'cloud',
-              readConnectionsDown: true,
+              readConnections: {
+                show: true,
+                mark: 'cloud',
+                placement: 'down',
+                height: 100,
+              },
+              coverage: { height: 100 },
               // color the cloud by both insert size and orientation:
               // short-insert pairs always paint pink (overriding orientation,
               // so the insertion-supporting cluster stands out from the grey
@@ -363,8 +370,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // the floating legend keys the insert-size/orientation colors
               // without obscuring the reads
               showLegend: true,
-              coverageHeight: 100,
-              readConnectionsHeight: 100,
               height: 600,
               forceLoad: true,
             },
@@ -512,12 +517,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           forceLoad: true,
           facet: 'strand',
           color: { field: 'strand' },
-          // ~150 reads a strand and each one 1-3 kb against a 3.4 kb window, so
-          // almost every read gets a row of its own: at 2px the two pileups are
-          // ~600px and the bands lose the frame, at 1px they are the strip under
-          // each band that the review asked to keep.
-          featureHeight: 1,
-          coverageHeight: 150,
+          pileup: {
+            // ~150 reads a strand and each one 1-3 kb against a 3.4 kb window, so
+            // almost every read gets a row of its own: at 2px the two pileups are
+            // ~600px and the bands lose the frame, at 1px they are the strip under
+            // each band that the review asked to keep.
+            readHeight: 1,
+          },
+          coverage: { height: 150 },
           height: 700,
         },
       ],
@@ -601,11 +608,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // so the section a band belongs to is readable off the reads
               // themselves rather than only off the group label
               color: { field: 'strand' },
-              // ~12 reads per strand here, so the pileup is short whatever it is
-              // given: at the compact 3px it drew as a solid pink and a solid
-              // purple stripe with no reads in it
-              featureHeight: 9,
-              coverageHeight: 110,
+              pileup: {
+                // ~12 reads per strand here, so the pileup is short whatever it is
+                // given: at the compact 3px it drew as a solid pink and a solid
+                // purple stripe with no reads in it
+                readHeight: 9,
+              },
+              coverage: { height: 110 },
               height: 480,
             },
           ],
@@ -949,10 +958,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // from featureHeight by featureSpacingForHeight (0 at or below 3px,
           // 1 above) and is not a config slot, so the display would drop it.
           type: 'LinearAlignmentsDisplay',
-          showSashimiLabels: true,
-          sashimiArcsMode: 'auto',
+          sashimi: { showCounts: true, placement: 'auto' },
+          pileup: { readHeight: 1 },
           scales: { y: { type: 'log' } },
-          featureHeight: 1,
         },
       ],
     }),
@@ -1439,7 +1447,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'illumina_hg002',
           type: 'LinearAlignmentsDisplay',
-          featureHeight: 3,
+          pileup: { readHeight: 3 },
         },
       ],
     }),
@@ -1567,10 +1575,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          coverageHeight: 120,
+          coverage: { height: 120 },
+          pileup: { maxHeight: 2000 },
+          sashimi: { filter: { minReads: 3 } },
           height: 460,
-          maxHeight: 2000,
-          minSashimiScore: 3,
         },
       ],
     }),
@@ -1597,18 +1605,23 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          featureHeight: 3,
-          maxHeight: 2000,
-          // taller SNPCoverage band + shorter pileup viewport + shorter
-          // browser: coverageHeight is the LinearAlignmentsDisplay
-          // coverage band, the pileup viewport = height - coverageHeight
-          coverageHeight: 120,
+          pileup: { readHeight: 3, maxHeight: 2000 },
+          coverage: {
+            // taller SNPCoverage band + shorter pileup viewport + shorter
+            // browser: coverageHeight is the LinearAlignmentsDisplay
+            // coverage band, the pileup viewport = height - coverageHeight
+            height: 120,
+          },
+          sashimi: {
+            filter: {
+              // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
+              // the spurious forward-strand sashimi arcs are single-/2-read
+              // aligner noise (correct XS-tag strand, just low support). A
+              // min-support of 3 drops the noise, keeps the real junctions.
+              minReads: 3,
+            },
+          },
           height: 420,
-          // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
-          // the spurious forward-strand sashimi arcs are single-/2-read
-          // aligner noise (correct XS-tag strand, just low support). A
-          // min-support of 3 drops the noise, keeps the real junctions.
-          minSashimiScore: 3,
         },
       ],
     }),
@@ -1635,9 +1648,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // super-compact featureHeight=1 so every isoform read
           // stacks in view instead of hitting "Max layout height reached".
           type: 'LinearAlignmentsDisplay',
-          coverageHeight: 120,
+          coverage: { height: 120 },
+          pileup: { readHeight: 1 },
           height: 620,
-          featureHeight: 1,
         },
       ],
     }),
@@ -1671,11 +1684,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          featureHeight: 3,
-          maxHeight: 2000,
-          coverageHeight: 120,
+          pileup: { readHeight: 3, maxHeight: 2000 },
+          coverage: { height: 120 },
+          sashimi: { filter: { minReads: 3 } },
           height: 420,
-          minSashimiScore: 3,
           ...display,
         },
       ],
@@ -1704,7 +1716,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       { suffix: 'all_junctions', display: {} },
       {
         suffix: 'canonical_only',
-        display: { showNonCanonicalJunctions: false },
+        display: {
+          sashimi: { filter: { nonCanonical: 'exclude' } },
+        },
       },
     ] as const
   ).map(({ suffix, display }) => ({
@@ -1719,9 +1733,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
-          featureHeight: 3,
-          maxHeight: 2000,
-          coverageHeight: 160,
+          pileup: { readHeight: 3, maxHeight: 2000 },
+          coverage: { height: 160 },
           height: 380,
           ...display,
         },
@@ -1802,9 +1815,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // at the gene boundary then shows twice — as the fill of the two
           // histograms and as which section the reads are stacked in
           color: { field: 'firstOfPairStrand' },
-          featureHeight: 3,
-          showSashimiArcs: false,
-          coverageHeight: 110,
+          pileup: { readHeight: 3 },
+          sashimi: { show: false },
+          coverage: { height: 110 },
           height: 560,
         },
       ],

@@ -253,7 +253,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     coverageMaxDepth: 9,
     coverageScaleType: 0 as const,
     coverageSymlogConstant: 1,
-    coverageSnpMinFrequency: 0,
+    coverageMinAlleleFraction: 0,
     showMismatches: true,
     fadeLowFrequencyMismatches: false,
     fadeLowQualityMismatches: false,

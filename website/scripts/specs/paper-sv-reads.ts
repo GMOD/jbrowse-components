@@ -43,15 +43,16 @@ const bamTrack = (trackId: string, name: string, uri: string) => ({
 
 const connections = {
   type: 'LinearAlignmentsDisplay',
-  showInterchrom: false,
-  showLongRange: false,
-  coverageHeight: 60,
+  readConnections: {
+    filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
+  },
+  coverage: { height: 60 },
   forceLoad: true,
 }
 
 const illuminaPairs = {
   ...connections,
-  readConnectionsDown: true,
+  readConnections: { ...connections.readConnections, placement: 'down' },
   color: { field: 'insertSizeAndOrientation' },
 }
 
@@ -159,19 +160,24 @@ const readEvidence = ({
           {
             ...connections,
             trackId: HIFI_COV,
-            showPileup: false,
+            pileup: { show: false },
             height: 62,
           },
           {
             ...connections,
             trackId: HIFI,
-            showCoverage: false,
+            coverage: { ...connections.coverage, show: false },
+            readConnections: {
+              ...connections.readConnections,
+              show: true,
+              height: 60,
+            },
+            pileup: {
+              // rows tall enough to show each maps-back loop
+              readHeight: connectorCurves ? 6 : 3,
+              showConnectors: connectorCurves,
+            },
             unit: 'chain',
-            readConnections: 'arc',
-            readConnectionsHeight: 60,
-            // rows tall enough to show each maps-back loop
-            featureHeight: connectorCurves ? 6 : 3,
-            showBezierConnections: connectorCurves,
             height: connectorCurves ? 345 : 195,
             facet: 'split',
             showLegend: true,
@@ -179,9 +185,12 @@ const readEvidence = ({
           {
             ...illuminaPairs,
             trackId: ILLUMINA_ARCS,
-            showPileup: false,
-            readConnections: 'arc',
-            readConnectionsHeight: arcsHeight,
+            pileup: { show: false },
+            readConnections: {
+              ...illuminaPairs.readConnections,
+              show: true,
+              height: arcsHeight,
+            },
             ...(coverageMax
               ? { scales: { y: { domainMax: coverageMax } } }
               : {}),
@@ -190,11 +199,15 @@ const readEvidence = ({
           {
             ...illuminaPairs,
             trackId: ILLUMINA_PAIRS,
-            showPileup: false,
-            showCoverage: false,
-            readConnections: 'cloud',
-            showOrdinaryPairs: true,
-            readConnectionsHeight: 200,
+            pileup: { show: false },
+            coverage: { ...illuminaPairs.coverage, show: false },
+            readConnections: {
+              ...illuminaPairs.readConnections,
+              show: true,
+              mark: 'cloud',
+              showOrdinaryPairs: true,
+              height: 200,
+            },
             height: 215,
             showLegend: true,
           },

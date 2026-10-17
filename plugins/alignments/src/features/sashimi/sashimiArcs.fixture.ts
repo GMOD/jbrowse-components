@@ -8,14 +8,14 @@ import { visibleRegionJunctions } from './computeOverlay.ts'
 import { mergeJunctions } from './junctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
+import type { SashimiFilter } from '../../shared/types.ts'
 import type { RegionInfo } from '../arcs/arcTypes.ts'
-import type { JunctionFilter } from './junctions.ts'
 
 export interface TestDisplayedRegion extends RegionInfo {
   reversed?: boolean
 }
 
-export interface ComputeSashimiArcsOpts extends JunctionFilter {
+export interface ComputeSashimiArcsOpts extends SashimiFilter {
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>
   visibleRegions: {
     refName: string
@@ -28,7 +28,7 @@ export interface ComputeSashimiArcsOpts extends JunctionFilter {
   displayed?: TestDisplayedRegion[]
   viewWidthPx: number
   coverageHeight: number
-  sashimiArcsHeight: number
+  sashimiHeight: number
   downJunctionKeys: ReadonlySet<string>
 }
 
@@ -79,7 +79,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     canvasWidth: opts.viewWidthPx,
     canvasHeight: 400,
     coverageHeight: opts.coverageHeight,
-    sashimiArcsHeight: opts.sashimiArcsHeight,
+    sashimiHeight: opts.sashimiHeight,
     linkRegions: linkRegionsOf(displayed),
     sections: [
       {

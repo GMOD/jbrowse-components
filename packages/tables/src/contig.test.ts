@@ -38,15 +38,16 @@ test('a region on a contig the file lacks reads empty and names the contigs it h
 test('an alignments table reports the settings its bands are composed from', async () => {
   const t = await engine.alignments({
     ...BAM,
-    display: { showCoverage: false, minSashimiScore: 5, featureHeight: 3 },
+    display: {
+      coverage: { show: false },
+      sashimi: { filter: { minReads: 5 } },
+      pileup: { readHeight: 3 },
+    },
   })
   expect(t.settings).toMatchObject({
-    showCoverage: false,
-    showPileup: true,
-    minSashimiScore: 5,
-    fadeLowFrequencyMismatches: true,
-    featureHeight: 3,
-    coverageHeight: 45,
-    sashimiArcsHeight: 40,
+    coverage: { show: false, height: 45 },
+    pileup: { show: true, fadeLowFrequency: true, readHeight: 3 },
+    sashimi: { height: 40, filter: { minReads: 5 } },
+    readConnections: { show: false, mark: 'arc' },
   })
 })

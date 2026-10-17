@@ -16,7 +16,7 @@ afterEach(cleanup)
 // Only the fields "Show..." reads.
 function makeModel(
   overrides?: Partial<{
-    canCollapseGroupRows: boolean
+    canCollapseSections: boolean
     showCoverage: boolean
     unit: AlignmentsUnit
   }>,
@@ -35,11 +35,11 @@ function makeModel(
     unit: 'read' as AlignmentsUnit,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
-    fadeLowQualityMismatches: false,
-    setFadeLowQualityMismatches: jest.fn(),
-    canCollapseGroupRows: false,
-    collapseGroupRows: false,
-    setCollapseGroupRows: jest.fn(),
+    fadeLowQuality: false,
+    setFadeLowQuality: jest.fn(),
+    canCollapseSections: false,
+    collapseSections: false,
+    setCollapseSections: jest.fn(),
     hiddenGroups: new Set<string>(),
     showAllGroups: jest.fn(),
     ...overrides,
@@ -76,7 +76,7 @@ function renderRows(items: MenuItem[]) {
 // reverted; the row cap moved to "Read height" instead. A new row that isn't a
 // checkbox belongs in another menu, and this fails if one lands.
 test('every row is a checkbox — no actions, headers or dividers', () => {
-  for (const item of subMenuOf(makeModel({ canCollapseGroupRows: true }))) {
+  for (const item of subMenuOf(makeModel({ canCollapseSections: true }))) {
     expect(item.type).toBe('checkbox')
   }
 })

@@ -244,7 +244,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   ) {
     // The setting first: this runs ahead of `performHitTest` on every hover
     // frame, so a display with the band off must not pay for it.
-    if (model.readConnections === 'off' || !view.initialized) {
+    if (model.drawnReadConnections === 'off' || !view.initialized) {
       return undefined
     }
     const { arcBand } = sec
@@ -278,13 +278,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               // same setting `resolveArcs` branches on, so the sentence the
               // hover prints and the rule that produced the tick cannot
               // disagree.
-              model.readConnections !== 'cloud',
+              model.drawnReadConnections !== 'cloud',
             )
           : formatArcTooltip(
               hit,
               refName,
               model.arcCategoryLabel(
-                arcSlotCategory(hit.colorType, model.arcColorField),
+                arcSlotCategory(hit.colorType, model.readConnectionsColorField),
               ),
               hit.endRefName,
             ),

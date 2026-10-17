@@ -12,7 +12,7 @@
 // loaded region for the layout, a screen-space one over the visible ones for the
 // geometry — that were only *argued* to agree ("it only ever over-reserves").
 // Nothing enforced it, and under-reservation is the bad direction: the down
-// sub-band renders at `sashimiArcsHeight` whether or not the layout reserved it,
+// sub-band renders at `sashimiHeight` whether or not the layout reserved it,
 // so an arc sent down into an unreserved strip paints over the top of the
 // pileup. One decision, read by both, cannot disagree with itself.
 //
@@ -21,6 +21,7 @@
 // screen-space assignment would decide, and it doesn't flip an arc between bands
 // as regions scroll in and out of view.
 
+import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
   classifyEncodedSpliceMotif,
   DINUCLEOTIDE_UNKNOWN,
@@ -29,13 +30,14 @@ import {
 } from './motif.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
+import type { SashimiFilter } from '../../shared/types.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
 // below (the display imports it via constants.ts): 'up' draws every arc over the
 // coverage band, 'down' in the reserved strip below it, 'auto' splits each
 // junction to minimize crossings.
-export const SASHIMI_ARCS_MODES = ['up', 'down', 'auto'] as const
-export type SashimiArcsMode = (typeof SASHIMI_ARCS_MODES)[number]
+export const SASHIMI_PLACEMENTS = ['up', 'down', 'auto'] as const
+export type SashimiPlacement = (typeof SASHIMI_PLACEMENTS)[number]
 
 // A junction's identity, and the ONE spelling of it. The layout's side
 // assignment and the geometry's cross-region merge both key on this, so a
@@ -91,15 +93,6 @@ function junctionStrand(fwd: number, rev: number, motif: number) {
       : fwd === 0
         ? spliceMotifStrand(motif)
         : 0
-}
-
-// What the merge drops: junctions under the read-support floor, and — when the
-// display asks — the ones whose splice motif is none of GT-AG / GC-AG / AT-AC.
-// A junction whose motif was never looked up is kept either way; only a known
-// non-canonical motif is evidence against it.
-export interface JunctionFilter {
-  minSashimiScore: number
-  showNonCanonicalJunctions: boolean
 }
 
 // The sashimi slice of a worker result. Narrowed to what the merge reads so the
@@ -207,11 +200,13 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
   return out
 }
 
+// What the merge drops: junctions under the read-support floor, and those the
+// `nonCanonical` category filters, a junction's motif being non-canonical only
+// where it is known to be none of GT-AG / GC-AG / AT-AC.
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
-  filter: JunctionFilter,
+  { minReads, nonCanonical }: SashimiFilter,
 ) {
-  const { minSashimiScore, showNonCanonicalJunctions } = filter
   const out = new Map<string, MergedJunction>()
   for (const {
     key,
@@ -226,8 +221,8 @@ export function mergeJunctions(
   } of accumulateJunctions(regions).values()) {
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
     if (
-      count >= minSashimiScore &&
-      (showNonCanonicalJunctions || !isNonCanonicalSpliceMotif(motif))
+      count >= minReads &&
+      passesCategory(isNonCanonicalSpliceMotif(motif), nonCanonical)
     ) {
       out.set(key, {
         key,
@@ -307,19 +302,19 @@ function byRefName(junctions: Iterable<MergedJunction>) {
 
 const NO_DOWN_KEYS: ReadonlySet<string> = new Set()
 
-// Which of these junctions the current mode sends to the strip below coverage,
+// Which of these junctions the placement sends to the strip below coverage,
 // as a set of `junctionKey`s. 'up' sends none (and allocates nothing — it is the
 // default), 'down' sends all, 'auto' runs the greedy 2-coloring per chromosome.
 // The set being non-empty is exactly "this lane needs the strip reserved".
 export function downJunctionKeys(
   junctions: Iterable<MergedJunction>,
-  mode: SashimiArcsMode,
+  placement: SashimiPlacement,
 ): ReadonlySet<string> {
-  if (mode === 'up') {
+  if (placement === 'up') {
     return NO_DOWN_KEYS
   }
   const out = new Set<string>()
-  if (mode === 'down') {
+  if (placement === 'down') {
     for (const j of junctions) {
       out.add(j.key)
     }

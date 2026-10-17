@@ -15,55 +15,58 @@ export {
 export type { InsertionType } from '@jbrowse/alignments-core'
 
 // What one pileup row stands for: a read, or a chain of a read's mate and
-// split segments joined by QNAME. Bezier connection curves are the orthogonal
-// `showBezierConnections` flag and draw over either unit.
+// split segments joined by QNAME. Curved connectors are the orthogonal
+// `pileup.showConnectors` and draw over either unit.
 export const ALIGNMENTS_UNITS = ['read', 'chain'] as const
 export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
-// How read connections (mate pairs + split/chimeric reads) are rendered.
-// Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
-// 'cloud' (read cloud) draws flat lines at Y=|tlen|, the modal pairs left out
-// unless `showOrdinaryPairs` keeps them.
-// Both color by `arcColorField` (red/green/teal/navy by insert size + orientation).
-// One list for the schema enumeration and the "Connection overlay" radio
-// group, so the menu cannot offer a mode the slot refuses. The members are
-// mutually exclusive by construction — arcs and the read cloud share one band
-// and the cloud repurposes its Y axis to |tlen| — which is why this is a radio
-// and not two checkboxes over one slot.
+// The two marks the read-connection band draws (`readConnections.mark`): 'arc'
+// rises with the span between its ends, and 'cloud' draws a flat line at
+// Y=|tlen|, the modal pairs left out unless `showOrdinaryPairs` keeps them.
+// Both color by `readConnections.color`. They share one band and the cloud
+// repurposes its Y axis, so they are one choice rather than two switches.
+export const READ_CONNECTIONS_MARKS = ['arc', 'cloud'] as const
+export type ReadConnectionsMark = (typeof READ_CONNECTIONS_MARKS)[number]
+
+// What the band draws, as the model's `drawnReadConnections` answers it: a
+// mark, or 'off' while `readConnections.show` is. The rows of the "Connection
+// overlay" radio, which writes `show` and `mark` together.
 export const READ_CONNECTIONS_OPTIONS = [
   { value: 'off', label: 'None' },
   { value: 'arc', label: 'Read arcs' },
   { value: 'cloud', label: 'Read cloud' },
 ] as const
-export const READ_CONNECTIONS_MODES = READ_CONNECTIONS_OPTIONS.map(o => o.value)
 export type ReadConnectionsMode =
   (typeof READ_CONNECTIONS_OPTIONS)[number]['value']
 
-// Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
-// paired-end `readConnectionsDown`). Defined next to the side-assignment
-// algorithm it selects and re-exported here for the display-layer model and
-// menus. 'up' is the default. `readConnectionsDown` answers the same question
-// for the read connections, and stays a boolean: one enum for both was
-// declined on 2026-10-16, since 'auto' has no meaning there and the rename
-// would move no picture.
+// Which side of the coverage band a layer draws on (`sashimi.placement`,
+// `readConnections.placement`): up over it, or down in a band below it. Each
+// layer holds its own setting, and only sashimi has 'auto',
+// which sends a junction down where it would cross another; arcs have no such
+// side assignment, so one shared enum would offer them a value that means
+// nothing. Sashimi's list sits beside the side-assignment algorithm it selects.
+export const READ_CONNECTIONS_PLACEMENTS = ['up', 'down'] as const
+export type ReadConnectionsPlacement =
+  (typeof READ_CONNECTIONS_PLACEMENTS)[number]
 export {
-  SASHIMI_ARCS_MODES,
-  type SashimiArcsMode,
+  SASHIMI_PLACEMENTS,
+  type SashimiPlacement,
 } from '../features/sashimi/junctions.ts'
 
 // Default supporting-read floor for a sashimi junction: hide single-read
 // junctions, which are dominated by alignment noise and unreadable at the 1px
 // stroke `strokeWidthForCount` floors them to. Lets the menu's reset/is-default
-// check name the default instead of hardcoding a bare 2. Must match the
-// `minSashimiScore` slot default in configSchema.ts, which spells the same
-// number as a literal so the config docgen can render it (it reads the AST
-// node's source text, so a reference here would publish as the identifier).
-export const DEFAULT_MIN_SASHIMI_SCORE = 2
+// check name the default instead of hardcoding a bare 2. Must match
+// `sashimi.filter.minReads`' default in sashimiFilterConfigSchema.ts, which spells
+// the same number as a literal so the config docgen can render it (it reads the
+// AST node's source text, so a reference here would publish as the identifier).
+export const DEFAULT_MIN_SASHIMI_READS = 2
 
 // Default reads a translocation breakpoint must gather before its connector
 // ticks are drawn. Same shape and the same reason as the sashimi floor above —
 // single-read marks are dominated by mismapping — and spelled as a literal in
-// `configSchema.ts` for the same docgen reason. Keep the two in step.
+// `readConnectionsFilterConfigSchema.ts` for the same docgen reason. Keep the
+// two in step.
 //
 // What differs is how the reads are COUNTED: over a window of one fragment
 // length on both sides rather than at a coordinate, since a mate pair straddles
@@ -72,7 +75,7 @@ export const DEFAULT_MIN_SASHIMI_SCORE = 2
 // one read, and widening the window from 0 to 2 kb merged only five clusters —
 // so they are scattered rather than badly keyed, which is what makes them
 // droppable.
-export const DEFAULT_MIN_INTERCHROM_SUPPORT = 2
+export const DEFAULT_MIN_INTERCHROM_READS = 2
 
 // Whether a point feature (mismatch / small insertion) may intercept a
 // click/hover. Clickable when zoomed to base level (bpPerPx <= 1), when

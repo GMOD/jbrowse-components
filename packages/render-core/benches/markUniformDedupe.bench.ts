@@ -282,7 +282,7 @@ const COV_STATE: CovState = {
     domainMax: 87,
     scaleType: 0,
     symlogConstant: 1,
-    snpMinFrequency: 0,
+    minAlleleFraction: 0,
     showInterbase: true,
     colors: {
       coverage: 0xff888888,

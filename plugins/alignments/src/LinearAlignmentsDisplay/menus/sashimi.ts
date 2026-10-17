@@ -2,42 +2,39 @@ import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
-import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
+import { DEFAULT_MIN_SASHIMI_READS } from '../constants.ts'
+import { categoryFilterItem } from './categoryFilterItem.ts'
 
-import type { SashimiArcsMode } from '../constants.ts'
+import type { SashimiFilter } from '../../shared/types.ts'
+import type { SashimiPlacement } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
-  { value: 'auto', label: 'Auto (minimize overlap)' },
-  { value: 'up', label: 'Above coverage' },
-  { value: 'down', label: 'Below coverage' },
-]
+const SASHIMI_PLACEMENT_OPTIONS: { value: SashimiPlacement; label: string }[] =
+  [
+    { value: 'auto', label: 'Auto (minimize overlap)' },
+    { value: 'up', label: 'Above coverage' },
+    { value: 'down', label: 'Below coverage' },
+  ]
 
 interface SashimiModel {
   showCoverage: boolean
-  showSashimiArcs: boolean
-  setShowSashimiArcs: (show: boolean) => void
-  showSashimiLabels: boolean
-  setShowSashimiLabels: (show: boolean) => void
-  sashimiArcsMode: SashimiArcsMode
-  setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  minSashimiScore: number
-  setMinSashimiScore: (score: number) => void
-  showNonCanonicalJunctions: boolean
-  setShowNonCanonicalJunctions: (show: boolean) => void
+  showSashimi: boolean
+  setShowSashimi: (show: boolean) => void
+  showSashimiCounts: boolean
+  setShowSashimiCounts: (show: boolean) => void
+  sashimiPlacement: SashimiPlacement
+  setSashimiPlacement: (placement: SashimiPlacement) => void
+  sashimiFilter: SashimiFilter
+  setSashimiFilter: (patch: Partial<SashimiFilter>) => void
 }
 
-// All sashimi (splice-junction arc) controls in one place. The labels,
-// placement, and filter options tune what's already drawn, so they're revealed
+// All sashimi (splice-junction arc) controls in one place. The counts,
+// placement and filter options tune what's already drawn, so they're revealed
 // only when the arcs are on (never shown disabled).
 //
-// ARITY ORDERS THE REVEALED ROWS — the checkboxes, then the choice, then the
+// ARITY ORDERS THE REVEALED ROWS — the checkboxes, then the choices, then the
 // value — so the row shape changes once down the menu rather than flickering,
-// the rule the synteny and dotplot settings menus already follow. It puts the
-// two filters (the non-canonical toggle and the read-support floor) at opposite
-// ends of the menu on purpose: five rows do not earn the section headings that
-// would let subject group them, and a lone submenu between two checkboxes reads
-// as a mis-set row.
+// the rule the synteny and dotplot settings menus already follow.
 //
 // The floor is a submenu holding its slider (`makeSizeSubMenu`) for the same
 // reason. Drawn inline it is a two-line block carrying a widget no other row
@@ -57,9 +54,9 @@ export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
     toggleItem(
       'Show sashimi arcs',
-      model.showSashimiArcs,
+      model.showSashimi,
       show => {
-        model.setShowSashimiArcs(show)
+        model.setShowSashimi(show)
       },
       model.showCoverage
         ? undefined
@@ -69,29 +66,34 @@ export function getSashimiMenuItem(model: SashimiModel) {
               'Sashimi arcs are drawn in the coverage band — turn on Show... → Coverage first',
           },
     ),
-    ...(model.showSashimiArcs
+    ...(model.showSashimi
       ? [
-          toggleItem('Show labels', model.showSashimiLabels, show => {
-            model.setShowSashimiLabels(show)
+          toggleItem('Show read counts', model.showSashimiCounts, show => {
+            model.setShowSashimiCounts(show)
           }),
-          toggleItem(
-            'Hide non-canonical junctions',
-            !model.showNonCanonicalJunctions,
-            hide => {
-              model.setShowNonCanonicalJunctions(!hide)
-            },
-          ),
           {
             label: 'Arc placement',
             type: 'subMenu' as const,
             subMenu: radioItems(
-              SASHIMI_MODE_OPTIONS,
-              model.sashimiArcsMode,
-              mode => {
-                model.setSashimiArcsMode(mode)
+              SASHIMI_PLACEMENT_OPTIONS,
+              model.sashimiPlacement,
+              placement => {
+                model.setSashimiPlacement(placement)
               },
             ),
           },
+          categoryFilterItem(
+            {
+              noun: 'Non-canonical junctions',
+              all: 'All junctions',
+              only: 'Only non-canonical junctions',
+              exclude: 'Hide non-canonical junctions',
+            },
+            model.sashimiFilter.nonCanonical,
+            nonCanonical => {
+              model.setSashimiFilter({ nonCanonical })
+            },
+          ),
           makeSizeSubMenu({
             label: 'Min read support',
             title: 'Min read support',
@@ -104,13 +106,14 @@ export function getSashimiMenuItem(model: SashimiModel) {
             min: 1,
             max: 10_000,
             format: n => `${n}`,
-            getValue: () => model.minSashimiScore,
-            isDefault: model.minSashimiScore === DEFAULT_MIN_SASHIMI_SCORE,
-            onChange: score => {
-              model.setMinSashimiScore(score)
+            getValue: () => model.sashimiFilter.minReads,
+            isDefault:
+              model.sashimiFilter.minReads === DEFAULT_MIN_SASHIMI_READS,
+            onChange: minReads => {
+              model.setSashimiFilter({ minReads })
             },
             onReset: () => {
-              model.setMinSashimiScore(DEFAULT_MIN_SASHIMI_SCORE)
+              model.setSashimiFilter({ minReads: DEFAULT_MIN_SASHIMI_READS })
             },
           }),
         ]

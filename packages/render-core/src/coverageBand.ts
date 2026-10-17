@@ -164,7 +164,7 @@ export interface CoverageBandUniformValues {
   binSize: number
   /** `interbaseBarHeightPx` — the one rule the draw, the hit test and this share. */
   interbaseHeight: number
-  snpMinFrequency: number
+  minAlleleFraction: number
   colors: CoverageBandColors
 }
 
@@ -198,7 +198,7 @@ export function writeCoverageBandUniforms(
     coverageSymlogConstant: v.symlogConstant,
     binSize: v.binSize,
     interbaseHeight: v.interbaseHeight,
-    snpMinFreq: v.snpMinFrequency,
+    snpMinFreq: v.minAlleleFraction,
     reversed: v.reversed ? 1 : 0,
     coverageScaleType: v.scaleType,
     colorCoverage: colors.coverage,

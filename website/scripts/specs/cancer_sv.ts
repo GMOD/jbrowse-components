@@ -38,7 +38,7 @@ const SV = 'COLO829_somatic_sv'
 // panel shows a dozen rows out of that; the reads carrying the junction are
 // below the fold. One row per pixel puts the whole pileup in frame, which is
 // what makes the wall of clipping legible as a wall.
-const SUPER_COMPACT = { featureHeight: 1 }
+const SUPER_COMPACT = { readHeight: 1 }
 
 // Both COLO829 ONT pileups sit above the byte gate at every window this
 // tutorial uses: over 3.4 kb the tumour CRAM's containers estimate 7.45 Mb and
@@ -111,7 +111,7 @@ const MULTIHOP_GENE_HEIGHT = 70
 // The review's other idea, filtering to split reads by grouping on the SA tag,
 // is already what `filterBy: { split: 'only' }` does one line down, and it is why
 // the set is 250 rows rather than 600x of coverage.
-const SPLIT_READS = { featureHeight: 4 }
+const SPLIT_READS = { readHeight: 4 }
 
 // The 29 reads realigned to the derivative used to share one row height across
 // the three figures that draw them. They no longer do, and the reason is that
@@ -281,7 +281,16 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   const BREAKPOINT_READS = {
     trackId: TUMOUR,
     ...DEEP_ONT,
-    showSoftClipping: true,
+    pileup: {
+      showSoftClipping: true,
+      // 2px rows, not the 1px SUPER_COMPACT the other cancer_sv pileups take: at
+      // 1px a read is a hairline and the rows fuse into a grey slab with white
+      // streaks where the pack happens to leave a gap, which reads as a rendering
+      // fault rather than as a pileup (reviewer: "captured a very weird glitch").
+      // 2px still fits every row in the panel here, since this window is 380bp
+      // rather than the 3.4kb the other two draw.
+      readHeight: 2,
+    },
     // ONLY THE SPLIT READS, which is what the panel is about and what fixes
     // the second glitch report ("this is potentially showing some weird
     // glitchy lines in figure 1 on left"). Those lines were the bezier
@@ -294,13 +303,6 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     // this pane exists to show -- and every connector then starts and ends on
     // a row a reader can see.
     filterBy: { split: 'only' },
-    // 2px rows, not the 1px SUPER_COMPACT the other cancer_sv pileups take: at
-    // 1px a read is a hairline and the rows fuse into a grey slab with white
-    // streaks where the pack happens to leave a gap, which reads as a rendering
-    // fault rather than as a pileup (reviewer: "captured a very weird glitch").
-    // 2px still fits every row in the panel here, since this window is 380bp
-    // rather than the 3.4kb the other two draw.
-    featureHeight: 2,
   }
   return [
     {
@@ -429,23 +431,25 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           {
             trackId: 'reads_vs_der3',
             type: 'LinearAlignmentsDisplay',
-            showSoftClipping: true,
-            // 29 reads rather than 200, so they get a row an order of magnitude
-            // taller than the reference pane's and the pane fills with 380 bp
-            // of pileup
-            // EVERY ROW, and the row count is 43, not the 29 an older note
-            // here asserted. 29 is the number of reads spanning ALL FOUR
-            // junctions, which the tutorial's prose is about; what this 380 bp
-            // window draws is every read overlapping it, and
-            // `samtools view -c ... der3_RARB_BICC1_TRHDE:32545-32925` says 43
-            // (69 in the whole BAM). Pitch is `featureHeight + 1` above 3px
-            // (featureSpacingForHeight), so 43 rows need 387 px and the 425 px
-            // this track has left over its coverage band fits them with room.
-            // At 11 they overflowed and the pileup ended on a scrollbar, which
-            // is the "pileup that stops" failure this number exists to avoid --
-            // and neither size report catches it, because the overflow is
-            // inside a track.
-            featureHeight: 8,
+            pileup: {
+              showSoftClipping: true,
+              // 29 reads rather than 200, so they get a row an order of magnitude
+              // taller than the reference pane's and the pane fills with 380 bp
+              // of pileup
+              // EVERY ROW, and the row count is 43, not the 29 an older note
+              // here asserted. 29 is the number of reads spanning ALL FOUR
+              // junctions, which the tutorial's prose is about; what this 380 bp
+              // window draws is every read overlapping it, and
+              // `samtools view -c ... der3_RARB_BICC1_TRHDE:32545-32925` says 43
+              // (69 in the whole BAM). Pitch is `featureHeight + 1` above 3px
+              // (featureSpacingForHeight), so 43 rows need 387 px and the 425 px
+              // this track has left over its coverage band fits them with room.
+              // At 11 they overflowed and the pileup ended on a scrollbar, which
+              // is the "pileup that stops" failure this number exists to avoid --
+              // and neither size report catches it, because the overflow is
+              // inside a track.
+              readHeight: 8,
+            },
             height: 470,
           },
         ],
@@ -529,16 +533,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: TUMOUR,
           ...DEEP_ONT,
-          showSoftClipping: true,
+          pileup: { showSoftClipping: true, readHeight: 2 },
           height: 470,
-          featureHeight: 2,
         },
         {
           trackId: NORMAL,
           ...DEEP_ONT,
-          showSoftClipping: true,
+          pileup: { showSoftClipping: true, readHeight: 2 },
           height: 215,
-          featureHeight: 2,
         },
       ],
     }),
@@ -584,9 +586,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               {
                 trackId: TUMOUR,
                 ...DEEP_ONT,
-                showSoftClipping: true,
+                pileup: { ...SUPER_COMPACT, showSoftClipping: true },
                 height: 160,
-                ...SUPER_COMPACT,
               },
             ],
           })),
@@ -682,13 +683,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filterBy: { split: 'only' },
                   unit: 'chain',
-                  showBezierConnections: true,
+                  pileup: { showConnectors: true, readHeight: 3 },
+                  coverage: { height: 30 },
+                  readConnections: { show: true, height: 110 },
                   heightMode: 'grow',
                   height: 200,
-                  coverageHeight: 30,
-                  featureHeight: 3,
-                  readConnections: 'arc',
-                  readConnectionsHeight: 110,
                   showLegend: true,
                 },
               ],
@@ -827,11 +826,61 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   filterBy: { split: 'only' },
                   unit: 'chain',
-                  // Chain mode alone joins only the pieces that straddle two
-                  // panels (`bezierArcScope` 'crossRegion'); this adds the
-                  // inverted and hidden-segment joins inside one panel, as on
-                  // the sibling lane on derivative_synteny.
-                  showBezierConnections: true,
+                  pileup: {
+                    // Chain mode alone joins only the pieces that straddle two
+                    // panels (`bezierArcScope` 'crossRegion'); this adds the
+                    // inverted and hidden-segment joins inside one panel, as on
+                    // the sibling lane on derivative_synteny.
+                    showConnectors: true,
+                    readHeight: 5,
+                  },
+                  coverage: {
+                    // A BAND OVER THE SPLIT SUBSET, which is what this lane is
+                    // and what the band therefore has to be read as.
+                    // `split: 'only'` filters in the worker
+                    // (`filterChainFeatures`), before partitioning and therefore
+                    // before `runCoveragePipeline`, so the depth here counts only
+                    // the chimeric reads drawn under it and is NOT tumour
+                    // coverage. That is why it used to be off, and what changes
+                    // it is the wider window above: the profile now steps down
+                    // twice on chr3 -- once where the inverted arm stops
+                    // contributing at 25,359,111, then to nothing at the junction
+                    // at 25,359,568 -- and holds at nothing across the reference
+                    // the allele abandons. The ragged right edge of a pileup says
+                    // that once; a profile says it as a height, in each of the
+                    // three windows at the same time.
+                    //
+                    // The der3 lane's band below is unfiltered realigned depth,
+                    // so the two are NOT comparable as numbers and nothing in the
+                    // frame could say so -- the caption names this lane as split
+                    // alignments only for that reason.
+                    show: true,
+                    height: 40,
+                  },
+                  readConnections: {
+                    // THE THREE JUNCTIONS AS COUNTED ARCS (review: "please add
+                    // readconnections arcs to this figure"), which this figure
+                    // could not have before: an inter-chromosomal connection drew
+                    // as two ticks until both-feet-on-screen arcs landed, and all
+                    // three of this allele's junctions have both feet in these
+                    // three panels -- chr3:25,359,568 into chr10:58,717,463, chr10
+                    // into chr12:72,273,111, and chr12 back into the inverted chr3
+                    // arm at 25,352,683.
+                    //
+                    // A connector per molecule shows each junction is real and
+                    // cannot weigh them against each other, because 28
+                    // near-identical connectors and 3 look alike. The band
+                    // coalesces each junction into one mark whose stroke width is
+                    // its support, so the three junctions of one allele are
+                    // comparable at a glance. The per-molecule connectors stay,
+                    // since they show a single read running through all three.
+                    //
+                    // Default band height rather than a chosen one, as on
+                    // k562_bcr_abl_split: three arcs is not a pile-up, and the
+                    // band is under the coverage profile where it has the whole
+                    // strip to itself.
+                    show: true,
+                  },
                   // NOT super-compact, unlike every other pileup in this
                   // tutorial, and the connectors above are the whole reason
                   // (reviewer: "it is too hard to see the bezier curves"). A
@@ -852,7 +901,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // takes effect once the lane stops deriving it.
                   heightMode: 'grow',
                   height: 170,
-                  featureHeight: 5,
                   // NEUTRAL READS, both lanes (review: "consider turning off
                   // colorby:strand settings. the reads could all be grey and i
                   // think story would be the same. both top and bottom views").
@@ -873,49 +921,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // twenty draw, and nothing else in the frame says what a
                   // curve means.
                   showLegend: true,
-                  // A BAND OVER THE SPLIT SUBSET, which is what this lane is
-                  // and what the band therefore has to be read as.
-                  // `split: 'only'` filters in the worker
-                  // (`filterChainFeatures`), before partitioning and therefore
-                  // before `runCoveragePipeline`, so the depth here counts only
-                  // the chimeric reads drawn under it and is NOT tumour
-                  // coverage. That is why it used to be off, and what changes
-                  // it is the wider window above: the profile now steps down
-                  // twice on chr3 -- once where the inverted arm stops
-                  // contributing at 25,359,111, then to nothing at the junction
-                  // at 25,359,568 -- and holds at nothing across the reference
-                  // the allele abandons. The ragged right edge of a pileup says
-                  // that once; a profile says it as a height, in each of the
-                  // three windows at the same time.
-                  //
-                  // The der3 lane's band below is unfiltered realigned depth,
-                  // so the two are NOT comparable as numbers and nothing in the
-                  // frame could say so -- the caption names this lane as split
-                  // alignments only for that reason.
-                  showCoverage: true,
-                  coverageHeight: 40,
-                  // THE THREE JUNCTIONS AS COUNTED ARCS (review: "please add
-                  // readconnections arcs to this figure"), which this figure
-                  // could not have before: an inter-chromosomal connection drew
-                  // as two ticks until both-feet-on-screen arcs landed, and all
-                  // three of this allele's junctions have both feet in these
-                  // three panels -- chr3:25,359,568 into chr10:58,717,463, chr10
-                  // into chr12:72,273,111, and chr12 back into the inverted chr3
-                  // arm at 25,352,683.
-                  //
-                  // A connector per molecule shows each junction is real and
-                  // cannot weigh them against each other, because 28
-                  // near-identical connectors and 3 look alike. The band
-                  // coalesces each junction into one mark whose stroke width is
-                  // its support, so the three junctions of one allele are
-                  // comparable at a glance. The per-molecule connectors stay,
-                  // since they show a single read running through all three.
-                  //
-                  // Default band height rather than a chosen one, as on
-                  // k562_bcr_abl_split: three arcs is not a pile-up, and the
-                  // band is under the coverage profile where it has the whole
-                  // strip to itself.
-                  readConnections: 'arc',
                 },
               ],
             },
@@ -999,16 +1004,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // what this reverses; the lane costs ~140px again.
                   heightMode: 'grow',
                   height: 175,
-                  featureHeight: 5,
-                  // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
-                  // does not dip at them") and no lane had drawn since this
-                  // one's band was dropped. It belongs here rather than on the
-                  // hg38 lane: nothing filters this fetch to a subset (the
-                  // flagExclude below drops secondaries and unmapped, keeping
-                  // primary + supplementary), so the band is the realigned
-                  // depth the sentence is about, flat across all four
-                  // junctions.
-                  coverageHeight: 40,
+                  pileup: { readHeight: 5 },
+                  coverage: {
+                    // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
+                    // does not dip at them") and no lane had drawn since this
+                    // one's band was dropped. It belongs here rather than on the
+                    // hg38 lane: nothing filters this fetch to a subset (the
+                    // flagExclude below drops secondaries and unmapped, keeping
+                    // primary + supplementary), so the band is the realigned
+                    // depth the sentence is about, flat across all four
+                    // junctions.
+                    height: 40,
+                  },
                   unit: 'chain',
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
@@ -1141,7 +1148,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       loc: 'chr3:25,359,318-25,359,818',
       tracks: [
         { trackId: SV, height: 130 },
-        { trackId: TUMOUR, height: 300, ...SUPER_COMPACT, ...DEEP_ONT },
+        { trackId: TUMOUR, height: 300, pileup: SUPER_COMPACT, ...DEEP_ONT },
       ],
     }),
     readyText: '25,359',
@@ -1240,7 +1247,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                     {
                       trackId: TUMOUR,
                       height: 50,
-                      ...SUPER_COMPACT,
+                      pileup: SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
                   ],
@@ -1253,7 +1260,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                     {
                       trackId: TUMOUR,
                       height: 50,
-                      ...SUPER_COMPACT,
+                      pileup: SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
                   ],
@@ -1266,7 +1273,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                     {
                       trackId: TUMOUR,
                       height: 50,
-                      ...SUPER_COMPACT,
+                      pileup: SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
                   ],
@@ -1498,10 +1505,32 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           trackId: 'K562_isoseq',
           type: 'LinearAlignmentsDisplay',
           height: 450,
-          coverageHeight: 90,
-          // the splice-junction arcs over the coverage were purple domes a
-          // reader took for read connections joining the wrong places
-          showSashimiArcs: false,
+          coverage: { height: 90 },
+          sashimi: {
+            // the splice-junction arcs over the coverage were purple domes a
+            // reader took for read connections joining the wrong places
+            show: false,
+          },
+          pileup: { ...SPLIT_READS, showConnectors: true },
+          readConnections: {
+            // THE JUNCTION'S TOTAL, beside the per-molecule fan (review: "please
+            // add the readconnections arcs because it now supports
+            // interchromosomal assemblies"). Both feet of this connection are on
+            // screen -- that is what the two displayed regions are for -- so it
+            // coalesces into one arc whose stroke width is its support rather than
+            // into the pair of ticks an inter-chromosomal connection used to draw.
+            // One junction here, against three on derivative_inserts and two on
+            // k562_bcr_abl_split, so what the band adds is a single weighted mark
+            // saying how many molecules the fan is: 40-odd near-identical curves
+            // and four look alike.
+            show: true,
+            filter: {
+              // arcs whose other end is outside both windows were a fan of thin
+              // lines leaving the frame
+              offscreenMates: 'exclude',
+            },
+            height: 90,
+          },
           // a read whose chr9 alignment has a chr22 supplementary IS the
           // fusion's support, so every remaining row crosses the junction
           filterBy: { split: 'only' },
@@ -1519,23 +1548,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // `showLegend` is opt-in per track and off by default, so a figure
           // that leans on those colors has to ask for it.
           showLegend: true,
-          showBezierConnections: true,
-          // THE JUNCTION'S TOTAL, beside the per-molecule fan (review: "please
-          // add the readconnections arcs because it now supports
-          // interchromosomal assemblies"). Both feet of this connection are on
-          // screen -- that is what the two displayed regions are for -- so it
-          // coalesces into one arc whose stroke width is its support rather than
-          // into the pair of ticks an inter-chromosomal connection used to draw.
-          // One junction here, against three on derivative_inserts and two on
-          // k562_bcr_abl_split, so what the band adds is a single weighted mark
-          // saying how many molecules the fan is: 40-odd near-identical curves
-          // and four look alike.
-          readConnections: 'arc',
-          // arcs whose other end is outside both windows were a fan of thin
-          // lines leaving the frame
-          showLongRange: false,
-          readConnectionsHeight: 90,
-          ...SPLIT_READS,
         },
       ],
     }),
@@ -1671,45 +1683,47 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // A fixed lane rather than every molecule: the arc band carries the
           // count, and the first couple of hundred rows carry the shape.
           height: 800,
-          coverageHeight: 110,
-          showSashimiArcs: false,
+          coverage: { height: 110 },
+          sashimi: { show: false },
+          pileup: { ...SPLIT_READS, showConnectors: true },
+          readConnections: {
+            // The connectors' TOTAL, beside the connectors themselves. A
+            // connector per molecule shows the junction is real and cannot show
+            // how many molecules say so -- 200 near-identical lines and one look
+            // alike -- and the arc band coalesces them into one mark whose stroke
+            // width is the count.
+            //
+            // It draws at all only because an interchromosomal connection with
+            // both feet on screen is now an arc rather than two ticks -- so which
+            // junctions are arcs is a property of the WINDOWS, and the third one
+            // was added to move the biggest of them across that line.
+            //
+            // Measured off the BAM (samtools over the chr22 window, counting chr9
+            // SA start positions -- DEMO_DATASETS.md has the method): of 235 chr9
+            // SA entries, 169 land in the middle window and 29 in the right one,
+            // leaving 37 scattered over 15 sites the frame still does not reach.
+            // So the band draws a thick arc into the middle panel, a thinner one
+            // into the right, and keeps a tick at the donor for the 37.
+            //
+            // THE TICK DOES NOT GET THINNER, and that is worth knowing before
+            // re-framing this again in the hope that it will: `arcStrokeScale` caps
+            // at 4x the base width around 44 reads, so 206 reads and 37 reads draw
+            // the same 8 device px. What the third window changes is what the
+            // marks MEAN -- the two junctions carrying this frame's evidence are
+            // arcs now, weighted against each other, and the bar at the donor is
+            // the honest remainder instead of the majority of the data hidden in a
+            // mark with no way to say so.
+            show: true,
+            // over the 35 default (review: "increase height of the read
+            // connections arcs"). Two arcs and a tick share this band, and at 35
+            // the two domes were close enough in height to read as one mark
+            // stepping over the middle panel. The slot buys apex separation only,
+            // which is exactly what a frame comparing two junctions wants.
+            height: 90,
+          },
           filterBy: { split: 'only' },
           // one row per molecule across both regions -- see the note above
           unit: 'chain',
-          showBezierConnections: true,
-          // The connectors' TOTAL, beside the connectors themselves. A
-          // connector per molecule shows the junction is real and cannot show
-          // how many molecules say so -- 200 near-identical lines and one look
-          // alike -- and the arc band coalesces them into one mark whose stroke
-          // width is the count.
-          //
-          // It draws at all only because an interchromosomal connection with
-          // both feet on screen is now an arc rather than two ticks -- so which
-          // junctions are arcs is a property of the WINDOWS, and the third one
-          // was added to move the biggest of them across that line.
-          //
-          // Measured off the BAM (samtools over the chr22 window, counting chr9
-          // SA start positions -- DEMO_DATASETS.md has the method): of 235 chr9
-          // SA entries, 169 land in the middle window and 29 in the right one,
-          // leaving 37 scattered over 15 sites the frame still does not reach.
-          // So the band draws a thick arc into the middle panel, a thinner one
-          // into the right, and keeps a tick at the donor for the 37.
-          //
-          // THE TICK DOES NOT GET THINNER, and that is worth knowing before
-          // re-framing this again in the hope that it will: `arcStrokeScale` caps
-          // at 4x the base width around 44 reads, so 206 reads and 37 reads draw
-          // the same 8 device px. What the third window changes is what the
-          // marks MEAN -- the two junctions carrying this frame's evidence are
-          // arcs now, weighted against each other, and the bar at the donor is
-          // the honest remainder instead of the majority of the data hidden in a
-          // mark with no way to say so.
-          readConnections: 'arc',
-          // over the 35 default (review: "increase height of the read
-          // connections arcs"). Two arcs and a tick share this band, and at 35
-          // the two domes were close enough in height to read as one mark
-          // stepping over the middle panel. The slot buys apex separation only,
-          // which is exactly what a frame comparing two junctions wants.
-          readConnectionsHeight: 90,
           // The key for the arcs and the read fills alike (review: "also need
           // legend"). It is data-driven -- the display lists the color slots
           // actually present -- so the inter-chromosomal row appears here
@@ -1717,7 +1731,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // that needed a name: a reader meeting a brown curve across a region
           // divider has nothing else in the frame telling them what brown means.
           showLegend: true,
-          ...SPLIT_READS,
         },
       ],
     }),

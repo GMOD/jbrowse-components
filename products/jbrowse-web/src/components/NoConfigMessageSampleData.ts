@@ -58,7 +58,7 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Theme (wild color)',
   },
   {
-    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
+    href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":{"show":true}}}]}]}',
     label: 'Volvox SV (arc display)',
   },
   {
@@ -98,7 +98,7 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'hg38 MAF (447-way)',
   },
   {
-    href: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"rowHeight":8}}]}]}',
+    href: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","conservation":{"show":true},"rowHeight":8}}]}]}',
     label: 'C. elegans MAF (26-way, conservation band)',
   },
   {

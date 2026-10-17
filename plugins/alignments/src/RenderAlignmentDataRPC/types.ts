@@ -337,7 +337,7 @@ export interface WorkerPileupData {
 //              chip's expand can actually raise.
 //   'override' a cap the user set themselves (chip expand, or a height drag), so
 //              anything it hides is their own doing and neither signal fires.
-//   'collapse' `collapseGroupRows` — one row, depth in the tint layer. Clipped
+//   'collapse' `collapseSections` — one row, depth in the tint layer. Clipped
 //              whenever features overlap, and the chip expands it to a stack.
 //   'uncapped' no cap; can never clip.
 export type RowCapSource =

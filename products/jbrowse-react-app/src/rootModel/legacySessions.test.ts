@@ -185,7 +185,7 @@ test('a v4 pileup display on a config.json track keeps its settings', async () =
   )
   expect(display.type).toBe('LinearAlignmentsDisplay')
   expect(getConf(display, ['color', 'field'])).toBe('strand')
-  expect(getConf(display, 'showCoverage')).toBe(false)
+  expect(getConf(display, ['coverage', 'show'])).toBe(false)
   expect(display.height).toBe(333)
 })
 
@@ -198,7 +198,7 @@ test('a v4 pileup display keeps its settings on a config.json that still spells 
     }),
   )
   expect(getConf(display, ['color', 'field'])).toBe('strand')
-  expect(getConf(display, 'showCoverage')).toBe(false)
+  expect(getConf(display, ['coverage', 'show'])).toBe(false)
 })
 
 test('a v4 read-arcs display on a config.json track keeps drawing arcs', async () => {
@@ -208,9 +208,9 @@ test('a v4 read-arcs display on a config.json track keeps drawing arcs', async (
       configuration: 'bam-LinearReadArcsDisplay',
     }),
   )
-  expect(getConf(display, 'readConnections')).toBe('arc')
-  expect(getConf(display, 'showPileup')).toBe(false)
-  expect(getConf(display, 'showCoverage')).toBe(false)
+  expect(getConf(display, ['readConnections', 'show'])).toBe(true)
+  expect(getConf(display, ['pileup', 'show'])).toBe(false)
+  expect(getConf(display, ['coverage', 'show'])).toBe(false)
 })
 
 test('a v4 multi-wiggle display opens as rows, in its order and colors', async () => {

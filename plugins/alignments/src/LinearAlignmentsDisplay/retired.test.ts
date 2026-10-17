@@ -22,18 +22,26 @@ function alignmentsEntries(displays: Record<string, unknown>[]) {
 }
 
 test.each([
-  ['LinearPileupDisplay', { showCoverage: false }],
+  ['LinearPileupDisplay', { coverage: { show: false } }],
   [
     'LinearSNPCoverageDisplay',
-    { showPileup: false, coverageHeight: 100, height: 100 },
+    { pileup: { show: false }, coverage: { height: 100 }, height: 100 },
   ],
   [
     'LinearReadArcsDisplay',
-    { showPileup: false, showCoverage: false, readConnections: 'arc' },
+    {
+      pileup: { show: false },
+      coverage: { show: false },
+      readConnections: { show: true },
+    },
   ],
   [
     'LinearReadCloudDisplay',
-    { showPileup: false, showCoverage: false, readConnections: 'cloud' },
+    {
+      pileup: { show: false },
+      coverage: { show: false },
+      readConnections: { show: true, mark: 'cloud' },
+    },
   ],
 ])('a %s entry draws the band it drew', (type, bands) => {
   expect(alignmentsEntries([{ type, displayId: `t-${type}` }])).toEqual([
@@ -47,9 +55,17 @@ test.each([
 
 test('an explicit author value wins over the band a retired type implies', () => {
   const [entry] = alignmentsEntries([
-    { type: 'LinearSNPCoverageDisplay', showPileup: true, height: 400 },
+    {
+      type: 'LinearSNPCoverageDisplay',
+      pileup: { show: true, readHeight: 3 },
+      height: 400,
+    },
   ])
-  expect(entry).toMatchObject({ showPileup: true, height: 400 })
+  expect(entry).toMatchObject({
+    pileup: { show: true, readHeight: 3 },
+    coverage: { height: 100 },
+    height: 400,
+  })
 })
 
 test.each([
@@ -132,8 +148,7 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
     filter: { flagInclude: 0, flagExclude: 1540 },
-    maxHeight: 900,
-    showMismatches: false,
+    pileup: { maxHeight: 900, showMismatches: false },
   })
 })
 

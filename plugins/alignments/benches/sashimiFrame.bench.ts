@@ -84,7 +84,7 @@ interface ProjectSashimiArcsOpts {
   // the box both hosts draw into, so the cull cannot drop an arc either shows
   viewWidthPx: number
   coverageHeight: number
-  sashimiArcsHeight: number
+  sashimiHeight: number
   // by `junctionKey`, decided in `junctions.ts` from the loaded data so the
   // strip the layout reserved and the arcs drawn into it are one decision
   downJunctionKeys: ReadonlySet<string>
@@ -146,14 +146,11 @@ function arcHeightFraction(genomicSpan: number) {
 // neighbouring band instead of collapsing them flat.
 function bandGeometry(
   side: keyof SashimiArcsBySide,
-  heights: { effectiveHeight: number; sashimiArcsHeight: number },
+  heights: { effectiveHeight: number; sashimiHeight: number },
 ) {
   return side === 'down'
     ? {
-        band: Math.max(
-          0,
-          heights.sashimiArcsHeight - SASHIMI_APEX_CLEARANCE_PX,
-        ),
+        band: Math.max(0, heights.sashimiHeight - SASHIMI_APEX_CLEARANCE_PX),
         baseline: 0,
         dir: 1,
       }
@@ -193,7 +190,7 @@ function projectSashimiArcs(
     bpToScreenX,
     viewWidthPx,
     coverageHeight,
-    sashimiArcsHeight,
+    sashimiHeight,
     downJunctionKeys,
   } = opts
   // Up arcs hang off the histogram's zero line, one scalebar offset above the
@@ -226,7 +223,7 @@ function projectSashimiArcs(
     const side = downJunctionKeys.has(j.key) ? 'down' : 'up'
     const { band, baseline, dir } = bandGeometry(side, {
       effectiveHeight,
-      sashimiArcsHeight,
+      sashimiHeight,
     })
     const arcHeight = band * arcHeightFraction(Math.abs(j.end - j.start))
     out[side].push({
@@ -329,11 +326,11 @@ const projectOpts = {
   bpToScreenX,
   viewWidthPx: VIEW_WIDTH_PX,
   coverageHeight: 100,
-  sashimiArcsHeight: 40,
+  sashimiHeight: 40,
   downJunctionKeys: NO_DOWN_KEYS,
 }
 
-const mergeOpts = { minSashimiScore: 2, showNonCanonicalJunctions: true }
+const mergeOpts = { minReads: 2 }
 
 // ARM 1: whole — what shipped. Merges the visible regions, then projects.
 function frameWhole(

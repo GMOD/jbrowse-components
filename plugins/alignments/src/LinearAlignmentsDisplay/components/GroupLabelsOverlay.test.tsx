@@ -29,7 +29,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
   const model = {
     showsGroupLabels: true,
     showPileup,
-    collapseGroupRows: false,
+    collapseSections: false,
     // as the model resolves it — there is nothing to size when the pileup is
     // hidden, so a fake that ticked it on would test a state that can't happen
     canSizeGroupHeights: showPileup,
@@ -123,7 +123,7 @@ test('no height affordance when group heights cannot be set', () => {
 // One row per group is a compact reading for many groups, so the button text
 // that would cover the left of every lane goes away with it.
 test('collapsed-row lanes get an icon-only expand button', () => {
-  renderOverlay({ collapseGroupRows: true })
+  renderOverlay({ collapseSections: true })
   const buttons = screen.getAllByTitle(
     'Expand this group into a stacked layout',
   )

@@ -47,8 +47,8 @@ export interface RenderState {
   // depth bar shows through where it would have been. 0 colors every
   // mismatch. Nothing to do with `fadeLowFrequencyMismatches`, which is the
   // PILEUP's depth-dependent fade.
-  coverageSnpMinFrequency: number
-  sashimiArcsHeight: number
+  coverageMinAlleleFraction: number
+  sashimiHeight: number
   showMismatches: boolean
   fadeLowFrequencyMismatches: boolean
   // Fade mismatch bases by their per-base Phred quality (advanced setting).
@@ -76,7 +76,7 @@ export interface RenderState {
   // Each group drawn as one row, so features that would have stacked share it.
   // The overlap tint is what makes that depth readable, hence a second reason
   // (besides chain mode) for that layer to draw.
-  collapseGroupRows: boolean
+  collapseSections: boolean
   readConnectionsLineWidth: number
   // The read cloud's largest insert size, which tops its log y axis; absent
   // in arc mode, where an arc's apex is its own half-width.
@@ -244,7 +244,7 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
 // the failure this shares rather than restates.
 export interface OverlapDrawInput {
   chainMode: boolean
-  collapseGroupRows: boolean
+  collapseSections: boolean
   featureHeight: number
 }
 
@@ -253,9 +253,7 @@ export interface OverlapDrawInput {
 // feature on a row — a linked-reads chain, or a collapsed group — and suppressed
 // below 3px row height where the tint is sub-pixel noise.
 export function shouldDrawOverlaps(state: OverlapDrawInput) {
-  return (
-    (state.chainMode || state.collapseGroupRows) && state.featureHeight >= 3
-  )
+  return (state.chainMode || state.collapseSections) && state.featureHeight >= 3
 }
 
 // Whether reads get an outline at all, for a whole frame. Shared by both

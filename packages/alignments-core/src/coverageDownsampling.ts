@@ -727,7 +727,7 @@ function countInterbaseAtPosition(
  * way searched the neighbouring pixel's bp on a flipped view and named a SNP
  * the cursor was not over.
  *
- * `snpMinFrequency` is the band's own allele floor, applied per allele the way
+ * `minAlleleFraction` is the band's own allele floor, applied per allele the way
  * the SNP pass applies it, so the snap cannot name a segment neither backend
  * drew. The pooled `SNP_TOOLTIP_SNAP_FLOOR` still gates dominance in the pixel.
  */
@@ -736,7 +736,7 @@ export function coverageBinAt(
   basePos: number,
   bpPerPx: number,
   reversed: boolean,
-  snpMinFrequency = 0,
+  minAlleleFraction = 0,
 ) {
   const { coverageDepths, coverageStartPos } = arrays
   const binIndex = basePos - coverageStartPos
@@ -756,7 +756,7 @@ export function coverageBinAt(
       from,
       from + width,
       SNP_TOOLTIP_SNAP_FLOOR,
-      { bases: arrays.mismatchBases, minFrequency: snpMinFrequency },
+      { bases: arrays.mismatchBases, minFrequency: minAlleleFraction },
     ) ?? basePos
   )
 }

@@ -686,7 +686,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // show soft clipping so the clipped bases flanking the insertion
               // are visible on the Illumina reads
               height: 320,
-              showSoftClipping: true,
+              pileup: { showSoftClipping: true },
             },
           ],
         },
@@ -1006,73 +1006,75 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: `${s}.final`,
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
-              showPileup: false,
-              // NO MATE-PAIR BAND, and this is a claim about the biology rather
-              // than about settings -- three rounds of review went into it, so
-              // don't put the arcs back. See `scripts/count_rhd_mate_pairs.py`,
-              // which prints the numbers below straight off the three CRAMs.
-              //
-              // The band was here as "the second, independent reading of the
-              // same event": coverage says how much sequence is there, the mates
-              // say what distance they think they are apart, so a deletion ought
-              // to show as a hole AND as pairs whose insert spans that hole. The
-              // reviewer twice reported the arcs were not over the deletion.
-              // They were right, and no setting fixes it. Counting every
-              // in-window pair (both ends in frame, mate on chr1, >=1 kb apart
-              // -- exactly what `showInterchrom: false` + `showLongRange: false`
-              // leave drawable):
-              //
-              //   sample           spans RHD   RHD<->RHCE   other
-              //   HG00113  1/1             1            1       0
-              //   HG00096  0/1             0           36       0
-              //   HG00097  0/0             1           56       1
-              //
-              // ONE pair spans the deletion in the homozygous carrier. THE RHD
-              // DELETION HAS NO READ-PAIR SIGNAL, because it is NAHR between the
-              // ~9 kb Rhesus boxes that flank RHD: a fragment crossing the
-              // junction lands wholly inside the hybrid box, which the reference
-              // also carries, so it aligns collinearly at ordinary insert size.
-              // A deletion whose breakpoints sit inside a long identical repeat
-              // is invisible to mate distance by construction.
-              //
-              // What the band actually drew is the RHD/RHCE paralogy. Those 36
-              // and 56 pairs are not scattered: they stack on two offsets,
-              // 25,283,7xx->25,409,9xx and 25,287,1xx->25,405,4xx, repeated
-              // dozens of times -- reads mismapping between a 97% identical
-              // inverted gene pair. So the band was busiest in the 0/0 control
-              // and nearly empty in the 1/1 carrier, which is a true statement
-              // about paralogy and the exact opposite of the figure's own claim.
-              // The coverage curve is the whole reading, and it is a clean one.
-              //
-              // Two earlier rounds narrowed the band before this one removed it,
-              // and both mechanisms are durable enough to be worth keeping (they
-              // are also written up in screenshot-review-plan.md, since no spec
-              // demonstrates them any more). An INTERCHROMOSOMAL pair is never
-              // drawn as an arc -- it drops a tick at each endpoint, because
-              // insert size and orientation mean nothing across refNames
-              // (compute.ts, `if (p1Ref !== p2Ref)`) -- so 270 kb of segmental
-              // duplication at 30x filled the band with a picket fence of them,
-              // and `showInterchrom: false` is what removes it. And `showLongRange`
-              // draws an arc to a mate's RECORDED position outside the window
-              // (`offScreenMateArcs`), which put the widest curves off-frame.
-              // Turning both off is what left the two arcs counted above, i.e.
-              // what made it possible to see there was nothing there.
-              //
-              // `svSignal: 'only'` is not the answer: it drops whole
-              // read-name chains in `filterChainFeatures`, which runs before the
-              // COVERAGE pipeline and not merely before layout, so it would take
-              // ~all the reads and the three curves with them. Nor is a jexl
-              // insert-size filter, for the same reason -- the coverage is
-              // downstream of it. Read cloud is worse again: its y axis is
-              // `arcsYDomainBp`, a per-TRACK maximum, so three CRAM tracks got
-              // three different insert-size scales (149 kb / 19 Mb / 8.4 Mb) and
-              // comparing the three samples is the one thing this figure does.
-              readConnections: 'off',
+              pileup: { show: false },
+              coverage: { height: 190 },
+              readConnections: {
+                // NO MATE-PAIR BAND, and this is a claim about the biology rather
+                // than about settings -- three rounds of review went into it, so
+                // don't put the arcs back. See `scripts/count_rhd_mate_pairs.py`,
+                // which prints the numbers below straight off the three CRAMs.
+                //
+                // The band was here as "the second, independent reading of the
+                // same event": coverage says how much sequence is there, the mates
+                // say what distance they think they are apart, so a deletion ought
+                // to show as a hole AND as pairs whose insert spans that hole. The
+                // reviewer twice reported the arcs were not over the deletion.
+                // They were right, and no setting fixes it. Counting every
+                // in-window pair (both ends in frame, mate on chr1, >=1 kb apart
+                // -- exactly what `showInterchrom: false` + `showLongRange: false`
+                // leave drawable):
+                //
+                //   sample           spans RHD   RHD<->RHCE   other
+                //   HG00113  1/1             1            1       0
+                //   HG00096  0/1             0           36       0
+                //   HG00097  0/0             1           56       1
+                //
+                // ONE pair spans the deletion in the homozygous carrier. THE RHD
+                // DELETION HAS NO READ-PAIR SIGNAL, because it is NAHR between the
+                // ~9 kb Rhesus boxes that flank RHD: a fragment crossing the
+                // junction lands wholly inside the hybrid box, which the reference
+                // also carries, so it aligns collinearly at ordinary insert size.
+                // A deletion whose breakpoints sit inside a long identical repeat
+                // is invisible to mate distance by construction.
+                //
+                // What the band actually drew is the RHD/RHCE paralogy. Those 36
+                // and 56 pairs are not scattered: they stack on two offsets,
+                // 25,283,7xx->25,409,9xx and 25,287,1xx->25,405,4xx, repeated
+                // dozens of times -- reads mismapping between a 97% identical
+                // inverted gene pair. So the band was busiest in the 0/0 control
+                // and nearly empty in the 1/1 carrier, which is a true statement
+                // about paralogy and the exact opposite of the figure's own claim.
+                // The coverage curve is the whole reading, and it is a clean one.
+                //
+                // Two earlier rounds narrowed the band before this one removed it,
+                // and both mechanisms are durable enough to be worth keeping (they
+                // are also written up in screenshot-review-plan.md, since no spec
+                // demonstrates them any more). An INTERCHROMOSOMAL pair is never
+                // drawn as an arc -- it drops a tick at each endpoint, because
+                // insert size and orientation mean nothing across refNames
+                // (compute.ts, `if (p1Ref !== p2Ref)`) -- so 270 kb of segmental
+                // duplication at 30x filled the band with a picket fence of them,
+                // and `showInterchrom: false` is what removes it. And `showLongRange`
+                // draws an arc to a mate's RECORDED position outside the window
+                // (`offScreenMateArcs`), which put the widest curves off-frame.
+                // Turning both off is what left the two arcs counted above, i.e.
+                // what made it possible to see there was nothing there.
+                //
+                // `svSignal: 'only'` is not the answer: it drops whole
+                // read-name chains in `filterChainFeatures`, which runs before the
+                // COVERAGE pipeline and not merely before layout, so it would take
+                // ~all the reads and the three curves with them. Nor is a jexl
+                // insert-size filter, for the same reason -- the coverage is
+                // downstream of it. Read cloud is worse again: its y axis is
+                // `arcsYDomainBp`, a per-TRACK maximum, so three CRAM tracks got
+                // three different insert-size scales (149 kb / 19 Mb / 8.4 Mb) and
+                // comparing the three samples is the one thing this figure does.
+                show: false,
+              },
               // 140 -> 190 with the 110px arc band's space: the curve IS the
               // figure, so the height the band was spending goes to the thing
               // being compared rather than off the bottom of the frame.
               height: 200,
-              coverageHeight: 190,
               scales: { y: { autoscaleGroup: 'depth' } },
             })),
           ],
@@ -1184,8 +1186,8 @@ export const uiSpecs: ScreenshotSpec[] = [
             ...['HG02030', 'HG02031', 'HG02032'].map(id => ({
               trackId: `${id}_trio_slice`,
               height: 150,
-              featureHeight: 1,
-              readConnections: 'arc' as const,
+              pileup: { readHeight: 1 },
+              readConnections: { show: true },
             })),
           ],
         },

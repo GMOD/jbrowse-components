@@ -13,8 +13,8 @@ import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 const PixelHeightDialog = lazy(() => import('../dialogs/PixelHeightDialog.tsx'))
 
 interface MaxHeightModel {
-  maxHeight: number
-  setMaxHeight: (height?: number) => void
+  pileupMaxHeight: number
+  setPileupMaxHeight: (height?: number) => void
 }
 
 // The pileup row cap: how tall the stack may grow before reads are dropped.
@@ -30,9 +30,9 @@ function getMaxHeightMenuItem(model: MaxHeightModel) {
           description:
             'Maximum pixel height of the pileup layout. Reads that pile up beyond this are not stacked; the coverage histogram still reflects the true depth. Raise it for very deep targeted-sequencing data.',
           label: 'Max layout height (px)',
-          initialValue: model.maxHeight,
+          initialValue: model.pileupMaxHeight,
           onSubmit: (height: number) => {
-            model.setMaxHeight(height)
+            model.setPileupMaxHeight(height)
           },
           handleClose,
         },
@@ -75,12 +75,12 @@ export {
 // the fixed/grow/fit track-sizing modes. They're orthogonal axes — the size is
 // what each read is drawn at (used in fixed and grow), the mode is how the track
 // absorbs overflow — so picking a size never changes the mode and vice versa.
-// Each group reads as a plain "pick one". `configuredFeatureHeight` drives the
+// Each group reads as a plain "pick one". `configuredReadHeight` drives the
 // size group; `heightMode` the mode group.
 interface FeatureHeightModel extends MaxHeightModel {
-  configuredFeatureHeight: number
+  configuredReadHeight: number
   heightMode: HeightMode
-  setFeatureHeight: (height?: number) => void
+  setReadHeight: (height?: number) => void
   setHeightMode: (mode: HeightMode) => void
 }
 
@@ -98,11 +98,11 @@ export function getFeatureHeightMenuItem(
 ) {
   const mode = model.heightMode
   // fit derives the size, so no size reads as selected while fitting; picking one
-  // drops back to fixed (setFeatureHeight) and then lights up.
+  // drops back to fixed (setReadHeight) and then lights up.
   const sizeActive = mode !== 'fit'
-  const height = model.configuredFeatureHeight
-  const matchesPreset = (preset: { featureHeight: number }) =>
-    height === preset.featureHeight
+  const height = model.configuredReadHeight
+  const matchesPreset = (preset: { readHeight: number }) =>
+    height === preset.readHeight
   return {
     label: `${capitalizeFirst(noun)} height`,
     icon: HeightIcon,
@@ -114,7 +114,7 @@ export function getFeatureHeightMenuItem(
       ...PRESETS.map(preset =>
         needsContent(
           radioItem(preset.label, sizeActive && matchesPreset(preset), () => {
-            model.setFeatureHeight(preset.featureHeight)
+            model.setReadHeight(preset.readHeight)
           }),
           gate,
         ),
@@ -136,9 +136,9 @@ export function getFeatureHeightMenuItem(
                 title: `Custom ${noun} height`,
                 description: `Adjust the ${noun} height. The spacing between ${noun}s is derived from it — a 1px gap once ${noun}s are tall enough, otherwise flush. Setting the height to 1 makes the display very compact.`,
                 label: `${capitalizeFirst(noun)} height (px)`,
-                initialValue: model.configuredFeatureHeight,
+                initialValue: model.configuredReadHeight,
                 onSubmit: (height: number) => {
-                  model.setFeatureHeight(height)
+                  model.setReadHeight(height)
                 },
                 handleClose,
               },

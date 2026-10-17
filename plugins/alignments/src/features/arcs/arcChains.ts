@@ -115,27 +115,25 @@ export function computePairingInfo(
 
 // Whether a connection whose far end is NOT loaded in this view is emitted.
 //
-// The two settings are orthogonal predicates and the menu offers them as
-// siblings — "Show off-screen mate connections" is about a partner this view has
-// not loaded, "Show inter-chromosomal pairs" about one on another chromosome —
-// so either alone has to be able to produce a connection. They were layered
-// instead: `showLongRange` gated EMISSION here and `showInterchrom` filtered the
-// result in `resolveArcs`, which is an AND wearing the costume of an OR.
+// The two categories are orthogonal and the menu offers them as siblings —
+// "Off-screen mate connections" is about a partner this view has not loaded,
+// "Inter-chromosomal pairs" about one on another chromosome — so
+// either alone has to be able to produce a connection. Layered instead (one
+// gating EMISSION here, the other filtering in `resolveArcs`) they were an AND
+// wearing the costume of an OR: a single-chromosome view never loads the far
+// mate of a translocation, so excluding off-screen mates also silently dropped
+// the inter-chromosomal ticks while their own checkbox stayed on.
 //
-// The case it broke is the ordinary one. A view showing a single chromosome
-// never loads the far mate of a translocation, so unticking off-screen mates
-// also silently unticked inter-chromosomal pairs: the connector ticks vanished
-// while their own checkbox stayed on. Both slots default true, which is why it
-// survived — it takes turning one off to see the other stop working.
-//
-// `showInterchrom` still filters in `resolveArcs`, so the OR here cannot smuggle an
-// interchromosomal connection past a user who turned it off; this only stops the
-// other gate from suppressing one first.
+// Both categories still filter in `resolveArcs`, so the OR here cannot smuggle
+// a connection past a user who excluded it, and `only` drops the rest there.
 export function emitsOffScreenPartner(
-  ctx: ArcChainContext,
+  { filter }: ArcChainContext,
   interchromosomal: boolean,
 ) {
-  return ctx.showLongRange || (ctx.showInterchrom && interchromosomal)
+  return (
+    filter.offscreenMates !== 'exclude' ||
+    (filter.interchrom !== 'exclude' && interchromosomal)
+  )
 }
 
 function entrySeg(entry: ReadEntry): SegAln {
@@ -237,7 +235,11 @@ export function unpairedReadChain(
 // reverse segment. One spelling of the `connectionEndpointBps` call, so the
 // SegAln path can't disagree with the entry path (`pendingArcFromConnection`)
 // about which edges a split junction connects.
-function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
+function splitJunctionArc(
+  a1: SegAln,
+  a2: SegAln,
+  offScreen: boolean,
+): PendingArc {
   const { bp1, bp2, dir1, dir2 } = connectionEndpointBps({
     s1: a1.strand,
     start1: a1.start,
@@ -257,6 +259,7 @@ function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
     p2Strand: a2.strand,
     p2Dir: dir2,
     isSplit: true,
+    offScreen,
   }
 }
 
@@ -281,11 +284,9 @@ function unpairedChainArcs(
   for (let j = 0; j < chain.length - 1; j++) {
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
-    if (
-      (a1.onScreen && a2.onScreen) ||
-      emitsOffScreenPartner(ctx, a1.refName !== a2.refName)
-    ) {
-      arcs.push(splitJunctionArc(a1, a2))
+    const offScreen = !a1.onScreen || !a2.onScreen
+    if (!offScreen || emitsOffScreenPartner(ctx, a1.refName !== a2.refName)) {
+      arcs.push(splitJunctionArc(a1, a2, offScreen))
     }
   }
   return arcs
@@ -366,6 +367,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     // the other two read a primary's.
     flags: flagsOf(src),
     stats: src.data.insertSizeStats,
+    offScreen: false,
   }
 }
 
@@ -373,7 +375,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 // is the one connection kind the connector mark can't draw and the arc path can.
 // Gated on `emitsOffScreenPartner` — either user setting can ask for it, and a
 // translocation seen from a single-chromosome view has ONLY this path, which is
-// why "Show inter-chromosomal pairs" is one of the two — and on the mate
+// why the inter-chromosomal category is one of the two — and on the mate
 // actually having a locus. An unmapped mate has none; neither does a record
 // naming a real RNEXT with PNEXT 0, which SAM spells "unavailable" and
 // `parseSam` maps to `undefined`. Substituting bp 0 there drew a
@@ -443,6 +445,7 @@ export function offScreenMateArcs(
       flags: flagsOf(entry),
       stats: data.insertSizeStats,
       isSplit: false,
+      offScreen: true,
     },
   ]
 }

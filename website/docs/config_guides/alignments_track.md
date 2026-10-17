@@ -25,9 +25,10 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **CRAM decodes against the reference**, and both adapters take their
   `sequenceAdapter` from the enclosing assembly, so the track names none
   ([](/docs/config/bamadapter), [](/docs/config/cramadapter))
-- **`color`, `height`, `featureHeight`, `filter` and the coverage band's
-  `scales.y`** are
-  [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots. Reads
+- **`color`, `height`, `filter`, the coverage band's `scales.y` and the four
+  bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
+  [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots; each
+  band object holds whether it draws, its height and its own `filter`. Reads
   draw gray with mismatches marked until
   [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
   `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
@@ -39,7 +40,7 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   stands for**, a read or a chain of a read with its mate and split segments;
   [`facet`](/docs/config/linearalignmentsdisplay/#slot-facet) stacks one
   labelled section per value of a read field (`pairOrientation`, `tags.HP`); and
-  [`arcColor`](/docs/config/linearalignmentsdisplay/#slot-arccolor) picks the
+  [`readConnections.color`](/docs/config/readconnections/#slot-color) picks the
   pair field the read-connection arcs paint when it is not the reads'
 
 [Applying display settings](/docs/tutorials/display_settings) opens a track in a

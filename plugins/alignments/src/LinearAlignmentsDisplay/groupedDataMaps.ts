@@ -12,13 +12,11 @@ import type {
   GroupedAlignmentsResult,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type {
-  JunctionFilter,
-  RegionJunctions,
-} from '../features/sashimi/junctions.ts'
+import type { RegionJunctions } from '../features/sashimi/junctions.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
-import type { SashimiArcsMode } from './constants.ts'
+import type { SashimiFilter } from '../shared/types.ts'
+import type { SashimiPlacement } from './constants.ts'
 import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 export { NO_HIDDEN_GROUPS }
@@ -44,8 +42,9 @@ export function* eachGroup(
   }
 }
 
-export interface SashimiSidesOpts extends JunctionFilter {
-  mode: SashimiArcsMode
+export interface SashimiSidesOpts {
+  filter: SashimiFilter
+  placement: SashimiPlacement
   // refName of the region each `rpcDataMap` key was fetched from — the display
   // reads it off `loadedRegions`, which is keyed the same way and updates with
   // the fetch, not with pan. Required rather than defaulted: without it every
@@ -59,7 +58,7 @@ export interface SashimiSidesOpts extends JunctionFilter {
 // `junctionKey`. Two questions come off this one scan, and sharing the set is
 // what makes them agree: the LAYOUT asks whether a lane needs the strip reserved
 // at all (a non-empty set), and the OVERLAY asks which side to draw each arc on.
-// The down sub-band renders at `sashimiArcsHeight` whether or not the layout
+// The down sub-band renders at `sashimiHeight` whether or not the layout
 // reserved it, so any under-reserving disagreement paints arcs over the pileup.
 //
 // Genomic-bp over every *loaded* region, so the layout keeps depending only on
@@ -70,13 +69,7 @@ export function buildSashimiDownKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   opts: SashimiSidesOpts,
 ) {
-  const {
-    minSashimiScore,
-    showNonCanonicalJunctions,
-    mode,
-    refNameFor,
-    hidden,
-  } = opts
+  const { filter, placement, refNameFor, hidden } = opts
   const out = new Map<string, ReadonlySet<string>>()
   for (const [key, regions] of sashimiRegionsByGroup(
     rpcDataMap,
@@ -86,11 +79,8 @@ export function buildSashimiDownKeys(
     // 'auto' pools a group's junctions across its regions before assigning
     // sides, so the merge pools the same way — a pair interleaving across two
     // collapsed-intron regions of one group still reserves the strip.
-    const merged = mergeJunctions(regions, {
-      minSashimiScore,
-      showNonCanonicalJunctions,
-    })
-    out.set(key, downJunctionKeys(merged.values(), mode))
+    const merged = mergeJunctions(regions, filter)
+    out.set(key, downJunctionKeys(merged.values(), placement))
   }
   return out
 }

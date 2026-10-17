@@ -323,7 +323,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     display.setShowConservation(true)
-    display.setConservationMode('codon')
+    display.setConservationUnit('codon')
     zoomAndSettle(view, 100)
     expect(display.codonConservationActive).toBe(false)
     expect(display.rowsEncodeProps().codons).toBeUndefined()

@@ -89,15 +89,15 @@ shared by its mates and supplementary segments. The coverage band's tables
 stop at the region's ends: the worker counts depth wherever its reads reach,
 which past the region is a partial count. A band the display's `show*` slot
 hides (`showCoverage`, `showPileup`, `showMismatches`,
-`showInterbaseIndicators`, `showSashimiArcs`) comes back as empty tables.
+`showInterbaseIndicators`, `showSashimi`) comes back as empty tables.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
 `missingContig` to each table: where the region's contig is not one the file
 lists, the tables come back empty, as the browser draws such a track, and
 `missingContig` says so and names the file's contigs, so a host can tell a
 typo from a quiet region. `alignmentTables` also returns `settings`, the
-resolved slots that decide which bands a host stacks (`showCoverage`,
-`showPileup`, `showSashimiArcs`, `minSashimiScore`, ...), so the host composes
-from the config rather than restating its defaults. The engine also serves the colors a
+four band objects resolved (`coverage`, `pileup`, `sashimi`,
+`readConnections`), which decide which bands a host stacks, so the host
+composes from the config rather than restating its defaults. The engine also serves the colors a
 host should draw in (`alignmentColors`), read off the palette rather than
 copied.
 
@@ -119,13 +119,13 @@ copied.
   sashimi band's own strand key, over the junctions shown) and
   `interbaseLegend` come back as `legend` does, each with its title, keying
   only what the tables paint.
-- `junctions` has `shown`, true where the count reaches `minSashimiScore`
-  and the motif passes `showNonCanonicalJunctions` (the browser keeps a
-  junction whose motif it never read), `arcHeight`
+- `junctions` has `shown`, true where the junction passes `sashimi.filter`
+  (the browser counts a junction whose motif it never read as canonical), `arcHeight`
   (`sashimiArcHeightFraction`) and `strokeWidth` (`sashimiStrokeWidth`, in
   px). `alleleCoverage` has `shown`, true where the allele's share of the
-  depth reaches `coverageSnpMinFrequency`, the coverageSnp shader's test.
-- `readPitch` gives `featureHeight` and the gap below a read
+  depth reaches `coverage.filter.minAlleleFraction`, the coverageSnp shader's
+  test.
+- `readPitch` gives the read height (`pileup.readHeight`) and the gap below a read
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
   squeezes the pitch to the track's height, which is the host's.
 
@@ -206,8 +206,7 @@ worker ships it: `insertions` (position, length, sequence, read), `clips`
 as the sashimi band merges them (start, end, supporting-read count, strand off
 the reads' tags or the splice motif, and the motif where the region's sequence
 covers both ends), every junction down to a single read, with `shown`
-marking the ones the display's `minSashimiScore` and
-`showNonCanonicalJunctions` keep. `alignmentColors` names the
+marking the ones the display's `sashimi.filter` keeps. `alignmentColors` names the
 insertion, soft-clip and hard-clip colors beside the rest. A mismatch, gap,
 insertion or clip carries `fade`, the worker's own frequency byte: its share
 of the depth at its site, zeroed below the display's depth-dependent
@@ -241,7 +240,7 @@ draws neither while `settings.showInterbaseIndicators` is false.
 `domain` over every shown section's visible depths under `scales.y` (quantile,
 rules, bounds, nice rounding, a log scale floored at one read), its `type`,
 the `symlogConstant` it resolves from that domain, and the `ticks` the display
-labels at `coverageHeight`. Every section shares it.
+labels at `coverage.height`. Every section shares it.
 `glyph` gives the px the band draws in: the triangle's width and height,
 `coverageInset` (the label room the band keeps at both ends, inside which the
 depth axis runs) and `interbaseTop` (where the histogram starts below the
@@ -280,10 +279,8 @@ section at once as the display runs it:
   shader's own `linkStrokeWidthPx` over `arcStrokeScale`, past its 1.5 device
   px antialiasing floor, which is the GPU's concern and not the host's.
 - `arcTicks` are the interchromosomal ticks, with the contigs each reaches.
-- `arcLegend` and `arcLegendTitle` are the band's key. `arcColor`,
-  `showOrdinaryPairs`, `showInterchrom`, `showLongRange`,
-  `minInterchromSupport` and `readConnectionsLineWidth` act as they do in the
-  display.
+- `arcLegend` and `arcLegendTitle` are the band's key. Every member of
+  `readConnections` acts as it does in the display.
 
 A host has no assembly, so a split read whose SA tag spells its contig
 another way than the BAM does reads as interchromosomal.

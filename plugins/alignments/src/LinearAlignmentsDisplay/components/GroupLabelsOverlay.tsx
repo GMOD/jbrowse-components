@@ -19,29 +19,29 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 // one-row-per-group track exists to fit many groups on screen, and a word of
 // button text beside every one of them covers the left of every lane.
 function groupHeightAffordance({
-  collapseGroupRows,
+  collapseSections,
   hasOverride,
   featureNoun,
 }: {
-  collapseGroupRows: boolean
+  collapseSections: boolean
   hasOverride: boolean
   featureNoun: string
 }) {
   if (hasOverride) {
     return {
       Icon: UnfoldLessIcon,
-      title: collapseGroupRows
+      title: collapseSections
         ? 'Collapse this group back to one row'
         : 'Fit group to view',
-      text: collapseGroupRows ? undefined : 'Fit to view',
+      text: collapseSections ? undefined : 'Fit to view',
     }
   }
   return {
     Icon: UnfoldMoreIcon,
-    title: collapseGroupRows
+    title: collapseSections
       ? 'Expand this group into a stacked layout'
       : `Show all ${featureNoun}s in this group`,
-    text: collapseGroupRows ? undefined : `Show all ${featureNoun}s`,
+    text: collapseSections ? undefined : `Show all ${featureNoun}s`,
   }
 }
 
@@ -62,7 +62,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   const {
     scrollModel: scroll,
     showPileup,
-    collapseGroupRows,
+    collapseSections,
     canSizeGroupHeights,
     renderSections,
   } = model
@@ -106,7 +106,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
             (hasOverride || laneExpandable(section))
               ? {
                   ...groupHeightAffordance({
-                    collapseGroupRows,
+                    collapseSections,
                     hasOverride,
                     featureNoun: model.featureNoun,
                   }),

@@ -55,7 +55,7 @@ const scrolled = {
   scrollTop: 5,
   fadeLowFrequencyMismatches: true,
   chainMode: true,
-  collapseGroupRows: false,
+  collapseSections: false,
 }
 
 const compact = {
@@ -65,7 +65,7 @@ const compact = {
   scrollTop: 0,
   fadeLowFrequencyMismatches: false,
   chainMode: false,
-  collapseGroupRows: true,
+  collapseSections: true,
 }
 
 function renderState(overrides: Partial<RenderState>) {

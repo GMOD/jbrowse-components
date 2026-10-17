@@ -60,7 +60,7 @@ test('chain mode fills with the neutral, opaquely', () => {
 })
 
 test('collapsed rows keep the stacking dark tint', () => {
-  const svg = draw(WIDE, { collapseGroupRows: true })
+  const svg = draw(WIDE, { collapseSections: true })
   expect(svg).toContain('fill="rgb(0,0,0)"')
   // OVERLAP_ALPHA comes back through the generated twin as the float32 it is in
   // the shader, so this is 0.4000000059604645 on the nose
@@ -80,7 +80,7 @@ test('and below the fade floor nothing is painted at all', () => {
 })
 
 test('sub-3px rows draw nothing in either layout', () => {
-  for (const state of [{ chainMode: true }, { collapseGroupRows: true }]) {
+  for (const state of [{ chainMode: true }, { collapseSections: true }]) {
     expect(draw(WIDE, { ...state, featureHeight: 2 })).not.toContain('<rect')
   }
 })

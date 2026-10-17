@@ -420,7 +420,7 @@ const suite: TestSuite = {
                   trackId: 'volvox_translocation',
                   displaySnapshot: {
                     type: 'LinearAlignmentsDisplay',
-                    readConnections: 'arc',
+                    readConnections: { show: true },
                   },
                 },
               ],

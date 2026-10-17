@@ -153,7 +153,7 @@ export interface GroupLayoutContext {
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
   // explicitly opts back out, which is what makes the label chip's expand
   // affordance a true-stack toggle.
-  collapseGroupRows: boolean
+  collapseSections: boolean
 }
 
 // One group's regions. `ctx.order` and `rawByGroup` are two views of one
@@ -386,7 +386,7 @@ function collapsesRows(
   key: string,
   capOverrides: ReadonlyMap<string, RowCap>,
 ) {
-  return ctx.collapseGroupRows && ctx.unit !== 'chain' && !capOverrides.has(key)
+  return ctx.collapseSections && ctx.unit !== 'chain' && !capOverrides.has(key)
 }
 
 // Whether a group's reads are stacked in rows: not drawn as its coverage band

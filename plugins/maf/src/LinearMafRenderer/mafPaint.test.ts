@@ -102,7 +102,7 @@ function state(binBp: number) {
       domainMax: undefined,
       scaleType: 0 as const,
       symlogConstant: 1,
-      snpMinFrequency: 0,
+      minAlleleFraction: 0,
       showInterbase: true,
       colors: NO_COLORS,
     },

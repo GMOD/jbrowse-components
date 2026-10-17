@@ -29,7 +29,7 @@ function items(model: ReturnType<typeof makeModel>) {
 }
 
 // No "One row per group" here: that toggle is the group's drawn height, not a
-// dimension, so the "Show..." menu carries it (`collapseGroupRowsItems`).
+// dimension, so the "Show..." menu carries it (`collapseSectionsItems`).
 test('offers None plus the synteny-applicable dimensions, then the self lane', () => {
   expect(items(makeModel('mateAssembly')).map(i => i.label)).toEqual([
     'None',
@@ -131,9 +131,9 @@ function makeShowModel(showCoverage: boolean) {
     setShowMismatches: jest.fn(),
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
-    canCollapseGroupRows: false,
-    collapseGroupRows: false,
-    setCollapseGroupRows: jest.fn(),
+    canCollapseSections: false,
+    collapseSections: false,
+    setCollapseSections: jest.fn(),
     hiddenGroups: new Set<string>(),
     showAllGroups: jest.fn(),
   }

@@ -28,18 +28,23 @@ import type {
   ArcColorField,
   BaseLayer,
   ColorSchemeType,
+  ReadConnectionsFilter,
   ReadFilter,
   Facet,
   LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
+  SashimiFilter,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
   AlignmentsUnit,
+  ReadConnectionsMark,
   ReadConnectionsMode,
-  SashimiArcsMode,
+  ReadConnectionsPlacement,
+  SashimiPlacement,
 } from './constants.ts'
+import type { CoverageFilter } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -54,8 +59,8 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  *
  * **A getter that reads any OTHER model member does not belong here** — it
  * belongs in the chain, where `self` is the model so far. That is the line
- * between this file and model.ts, and it is why `collapseGroupRows` (which reads
- * `canCollapseGroupRows`) and `showOutline` (which reads `unit`) stayed
+ * between this file and model.ts, and it is why `collapseSections` (which reads
+ * `canCollapseSections`) and `showOutline` (which reads `unit`) stayed
  * behind despite also being slot reads.
  */
 /**
@@ -98,36 +103,118 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'unit')
     },
     /** #getter */
-    get showBezierConnections(): boolean {
-      return getConf(self, 'showBezierConnections')
-    },
-    /** #getter */
     get showCoverage(): boolean {
-      return getConf(self, 'showCoverage')
-    },
-    /** #getter */
-    get showPileup(): boolean {
-      return getConf(self, 'showPileup')
+      return getConf(self, ['coverage', 'show'])
     },
     /** #getter */
     get coverageHeight(): number {
-      return getConf(self, 'coverageHeight')
-    },
-    /** #getter */
-    get coverageSnpMinFrequency(): number {
-      return getConf(self, 'coverageSnpMinFrequency')
-    },
-    /** #getter */
-    get showMismatches(): boolean {
-      return getConf(self, 'showMismatches')
+      return getConf(self, ['coverage', 'height'])
     },
     /** #getter */
     get showInterbaseIndicators(): boolean {
-      return getConf(self, 'showInterbaseIndicators')
+      return getConf(self, ['coverage', 'showInterbaseIndicators'])
     },
     /** #getter */
-    get showInterchrom(): boolean {
-      return getConf(self, 'showInterchrom')
+    get coverageFilter(): CoverageFilter {
+      return {
+        minAlleleFraction: getConf(self, [
+          'coverage',
+          'filter',
+          'minAlleleFraction',
+        ]),
+      }
+    },
+    /** #getter */
+    get showPileup(): boolean {
+      return getConf(self, ['pileup', 'show'])
+    },
+    /**
+     * #getter
+     * `pileup.readHeight` as configured, independent of the fit squeeze.
+     * Consumers that EDIT the size (the "Custom..." height dialog) must start
+     * from it, not the fractional fit pitch `featureHeight` resolves to in fit
+     * mode, or opening the dialog while compressed would bake the squeeze.
+     */
+    get configuredReadHeight(): number {
+      return getConf(self, ['pileup', 'readHeight'])
+    },
+    /** #getter */
+    get pileupMaxHeight(): number {
+      return getConf(self, ['pileup', 'maxHeight'])
+    },
+    /** #getter */
+    get showMismatches(): boolean {
+      return getConf(self, ['pileup', 'showMismatches'])
+    },
+    /** #getter */
+    get showSoftClipping(): boolean {
+      return getConf(self, ['pileup', 'showSoftClipping'])
+    },
+    /** #getter */
+    get showConnectors(): boolean {
+      return getConf(self, ['pileup', 'showConnectors'])
+    },
+    /** #getter */
+    get fadeLowQuality(): boolean {
+      return getConf(self, ['pileup', 'fadeLowQuality'])
+    },
+    /** #getter */
+    get fadeLowFrequency(): boolean {
+      return getConf(self, ['pileup', 'fadeLowFrequency'])
+    },
+    /**
+     * #getter
+     * Whether sashimi arcs draw: `sashimi.show`, and the coverage band they
+     * hang off.
+     */
+    get showSashimi(): boolean {
+      return getConf(self, ['sashimi', 'show']) && this.showCoverage
+    },
+    /** #getter */
+    get sashimiHeight(): number {
+      return getConf(self, ['sashimi', 'height'])
+    },
+    /** #getter */
+    get sashimiPlacement(): SashimiPlacement {
+      return getConf(self, ['sashimi', 'placement'])
+    },
+    /** #getter */
+    get showSashimiCounts(): boolean {
+      return getConf(self, ['sashimi', 'showCounts'])
+    },
+    /** #getter */
+    get sashimiFilter(): SashimiFilter {
+      return {
+        minReads: getConf(self, ['sashimi', 'filter', 'minReads']),
+        nonCanonical: getConf(self, ['sashimi', 'filter', 'nonCanonical']),
+      }
+    },
+    /** #getter */
+    get showReadConnections(): boolean {
+      return getConf(self, ['readConnections', 'show'])
+    },
+    /** #getter */
+    get readConnectionsMark(): ReadConnectionsMark {
+      return getConf(self, ['readConnections', 'mark'])
+    },
+    /**
+     * #getter
+     * The mark the read-connection band draws, or 'off' while it is hidden.
+     */
+    get drawnReadConnections(): ReadConnectionsMode {
+      return this.showReadConnections ? this.readConnectionsMark : 'off'
+    },
+    /** #getter */
+    get readConnectionsHeight(): number {
+      return getConf(self, ['readConnections', 'height'])
+    },
+    /** #getter */
+    get readConnectionsPlacement(): ReadConnectionsPlacement {
+      return getConf(self, ['readConnections', 'placement'])
+    },
+    /** #getter */
+    get readConnectionsLineWidth(): number {
+      return getConf(self, ['readConnections', 'lineWidth'])
     },
     /**
      * #getter
@@ -138,58 +225,30 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get showOrdinaryPairs(): boolean {
       return ordinaryPairsShown(
-        getConf(self, 'showOrdinaryPairs'),
-        this.readConnections === 'cloud',
+        getConf(self, ['readConnections', 'showOrdinaryPairs']),
+        this.readConnectionsMark === 'cloud',
       )
     },
     /**
      * #getter
-     * Reads a translocation must gather, within one fragment length on both
-     * sides, before its connector ticks are drawn. See
-     * `clusteredInterchromSupport` — the count is over a window because a
-     * mate-pair breakpoint is not localized to a base.
+     * `minInterchromReads` counts within one fragment length on both sides of
+     * a breakpoint (`clusteredInterchromSupport`), since a mate-pair
+     * breakpoint is not localized to a base.
      */
-    get minInterchromSupport(): number {
-      return getConf(self, 'minInterchromSupport')
-    },
-    /** #getter */
-    get showLongRange(): boolean {
-      return getConf(self, 'showLongRange')
-    },
-    /** #getter */
-    get readConnections(): ReadConnectionsMode {
-      return getConf(self, 'readConnections')
-    },
-    /** #getter */
-    get readConnectionsDown(): boolean {
-      return getConf(self, 'readConnectionsDown')
-    },
-    /**
-     * #getter
-     * Whether sashimi arcs draw: the slot, and the coverage band they hang off.
-     */
-    get showSashimiArcs(): boolean {
-      return getConf(self, 'showSashimiArcs') && this.showCoverage
-    },
-    /** #getter */
-    get sashimiArcsMode(): SashimiArcsMode {
-      return getConf(self, 'sashimiArcsMode')
-    },
-    /** #getter */
-    get minSashimiScore(): number {
-      return getConf(self, 'minSashimiScore')
-    },
-    /** #getter */
-    get sashimiArcsHeight(): number {
-      return getConf(self, 'sashimiArcsHeight')
-    },
-    /** #getter */
-    get readConnectionsHeight(): number {
-      return getConf(self, 'readConnectionsHeight')
-    },
-    /** #getter */
-    get showSoftClipping(): boolean {
-      return getConf(self, 'showSoftClipping')
+    get readConnectionsFilter(): ReadConnectionsFilter {
+      return {
+        interchrom: getConf(self, ['readConnections', 'filter', 'interchrom']),
+        offscreenMates: getConf(self, [
+          'readConnections',
+          'filter',
+          'offscreenMates',
+        ]),
+        minInterchromReads: getConf(self, [
+          'readConnections',
+          'filter',
+          'minInterchromReads',
+        ]),
+      }
     },
 
     /**
@@ -280,12 +339,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The field the arcs and the read cloud paint: `arcColor`'s own, or the
-     * reads' where `arcColor` names none.
+     * The field the arcs and the read cloud paint: `readConnections.color`'s
+     * own, or the reads' where it names none.
      */
-    get arcColorField(): ArcColorField {
+    get readConnectionsColorField(): ArcColorField {
       return arcColorFieldOf(
-        getConf(self, ['arcColor', 'field']),
+        getConf(self, ['readConnections', 'color', 'field']),
         this.colorField,
       )
     },
@@ -319,50 +378,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     */
-    // The configured fixed-mode read size, independent of the fit squeeze.
-    // Consumers that EDIT the size (the "Custom..." height dialog) must
-    // start from the configured value, not the fractional fit pitch that
-    // `featureHeight` resolves to in fit mode — otherwise opening the dialog
-    // while compressed would bake the squeezed height.
-    get configuredFeatureHeight(): number {
-      return getConf(self, 'featureHeight')
-    },
-    /**
-     * #getter
-     */
-    get maxHeight() {
-      return getConf(self, 'maxHeight')
-    },
-    /**
-     * #getter
-     * Whether to draw the supporting-read count on each sashimi arc.
-     */
-    get showSashimiLabels(): boolean {
-      return getConf(self, 'showSashimiLabels')
-    },
-    /**
-     * #getter
-     * Whether junctions with a non-canonical splice motif are dropped from
-     * the sashimi arcs.
-     */
-    get showNonCanonicalJunctions(): boolean {
-      return getConf(self, 'showNonCanonicalJunctions')
-    },
-    /**
-     * #getter
-     */
-    get fadeLowFrequencyMismatches(): boolean {
-      return getConf(self, 'fadeLowFrequencyMismatches')
-    },
-    /**
-     * #getter
-     */
-    get fadeLowQualityMismatches(): boolean {
-      return getConf(self, 'fadeLowQualityMismatches')
-    },
-    /**
-     * #getter
      * The whole-window row order: `sort`'s type, or `position` under a column
      * sort, which lays the reads off its column out by start (a tier-2
      * relayout).
@@ -381,12 +396,18 @@ export function configSlotViews(self: ConfigSlotSelf) {
         domain: getConf(self, ['facet', 'domain']),
       })
     },
-    /**
-     * #getter
-     */
-    get readConnectionsLineWidth() {
-      return getConf(self, 'readConnectionsLineWidth')
-    },
+  }
+}
+
+// One member at a time, so a patch leaves the members it does not name as
+// they were; `undefined` clears a category back to unfiltered.
+function patchFilter(
+  self: ConfigSlotSelf,
+  band: 'coverage' | 'sashimi' | 'readConnections',
+  patch: object,
+) {
+  for (const [member, value] of Object.entries(patch)) {
+    setConf(self, [band, 'filter', member] as never, value)
   }
 }
 
@@ -402,157 +423,142 @@ export function configSlotActions(self: ConfigSlotSelf) {
     /**
      * #action
      */
-    setShowSoftClipping(value: boolean) {
-      setConf(self, 'showSoftClipping', value)
-    },
-
-    /**
-     * #action
-     */
-    setFadeLowQualityMismatches(value: boolean) {
-      setConf(self, 'fadeLowQualityMismatches', value)
-    },
-
-    /**
-     * #action
-     * Writes this slot alone. The arcs draw only with the coverage band
-     * (`showSashimiArcs`), and the menu greys the row out without it
-     * rather than turning the band back on behind the user's back.
-     */
-    setShowSashimiArcs(show: boolean) {
-      setConf(self, 'showSashimiArcs', show)
-    },
-
-    /**
-     * #action
-     */
     setShowCoverage(show: boolean) {
-      setConf(self, 'showCoverage', show)
-    },
-
-    /**
-     * #action
-     */
-    setReadConnections(mode?: ReadConnectionsMode) {
-      setConf(self, 'readConnections', mode)
-    },
-
-    /**
-     * #action
-     * Whether the read-connection band hangs below the coverage band.
-     */
-    setReadConnectionsDown(down: boolean) {
-      setConf(self, 'readConnectionsDown', down)
-    },
-
-    /**
-     * #action
-     */
-    setShowPileup(show: boolean) {
-      setConf(self, 'showPileup', show)
-    },
-
-    /**
-     * #action
-     */
-    setCoverageSnpMinFrequency(fraction: number) {
-      setConf(self, 'coverageSnpMinFrequency', fraction)
-    },
-
-    /**
-     * #action
-     */
-    setMinSashimiScore(score: number) {
-      setConf(self, 'minSashimiScore', score)
-    },
-
-    /**
-     * #action
-     */
-    setSashimiArcsMode(mode: SashimiArcsMode) {
-      setConf(self, 'sashimiArcsMode', mode)
-    },
-
-    /**
-     * #action
-     */
-    setShowSashimiLabels(show: boolean) {
-      setConf(self, 'showSashimiLabels', show)
-    },
-
-    /**
-     * #action
-     */
-    setShowNonCanonicalJunctions(show: boolean) {
-      setConf(self, 'showNonCanonicalJunctions', show)
-    },
-
-    /**
-     * #action
-     */
-    setReadConnectionsLineWidth(width: number) {
-      setConf(self, 'readConnectionsLineWidth', width)
-    },
-
-    /**
-     * #action
-     */
-    setShowInterchrom(draw: boolean) {
-      setConf(self, 'showInterchrom', draw)
-    },
-
-    /**
-     * #action
-     */
-    setShowOrdinaryPairs(show?: boolean) {
-      setConf(self, 'showOrdinaryPairs', show)
-    },
-
-    /**
-     * #action
-     */
-    setMinInterchromSupport(support: number) {
-      setConf(self, 'minInterchromSupport', support)
-    },
-
-    /**
-     * #action
-     */
-    setShowLongRange(draw: boolean) {
-      setConf(self, 'showLongRange', draw)
-    },
-
-    /**
-     * #action
-     * Paint the arcs by `field`, `''` following the reads. `arcColor`
-     * holds a field and nothing else, so it skips `colorForField`, whose
-     * `scale: 'none'` it has no slot for.
-     */
-    setArcColorField(field: ArcColorField | '') {
-      setConf(self, ['arcColor', 'field'], field)
-    },
-
-    /**
-     * #action
-     */
-    setShowMismatches(show: boolean) {
-      setConf(self, 'showMismatches', show)
+      setConf(self, ['coverage', 'show'], show)
     },
 
     /**
      * #action
      */
     setShowInterbaseIndicators(show: boolean) {
-      setConf(self, 'showInterbaseIndicators', show)
+      setConf(self, ['coverage', 'showInterbaseIndicators'], show)
     },
 
     /**
      * #action
-     * Toggle the paired-read connection overlay. A main-thread tier-2/4
-     * setting, not in `rpcProps`: toggling never refetches.
      */
-    setShowBezierConnections(flag: boolean) {
-      setConf(self, 'showBezierConnections', flag)
+    setCoverageFilter(patch: Partial<CoverageFilter>) {
+      patchFilter(self, 'coverage', patch)
+    },
+
+    /**
+     * #action
+     */
+    setShowPileup(show: boolean) {
+      setConf(self, ['pileup', 'show'], show)
+    },
+
+    /**
+     * #action
+     */
+    setShowMismatches(show: boolean) {
+      setConf(self, ['pileup', 'showMismatches'], show)
+    },
+
+    /**
+     * #action
+     */
+    setShowSoftClipping(value: boolean) {
+      setConf(self, ['pileup', 'showSoftClipping'], value)
+    },
+
+    /**
+     * #action
+     * A main-thread tier-2/4 setting, not in `rpcProps`: toggling never
+     * refetches.
+     */
+    setShowConnectors(flag: boolean) {
+      setConf(self, ['pileup', 'showConnectors'], flag)
+    },
+
+    /**
+     * #action
+     */
+    setFadeLowQuality(value: boolean) {
+      setConf(self, ['pileup', 'fadeLowQuality'], value)
+    },
+
+    /**
+     * #action
+     * Writes `sashimi.show` alone. The arcs draw only with the coverage band
+     * (`showSashimi`), and the menu greys the row out without it rather than
+     * turning the band back on behind the user's back.
+     */
+    setShowSashimi(show: boolean) {
+      setConf(self, ['sashimi', 'show'], show)
+    },
+
+    /**
+     * #action
+     */
+    setSashimiPlacement(placement: SashimiPlacement) {
+      setConf(self, ['sashimi', 'placement'], placement)
+    },
+
+    /**
+     * #action
+     */
+    setShowSashimiCounts(show: boolean) {
+      setConf(self, ['sashimi', 'showCounts'], show)
+    },
+
+    /**
+     * #action
+     */
+    setSashimiFilter(patch: Partial<SashimiFilter>) {
+      patchFilter(self, 'sashimi', patch)
+    },
+
+    /**
+     * #action
+     * What the "Connection overlay" radio writes: 'off' hides the band and
+     * keeps its mark for the way back.
+     */
+    setDrawnReadConnections(mode: ReadConnectionsMode) {
+      if (mode === 'off') {
+        setConf(self, ['readConnections', 'show'], false)
+      } else {
+        setConf(self, ['readConnections', 'mark'], mode)
+        setConf(self, ['readConnections', 'show'], true)
+      }
+    },
+
+    /**
+     * #action
+     */
+    setReadConnectionsPlacement(placement: ReadConnectionsPlacement) {
+      setConf(self, ['readConnections', 'placement'], placement)
+    },
+
+    /**
+     * #action
+     */
+    setReadConnectionsLineWidth(width: number) {
+      setConf(self, ['readConnections', 'lineWidth'], width)
+    },
+
+    /**
+     * #action
+     * Paint the connections by `field`, `''` following the reads.
+     * `readConnections.color` holds a field and nothing else, so it skips
+     * `colorForField`, whose `scale: 'none'` it has no slot for.
+     */
+    setReadConnectionsColorField(field: ArcColorField | '') {
+      setConf(self, ['readConnections', 'color', 'field'], field)
+    },
+
+    /**
+     * #action
+     */
+    setShowOrdinaryPairs(show?: boolean) {
+      setConf(self, ['readConnections', 'showOrdinaryPairs'], show)
+    },
+
+    /**
+     * #action
+     */
+    setReadConnectionsFilter(patch: Partial<ReadConnectionsFilter>) {
+      patchFilter(self, 'readConnections', patch)
     },
   }
 }

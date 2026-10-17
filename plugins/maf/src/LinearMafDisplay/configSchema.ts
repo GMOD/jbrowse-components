@@ -1,3 +1,4 @@
+import { coverageBandConfigSchema } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
@@ -8,9 +9,9 @@ import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConf
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafColorConfigSchema } from './mafColorConfigSchema.ts'
+import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -39,8 +40,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   },
  *   displayDefaults: {
  *     rowHeight: 12,
- *     showConservation: true,
- *     conservationHeight: 40,
+ *     conservation: { show: true, height: 40 },
  *     showRowLabels: true,
  *   },
  * }
@@ -160,30 +160,20 @@ export default function configSchemaF() {
         defaultValue: true,
       },
       /**
-       * #slot
+       * #slot coverage
+       * The coverage band: `show`, `height`, `showInterbaseIndicators` and
+       * `filter.minAlleleFraction`, as the alignments display spells it.
        */
-      showCoverage: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showCoverage,
-        description: 'show the coverage band',
-      },
+      coverage: coverageBandConfigSchema,
       /**
        * #slot
-       * Show the per-sample alignment rows. When off, only the coverage band
-       * renders (independent of `showCoverage`).
+       * Show the per-sample alignment rows. When off, only the bands above
+       * them render.
        */
       showAlignments: {
         type: 'boolean',
         defaultValue: DEFAULTS.showAlignments,
         description: 'show the per-sample alignment rows',
-      },
-      /**
-       * #slot
-       */
-      coverageHeight: {
-        type: 'number',
-        defaultValue: DEFAULTS.coverageHeight,
-        description: 'height of the coverage band in px',
       },
       /**
        * #slot
@@ -196,56 +186,11 @@ export default function configSchemaF() {
         }),
       ),
       /**
-       * #slot
+       * #slot conservation
+       * The band of identity to the reference: `show` (default off),
+       * `height` and `unit`, `base` or `codon`.
        */
-      coverageSnpMinFrequency: {
-        type: 'number',
-        defaultValue: 0,
-        description:
-          "hide a coverage-band allele segment whose share of that position's depth is below this fraction; 0 colors every mismatch",
-        advanced: true,
-      },
-      /**
-       * #slot
-       */
-      showInterbaseIndicators: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          "draw the coverage band's insertion count bars and indicator triangles",
-      },
-      /**
-       * #slot
-       * Show the conservation band (per-bp percent identity to the reference).
-       * Independent of `showCoverage`/`showAlignments`.
-       */
-      showConservation: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showConservation,
-        description: 'show the conservation band',
-      },
-      /**
-       * #slot
-       */
-      conservationHeight: {
-        type: 'number',
-        defaultValue: DEFAULTS.conservationHeight,
-        description: 'height of the conservation band in px',
-      },
-      /**
-       * #slot
-       * Conservation band resolution: `base` (per-bp percent identity) or
-       * `codon` (per-codon amino-acid identity; needs an `annotationAdapter`).
-       */
-      conservationMode: {
-        type: 'stringEnum',
-        model: types.enumeration(
-          'MafConservationMode',
-          CONSERVATION_MODE_VALUES,
-        ),
-        defaultValue: DEFAULTS.conservationMode,
-        description: 'conservation band resolution: base or codon',
-      },
+      conservation: mafConservationConfigSchema,
       /**
        * #slot
        * When true (the default), identity, as `color` or as `y`, draws only

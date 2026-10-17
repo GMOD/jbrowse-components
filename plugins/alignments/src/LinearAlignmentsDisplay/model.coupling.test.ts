@@ -119,65 +119,64 @@ function createDisplay({ withRegions = false } = {}) {
 describe('alignments display cross-feature coupling', () => {
   // The menu greys the toggle out while the band is off, so the action writes
   // its own slot and never turns coverage back on
-  test('setShowSashimiArcs leaves coverage alone', () => {
+  test('setShowSashimi leaves coverage alone', () => {
     const display = createDisplay()
     display.setShowCoverage(false)
 
-    display.setShowSashimiArcs(true)
+    display.setShowSashimi(true)
     expect(display.showCoverage).toBe(false)
-    expect(display.showSashimiArcs).toBe(false)
+    expect(display.showSashimi).toBe(false)
 
     display.setShowCoverage(true)
-    expect(display.showSashimiArcs).toBe(true)
+    expect(display.showSashimi).toBe(true)
   })
 
   // Sashimi draws only over the coverage band, so with the band off the arcs are
   // off whatever the slot says, and turning the band back on restores the slot.
   test('sashimi resolves off while coverage is off, and returns with it', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
+    display.setShowSashimi(true)
     expect(display.showCoverage).toBe(true)
 
     display.setShowCoverage(false)
-    expect(display.showSashimiArcs).toBe(false)
+    expect(display.showSashimi).toBe(false)
 
     display.setShowCoverage(true)
-    expect(display.showSashimiArcs).toBe(true)
+    expect(display.showSashimi).toBe(true)
   })
 
-  // Direction is a single shared field (readConnectionsDown); sashimi stores
-  // no direction of its own, so there is nothing to keep in sync and
-  // setReadConnectionsDown can't disturb sashimi visibility.
-  test('setReadConnectionsDown does not affect sashimi visibility', () => {
+  // Each layer holds its own placement, so moving the read connections cannot
+  // disturb sashimi visibility.
+  test('setReadConnectionsPlacement does not affect sashimi visibility', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
+    display.setShowSashimi(true)
 
-    display.setReadConnectionsDown(true)
-    expect(display.showSashimiArcs).toBe(true)
-    expect(display.readConnectionsDown).toBe(true)
+    display.setReadConnectionsPlacement('down')
+    expect(display.showSashimi).toBe(true)
+    expect(display.readConnectionsPlacement).toBe('down')
 
-    display.setShowSashimiArcs(false)
-    display.setReadConnectionsDown(false)
-    expect(display.showSashimiArcs).toBe(false)
-    expect(display.readConnectionsDown).toBe(false)
+    display.setShowSashimi(false)
+    display.setReadConnectionsPlacement('up')
+    expect(display.showSashimi).toBe(false)
+    expect(display.readConnectionsPlacement).toBe('up')
   })
 
   // One slot for both overlays: unset, each keeps its own default, and a
   // value the user picked carries across a switch.
   test('showOrdinaryPairs resolves per overlay until set', () => {
     const display = createDisplay()
-    display.setReadConnections('arc')
+    display.setDrawnReadConnections('arc')
     expect(display.showOrdinaryPairs).toBe(true)
-    display.setReadConnections('cloud')
+    display.setDrawnReadConnections('cloud')
     expect(display.showOrdinaryPairs).toBe(false)
 
     display.setShowOrdinaryPairs(true)
     expect(display.showOrdinaryPairs).toBe(true)
-    display.setReadConnections('arc')
+    display.setDrawnReadConnections('arc')
     expect(display.showOrdinaryPairs).toBe(true)
 
     display.setShowOrdinaryPairs(undefined)
-    display.setReadConnections('cloud')
+    display.setDrawnReadConnections('cloud')
     expect(display.showOrdinaryPairs).toBe(false)
   })
 })
@@ -371,58 +370,58 @@ describe('setUnit color scheme preservation', () => {
 describe('Arc color menu visibility', () => {
   test('hidden when no read-connection overlay is active', () => {
     const display = createDisplay()
-    display.setReadConnections('off')
+    display.setDrawnReadConnections('off')
     expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(false)
   })
 
   test('shown for read arcs', () => {
     const display = createDisplay()
-    display.setReadConnections('arc')
+    display.setDrawnReadConnections('arc')
     expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 
   test('shown for read cloud', () => {
     const display = createDisplay()
-    display.setReadConnections('cloud')
+    display.setDrawnReadConnections('cloud')
     expect(hasMenuItem(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 })
 
 describe('arc color follows the reads unless it names its own field', () => {
-  test('an empty arcColor takes a pair field from the reads', () => {
+  test('an empty readConnections.color takes a pair field from the reads', () => {
     const display = createDisplay()
-    display.setArcColorField('')
+    display.setReadConnectionsColorField('')
     display.colorByField('pairOrientation')
-    expect(display.arcColorField).toBe('pairOrientation')
+    expect(display.readConnectionsColorField).toBe('pairOrientation')
     display.colorByField('strand')
-    expect(display.arcColorField).toBe('insertSizeAndOrientation')
+    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
   })
 
-  test('a display naming no arcColor follows the reads', () => {
+  test('a display naming no readConnections.color follows the reads', () => {
     const display = createDisplay()
     display.colorByField('insertSize')
-    expect(display.arcColorField).toBe('insertSize')
+    expect(display.readConnectionsColorField).toBe('insertSize')
   })
 
-  test('an arcColor field of its own ignores the reads', () => {
+  test('a readConnections.color field of its own ignores the reads', () => {
     const display = createDisplay()
-    display.setArcColorField('insertSize')
+    display.setReadConnectionsColorField('insertSize')
     display.colorByField('pairOrientation')
-    expect(display.arcColorField).toBe('insertSize')
+    expect(display.readConnectionsColorField).toBe('insertSize')
   })
 
   test('the Arc color radios write the field, Same as reads the empty one', () => {
     const display = createDisplay()
-    display.setReadConnections('arc')
+    display.setDrawnReadConnections('arc')
     display.colorByField('insertSize')
     const arcMenu = () => menuSubItems(display.trackMenuItems(), 'Arc color')
     clickMenuItem(arcMenu(), 'Pair orientation')
-    expect(display.arcColorField).toBe('pairOrientation')
+    expect(display.readConnectionsColorField).toBe('pairOrientation')
     expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
       checked: false,
     })
     clickMenuItem(arcMenu(), 'Same as reads')
-    expect(display.arcColorField).toBe('insertSize')
+    expect(display.readConnectionsColorField).toBe('insertSize')
     expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
       checked: true,
     })
@@ -592,7 +591,7 @@ describe('sort refName normalization', () => {
 
 // Chain layout is handed no `sort` — its rows
 // are chains — so every ordering control has to curate itself out the way
-// `canCollapseGroupRows` already does, or a sort is a silent no-op (and a tag
+// `canCollapseSections` already does, or a sort is a silent no-op (and a tag
 // sort refetches the region for values nothing reads).
 describe('ordering controls in chain mode', () => {
   test('"Sort by..." greys out, naming chain mode as the reason', () => {
@@ -679,16 +678,16 @@ describe('ordering controls in chain mode', () => {
 
   // The collapse is the same shape of no-op, and the one you can arrive at with
   // the slot already on: tick it under a chain-consistent grouping, then switch
-  // to linked reads. The menu row goes with `canCollapseGroupRows`, so from
-  // there it can't be unticked — and `collapseGroupRows` has to answer "is the
+  // to linked reads. The menu row goes with `canCollapseSections`, so from
+  // there it can't be unticked — and `collapseSections` has to answer "is the
   // collapse IN EFFECT", since the layout lays chains out as true stacks
   // whatever the slot says and the label chip words its height button off this.
   test('the collapse stops being in effect when chain mode starts', () => {
     const display = createDisplay()
     display.setFacet({ field: 'tags.HP' })
-    display.setCollapseGroupRows(true)
-    expect(display.collapseGroupRows).toBe(true)
-    expect(display.canCollapseGroupRows).toBe(true)
+    display.setCollapseSections(true)
+    expect(display.collapseSections).toBe(true)
+    expect(display.canCollapseSections).toBe(true)
     expect(
       hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
     ).toBe(true)
@@ -697,8 +696,8 @@ describe('ordering controls in chain mode', () => {
     // the grouping survives — `tag` is chain-consistent — so this is the
     // collapse alone stepping aside, not the whole grouping degrading
     expect(display.prefersOffset).toBe(true)
-    expect(display.canCollapseGroupRows).toBe(false)
-    expect(display.collapseGroupRows).toBe(false)
+    expect(display.canCollapseSections).toBe(false)
+    expect(display.collapseSections).toBe(false)
     expect(
       hasMenuItem(display.trackMenuItems(), 'Collapse groups to one row'),
     ).toBe(false)
@@ -816,7 +815,7 @@ describe('cross-region chain connectors', () => {
 
   test('ticking curved connectors widens it back to every connection', () => {
     const display = createDisplay()
-    display.setShowBezierConnections(true)
+    display.setShowConnectors(true)
     expect(display.bezierArcScope).toBe('all')
 
     // and chain mode doesn't narrow an explicit choice
@@ -833,7 +832,7 @@ describe('curved connectors', () => {
 
   function connectorDisplay() {
     const display = createDisplay({ withRegions: true })
-    display.setShowBezierConnections(true)
+    display.setShowConnectors(true)
     display.setRpcData(
       0,
       {
@@ -884,7 +883,7 @@ describe('curved connectors', () => {
     const colored = display.laidOutByGroupColored
     expect(display.laidOutByGroup.get('')?.get(0)?.numLinkedReadLines).toBe(1)
 
-    display.setShowBezierConnections(false)
+    display.setShowConnectors(false)
     expect(display.laidOutByGroupFramed).toBe(layout)
     expect(display.laidOutByGroupColored).toBe(colored)
     expect(display.laidOutByGroup.get('')?.get(0)?.numLinkedReadLines).toBe(0)
@@ -1255,41 +1254,41 @@ describe('sashimi score filter releases the reserved band', () => {
 
   test('auto: filtering out the crossing junction gives the strip back to the pileup', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
-    display.setSashimiArcsMode('auto')
-    display.setMinSashimiScore(0)
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('auto')
+    display.setSashimiFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
     expect(display.coverageDisplayHeight).toBe(
-      display.coverageHeight + display.sashimiArcsHeight,
+      display.coverageHeight + display.sashimiHeight,
     )
 
     // drops the 2-read junction => nothing left to cross => nothing goes down
-    display.setMinSashimiScore(5)
+    display.setSashimiFilter({ minReads: 5 })
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
     expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
   })
 
   test('down: the strip stays reserved for any surviving junction', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
-    display.setSashimiArcsMode('down')
-    display.setMinSashimiScore(5)
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('down')
+    display.setSashimiFilter({ minReads: 5 })
     seedCrossingJunctions(display)
 
     // the 20-read junction survives and still draws below coverage
     expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
 
-    display.setMinSashimiScore(50)
+    display.setSashimiFilter({ minReads: 50 })
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
   })
 
   test('up: arcs overlay coverage, so the strip is never reserved', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
-    display.setSashimiArcsMode('up')
-    display.setMinSashimiScore(0)
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('up')
+    display.setSashimiFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
@@ -1302,9 +1301,9 @@ describe('sashimi score filter releases the reserved band', () => {
   // in that same set.
   test('auto: the lane names the junction the overlay will draw below', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
-    display.setSashimiArcsMode('auto')
-    display.setMinSashimiScore(0)
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('auto')
+    display.setSashimiFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
     expect([...display.sashimiDownArcLanes]).toEqual([''])
@@ -1320,9 +1319,9 @@ describe('sashimi score filter releases the reserved band', () => {
   // every lane's coverage that no arc was ever bound for.
   test('auto: two chromosomes in view do not cross each other', () => {
     const display = createDisplay()
-    display.setShowSashimiArcs(true)
-    display.setSashimiArcsMode('auto')
-    display.setMinSashimiScore(0)
+    display.setShowSashimi(true)
+    display.setSashimiPlacement('auto')
+    display.setSashimiFilter({ minReads: 0 })
     const junction = (start: number, end: number): WorkerPileupData => ({
       ...makeEmptyPileupData(),
       sashimiX1: new Uint32Array([start]),
@@ -1526,7 +1525,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const before = region0(display)
 
     // Read height is a genuine layout input — it sets how many rows fit.
-    display.setFeatureHeight(display.configuredFeatureHeight + 3)
+    display.setReadHeight(display.configuredReadHeight + 3)
 
     expect(region0(display).readYs).not.toBe(before.readYs)
   })

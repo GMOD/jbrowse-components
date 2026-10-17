@@ -461,7 +461,7 @@ export default function stateModelFactory(
           return (
             (self.showAnnotations ||
               self.colorField === 'codon' ||
-              (self.showConservation && self.conservationMode === 'codon')) &&
+              (self.showConservation && self.conservationUnit === 'codon')) &&
             !!self.annotationAdapterConfig
           )
         },
@@ -990,7 +990,7 @@ export default function stateModelFactory(
         resizeCoverageHeight(distance: number) {
           setConf(
             self,
-            'coverageHeight',
+            ['coverage', 'height'],
             clampBandHeight(
               self.coverageHeight,
               self.coverageHeight + distance,
@@ -1006,7 +1006,7 @@ export default function stateModelFactory(
         resizeConservationHeight(distance: number) {
           setConf(
             self,
-            'conservationHeight',
+            ['conservation', 'height'],
             clampBandHeight(
               self.conservationHeight,
               self.conservationHeight + distance,
@@ -1248,7 +1248,7 @@ export default function stateModelFactory(
               domainMax,
               self.symlogConstant,
             ),
-            snpMinFrequency: self.coverageSnpMinFrequency,
+            minAlleleFraction: self.coverageFilter.minAlleleFraction,
             showInterbase: self.showInterbaseIndicators,
             colors: self.coverageBandColors,
           }
@@ -1376,7 +1376,7 @@ export default function stateModelFactory(
                 basePos,
                 bpPerPx,
                 reversed,
-                self.coverageSnpMinFrequency,
+                self.coverageFilter.minAlleleFraction,
               )
             : undefined
         },
@@ -1732,7 +1732,7 @@ export default function stateModelFactory(
           return (
             self.host.initialized &&
             self.conservationBandActive &&
-            self.conservationMode === 'codon' &&
+            self.conservationUnit === 'codon' &&
             !!self.annotationAdapterConfig &&
             !!self.defaultCodonSpecies
           )

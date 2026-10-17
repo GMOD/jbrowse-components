@@ -330,11 +330,13 @@ still colors by strand. This needs a sequence adapter on the assembly.
 
 The track menu's **Sashimi arcs** submenu controls them:
 
-- **Show labels** prints each junction's supporting-read count on its arc
-- **Hide non-canonical junctions** drops junctions whose motif is none of the
-  three canonical pairs. On deep RNA-seq the thin arcs are mostly these, so it
-  is the filter to reach for first
+- **Show read counts** prints each junction's supporting-read count on its arc
 - **Arc placement** splits the arcs above/below the coverage row
+- **Non-canonical junctions → Hide non-canonical junctions** drops junctions
+  whose motif is none of the three canonical pairs. On deep RNA-seq the thin
+  arcs are mostly these, so it is the filter to reach for first. **Only
+  non-canonical junctions** in the same submenu keeps just those, for checking
+  an aligner's output
 - **Min read support** drops the junctions with fewer reads than the slider's
   value
 
@@ -368,13 +370,13 @@ nothing across chromosomes.
 insert size, pair orientation, or both. **Same as reads**, the default, takes
 the read color when the reads are colored by one of those three, and paints
 insert size and orientation under any other read color. The
-[`arcColor`](/docs/config/linearalignmentsdisplay/#slot-arccolor) slot holds the
+[`readConnections.color`](/docs/config/readconnections/#slot-color) holds the
 choice, `""` meaning same as reads.
 
 Reads describing the same connection draw as **one arc, thickened by how many
 there are**, on a log scale, so the arcs rank the evidence. A single-read
 connection draws at
-[`readConnectionsLineWidth`](/docs/config/linearalignmentsdisplay/#slot-readconnectionslinewidth).
+[`readConnections.lineWidth`](/docs/config/readconnections/#slot-linewidth).
 Arcs coalesce only on exactly equal endpoints.
 
 Hovering an arc reports its location, the distance between the ends, the

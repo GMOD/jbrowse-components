@@ -139,6 +139,7 @@ import {
   sashimiLegendItems,
 } from './shared/legendUtils.ts'
 import { getModificationName } from './shared/modificationData.ts'
+import { passesCategory } from './shared/readCategoryFilters.ts'
 import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
@@ -150,7 +151,10 @@ import { getColorForModification } from './util.ts'
 import type { RefNamePosition } from './LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
-import type { ReadConnectionsMode } from './LinearAlignmentsDisplay/constants.ts'
+import type {
+  ReadConnectionsMark,
+  ReadConnectionsMode,
+} from './LinearAlignmentsDisplay/constants.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
   LaidOutPileupData,
@@ -166,6 +170,7 @@ import type {
   InterbaseTypeName,
   LayoutOrder,
   ModificationColorBy,
+  SashimiFilter,
   SortColumn,
 } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -232,11 +237,9 @@ export interface AlignmentTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearAlignmentsDisplay`. The tables read its `color`, `filter`,
-   * `baseColor`, `modifications`, `sort` and `facet` objects, and its read
-   * connections: `readConnections` (`'arc'` or `'cloud'`), `arcColor`,
-   * `showInterchrom`, `showLongRange`, `showOrdinaryPairs`,
-   * `minInterchromSupport` and `readConnectionsLineWidth`. Unset reads the
-   * default display.
+   * `baseColor`, `modifications`, `sort` and `facet` objects, and its four
+   * bands: `coverage`, `pileup`, `sashimi` and `readConnections`, each with
+   * its own `show` and `filter`. Unset reads the default display.
    */
   display?: Record<string, unknown>
   /**
@@ -365,9 +368,8 @@ type MarkColors = ReturnType<typeof markColors>
 
 /** What the display hides of the coverage band's stacks and the sashimi arcs. */
 interface MarkThresholds {
-  coverageSnpMinFrequency: number
-  minSashimiScore: number
-  showNonCanonicalJunctions: boolean
+  minAlleleFraction: number
+  sashimi: SashimiFilter
 }
 
 function positionIn(refNames: readonly string[]): RefNamePosition {
@@ -701,9 +703,9 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
  * merges them: each once, with its supporting-read count, the strand its
  * reads' tags or its splice motif give it (0 where neither says), and the
  * motif where the reference was read. Every junction, down to a single
- * read, with `shown` false where the display's `minSashimiScore` or
- * `showNonCanonicalJunctions` hides it; a junction whose motif was never read
- * stays shown, as the display keeps it. `arcHeight` is the apex as a fraction
+ * read, with `shown` false where the display's `sashimi.filter` hides it; a
+ * junction whose motif was never read counts as canonical, as the display
+ * counts it. `arcHeight` is the apex as a fraction
  * of the band and `strokeWidth` the stroke in px, the sashimi marks' own.
  * A junction the reads of several regions show is merged once, as the
  * sashimi band merges it, and `startRegion` and `endRegion` name the region
@@ -721,12 +723,7 @@ function junctions(
       contigOrder.set(refName, contigOrder.size)
     }
   }
-  const merged = [
-    ...mergeJunctions(perRegion, {
-      minSashimiScore: 0,
-      showNonCanonicalJunctions: true,
-    }).values(),
-  ].sort(
+  const merged = [...mergeJunctions(perRegion, { minReads: 0 }).values()].sort(
     (a, b) =>
       contigOrder.get(a.refName)! - contigOrder.get(b.refName)! ||
       a.start - b.start ||
@@ -743,9 +740,11 @@ function junctions(
     color: merged.map(j => paint.junction(j.strand)),
     shown: merged.map(
       j =>
-        j.count >= thresholds.minSashimiScore &&
-        (thresholds.showNonCanonicalJunctions ||
-          !isNonCanonicalSpliceMotif(j.motif)),
+        j.count >= thresholds.sashimi.minReads &&
+        passesCategory(
+          isNonCanonicalSpliceMotif(j.motif),
+          thresholds.sashimi.nonCanonical,
+        ),
     ),
     arcHeight: merged.map(j =>
       sashimiArcHeightFraction(Math.abs(j.end - j.start)),
@@ -853,10 +852,12 @@ function readConnectionTables(
   regionInfos: RegionInfo[],
   colors: ReturnType<typeof colorReads>,
 ) {
-  const mode: ReadConnectionsMode = readConfObject(conf, 'readConnections')
+  const band = conf.readConnections
+  const mark: ReadConnectionsMark = readConfObject(band, 'mark')
+  const mode: ReadConnectionsMode = readConfObject(band, 'show') ? mark : 'off'
   const cloud = mode === 'cloud'
   const colorField = arcColorFieldOf(
-    readConfObject(conf.arcColor, 'field'),
+    readConfObject(band, ['color', 'field']),
     colors.readField,
   )
   const result =
@@ -868,19 +869,27 @@ function readConnectionTables(
           {
             colorField,
             cloud,
-            showInterchrom: readConfObject(conf, 'showInterchrom'),
-            showLongRange: readConfObject(conf, 'showLongRange'),
+            filter: {
+              interchrom: readConfObject(band, ['filter', 'interchrom']),
+              offscreenMates: readConfObject(band, [
+                'filter',
+                'offscreenMates',
+              ]),
+              minInterchromReads: readConfObject(band, [
+                'filter',
+                'minInterchromReads',
+              ]),
+            },
             showOrdinaryPairs: ordinaryPairsShown(
-              readConfObject(conf, 'showOrdinaryPairs'),
+              readConfObject(band, 'showOrdinaryPairs'),
               cloud,
             ),
-            minInterchromSupport: readConfObject(conf, 'minInterchromSupport'),
           },
         )
   const slotColor = buildArcColorPalette(colors.palette, colorField).map(
     normalizedRgbToHex,
   )
-  const lineWidth: number = readConfObject(conf, 'readConnectionsLineWidth')
+  const lineWidth: number = readConfObject(band, 'lineWidth')
   const stroke = arcStrokeScale(lineWidth)
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
@@ -1051,7 +1060,7 @@ function sectionTables(
     ...interbase(d, paint),
     modifications: modifications(d),
     qualities: qualities(d, plainRead),
-    ...coverageBand(d, region, paint, thresholds.coverageSnpMinFrequency),
+    ...coverageBand(d, region, paint, thresholds.minAlleleFraction),
   }
 }
 
@@ -1065,7 +1074,7 @@ function coverageBand(
   d: WorkerPileupData,
   region: { start: number; end: number },
   paint: MarkColors,
-  snpMinFrequency: number,
+  minAlleleFraction: number,
 ) {
   const bin = d.coverageBinSize
   const first = Math.max(
@@ -1084,7 +1093,7 @@ function coverageBand(
   const inside = (position: number) =>
     position >= region.start && position < region.end
   const stacks = {
-    ...coverageStacks(d, paint, snpMinFrequency),
+    ...coverageStacks(d, paint, minAlleleFraction),
     ...interbaseStacks(d, paint),
   }
   return {
@@ -1174,7 +1183,7 @@ function coverageScale(
     symlogConstant: resolveSymlogConstant(domain[0], domain[1], symlogConstant),
     ticks: computeCoverageTicks(
       domain,
-      readConfObject(conf, 'coverageHeight'),
+      readConfObject(conf, ['coverage', 'height']),
       type,
       symlogConstant,
       readConfObject(scale, 'minimalTicks'),
@@ -1254,8 +1263,11 @@ export async function alignmentTables(
   )
   const sortTag = sortColumn?.type === 'tag' ? sortColumn.tag : undefined
   const chain = readConfObject(conf, 'unit') === 'chain'
-  const featureHeight: number = readConfObject(conf, 'featureHeight')
-  const softClippingAsked: boolean = readConfObject(conf, 'showSoftClipping')
+  const featureHeight: number = readConfObject(conf, ['pileup', 'readHeight'])
+  const softClippingAsked: boolean = readConfObject(conf, [
+    'pileup',
+    'showSoftClipping',
+  ])
   const showSoftClipping = !chain && softClippingAsked
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
@@ -1364,12 +1376,15 @@ export async function alignmentTables(
   )
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {
-    coverageSnpMinFrequency: readConfObject(conf, 'coverageSnpMinFrequency'),
-    minSashimiScore: readConfObject(conf, 'minSashimiScore'),
-    showNonCanonicalJunctions: readConfObject(
-      conf,
-      'showNonCanonicalJunctions',
-    ),
+    minAlleleFraction: readConfObject(conf, [
+      'coverage',
+      'filter',
+      'minAlleleFraction',
+    ]),
+    sashimi: {
+      minReads: readConfObject(conf, ['sashimi', 'filter', 'minReads']),
+      nonCanonical: readConfObject(conf, ['sashimi', 'filter', 'nonCanonical']),
+    },
   }
   const band = colors.insertSizeBand
   const connections = readConnectionTables(
@@ -1427,7 +1442,8 @@ export async function alignmentTables(
         : []
     }),
   )
-  const tables = drawnBands(conf, {
+  const bands = composingBands(conf)
+  const tables = drawnBands(bands, {
     ...joinSections(pileups, t => t.reads.start.length),
     ...joinSections(
       regions.flatMap((_, i) =>
@@ -1492,9 +1508,7 @@ export async function alignmentTables(
       coverageInset: YSCALEBAR_LABEL_OFFSET,
       interbaseTop: interbaseEdgePx(0, 0),
     },
-    settings: Object.fromEntries(
-      COMPOSING_SLOTS.map(slot => [slot, readConfObject(conf, slot)]),
-    ) as Record<(typeof COMPOSING_SLOTS)[number], unknown>,
+    settings: bands,
     readPitch: {
       featureHeight,
       featureSpacing: featureSpacingForHeight(featureHeight),
@@ -1626,41 +1640,61 @@ function markLegends(
 }
 
 /**
- * The tables each `show*` slot turns off with its band, as the display then
- * draws none of them.
+ * The display's four bands, resolved, which decide which a host stacks, what
+ * each hides and how many pixels each takes, so a host composes the track from
+ * the config it was read with rather than restating the defaults.
+ */
+function composingBands(conf: DisplayConf) {
+  return {
+    coverage: fullConfSnapshot(conf.coverage),
+    pileup: fullConfSnapshot(conf.pileup),
+    sashimi: fullConfSnapshot(conf.sashimi),
+    readConnections: fullConfSnapshot(conf.readConnections),
+  }
+}
+
+/**
+ * The tables each band member turns off with it, as the display then draws
+ * none of them.
  */
 const BAND_TABLES = {
-  showPileup: [
-    'reads',
-    'mismatches',
-    'gaps',
-    'insertions',
-    'clips',
-    'modifications',
-    'qualities',
-    'chains',
-    'overlaps',
-  ],
-  showMismatches: ['mismatches'],
-  showCoverage: [
-    'coverage',
-    'alleleCoverage',
-    'modificationCoverage',
-    'interbaseCoverage',
-    'indicators',
-  ],
-  showInterbaseIndicators: ['interbaseCoverage', 'indicators'],
-  showSashimiArcs: ['junctions'],
+  pileup: {
+    show: [
+      'reads',
+      'mismatches',
+      'gaps',
+      'insertions',
+      'clips',
+      'modifications',
+      'qualities',
+      'chains',
+      'overlaps',
+    ],
+    showMismatches: ['mismatches'],
+  },
+  coverage: {
+    show: [
+      'coverage',
+      'alleleCoverage',
+      'modificationCoverage',
+      'interbaseCoverage',
+      'indicators',
+    ],
+    showInterbaseIndicators: ['interbaseCoverage', 'indicators'],
+  },
+  sashimi: { show: ['junctions'] },
 } as const
 
 /** The tables, each of a band the display does not draw left empty. */
 function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
-  conf: DisplayConf,
+  bands: ReturnType<typeof composingBands>,
   tables: T,
 ) {
   const hidden = new Set<string>(
-    (Object.keys(BAND_TABLES) as (keyof typeof BAND_TABLES)[]).flatMap(slot =>
-      readConfObject(conf, slot) ? [] : BAND_TABLES[slot],
+    Object.entries(BAND_TABLES).flatMap(([band, members]) =>
+      Object.entries(members).flatMap(([member, names]) =>
+        bands[band as keyof typeof BAND_TABLES][member] ? [] : names,
+      ),
     ),
   )
   return Object.fromEntries(
@@ -1672,28 +1706,5 @@ function drawnBands<T extends Record<string, Record<string, unknown[]>>>(
     ]),
   ) as T
 }
-
-/**
- * The display's slots that decide which bands a host stacks, what each
- * hides and how many pixels each takes, resolved, so a host composes the
- * track from the config it was read with rather than restating the defaults.
- */
-const COMPOSING_SLOTS = [
-  'showCoverage',
-  'showPileup',
-  'showMismatches',
-  'showSashimiArcs',
-  'minSashimiScore',
-  'coverageSnpMinFrequency',
-  'showInterbaseIndicators',
-  'showNonCanonicalJunctions',
-  'fadeLowFrequencyMismatches',
-  'fadeLowQualityMismatches',
-  'readConnections',
-  'featureHeight',
-  'coverageHeight',
-  'sashimiArcsHeight',
-  'readConnectionsHeight',
-] as const
 
 export type AlignmentTables = Awaited<ReturnType<typeof alignmentTables>>

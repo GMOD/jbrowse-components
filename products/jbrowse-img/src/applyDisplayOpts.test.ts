@@ -82,11 +82,11 @@ describe("batch's one-row junction", () => {
       return calls[0]
     }
     expect(await snapOf([])).toEqual({
-      readConnections: 'arc',
+      readConnections: { show: true, mark: 'arc' },
       sort: 'svSignal',
     })
     expect(await snapOf(['arcs:off', 'sort=position'])).toEqual({
-      readConnections: 'off',
+      readConnections: { show: false },
       sort: 'position',
     })
     expect(await snapOf([], 'feature')).toEqual({})

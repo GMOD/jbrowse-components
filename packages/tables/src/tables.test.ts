@@ -350,7 +350,7 @@ test('a band the display hides leaves its tables empty', async () => {
   ).toBe(false)
   const noCoverage = await engine.alignments({
     ...SPLICED,
-    display: { showCoverage: false },
+    display: { coverage: { show: false } },
   })
   for (const table of [
     noCoverage.coverage,
@@ -363,7 +363,7 @@ test('a band the display hides leaves its tables empty', async () => {
   expect(noCoverage.reads.start).toEqual(shown.reads.start)
   const noPileup = await engine.alignments({
     ...SPLICED,
-    display: { showPileup: false, showSashimiArcs: false },
+    display: { pileup: { show: false }, sashimi: { show: false } },
   })
   expect(empty(noPileup.reads)).toBe(true)
   expect(empty(noPileup.gaps)).toBe(true)
@@ -767,7 +767,7 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   const tall = await engine.alignments(SPLICED)
   const compact = await engine.alignments({
     ...SPLICED,
-    display: { featureHeight: 3 },
+    display: { pileup: { readHeight: 3 } },
   })
   expect(tall.glyph.intronAlpha).toBe(1)
   expect(compact.glyph.intronAlpha).toBeGreaterThan(0.25)
@@ -781,11 +781,11 @@ test('the glyph hands R the splice line’s fade at the read height, and the siz
   expect(fadeFloor).toBeLessThan(1)
 })
 
-test('the display’s showSoftClipping lays reads out by their clipped extent', async () => {
+test('the display’s pileup.showSoftClipping lays reads out by their clipped extent', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const clipped = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { showSoftClipping: true },
+    display: { pileup: { showSoftClipping: true } },
   })
   expect(clipped.reads.start).toEqual(plain.reads.start)
   expect(clipped.reads.row).not.toEqual(plain.reads.row)
@@ -798,7 +798,7 @@ test('read connections come back as the display’s band draws them', async () =
 
   const arcs = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: 'arc' },
+    display: { readConnections: { show: true } },
   })
   const n = arcs.arcs.start.length
   expect(n).toBeGreaterThan(100)
@@ -821,7 +821,7 @@ test('read connections come back as the display’s band draws them', async () =
 
   const abnormal = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: 'arc', showOrdinaryPairs: false },
+    display: { readConnections: { show: true, showOrdinaryPairs: false } },
   })
   expect(abnormal.arcs.category).not.toContain('normalInsert')
   expect(abnormal.arcs.start).toHaveLength(
@@ -830,7 +830,7 @@ test('read connections come back as the display’s band draws them', async () =
 
   const cloud = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: 'cloud' },
+    display: { readConnections: { show: true, mark: 'cloud' } },
   })
   expect(cloud.arcs.category).not.toContain('normalInsert')
   expect(new Set(cloud.arcs.shape)).toEqual(new Set(['flat', 'flatSplit']))
@@ -843,7 +843,7 @@ test('read connections come back as the display’s band draws them', async () =
 
   const faceted = await engine.alignments({
     ...PAIRED_INVERSION,
-    display: { readConnections: 'arc', facet: { field: 'strand' } },
+    display: { readConnections: { show: true }, facet: { field: 'strand' } },
   })
   expect(faceted.arcs.start).toHaveLength(n)
   expect(new Set(faceted.arcs.section)).toEqual(new Set(faceted.sections.label))
@@ -852,7 +852,7 @@ test('read connections come back as the display’s band draws them', async () =
 test('an arc’s stroke widens with the reads behind it, as the band strokes it', async () => {
   const { arcs } = await engine.alignments({
     ...LONG_READS,
-    display: { readConnections: 'arc', readConnectionsLineWidth: 2 },
+    display: { readConnections: { show: true, lineWidth: 2 } },
   })
   const widthAt = new Map(arcs.support.map((s, i) => [s, arcs.width[i]!]))
   expect(widthAt.get(1)).toBe(2)
@@ -916,7 +916,7 @@ test('every mark carries the color the display paints it, keyed beside the reads
   expect(t.readPitch).toEqual({ featureHeight: 7, featureSpacing: 1 })
   const thin = await engine.alignments({
     ...SPLICED,
-    display: { featureHeight: 3 },
+    display: { pileup: { readHeight: 3 } },
   })
   expect(thin.readPitch).toEqual({ featureHeight: 3, featureSpacing: 0 })
 })
@@ -945,14 +945,14 @@ test('a junction says whether the display shows it, its arc height and its strok
   const floor = Math.max(...count)
   const t = await engine.alignments({
     ...SPLICED,
-    display: { minSashimiScore: floor },
+    display: { sashimi: { filter: { minReads: floor } } },
   })
   expect(t.junctions.count).toEqual(count)
   expect(t.junctions.shown).toEqual(count.map(c => c >= floor))
   expect(t.junctions.shown).toContain(false)
   const hidden = await engine.alignments({
     ...SPLICED,
-    display: { showNonCanonicalJunctions: false },
+    display: { sashimi: { filter: { nonCanonical: 'exclude' } } },
   })
   expect(hidden.junctions.shown).toEqual(
     all.junctions.motif.map(m => m !== 'non-canonical'),
@@ -974,12 +974,12 @@ test('a junction says whether the display shows it, its arc height and its strok
   })
 })
 
-test('an allele segment is shown where its share of the depth reaches coverageSnpMinFrequency', async () => {
+test('an allele segment is shown where its share of the depth reaches coverage.filter.minAlleleFraction', async () => {
   const all = await engine.alignments(BAM)
   expect(all.alleleCoverage.shown.every(Boolean)).toBe(true)
   const t = await engine.alignments({
     ...BAM,
-    display: { coverageSnpMinFrequency: 0.5 },
+    display: { coverage: { filter: { minAlleleFraction: 0.5 } } },
   })
   expect(t.alleleCoverage.shown).toEqual(
     t.alleleCoverage.from.map(
@@ -993,13 +993,15 @@ test('an allele segment is shown where its share of the depth reaches coverageSn
 test('config is the display’s resolved config, the slots the call set and the defaults it left', async () => {
   const t = await engine.alignments({
     ...BAM,
-    display: { minSashimiScore: 5, color: { field: 'strand' } },
+    display: {
+      sashimi: { filter: { minReads: 5 } },
+      color: { field: 'strand' },
+    },
   })
-  expect(t.config.minSashimiScore).toBe(5)
+  expect(t.config.sashimi).toMatchObject({ filter: { minReads: 5 } })
   expect((t.config.color as { field: string }).field).toBe('strand')
-  expect(t.config.coverageHeight).toBe(45)
-  expect(t.config.showCoverage).toBe(true)
-  expect(t.settings.minSashimiScore).toBe(5)
+  expect(t.config.coverage).toMatchObject({ height: 45, show: true })
+  expect(t.settings.sashimi).toMatchObject({ filter: { minReads: 5 } })
   const display = { height: 150 }
   const others = [
     [await engine.features({ ...GFF3, display }), 'heightMode', 'fit'],

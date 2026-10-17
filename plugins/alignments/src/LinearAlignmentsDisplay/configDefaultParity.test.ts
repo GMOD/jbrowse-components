@@ -3,8 +3,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from './configSchema.ts'
 import {
-  DEFAULT_MIN_INTERCHROM_SUPPORT,
-  DEFAULT_MIN_SASHIMI_SCORE,
+  DEFAULT_MIN_INTERCHROM_READS,
+  DEFAULT_MIN_SASHIMI_READS,
 } from './constants.ts'
 
 // Two numbers are written down twice on purpose, and nothing until now checked
@@ -29,14 +29,18 @@ function displayConf() {
   })
 }
 
-test('the sashimi menu constant is the minSashimiScore slot default', () => {
-  expect(readConfObject(displayConf(), 'minSashimiScore')).toBe(
-    DEFAULT_MIN_SASHIMI_SCORE,
+test('the sashimi menu constant is the sashimi.filter.minReads default', () => {
+  expect(readConfObject(displayConf(), ['sashimi', 'filter', 'minReads'])).toBe(
+    DEFAULT_MIN_SASHIMI_READS,
   )
 })
 
-test('the arc menu constant is the minInterchromSupport slot default', () => {
-  expect(readConfObject(displayConf(), 'minInterchromSupport')).toBe(
-    DEFAULT_MIN_INTERCHROM_SUPPORT,
-  )
+test('the arc menu constant is the readConnections.filter.minInterchromReads default', () => {
+  expect(
+    readConfObject(displayConf(), [
+      'readConnections',
+      'filter',
+      'minInterchromReads',
+    ]),
+  ).toBe(DEFAULT_MIN_INTERCHROM_READS)
 })

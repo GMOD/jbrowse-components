@@ -97,10 +97,10 @@ Answerable from settings alone, before any data:
   which is placed before data lands and must not jump afterwards. Chain mode
   degrades a per-read dimension (`facetForUnit`), so this is not "is `facet`
   set".
-- **`canCollapseGroupRows`** / **`canSizeGroupHeights`** / **`canSortReads`** —
+- **`canCollapseSections`** / **`canSizeGroupHeights`** / **`canSortReads`** —
   may the control be OFFERED? Each is absent rather than disabled where it would
   write a slot no getter reads.
-- **`collapseGroupRows`** — is the collapse in effect (and it puts depth in the
+- **`collapseSections`** — is the collapse in effect (and it puts depth in the
   overlap tint, so the collapsed path must **not** run `mergeSpans`).
 
 Answerable only from the fetched lanes:
@@ -132,7 +132,7 @@ with the coverage band off — on every window its file has no records in.
 records that label when the cap actually clips. So a lane's `clippedBy` is a
 field read: `'budget'` (the lane's slice of the viewport), `'ceiling'`
 (display-wide `maxHeight`), `'override'` (a cap the user set) or `'collapse'`
-(`collapseGroupRows`).
+(`collapseSections`).
 
 - `'budget'` and `'collapse'` offer the chip's expand, which banks an override
   OF `maxHeight` — and an override opts the lane out of both.
@@ -153,7 +153,7 @@ ceiling, since expanding there hands back the identical cap.
 **`fit` is the sole `heightMode` that also drives the read-height axis**; every
 special case follows, including the fit cap using the Normal height.
 `self.featureHeight` is the fit-squeezed value — editors that mutate the size
-read `configuredFeatureHeight`. `fittedHeightPx` is a **pitch**, `featureHeight`
+read `configuredReadHeight`. `fittedHeightPx` is a **pitch**, `featureHeight`
 a **body**; the volatile bridging them breaks a MobX cycle, so don't collapse
 it.
 
@@ -219,7 +219,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   ADR-225), both fed in bp, so a pan rebuilds nothing. The sashimi count
   labels stay an SVG overlay, placed by the marks (`sashimiLabels`, through
   `linkApex`), never by a second spelling of the band geometry.
-- **Ask `drawsSashimi`, not `showSashimiArcs`, before reading the pan for
+- **Ask `drawsSashimi`, not `showSashimi`, before reading the pan for
   sashimi.** The setting is on by default on every track with coverage, and a
   track of unspliced reads must not rebuild `renderState` per frame for it.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
@@ -227,7 +227,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   whole canvas through the view's region table (ADR-170), and so do the curved
   connectors (ADR-225). Which pairs those draw is `bezierArcScope`, the one
   place deciding between `all`, `crossRegion` and `none`; read the getter,
-  never `showBezierConnections`.
+  never `showConnectors`.
 - **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
   `sashimiDownKeysByGroup`, read by both the layout reserving the strip and the
   geometry filling it. Junction identity is `junctionKey`, refName included.
@@ -279,7 +279,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   color?" — which at any real depth every read on that outer edge answers yes
   to. They merged into one mark whose width counted them all and whose hover
   named one of their partners.
-- **`minInterchromSupport` is gated against the number each mark DRAWS with** —
+- **`minInterchromReads` is gated against the number each mark DRAWS with** —
   a cluster's size for an arc, the coalesced total for a tick — and split
   junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made
   the hover's count follow the filter.

@@ -10,4 +10,4 @@ thread (ADR-053).
   is testable without an MST tree.
 - **A getter reading only `configuration` goes in `configSlotViews.ts`; a setter
   writing only a slot goes in `configSlotActions`.** One that touches any other
-  member stays in the chain (`setCollapseGroupRows` clears height overrides).
+  member stays in the chain (`setCollapseSections` clears height overrides).

@@ -308,7 +308,7 @@ change the `trackId`, the name and `cytosineContext`:
   "displayDefaults": {
     "baseColor": { "field": "bisulfite" },
     "modifications": { "cytosineContext": "CHG" },
-    "showCoverage": false
+    "coverage": { "show": false }
   }
 }
 ```

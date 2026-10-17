@@ -5,14 +5,14 @@ import { getCoverageMenuItems } from './coverageMenuItems.ts'
 // Both rows scale or color the coverage band and reach nothing else, and
 // neither carries the band's visibility toggle, so with the band hidden they
 // grey out and name the switch instead.
-function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
+function menu(showCoverage: boolean, minAlleleFraction = 0) {
   return getCoverageMenuItems({
     id: 'd1',
     showCoverage,
     autoscaleRange: undefined,
     autoscaledDomain: undefined,
-    coverageSnpMinFrequency,
-    setCoverageSnpMinFrequency: () => {},
+    coverageFilter: { minAlleleFraction },
+    setCoverageFilter: () => {},
     scaleType: 'linear',
     scaleZero: true,
     domainQuantile: 1,
@@ -53,8 +53,8 @@ test('the coverage rows are live with the band shown', () => {
 // five offered fractions. The group still has to say which one is nearest, or a
 // track configured at 0.15 renders five unticked rows over a floor that is in
 // effect. Ties go to the lower row.
-function tickedSnpFrequencyLabels(coverageSnpMinFrequency: number) {
-  const group = menu(true, coverageSnpMinFrequency).find(
+function tickedSnpFrequencyLabels(minAlleleFraction: number) {
+  const group = menu(true, minAlleleFraction).find(
     row => 'label' in row && row.label === 'Color SNPs above...',
   )
   const options = group && 'subMenu' in group ? resolveSubMenu(group) : []

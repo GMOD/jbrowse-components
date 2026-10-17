@@ -1,5 +1,6 @@
 import { isConcordantPairRead } from '@jbrowse/alignments-core'
 
+import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
   collectPendingArcs,
   collectPendingArcsByLane,
@@ -169,13 +170,12 @@ interface ArcInputs {
   stats: InsertSizeBand | undefined
 }
 
-// The two user gates plus the refName normalizer, in the one shape pending-arc
-// emission takes them. Both entry points build it, so neither can hand the
-// chainer a different `showLongRange` from the other.
+// The filter plus the refName normalizer, in the one shape pending-arc emission
+// takes them. Both entry points build it, so neither can hand the chainer a
+// different filter from the other.
 function arcChainContext(settings: ArcSettings): ArcChainContext {
   return {
-    showLongRange: settings.showLongRange,
-    showInterchrom: settings.showInterchrom,
+    filter: settings.filter ?? {},
     canonicalRefName: settings.canonicalRefName ?? (refName => refName),
   }
 }
@@ -246,12 +246,8 @@ function resolveArcs(
   // How far past the fetched data a bar may still point — see `cloudReachBp`.
   // Resolved once for the feed: it describes the VIEW, not a connection.
   const reachBp = cloudReachBp(loadedRegions)
-  const {
-    colorField,
-    cloud = false,
-    showInterchrom,
-    minInterchromSupport = 1,
-  } = settings
+  const { colorField, cloud = false, filter = {} } = settings
+  const { minInterchromReads = 1 } = filter
   const showOrdinaryPairs = ordinaryPairsShown(
     settings.showOrdinaryPairs,
     cloud,
@@ -301,7 +297,7 @@ function resolveArcs(
   // pairs straddle a breakpoint rather than landing on it, so the count is 1 for
   // 862 of 865 connections (`ComputedArc.support`), and the tick is the mark a
   // SINGLE-chromosome view draws for a translocation: the arc half of the fix
-  // never reaches it. Worse, `minInterchromSupport` gates a tick on its cluster,
+  // never reaches it. Worse, `minInterchromReads` gates a tick on its cluster,
   // so a five-pair breakpoint cleared a floor of 2 and then drew, and hovered,
   // as one read.
   //
@@ -316,7 +312,7 @@ function resolveArcs(
   // an arc makes, and for the same reason: the mark is the junction and the
   // POSITION is its own read's.
   //
-  // EVERY CLUSTER IS COUNTED, and `minInterchromSupport` is applied to the SUM
+  // EVERY CLUSTER IS COUNTED, and `minInterchromReads` is applied to the SUM
   // afterwards rather than to each addend. Filtering the addends made the number
   // a tick reports depend on the setting: on one donor with a 3-read and a
   // 1-read acceptor, the donor coordinate read 4 at `all` and 3 at the default
@@ -468,6 +464,18 @@ function resolveArcs(
   for (let i = 0; i < pendingArcs.length; i++) {
     const arc = pendingArcs[i]!
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
+    // ONE gate over every mark a connection can become (arc, tick, flat bar),
+    // so neither category can be bypassed by a branch added below.
+    const interchromosomal = p1Ref !== p2Ref
+    if (
+      !passesCategory(interchromosomal, filter.interchrom) ||
+      !passesCategory(
+        !interchromosomal && arc.offScreen === true,
+        filter.offscreenMates,
+      )
+    ) {
+      continue
+    }
     // THE region lookup for this connection, and the only one. Every decision
     // below about where the arc can be drawn is taken from these two.
     //
@@ -489,21 +497,13 @@ function resolveArcs(
     // chromosomes" used to be readable from the mark itself, and it is not from
     // a curve — a same-chromosome cross-region arc crosses the same panel
     // divider — so the color is now the ONLY channel carrying it.
-    if (p1Ref !== p2Ref) {
-      // ONE gate over both marks, which is the point of hoisting it: `showInterchrom`
-      // used to sit inside the tick push, so an arc branch added beside it would
-      // have inherited neither it nor the floor — "Show inter-chromosomal pairs:
-      // off" still drawing arcs, and the floor bypassed for connections that now
-      // draw a BIGGER mark than the ticks they replace.
+    if (interchromosomal) {
+      // Scattered IS the criterion for the `minInterchromReads` floor, so it
+      // drops the whole connection rather than merging it: a breakpoint whose
+      // reads cluster keeps every mark at the coordinate its own read put it
+      // at. Merging a cluster would have to invent a position for it, which is
+      // the thing `arcKey`'s exact-coordinate rule exists to refuse.
       //
-      // Scattered IS the criterion for that floor, so it drops the whole
-      // connection rather than merging it: a breakpoint whose reads cluster
-      // keeps every mark at the coordinate its own read put it at. Merging a
-      // cluster would have to invent a position for it, which is the thing
-      // `arcKey`'s exact-coordinate rule exists to refuse.
-      if (!showInterchrom) {
-        continue
-      }
       // The reads behind this connection, and the number both its marks are
       // drawn and reported with — see `ComputedArc.support`. The tick also takes
       // the cluster's IDENTITY, because a coordinate several events reach adds
@@ -542,7 +542,7 @@ function resolveArcs(
         // the count `arcStrokeScale` spends are the same value. The tick arm below
         // cannot say that — its number is a sum — so its gate is applied after
         // the summing instead.
-        if (clearsInterchromFloor(exempt, support, minInterchromSupport)) {
+        if (clearsInterchromFloor(exempt, support, minInterchromReads)) {
           interchromFromMatePair ||= !exempt
           pushArc(
             {
@@ -598,7 +598,7 @@ function resolveArcs(
     // pair renders as an arc. "Long range" is purely the *visual* result of
     // zoom — a far-apart arc collapses to near-vertical lines at its real
     // endpoints (the link mark), and zooming out to show the whole span restores
-    // the rounded arc. (showLongRange only gates connections to mates that
+    // the rounded arc. (`offscreenMates` only filters connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({ arc, colorField, hasPaired })
     // The arcs' ordinary pair, which at depth stops being context and becomes
@@ -723,7 +723,7 @@ function resolveArcs(
   // `pushLine`. This is where the tick family's gate and its drawn number become
   // one number, which is what the arc arm already had by construction.
   const kept = [...byLineKey.values()].filter(e =>
-    clearsInterchromFloor(e.exempt, e.line.support, minInterchromSupport),
+    clearsInterchromFloor(e.exempt, e.line.support, minInterchromReads),
   )
   const lines = kept.map(e => e.line)
   interchromFromMatePair ||= kept.some(e => e.fromMatePair)
@@ -755,7 +755,7 @@ function resolveArcs(
 /**
  * Which interchromosomal cluster each pending arc belongs to, and each
  * cluster's size: what an interchromosomal mark's `support` is, and so what
- * `minInterchromSupport` gates.
+ * `minInterchromReads` gates.
  *
  * Taken over every lane of a fetch at once. Grouping partitions reads for
  * drawing and says nothing about how many reads stand behind a breakpoint, so
@@ -766,15 +766,15 @@ function resolveArcs(
  * The window is the library's fragment length (`stats.upper`), pooled across
  * lanes like the rest of `ArcScale`: too wide a window merges events on a 150
  * bp amplicon library, too narrow a one splits a 3 kb mate-pair library's
- * translocation into singletons. Skipped when `showInterchrom` is off, since every
+ * translocation into singletons. Skipped while `interchrom` is excluded, since every
  * reader sits in the branch that setting closes.
  */
 function interchromClusters(
   pendingArcs: PendingArc[],
   { stats }: ArcScale,
-  { showInterchrom }: ArcSettings,
+  { filter = {} }: ArcSettings,
 ): InterchromClusters {
-  return showInterchrom
+  return filter.interchrom !== 'exclude'
     ? clusteredInterchromSupport(
         pendingArcs,
         stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,

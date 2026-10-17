@@ -2,6 +2,14 @@ import type { CategoryFilter, ReadFilter, ReadCategoryKey } from './types.ts'
 
 export type { ReadCategoryKey }
 
+/** Whether a row in or out of a category passes that category's filter. */
+export function passesCategory(
+  inCategory: boolean,
+  filter: CategoryFilter | undefined,
+) {
+  return filter === undefined || inCategory === (filter === 'only')
+}
+
 /**
  * The read-category filters, declared once, so the dialog grid and the track
  * menu cannot word the same filter two ways (`check-menu-labels` gates the docs
@@ -76,28 +84,6 @@ export const READ_CATEGORIES = [
       'rather than over the whole chain a read belongs to.',
   },
 ] as const satisfies readonly ReadCategorySpec[]
-
-/**
- * What a category's radios are selected by. `'all'` is the UI's name for the
- * absent filter — {@link CategoryFilter} deliberately has no such member, so
- * this is the one place the two spellings meet.
- */
-export type ReadCategoryChoice = CategoryFilter | 'all'
-
-export function readCategoryChoice(
-  filterBy: ReadFilter,
-  key: ReadCategoryKey,
-): ReadCategoryChoice {
-  return filterBy[key] ?? 'all'
-}
-
-export function setReadCategory(
-  filterBy: ReadFilter,
-  key: ReadCategoryKey,
-  choice: ReadCategoryChoice,
-): ReadFilter {
-  return { ...filterBy, [key]: choice === 'all' ? undefined : choice }
-}
 
 /** How many categories are filtering. One each, like every other filter. */
 export function activeReadCategoryCount(filterBy: ReadFilter) {

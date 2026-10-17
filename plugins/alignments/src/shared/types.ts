@@ -162,6 +162,24 @@ export interface TagFilter {
  */
 export type CategoryFilter = 'only' | 'exclude'
 
+/** The junctions the sashimi arcs draw: the display's `sashimiFilter`. */
+export interface SashimiFilter {
+  minReads: number
+  // A junction whose motif was never read off the reference is canonical here,
+  // since only a known motif is evidence against it.
+  nonCanonical?: CategoryFilter
+}
+
+/** The connections the arcs and the read cloud draw: `readConnectionsFilter`. */
+export interface ReadConnectionsFilter {
+  interchrom?: CategoryFilter
+  // a mate on the same chromosome outside the loaded window
+  offscreenMates?: CategoryFilter
+  // counted over one fragment length on both sides of the breakpoint
+  // (`clusteredInterchromSupport`); a split read is exempt
+  minInterchromReads: number
+}
+
 export interface ReadFilter {
   flagExclude: number
   flagInclude: number

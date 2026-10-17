@@ -45,8 +45,14 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   rowColor: 'the color of each row, by a row attribute',
   color: 'the color',
   baseColor: 'the per-base layer over the reads',
-  arcColor: 'the color of the arcs between mates',
   ribbonColor: 'the color of the ribbons between lanes',
+  coverage: 'the coverage band: whether it draws, its height and its filter',
+  conservation: 'the conservation band: whether it draws, its height and unit',
+  pileup: 'the stacked reads: whether they draw, their height and parts',
+  sashimi:
+    'the splice-junction arcs: whether they draw, their placement and filter',
+  readConnections:
+    'the connections between mates: whether they draw, the mark, its color and filter',
   laneLayers: 'the layers drawn over each lane',
   scales: 'the axes, scales.y the value axis',
   y: 'the field plotted on the value axis',

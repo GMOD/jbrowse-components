@@ -12,42 +12,61 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
 }
 
+// The bands a retired type implies, under whatever the entry spells itself:
+// an entry writing `pileup: { readHeight: 3 }` keeps the implied
+// `pileup.show`, as a band member the entry names wins over the implied one.
+function underEntry(bands: DisplayEntry, entry: DisplayEntry): DisplayEntry {
+  const out: DisplayEntry = { ...bands, ...entry }
+  for (const [key, implied] of Object.entries(bands)) {
+    const own = entry[key]
+    if (isObject(implied) && isObject(own)) {
+      out[key] = { ...implied, ...own }
+    }
+  }
+  return out
+}
+
 // Each v4 display drew one band, and a bare rename to this display would draw
 // all of them: a coverage-only track as coverage + pileup, an arcs track as a
 // pileup.
 export const retiredTypes: RetiredDisplayType[] = [
   {
     type: 'LinearPileupDisplay',
-    migrate: entry => ({ showCoverage: false, ...entry }),
+    migrate: entry => underEntry({ coverage: { show: false } }, entry),
   },
   {
     type: 'LinearSNPCoverageDisplay',
-    // coverageHeight with height, else the band keeps its 45px default under a
+    // coverage.height with height, else the band keeps its 45px default under a
     // 250px display and leaves 200px blank
-    migrate: entry => ({
-      showPileup: false,
-      coverageHeight: 100,
-      height: 100,
-      ...entry,
-    }),
+    migrate: entry =>
+      underEntry(
+        { pileup: { show: false }, coverage: { height: 100 }, height: 100 },
+        entry,
+      ),
   },
   {
     type: 'LinearReadArcsDisplay',
-    migrate: entry => ({
-      showPileup: false,
-      showCoverage: false,
-      readConnections: 'arc',
-      ...entry,
-    }),
+    migrate: entry =>
+      underEntry(
+        {
+          pileup: { show: false },
+          coverage: { show: false },
+          readConnections: { show: true },
+        },
+        entry,
+      ),
   },
   {
     type: 'LinearReadCloudDisplay',
-    migrate: entry => ({
-      showPileup: false,
-      showCoverage: false,
-      readConnections: 'cloud',
-      ...entry,
-    }),
+    migrate: entry =>
+      underEntry(
+        {
+          pileup: { show: false },
+          coverage: { show: false },
+          readConnections: { show: true, mark: 'cloud' },
+        },
+        entry,
+      ),
   },
 ]
 
@@ -109,16 +128,15 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
     return {}
   }
   const { height, maxHeight, mismatchAlpha, hideMismatches } = pileup
-  return {
-    ...(height !== undefined ? { featureHeight: height } : {}),
+  const slots = {
+    ...(height !== undefined ? { readHeight: height } : {}),
     ...(maxHeight !== undefined ? { maxHeight } : {}),
-    ...(mismatchAlpha !== undefined
-      ? { fadeLowQualityMismatches: mismatchAlpha }
-      : {}),
+    ...(mismatchAlpha !== undefined ? { fadeLowQuality: mismatchAlpha } : {}),
     ...(hideMismatches !== undefined
       ? { showMismatches: !hideMismatches }
       : {}),
   }
+  return Object.keys(slots).length > 0 ? { pileup: slots } : {}
 }
 
 // v1.2-v4.3's container held the pileup display's config and the coverage
@@ -132,7 +150,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
   return applyRetiredSpellings(retiredConfigSpellings, {
     ...rest,
     ...(band === 'coverage' && height !== undefined
-      ? { coverageHeight: height }
+      ? { coverage: { height } }
       : {}),
   })
 }
@@ -142,7 +160,9 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * as `retired` declares them. v4's `colorBy` named a scheme and held the
  * modification settings, which are the `color` or `baseColor` object's field
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
- * arc classes under the draw verb; its `jexlFilters` has no slot, since
+ * arc classes under the draw verb, which are `readConnections.filter`
+ * categories now; its read size and layout cap are `pileup`'s `readHeight`
+ * and `maxHeight`; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
  * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
  * strand against its molecule is a level of the orientation fields, which
@@ -151,8 +171,14 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
 // #region retired
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
-  drawInter: v => ({ showInterchrom: v }),
-  drawLongRange: v => ({ showLongRange: v }),
+  drawInter: v =>
+    v === false
+      ? { readConnections: { filter: { interchrom: 'exclude' } } }
+      : {},
+  drawLongRange: v =>
+    v === false
+      ? { readConnections: { filter: { offscreenMates: 'exclude' } } }
+      : {},
   filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
@@ -163,10 +189,12 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
   jitter: () => ({}),
-  lineWidth: v => ({ readConnectionsLineWidth: v }),
+  lineWidth: v => ({ readConnections: { lineWidth: v } }),
+  featureHeight: v => ({ pileup: { readHeight: v } }),
+  maxHeight: v => ({ pileup: { maxHeight: v } }),
   hideSmallIndels: () => ({}),
-  hideMismatches: v => ({ showMismatches: !v }),
-  mismatchAlpha: v => ({ fadeLowQualityMismatches: v }),
+  hideMismatches: v => ({ pileup: { showMismatches: !v } }),
+  mismatchAlpha: v => ({ pileup: { fadeLowQuality: v } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),
@@ -204,8 +232,8 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   filterBy: value => ({ filter: value }),
   filterBySetting: value => ({ filter: value }),
   sortedBy: sortSlot,
-  trackMaxHeight: value => ({ maxHeight: value }),
-  hideMismatchesSetting: value => ({ showMismatches: !value }),
+  trackMaxHeight: value => ({ pileup: { maxHeight: value } }),
+  hideMismatchesSetting: value => ({ pileup: { showMismatches: !value } }),
 }
 
 // The pre-4.x display was a container whose track-menu settings sat on these
@@ -214,10 +242,10 @@ const NESTED_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 
 // a key under both spellings resolves to the `*Setting` one, listed last
 function instanceSlotsOf(source: DisplayEntry) {
-  const slots: DisplayEntry = {}
+  let slots: DisplayEntry = {}
   for (const [key, toSlots] of Object.entries(INSTANCE_SLOTS)) {
     if (source[key] !== undefined) {
-      Object.assign(slots, toSlots(source[key]))
+      slots = underEntry(slots, toSlots(source[key]))
     }
   }
   return slots

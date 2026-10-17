@@ -53,7 +53,7 @@ function bandState(overrides: Partial<RenderState> = {}) {
     showInterbaseIndicators: true,
     coverageHeight: 60,
     coverageMaxDepth: 200,
-    coverageSnpMinFrequency: 0.1,
+    coverageMinAlleleFraction: 0.1,
     sections: [
       {
         pileupTopOffset: 60,

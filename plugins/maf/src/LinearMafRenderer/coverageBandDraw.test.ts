@@ -45,7 +45,7 @@ const BAND: CoverageBandState = {
   domainMax: 20,
   scaleType: SCALE_TYPE_LINEAR,
   symlogConstant: 1,
-  snpMinFrequency: 0,
+  minAlleleFraction: 0,
   showInterbase: true,
   colors: COLORS,
 }

@@ -8,7 +8,7 @@
 // consumers can treat the fields as required.
 //
 // Populated in PILEUP layout with curved connectors on (`showLinkedReadLines`
-// = `showBezierConnections && unit !== 'chain'`), and empty in chain mode,
+// = `showConnectors && unit !== 'chain'`), and empty in chain mode,
 // which draws its own per-chain `connectingLine` pass instead.
 export interface LinkedReadLinesUploadData {
   linkedReadLinePositions: Uint32Array

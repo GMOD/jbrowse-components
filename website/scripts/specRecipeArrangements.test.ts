@@ -3,12 +3,14 @@ import {
   SV_CHANNELS_ON,
 } from '../../plugins/alignments/src/LinearAlignmentsDisplay/menus/svChannelsPreset.ts'
 import { takeArrangement } from '../src/lib/spec-recipe/arrangements.ts'
+import { flatSettings } from '../src/lib/spec-recipe/decode.ts'
 
 const ALIGNMENTS = 'LinearAlignmentsDisplay'
 
-// A spec entry's settings, in the shape specTrackSettings hands over.
+// A spec entry's settings, in the shape specTrackSettings hands over: each
+// band object flattened to its dotted members.
 function entries(extra: Record<string, unknown> = {}) {
-  return Object.entries({ ...SV_CHANNELS_ON, ...extra })
+  return [...flatSettings(SV_CHANNELS_ON), ...flatSettings(extra)]
 }
 
 test('the arrangement is one step, and its settings leave the per-field walk', () => {
@@ -21,17 +23,17 @@ test('the arrangement is one step, and its settings leave the per-field walk', (
 
 test('a setting the arrangement does not name walks on', () => {
   const { step, rest } = takeArrangement(
-    entries({ coverageHeight: 60 }),
+    entries({ coverage: { height: 60 } }),
     ALIGNMENTS,
   )
   expect(step).toBeDefined()
-  expect(rest).toEqual([['coverageHeight', 60]])
+  expect(rest).toEqual([['coverage.height', 60]])
 })
 
 // The point of the presence half: a spec one setting short produces a different
 // picture, so it gets the per-field walk rather than an instruction to click a
 // row that would also change the setting it left out.
-test.each(Object.keys(SV_CHANNELS_ON))(
+test.each(flatSettings(SV_CHANNELS_ON).map(([field]) => field))(
   'a spec that omits %s is not the arrangement',
   field => {
     const short = entries().filter(([name]) => name !== field)
@@ -41,16 +43,16 @@ test.each(Object.keys(SV_CHANNELS_ON))(
   },
 )
 
-// isSvChannelsActive leaves readConnectionsDown out of the match on purpose, so
-// the arrangement still resolves — but the reader has to flip that row by hand,
-// which means it may not be swallowed.
+// isSvChannelsActive leaves readConnections.placement out of the match on
+// purpose, so the arrangement still resolves — but the reader has to flip that
+// row by hand, which means it may not be swallowed.
 test('arcs on the other side of the band stay in the arrangement, and keep a step', () => {
   const { step, rest } = takeArrangement(
-    entries({ readConnectionsDown: false }),
+    entries({ readConnections: { placement: 'up' } }),
     ALIGNMENTS,
   )
   expect(step).toBeDefined()
-  expect(rest).toEqual([['readConnectionsDown', false]])
+  expect(rest).toEqual([['readConnections.placement', 'up']])
 })
 
 test('another display type spelling the same settings is not the arrangement', () => {

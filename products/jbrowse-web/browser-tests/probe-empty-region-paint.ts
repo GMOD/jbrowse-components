@@ -71,7 +71,7 @@ const scenarios = {
             {
               type: 'LinearAlignmentsDisplay',
               displayId: 'nocov_bam-LinearAlignmentsDisplay',
-              showCoverage: false,
+              coverage: { show: false },
             },
           ],
         },

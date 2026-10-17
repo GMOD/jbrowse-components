@@ -87,9 +87,8 @@ function collapsedOpts(
     // the piecewise projection.
     viewWidthPx: 10_000,
     coverageHeight: 100,
-    sashimiArcsHeight: 40,
-    minSashimiScore: 0,
-    showNonCanonicalJunctions: true,
+    sashimiHeight: 40,
+    minReads: 0,
     downJunctionKeys: new Set<string>(),
     ...overrides,
   }
@@ -102,7 +101,7 @@ function autoDownKeys(perRegion: PileupDataResult[]) {
   return downJunctionKeys(
     mergeJunctions(
       perRegion.map(data => ({ refName: 'chr1', data })),
-      { minSashimiScore: 0, showNonCanonicalJunctions: true },
+      { minReads: 0 },
     ).values(),
     'auto',
   )

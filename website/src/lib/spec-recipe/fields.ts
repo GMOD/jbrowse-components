@@ -15,7 +15,7 @@ import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // BaseDisplayModel.tsx, and `node` cannot load a .tsx, so check-spec-recipes.ts
 // died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
-import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
+import { CONSERVATION_UNIT_OPTIONS } from '../../../../plugins/maf/src/LinearMafDisplay/conservationUnits.ts'
 import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
 import { MAF_COLOR_FIELD_LABELS } from '../../../../plugins/maf/src/LinearMafDisplay/rowRenderings.ts'
 import {
@@ -906,7 +906,7 @@ const SHOW_SUBMENU_DISPLAYS = new Set([
 // (display-kit's LegendMixin), so the label is the same on all of them. The
 // displays beyond the set above have none of its read-oriented rows, so they
 // join the legend alone rather than that set, which also answers showCoverage
-// and collapseGroupRows.
+// and collapseSections.
 const SHOW_LEGEND_DISPLAYS = new Set([
   ...SHOW_SUBMENU_DISPLAYS,
   'LinearHicDisplay',
@@ -1005,8 +1005,8 @@ const SHOW_LABELS_MODES: Record<string, string> = Object.fromEntries(
 
 const SASHIMI_PLACEMENT: Record<string, string> = {
   auto: 'Auto (minimize overlap)',
-  above: 'Above coverage',
-  below: 'Below coverage',
+  up: 'Above coverage',
+  down: 'Below coverage',
 }
 
 // verified against READ_CONNECTIONS_OPTIONS, the "Connection overlay" radio
@@ -1016,6 +1016,42 @@ const READ_CONNECTIONS: Record<string, string> = {
   off: 'None',
   arc: 'Read arcs',
   cloud: 'Read cloud',
+}
+
+const READ_CONNECTIONS_PLACEMENT: Record<string, string> = {
+  up: 'Above coverage',
+  down: 'Below coverage',
+}
+
+// The canvas displays' `featureHeight` and the alignments `pileup.readHeight`
+// share one size submenu, whose presets carry their own pixel heights.
+const readHeightStep: FieldRecipe = (value, { noun, displayType }) => {
+  const preset = Object.values(COMPACTNESS_PRESETS).find(
+    p => p.readHeight === value,
+  )
+  const menu = heightMenu(noun, displayType)
+  return {
+    path: preset
+      ? `${menu} → ${preset.label}`
+      : `${menu} → Custom... → ${String(value)}px`,
+  }
+}
+
+// A category filter's three radios (menus/categoryFilterItem.ts): every row,
+// only the category's, or none of them.
+function categoryStep(
+  menu: string,
+  value: unknown,
+  noun: string,
+  note?: string,
+): FieldStep | undefined {
+  const label =
+    value === 'only'
+      ? `Only ${noun}`
+      : value === 'exclude'
+        ? `Hide ${noun}`
+        : undefined
+  return label ? { path: `${menu} → ${label}`, note } : undefined
 }
 
 // verified against the inline radio list in makeAggregateSubMenu
@@ -1554,27 +1590,31 @@ export const trackFields: Record<string, FieldRecipe> = {
                 : undefined,
           }
         : undefined,
-  showLongRange: (value, { displayType }) =>
-    typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
-      ? {
-          path: `${READ_CONNECTIONS_MENU} → Show off-screen mate connections (${value ? 'checked' : 'unchecked'})`,
-          note: 'The row stays greyed out until an arc or read-cloud overlay is on.',
-        }
+  'readConnections.filter.offscreenMates': (value, { displayType }) =>
+    isAlignmentsOnlyField(displayType)
+      ? categoryStep(
+          `${READ_CONNECTIONS_MENU} → Off-screen mate connections`,
+          value,
+          'off-screen mate connections',
+          'The row stays greyed out until an arc or read-cloud overlay is on.',
+        )
       : undefined,
-  showInterchrom: (value, { displayType }) =>
-    typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
-      ? {
-          path: `${READ_CONNECTIONS_MENU} → Show inter-chromosomal pairs (${value ? 'checked' : 'unchecked'})`,
-        }
+  'readConnections.filter.interchrom': (value, { displayType }) =>
+    isAlignmentsOnlyField(displayType)
+      ? categoryStep(
+          `${READ_CONNECTIONS_MENU} → Inter-chromosomal pairs`,
+          value,
+          'inter-chromosomal pairs',
+        )
       : undefined,
-  readConnectionsHeight: (value, { displayType }) =>
+  'readConnections.height': (value, { displayType }) =>
     typeof value === 'number' && isAlignmentsOnlyField(displayType)
       ? {
           path: `Drag the handle at the edge of the arc band to resize it (${value}px here).`,
           note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
         }
       : undefined,
-  arcColor: (value, { displayType }) => {
+  'readConnections.color': (value, { displayType }) => {
     const field = typeof value === 'string' ? value : asRecord(value)?.field
     const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
     return label && displayType === 'LinearAlignmentsDisplay'
@@ -1600,7 +1640,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Legend (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  showCoverage: (value, { displayType }) =>
+  'coverage.show': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     (SHOW_SUBMENU_DISPLAYS.has(displayType) ||
@@ -1609,7 +1649,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Coverage (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  collapseGroupRows: (value, { displayType }) =>
+  collapseSections: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     SHOW_SUBMENU_DISPLAYS.has(displayType)
@@ -1655,14 +1695,14 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Qualifies identity, as the heatmap or the X-Y plot, and does nothing under the other colorings.',
         }
       : undefined,
-  showConservation: (value, { displayType }) =>
+  'conservation.show': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearMafDisplay'
       ? {
           path: `${TRACK_MENU} → Show... → Conservation (% identity) (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  conservationMode: (value, { displayType }) => {
-    const label = CONSERVATION_MODES.find(([v]) => v === value)?.[1]
+  'conservation.unit': (value, { displayType }) => {
+    const label = CONSERVATION_UNIT_OPTIONS.find(([v]) => v === value)?.[1]
     return label && displayType === 'LinearMafDisplay'
       ? {
           path: `${TRACK_MENU} → Conservation resolution → ${label}`,
@@ -1718,17 +1758,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   geneGlyphMode: geneGlyphStep,
   // the size presets carry their own pixel heights, so the figure's number
   // names its preset without a second table to keep in sync
-  featureHeight: (value, { noun, displayType }) => {
-    const preset = Object.values(COMPACTNESS_PRESETS).find(
-      p => p.featureHeight === value,
-    )
-    const menu = heightMenu(noun, displayType)
-    return {
-      path: preset
-        ? `${menu} → ${preset.label}`
-        : `${menu} → Custom... → ${String(value)}px`,
-    }
-  },
+  featureHeight: readHeightStep,
+  'pileup.readHeight': readHeightStep,
   // 'Track sizing' is a subheader inside the same submenu as the size presets
   heightMode: (value, { noun, displayType }) => {
     const option = getHeightModeOptions(noun).find(o => o.value === value)
@@ -1760,13 +1791,16 @@ export const trackFields: Record<string, FieldRecipe> = {
   // that make the picture
   height: () => [],
   subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
-  sashimiArcsMode: fromTable('Sashimi arcs → Arc placement', SASHIMI_PLACEMENT),
+  'sashimi.placement': fromTable(
+    'Sashimi arcs → Arc placement',
+    SASHIMI_PLACEMENT,
+  ),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
-  showSoftClipping: checkbox(
+  'pileup.showSoftClipping': checkbox(
     'Show... → Soft clipping',
     'Reveals clipped bases — the signal that a read spans a breakpoint.',
   ),
-  showBezierConnections: checkbox(
+  'pileup.showConnectors': checkbox(
     'Read connections → Use curved connectors',
     "Draws a read's alignments joined by a curve rather than a straight line. Worth it when the two ends sit in different displayed regions, where the curve reads as one read crossing the gap.",
   ),
@@ -1775,14 +1809,14 @@ export const trackFields: Record<string, FieldRecipe> = {
   // (menus/reads.ts). Unchecking it leaves the coverage band alone, which is
   // what a figure comparing depth across samples wants: at whole-gene zoom a
   // 30x pileup is a solid mass and only the curve carries the comparison.
-  showPileup: checkbox(
+  'pileup.show': checkbox(
     'Show... → Pileup',
     'Drops the stacked-read band and keeps the coverage curve, so several samples can be compared on depth alone.',
   ),
   // A radio list of five fractions rather than a number entry
   // (alignments-core coverageMenuItems.ts), so the recipe names the row and
   // not the value.
-  coverageSnpMinFrequency: value => {
+  'coverage.filter.minAlleleFraction': value => {
     const row =
       typeof value === 'number' ? SNP_FREQUENCY_ROWS[String(value)] : undefined
     return row
@@ -1796,14 +1830,14 @@ export const trackFields: Record<string, FieldRecipe> = {
   // and a score threshold alongside the toggle (menus/sashimi.ts). Unchecking
   // leaves the coverage band, which is what a figure about the histogram wants:
   // the arcs are strand-colored too, from the XS/TS tag, and outdraw it.
-  showSashimiArcs: checkbox(
+  'sashimi.show': checkbox(
     'Sashimi arcs → Show sashimi arcs',
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   // Same label in the same submenu on both displays that have the slot: the
   // alignments "Show..." menu (menus/reads.ts) and LGVSyntenyDisplay's trimmed
   // copy of it (LGVSyntenyDisplay/menus.ts), so one path serves both.
-  showMismatches: checkbox(
+  'pileup.showMismatches': checkbox(
     'Show... → Mismatches',
     'Per-base differences read from the CIGAR (and cs tag, on synteny tracks). Worth unchecking when zoomed out far enough that each one is sub-pixel and they paint over the block structure.',
   ),
@@ -1825,29 +1859,29 @@ export const trackFields: Record<string, FieldRecipe> = {
   showForward: checkbox('Show... → Forward'),
   showReverse: checkbox('Show... → Reverse'),
   showTranslation: checkbox('Show... → Translation'),
-  showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
+  'sashimi.showCounts': checkbox('Sashimi arcs → Show read counts'),
   // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
   // and shown only while the arcs are.
-  // the slot says what draws; the row says what hides
-  showNonCanonicalJunctions: value =>
-    typeof value === 'boolean'
-      ? {
-          path: `${TRACK_MENU} → Sashimi arcs → Hide non-canonical junctions (${value ? 'unchecked' : 'checked'})`,
-          note: 'Checked, drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
-        }
-      : undefined,
-  readConnectionsDown: checkbox(
-    'Read connections → Draw arcs below coverage band',
+  'sashimi.filter.nonCanonical': value =>
+    categoryStep(
+      `${TRACK_MENU} → Sashimi arcs → Non-canonical junctions`,
+      value,
+      'non-canonical junctions',
+      'Hiding drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
+    ),
+  'readConnections.placement': fromTable(
+    'Read connections → Arc placement',
+    READ_CONNECTIONS_PLACEMENT,
   ),
-  showOrdinaryPairs: checkbox(
+  'readConnections.showOrdinaryPairs': checkbox(
     'Read connections → Show ordinary pairs',
     'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
-  minSashimiScore: numberField(n => ({
+  'sashimi.filter.minReads': numberField(n => ({
     path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,
     note: 'Hides splice junctions supported by fewer reads than this.',
   })),
-  maxHeight: numberField(n => ({
+  'pileup.maxHeight': numberField(n => ({
     path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
   })),
   // Two inline sliders under the multi-sample variant "Filter by..." submenu
@@ -1889,7 +1923,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Resolution`,
     note: `Step with Coarser and Finer, 2× per click; the caption between them reads the current bin size. Higher fetches finer bins, and this figure uses ${resolutionLabel(n)}.`,
   })),
-  coverageHeight: numberField(() => ({
+  'coverage.height': numberField(() => ({
     path: 'Drag the bottom edge of the coverage band to resize it.',
   })),
   // Same shape as coverageHeight: the band has a drag handle at its lower edge

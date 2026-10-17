@@ -69,7 +69,6 @@
             "type": "LinearAlignmentsDisplay",
             "configuration": "colo829_tumor_ont-LinearAlignmentsDisplay",
             "height": 250,
-            "showCoverage": true,
             "filterBySetting": {
               "flagInclude": 0,
               "flagExclude": 1536

@@ -8,15 +8,11 @@ import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import {
   READ_CATEGORIES,
   activeReadCategoryCount,
-  readCategoryChoice,
-  setReadCategory,
 } from '../../shared/readCategoryFilters.ts'
 import { defaultFilterFlags } from '../../shared/util.ts'
+import { categoryFilterItem } from './categoryFilterItem.ts'
 
-import type {
-  ReadCategoryChoice,
-  ReadCategorySpec,
-} from '../../shared/readCategoryFilters.ts'
+import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -60,34 +56,17 @@ function filterNarrowings(model: FiltersModel): Reversibles {
   }
 }
 
-// One submenu per category, three radios inside: only, hide, or all reads.
-//
-// The choice shows on the parent row (`withHint`), so which categories are
-// filtering is readable without opening any of them, and the help text sits
-// there too rather than on all three radios saying much the same thing.
 function readCategoryItem(
   model: FiltersModel,
-  { key, noun, only, exclude, helpText }: ReadCategorySpec,
+  spec: ReadCategorySpec,
 ): MenuItem {
-  const current = readCategoryChoice(model.readFilter, key)
-  return makeRadioSubMenu<ReadCategoryChoice>({
-    // 'hidden' rather than the stored 'exclude': the row is reporting what the
-    // user sees, and the vocabulary is the wire format's, not theirs.
-    label: withHint(
-      noun,
-      current === 'all' ? undefined : current === 'only' ? 'only' : 'hidden',
-    ),
-    helpText,
-    value: current,
-    options: [
-      ['all', 'All reads'],
-      ['only', only],
-      ['exclude', exclude],
-    ],
-    onChange: choice => {
-      model.setReadFilter(setReadCategory(model.readFilter, key, choice))
+  return categoryFilterItem(
+    { ...spec, all: 'All reads' },
+    model.readFilter[spec.key],
+    value => {
+      model.setReadFilter({ ...model.readFilter, [spec.key]: value })
     },
-  })
+  )
 }
 
 // The thresholds are the mapping-quality facet's bin edges, so "MAPQ 10+"

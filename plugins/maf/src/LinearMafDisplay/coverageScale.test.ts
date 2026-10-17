@@ -11,7 +11,7 @@ import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The coverage band reads the alignments display's scale and band settings:
-// `scales.y`, `coverageSnpMinFrequency` and `showInterbaseIndicators`.
+// `scales.y` and the `coverage` band's filter and interbase marks.
 function displayWith(displayConfig: Record<string, unknown> = {}) {
   const { display } = createMafTestEnvironment({
     displayConfig,
@@ -41,7 +41,7 @@ test('a default band is linear from zero, every mismatch and insertion drawn', (
     domainMin: 0,
     domainMax: domain[1],
     scaleType: scaleTypeCode('linear'),
-    snpMinFrequency: 0,
+    minAlleleFraction: 0,
     showInterbase: true,
   })
   expect(display.axes[0]!.domain).toEqual(domain)
@@ -63,15 +63,17 @@ test('a pinned maximum pins the band', () => {
 })
 
 test('the SNP floor and the interbase toggle reach the band', () => {
-  const display = displayWith({ coverageSnpMinFrequency: 0.2 })
-  expect(display.coverageBandState.snpMinFrequency).toBe(0.2)
+  const display = displayWith({
+    coverage: { filter: { minAlleleFraction: 0.2 } },
+  })
+  expect(display.coverageBandState.minAlleleFraction).toBe(0.2)
   display.setShowInterbaseIndicators(false)
   expect(display.coverageBandState.showInterbase).toBe(false)
 })
 
 test('the zoomed-out tooltip snaps past a SNP under the floor, as the band skips it', () => {
   const { display } = createMafTestEnvironment({
-    displayConfig: { coverageSnpMinFrequency: 0.2 },
+    displayConfig: { coverage: { filter: { minAlleleFraction: 0.2 } } },
   }).createDisplay()
   const A = 'A'.charCodeAt(0)
   stageDetailRegion(display, 0, {
@@ -88,7 +90,10 @@ test('the zoomed-out tooltip snaps past a SNP under the floor, as the band skips
 })
 
 test('rules belong to the coverage scale, not the fixed conservation one', () => {
-  const display = displayWith({ showCoverage: false, showConservation: true })
+  const display = displayWith({
+    coverage: { show: false },
+    conservation: { show: true },
+  })
   expect(display.valueScales).toHaveLength(1)
   expect(display.scoreRulesDrawn).toBe(false)
   display.setShowCoverage(true)
@@ -96,7 +101,7 @@ test('rules belong to the coverage scale, not the fixed conservation one', () =>
 })
 
 test('the interbase toggle greys out with the band hidden', () => {
-  const display = displayWith({ showCoverage: false })
+  const display = displayWith({ coverage: { show: false } })
   const row = display
     .trackMenuItems()
     .flatMap(i => ('subMenu' in i ? resolveSubMenu(i) : [i]))

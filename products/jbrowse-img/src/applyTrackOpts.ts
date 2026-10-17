@@ -255,7 +255,7 @@ export type AssertCompactnessMatchesUpstream = AssertTrue<
   typeof ALIGNMENTS_COMPACTNESS extends {
     [
       K in keyof typeof COMPACTNESS_PRESETS
-    ]: (typeof COMPACTNESS_PRESETS)[K]['featureHeight']
+    ]: (typeof COMPACTNESS_PRESETS)[K]['readHeight']
   }
     ? true
     : false
@@ -301,10 +301,13 @@ interface DisplaySnapshot {
         refName: string
         tag?: string
       }
-  readConnections?: 'off' | 'arc' | 'cloud'
-  readConnectionsDown?: boolean
-  showSashimiArcs?: boolean
-  sashimiArcsMode?: 'up' | 'down' | 'auto'
+  pileup?: { readHeight?: number }
+  readConnections?: {
+    show?: boolean
+    mark?: 'arc' | 'cloud'
+    placement?: 'up' | 'down'
+  }
+  sashimi?: { show?: boolean; placement?: 'up' | 'down' | 'auto' }
   // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
   // see there for why this one slot cannot ride in on the snapshot.
   filter?: ReadFilterSnapshot | string[]
@@ -314,8 +317,9 @@ interface DisplaySnapshot {
 
 // Compile-time guard that every DisplaySnapshot key exists on a display model, so
 // a property renamed upstream fails the build instead of going dead. `color`,
-// `forceLoad`, `modifications`, `baseColor` and `sort` are config slots read
-// through differently named getters, which `keyof` the instance misses.
+// `forceLoad`, `modifications`, `baseColor`, `sort` and the alignments bands
+// are config slots read through differently named getters, which `keyof` the
+// instance misses.
 type ConfigSlotKey =
   | 'color'
   | 'forceLoad'
@@ -323,6 +327,9 @@ type ConfigSlotKey =
   | 'baseColor'
   | 'filter'
   | 'sort'
+  | 'pileup'
+  | 'readConnections'
+  | 'sashimi'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -574,24 +581,29 @@ const modifiers: Record<string, Modifier> = {
     },
   },
 
-  // The compactness presets map onto different fields per display: featureHeight
-  // for alignments, the displayMode slot for the canvas-based displays. Both are
-  // still plain snapshot values.
+  // The compactness presets map onto different fields per display:
+  // `pileup.readHeight` for alignments, the displayMode slot for the
+  // canvas-based displays.
   featureHeight: {
     on: ['alignments', ...CANVAS],
     apply: (r, v, _v2, category) => {
       if (v === 'normal' || v === 'compact' || v === 'super-compact') {
         if (category === 'alignments') {
-          r.snap.featureHeight = ALIGNMENTS_COMPACTNESS[v]
+          r.snap.pileup = { readHeight: ALIGNMENTS_COMPACTNESS[v] }
         } else {
           r.snap.displayMode = v === 'super-compact' ? 'superCompact' : v
         }
       } else {
-        r.snap.featureHeight = parseNum(
+        const height = parseNum(
           'featureHeight',
           v,
           'normal, compact, super-compact, or a number',
         )
+        if (category === 'alignments') {
+          r.snap.pileup = { readHeight: height }
+        } else {
+          r.snap.featureHeight = height
+        }
       }
     },
   },
@@ -609,20 +621,20 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v) => {
       // a bare `arcs` once meant off, so the mode is required
       const mode = parseEnum('arcs', v, ['off', 'up', 'down', 'cloud'] as const)
-      r.snap.readConnections = mode === 'cloud' || mode === 'off' ? mode : 'arc'
-      if (mode === 'up' || mode === 'down') {
-        r.snap.readConnectionsDown = mode === 'down'
-      }
+      r.snap.readConnections =
+        mode === 'off'
+          ? { show: false }
+          : mode === 'cloud'
+            ? { show: true, mark: 'cloud' }
+            : { show: true, mark: 'arc', placement: mode }
     },
   },
   sashimi: {
     on: ['alignments'],
     apply: (r, v) => {
       const mode = parseEnum('sashimi', v, ['off', 'up', 'down', 'auto'])
-      r.snap.showSashimiArcs = mode !== 'off'
-      if (mode !== 'off') {
-        r.snap.sashimiArcsMode = mode
-      }
+      r.snap.sashimi =
+        mode === 'off' ? { show: false } : { show: true, placement: mode }
     },
   },
   // The four read-category filters, one flag each and one vocabulary between
@@ -849,7 +861,7 @@ export async function applyDisplayOpts(
   // SV evidence takes the top rows, split reads first (`svSignalTier`). A
   // track saying otherwise keeps it.
   if (joined && category === 'alignments') {
-    snap.readConnections ??= 'arc'
+    snap.readConnections ??= { show: true, mark: 'arc' }
     snap.sort ??= 'svSignal'
   }
 

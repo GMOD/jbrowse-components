@@ -629,7 +629,7 @@ circular view's `ChordVariantDisplay`.
 
 **Read arcs, the read cloud and coverage are settings on the alignments
 display.** An alignments track has one `LinearAlignmentsDisplay`, so arcs are
-`track.applyDisplaySettings({ readConnections: 'arc' })`, and
+`track.applyDisplaySettings({ readConnections: { show: true } })`, and
 `jb.describeSlots(track.activeDisplay.configuration)` lists the rest. A session
 saved before v5 still loads, because `LinearPileupDisplay`,
 `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and `LinearReadCloudDisplay`

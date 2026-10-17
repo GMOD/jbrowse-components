@@ -3,6 +3,7 @@ import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alig
 import { lodModeSlot } from '@jbrowse/synteny-core'
 
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
+import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -49,27 +50,24 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       color: lgvSyntenyColorConfigSchema,
       /**
-       * #slot
-       * Synteny reads hide the coverage histogram by default; overrides the
-       * inherited base alignments display's `showCoverage` default of `true`.
+       * #slot coverage
+       * The alignments displays' `coverage` band with `show` defaulting to
+       * off: a synteny track hides the coverage histogram unless asked.
        */
-      showCoverage: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw the coverage histogram band',
-      },
+      coverage: lgvSyntenyCoverageConfigSchema,
       /**
        * #slot
-       * One lane per group by default: an all-vs-all track grouped by mate
-       * assembly draws each mate genome as a single band, with repeat depth
-       * shown as darker shading rather than as extra rows. Overrides the base
-       * alignments display's `collapseGroupRows` default of `false`, where a
-       * group is a read category and the stack itself is the information.
+       * One row per facet section by default: an all-vs-all track faceted by
+       * mate assembly draws each mate genome as a single band, with repeat
+       * depth shown as darker shading rather than as extra rows. Overrides the
+       * base alignments display's `collapseSections` default of `false`, where
+       * a section is a read category and the stack itself is the information.
        */
-      collapseGroupRows: {
+      collapseSections: {
         type: 'boolean',
         defaultValue: true,
-        description: 'Draw each group as a single row rather than a stack',
+        description:
+          'Draw each facet section as a single row rather than a stack',
       },
       /**
        * #slot

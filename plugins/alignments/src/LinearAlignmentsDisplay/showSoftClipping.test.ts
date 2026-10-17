@@ -42,12 +42,13 @@ describe('alignments showSoftClipping', () => {
   it('is off unless the track config says otherwise', () => {
     expect(createDisplay().display.showSoftClipping).toBe(false)
     expect(
-      createDisplay({ showSoftClipping: true }).display.showSoftClipping,
+      createDisplay({ pileup: { showSoftClipping: true } }).display
+        .showSoftClipping,
     ).toBe(true)
   })
 
   it('setShowSoftClipping writes the slot both ways', () => {
-    const { display } = createDisplay({ showSoftClipping: true })
+    const { display } = createDisplay({ pileup: { showSoftClipping: true } })
     display.setShowSoftClipping(false)
     expect(display.showSoftClipping).toBe(false)
     display.setShowSoftClipping(true)
@@ -65,7 +66,7 @@ describe('alignments compactness', () => {
   })
 
   it('takes a per-track size from the config', () => {
-    const { display } = createDisplay({ featureHeight: 3 })
+    const { display } = createDisplay({ pileup: { readHeight: 3 } })
     expect(display.featureHeight).toBe(3)
     // spacing is derived from the height (3 -> 0)
     expect(display.featureSpacing).toBe(0)
@@ -97,19 +98,19 @@ describe('alignments fit-to-display-height', () => {
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
-  it('setFeatureHeight exits fit mode', () => {
+  it('setReadHeight exits fit mode', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
 
-    display.setFeatureHeight(20)
+    display.setReadHeight(20)
     expect(display.fitHeightToDisplay).toBe(false)
     expect(display.heightMode).toBe('fixed')
-    expect(display.configuredFeatureHeight).toBe(20)
+    expect(display.configuredReadHeight).toBe(20)
   })
 
   // The "Custom..." height dialog edits the fixed config, so it must seed from
-  // `configuredFeatureHeight` — the resolved `featureHeight` becomes the
+  // `configuredReadHeight` — the resolved `featureHeight` becomes the
   // fractional fit pitch in Compressed mode, which the dialog would then bake.
   it('exposes configured feature size independent of the fit squeeze', () => {
     const { display } = createDisplay()
@@ -121,29 +122,29 @@ describe('alignments fit-to-display-height', () => {
     expect(display.featureSpacing).toBe(1)
 
     // ...but the configured size the dialog edits stays at the config base
-    expect(display.configuredFeatureHeight).toBe(7)
+    expect(display.configuredReadHeight).toBe(7)
   })
 })
 
-// fadeLowQualityMismatches fades mismatch bases by their per-base Phred quality, and
+// pileup.fadeLowQuality fades mismatch bases by their per-base Phred quality, and
 // reaches the renderers via renderState (tier-4 rerender).
-describe('alignments fadeLowQualityMismatches (fade by base quality)', () => {
+describe('alignments pileup.fadeLowQuality (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.fadeLowQualityMismatches).toBe(false)
+    expect(display.fadeLowQuality).toBe(false)
   })
 
-  it('setFadeLowQualityMismatches sets the config slot on and off', () => {
+  it('setFadeLowQuality sets the config slot on and off', () => {
     const { display } = createDisplay()
-    display.setFadeLowQualityMismatches(true)
-    expect(display.fadeLowQualityMismatches).toBe(true)
-    display.setFadeLowQualityMismatches(false)
-    expect(display.fadeLowQualityMismatches).toBe(false)
+    display.setFadeLowQuality(true)
+    expect(display.fadeLowQuality).toBe(true)
+    display.setFadeLowQuality(false)
+    expect(display.fadeLowQuality).toBe(false)
   })
 
   it('follows a config default', () => {
-    const { display } = createDisplay({ fadeLowQualityMismatches: true })
-    expect(display.fadeLowQualityMismatches).toBe(true)
+    const { display } = createDisplay({ pileup: { fadeLowQuality: true } })
+    expect(display.fadeLowQuality).toBe(true)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -151,22 +152,22 @@ describe('alignments fadeLowQualityMismatches (fade by base quality)', () => {
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show...')
     clickMenuItem(show, 'Fade low quality mismatches')
-    expect(display.fadeLowQualityMismatches).toBe(true)
+    expect(display.fadeLowQuality).toBe(true)
   })
 })
 
-describe('alignments showSashimiLabels (sashimi arc counts)', () => {
+describe('alignments sashimi.showCounts (sashimi arc counts)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.showSashimiLabels).toBe(false)
+    expect(display.showSashimiCounts).toBe(false)
   })
 
-  it('setShowSashimiLabels writes the slot both ways', () => {
-    const { display } = createDisplay({ showSashimiLabels: true })
-    display.setShowSashimiLabels(false)
-    expect(display.showSashimiLabels).toBe(false)
-    display.setShowSashimiLabels(true)
-    expect(display.showSashimiLabels).toBe(true)
+  it('setShowSashimiCounts writes the slot both ways', () => {
+    const { display } = createDisplay({ sashimi: { showCounts: true } })
+    display.setShowSashimiCounts(false)
+    expect(display.showSashimiCounts).toBe(false)
+    display.setShowSashimiCounts(true)
+    expect(display.showSashimiCounts).toBe(true)
   })
 })
 
@@ -228,9 +229,9 @@ describe('alignments grow (auto-height) mode', () => {
     display.setHeightMode('grow')
     expect(display.autoHeight).toBe(true)
 
-    display.setFeatureHeight(3)
+    display.setReadHeight(3)
     expect(display.autoHeight).toBe(true)
-    expect(display.configuredFeatureHeight).toBe(3)
+    expect(display.configuredReadHeight).toBe(3)
   })
 })
 
@@ -543,11 +544,22 @@ describe('alignments unit (view as pairs)', () => {
 describe('alignments readConnections (arcs)', () => {
   it('is off with no config', () => {
     const { display } = createDisplay()
-    expect(display.readConnections).toBe('off')
+    expect(display.drawnReadConnections).toBe('off')
   })
 
   it('takes an explicit per-track overlay', () => {
-    const { display } = createDisplay({ readConnections: 'arc' })
-    expect(display.readConnections).toBe('arc')
+    const { display } = createDisplay({
+      readConnections: { show: true, mark: 'cloud' },
+    })
+    expect(display.drawnReadConnections).toBe('cloud')
+  })
+
+  it('keeps its mark while hidden', () => {
+    const { display } = createDisplay({
+      readConnections: { show: true, mark: 'cloud' },
+    })
+    display.setDrawnReadConnections('off')
+    expect(display.drawnReadConnections).toBe('off')
+    expect(display.readConnectionsMark).toBe('cloud')
   })
 })

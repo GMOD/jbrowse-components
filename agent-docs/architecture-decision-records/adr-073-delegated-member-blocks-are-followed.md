@@ -107,8 +107,8 @@ carried; the delegated block is for what one model keeps elsewhere for size.
 member, which is a mechanical lever on the lines above. It does not make
 splitting a good idea by itself — a getter that reads any *other* model member
 still belongs in the chain, where `self` is the model so far, and that line is
-what keeps `configSlotViews.ts` honest (`collapseGroupRows` and `showOutline`
-are slot reads that stayed behind because they read `canCollapseGroupRows` and
+what keeps `configSlotViews.ts` honest (`collapseSections` and `showOutline`
+are slot reads that stayed behind because they read `canCollapseSections` and
 `isChainMode`).
 
 **Shared members still belong in a mixin, not in a delegated block.** The follow

@@ -2,7 +2,7 @@ import { resolveSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
-  collapseGroupRowsItems,
+  collapseSectionsItems,
   groupByRadioMenuItem,
   hiddenGroupsItems,
   pickFacetOptions,
@@ -11,7 +11,7 @@ import {
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AlignmentsUnit,
-  CollapseGroupRowsModel,
+  CollapseSectionsModel,
   Facet,
   HiddenGroupsModel,
 } from '@jbrowse/plugin-alignments'
@@ -55,7 +55,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   // Offered only while mate-assembly grouping is on, which is the same condition
   // `hiddenGroupKeys` reads: under any other dimension the self alignments are
   // not a lane of their own, so the box hid nothing whichever way it was ticked.
-  // Absent rather than disabled, like `collapseGroupRowsItems` and the interbase
+  // Absent rather than disabled, like `collapseSectionsItems` and the interbase
   // toggle below.
   return {
     ...item,
@@ -82,7 +82,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
   }
 }
 
-interface ShowModel extends CollapseGroupRowsModel, HiddenGroupsModel {
+interface ShowModel extends CollapseSectionsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -117,7 +117,7 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
     }),
     // Only while grouping is in effect — for an all-vs-all track grouped by
     // mate assembly this is the default, one band per mate genome.
-    ...collapseGroupRowsItems(model),
+    ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     toggleItem('Mismatches', model.showMismatches, model.setShowMismatches, {
       helpText:

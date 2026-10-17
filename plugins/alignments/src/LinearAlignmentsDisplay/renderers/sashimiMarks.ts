@@ -47,7 +47,7 @@ export function sashimiBandsOf(
   sec: SectionRender,
 ): SashimiBandState['sashimi'] {
   const upHeight = state.coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
-  const downHeight = state.sashimiArcsHeight - SASHIMI_APEX_CLEARANCE_PX
+  const downHeight = state.sashimiHeight - SASHIMI_APEX_CLEARANCE_PX
   return {
     up:
       upHeight > 0
@@ -64,7 +64,7 @@ export function sashimiBandsOf(
             top: sec.sashimiBandTop,
             height: downHeight,
             clipTop: sec.sashimiBandTop,
-            clipHeight: state.sashimiArcsHeight,
+            clipHeight: state.sashimiHeight,
           }
         : undefined,
   }

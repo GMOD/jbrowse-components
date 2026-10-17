@@ -57,11 +57,13 @@ function wgbsContextTrack(
       // methylated-only is the default, so the tri-context contrast reads as
       // presence/absence of red rather than a red/blue mix per read
       modifications: { cytosineContext: context },
-      // compact reads, coverage hidden: three stacked pileups stay legible and
-      // the row's message is the read colors, not a per-copy histogram
-      showCoverage: false,
+      coverage: {
+        // compact reads, coverage hidden: three stacked pileups stay legible and
+        // the row's message is the read colors, not a per-copy histogram
+        show: false,
+      },
+      pileup: { readHeight: 3 },
       heightMode: 'fixed',
-      featureHeight: 3,
       height: 90,
       ...displayOverrides,
     },
@@ -282,9 +284,9 @@ export const bisulfiteVideoFixtures = {
         type: 'LinearAlignmentsDisplay',
         baseColor: { field: 'bisulfite' },
         modifications: { cytosineContext: 'CG' },
-        showCoverage: false,
+        coverage: { show: false },
+        pileup: { readHeight: 5 },
         heightMode: 'fixed',
-        featureHeight: 5,
         height: 200,
       },
     ],
@@ -461,7 +463,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               // setting, and the gap that pairs with it is derived from the
               // height rather than set
               heightMode: 'fixed',
-              featureHeight: 3,
+              pileup: { readHeight: 3 },
               // reviewer: label the modification-type swatches (6mA calls)
               showLegend: true,
             },
@@ -472,7 +474,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               baseColor: { field: 'modifications' },
               modifications: { shownModifications: ['a'] },
               heightMode: 'fixed',
-              featureHeight: 3,
+              pileup: { readHeight: 3 },
             },
           ],
         },

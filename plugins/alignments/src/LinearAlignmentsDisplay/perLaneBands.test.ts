@@ -95,8 +95,8 @@ function createEnv() {
 // is a reserved strip rather than a coverage overlay.
 function twoLanes() {
   const { view, display } = createEnv()
-  display.setReadConnections('arc')
-  display.setReadConnectionsDown(true)
+  display.setDrawnReadConnections('arc')
+  display.setReadConnectionsPlacement('down')
   display.setRpcData(
     0,
     {
@@ -159,7 +159,7 @@ test('the reserved band tracks the arc feed, not just the setting', () => {
 test('turning read connections off drops the band from the lane that had one', () => {
   const { display } = twoLanes()
   const withArcs = display.sections.contentHeight
-  display.setReadConnections('off')
+  display.setDrawnReadConnections('off')
   // Connections are an rpcProps setting — the worker skips the per-read SA tag
   // walk when they are off — so toggling drops the fetched data. Re-seed it
   // here, standing in for the refetch, since what this test is about is the
@@ -193,8 +193,8 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
   // arc mode, since only read cloud puts |TLEN| on the axis at all.
   function twoCloudLanes() {
     const { view, display } = createEnv()
-    display.setReadConnections('cloud')
-    display.setReadConnectionsDown(true)
+    display.setDrawnReadConnections('cloud')
+    display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
       {
@@ -249,8 +249,8 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
     // Same gate the renderers use to skip the pass: no arcs, no band, so
     // nothing to label. Lane A pairs, lane B does not.
     const { display } = createEnv()
-    display.setReadConnections('cloud')
-    display.setReadConnectionsDown(true)
+    display.setDrawnReadConnections('cloud')
+    display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
       {
@@ -272,7 +272,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
 
   test('arc mode has no |TLEN| axis to rule', () => {
     const { display } = twoCloudLanes()
-    display.setReadConnections('arc')
+    display.setDrawnReadConnections('arc')
     expect(tlen(display)).toBeUndefined()
   })
 })
@@ -287,8 +287,8 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
 describe('the pooled below-coverage bands agree with the sections', () => {
   function ungrouped(mateBp?: number) {
     const { display } = createEnv()
-    display.setReadConnections('arc')
-    display.setReadConnectionsDown(true)
+    display.setDrawnReadConnections('arc')
+    display.setReadConnectionsPlacement('down')
     display.setRpcData(
       0,
       {
@@ -331,8 +331,8 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     const seedTwoUnpairedLanes = (connections: 'arc' | 'off') => {
       const { display } = createEnv()
       display.setHeightMode('fit')
-      display.setReadConnections(connections)
-      display.setReadConnectionsDown(true)
+      display.setDrawnReadConnections(connections)
+      display.setReadConnectionsPlacement('down')
       display.setFacet({ field: 'strand' })
       display.setRpcData(
         0,
@@ -372,8 +372,8 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     const seed = (secondLaneMate: number | undefined) => {
       const { display } = createEnv()
       display.setHeightMode('fit')
-      display.setReadConnections('arc')
-      display.setReadConnectionsDown(true)
+      display.setDrawnReadConnections('arc')
+      display.setReadConnectionsPlacement('down')
       display.setFacet({ field: 'strand' })
       display.setRpcData(
         0,

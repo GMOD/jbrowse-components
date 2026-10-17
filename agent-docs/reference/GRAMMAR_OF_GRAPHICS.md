@@ -128,7 +128,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
   Canvas2D painters' color batching. The alignments mismatch fades
-  (`fadeLowQualityMismatches`, `fadeLowFrequencyMismatches`) stay booleans:
+  (`pileup.fadeLowQuality`, `pileup.fadeLowFrequency`) stay booleans:
   each fades by one variable, so an `opacity` object would take one legal
   value. `encoding.size` maps a width through the
   `size` lane on the link alone
@@ -137,11 +137,13 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ([ADR-184](../architecture-decision-records/adr-184-a-line-is-a-mark.md)).
   No `tooltip` channel either: each display's hover prints its own fields,
   and a plot naming them waits on one whose hover prints the wrong ones.
-- **No filter object per alignments layer.** The read-connection, sashimi and
-  allele-segment predicates (`showInterchrom`, `showLongRange`,
-  `showOrdinaryPairs`, `minInterchromSupport`, `minSashimiScore`,
-  `showNonCanonicalJunctions`, `coverageSnpMinFrequency`) stay flat slots; one
-  object per layer would rename them and change no picture.
+- **A band is one config object, with a filter of its own**
+  ([ADR-231](../architecture-decision-records/adr-231-an-alignments-band-is-one-config-object.md)).
+  The alignments `coverage`, `pileup`, `sashimi` and `readConnections`, and
+  MAF's `coverage` and `conservation`, each hold `show`, `height` and
+  `placement` meaning the same in every band, and a predicate on a band's
+  rows is that band's `filter`, spelt as the read filter. `show` toggles a
+  band or a mark's part and nothing else.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.
@@ -174,7 +176,7 @@ the result, since it is what a later audit need not redo:
 
 - Every color object carries ADR-151's members, and `scale: 'none'` means the
   same on each: paint `value`, keep the field. Alignments' `baseColor` and
-  `arcColor` are the exceptions by design: each names a field alone, since
+  `readConnections.color` are the exceptions by design: each names a field alone, since
   each field paints a vocabulary of its own (ADR-149), and the arcs borrow
   `color`'s `range` by category.
 - `fieldPresets` names agree across displays: `strand`, `identity`, `mapq`,
@@ -191,8 +193,9 @@ the result, since it is what a later audit need not redo:
 - `displayDefaults` expand into the display config, so `plot` and "Reset track
   settings" see them.
 - Alignments `sort` is not a second spelling of
-  `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`,
-  `conservationMode` and `heightMode` are layout or fetch modes, not marks.
+  `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`
+  and `heightMode` are layout or fetch modes, not marks, and MAF's
+  `conservation.unit` is what one bar stands for.
 
 Two docs the audit left on a jexl callback or a flag name, on purpose: the
 cookbook's whole-config recipe paints SNVs one color and every other variant

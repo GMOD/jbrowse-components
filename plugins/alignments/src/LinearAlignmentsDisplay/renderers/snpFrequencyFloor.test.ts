@@ -129,7 +129,7 @@ test('the GPU carries the floor as its own uniform', () => {
     ],
     makeTestRenderState({
       colors: makeTestPalette(),
-      coverageSnpMinFrequency: 0.05,
+      coverageMinAlleleFraction: 0.05,
       // The band has to actually draw for its uniforms to be written at all:
       // they go into their own buffer, staged immediately before the coverage
       // passes and only when the band has a clip band to draw into.

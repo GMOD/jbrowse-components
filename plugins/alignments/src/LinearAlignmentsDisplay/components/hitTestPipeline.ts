@@ -425,7 +425,7 @@ export function performHitTest(
   const { state, overPileup } = options
   const {
     showInterbaseIndicators,
-    coverageSnpMinFrequency,
+    coverageMinAlleleFraction,
     coverageTopOffset,
     coverageHeight,
     coverageMaxDepth,
@@ -479,7 +479,7 @@ export function performHitTest(
       basePos,
       bpPerPx,
       resolved.reversed,
-      coverageSnpMinFrequency,
+      coverageMinAlleleFraction,
     )
     if (position !== undefined) {
       return { type: 'coverage', hit: { type: 'coverage', position }, resolved }

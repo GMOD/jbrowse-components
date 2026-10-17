@@ -6,21 +6,24 @@ import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
 /**
  * #config AlignmentsArcColor
  * #category display
- * The alignments displays' `arcColor` setting colors the read-connection
- * arcs and the read cloud. Empty, the default, the arcs take the reads'
- * `color` field where it is one an arc paints (`insertSize`,
+ * The alignments displays' `readConnections.color` setting colors the
+ * read-connection arcs and the read cloud. Empty, the default, the arcs take
+ * the reads' `color` field where it is one an arc paints (`insertSize`,
  * `pairOrientation`, `insertSizeAndOrientation`), and paint
  * `insertSizeAndOrientation` under any other. A field of its own colors the
  * arcs whatever the reads show. A string is the field.
  *
  * #example
  * ```js
- * { type: 'LinearAlignmentsDisplay', readConnections: 'arc', arcColor: 'pairOrientation' }
+ * {
+ *   type: 'LinearAlignmentsDisplay',
+ *   readConnections: { show: true, color: 'pairOrientation' },
+ * }
  * ```
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: 'cloud',
+ *   readConnections: { show: true, mark: 'cloud' },
  *   color: { field: 'insertSize' },
  * }
  * ```

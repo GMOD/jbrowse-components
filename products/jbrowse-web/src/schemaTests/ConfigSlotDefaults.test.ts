@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaDefinition,
+  isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
   slotChoices,
@@ -31,6 +32,53 @@ import corePlugins from '../corePlugins.ts'
 // is where to look. `ConfigSlot` refuses the two authoring mistakes outright (a
 // non-`maybe*` slot with no default, a `maybe*` slot with a concrete one), so
 // what reaches here is only a *changed* value.
+type SchemaDefinition = NonNullable<
+  ReturnType<typeof getConfigurationSchemaDefinition>
+>
+
+// A sub-schema's slots are listed under its dotted name, `pileup.readHeight`,
+// so a band object's defaults are pinned as a flat slot's are.
+function slotsOf(
+  definition: SchemaDefinition,
+  prefix = '',
+  slots: Record<string, string> = {},
+) {
+  for (const name of Object.keys(definition).sort()) {
+    const entry = definition[name]
+    if (isConstantEntry(entry)) {
+      // A bare string/number entry, which becomes a volatile instance
+      // constant rather than a slot. Recorded because the feature looks
+      // unused — if this line never appears, `volatileConstants` and
+      // `isConstantEntry` are dead weight in `makeConfigurationSchemaModel`.
+      slots[prefix + name] = `constant ${JSON.stringify(entry)}`
+      continue
+    }
+    if (isConfigurationSchemaType(entry)) {
+      const nested = getConfigurationSchemaDefinition(entry)
+      if (nested) {
+        slotsOf(nested, `${prefix}${name}.`, slots)
+      }
+      continue
+    }
+    if (!isSlotDefinitionEntry(entry)) {
+      continue
+    }
+    // `undefined` is spelled out rather than leaning on
+    // JSON.stringify(undefined), whose declared return type is a plain
+    // string even though it really answers undefined — and an unset
+    // `maybe*` slot is the common case here.
+    const value = `= ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
+    // An enum's vocabulary is the other schema fact that breaks saved
+    // sessions silently: drop a member and a session holding it fails MST
+    // validation, so the track stops hydrating rather than falling back.
+    const choices = slotChoices(entry)
+    slots[prefix + name] = choices
+      ? `${entry.type} ${value} of ${JSON.stringify(choices)}`
+      : `${entry.type} ${value}`
+  }
+  return slots
+}
+
 test('every registered schema slot default', () => {
   // `createPluggableElements` is what registers each type and builds its
   // configSchema, so the schema registry is fully populated here. No
@@ -60,34 +108,7 @@ test('every registered schema slot default', () => {
       if (!definition) {
         continue
       }
-      const slots: Record<string, string> = {}
-      for (const name of Object.keys(definition).sort()) {
-        const entry = definition[name]
-        if (isConstantEntry(entry)) {
-          // A bare string/number entry, which becomes a volatile instance
-          // constant rather than a slot. Recorded because the feature looks
-          // unused — if this line never appears, `volatileConstants` and
-          // `isConstantEntry` are dead weight in `makeConfigurationSchemaModel`.
-          slots[name] = `constant ${JSON.stringify(entry)}`
-          continue
-        }
-        if (!isSlotDefinitionEntry(entry)) {
-          continue
-        }
-        // `undefined` is spelled out rather than leaning on
-        // JSON.stringify(undefined), whose declared return type is a plain
-        // string even though it really answers undefined — and an unset
-        // `maybe*` slot is the common case here.
-        const value = `= ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
-        // An enum's vocabulary is the other schema fact that breaks saved
-        // sessions silently: drop a member and a session holding it fails MST
-        // validation, so the track stops hydrating rather than falling back.
-        const choices = slotChoices(entry)
-        slots[name] = choices
-          ? `${entry.type} ${value} of ${JSON.stringify(choices)}`
-          : `${entry.type} ${value}`
-      }
-      bySchema[`${group}: ${element.name}`] = slots
+      bySchema[`${group}: ${element.name}`] = slotsOf(definition)
     }
   }
 

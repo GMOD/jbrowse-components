@@ -70,7 +70,7 @@ function AlignmentsSvgBody({
   }
   const labels = model.visibleLabels
   const sections = model.sourceSectionsIn(state.colors)
-  const sashimiCounts = model.showSashimiLabels
+  const sashimiCounts = model.showSashimiCounts
     ? sashimiLabels(
         state,
         sections.map(sec => sec.sashimiFeeds),

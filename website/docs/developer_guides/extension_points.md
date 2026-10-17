@@ -975,8 +975,14 @@ config schema's `retired`:
 ```typescript
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
-  drawInter: v => ({ showInterchrom: v }),
-  drawLongRange: v => ({ showLongRange: v }),
+  drawInter: v =>
+    v === false
+      ? { readConnections: { filter: { interchrom: 'exclude' } } }
+      : {},
+  drawLongRange: v =>
+    v === false
+      ? { readConnections: { filter: { offscreenMates: 'exclude' } } }
+      : {},
   filterBy: filter => ({ filter }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
@@ -987,10 +993,12 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   ...retiredScaleSpellings,
   multiTicks: () => ({}),
   jitter: () => ({}),
-  lineWidth: v => ({ readConnectionsLineWidth: v }),
+  lineWidth: v => ({ readConnections: { lineWidth: v } }),
+  featureHeight: v => ({ pileup: { readHeight: v } }),
+  maxHeight: v => ({ pileup: { maxHeight: v } }),
   hideSmallIndels: () => ({}),
-  hideMismatches: v => ({ showMismatches: !v }),
-  mismatchAlpha: v => ({ fadeLowQualityMismatches: v }),
+  hideMismatches: v => ({ pileup: { showMismatches: !v } }),
+  mismatchAlpha: v => ({ pileup: { fadeLowQuality: v } }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),

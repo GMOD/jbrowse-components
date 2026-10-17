@@ -28,7 +28,7 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
   size. Arc mode draws the arc unvalued (`arcCrossLink`), half as tall as its
   feet are apart, since it has no genomic radius.
-- **`showInterchrom` and `minInterchromSupport` gate both marks** from one hoisted
+- **`readConnections.filter.interchrom` and `minInterchromReads` gate both marks** from one hoisted
   condition, so neither mark escapes the setting or the mismapping floor.
 - **The hover needs two refNames.** `formatArcTooltip` builds a range from the
   min and max of the two bp, which across chromosomes names one chromosome with a
@@ -57,7 +57,7 @@ the arc to paint the baseline color slot (`arcPaintRank`), so "hidden" equals
 different, deliberate reading: |TLEN| in the modal band.
 
 **A support floor exists only for interchromosomal mate links** (either mark),
-not for same-chromosome arcs or split junctions. `minInterchromSupport` counts a
+not for same-chromosome arcs or split junctions. `minInterchromReads` counts a
 mate link's reads over a window of one fragment length on both sides
 (`clusteredInterchromSupport`), never at a coordinate: mates straddle a
 breakpoint, so `arcKey`'s exact count is 1 for nearly every interchromosomal pair

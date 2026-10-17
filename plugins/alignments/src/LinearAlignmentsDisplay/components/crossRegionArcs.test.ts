@@ -32,7 +32,7 @@ function twoRegionDisplay() {
     { assemblyName: 'volvox', start: 1500, end: 10_000, refName: 'ctgA' },
   ])
   applyView(view, 10, 0)
-  display.setReadConnections('arc')
+  display.setDrawnReadConnections('arc')
   display.setRpcData(
     0,
     {
@@ -118,7 +118,7 @@ test('a single-region view has none of this', () => {
   // partition that files every arc as cross-region.
   const { view, display } = createTestAlignmentsDisplay()
   applyView(view, 10, 0)
-  display.setReadConnections('arc')
+  display.setDrawnReadConnections('arc')
   display.setRpcData(
     0,
     {
@@ -146,7 +146,7 @@ function straddlingDisplay() {
     { assemblyName: 'volvox', start: 5000, end: 10_000, refName: 'ctgA' },
   ])
   applyView(view, 10, 0)
-  display.setReadConnections('arc')
+  display.setDrawnReadConnections('arc')
   display.setRpcData(
     0,
     { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },

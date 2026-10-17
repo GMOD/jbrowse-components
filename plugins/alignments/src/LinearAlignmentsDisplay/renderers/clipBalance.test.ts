@@ -180,7 +180,7 @@ function state(): RenderState {
     colors: makeTestPalette(),
     chainMode: false,
     showLinkedReadLines: false,
-    collapseGroupRows: false,
+    collapseSections: false,
     readConnectionsLineWidth: 1,
     linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],
     readConnections: 'off',

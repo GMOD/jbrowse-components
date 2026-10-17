@@ -101,7 +101,7 @@ export interface CoverageBandState {
   scaleType: ScaleTypeCode
   symlogConstant: number
   /** SNP slices under this allele fraction are not drawn. */
-  snpMinFrequency: number
+  minAlleleFraction: number
   /** Whether the interbase bars and their indicator triangles draw at all. */
   showInterbase: boolean
   colors: CoverageBandColors
@@ -156,7 +156,7 @@ function writeBandUniforms(
       p.interbaseMaxCount,
       p.domainMax,
     ),
-    snpMinFrequency: p.snpMinFrequency,
+    minAlleleFraction: p.minAlleleFraction,
     colors: p.colors,
   })
 }
@@ -312,7 +312,7 @@ export const coverageSnpShape = layerShape(
       },
       bpToX,
       viewWidth,
-      p.snpMinFrequency,
+      p.minAlleleFraction,
     )
   },
 )
@@ -522,7 +522,7 @@ export function hitCoverageBand(
     domainMin: 0,
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
-    snpMinFrequency: 0,
+    minAlleleFraction: 0,
     colors: NO_COLORS,
     regionMaxDepth: region.coverageMaxDepth,
     coverageBinSize: region.coverageBinSize,

@@ -460,13 +460,12 @@ const crossing: [number, number, number][] = [
 // itself is covered in features/sashimi/junctions.test.ts.
 function downKeys(
   rpcDataMap: Parameters<typeof buildSashimiDownKeys>[0],
-  minSashimiScore: number,
-  mode: 'up' | 'down' | 'auto',
+  minReads: number,
+  placement: 'up' | 'down' | 'auto',
 ) {
   return buildSashimiDownKeys(rpcDataMap, {
-    minSashimiScore,
-    showNonCanonicalJunctions: true,
-    mode,
+    filter: { minReads },
+    placement,
     refNameFor: () => 'chr1',
   })
 }
@@ -581,9 +580,8 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
     ],
   ])
   const keys = buildSashimiDownKeys(m, {
-    minSashimiScore: 0,
-    showNonCanonicalJunctions: true,
-    mode: 'down',
+    filter: { minReads: 0 },
+    placement: 'down',
     refNameFor: () => 'chr1',
     hidden: new Set(['self']),
   })

@@ -27,32 +27,34 @@ describe('alignments modifiers', () => {
   test('arcs:cloud and arcs:down map to readConnections fields', () => {
     expect(
       buildDisplaySnapshot('alignments', ['arcs:cloud']).snap,
-    ).toMatchObject({ readConnections: 'cloud' })
+    ).toMatchObject({ readConnections: { show: true, mark: 'cloud' } })
     expect(
       buildDisplaySnapshot('alignments', ['arcs:down']).snap,
-    ).toMatchObject({ readConnections: 'arc', readConnectionsDown: true })
+    ).toMatchObject({
+      readConnections: { show: true, mark: 'arc', placement: 'down' },
+    })
   })
 
-  test('the unit is a slot write that leaves the bezier overlay alone', () => {
+  test('the unit is a slot write that leaves the curved connectors alone', () => {
     const { snap } = buildDisplaySnapshot('alignments', ['unit=chain'])
     expect(snap).toMatchObject({ unit: 'chain' })
-    expect(snap).not.toHaveProperty('showBezierConnections')
+    expect(snap).not.toHaveProperty('pileup')
   })
 
-  test('the curved-connector overlay is a slot write', () => {
+  test('the curved-connector overlay is a band member, which waits for the display', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
-      'showBezierConnections=true',
+      'pileup.showConnectors=true',
     ])
-    expect(snap).toMatchObject({ showBezierConnections: true })
+    expect(snap).toEqual({})
   })
 
-  test('sashimi:off hides arcs; sashimi:down sets mode', () => {
+  test('sashimi:off hides arcs; sashimi:down sets the placement', () => {
     expect(
       buildDisplaySnapshot('alignments', ['sashimi:off']).snap,
-    ).toMatchObject({ showSashimiArcs: false })
+    ).toMatchObject({ sashimi: { show: false } })
     expect(
       buildDisplaySnapshot('alignments', ['sashimi:down']).snap,
-    ).toMatchObject({ showSashimiArcs: true, sashimiArcsMode: 'down' })
+    ).toMatchObject({ sashimi: { show: true, placement: 'down' } })
   })
 
   test('sort is returned as an intent (resolved against the view)', () => {
@@ -81,14 +83,14 @@ describe('alignments modifiers', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'featureHeight:super-compact',
     ])
-    expect(snap).toMatchObject({ featureHeight: 1 })
+    expect(snap).toMatchObject({ pileup: { readHeight: 1 } })
     expect(snap).not.toHaveProperty('featureSpacing')
   })
 
-  test('featureHeight numeric sets featureHeight', () => {
+  test('featureHeight numeric sets pileup.readHeight on alignments', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['featureHeight:4']).snap
-        .featureHeight,
+      buildDisplaySnapshot('alignments', ['featureHeight:4']).snap.pileup
+        ?.readHeight,
     ).toBe(4)
   })
 
@@ -159,7 +161,7 @@ describe('feature modifiers', () => {
       'sashimi:down',
     ])
     expect(snap.readConnections).toBeUndefined()
-    expect(snap.showSashimiArcs).toBeUndefined()
+    expect(snap.sashimi).toBeUndefined()
     expect(warn).toHaveBeenCalledWith(
       'Warning: track option "arcs" has no effect on a feature track (applies to: alignments)',
     )
@@ -241,21 +243,15 @@ describe('feature modifiers', () => {
 })
 
 describe('alignments settings a static export cannot reach any other way', () => {
-  test('display-chrome and sashimi settings are slot writes', () => {
+  test('display-chrome settings are slot writes, band members wait for the display', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'showLegend=true',
-      'maxHeight=4000',
-      'minSashimiScore=3',
-      'sashimiArcsHeight=120',
-      'arcColor=insertSize',
+      'pileup.maxHeight=4000',
+      'sashimi.filter.minReads=3',
+      'sashimi.height=120',
+      'readConnections.color=insertSize',
     ])
-    expect(snap).toEqual({
-      showLegend: true,
-      maxHeight: 4000,
-      minSashimiScore: 3,
-      sashimiArcsHeight: 120,
-      arcColor: 'insertSize',
-    })
+    expect(snap).toEqual({ showLegend: true })
   })
 
   // Both land in one `filter`, so they compose with the flag masks and tag
@@ -367,7 +363,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
       'sashimi:up',
       'flags:2:1540',
     ])
-    expect(snap.showSashimiArcs).toBeUndefined()
+    expect(snap.sashimi).toBeUndefined()
     expect(snap.filter).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()

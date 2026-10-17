@@ -28,7 +28,7 @@ function coverageDisplay(depth: number, pileUp = depth) {
     },
   }))
   const { view, display } = mount(Session)
-  setConf(display, 'coverageHeight', 200)
+  setConf(display, ['coverage', 'height'], 200)
   view.setWidth(800)
   const region = {
     assemblyName: 'volvox',

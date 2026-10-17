@@ -26,27 +26,27 @@ export function groupByRadioMenuItem({
   })
 }
 
-export interface CollapseGroupRowsModel {
-  canCollapseGroupRows: boolean
-  collapseGroupRows: boolean
-  setCollapseGroupRows: (flag: boolean) => void
+export interface CollapseSectionsModel {
+  canCollapseSections: boolean
+  collapseSections: boolean
+  setCollapseSections: (flag: boolean) => void
 }
 
 // Spread into a display's "Show..." menu next to the pileup toggle: collapsing is
 // how tall a group is drawn, so it belongs with the layout controls.
 //
-// Absent rather than disabled when it can't take effect (`canCollapseGroupRows` —
+// Absent rather than disabled when it can't take effect (`canCollapseSections` —
 // ungrouped, or chain mode, whose rows are chains). The display's
-// `collapseGroupRows` getter is gated on the same rule, so a visible box would
+// `collapseSections` getter is gated on the same rule, so a visible box would
 // sit unchecked on a track that defaults it on and do nothing when clicked.
-export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
+export function collapseSectionsItems(model: CollapseSectionsModel) {
   return (
-    model.canCollapseGroupRows
+    model.canCollapseSections
       ? [
           toggleItem(
             'Collapse groups to one row',
-            model.collapseGroupRows,
-            model.setCollapseGroupRows,
+            model.collapseSections,
+            model.setCollapseSections,
             {
               helpText:
                 'Draw each group as a single row instead of a stack, with ' +

@@ -3,16 +3,13 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
-import { collapseGroupRowsItems, hiddenGroupsItems } from './groupByMenu.ts'
+import { collapseSectionsItems, hiddenGroupsItems } from './groupByMenu.ts'
 
 import type { AlignmentsUnit } from '../constants.ts'
-import type {
-  CollapseGroupRowsModel,
-  HiddenGroupsModel,
-} from './groupByMenu.ts'
+import type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
+interface ReadsModel extends CollapseSectionsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -26,8 +23,8 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   unit: AlignmentsUnit
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  fadeLowQualityMismatches: boolean
-  setFadeLowQualityMismatches: (value: boolean) => void
+  fadeLowQuality: boolean
+  setFadeLowQuality: (value: boolean) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -71,7 +68,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     }),
     // Only while grouping is in effect, so it sits next to the pileup toggle
     // it modifies rather than in the Group-by dimension list.
-    ...collapseGroupRowsItems(model),
+    ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     toggleItem(
       'Mismatches',
@@ -87,13 +84,9 @@ export function getReadsMenuItems(model: ReadsModel) {
           'the line joining them is what says they are one read.',
       },
     ),
-    toggleItem(
-      'Fade low quality mismatches',
-      model.fadeLowQualityMismatches,
-      fade => {
-        model.setFadeLowQualityMismatches(fade)
-      },
-    ),
+    toggleItem('Fade low quality mismatches', model.fadeLowQuality, fade => {
+      model.setFadeLowQuality(fade)
+    }),
     // The worker forces soft clipping off in chain mode
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
     // out there rather than taking a click that draws nothing.

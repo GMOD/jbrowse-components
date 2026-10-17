@@ -254,7 +254,7 @@ const ConnectionBandResizeHandles = observer(
                     s => s.hasSashimiBand,
                   )}
                   onDrag={dy => {
-                    model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
+                    model.setSashimiHeight(model.sashimiHeight + dy)
                   }}
                   title={`Drag to resize the sashimi arcs area${scope}`}
                 />

@@ -23,6 +23,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./CoverageTooltipTables": "./src/CoverageTooltipTables.tsx",
+    "./coverageBandConfigSchema": "./src/coverageBandConfigSchema.ts",
     "./coverageMenuItems": "./src/coverageMenuItems.ts",
     "./variantSortColumn": "./src/variantSortColumn.ts"
   },
@@ -56,6 +57,7 @@
     "exports": {
       ".": "./esm/index.js",
       "./CoverageTooltipTables": "./esm/CoverageTooltipTables.js",
+      "./coverageBandConfigSchema": "./esm/coverageBandConfigSchema.js",
       "./coverageMenuItems": "./esm/coverageMenuItems.js",
       "./variantSortColumn": "./esm/variantSortColumn.js"
     }

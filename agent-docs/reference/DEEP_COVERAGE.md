@@ -56,14 +56,14 @@ already controls that family.
 At 300x a 1% sequencing error rate is three reads at every position, so an
 un-floored band carries a permanent sliver of every base. The pileup always faded
 these through `featureFrequencyThreshold`; the band did not.
-`coverageSnpMinFrequency` (Coverage → "Color SNPs above...") is the band's floor,
+`coverage.filter.minAlleleFraction` (Coverage → "Color SNPs above...") is the band's floor,
 0 by default because a floor at 30x would hide real low-frequency variants in a
 somatic or pooled sample. It is a draw-time test in both backends against each
 segment's `segHeight`, so changing it repaints rather than refetches.
 
 Three rules answer "is this event real", calibrated differently:
 `featureFrequencyThreshold` (depth-ramped, stricter at low depth; zeroes the
-pileup's frequency bytes in the worker), `coverageSnpMinFrequency` (flat, user-set,
+pileup's frequency bytes in the worker), `coverage.filter.minAlleleFraction` (flat, user-set,
 at draw time), and `MINIMUM_INDICATOR_READ_DEPTH` + `INDICATOR_THRESHOLD` (an
 absolute depth floor, then a flat fraction, for the interbase indicator
 triangle). **Below the depth floor no indicator triangle is emitted**, whatever

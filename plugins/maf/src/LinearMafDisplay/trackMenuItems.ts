@@ -23,11 +23,11 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 
-import { CONSERVATION_MODES } from './conservationModes.ts'
+import { CONSERVATION_UNIT_OPTIONS } from './conservationUnits.ts'
 import { HEIGHT_PRESETS } from './displayDefaults.ts'
 import { MAF_COLOR_FIELDS, MAF_COLOR_FIELD_LABELS } from './rowRenderings.ts'
 
-import type { ConservationMode } from './conservationModes.ts'
+import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafColorField, MafYField } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
@@ -78,7 +78,7 @@ interface MafMenuSelf
   coarseTierActive: boolean
   zoomedToBaseLevel: boolean
   framesGateBlocked: boolean
-  conservationMode: ConservationMode
+  conservationUnit: ConservationUnit
   showAnnotations: boolean
   showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
@@ -107,7 +107,7 @@ interface MafMenuSelf
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
   setShowReferenceRow: (f: boolean) => void
-  setConservationMode: (m: ConservationMode) => void
+  setConservationUnit: (m: ConservationUnit) => void
   setShowAnnotations: (f: boolean) => void
   setShowInversions: (f: boolean) => void
   setRowIdentityAutoZoom: (f: boolean) => void
@@ -185,11 +185,11 @@ function conservationResolutionMenuItems(self: MafMenuSelf): MenuItem[] {
     ? [
         makeRadioSubMenu({
           label: 'Conservation resolution',
-          value: self.conservationMode,
+          value: self.conservationUnit,
           onChange: m => {
-            self.setConservationMode(m)
+            self.setConservationUnit(m)
           },
-          options: CONSERVATION_MODES,
+          options: CONSERVATION_UNIT_OPTIONS,
         }),
       ]
     : []

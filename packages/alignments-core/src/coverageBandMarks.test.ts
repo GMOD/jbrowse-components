@@ -101,7 +101,7 @@ const state = (over: Partial<CoverageBandState> = {}): State => ({
     domainMax: DOMAIN_MAX,
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
-    snpMinFrequency: 0,
+    minAlleleFraction: 0,
     showInterbase: true,
     colors: {
       coverage: 1,

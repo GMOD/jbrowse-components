@@ -354,7 +354,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  *       displayId: 'long_reads-LinearAlignmentsDisplay',
  *       height: 400,
  *       unit: 'chain',
- *       readConnections: 'arc',
+ *       readConnections: { show: true },
  *     },
  *   ],
  * }
@@ -484,7 +484,7 @@ export default function stateModelFactory(
          * regions; that is `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
-          return self.showBezierConnections && self.unit !== 'chain'
+          return self.showConnectors && self.unit !== 'chain'
         },
 
         /**
@@ -494,7 +494,7 @@ export default function stateModelFactory(
          * that pass joins a chain's ends across displayed regions.
          */
         get bezierArcScope(): BezierArcScope {
-          return self.showBezierConnections
+          return self.showConnectors
             ? 'all'
             : self.unit === 'chain'
               ? 'crossRegion'
@@ -606,13 +606,13 @@ export default function stateModelFactory(
           /**
            * #getter
            * The read body height: the fitted pitch minus `featureSpacing` in
-           * fit mode, else `configuredFeatureHeight`, which is what editors
+           * fit mode, else `configuredReadHeight`, which is what editors
            * that write the size read.
            */
           get featureHeight(): number {
             return this.isFitting
               ? self.fittedHeightPx - this.featureSpacing
-              : self.configuredFeatureHeight
+              : self.configuredReadHeight
           },
 
           /**
@@ -623,9 +623,7 @@ export default function stateModelFactory(
            */
           get featureSpacing(): number {
             return featureSpacingForHeight(
-              this.isFitting
-                ? self.fittedHeightPx
-                : self.configuredFeatureHeight,
+              this.isFitting ? self.fittedHeightPx : self.configuredReadHeight,
             )
           },
 
@@ -685,14 +683,12 @@ export default function stateModelFactory(
           /**
            * #getter
            * Whether each group draws as one row, overlap depth carried by the
-           * tint layer — the collapse IN EFFECT. Reads `canCollapseGroupRows`,
+           * tint layer — the collapse IN EFFECT. Reads `canCollapseSections`,
            * not the slot alone: a config default can be ticked where collapsing
            * is inert.
            */
-          get collapseGroupRows(): boolean {
-            return (
-              this.canCollapseGroupRows && getConf(self, 'collapseGroupRows')
-            )
+          get collapseSections(): boolean {
+            return this.canCollapseSections && getConf(self, 'collapseSections')
           },
 
           /**
@@ -702,7 +698,7 @@ export default function stateModelFactory(
            * The menu omits the row rather than disabling it: a click would
            * write a slot no getter reads.
            */
-          get canCollapseGroupRows() {
+          get canCollapseSections() {
             return this.prefersOffset && self.unit !== 'chain'
           },
 
@@ -933,17 +929,19 @@ export default function stateModelFactory(
           /**
            * #getter
            * The arc color slots plotted, mapped to legend buckets, for curved
-           * arcs and the read cloud alike: both paint `arcColorField`, which
+           * arcs and the read cloud alike: both paint `readConnectionsColorField`, which
            * follows the reads only where they paint a pair field. Empty unless
            * an overlay is on with the legend shown.
            */
           get arcLegendCategories(): Set<ArcCategory> {
             const present = new Set<ArcCategory>()
-            if (self.showLegend && self.readConnections !== 'off') {
+            if (self.showLegend && self.drawnReadConnections !== 'off') {
               // `colorSlots`, not a walk of `arcsByGroup`, which holds only one
               // of the two halves arcs resolve into; see `ArcsByGroupResult`.
               for (const slot of this.arcsResult.colorSlots) {
-                present.add(arcSlotCategory(slot, self.arcColorField))
+                present.add(
+                  arcSlotCategory(slot, self.readConnectionsColorField),
+                )
               }
             }
             return present
@@ -960,7 +958,7 @@ export default function stateModelFactory(
             if (
               !shouldDrawOverlaps({
                 chainMode: self.unit === 'chain',
-                collapseGroupRows: this.collapseGroupRows,
+                collapseSections: this.collapseSections,
                 featureHeight: this.featureHeight,
               })
             ) {
@@ -1029,7 +1027,7 @@ export default function stateModelFactory(
            * the reader is looking at: flat read-cloud lines are not arcs.
            */
           get arcLegendTitle() {
-            return arcLegendTitle(self.readConnections)
+            return arcLegendTitle(self.drawnReadConnections)
           },
 
           /**
@@ -1044,9 +1042,8 @@ export default function stateModelFactory(
            */
           get sashimiDownKeysByGroup() {
             return buildSashimiDownKeys(self.rpcDataMap, {
-              minSashimiScore: self.minSashimiScore,
-              showNonCanonicalJunctions: self.showNonCanonicalJunctions,
-              mode: self.sashimiArcsMode,
+              filter: self.sashimiFilter,
+              placement: self.sashimiPlacement,
               refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
               hidden: self.hiddenGroupKeys,
             })
@@ -1098,10 +1095,7 @@ export default function stateModelFactory(
                 self.readConnectionsHeight,
                 bounds,
               ),
-              sashimiArcsHeight: boundBandHeight(
-                self.sashimiArcsHeight,
-                bounds,
-              ),
+              sashimiHeight: boundBandHeight(self.sashimiHeight, bounds),
             }
           },
 
@@ -1115,9 +1109,9 @@ export default function stateModelFactory(
             return {
               ...this.bandHeights,
               showCoverage: self.showCoverage,
-              readConnections: self.readConnections,
-              readConnectionsDown: self.readConnectionsDown,
-              showSashimiArcs: self.showSashimiArcs,
+              readConnections: self.drawnReadConnections,
+              readConnectionsDown: self.readConnectionsPlacement === 'down',
+              showSashimi: self.showSashimi,
             }
           },
 
@@ -1209,7 +1203,7 @@ export default function stateModelFactory(
           get fitRows(): number {
             return fitRowCount(
               this.groupLayoutContext,
-              self.maxHeight,
+              self.pileupMaxHeight,
               self.collapsedGroups,
             )
           },
@@ -1221,7 +1215,7 @@ export default function stateModelFactory(
            * frames and the layout does not re-place every row.
            */
           get fitCeilingRows(): number {
-            const ceiling = maxRowsFor(self.maxHeight, this.rowHeight)
+            const ceiling = maxRowsFor(self.pileupMaxHeight, this.rowHeight)
             return this.isFitting ? Math.min(ceiling, this.fitRows) : ceiling
           },
 
@@ -1340,7 +1334,7 @@ export default function stateModelFactory(
               showSoftClipping: self.showSoftClipping,
               layoutOrder: self.layoutOrder,
               regions: self.loadedRegions,
-              collapseGroupRows: this.collapseGroupRows,
+              collapseSections: this.collapseSections,
             }
           },
 
@@ -1621,7 +1615,10 @@ export default function stateModelFactory(
            * (`arcsYDomainBp`, `arcLegendCategories`) walk every entry.
            */
           get arcsResult(): ArcsByGroupResult {
-            if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
+            if (
+              self.drawnReadConnections === 'off' ||
+              self.rpcDataMap.size === 0
+            ) {
               return {
                 byGroup: new Map(),
                 crossRegionByGroup: new Map(),
@@ -1632,12 +1629,10 @@ export default function stateModelFactory(
               }
             }
             const settings = {
-              colorField: self.arcColorField,
-              cloud: self.readConnections === 'cloud',
-              showInterchrom: self.showInterchrom,
-              showLongRange: self.showLongRange,
+              colorField: self.readConnectionsColorField,
+              cloud: self.drawnReadConnections === 'cloud',
+              filter: self.readConnectionsFilter,
               showOrdinaryPairs: self.showOrdinaryPairs,
-              minInterchromSupport: self.minInterchromSupport,
               canonicalRefName: this.canonicalRefName,
             }
             return computeArcsByGroup(
@@ -1693,7 +1688,7 @@ export default function stateModelFactory(
                   crossRegion: crossRegionByGroup.get(key) ?? [],
                   displayed,
                   colors,
-                  colorField: self.arcColorField,
+                  colorField: self.readConnectionsColorField,
                 }),
               ]),
             )
@@ -2047,7 +2042,9 @@ export default function stateModelFactory(
          * #getter
          */
         get showOutline() {
-          return getConf(self, 'showOutline') ?? self.unit === 'chain'
+          return (
+            getConf(self, ['pileup', 'showOutline']) ?? self.unit === 'chain'
+          )
         },
 
         /**
@@ -2065,7 +2062,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
-            fadeLowQualityMismatches: self.fadeLowQualityMismatches,
+            fadeLowQualityMismatches: self.fadeLowQuality,
             scrollTop: self.scrollTop,
           })
         },
@@ -2222,13 +2219,10 @@ export default function stateModelFactory(
            */
           get sashimiJunctionSections() {
             const view = self.view
-            if (!self.showSashimiArcs || !view.initialized) {
+            if (!self.showSashimi || !view.initialized) {
               return []
             }
-            const filter = {
-              minSashimiScore: self.minSashimiScore,
-              showNonCanonicalJunctions: self.showNonCanonicalJunctions,
-            }
+            const filter = self.sashimiFilter
             const regions = junctionRegions.get()
             return self.renderSections.map(sec => ({
               groupKey: sec.groupKey,
@@ -2505,11 +2499,11 @@ export default function stateModelFactory(
               self.coverageDepthDomain?.[1] ?? 0,
               self.symlogConstant,
             ),
-            coverageSnpMinFrequency: self.coverageSnpMinFrequency,
-            sashimiArcsHeight: self.bandHeights.sashimiArcsHeight,
+            coverageMinAlleleFraction: self.coverageFilter.minAlleleFraction,
+            sashimiHeight: self.bandHeights.sashimiHeight,
             showMismatches: self.showMismatches,
-            fadeLowFrequencyMismatches: self.fadeLowFrequencyMismatches,
-            fadeLowQualityMismatches: self.fadeLowQualityMismatches,
+            fadeLowFrequencyMismatches: self.fadeLowFrequency,
+            fadeLowQualityMismatches: self.fadeLowQuality,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
@@ -2529,7 +2523,7 @@ export default function stateModelFactory(
             colors: palette,
             chainMode: self.unit === 'chain',
             showLinkedReadLines: self.showLinkedReadLines,
-            collapseGroupRows: self.collapseGroupRows,
+            collapseSections: self.collapseSections,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
             linkRegions: this.linkRegions,
@@ -2544,7 +2538,7 @@ export default function stateModelFactory(
          * `renderState` alone on a track that draws neither.
          */
         get linkRegions(): readonly LinkRegion[] {
-          return (self.readConnections === 'off' &&
+          return (self.drawnReadConnections === 'off' &&
             !self.drawsSashimi &&
             self.bezierPairSections.length === 0) ||
             !self.view.initialized
@@ -2560,7 +2554,7 @@ export default function stateModelFactory(
          * observer stops.
          */
         get sashimiLabels(): readonly SashimiLabel[] {
-          return self.showSashimiLabels && self.drawsSashimi
+          return self.showSashimiCounts && self.drawsSashimi
             ? sashimiLabels(
                 this.renderState,
                 self.sourceSections.map(sec => sec.sashimiFeeds),
@@ -2705,7 +2699,7 @@ export default function stateModelFactory(
          * zero.
          */
         get arcsYDomainBp() {
-          if (self.readConnections !== 'cloud') {
+          if (self.drawnReadConnections !== 'cloud') {
             return undefined
           }
           // Maxed across every group and both halves by `computeArcsByGroup`,
@@ -2756,7 +2750,7 @@ export default function stateModelFactory(
           const banded = renderSections.filter(s => s.arcBandHeight > 0)
           const band = banded[0]
           if (arcsYDomainBp !== undefined && band) {
-            const down = self.readConnectionsDown
+            const down = self.readConnectionsPlacement === 'down'
             const ticks = computeInsertSizeTicks({
               band: { top: 0, height: band.arcBandHeight, down },
               arcsYDomainBp,
@@ -2782,7 +2776,7 @@ export default function stateModelFactory(
         /**
          * #method
          * Fields that invalidate the fetched data, every one worker-bound.
-         * Arc-only fields (`arcColor`, `showInterchrom`, `showLongRange`) are
+         * Arc-only fields (`readConnections.color` and `.filter`) are
          * NOT here: `arcsResult` reads them and they need no refetch. Non-tag
          * sort changes and tag coloring (`readFillColors`, baked in
          * `laidOutByGroup`) stay main-thread. Its own views block, after every
@@ -3111,8 +3105,8 @@ export default function stateModelFactory(
            * per-group height overrides: an override opts a lane out of the
            * collapse, which means nothing once every lane is a stack again.
            */
-          setCollapseGroupRows(flag: boolean) {
-            setConf(self, 'collapseGroupRows', flag)
+          setCollapseSections(flag: boolean) {
+            setConf(self, 'collapseSections', flag)
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
           },
@@ -3128,7 +3122,7 @@ export default function stateModelFactory(
             if (self.groupMaxHeightOverrides.has(key)) {
               self.groupMaxHeightOverrides.delete(key)
             } else {
-              self.groupMaxHeightOverrides.set(key, self.maxHeight)
+              self.groupMaxHeightOverrides.set(key, self.pileupMaxHeight)
             }
           },
 
@@ -3161,19 +3155,19 @@ export default function stateModelFactory(
            * Fit derives the size, so a chosen size would be dormant: picking
            * one drops back to fixed.
            */
-          setFeatureHeight(height?: number) {
+          setReadHeight(height?: number) {
             if (self.fitHeightToDisplay) {
               self.setHeightMode('fixed')
             }
-            setConf(self, 'featureHeight', height)
+            setConf(self, ['pileup', 'readHeight'], height)
             self.scrollTop = 0
           },
 
           /**
            * #action
            */
-          setMaxHeight(height?: number) {
-            setConf(self, 'maxHeight', height)
+          setPileupMaxHeight(height?: number) {
+            setConf(self, ['pileup', 'maxHeight'], height)
             self.scrollTop = 0
           },
 
@@ -3212,7 +3206,7 @@ export default function stateModelFactory(
           setCoverageHeight(height: number) {
             setConf(
               self,
-              'coverageHeight',
+              ['coverage', 'height'],
               clampBandHeight(
                 self.coverageHeight,
                 height,
@@ -3227,7 +3221,7 @@ export default function stateModelFactory(
           setReadConnectionsHeight(height: number) {
             setConf(
               self,
-              'readConnectionsHeight',
+              ['readConnections', 'height'],
               clampBandHeight(
                 self.readConnectionsHeight,
                 height,
@@ -3239,12 +3233,12 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setSashimiArcsHeight(height: number) {
+          setSashimiHeight(height: number) {
             setConf(
               self,
-              'sashimiArcsHeight',
+              ['sashimi', 'height'],
               clampBandHeight(
-                self.sashimiArcsHeight,
+                self.sashimiHeight,
                 height,
                 self.resizableBandBounds,
               ),
@@ -3497,12 +3491,12 @@ export default function stateModelFactory(
               includePairedEnd: true,
               includeModifications: true,
               arcColor:
-                self.readConnections === 'off'
+                self.drawnReadConnections === 'off'
                   ? undefined
                   : {
-                      own: getConf(self, ['arcColor', 'field']),
+                      own: getConf(self, ['readConnections', 'color', 'field']),
                       setField: (field: ArcColorField | '') => {
-                        self.setArcColorField(field)
+                        self.setReadConnectionsColorField(field)
                       },
                     },
             }),

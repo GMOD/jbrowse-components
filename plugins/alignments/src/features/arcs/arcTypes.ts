@@ -1,6 +1,9 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ArcColorField } from '../../shared/types.ts'
+import type {
+  ArcColorField,
+  ReadConnectionsFilter,
+} from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
 // settings that gate it, the pending form a read pair or split junction takes
@@ -51,23 +54,17 @@ export interface ArcSettings {
   // filtered out so only discordant pairs remain. Coloring follows colorField
   // (same palette as arcs), not a separate DEL/DUP/INV scheme.
   cloud?: boolean
-  showInterchrom: boolean
-  showLongRange: boolean
+  // `minInterchromReads` is tested on MATE-LINK EVIDENCE ONLY
+  // (`clearsInterchromFloor`), against the number each mark actually draws
+  // with: a cluster's own size for an arc, the coalesced total for a tick. See
+  // `pushLine` for why testing a tick's addends instead let a display setting
+  // change the count the hover reported.
+  filter?: Partial<ReadConnectionsFilter>
   // Whether the band draws its ordinary pairs, each mode by its own rule:
   // concordant flags for arcs (`isConcordantPairRead`, shared with the
   // `svSignal` read filter), a modal |TLEN| for the cloud. Unset is
   // `ordinaryPairsShown`'s.
   showOrdinaryPairs?: boolean
-  // Reads a translocation breakpoint must gather before its marks are drawn —
-  // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
-  // this did before the setting existed.
-  //
-  // MATE-LINK EVIDENCE ONLY (`clearsInterchromFloor`), and taken against the
-  // number each mark actually draws with: a cluster's own size for an arc, the
-  // coalesced total for a tick. Neither is a free choice — see `pushLine` for
-  // why testing a tick's addends instead let a display setting change the count
-  // the hover reported.
-  minInterchromSupport?: number
   // See `CanonicalRefName`. Without it a split junction between a fetched read
   // (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints as a
   // connector tick instead of the intra-chromosomal split-inversion arc.
@@ -251,6 +248,11 @@ export interface PendingArcEndpoints {
   p2Bp: number
   p2Strand: number
   p2Dir: number
+  // Whether the connection reaches a partner this view has not loaded
+  // (`offScreenMateArcs`, a split junction touching an off-screen segment): on
+  // the same chromosome, the `offscreenMates` category. Every producer sets
+  // it, so the pending arcs keep one shape per producer.
+  offScreen?: boolean
 }
 
 // A split-read junction between two segments of a single read: it carries no
@@ -305,8 +307,8 @@ export interface ReadEntry {
 export type CanonicalRefName = (refName: string) => string
 
 // Dependencies threaded through pending-arc EMISSION: the normalizer above plus
-// the two user gates that decide whether a connection to a partner this view has
-// not loaded is worth emitting at all.
+// the two filter categories that decide whether a connection to a partner this
+// view has not loaded is worth emitting at all.
 //
 // Chain BUILDING takes only the normalizer, which is why that is the narrower
 // parameter below rather than this bundle. The gates decide whether a junction
@@ -314,7 +316,6 @@ export type CanonicalRefName = (refName: string) => string
 // which segments a read has, so a chain builder handed this whole struct would
 // have to be given values for fields it cannot read.
 export interface ArcChainContext {
-  showLongRange: boolean
-  showInterchrom: boolean
+  filter: Pick<Partial<ReadConnectionsFilter>, 'interchrom' | 'offscreenMates'>
   canonicalRefName: CanonicalRefName
 }

@@ -77,11 +77,13 @@ export const TASKS: EvalTask[] = [
   {
     name: 'arcs',
     prompt: 'Show the volvox_alignments track as read arcs.',
-    solution: `return jb.addTrack({ trackId: 'volvox_alignments', settings: { readConnections: 'arc' } })`,
+    solution: `return jb.addTrack({ trackId: 'volvox_alignments', settings: { readConnections: { show: true } } })`,
     grade: `
       const t = ${shownTrack('volvox_alignments')}
-      const readConnections = t && jb.readConfObject(t.activeDisplay.configuration, 'readConnections')
-      return { pass: readConnections === 'arc', detail: { shown: !!t, readConnections } }`,
+      const conf = t && t.activeDisplay.configuration
+      const show = conf && jb.readConfObject(conf, ['readConnections', 'show'])
+      const mark = conf && jb.readConfObject(conf, ['readConnections', 'mark'])
+      return { pass: show === true && mark === 'arc', detail: { shown: !!t, show, mark } }`,
   },
   {
     name: 'compact',

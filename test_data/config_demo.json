@@ -1277,7 +1277,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "hg002_dipcall_hap1_t2t-LinearAlignmentsDisplay",
-          "showCoverage": false
+          "coverage": { "show": false }
         }
       ]
     },
@@ -1306,7 +1306,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "hg002_dipcall_hap2_t2t-LinearAlignmentsDisplay",
-          "showCoverage": false
+          "coverage": { "show": false }
         }
       ]
     },

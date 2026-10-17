@@ -20,7 +20,7 @@ function merged(
   return [
     ...mergeJunctions(
       [{ refName: 'chr1', data: computeSashimiJunctions(gaps, reference) }],
-      { minSashimiScore: 0, showNonCanonicalJunctions: true },
+      { minReads: 0 },
     ).values(),
   ]
 }

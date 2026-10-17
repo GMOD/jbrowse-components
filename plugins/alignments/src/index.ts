@@ -56,7 +56,7 @@ export type { GroupConnectors } from './features/linkedReads/computeOverlay.ts'
 // pins its own copy against this one's literal types, so the two cannot drift.
 export { COMPACTNESS_PRESETS } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 export {
-  collapseGroupRowsItems,
+  collapseSectionsItems,
   copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
@@ -69,7 +69,7 @@ export {
   withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export type {
-  CollapseGroupRowsModel,
+  CollapseSectionsModel,
   HiddenGroupsModel,
   SectionOrderMenuModel,
 } from './LinearAlignmentsDisplay/menus/index.ts'
@@ -105,7 +105,7 @@ export type { TooltipPayload } from './LinearAlignmentsDisplay/components/toolti
 export type {
   AlignmentsUnit,
   ReadConnectionsMode,
-  SashimiArcsMode,
+  SashimiPlacement,
 } from './LinearAlignmentsDisplay/constants.ts'
 // The shared "this display hides no lane" set. Exported so an overriding
 // `hiddenGroupKeys` returns the same identity the base one does instead of a
@@ -162,6 +162,8 @@ export type {
   Facet,
   ModificationColorBy,
   ReadColorBy,
+  ReadConnectionsFilter,
+  SashimiFilter,
   SortColumn,
   TagColorScale,
   WorkerFacet,

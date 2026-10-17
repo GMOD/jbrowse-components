@@ -68,7 +68,9 @@ const spec = {
           displaySnapshot: {
             color: { field: 'strand' },
             ...(process.env.COVERAGE_HEIGHT
-              ? { coverageHeight: Number(process.env.COVERAGE_HEIGHT) }
+              ? {
+                  coverage: { height: Number(process.env.COVERAGE_HEIGHT) },
+                }
               : {}),
           },
         },
