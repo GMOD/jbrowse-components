@@ -9,7 +9,7 @@ description: A parsed BAI, CSI or TBI holds up to about 4.2x its uncompressed by
 uncompressed size of each index it read whole, because no parser reports what
 its parsed index holds. A BAI holds 1.7x its file with one contig read and 4.2x
 with five, since `memoizeByRefId` keeps five decoded contigs as `Chunk` objects
-and `VirtualOffset` arrays. A CRAI holds 4.3x.
+and `VirtualOffset` arrays, and a CRAI holds 4.3x.
 
 - **A `retainedBytes` getter would only be an estimate.** The parsers would
   have to sum object sizes V8 does not expose.

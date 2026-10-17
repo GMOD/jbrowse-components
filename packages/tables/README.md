@@ -32,8 +32,8 @@ pools that share no space, each under `limit` (256 MiB unless set):
   other adapter, most recently read first, stays if its weight still fits under
   `limit` beside those kept.
 - An adapter weighs at least 1 MiB, or an estimate of what it parsed from the
-  files it read whole: four times an index's uncompressed size, ten times any
-  other file's, such as a plain or gzipped VCF.
+  files it read whole, which is four times an index's uncompressed size and ten
+  times any other file's, such as a plain or gzipped VCF.
 - `engine.cache({ limit })` sets `limit` in bytes, `Infinity` for none, and
   reports what the engine holds: `chunks` is what the chunk cache holds, and
   `parsed` is the adapters' estimated weight. `engine.clearCache()` empties
@@ -41,8 +41,8 @@ pools that share no space, each under `limit` (256 MiB unless set):
 - A call's own reads and tables come on top, which one wide read of a deep BAM
   takes to gigabytes. So does the BGZF inflater's wasm memory, which stays near
   20 MiB.
-- R's V8 stops at a heap of about 1.4 GB, which whole-file adapters reach first:
-  a 24 MB plain VCF parses to about 220 MiB.
+- R's V8 stops at a heap of about 1.4 GB, which whole-file adapters reach first,
+  since a 24 MB plain VCF parses to about 220 MiB.
 - A host that never yields to its event loop keeps alive every object a
   `WeakRef` points to, the shared budget's evicted caches among them, so await a
-  macrotask between calls. From R's V8 the engine frees them.
+  macrotask between calls. The engine frees them itself in R's V8.

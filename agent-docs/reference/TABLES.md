@@ -545,8 +545,8 @@ process, in three pools that share no space, each under one setting, `limit`
   keys a BAM, SAM or CRAM on it, so a lookup without it builds a second
   instance that reads the index again.
 - **R's V8 stops at a heap of about 1.4 GB**, which whole-file adapters reach
-  first. They weigh their uncompressed size for that reason: a 24 MB plain VCF
-  parses to about 220 MiB.
+  first, since a 24 MB plain VCF parses to about 220 MiB. Whole files weigh
+  their uncompressed size for that reason.
 
 What an adapter holds per uncompressed byte of a file it read whole, measured
 with Node's heap and ArrayBuffer totals after a warm-up parse, so the
@@ -563,16 +563,16 @@ most the libraries' `memoizeByRefId` keeps decoded):
 | VCF parsed whole, plain or gzipped | 23.3 MiB | 218 MiB | 9.4x |
 | GFF3 parsed whole | 20.2 MiB | 41 MiB | 2.0x |
 
-- **The variance follows the content, not the format or its compression.**
+- **The variance follows the file's content.**
 - **The estimate overcounts:** an index read on one contig holds about half,
   and a GFF3 a fifth. An index under about 1 MiB uncompressed holds more than
   four times its size, which the 1 MiB floor covers.
 
-What the engine reads and holds, measured with the bundle in Node's `vm`, or
-from R where a row says so: the bytes the host read on each pass, what
-`chunks` reports, the largest ArrayBuffer backing store after `clearCache()`
-(the inflater's wasm memory), and what the process held after the run, heap
-plus ArrayBuffers after a full GC in Node and RSS in R:
+The rows below come from the bundle in Node's `vm`, or from R where noted. Read is
+the bytes the host read on each pass, `chunks` is what `cache()` reports, Wasm
+is the largest ArrayBuffer backing store after `clearCache()` (the inflater's
+wasm memory), and Held is heap plus ArrayBuffers after a full GC in Node, or
+RSS in R:
 
 | Workload | `limit` | Read | `chunks` | Wasm | Held |
 | --- | --- | --- | --- | --- | --- |
