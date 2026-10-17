@@ -519,14 +519,14 @@ range through the host's synchronous `jbrowseHost.readRange(url, start, end)`.
 
 A browser worker frees an adapter when its track closes. A host has no tracks,
 so `src/cache.ts` trims after every call, one state for every engine in the
-process, under three bounds that share no space and one setting, `limit`
+process, in three pools that share no space, each under one setting, `limit`
 (`DEFAULT_CACHE_LIMIT`, 256 MiB):
 
 - **Decoded records:** the decoded-bytes budget (`cacheBudgets.ts`) gets all
   of `limit`, where a browser worker allows 1 GiB.
-- **Chunks:** the range cache's own cap, 1000 chunks of 256 KiB, which the
-  engine never trims between calls. The bare host counts the bytes it answered
-  to range requests, and `chunks` reports that count clamped to the cap.
+- **Chunks:** `setChunkCacheLimit(limit)` (`@gmod/range-cache-filehandle`
+  1.6.0) bounds the range cache's 256 KiB chunks and evicts the least recently
+  used at once when `limit` drops. `chunks` reports its `cachedBytes()`.
 - **Adapters:** `keepAdapters` keeps the adapters the last call used, whatever
   they weigh, then walks the others from the most recently requested, keeping
   each whose weight still fits under `limit` beside those kept. `setLimit`
@@ -591,15 +591,36 @@ heap plus ArrayBuffers after a full GC in Node and RSS in R:
 the bundle weighing compressed bytes for the whole-file loops.
 
 - **No workload reads more, and the engine holds more between calls:** up to
-  the chunk cache's 256 MiB, and a full `limit` of records.
+  a full `limit` each of chunks and records.
 - **A call's own working memory comes on top.** One 1 Mb read of a local 100x
   BAM took R to 2.2 GB at the default.
-- **The inflater's wasm memory is a floor `limit` cannot lower.** A
-  `WebAssembly.Memory` only grows, and after one 20 kb window of 1000x long
-  reads `clearCache()` left a 261.9 MiB wasm backing store, the bundle's only
-  sizeable one.
-  [ideas/waiting-on-someone-else/gmod-memory-hooks-for-the-embedded-engine.md](../ideas/waiting-on-someone-else/gmod-memory-hooks-for-the-embedded-engine.md)
-  lists the library releases that would let one budget cover real bytes.
+- **The inflater's wasm memory stays near 20 MiB.** A `WebAssembly.Memory`
+  only grows, and `@gmod/bgzf-filehandle` 6.8.1 caps each inflate at 8 MiB.
+
+Before and after range-cache 1.6.0 and bgzf 6.8.1, with the bundle in Node's
+`vm`: the bytes the host read per pass, what `chunks` reported, and the
+largest ArrayBuffer backing store after `clearCache()`, the inflater's wasm
+memory:
+
+| Workload | `limit` | Read before | Read after | `chunks` before | `chunks` after | Wasm before | Wasm after |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 20 x 100 kb of a 100x BAM, twice | 256 MiB | 75.9 + 0 MiB | 75.9 + 0 MiB | 75.9 MiB | 75.9 MiB | 62.6 MiB | 9.6 MiB |
+| 20 x 100 kb of a 100x BAM, twice | 64 MiB | 75.9 + 0 MiB | 75.9 + 75.9 MiB | 75.9 MiB | 63.9 MiB | 62.6 MiB | 9.6 MiB |
+| 12 x 20 kb of 200x long reads, twice | 64 MiB | 52.4 + 0 MiB | 52.4 + 0 MiB | 52.4 MiB | 52.4 MiB | 94.3 MiB | 9.3 MiB |
+| One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 34.4 MiB | 9.6 MiB |
+| 20 kb of 1000x long reads | 64 MiB | 169.8 MiB | 169.8 MiB | 169.8 MiB | 64.0 MiB | 261.9 MiB | 9.3 MiB |
+| The HPRC v2.1 segs TBI, read whole | 256 MiB | 4.2 MiB | 4.2 MiB | | | 610.9 MiB | 9.1 MiB |
+
+- **A working set wider than `limit` now reads again.** At 64 MiB the second
+  pass over 75.9 MiB of chunks misses on every one, since the least recently
+  used chunk is always the next one read. Before, the fixed 1000-chunk cap held
+  them all.
+- **The process holds less.** After the 1000x read at 64 MiB, heap plus
+  ArrayBuffers fell from 269.8 to 164.7 MiB, and the TBI read's peak RSS from
+  1318 to 717 MiB.
+- **The engine still estimates what a parsed index holds.**
+  [ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md](../ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md)
+  says what would replace it.
 
 ## Hooks: who notices a break
 
