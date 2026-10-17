@@ -221,9 +221,10 @@ const suite: TestSuite = {
     }),
     lgvSnapshotTest({
       // THE DEFAULT, and it sets nothing so that it stays the default:
-      // `readConnectionsDown` defaults to true (configSchema.ts), so arcs point
-      // DOWN — below the coverage band — unless a track says otherwise. This
-      // case is what a user gets, and the one below is the opt-out.
+      // `readConnections.placement` defaults to `down`
+      // (readConnectionsConfigSchema.ts), so arcs draw below the coverage band
+      // unless a track says otherwise. This case is what a user gets, and the
+      // one below is the opt-out.
       name: 'cloud mode (paired-end SV)',
       snapshot: 'arcs-cloud',
       loc: 'ctgA:1-50000',
@@ -240,7 +241,7 @@ const suite: TestSuite = {
     }),
     lgvSnapshotTest({
       // UP mode, the non-default, which is why it is the one spelling a value
-      // out. Its predecessor set `readConnectionsDown: true` and so captured
+      // out. Its predecessor set the then `readConnectionsDown: true` and so captured
       // the default over again: byte-identical goldens to the case above, on
       // all three backends. That was invisible from 5556f47257 (2026-07-12),
       // which flipped the ambient default to true months after this test was

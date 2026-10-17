@@ -424,10 +424,10 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 co
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
-## read-cloud SV view — the read cloud overlays the coverage band, so use
-## coverage.height to make the panel tall (NOT readConnections.height, which only sizes
-## the regular up/down arcs panel). The read cloud disappears if coverage.show=false.
-jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverage.height=300 \
+## read-cloud SV view — the cloud draws in its own band below the coverage band,
+## sized by readConnections.height. With readConnections.placement=up it overlays
+## the coverage band instead, sized by coverage.height.
+jb2export --fasta ref.fa --bam reads.bam arcs:cloud readConnections.height=300 \
   readConnections.lineWidth=2 height:600 --loc chr1:1-50000
 
 ## view as pairs / link supplementary alignments: mates and split segments of one

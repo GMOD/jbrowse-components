@@ -202,7 +202,10 @@ function accumulateJunctions(regions: Iterable<RegionJunctions>) {
 
 // What the merge drops: junctions under the read-support floor, and those the
 // `nonCanonical` category filters, a junction's motif being non-canonical only
-// where it is known to be none of GT-AG / GC-AG / AT-AC.
+// where it is known to be none of GT-AG / GC-AG / AT-AC. An unread motif counts
+// as canonical, so `nonCanonical: 'only'` drops it: with no sequence adapter
+// every junction goes, and with one, any junction whose donor or acceptor lies
+// past the fetched reference.
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
   { minReads, nonCanonical }: SashimiFilter,

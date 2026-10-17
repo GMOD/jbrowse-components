@@ -87,9 +87,10 @@ record's own `feature.id()`, built from the worker's read keys, the same in
 every call; `read` indexes `reads` within one call, and a read's `name` is
 shared by its mates and supplementary segments. The coverage band's tables
 stop at the region's ends: the worker counts depth wherever its reads reach,
-which past the region is a partial count. A band the display's `show*` slot
-hides (`showCoverage`, `showPileup`, `showMismatches`,
-`showInterbaseIndicators`, `showSashimi`) comes back as empty tables.
+which past the region is a partial count. A band or mark the display's
+`show` members hide (`coverage.show`, `pileup.show`, `pileup.showMismatches`,
+`coverage.showInterbaseIndicators`, `sashimi.show`) comes back as empty
+tables.
 `@jbrowse/tables` composes them (`createTablesEngine`) and adds
 `missingContig` to each table: where the region's contig is not one the file
 lists, the tables come back empty, as the browser draws such a track, and
@@ -198,7 +199,7 @@ A setting the table cannot serve is refused with an error:
 - `spanLimit` and `byteLimit` apply to the regions' sum.
 - `warnings` names each setting the layout drops without an error, such as
   a column sort with no `pos`, a sort across contigs or held by no region
-  with reads, and a sort or `showSoftClipping` under `unit: 'chain'`.
+  with reads, and a sort or `pileup.showSoftClipping` under `unit: 'chain'`.
 
 Beside the reads come the marks the display draws on them, each as the
 worker ships it: `insertions` (position, length, sequence, read), `clips`
