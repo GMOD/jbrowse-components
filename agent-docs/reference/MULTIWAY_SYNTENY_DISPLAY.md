@@ -209,6 +209,15 @@ lanes; every window fetches the whole cohort until the reader takes a set; and
 cheaply. The scaling story is two surfaces with a hand-off, not one surface that
 grows.
 
+**Tens of lanes do read, chosen by genotype and stacked by structure.** The HPRC
+portal's Haplotypes launch is that hand-off at one locus. It shares 32 lanes
+over the forms the structural-state sidecar groups haplotypes into, by how many
+carry each, and the display stacks graph haplotype lanes by structure, so each
+form draws as a block of straight ribbons as tall as its share. On 2026-10-17,
+48 and 96 lanes at GSTT1 and 48 at MHC class II read as blocks too, and going
+from 8 lanes to 96 settled in about 4 s against jbrowse.org. At 22 px a lane
+has no room for gene names; the launch draws 40 px lanes to keep them.
+
 ## Lane fit
 
 A lane draws one block of its contig at a time. `blocksOf` clusters the
