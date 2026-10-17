@@ -30,8 +30,9 @@ The hosted tracks are files already wired into the
 from the 1000 Genomes high-coverage short-read release and its ONT long-read
 release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                                                                                        | File                                                                                                                                                                                                  |
 | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

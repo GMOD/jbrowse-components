@@ -63,8 +63,9 @@ npm install -g @jbrowse/cli
 Five _E. coli_ RefSeq assemblies, each fetched by accession with the `datasets`
 CLI.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The page's commands build local files from these, and the tracks over those read
+them from disk; every other track reads a hosted copy. The
+[build script](#reproduce-it-end-to-end) fetches everything itself.
 
 | What it is | File                                                                                                                  |
 | ---------- | --------------------------------------------------------------------------------------------------------------------- |

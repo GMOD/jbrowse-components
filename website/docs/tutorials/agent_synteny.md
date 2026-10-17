@@ -49,7 +49,8 @@ The assemblies are two GenArk genomes
 hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
-Nothing to download: the agent fetches both sequences itself.
+Nothing to download: the agent fetches both sequences itself, then aligns them
+in about seven minutes on 16 threads and 14 GB of memory.
 
 <details>
 <summary>The files</summary>

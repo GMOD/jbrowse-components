@@ -44,8 +44,9 @@ an indexed PAF and rehosted beside the hub configs
 [genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
 hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The page's commands build local files from these, and the tracks over those read
+them from disk; every other track reads a hosted copy. The
+[build script](#reproduce-it-end-to-end) fetches everything itself.
 
 | What it is                                                                     | File                                                                   |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |

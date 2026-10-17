@@ -52,8 +52,9 @@ Shigella, and complete genomes picked by striding a `datasets summary` listing.
 The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions (MG1655 is the strain those pages call K12). The
-[build script](#reproduce-it-end-to-end) pins and fetches every accession, so
-there is nothing to download by hand; the anchor and the four Shigella are:
+[build script](#reproduce-it-end-to-end) pins and fetches every accession and
+writes the local files the tracks below read, so run it first, or follow the
+same commands on your own genomes. The anchor and the four Shigella are:
 
 | What it is                 | File                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------- |

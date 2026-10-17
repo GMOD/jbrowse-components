@@ -59,8 +59,9 @@ TAIR10 for Columbia, and the chromosome-level assemblies of five more accessions
 from [Jiao and Schneeberger 2020](https://doi.org/10.1038/s41467-020-14779-y),
 the first three the ones a figure in the plotsr paper stacks.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is             | File                                                                                                                                                |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |

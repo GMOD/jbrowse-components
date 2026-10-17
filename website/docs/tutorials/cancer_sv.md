@@ -51,13 +51,14 @@ All but the last file come from the ONT COLO829 open-data release and its
 `wf-somatic-variation` run; the last is the multi-platform truth set
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                                                                                           | File                                                                                                                                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| COLO829 tumor reads (ONT R10, haplotagged)                                                           | [COLO829_tumor.ht.cram](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram)                                                         |
-| COLO829BL matched normal reads                                                                       | [PAU59807.d052sup4305mCG_5hmCGvHg38.bam](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam)                        |
+| COLO829 tumor reads (ONT R10, haplotagged), streamed and never downloaded                            | [COLO829_tumor.ht.cram](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram)                                                         |
+| COLO829BL matched normal reads, streamed and never downloaded                                        | [PAU59807.d052sup4305mCG_5hmCGvHg38.bam](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam)                        |
 | The somatic SV calls this page works from                                                            | [COLO829.wf-somatic-sv.vcf.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz)                                           |
 | Mosdepth coverage regions, tumor                                                                     | [COLO829_tumor.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz)                       |
 | Mosdepth coverage regions, normal                                                                    | [COLO829_normal.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz)                     |

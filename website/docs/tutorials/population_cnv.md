@@ -48,8 +48,9 @@ QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
 lab at the University of Michigan
 ([Shen and Kidd 2020](https://doi.org/10.3390/genes11020141)).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                           | File                                                                                                   |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |

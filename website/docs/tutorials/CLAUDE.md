@@ -91,14 +91,20 @@ follows is what no check sees.
 - **The data section tells the reader what to do.** Its heading is
   `## Download the data` when the reader fetches files by hand, with a `bash`
   fence of `wget -c` lines, one comment per file giving its size, and otherwise
-  `## The data`, whose second sentence says who fetches the files (the build
-  script, or the track configs by URL). It lists only what the page's commands
-  or script download, as one two-column table: **What it is** (what reads it, in
-  the reader's terms) and **File** (a link whose text is the file name). A
-  source read by URL goes in a `<details>` summarised "Read by URL (no download
-  needed)"; our own hub configs and rehosted results are cut. Past ten rows,
-  split into labelled groups; `check-data-sources` holds the shape (two intro
-  paragraphs at most, nothing after the last table).
+  `## The data`, whose second sentence says whether the reader needs the files:
+  "Nothing to download" when the track configs read by URL, "You don't need
+  these files to follow the page" when every track reads a hosted result, "run
+  [the build script] first, or follow the same commands on your own files" when
+  the tracks read local files it writes, and the mixed form when both occur.
+  Never "nothing to download by hand", which hides all three. State the cost
+  (size, time, memory) when it passes about 1 GB or ten minutes, and mark a file
+  the script streams "streamed and never downloaded". It lists only what the
+  page's commands or script download, as one two-column table: **What it is**
+  (what reads it, in the reader's terms) and **File** (a link whose text is the
+  file name). A source read by URL goes in a `<details>` summarised "Read by URL
+  (no download needed)"; our own hub configs and rehosted results are cut. Past
+  ten rows, split into labelled groups; `check-data-sources` holds the shape
+  (two intro paragraphs at most, nothing after the last table).
 - Our buckets serve no directory listing, so write a rehosted copy as file URLs.
 - A Reproduce section does not mean the script fetches the data. Read how the
   script gets each file before writing the sentence.

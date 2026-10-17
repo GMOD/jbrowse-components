@@ -54,8 +54,9 @@ UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene
 sets of both genomes from genomes.jbrowse.org's copies of the UCSC hubs, and the
 density bigWig the build script makes of them.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                 | File                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------- |

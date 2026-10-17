@@ -66,8 +66,9 @@ npm install -g @jbrowse/cli
 The five _E. coli_ RefSeq assemblies come from the NCBI datasets CLI by
 accession. K12 is the `--reference` backbone the other four align onto.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The page's commands build local files from these, and the tracks over those read
+them from disk; every other track reads a hosted copy. The
+[build script](#reproduce-it-end-to-end) fetches everything itself.
 
 | What it is                                                         | File                                                                                                                  |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |

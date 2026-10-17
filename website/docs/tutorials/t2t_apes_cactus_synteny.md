@@ -49,8 +49,9 @@ npm install -g @jbrowse/cli
 The Cactus alignment of hg38 and the T2T ape assemblies (Yoo et al. 2025), built
 with Progressive Cactus (Armstrong et al. 2020).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                                                                | File                                                                              |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |

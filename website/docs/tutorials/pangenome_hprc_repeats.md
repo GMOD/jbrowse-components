@@ -75,8 +75,9 @@ cargo install gbz-base
 genotypes of 100 of its samples (Dolzhenko et al. 2024), 94 of which have a call
 at _ABCA7_.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                              | File                                                                                                                                                                     |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

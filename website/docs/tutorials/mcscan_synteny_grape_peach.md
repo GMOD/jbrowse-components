@@ -49,8 +49,9 @@ npm install -g @jbrowse/cli
 Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
 genomes and gene annotations, Ensembl Plants release 58.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                                                         | File                                                                                         |
 | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |

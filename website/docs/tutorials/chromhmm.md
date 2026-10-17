@@ -39,8 +39,9 @@ Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's nine-cell-type
 ENCODE Broad HMM set, and the Roadmap Epigenomics compendium across 127
 epigenomes.
 
-The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
-nothing to download by hand.
+The page's commands build local files from these, and the tracks over those read
+them from disk; every other track reads a hosted copy. The
+[build script](#reproduce-it-end-to-end) fetches everything itself.
 
 | What it is                                                                                           | File                                                                                                                                                              |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |

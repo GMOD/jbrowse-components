@@ -46,8 +46,9 @@ current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
 et al. 2025) and the telomere-to-telomere rhesus macaque. The build downloads
 the annotation and sequence report for each genome.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                   | File                                                                                                                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |

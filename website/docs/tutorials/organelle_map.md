@@ -42,7 +42,7 @@ npm install -g @jbrowse/cli
 
 NC_012920.1 is the revised Cambridge Reference Sequence of the human
 mitochondrion (Andrews et al. 1999). The commands below fetch both files from
-NCBI, so there is nothing to download by hand.
+NCBI, and every step after them runs on those copies.
 
 | What it is             | File                                                                                                             |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |

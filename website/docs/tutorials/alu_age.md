@@ -50,8 +50,9 @@ UCSC's hg38 RepeatMasker table, rehosted by
 [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with the
 Alu rows cut out.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                    | File                                                                                         |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |

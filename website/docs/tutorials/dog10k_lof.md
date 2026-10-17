@@ -50,8 +50,9 @@ The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
 directly over HTTP with no local copy of the 397 GB callset.
 
-The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                                                                          | File                                                                                                                                                            |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

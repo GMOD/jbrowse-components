@@ -31,8 +31,9 @@ marker genes.
 SnapATAC2's annotated release of the 10x 5k PBMC scATAC dataset, already
 clustered and cell-type-labeled by the SnapATAC2 pipeline.
 
-The [build script](#reproduce-it-end-to-end) downloads the dataset through
-SnapATAC2, so there is nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) downloads the
+dataset through SnapATAC2 (about 800 MB, ten minutes) to rebuild them.
 
 | What it is                                                                                      | File                                                                                                            |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |

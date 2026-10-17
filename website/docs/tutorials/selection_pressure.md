@@ -53,8 +53,9 @@ The assemblies are
 (rhesus macaque Mmul_10), with gene models and coding sequence from Ensembl
 release 116.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                     | File                                                                                                                                          |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |

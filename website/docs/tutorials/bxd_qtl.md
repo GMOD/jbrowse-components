@@ -41,8 +41,9 @@ conda install -c bioconda -c conda-forge htslib
 BXD consensus genotypes and QTL scans from GeneNetwork
 ([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The page's commands build local files from these, and the tracks over those read
+them from disk; every other track reads a hosted copy. The
+[build script](#reproduce-it-end-to-end) fetches everything itself.
 
 | What it is                                                           | File                                                                                            |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |

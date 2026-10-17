@@ -43,8 +43,9 @@ npm install -g @jbrowse/cli
 Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                                                                                                                                                             | File                                                                                                           |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |

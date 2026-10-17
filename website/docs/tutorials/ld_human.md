@@ -57,8 +57,9 @@ npm install -g @jbrowse/cli
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
 called natively on GRCh38.
 
-The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
-nothing to download by hand.
+You don't need these files to follow the page: the track configs below read the
+hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
+rebuild those results.
 
 | What it is                                                                                                                      | File                                                                                                                                                                                                                                                                                    |
 | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

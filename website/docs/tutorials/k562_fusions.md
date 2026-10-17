@@ -58,8 +58,9 @@ Four PacBio Iso-Seq runs from [ENCODE](https://www.encodeproject.org/), two
 tables out of [DepMap](https://depmap.org/portal/)'s 24Q4 release, and the DNA
 breakpoints on hg19.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                                                                                             | File                                                                                                          |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |

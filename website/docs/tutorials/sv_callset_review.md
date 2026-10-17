@@ -35,8 +35,7 @@ The COLO829 somatic SV callset comes from the ONT open-data release's
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
 rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 
-The commands below read this file by URL, so there is nothing to download by
-hand.
+Nothing to download: the commands below read this file by URL.
 
 | What it is                                | File                                                                                       |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |

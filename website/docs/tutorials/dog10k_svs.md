@@ -52,8 +52,9 @@ Two Dog10K structural-variant callsets from Schall & Kidd
 ([2025](https://doi.org/10.1093/gbe/evaf173)), read directly over HTTP, plus
 supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 
-The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
-so there is nothing to download by hand.
+The tracks below read local files that the
+[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
+follow the same commands on your own files. It fetches everything itself.
 
 | What it is                                                                                                                                                                                                                            | File                                                                                                                                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |

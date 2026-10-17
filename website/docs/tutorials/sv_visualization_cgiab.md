@@ -71,8 +71,10 @@ npm install -g @jbrowse/cli
 
 HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on
 the C-GIAB FTP, and the assemblies are on NIST's S3 bucket. The
-[build script](#reproduce-it-end-to-end) takes these files from their URLs, so
-there is nothing to download by hand.
+[build script](#reproduce-it-end-to-end) takes these files from their URLs, over
+200 GB and hours of download. The page's commands build local files from them,
+and the tracks over those read them from disk; every other track reads a hosted
+copy.
 
 The reference and the reads:
 
