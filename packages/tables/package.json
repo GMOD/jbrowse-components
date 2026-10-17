@@ -37,7 +37,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@gmod/range-cache-filehandle": "^1.5.2",
+    "@gmod/range-cache-filehandle": "^1.6.0",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-bed": "workspace:^",
