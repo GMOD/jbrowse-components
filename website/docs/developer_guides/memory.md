@@ -71,16 +71,15 @@ must all weigh the same unit — cram weighs a decoded slice's byte length, wher
 it used to weigh a record count that could not be summed with bam and tabix's
 bytes.
 
+`@gmod/bgzf-filehandle` keeps one module-global wasm heap that never shrinks, so
+each wasm call inflates at most a capped slice of input and output.
+
 ## Unbounded retention
 
 - **Reads in flight.** Eviction never touches an unsettled read.
 - **A query's working set.** It holds every chunk it parsed until it returns.
 - **Records that grow after weighing.** `end`, `CIGAR` and `tags` memoize onto a
   record when a renderer first reads them.
-
-`@gmod/bgzf-filehandle`'s module-global wasm heap never shrinks either. Since
-6.8.1 each wasm call inflates a capped slice, so the heap no longer grows to the
-largest inflate, which left hundreds of MB under 6.8.0.
 
 Across six tracks, bounding retention moved held bytes 31% and RSS 12%. Bound
 total memory somewhere that can see the whole process.

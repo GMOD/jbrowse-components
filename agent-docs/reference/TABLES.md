@@ -542,12 +542,11 @@ process, in three pools that share no space, each under one setting, `limit`
 - **Every tables lookup passes the sequence adapter** through `tablesAdapter`
   or `tablesFeatureAdapter` (`@jbrowse/core/data_adapters/getFeatureAdapter`),
   which lint enforces in `packages/tables` and each plugin's `tables.ts`: core
-  keys a BAM, SAM or CRAM on it, and a lookup without it built a second
-  instance that read the index again. The cancer_sv tutorial downloaded 183.3
-  MiB in R before the fix and 73.7 MiB after.
+  keys a BAM, SAM or CRAM on it, so a lookup without it builds a second
+  instance that reads the index again.
 - **R's V8 stops at a heap of about 1.4 GB**, which whole-file adapters reach
-  first. Weighed by compressed size, ten distinct 24 MB plain VCFs stayed open
-  and the eleventh read aborted R.
+  first. They weigh their uncompressed size for that reason: a 24 MB plain VCF
+  parses to about 220 MiB.
 
 What an adapter holds per uncompressed byte of a file it read whole, measured
 with Node's heap and ArrayBuffer totals after a warm-up parse, so the
@@ -564,64 +563,52 @@ most the libraries' `memoizeByRefId` keeps decoded):
 | VCF parsed whole, plain or gzipped | 23.3 MiB | 218 MiB | 9.4x |
 | GFF3 parsed whole | 20.2 MiB | 41 MiB | 2.0x |
 
-- **The variance follows the content, not the format or its compression.** A
-  factor per compressed byte ranged from 2x to 70x for the same parse.
+- **The variance follows the content, not the format or its compression.**
 - **The estimate overcounts:** an index read on one contig holds about half,
   and a GFF3 a fifth. An index under about 1 MiB uncompressed holds more than
   four times its size, which the 1 MiB floor covers.
 
-Before and after, measured with the bundle in Node's `vm`, or from R where a
-row says so: the bytes the host read, and what the process held after the run,
-heap plus ArrayBuffers after a full GC in Node and RSS in R:
+What the engine reads and holds, measured with the bundle in Node's `vm`, or
+from R where a row says so: the bytes the host read on each pass, what
+`chunks` reports, the largest ArrayBuffer backing store after `clearCache()`
+(the inflater's wasm memory), and what the process held after the run, heap
+plus ArrayBuffers after a full GC in Node and RSS in R:
 
-| Workload | `limit` | Read before | Read after | Held before | Held after |
+| Workload | `limit` | Read | `chunks` | Wasm | Held |
 | --- | --- | --- | --- | --- | --- |
-| 20 x 100 kb of a 100x BAM, twice | 256 MiB | 76.9 + 76.9 MiB | 75.9 + 0 MiB | 342 MiB | 543 MiB |
-| 12 x 20 kb of 200x long reads, twice | 64 MiB | 202.8 + 191.8 MiB | 52.4 + 0 MiB | 85 MiB | 157 MiB |
-| One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 81 MiB | 81 MiB |
-| 30 remote BAMs, an 8.3 MiB BAI each | 256 MiB | 269.0 MiB | 269.0 MiB | 121 MiB, 7 adapters | 135 MiB, 7 adapters |
-| cancer_sv tutorial, from R | 256 MiB | 183.3 MiB, 29.7 s | 73.7 MiB, 16.5 s | 812 MiB RSS | 757 MiB RSS |
-| 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 127.0 MiB, 44.0 s | 168.5 + 0 MiB, 28.5 s | 840 MiB peak | 953 MiB peak |
-| 12 distinct gzipped 24 MB VCFs | 256 MiB | | | 2640 MiB, 12 adapters | 238 MiB, 1 adapter |
+| 20 x 100 kb of a 100x BAM, twice | 256 MiB | 75.9 + 0 MiB | 75.9 MiB | 9.6 MiB | 543 MiB |
+| 20 x 100 kb of a 100x BAM, twice | 64 MiB | 75.9 + 75.9 MiB | 63.9 MiB | 9.6 MiB | |
+| 12 x 20 kb of 200x long reads, twice | 64 MiB | 52.4 + 0 MiB | 52.4 MiB | 9.3 MiB | 157 MiB |
+| One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 9.6 MiB | 81 MiB |
+| 20 kb of 1000x long reads | 64 MiB | 169.8 MiB | 64.0 MiB | 9.3 MiB | 165 MiB |
+| The HPRC v2.1 segs TBI, read whole | 256 MiB | 4.2 MiB | | 9.1 MiB | 717 MiB RSS |
+| 30 remote BAMs, an 8.3 MiB BAI each | 256 MiB | 269.0 MiB | | | 135 MiB, 7 adapters |
+| cancer_sv tutorial, from R | 256 MiB | 73.7 MiB, 16.5 s | | | 757 MiB RSS |
+| 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 0 MiB, 28.5 s | 127.2 MiB | | 953 MiB peak |
+| 12 distinct gzipped 24 MB VCFs | 256 MiB | | | | 238 MiB, 1 adapter |
 | 120 distinct gzipped 20 MB GFF3s | 256 MiB | | | | 61 MiB, 1 adapter |
-| 16 distinct 24 MB plain VCFs, from R | 256 MiB | | | aborted at the 11th | 730-980 MiB RSS |
-| 6 distinct 70 MB plain VCFs, from R | 256 MiB | | | aborted at the 4th | 1175 MiB RSS |
+| 16 distinct 24 MB plain VCFs, from R | 256 MiB | | | | 730-980 MiB RSS |
+| 6 distinct 70 MB plain VCFs, from R | 256 MiB | | | | 1175 MiB RSS |
 
-"Before" is main before the duplicate-adapter fix for the read workloads, and
-the bundle weighing compressed bytes for the whole-file loops.
-
-- **No workload reads more, and the engine holds more between calls:** up to
-  a full `limit` each of chunks and records.
+- **The engine holds up to a full `limit` each of chunks and records between
+  calls.**
 - **A call's own working memory comes on top.** One 1 Mb read of a local 100x
-  BAM took R to 2.2 GB at the default.
+  BAM takes R to 2.2 GB at the default, and peaks at 1832-1865 MiB RSS in Node,
+  holding 780-786 MiB after `clearCache()`.
 - **The inflater's wasm memory stays near 20 MiB.** A `WebAssembly.Memory`
-  only grows, and `@gmod/bgzf-filehandle` 6.8.1 caps each inflate at 8 MiB.
-
-Before and after range-cache 1.6.0 and bgzf 6.8.1, with the bundle in Node's
-`vm`: the bytes the host read per pass, what `chunks` reported, and the
-largest ArrayBuffer backing store after `clearCache()`, the inflater's wasm
-memory:
-
-| Workload | `limit` | Read before | Read after | `chunks` before | `chunks` after | Wasm before | Wasm after |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 20 x 100 kb of a 100x BAM, twice | 256 MiB | 75.9 + 0 MiB | 75.9 + 0 MiB | 75.9 MiB | 75.9 MiB | 62.6 MiB | 9.6 MiB |
-| 20 x 100 kb of a 100x BAM, twice | 64 MiB | 75.9 + 0 MiB | 75.9 + 75.9 MiB | 75.9 MiB | 63.9 MiB | 62.6 MiB | 9.6 MiB |
-| 12 x 20 kb of 200x long reads, twice | 64 MiB | 52.4 + 0 MiB | 52.4 + 0 MiB | 52.4 MiB | 52.4 MiB | 94.3 MiB | 9.3 MiB |
-| One 100 kb region, ten displays | 256 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 5.5 MiB | 34.4 MiB | 9.6 MiB |
-| 20 kb of 1000x long reads | 64 MiB | 169.8 MiB | 169.8 MiB | 169.8 MiB | 64.0 MiB | 261.9 MiB | 9.3 MiB |
-| The HPRC v2.1 segs TBI, read whole | 256 MiB | 4.2 MiB | 4.2 MiB | | | 610.9 MiB | 9.1 MiB |
-| 12 remote ONT regions of 100 kb, twice, from R | 256 MiB | 168.5 + 0 MiB | 168.5 + 0 MiB | 127.2 MiB | 127.2 MiB | | |
-
-- **A working set wider than `limit` now reads again.** At 64 MiB the second
-  pass over 75.9 MiB of chunks misses on every one, since the least recently
-  used chunk is always the next one read. Before, the fixed 1000-chunk cap held
-  them all.
-- **The process holds less.** After the 1000x read at 64 MiB, heap plus
-  ArrayBuffers fell from 269.8 to 164.7 MiB, and the TBI read's peak RSS from
-  1318 to 717 MiB.
-- **Whole-file loops from R still level off.** After 16 distinct 24 MB plain
-  VCFs R held 757 MB RSS, and after 6 distinct 70 MB ones 1147 MB, against 752
-  and 1142 MB before.
+  only grows, so `@gmod/bgzf-filehandle` caps each inflate at 8 MiB and puts
+  the runs of one chunk in one buffer.
+- **A working set wider than `limit` reads again.** At 64 MiB the second pass
+  over 75.9 MiB of chunks misses on every one, since the least recently used
+  chunk is always the next one read.
+- **One call can read a chunk again inside itself.** A CRAM window of 20 kb
+  over 1000x long reads makes 73 range requests for 84.2 MiB at a `limit` of
+  64 MiB or 16 MiB, and 76 for 90.7 MiB at 0: chunks past `limit` leave the
+  cache while the call still reads them.
+- **`limit = Inf` leaves the chunk cache unbounded.** Only its 15-minute idle
+  sweep frees chunks, and that sweep needs a timer a bare host lacks.
+- **Whole-file loops from R level off:** 16 distinct 24 MB plain VCFs hold 757
+  MB RSS, and 6 distinct 70 MB ones 1147 MB.
 - **The engine still estimates what a parsed index holds.**
   [ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md](../ideas/waiting-on-someone-else/compact-parsed-indexes-in-bam-js-and-tabix-js.md)
   lists what would replace it.

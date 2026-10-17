@@ -25,7 +25,9 @@ Every engine in the process shares what the engine keeps between calls, in three
 pools that share no space, each under `limit` (256 MiB unless set):
 
 - **Decoded records:** the BAM and CRAM records and tabix lines it decoded.
-- **Chunks:** the file bytes read in ranges, in chunks of 256 KiB.
+- **Chunks:** the file bytes read in ranges, in chunks of 256 KiB. A call whose
+  reads exceed `limit` can read a chunk again inside itself, and `Infinity`
+  leaves the chunks unbounded.
 - **Adapters:** the ones the last call read stay whatever they weigh. Then each
   other adapter, most recently read first, stays if its weight still fits under
   `limit` beside those kept.

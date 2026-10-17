@@ -357,7 +357,9 @@ describe('a bare host under a budget', () => {
     expect((await cache()).chunks).toBe(read)
     const limit = CHUNK_SIZE
     expect(read).toBeGreaterThan(limit)
-    expect((await cache({ limit })).chunks).toBeLessThanOrEqual(limit)
+    const kept = (await cache({ limit })).chunks
+    expect(kept).toBeGreaterThan(0)
+    expect(kept).toBeLessThanOrEqual(limit)
     rangeBytes.clear()
     await jbrowse.alignments(JSON.stringify(CRAM))
     await jbrowse.alignments(JSON.stringify(BAM))
