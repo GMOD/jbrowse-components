@@ -10,6 +10,10 @@ summary: "The alignments display's read filter is its `filter` slot, `ReadFilter
 Accepted (2026-10-07). Settles call 5 of the 2026-10-07 grammar audit, under
 [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md)'s rule that
 a typed sub-schema beats a `frozen` slot where the reader expects a shape.
+Amended 2026-10-17 by
+[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), to build
+before 5.0.0: `filter` is an object on every display that reads one, a jexl list
+being its `expressions` member and its shorthand; `tagFilters` becomes `tags`.
 
 ## Context
 

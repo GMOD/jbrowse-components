@@ -19,6 +19,11 @@ its metric became `color.field` on an `LDColor` object, so its track menu
 offers the box with `color` in it. The reference sequence, linear synteny,
 dotplot and chord synteny displays still declare none.
 
+Amended 2026-10-17 by
+[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), to build
+before 5.0.0: each schema declares its plot words with a `plot` option, and
+`PLOT_VOCABULARY`, the hand list below, goes.
+
 ## Context
 
 Two JSON boxes existed. `ChannelSpec` (canvas, the single-sample variant

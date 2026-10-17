@@ -12,6 +12,15 @@ band-prefixed slots, after two adversarial reviews of the vocabulary. v5.0.0
 is the one release where config spellings may change wholesale, so the end
 state was judged as the spelling users keep.
 
+Amended 2026-10-17 by
+[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), to build
+before 5.0.0: `sashimi.filter` and `readConnections.filter` become
+`filter.junctions` and `filter.connections`, read by every part that draws
+junctions or connections, `coverage.filter` becomes
+`coverage.minAlleleFraction`, and the Rejected row on data-named filters falls
+for connections, which two parts draw. With coverage hidden, the display draws
+the sashimi arcs in a strip of their own.
+
 ## Context
 
 - **`show` meant two things.** On `showCoverage`, `showPileup` and

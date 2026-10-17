@@ -10,7 +10,11 @@ summary: "A settings bag, a session spec, a share link and jb2export write `rows
 Accepted (2026-10-07). Settles call 2 of the 2026-10-07 grammar audit;
 narrows [ADR-142](adr-142-one-value-scale-object.md) §"A partial sub-schema
 write merges" to `scales`. Amended 2026-10-09: the shorthand claim below
-covers the color objects that declare no `value`.
+covers the color objects that declare no `value`. Amended 2026-10-17 by
+[ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md), to build
+before 5.0.0: a schema with a `shorthand` declares `writes: 'whole' |
+'members'`, overturning the Rejected row on a declared write mode, since a
+`filter` list shorthand needs member merging.
 
 ## Context
 
