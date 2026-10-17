@@ -80,8 +80,7 @@ bytes.
 
 `@gmod/bgzf-filehandle`'s module-global wasm heap never shrinks either. Since
 6.8.1 each wasm call inflates a capped slice, so the heap no longer grows to the
-largest inflate, which left hundreds of MB under 6.8.0
-([TABLES.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/TABLES.md#what-the-engine-keeps-between-calls)).
+largest inflate, which left hundreds of MB under 6.8.0.
 
 Across six tracks, bounding retention moved held bytes 31% and RSS 12%. Bound
 total memory somewhere that can see the whole process.
