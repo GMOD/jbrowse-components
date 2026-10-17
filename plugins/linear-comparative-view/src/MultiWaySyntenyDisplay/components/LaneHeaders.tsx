@@ -21,6 +21,8 @@ import { laneHeaderMenuItems } from '../menus.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 
+const CHIP_BORDER_PX = 1
+
 // fixed per gesture; the moving y is its own state so the listeners bind once
 interface LaneDrag {
   assemblyName: string
@@ -271,16 +273,14 @@ const LaneHeaders = observer(function LaneHeaders({
               title={`against ${row.changes.anchor}`}
               style={{
                 marginLeft: 'auto',
-                width: changesWidth,
+                minWidth: changesWidth + 2 * CHIP_BORDER_PX,
                 boxSizing: 'border-box',
                 padding: `0 ${INLINE_CHIP_PAD_PX}px`,
-                border: `1px solid ${bandPalette.text.secondary}`,
+                border: `${CHIP_BORDER_PX}px solid ${bandPalette.text.secondary}`,
                 borderRadius: 2,
                 background: bandGroundColor(),
                 color: bandInk().text,
                 textShadow: 'none',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
                 pointerEvents: 'all',
                 flex: '0 0 auto',
               }}
