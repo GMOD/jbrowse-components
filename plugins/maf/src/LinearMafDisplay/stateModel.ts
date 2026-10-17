@@ -260,7 +260,7 @@ function paintsThemeColors(field: MafColorField) {
  *       type: 'LinearMafDisplay',
  *       displayId: 'multiz-LinearMafDisplay',
  *       rowHeight: 16,
- *       showCoverage: true,
+ *       coverage: { show: true },
  *     },
  *   ],
  * }

@@ -315,8 +315,8 @@ await test('renderRegion alignments as snpcov', async () => {
         'bam',
         [
           fp('volvox-sorted.bam'),
-          'showPileup=false',
-          'coverageHeight=1000',
+          'pileup.show=false',
+          'coverage.height=1000',
           'height:1000',
         ],
       ],

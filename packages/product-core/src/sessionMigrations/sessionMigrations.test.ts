@@ -23,6 +23,10 @@ function display(
         color: { type: 'color', defaultValue: '#000' },
         height: { type: 'number', defaultValue: 100 },
         otherBand: { type: 'boolean', defaultValue: true },
+        band: ConfigurationSchema(`${name}Band`, {
+          show: { type: 'boolean', defaultValue: true },
+          height: { type: 'number', defaultValue: 45 },
+        }),
       },
       { retired, closed: true },
     ),
@@ -46,12 +50,21 @@ const pluginManager = {
           },
         ],
         retiredState: {
-          keys: ['colorSetting', 'subNode'],
-          lift: i =>
-            i.colorSetting === undefined ? {} : { legacyColor: i.colorSetting },
+          keys: ['colorSetting', 'subNode', 'bandSetting'],
+          lift: i => ({
+            ...(i.colorSetting === undefined
+              ? {}
+              : { legacyColor: i.colorSetting }),
+            ...(i.bandSetting === undefined
+              ? {}
+              : { legacyBand: i.bandSetting }),
+          }),
         },
       },
-      { legacyColor: color => ({ color }) },
+      {
+        legacyColor: color => ({ color }),
+        legacyBand: band => ({ band }),
+      },
     ),
     display('PlainDisplay'),
     display('HeightlessDisplay', {
@@ -322,6 +335,38 @@ test('the last panel wins when two panels lift into one display config', () => {
   ])
 })
 
+test('two panels lifting into one band object keep both members', () => {
+  const panel = (bandSetting: Record<string, unknown>) => ({
+    type: 'LinearGenomeView',
+    tracks: [
+      track('t', [
+        {
+          id: `d${Object.keys(bandSetting)[0]}`,
+          type: 'BandedDisplay',
+          configuration: 't-BandedDisplay',
+          bandSetting,
+        },
+      ]),
+    ],
+  })
+  const result = migrate({
+    name: 'test',
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        views: [panel({ show: false }), panel({ height: 80 })],
+      },
+    ],
+  })
+  expect((result.trackConfigDeltas as any).t.displays).toEqual([
+    {
+      type: 'BandedDisplay',
+      displayId: 't-BandedDisplay',
+      band: { show: false, height: 80 },
+    },
+  ])
+})
+
 test('an unknown display type is left for the prune', () => {
   const snap = lgv([
     track('t', [{ id: 'd', type: 'Gone', configuration: 't-Gone' }]),
@@ -332,6 +377,6 @@ test('an unknown display type is left for the prune', () => {
 test('the honoured instance keys come off the DisplayTypes', () => {
   expect(migratedDisplayInstanceKeys(pluginManager)).toEqual({
     '*': ['heightPreConfig'],
-    BandedDisplay: ['colorSetting', 'subNode'],
+    BandedDisplay: ['colorSetting', 'subNode', 'bandSetting'],
   })
 })

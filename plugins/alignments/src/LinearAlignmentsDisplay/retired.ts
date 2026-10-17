@@ -255,9 +255,9 @@ export const retiredState: RetiredDisplayState = {
   keys: [...Object.keys(INSTANCE_SLOTS), ...NESTED_SUBNODES],
   lift: instance => {
     const subNode = NESTED_SUBNODES.map(k => instance[k]).find(isObject)
-    return {
-      ...(subNode ? instanceSlotsOf(subNode) : {}),
-      ...instanceSlotsOf(instance),
-    }
+    return underEntry(
+      subNode ? instanceSlotsOf(subNode) : {},
+      instanceSlotsOf(instance),
+    )
   },
 }

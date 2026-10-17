@@ -1,6 +1,7 @@
 import {
   getConfigurationSchemaMetadata,
   liftRetiredSpellings,
+  mergeConfSettings,
 } from '@jbrowse/core/configuration'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -188,7 +189,13 @@ function mergeSettingsIntoTrackConfig(
     index === undefined
       ? [...list, { type: displayType, displayId, ...settings }]
       : list.map((d, i) =>
-          i === index ? { ...(d as object), ...settings } : d,
+          i === index && isObject(d)
+            ? mergeConfSettings(
+                resolve(displayType)?.display.configSchema,
+                d,
+                settings,
+              )
+            : d,
         )
   return { ...track, displays }
 }

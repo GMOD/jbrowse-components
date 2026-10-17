@@ -1,4 +1,9 @@
-import { getSnapshot, getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  getType,
+  isStateTreeNode,
+  isType,
+} from '@jbrowse/mobx-state-tree'
 
 import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
@@ -142,10 +147,39 @@ export interface ConfSettingsReport {
 // bag replaces it whole: `{ field }` after `{ field, domain }` is a facet with
 // no domain, and a merge would leave the old domain standing.
 function namespaceMetadata(member: unknown) {
-  const meta = isStateTreeNode(member)
-    ? getConfigurationSchemaMetadata(getType(member))
-    : undefined
+  const meta =
+    isStateTreeNode(member) || isType(member)
+      ? getConfigurationSchemaMetadata(member)
+      : undefined
   return meta?.options.shorthand === undefined ? meta : undefined
+}
+
+/**
+ * #api core/configuration
+ * Two settings bags for one schema as one, `over` written after `under` the
+ * way `applyConfSettings` writes a bag: a namespace's object merges member by
+ * member at any depth, and a slot or a channel takes `over`'s value whole.
+ * For combining snapshots before any config node exists, as a track's
+ * `displayDefaults` folds into its `displays`.
+ */
+export function mergeConfSettings(
+  schema: unknown,
+  under: Record<string, unknown>,
+  over: Record<string, unknown>,
+) {
+  const definition =
+    (isType(schema) ? getConfigurationSchemaMetadata(schema) : undefined)
+      ?.definition ?? {}
+  const out = { ...under }
+  for (const [key, value] of Object.entries(over)) {
+    const prior = out[key]
+    const member = Object.hasOwn(definition, key) ? definition[key] : undefined
+    out[key] =
+      isPlainObject(prior) && isPlainObject(value) && namespaceMetadata(member)
+        ? mergeConfSettings(member, prior, value)
+        : value
+  }
+  return out
 }
 
 function writeConfMember(

@@ -589,7 +589,9 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v, _v2, category) => {
       if (v === 'normal' || v === 'compact' || v === 'super-compact') {
         if (category === 'alignments') {
-          r.snap.pileup = { readHeight: ALIGNMENTS_COMPACTNESS[v] }
+          mergeSettings(settingsOf(r), {
+            pileup: { readHeight: ALIGNMENTS_COMPACTNESS[v] },
+          })
         } else {
           r.snap.displayMode = v === 'super-compact' ? 'superCompact' : v
         }
@@ -600,7 +602,7 @@ const modifiers: Record<string, Modifier> = {
           'normal, compact, super-compact, or a number',
         )
         if (category === 'alignments') {
-          r.snap.pileup = { readHeight: height }
+          mergeSettings(settingsOf(r), { pileup: { readHeight: height } })
         } else {
           r.snap.featureHeight = height
         }
@@ -621,20 +623,24 @@ const modifiers: Record<string, Modifier> = {
     apply: (r, v) => {
       // a bare `arcs` once meant off, so the mode is required
       const mode = parseEnum('arcs', v, ['off', 'up', 'down', 'cloud'] as const)
-      r.snap.readConnections =
-        mode === 'off'
-          ? { show: false }
-          : mode === 'cloud'
-            ? { show: true, mark: 'cloud' }
-            : { show: true, mark: 'arc', placement: mode }
+      mergeSettings(settingsOf(r), {
+        readConnections:
+          mode === 'off'
+            ? { show: false }
+            : mode === 'cloud'
+              ? { show: true, mark: 'cloud' }
+              : { show: true, mark: 'arc', placement: mode },
+      })
     },
   },
   sashimi: {
     on: ['alignments'],
     apply: (r, v) => {
       const mode = parseEnum('sashimi', v, ['off', 'up', 'down', 'auto'])
-      r.snap.sashimi =
-        mode === 'off' ? { show: false } : { show: true, placement: mode }
+      mergeSettings(settingsOf(r), {
+        sashimi:
+          mode === 'off' ? { show: false } : { show: true, placement: mode },
+      })
     },
   },
   // The four read-category filters, one flag each and one vocabulary between
@@ -861,7 +867,7 @@ export async function applyDisplayOpts(
   // SV evidence takes the top rows, split reads first (`svSignalTier`). A
   // track saying otherwise keeps it.
   if (joined && category === 'alignments') {
-    snap.readConnections ??= { show: true, mark: 'arc' }
+    snap.readConnections = { show: true, mark: 'arc', ...snap.readConnections }
     snap.sort ??= 'svSignal'
   }
 

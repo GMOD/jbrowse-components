@@ -40,6 +40,10 @@ const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
     ConfigurationSchema('LinearAlignmentsDisplay', {
       baseColor: { type: 'color', defaultValue: 'goldenrod' },
       height: { type: 'number', defaultValue: 100 },
+      coverage: ConfigurationSchema('CoverageBand', {
+        show: { type: 'boolean', defaultValue: true },
+        height: { type: 'number', defaultValue: 45 },
+      }),
     }),
   ],
 ])
@@ -109,6 +113,7 @@ describe('mergeOverridesIntoDisplays', () => {
       mergeOverridesIntoDisplays(
         [],
         new Map([['LinearBasicDisplay', { color: 'green' }]]),
+        displaySchemas,
       ),
     ).toEqual([])
   })
@@ -117,6 +122,7 @@ describe('mergeOverridesIntoDisplays', () => {
     const merged = mergeOverridesIntoDisplays(
       [{ type: 'LinearBasicDisplay', displayId: 'custom', color: 'red' }],
       new Map([['LinearBasicDisplay', { color: 'green', height: 20 }]]),
+      displaySchemas,
     )
     expect(merged).toEqual([
       {
@@ -136,7 +142,33 @@ describe('mergeOverridesIntoDisplays', () => {
           ['LinearBasicDisplay', { color: 'green' }],
           ['LinearAlignmentsDisplay', { baseColor: 'red' }],
         ]),
+        displaySchemas,
       ),
     ).toEqual([{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'green' }])
+  })
+
+  test('a namespace merges member by member, a channel is replaced whole', () => {
+    expect(
+      mergeOverridesIntoDisplays(
+        [
+          { type: 'LinearAlignmentsDisplay', coverage: { show: false } },
+          { type: 'LinearManhattanDisplay', color: { value: 'red' } },
+        ],
+        new Map([
+          ['LinearAlignmentsDisplay', { coverage: { height: 80 } }],
+          [
+            'LinearManhattanDisplay',
+            { color: { value: 'green', scale: 'ld' } },
+          ],
+        ]),
+        displaySchemas,
+      ),
+    ).toEqual([
+      {
+        type: 'LinearAlignmentsDisplay',
+        coverage: { show: false, height: 80 },
+      },
+      { type: 'LinearManhattanDisplay', color: { value: 'red' } },
+    ])
   })
 })

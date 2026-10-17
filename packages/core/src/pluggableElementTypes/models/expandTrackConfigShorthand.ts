@@ -1,3 +1,4 @@
+import { mergeConfSettings } from '../../configuration/getConf.ts'
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
 import { isPlainObject } from '../../util/objectUtils.ts'
@@ -78,7 +79,14 @@ export function collectDisplayOverrides(
       })
     }
     for (const { name, members } of targets) {
-      overrides.set(name, { ...overrides.get(name), ...members })
+      overrides.set(
+        name,
+        mergeConfSettings(
+          displaySchemas.get(name),
+          overrides.get(name) ?? {},
+          members,
+        ),
+      )
     }
     reached.set(
       key,
@@ -90,14 +98,23 @@ export function collectDisplayOverrides(
 
 /**
  * Fold per-display override props into the entries a `displays` array already
- * has; explicit props win. A display with no entry gets none: a setting never
- * adds a display to a track.
+ * has; explicit props win, member by member inside a namespace such as an
+ * alignments band. A display with no entry gets none: a setting never adds a
+ * display to a track.
  */
 export function mergeOverridesIntoDisplays(
   displays: DisplaySnapshot[],
   overrides: Map<string, Record<string, unknown>>,
+  displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
 ): DisplaySnapshot[] {
-  return displays.map(d => ({ ...overrides.get(d.type), ...d }))
+  return displays.map(
+    d =>
+      mergeConfSettings(
+        displaySchemas.get(d.type),
+        overrides.get(d.type) ?? {},
+        d,
+      ) as DisplaySnapshot,
+  )
 }
 
 /**
@@ -151,9 +168,12 @@ export function expandTrackConfigShorthand(
     return snap
   }
 
+  const displaySchemas = new Map(
+    trackType.displayTypes.map(d => [d.name, d.configSchema]),
+  )
   const { overrides, reached, unknownKeys, refused } = collectDisplayOverrides(
     shorthand,
-    new Map(trackType.displayTypes.map(d => [d.name, d.configSchema])),
+    displaySchemas,
   )
   for (const key of unknownKeys) {
     console.warn(
@@ -184,6 +204,6 @@ export function expandTrackConfigShorthand(
   }
   return {
     ...rest,
-    displays: mergeOverridesIntoDisplays(displays, overrides),
+    displays: mergeOverridesIntoDisplays(displays, overrides, displaySchemas),
   }
 }

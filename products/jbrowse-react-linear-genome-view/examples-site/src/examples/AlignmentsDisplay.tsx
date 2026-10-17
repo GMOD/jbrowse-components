@@ -30,7 +30,7 @@ export default function AlignmentsDisplay() {
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 250,
-              showSoftClipping: true,
+              pileup: { showSoftClipping: true },
               color: { field: 'pairOrientation' },
             },
           },
