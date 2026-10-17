@@ -30,9 +30,10 @@ jest.mock('@jbrowse/core/util/io', () => {
 
 // The column names come from the file's leading blocks and the region read
 // needs only the index, so a cold load issues both at once: one round trip,
-// not two. The lines wait for the parser the names build.
+// not two. The lines wait for the parser the names build. The file needs a
+// header: @gmod/tabix reads none for a file whose first data line opens it.
 test('the first load reads the names beside the region', async () => {
-  const file = '../../../../test_data/ce11.26way.chrI_subset.bed.gz'
+  const file = '../../../../test_data/dog10k/dog10k_wolfdog_named.chr1.bed.gz'
   const adapter = new Adapter(
     configSchema.create({
       bedGzLocation: {
@@ -51,10 +52,10 @@ test('the first load reads the names beside the region', async () => {
   const features = await firstValueFrom(
     adapter
       .getFeatures({
-        assemblyName: 'ce11',
-        refName: 'chrI',
-        start: 3003000,
-        end: 3004100,
+        assemblyName: 'canFam4',
+        refName: 'chr1',
+        start: 20_000_000,
+        end: 20_100_000,
       })
       .pipe(toArray()),
   )
