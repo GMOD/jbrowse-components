@@ -64,7 +64,7 @@ const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
 
 /**
  * The single-valued scale members a control shows beside a channel's field:
- * for a ramp the ends that pin it, its middle, the quantile an open end
+ * for a categorical color the one its left-out values paint, for a ramp the ends that pin it, its middle, the quantile an open end
  * follows, the named stops it samples and their direction, and for any scale the
  * key's title, row order and name for no value.
  */
@@ -99,7 +99,9 @@ export function isRamp(scale: unknown) {
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
     ? SCALE_MEMBERS.filter(
-        member => !(KEY_MEMBERS as readonly string[]).includes(member),
+        member =>
+          member !== 'unknown' &&
+          !(KEY_MEMBERS as readonly string[]).includes(member),
       )
     : RAMP_ENDS
 }

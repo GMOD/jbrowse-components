@@ -88,6 +88,8 @@ export const MARK_RULES = {
   'labels-domain': 'warning',
   /** A categorical color's `unknown` with no `domain`, so it paints every value. */
   'unknown-domain': 'warning',
+  /** An `unknown` on a color painting through no categorical scale, which reads it nowhere. */
+  'unknown-scale': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
   /** A `filter` or `formula` whose `expr` is not a `jexl:` expression. */

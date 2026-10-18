@@ -533,6 +533,11 @@ describe('a marks list in a config file', () => {
     expect(found(colored('bar', { field: 'type', unknown: 'grey' }))).toEqual([
       `warning unknown-domain ${color}.unknown`,
     ])
+    expect(
+      found(
+        colored('bar', { field: 'type', scale: 'linear', unknown: 'grey' }),
+      ),
+    ).toEqual([`warning unknown-scale ${color}.unknown`])
     expect(found(colored('span', { value: 'red' }))).toEqual([])
     expect(
       found([{ mark: 'span', encoding: { color: { value: 'red' } } }]),

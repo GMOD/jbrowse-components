@@ -57,8 +57,11 @@ export interface CategoricalField {
   color: (key: string) => string
   /** `key`'s color dealt with `batch`, as `dealKeyColors` deals one */
   colorAmong?: (key: string, batch: ReadonlySet<string>) => string
-  /** What every key `domain` leaves out paints, where one color does. */
-  unknown?: string
+  /**
+   * The one color every key `domain` leaves out paints, and which keys those
+   * are, so a key ordered by another field's domain still names them.
+   */
+  unknown?: { color: string; paints: (key: string) => boolean }
 }
 
 /**
@@ -130,7 +133,9 @@ export function categoricalField(
   return {
     field,
     domain: order,
-    ...(other === undefined ? {} : { unknown: other }),
+    ...(other === undefined
+      ? {}
+      : { unknown: { color: other, paints: unlisted } }),
     key: value => {
       const key = valueText(value)
       return key === '' ? (vocabulary?.missing ?? key) : key

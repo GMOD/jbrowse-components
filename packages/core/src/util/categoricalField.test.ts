@@ -185,7 +185,12 @@ test('unknown paints every key the domain leaves out, and the no-value key', () 
     'grey',
   ])
   expect(field.colorAmong?.('c', new Set(['c']))).toBe('grey')
-  expect(field.unknown).toBe('grey')
+  expect(field.unknown?.color).toBe('grey')
+  expect(['a', 'c', ''].map(k => field.unknown?.paints(k))).toEqual([
+    false,
+    true,
+    true,
+  ])
   expect(OTHER_VALUES_LABEL).toBe('Other')
 })
 

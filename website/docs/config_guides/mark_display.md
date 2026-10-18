@@ -942,6 +942,7 @@ each reported under its id:
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
+| `unknown-scale` | warning | An `unknown` on a color painting through no categorical scale, which reads it nowhere. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `unread-gap` | warning | A `gapBp` on a mark that draws no line. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |

@@ -44,8 +44,8 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
      * #slot domain
      * The row order: the rows listed lead, in this order. The rest keep the
      * order their source lists them in (a VCF's samples, a multi-BigWig's
-     * subtracks, a MAF's species), or sort, digits by magnitude, where the
-     * rows are values found on features. A clustering run, the arrangement dialog and
+     * subtracks), or sort, digits by magnitude, where the rows are values
+     * found on features. A clustering run, the arrangement dialog and
      * "Sort rows here" all write it, and a run rotates its dendrogram towards
      * it rather than discarding it.
      */

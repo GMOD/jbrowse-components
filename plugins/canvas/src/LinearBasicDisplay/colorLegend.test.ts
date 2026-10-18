@@ -350,6 +350,20 @@ describe('derived color key', () => {
     ])
   })
 
+  it("names the left-out values Other under a facet on the color's field", () => {
+    const display = coloredDisplay({
+      field: 'biotype',
+      domain: ['lncRNA'],
+      range: ['#ff0000'],
+      unknown: '#cccccc',
+    })
+    display.setFacet({ field: 'biotype', domain: ['snoRNA'] })
+    expect(display.legendSpec.sections[0]?.items.map(i => i.label)).toEqual([
+      'Other',
+      'lncRNA',
+    ])
+  })
+
   it("paints the left-out values the no-value grey where unknown is ''", () => {
     const display = coloredDisplay({
       field: 'biotype',

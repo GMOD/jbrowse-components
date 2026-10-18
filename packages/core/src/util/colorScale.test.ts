@@ -192,9 +192,13 @@ test("a preset's domain is the order labels name, and a threshold with no cuts c
   ).toEqual(['labels-domain'])
 })
 
-test('unknown with no domain paints every value, which a written color says and the empty one does not', () => {
+test('unknown with no domain paints every value, and outside a categorical scale nothing', () => {
   expect(rules({ field: 'type', unknown: 'grey' })).toEqual(['unknown-domain'])
-  expect(rules({ field: 'type', unknown: '' })).toEqual([])
+  expect(rules({ field: 'type', unknown: '' })).toEqual(['unknown-domain'])
+  expect(rules({ field: 'score', unknown: 'grey' }, 'linear')).toEqual([
+    'unknown-scale',
+  ])
+  expect(rules({ unknown: 'grey' })).toEqual(['unknown-scale'])
   expect(rules({ field: 'type', domain: ['a'], unknown: 'grey' })).toEqual([])
   expect(
     colorProblems(

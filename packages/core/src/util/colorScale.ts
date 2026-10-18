@@ -292,6 +292,7 @@ export interface ScaleProblem {
     | 'log-floor'
     | 'labels-domain'
     | 'unknown-domain'
+    | 'unknown-scale'
   /** the slot to look at, relative to the scale's own object */
   slot: string
   message: string
@@ -491,13 +492,22 @@ export function colorProblems(
       ...scaleEndProblems({ ...color, type: scale }, { reverse: true }),
     )
   }
-  if (scale === 'categorical' && written.unknown && domain.length === 0) {
-    problems.push({
-      rule: 'unknown-domain',
-      slot: 'unknown',
-      message:
-        'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
-    })
+  if (written.unknown !== undefined) {
+    if (scale !== 'categorical') {
+      problems.push({
+        rule: 'unknown-scale',
+        slot: 'unknown',
+        message:
+          "unknown paints the values a categorical scale's domain leaves out, and this color paints through no categorical scale",
+      })
+    } else if (domain.length === 0) {
+      problems.push({
+        rule: 'unknown-domain',
+        slot: 'unknown',
+        message:
+          'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
+      })
+    }
   }
   const { labels = [] } = color
   const named =

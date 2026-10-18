@@ -491,7 +491,11 @@ export async function featureTables(
     isHidden: hiddenGroupKeys.size > 0 ? isHidden : undefined,
     order:
       facet && facet.field === colors.categoricalColorField?.field
-        ? scale => ({ ...facetField(facet), label: scale.label })
+        ? scale => ({
+            ...facetField(facet),
+            label: scale.label,
+            unknown: scale.unknown,
+          })
         : undefined,
   })
   const key = scales.find(scale => scale.kind === 'categorical')

@@ -770,6 +770,9 @@ test('unknown with no domain paints every value of a categorical color', () => {
   expect(found(colored({ unknown: 'grey' }))).toEqual([
     'warning unknown-domain mark 0 encoding.color.unknown',
   ])
+  expect(found(colored({ scale: 'linear', unknown: 'grey' }))).toEqual([
+    'warning unknown-scale mark 0 encoding.color.unknown',
+  ])
 })
 
 test('labels name the domain values of a shape, and a constant shape names none', () => {

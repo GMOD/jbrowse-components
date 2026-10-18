@@ -1570,7 +1570,11 @@ export default function baseStateModelFactory(
             (section => hiddenGroupKeys.has(sectionOf(section).key)),
           order:
             facet && facet.field === categoricalColorField?.field
-              ? scale => ({ ...facetField(facet), label: scale.label })
+              ? scale => ({
+                  ...facetField(facet),
+                  label: scale.label,
+                  unknown: scale.unknown,
+                })
               : undefined,
         })
       },

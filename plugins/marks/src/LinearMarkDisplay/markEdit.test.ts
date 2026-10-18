@@ -393,6 +393,20 @@ describe('the scale beside a field', () => {
     ).toEqual({ field: 'score', scale: 'categorical' })
   })
 
+  it("keeps a categorical color's unknown only while it stays categorical", () => {
+    const other = {
+      encoding: {
+        color: { field: 'type', domain: ['a'], unknown: 'grey' },
+      },
+    }
+    expect(
+      withChannelScale(other, 'color', 'categorical').encoding!.color,
+    ).toMatchObject({ unknown: 'grey' })
+    expect(
+      withChannelScale(other, 'color', 'linear').encoding!.color,
+    ).not.toHaveProperty('unknown')
+  })
+
   it('keeps the ramp members when one ramp becomes another', () => {
     expect(withChannelScale(ramp, 'color', 'log').encoding!.color).toEqual({
       field: 'score',

@@ -1,5 +1,6 @@
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
+import { categoricalField } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   MISCONFIGURED_ABGR,
@@ -669,6 +670,31 @@ test('a categorical color key names the values its unknown paints Other', () => 
         })),
       ),
     ),
+  ).toEqual([['a', 'Other']])
+})
+
+test("a facet on the color's field orders the key and leaves Other to the color's own domain", () => {
+  const grey = cssColorToABGR('#cccccc')
+  const painted: ColorScaleTable = {
+    kind: 'categorical',
+    field: 'type',
+    domain: ['a'],
+    entries: [
+      { value: 'a', color: cssColorToABGR('red') },
+      { value: 'b', color: grey },
+      { value: 'c', color: grey },
+    ],
+  }
+  const sections = buildMarkLegend([region(painted)], undefined, () => ({
+    unknown: '#cccccc',
+  }))
+  expect(
+    rowLabels(
+      markColorScales(sections, categoricalField('type', { domain: ['b'] })),
+    ),
+  ).toEqual([['Other', 'a']])
+  expect(
+    rowLabels(markColorScales(sections, categoricalField('type'))),
   ).toEqual([['a', 'Other']])
 })
 
