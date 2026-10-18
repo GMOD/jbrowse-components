@@ -198,6 +198,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * `threshold` (percent, default 10), `unmodified`,
        * `cytosineContext` and `shownModifications`.
        */
+      // Beside `baseColor` rather than inside it: a color object is written
+      // whole, so a menu pick of `baseColor: 'bisulfite'` would reset these.
       modifications: alignmentsModificationsConfigSchema,
       /**
        * #slot scales
