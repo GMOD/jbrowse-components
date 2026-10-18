@@ -7,7 +7,11 @@ summary: "RemoteFileWithRangeCache sweeps on idle rather than never, at fifteen 
 
 ## Status
 
-Accepted (2026-08). Measured, and both measurements are re-runnable:
+Accepted (2026-08). Amended by
+[ADR-234](adr-234-the-range-cache-stores-the-extents-it-fetched.md), which
+replaced the 256 KB chunks and their entry cap with stored byte extents; the
+idle sweep and the 256 MB bound below stand. Measured, and both measurements
+are re-runnable:
 `products/jbrowse-web/browser-tests/rangecache-probe.ts` (what is retained) and
 `rangecache-budget.ts` (what the retention buys). Both need a hand-assembled
 `test_data/jb2bench_link`; see the `mem_config.json` there.

@@ -1,4 +1,4 @@
-import { cachedBytes, setChunkCacheLimit } from '@gmod/range-cache-filehandle'
+import { cachedBytes, setCacheLimit } from '@gmod/range-cache-filehandle'
 import { fullConfSnapshot } from '@jbrowse/core/configuration'
 import {
   adapterRequests,
@@ -143,7 +143,7 @@ function applyLimit(bytes: number) {
   }
   limit = bytes
   decompressedBytesBudget.limit = bytes
-  setChunkCacheLimit(bytes)
+  setCacheLimit(bytes)
 }
 
 const cache = {

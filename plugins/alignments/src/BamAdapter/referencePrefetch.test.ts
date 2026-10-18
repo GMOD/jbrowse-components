@@ -16,9 +16,9 @@ import type { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapte
  * and it measured the baseline fine: strictly serial at every latency, ~20% of a
  * cold query at 60ms. But it cannot measure the FIX, because its fixture's
  * reference is a 255 KB FASTA — smaller than one 256 KiB
- * `RemoteFileWithRangeCache` chunk, so after the first query the reference is
- * never re-fetched and a pan issues no reference request at all. Validating the
- * prefetch in a browser needs a reference big enough that panning misses that
+ * `RemoteFileWithRangeCache` chunk in @gmod/range-cache-filehandle 1.x, so
+ * after the first query the reference was never re-fetched and a pan issued no
+ * reference request at all. Validating the prefetch in a browser needs a reference big enough that panning misses that
  * cache, i.e. a real assembly. Ordering is the actual claim, and ordering is
  * exactly what a test can assert deterministically, so it is asserted here.
  *

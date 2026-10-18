@@ -25,8 +25,8 @@ Every engine in the process shares what the engine keeps between calls, in three
 pools that share no space, each under `limit` (256 MiB unless set):
 
 - **Decoded records:** the BAM and CRAM records and tabix lines it decoded.
-- **Chunks:** the file bytes read in ranges, in chunks of 256 KiB. A call whose
-  reads exceed `limit` can read a chunk again inside itself, and `Infinity`
+- **Chunks:** the file bytes read in ranges, as the byte ranges fetched. A call
+  whose reads exceed `limit` can fetch bytes again inside itself, and `Infinity`
   leaves the chunks unbounded.
 - **Adapters:** the ones the last call read stay whatever they weigh. Then each
   other adapter, most recently read first, stays if its weight still fits under
@@ -35,7 +35,7 @@ pools that share no space, each under `limit` (256 MiB unless set):
   files it read whole, which is four times an index's uncompressed size and ten
   times any other file's, such as a plain or gzipped VCF.
 - `engine.cache({ limit })` sets `limit` in bytes, `Infinity` for none, and
-  reports what the engine holds: `chunks` is what the chunk cache holds, and
+  reports what the engine holds: `chunks` is what the range cache holds, and
   `parsed` is the adapters' estimated weight. `engine.clearCache()` empties
   every cache.
 - A call's own reads and tables come on top, which one wide read of a deep BAM

@@ -52,8 +52,8 @@
 //
 // THE FIXTURE HAS TO BE TILED, and this took a wasted run to find out. With the
 // original 255 KB hg19mod.fa the pan issues no reference request AT ALL: the
-// reference is smaller than one 256 KiB RemoteFileWithRangeCache chunk, so the
-// first query caches the whole genome. The only query that fixture shows the
+// reference was smaller than one 256 KiB RemoteFileWithRangeCache chunk (in
+// @gmod/range-cache-filehandle 1.x), so the first query cached the whole genome. The only query that fixture shows the
 // cost on is the one the gate excludes, so it can measure the baseline and
 // never the fix. make-tiled-fixture.sh repeats chr22_mask into a 5 Mb contig
 // and shifts a copy of every read into each tile — the reference tiles, so the
@@ -80,8 +80,8 @@ import type { CDPSession, Page } from 'puppeteer'
 const CONFIG = process.env.CONFIG || 'test_data/jb2bench_link/tiled_config.json'
 const ASSEMBLY = process.env.ASSEMBLY || 'hg19big'
 const LOC = process.env.LOC || 'chr22_big:100000..110000'
-// Far from LOC, and far enough that the reference bases it needs are in a
-// DIFFERENT 256 KiB RemoteFileWithRangeCache chunk. That is the whole reason
+// Far from LOC, and far enough that the reference bases it needs are not
+// already in the RemoteFileWithRangeCache cache. That is the whole reason
 // the fixture is tiled — see the header. Also a cold @gmod/bam chunk.
 const PAN_LOC = process.env.PAN_LOC || 'chr22_big:4000000..4010000'
 const TRACKS = Number(process.env.TRACKS || 1)
@@ -245,7 +245,7 @@ function report(label: string, rows: Timed[]) {
   console.log(`--- ${label} ---`)
   if (!bam || !ref) {
     console.log(
-      'WARNING: a phase is missing — the reference read only happens if the reads lack MD, the byte gate let the query run, and the reference is not already in the 256 KiB chunk cache. Check the fixture.',
+      'WARNING: a phase is missing — the reference read only happens if the reads lack MD, the byte gate let the query run, and the reference is not already in the range cache. Check the fixture.',
     )
     timed.splice(0, timed.length, ...saved)
     return

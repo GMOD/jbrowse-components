@@ -13,7 +13,7 @@ for (let i = 0; i < SIZE; i++) {
 }
 
 /**
- * Drive as the chunk cache sees it: a metadata endpoint that reports the size
+ * Drive as the range cache sees it: a metadata endpoint that reports the size
  * (as a JSON string, the way Drive serializes its int64 fields), and a media
  * endpoint that serves ranges but carries no `Content-Range` — so `stat` is the
  * only place the size is ever observable.
@@ -57,17 +57,16 @@ test('stat() reports the size as a number', async () => {
   expect(await makeFile(mockFetch).stat()).toEqual({ size: SIZE })
 })
 
-test('stat() teaches the chunk cache the size, clamping the bgzf over-read', async () => {
+test('stat() teaches the range cache the size, clamping the bgzf over-read', async () => {
   const { calls, mockFetch } = createMockFetch({ size: String(SIZE) })
   const file = makeFile(mockFetch)
   await file.stat()
 
   // @gmod/bam and @gmod/tabix size their last read of a file to cover the whole
   // final bgzf block, so it runs past EOF by construction. A known size clamps
-  // it to the one chunk that exists; without one this asked for two, and the
-  // second was a round trip to be told 416.
+  // it to the bytes that exist.
   expect((await file.read(CHUNK, SIZE - 100)).length).toBe(100)
-  expect(calls).toEqual([{ start: CHUNK, end: 2 * CHUNK - 1 }])
+  expect(calls).toEqual([{ start: SIZE - 100, end: SIZE - 1 }])
 })
 
 test('a file Drive reports no size for does not poison later reads', async () => {

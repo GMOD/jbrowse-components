@@ -82,7 +82,7 @@ export function openLocation(
     }
 
     if (isNode || isElectron) {
-      // Same chunk cache the remote path has always had. A local read is not
+      // Same range cache the remote path has always had. A local read is not
       // free — desktop re-read every byte of every pan — and the layer above
       // does not care where the bytes came from.
       return new CachedFilehandle(

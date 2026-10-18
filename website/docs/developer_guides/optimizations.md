@@ -223,8 +223,8 @@ has the phase table and the recommended scheme.
 A user who pans faster than the data arrives leaves reads in flight for regions
 already off screen, and those reads are big:
 [`RemoteFileWithRangeCache`](https://github.com/GMOD/range-cache-filehandle)
-merges a run of neighbouring 256 KiB chunks into one request, so one small
-viewport over a 2000x BAM issues a single 6.5 MiB range read. Aborting them is
+merges the gaps a parser's reads leave into few requests, so one small viewport
+over a 2000x BAM issues a single range read of several MiB. Aborting them is
 worth real bandwidth. Measured on a four-hop pan burst throttled to 50 KiB/s,
 three of six requests aborted about 1.6 s in having transferred ~80 KiB each —
 roughly 19.5 MiB abandoned that would otherwise have arrived in full and been

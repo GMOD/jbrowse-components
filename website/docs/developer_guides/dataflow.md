@@ -91,11 +91,11 @@ what the pool is worth per format, and how to check it engaged are
 Three layers cache different things, and they compose because each dedups a
 different unit:
 
-| layer                        | unit                                | lives in          | goes stale when    |
-| ---------------------------- | ----------------------------------- | ----------------- | ------------------ |
-| `RemoteFileWithRangeCache`   | compressed bytes, in aligned blocks | the worker        | never              |
-| the parser's own chunk cache | decompressed and parsed chunks      | the worker        | never              |
-| `rpcDataMap`                 | one region's finished columns       | the display model | `rpcProps` changes |
+| layer                        | unit                           | lives in          | goes stale when    |
+| ---------------------------- | ------------------------------ | ----------------- | ------------------ |
+| `RemoteFileWithRangeCache`   | compressed bytes, as fetched   | the worker        | never              |
+| the parser's own chunk cache | decompressed and parsed chunks | the worker        | never              |
+| `rpcDataMap`                 | one region's finished columns  | the display model | `rpcProps` changes |
 
 Only the last is on the figure, because it is the one a gesture interacts with.
 A pan back over a region the display still holds does no work at all; a pan onto

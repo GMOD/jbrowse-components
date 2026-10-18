@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// Does RemoteFileWithRangeCache's chunk cache survive closing the track that
+// Does RemoteFileWithRangeCache's range cache survive closing the track that
 // filled it? memstress answers "does the floor rise" on volvox, whose entire
 // dataset is a few MB — too small for this layer to show up as anything. This
 // asks the one question directly, on data big enough to see it:
@@ -10,8 +10,9 @@
 // Closing the track frees the BamAdapter (b4a353c163) and with it @gmod/bam's
 // SharedReadCache, so anything left in the worker at step 4 is below that: the
 // raw compressed bytes this module keeps. The heap snapshot pass attributes it,
-// by counting buffers of exactly CHUNK_SIZE (262144) bytes, which is a shape
-// nothing else in the stack allocates.
+// by counting buffers of exactly PIECE_SIZE (1 MiB) bytes: the cache stores a
+// long body in pieces of that size, a shape nothing else in the stack allocates.
+// Shorter bodies and each body's last piece go uncounted.
 //
 // Needs test_data/jb2bench_link and a built products/jbrowse-web; ADR-059 has the
 // setup, since that directory is gitignored.
@@ -34,7 +35,7 @@ import type { CDPSession, Page } from 'puppeteer'
 const CONFIG = 'test_data/jb2bench_link/mem_config.json'
 const ASSEMBLY = 'hg19mod'
 const TRACK = process.env.TRACK || '1000x.shortread.bam'
-const CHUNK_SIZE = 256 * 1024
+const PIECE_SIZE = 1024 * 1024
 // chr22_mask is 250001 bp; walk it in windows small enough to clear the
 // adapter's fetchSizeLimit, so every window loads instead of banner-ing
 const WINDOWS = Number(process.env.WINDOWS || 20)
@@ -158,13 +159,13 @@ async function floor(label: string) {
 
 /**
  * Sum every node's `self_size` in a worker's heap snapshot, and count the ones
- * that are exactly CHUNK_SIZE bytes.
+ * that are exactly PIECE_SIZE bytes.
  *
  * Two reasons this parses the stream rather than JSON.parse-ing it, the way
  * memsticky does: a 300 MB heap serializes to more than V8's maximum string
  * length, so buffering it throws `Invalid string length` outright — and
  * `Runtime.getHeapUsage` (what `floor` reports) does NOT count external
- * ArrayBuffer memory, which is exactly where 256 KB chunks live. The snapshot is
+ * ArrayBuffer memory, which is exactly where the cached pieces live. The snapshot is
  * the only instrument here that sees them at all.
  *
  * The nodes array is a flat run of integers with no nesting, so the first `]`
@@ -186,7 +187,7 @@ function snapshotStats(label: string, session: CDPSession = firstWorker()) {
         if (field === sizeIdx) {
           const size = Number(part)
           total += size
-          if (size === CHUNK_SIZE) {
+          if (size === PIECE_SIZE) {
             exact++
           }
         }
@@ -225,10 +226,10 @@ function snapshotStats(label: string, session: CDPSession = firstWorker()) {
         if (end >= 0) {
           done = true
           session.off('HeapProfiler.addHeapSnapshotChunk', onChunk)
-          const exactBytes = exact * CHUNK_SIZE
+          const exactBytes = exact * PIECE_SIZE
           console.log(
             `  ${label.padEnd(26)} snapshot ${mb(total).padStart(9)}  ` +
-              `${String(exact).padStart(5)} nodes of exactly ${CHUNK_SIZE} B = ${mb(exactBytes)}`,
+              `${String(exact).padStart(5)} nodes of exactly ${PIECE_SIZE} B = ${mb(exactBytes)}`,
           )
           resolve({ total, exactBytes, exact })
         }
@@ -269,7 +270,7 @@ await sleep(1500)
 const base = await floor('track open, before pan')
 const beforePan = await snapshotStats('worker, before pan')
 
-// Pan across the contig. Each window is a distinct byte range, so the chunk
+// Pan across the contig. Each window is a distinct byte range, so the range
 // cache accumulates rather than re-hitting.
 for (let i = 0; i < WINDOWS; i++) {
   const start = 1 + Math.floor((i * 240000) / WINDOWS)
@@ -305,7 +306,7 @@ const hidden = await floor('after tab hidden')
 
 // Wait out BOTH idle sweeps before reading the residue. They are not the same
 // length on purpose (ADR-059): @gmod/bam's parsed cache goes at three minutes,
-// this module's raw chunks at fifteen, because raw bytes are the cheap layer and
+// this module's raw bytes at fifteen, because raw bytes are the cheap layer and
 // the only one still helping once the parsed cache has expired. So the default
 // here has to clear fifteen plus a sweep interval, or it reports a cache that is
 // simply not due yet as one that never reclaims.
@@ -333,7 +334,7 @@ console.log(
 )
 console.log(`  RETAINED after close+idle ${mb(idle.worker - base.worker)}`)
 console.log(
-  `  CHUNK_SIZE bufs  before pan ${mb(beforePan.exactBytes)}  ` +
+  `  PIECE_SIZE bufs  before pan ${mb(beforePan.exactBytes)}  ` +
     `after pan ${mb(afterPan.exactBytes)}  after close+idle ${mb(afterClose.exactBytes)}`,
 )
 console.log(
@@ -342,7 +343,7 @@ console.log(
 )
 console.log(`  main heap Δ after close    ${mb(closed.main - base.main)}`)
 console.log(
-  `  main thread CHUNK_SIZE bufs ${mb(mainClose.exactBytes)} — the alignments ` +
+  `  main thread PIECE_SIZE bufs ${mb(mainClose.exactBytes)} — the alignments ` +
     'fetches are issued from the worker, so this instance is expected to be empty',
 )
 console.log(`  page errors: ${errors.length}`)

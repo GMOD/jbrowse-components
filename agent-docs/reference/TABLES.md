@@ -524,9 +524,10 @@ process, in three pools that share no space, each under one setting, `limit`
 
 - **Decoded records:** the decoded-bytes budget (`cacheBudgets.ts`) gets all
   of `limit`, where a browser worker allows 1 GiB.
-- **Chunks:** `setChunkCacheLimit(limit)` (`@gmod/range-cache-filehandle`
-  1.6.0) bounds the range cache's 256 KiB chunks and evicts the least recently
-  used at once when `limit` drops. `chunks` reports its `cachedBytes()`.
+- **Chunks:** `setCacheLimit(limit)` (`@gmod/range-cache-filehandle` 2.0)
+  bounds the bytes the range cache holds and evicts the least recently used, in
+  pieces of at most 1 MiB, at once when `limit` drops. `chunks` reports its
+  `cachedBytes()`.
 - **Adapters:** `keepAdapters` keeps the adapters the last call used, whatever
   they weigh, then walks the others from the most recently requested, keeping
   each whose weight still fits under `limit` beside those kept. `setLimit`
@@ -601,12 +602,12 @@ RSS in R:
 - **A working set wider than `limit` reads again.** At 64 MiB the second pass
   over 75.9 MiB of chunks misses on every one, since the least recently used
   chunk is always the next one read.
-- **One call can read a chunk again inside itself.** A CRAM window of 20 kb
+- **One call can fetch bytes again inside itself.** A CRAM window of 20 kb
   over 1000x long reads makes 73 range requests for 84.2 MiB at a `limit` of
   64 MiB or 16 MiB, and 76 for 90.7 MiB at 0: chunks past `limit` leave the
   cache while the call still reads them.
-- **`limit = Inf` leaves the chunk cache unbounded.** Only its 15-minute idle
-  sweep frees chunks, and that sweep needs a timer a bare host lacks.
+- **`limit = Inf` leaves the range cache unbounded.** Only its 15-minute idle
+  sweep frees bytes, and that sweep needs a timer a bare host lacks.
 - **Whole-file loops from R level off:** 16 distinct 24 MB plain VCFs hold 757
   MB RSS, and 6 distinct 70 MB ones 1147 MB.
 - **The engine still estimates what a parsed index holds.**

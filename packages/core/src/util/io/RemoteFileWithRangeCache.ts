@@ -1,5 +1,5 @@
 /**
- * The chunk cache now lives in `@gmod/range-cache-filehandle`, extracted from
+ * The range cache now lives in `@gmod/range-cache-filehandle`, extracted from
  * this file so the @gmod parsers can use it without depending on
  * `@jbrowse/core`, react and mobx-state-tree.
  *

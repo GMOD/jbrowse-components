@@ -10,8 +10,8 @@ Cancellation is an `AbortSignal`: the caller's `AbortController` signal rides th
 and the adapter hands it to its reader, so a cancelled navigation drops the read at the
 socket. [ADR-122](../architecture-decision-records/adr-122-cancellation-is-an-abortsignal.md)
 records the decision, the stop token it replaced and the cancel-latency measurements.
-`RemoteFileWithRangeCache` merges a run of neighbouring 256 KiB chunks into one large range
-request, so the socket abort saves most of a big range at any link speed.
+`RemoteFileWithRangeCache` merges the gaps a turn of reads leaves into few large range
+requests, so the socket abort saves most of a big range at any link speed.
 
 ## Crossing the worker boundary
 

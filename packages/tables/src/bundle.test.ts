@@ -14,7 +14,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import vm from 'node:vm'
 import { gzipSync } from 'node:zlib'
 
-import { CHUNK_SIZE } from '@gmod/range-cache-filehandle'
 import { parse } from 'acorn'
 
 import { MIN_ADAPTER_BYTES, createTablesEngine } from './index.ts'
@@ -355,8 +354,7 @@ describe('a bare host under a budget', () => {
     await jbrowse.alignments(JSON.stringify(CRAM))
     const read = [...rangeBytes.values()].reduce((a, b) => a + b, 0)
     expect((await cache()).chunks).toBe(read)
-    const limit = CHUNK_SIZE
-    expect(read).toBeGreaterThan(limit)
+    const limit = Math.floor(read / 2)
     const kept = (await cache({ limit })).chunks
     expect(kept).toBeGreaterThan(0)
     expect(kept).toBeLessThanOrEqual(limit)

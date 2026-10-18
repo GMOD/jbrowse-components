@@ -76,12 +76,12 @@ export abstract class FastaAdapterBase<
    * chunk and memoize it in a 200-entry LRU, and it was measured a loss.
    *
    * The reuse it was providing already exists one layer down:
-   * `RemoteFileWithRangeCache` caches 256 KiB of raw bytes per chunk, module-wide
+   * `RemoteFileWithRangeCache` caches the raw bytes it fetched, module-wide
    * across every adapter instance, with in-flight dedup and a 15-minute idle
    * sweep, and every URI location goes through it (an internet account's
    * `openLocation` returns one too). Measured over 100 pan steps of a reference
    * sequence track at 1bp/px on a 30Mb contig, both come to a single read, and
-   * the chunk cache's whole contribution was 0.3ms of skipped decode — 0.003ms
+   * the range cache's whole contribution was 0.3ms of skipped decode — 0.003ms
    * per step. What it cost was real: up to ~51MB of decoded sequence retained per
    * adapter instance with no expiry (quick-lru holds 2x maxSize), and 300
    * scattered 200bp lookups reading 22.9MB instead of 0.06MB, 3x slower. It also

@@ -6,8 +6,8 @@
 // whether it should be holding that much in the first place. @gmod/bam caches
 // PARSED features keyed by bgzf chunk, so a re-read of a region it has already
 // parsed is answered upstairs and never reaches the filehandle at all — which
-// would leave the raw layer earning its keep only on index blocks and on 256 KB
-// blocks straddling two bgzf chunks.
+// would leave the raw layer earning its keep only on index blocks and on bytes
+// straddling two bgzf chunks.
 //
 // Three phases, counting bytes on the wire per phase (worker targets included,
 // since that is where alignments fetches are issued):

@@ -23,7 +23,7 @@ import type { CDPSession, HTTPRequest, Page } from 'puppeteer'
 //   - the alignments track unmounts above ~25 bp/px, so a wide window fetches
 //     NOTHING. The windows below stay at ~5 bp/px, where a 2000x pileup issues a
 //     real range read.
-//   - reads are cached per 256 KiB chunk, so revisiting a region issues no
+//   - fetched bytes are cached, so revisiting a region issues no
 //     request. Each window below is somewhere the previous ones did not touch.
 //   - the fixture sets `forceLoad` on its display, and needs to. The very depth
 //     that makes this file worth cancelling puts it over the region-too-large
