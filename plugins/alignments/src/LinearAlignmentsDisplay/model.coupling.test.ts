@@ -119,32 +119,37 @@ function createDisplay({ withRegions = false } = {}) {
 }
 
 describe('alignments display cross-feature coupling', () => {
-  // The menu greys the toggle out while the band is off, so the action writes
-  // its own slot and never turns coverage back on
   test('setShowSashimi leaves coverage alone', () => {
     const display = createDisplay()
     display.setShowCoverage(false)
-
     display.setShowSashimi(true)
     expect(display.showCoverage).toBe(false)
-    expect(display.showSashimi).toBe(false)
-
-    display.setShowCoverage(true)
     expect(display.showSashimi).toBe(true)
   })
 
-  // Sashimi draws only over the coverage band, so with the band off the arcs are
-  // off whatever the slot says, and turning the band back on restores the slot.
-  test('sashimi resolves off while coverage is off, and returns with it', () => {
+  // Without the band the arcs draw in their own strip, and the configured
+  // placement returns with the band.
+  test('sashimi draws down while coverage is off, and its placement returns with it', () => {
     const display = createDisplay()
-    display.setShowSashimi(true)
-    expect(display.showCoverage).toBe(true)
-
+    display.setSashimiPlacement('up')
     display.setShowCoverage(false)
-    expect(display.showSashimi).toBe(false)
-
-    display.setShowCoverage(true)
     expect(display.showSashimi).toBe(true)
+    expect(display.effectiveSashimiPlacement).toBe('down')
+    display.setShowCoverage(true)
+    expect(display.effectiveSashimiPlacement).toBe('up')
+  })
+
+  // The junctions ride with coverage, so a sashimi toggle under the band
+  // writes no fetch key; without it they ride with the arcs.
+  test('the worker reads junctions while coverage or sashimi shows', () => {
+    const display = createDisplay()
+    expect(display.rpcProps().junctions).toBe(true)
+    display.setShowSashimi(false)
+    expect(display.rpcProps().junctions).toBe(true)
+    display.setShowCoverage(false)
+    expect(display.rpcProps().junctions).toBe(false)
+    display.setShowSashimi(true)
+    expect(display.rpcProps().junctions).toBe(true)
   })
 
   // Each layer holds its own placement, so moving the read connections cannot

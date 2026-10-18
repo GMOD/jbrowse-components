@@ -220,8 +220,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   labels stay an SVG overlay, placed by the marks (`sashimiLabels`, through
   `linkApex`), never by a second spelling of the band geometry.
 - **Ask `drawsSashimi`, not `showSashimi`, before reading the pan for
-  sashimi.** The setting is on by default on every track with coverage, and a
+  sashimi.** The setting is on by default on every alignments track, and a
   track of unspliced reads must not rebuild `renderState` per frame for it.
+- **The worker's `junctions` is `coverage.show || sashimi.show`.** With
+  coverage shown a sashimi toggle changes no fetch key; without it the arcs
+  draw in their own strip (`effectiveSashimiPlacement` is `down`), so the
+  junctions ride with the arcs.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170), and so do the curved

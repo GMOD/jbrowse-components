@@ -38,11 +38,14 @@ describe('sashimi menu', () => {
     expect(labels(model)).toEqual(['Show sashimi arcs'])
   })
 
-  test('with coverage off the toggle greys out and names the switch', () => {
+  test('with coverage off the arcs still toggle, and placement greys out naming the switch', () => {
     const model = makeModel()
     model.showCoverage = false
-    const [toggle] = resolveSubMenu(getSashimiMenuItem(model))
-    expect(toggle).toMatchObject({
+    model.showSashimi = true
+    const [toggle, , placement] = resolveSubMenu(getSashimiMenuItem(model))
+    expect(toggle).not.toHaveProperty('disabled')
+    expect(placement).toMatchObject({
+      label: 'Arc placement',
       disabled: true,
       disabledHelpText: expect.stringContaining('Show... → Coverage'),
     })

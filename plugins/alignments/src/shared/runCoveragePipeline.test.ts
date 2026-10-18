@@ -117,6 +117,27 @@ describe('runCoveragePipeline coverage-band gate', () => {
   })
 })
 
+// The arcs draw in a strip of their own without the band, so the junctions
+// outlive it; they go only when nothing draws them.
+test('the junctions run without the coverage band, unless asked not to', async () => {
+  const gaps: GapData[] = [
+    {
+      readIndex: 0,
+      start: 20,
+      end: 60,
+      type: 'skip',
+      strand: 1,
+      featureStrand: 1,
+    },
+  ]
+  const run = (junctions: boolean) =>
+    runCoveragePipeline({ ...baseArgs, gaps, showCoverage: false, junctions })
+  const kept = await run(true)
+  expect(kept.coverage.depths.length).toBe(0)
+  expect(Array.from(kept.sashimi.sashimiX1)).toEqual([20])
+  expect((await run(false)).sashimi.sashimiX1.length).toBe(0)
+})
+
 describe('runCoveragePipeline bisulfite mod coverage', () => {
   // 30 methylated + 10 unmethylated C->T calls at one position, and NO base-count
   // pileup (baseArgs.modBaseCounts is empty). The bisulfite path must fill the

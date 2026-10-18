@@ -6,9 +6,10 @@ import { SASHIMI_PLACEMENTS } from './constants.ts'
 /**
  * #config Sashimi
  * #category display
- * The alignments display's `sashimi` setting: the splice-junction arcs, drawn
- * in the coverage band, so they draw only while `coverage.show` is on. Which
- * junctions draw is the display's `filter.junctions`.
+ * The alignments display's `sashimi` setting: the splice-junction arcs, over
+ * the coverage band or in a strip below it, and in that strip alone while
+ * `coverage.show` is off. Which junctions draw is the display's
+ * `filter.junctions`.
  *
  * #example
  * ```js
@@ -47,7 +48,7 @@ export const sashimiConfigSchema = ConfigurationSchema(
       model: types.enumeration('SashimiPlacement', [...SASHIMI_PLACEMENTS]),
       defaultValue: 'up',
       description:
-        'where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another',
+        'where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down',
     },
     /**
      * #slot

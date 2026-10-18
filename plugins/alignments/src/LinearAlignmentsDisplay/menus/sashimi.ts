@@ -47,25 +47,13 @@ interface SashimiModel {
 // detail panel, all of which can name the motif THIS junction has. A tooltip
 // repeating that in the abstract is a fourth copy that goes stale first.
 //
-// The arcs draw only in the coverage band, so with it off the toggle greys out
-// and names that switch, as the interbase row does, rather than turning the
-// band back on when ticked.
+// Without the coverage band the arcs draw in their own strip, so placement
+// has nothing to choose and is greyed out, naming the switch.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
-    toggleItem(
-      'Show sashimi arcs',
-      model.showSashimi,
-      show => {
-        model.setShowSashimi(show)
-      },
-      model.showCoverage
-        ? undefined
-        : {
-            disabled: true,
-            disabledHelpText:
-              'Sashimi arcs are drawn in the coverage band — turn on Show... → Coverage first',
-          },
-    ),
+    toggleItem('Show sashimi arcs', model.showSashimi, show => {
+      model.setShowSashimi(show)
+    }),
     ...(model.showSashimi
       ? [
           toggleItem('Show read counts', model.showSashimiCounts, show => {
@@ -81,6 +69,13 @@ export function getSashimiMenuItem(model: SashimiModel) {
                 model.setSashimiPlacement(placement)
               },
             ),
+            ...(model.showCoverage
+              ? {}
+              : {
+                  disabled: true,
+                  disabledHelpText:
+                    'Without the coverage band the arcs draw in a strip of their own — turn on Show... → Coverage to place them over it',
+                }),
           },
           categoryFilterItem(
             {

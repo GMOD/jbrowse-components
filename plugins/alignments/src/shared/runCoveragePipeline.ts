@@ -60,6 +60,7 @@ export async function runCoveragePipeline({
   interbaseArrays,
   gapArrays,
   showCoverage,
+  junctions = true,
   modCoverage,
   junctionReference,
   statusCallback,
@@ -79,6 +80,9 @@ export async function runCoveragePipeline({
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   showCoverage: boolean
+  // The sashimi junctions, which draw over the band or in a strip of their
+  // own without it; true wherever coverage is shown
+  junctions?: boolean
   modCoverage?: ModCoverageKind
   // Reference bases for the junctions' splice motifs; fetched by the executor
   // only when the region carries a skip gap, so DNA-seq never pays for it.
@@ -111,13 +115,14 @@ export async function runCoveragePipeline({
       coverage.startPos,
     )
 
-  // The coverage band — histogram, SNP/interbase/mod segments, sashimi arcs, and
-  // the per-bp GPU depth buffer — only renders when showCoverage is on (the
+  // The coverage band — histogram, SNP/interbase/mod segments, and the per-bp
+  // GPU depth buffer — only renders when showCoverage is on (the
   // LGVSyntenyDisplay default is off). The per-bp buffer alone is regionWidth×8
   // bytes and overflows the GPU device limit at whole-chromosome scale, so when
   // the band is off we skip every band computation and return an empty coverage
   // depth array; the coverage uploads / packCoverageAreaForGpu / coverageStats all
-  // no-op on a zero-length depth array.
+  // no-op on a zero-length depth array. The junctions still run while the
+  // sashimi arcs draw in their own strip.
   const band = showCoverage
     ? computeCoverageBand({
         coverage,
@@ -133,7 +138,13 @@ export async function runCoveragePipeline({
         modCoverage,
         junctionReference,
       })
-    : emptyCoverageBand()
+    : {
+        ...emptyCoverageBand(),
+        sashimi: computeSashimiJunctions(
+          junctions ? gaps : [],
+          junctionReference,
+        ),
+      }
 
   return {
     coverage: showCoverage

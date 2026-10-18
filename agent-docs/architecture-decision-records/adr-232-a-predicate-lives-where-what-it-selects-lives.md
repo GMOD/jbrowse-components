@@ -142,8 +142,9 @@ readConnections: { show, mark, height, placement, lineWidth, color, showOrdinary
   derived `junctions: coverage.show || sashimi.show`, an RPC argument
   defaulting to true, so a sashimi toggle with coverage shown refetches
   nothing. With coverage hidden the effective placement is `down`, drawn in the
-  existing strip. LGVSyntenyDisplay defaults `sashimi.show` to false, as it
-  defaults `coverage.show`.
+  existing strip. LGVSyntenyDisplay gets no sashimi default of its own: a
+  synteny block has no introns, so the slot belongs off its schema (Loose
+  edges).
 - `filter.tags` replaces `filter.tagFilters`; v4's `tagFilter` lifts into it.
 
 ### Other displays
@@ -260,7 +261,8 @@ costs a `retired` entry kept for good, so the trivial ones go now.
    and `jexlFilters` lift. The same commit adds the check that a plot word is
    the same top-level kind (slot, sub-schema or list) on every display
    declaring it, which `filter` fails until then.
-5. **The sashimi fallback**, with the LGVSynteny default.
+5. **The sashimi fallback.** Built: the placement row greys out without
+   coverage, as every arc draws down.
 6. **The connectors' color**, a picture change shot before and after.
 7. **`variants`** on the multi-sample variant display, flagged `plot`. The
    names are beta-only, so no lift; jb2hubs' pangenome configs and share links
@@ -270,6 +272,11 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 9. **The sweep's "now" rows.**
 
 ### Loose edges
+
+- LGVSyntenyDisplay inherits `sashimi` and `filter.junctions` from the
+  alignments schema, though a synteny block has no introns; its track menu
+  offers neither. A schema has no way to drop an inherited slot, so leaving
+  them off needs either that or a shared base the alignments display extends.
 
 - A read-category edit still refetches: the worker compacts the reads, and
   Idea 2 leaves the category filters in the worker.

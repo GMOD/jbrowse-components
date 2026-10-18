@@ -44,6 +44,11 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // The pileup's low-frequency mismatch/indel fade is unaffected (frequencies
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
+  // Whether the reply carries the splice junctions and fetches their motifs:
+  // `coverage.show || sashimi.show`, so with coverage shown a sashimi toggle
+  // refetches nothing, and with both off no RNA-seq fetch reads sequence for
+  // arcs nothing draws. Defaults true.
+  junctions?: boolean
   // In-track stacked grouping: the worker partitions the fetch into N ordered
   // groups and returns one WorkerPileupData per group, keeping each `unit`
   // whole. In rpcProps, since changing it re-partitions.

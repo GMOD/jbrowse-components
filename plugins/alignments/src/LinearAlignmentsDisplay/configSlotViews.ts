@@ -159,13 +159,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get fadeLowFrequency(): boolean {
       return getConf(self, ['pileup', 'fadeLowFrequency'])
     },
-    /**
-     * #getter
-     * Whether sashimi arcs draw: `sashimi.show`, and the coverage band they
-     * hang off.
-     */
+    /** #getter */
     get showSashimi(): boolean {
-      return getConf(self, ['sashimi', 'show']) && this.showCoverage
+      return getConf(self, ['sashimi', 'show'])
     },
     /** #getter */
     get sashimiHeight(): number {
@@ -174,6 +170,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     get sashimiPlacement(): SashimiPlacement {
       return getConf(self, ['sashimi', 'placement'])
+    },
+    /**
+     * #getter
+     * Where the arcs draw: `sashimi.placement` over the coverage band, and
+     * `down`, in the strip of their own, while the band is hidden.
+     */
+    get effectiveSashimiPlacement(): SashimiPlacement {
+      return this.showCoverage ? this.sashimiPlacement : 'down'
     },
     /** #getter */
     get showSashimiCounts(): boolean {
@@ -498,9 +502,8 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Writes `sashimi.show` alone. The arcs draw only with the coverage band
-     * (`showSashimi`), and the menu greys the row out without it rather than
-     * turning the band back on behind the user's back.
+     * Writes `sashimi.show` alone. Without the coverage band the arcs draw
+     * in their own strip (`effectiveSashimiPlacement`).
      */
     setShowSashimi(show: boolean) {
       setConf(self, ['sashimi', 'show'], show)

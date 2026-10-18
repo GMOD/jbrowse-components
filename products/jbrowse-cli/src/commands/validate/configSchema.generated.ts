@@ -6947,7 +6947,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "placement": {
-          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another.",
+          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down.",
           "default": "up",
           "if": {
             "type": "null"

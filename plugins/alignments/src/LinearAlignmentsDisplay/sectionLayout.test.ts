@@ -294,7 +294,9 @@ test('both strips stack for a lane that has arcs and sashimi', () => {
   })
 })
 
-test('the sashimi strip needs the coverage band it hangs off', () => {
+// without coverage every junction is bound for the strip, which then heads
+// the stack
+test('the sashimi strip stands on its own with coverage hidden', () => {
   const { sections } = computeStackedSections(
     [lane({ key: 'a', maxY: 2, hasArcs: false, hasSashimiDownArcs: true })],
     {
@@ -305,7 +307,11 @@ test('the sashimi strip needs the coverage band it hangs off', () => {
       sashimiHeight: 30,
     },
   )
-  expect(sections[0]).toMatchObject({ pileupTop: 0, hasSashimiBand: false })
+  expect(sections[0]).toMatchObject({
+    sashimiBandTop: 0,
+    pileupTop: 30,
+    hasSashimiBand: true,
+  })
 })
 
 test('up-mode arcs overlay coverage: no reserved band, draw band at coverage top', () => {

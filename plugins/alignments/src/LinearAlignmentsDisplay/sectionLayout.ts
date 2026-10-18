@@ -164,16 +164,16 @@ export interface BelowCoverageBandsInput {
   hasSashimiDownArcs: boolean
 }
 
-// Whether the sashimi junctions reserve the strip below coverage: only with the
-// coverage band they hang off, and only when a junction is actually bound for it.
-// The single spelling of that rule, read by `belowCoverageBandsGeometry` (global
-// geometry, fit budget) and `computeStackedSections` (per-section stacking).
+// Whether the sashimi junctions reserve the strip below coverage: only when a
+// junction is actually bound for it, as every junction is while coverage is
+// hidden (`effectiveSashimiPlacement`). The single spelling of that rule, read
+// by `belowCoverageBandsGeometry` (global geometry, fit budget) and
+// `computeStackedSections` (per-section stacking).
 function reservesSashimiBand(s: {
   showSashimi: boolean
-  showCoverage: boolean
   hasSashimiDownArcs: boolean
 }) {
-  return s.showSashimi && s.showCoverage && s.hasSashimiDownArcs
+  return s.showSashimi && s.hasSashimiDownArcs
 }
 
 // The settings half alone, with neither data half answered. The pooled geometry

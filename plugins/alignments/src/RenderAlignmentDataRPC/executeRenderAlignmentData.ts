@@ -48,6 +48,7 @@ interface GroupContext {
   region: Region
   showSoftClipping: boolean
   showCoverage: boolean
+  junctions: boolean
   // Which modification coverage the band stacks: modBAM calls over a read-base
   // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
   // modification color modes.
@@ -111,6 +112,7 @@ async function buildGroupResult(
     region,
     showSoftClipping,
     showCoverage,
+    junctions,
     modCoverage,
     junctionReference,
     detectedSimplexModifications,
@@ -183,6 +185,7 @@ async function buildGroupResult(
     interbaseArrays,
     gapArrays,
     showCoverage,
+    junctions,
     modCoverage,
     junctionReference,
     statusCallback,
@@ -259,6 +262,7 @@ export async function executeRenderAlignmentData({
     lodMode,
     showSoftClipping = false,
     showCoverage = true,
+    junctions = true,
     byteLimit,
     perBaseBinBp = 1,
     statusCallback,
@@ -378,9 +382,8 @@ export async function executeRenderAlignmentData({
   // Splice motifs need the reference under every junction. A spliced read is
   // the one signal that this is RNA-seq, so a DNA-seq fetch never reads
   // sequence here; bisulfite already fetched the same span, so reuse it.
-  // Junctions are part of the coverage band, so nothing reads it without one.
   if (
-    showCoverage &&
+    junctions &&
     regionSequence === undefined &&
     sequenceAdapter &&
     extractions.some(e => e.gaps.some(g => g.type === 'skip'))
@@ -405,6 +408,7 @@ export async function executeRenderAlignmentData({
     region,
     showSoftClipping,
     showCoverage,
+    junctions,
     modCoverage,
     junctionReference,
     detectedSimplexModifications,

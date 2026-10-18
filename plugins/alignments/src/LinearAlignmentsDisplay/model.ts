@@ -1043,7 +1043,7 @@ export default function stateModelFactory(
           get sashimiDownKeysByGroup() {
             return buildSashimiDownKeys(self.rpcDataMap, {
               filter: self.junctionFilter,
-              placement: self.sashimiPlacement,
+              placement: self.effectiveSashimiPlacement,
               refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
               hidden: self.hiddenGroupKeys,
             })
@@ -2834,6 +2834,9 @@ export default function stateModelFactory(
             // per-bp GPU depth buffer that overflows the device limit at
             // chromosome scale, when the band is off.
             showCoverage: self.showCoverage,
+            // The junctions ride with coverage, so a sashimi toggle with the
+            // band shown refetches nothing; without it they ride with the arcs.
+            junctions: self.showCoverage || self.showSashimi,
             // `readConnections` is not here: the SA tag walk it could gate also
             // feeds linked reads and the curved connectors (see
             // `extractFeatureArrays`).

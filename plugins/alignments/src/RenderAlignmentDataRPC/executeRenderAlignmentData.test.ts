@@ -54,6 +54,7 @@ const spliced = [0, 1].map(
 function run(
   settings: {
     showCoverage: boolean
+    junctions?: boolean
     baseLayer?: BaseLayer
     facet?: WorkerFacet
     filterBy?: ReadFilter
@@ -87,15 +88,16 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-// Junctions are part of the coverage band, and their splice motifs are the
-// only reader of this reference
+// The junctions' splice motifs are the only reader of this reference, so it
+// is read while the reply carries junctions, with or without the band
 test.each([
-  [true, 1],
-  [false, 0],
+  [true, true, 1],
+  [false, true, 1],
+  [false, false, 0],
 ])(
-  'spliced reads read the reference for motifs only with the band (showCoverage %s)',
-  async (showCoverage, calls) => {
-    await run({ showCoverage })
+  'spliced reads read the reference for motifs only with junctions (showCoverage %s, junctions %s)',
+  async (showCoverage, junctions, calls) => {
+    await run({ showCoverage, junctions })
     expect(fetchReferenceSequence).toHaveBeenCalledTimes(calls)
   },
 )
