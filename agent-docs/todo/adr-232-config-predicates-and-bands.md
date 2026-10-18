@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "step 6 of ADR-232's order of work (steps 1 to 5 are built): the curved connectors paint by `readConnectionsColorField` as the arcs do, a picture change shot before and after"
+  first_move: "steps 1 to 5 are built; next is LGVSyntenyDisplay shedding sashimi, filter.junctions, modifications and baseColor through a shared alignments base schema, then step 6 (handoffs/adr-232-steps-6-9-and-lgvsynteny-base-schema.md)"
 ---
 
 # ADR-232's config renames land before 5.0.0
