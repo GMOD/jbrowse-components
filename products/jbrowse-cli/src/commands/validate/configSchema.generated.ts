@@ -5979,7 +5979,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "nonCanonical": {
-          "description": "only, exclude, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
+          "description": "\`only\`, \`exclude\`, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
           "if": {
             "type": "null"
           },
@@ -6002,7 +6002,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "interchrom": {
-          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise.",
+          "description": "\`only\`, \`exclude\`, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise.",
           "if": {
             "type": "null"
           },
@@ -6014,7 +6014,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "offscreenMates": {
-          "description": "only, exclude, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one.",
+          "description": "\`only\`, \`exclude\`, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one.",
           "if": {
             "type": "null"
           },

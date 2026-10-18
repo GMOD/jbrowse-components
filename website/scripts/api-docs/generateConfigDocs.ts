@@ -671,6 +671,8 @@ export interface ManifestSlot {
   // family, which no page carries a row for.
   type: string
   subSlots?: ManifestSlot[]
+  schema?: string
+  writes?: 'whole' | 'members'
 }
 interface ManifestEntry {
   slots: ManifestSlot[]
@@ -742,6 +744,39 @@ function shorthandKeysByAdapter() {
 
 function configManifest() {
   return readManifest().byType
+}
+
+// Every sub-schema by name and how a settings bag writes it, off every slot the
+// manifest lists at any depth.
+let writesBySchema: Map<string, 'whole' | 'members'> | undefined
+
+function schemaWrites(name: string) {
+  if (!writesBySchema) {
+    const found = new Map<string, 'whole' | 'members'>()
+    const visit = (slots: ManifestSlot[] = []) => {
+      for (const slot of slots) {
+        if (slot.schema && slot.writes) {
+          found.set(slot.schema, slot.writes)
+        }
+        visit(slot.subSlots)
+      }
+    }
+    for (const entry of Object.values(configManifest())) {
+      visit(entry.slots)
+    }
+    writesBySchema = found
+  }
+  return writesBySchema.get(name)
+}
+
+// A setting's write mode, which a reader editing the JSON cannot see in it.
+function writesLine(name: string) {
+  const writes = schemaWrites(name)
+  return writes === 'whole'
+    ? 'A setting written to it replaces it whole, since its members are alternatives: a member left out returns to its default.'
+    : writes === 'members'
+      ? 'A setting written to it names members one by one: a member left out stays as it is, and `null` resets one.'
+      : ''
 }
 
 function shorthandLine(name: string, category: string, isBase: boolean) {
@@ -891,6 +926,7 @@ function renderConfig(
             ? unionNesting(header.name, slots)
             : slotNesting(header.name, category, isBase, links),
           shorthandLine(header.name, category, isBase),
+          writesLine(header.name),
           `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
         ]
           .filter(Boolean)

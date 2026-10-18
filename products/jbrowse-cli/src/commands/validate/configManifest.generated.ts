@@ -79,7 +79,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "BamIndex",
+          "writes": "members"
         },
         {
           "name": "fetchSizeLimit",
@@ -274,7 +276,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "columnNames",
@@ -341,7 +345,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "columnNames",
@@ -512,7 +518,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "dontRedispatch",
@@ -551,7 +559,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "dontRedispatch",
@@ -888,7 +898,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "samplesTsvLocation",
@@ -972,7 +984,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         }
       ],
       "shorthandKeys": [
@@ -1200,7 +1214,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "samples",
@@ -1318,7 +1334,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         }
       ],
       "shorthandKeys": [
@@ -1401,7 +1419,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         }
       ],
       "shorthandKeys": [
@@ -1667,7 +1687,9 @@ export const configManifest: ConfigManifest = {
               "name": "location",
               "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
             }
-          ]
+          ],
+          "schema": "TabixIndex",
+          "writes": "members"
         },
         {
           "name": "columnNames",
@@ -1756,7 +1778,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -1782,7 +1806,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -1796,7 +1822,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -1871,7 +1899,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -1897,7 +1927,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -1911,7 +1943,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -1975,7 +2009,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2044,7 +2080,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2070,7 +2108,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2084,7 +2124,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2158,7 +2200,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2184,7 +2228,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2198,7 +2244,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2269,7 +2317,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2295,7 +2345,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2309,7 +2361,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2381,7 +2435,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2407,7 +2463,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2421,7 +2479,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2493,7 +2553,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2519,7 +2581,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2533,7 +2597,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2604,7 +2670,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2630,7 +2698,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2644,7 +2714,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2716,7 +2788,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2742,7 +2816,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2756,7 +2832,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2827,7 +2905,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2853,7 +2933,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2867,7 +2949,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -2945,7 +3029,9 @@ export const configManifest: ConfigManifest = {
               "name": "textSearchAdapter",
               "type": "(undefined | (BigBedTextSearchAdapterConfigurationSchema | JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
-          ]
+          ],
+          "schema": "textSearching",
+          "writes": "members"
         },
         {
           "name": "displays",
@@ -2971,7 +3057,9 @@ export const configManifest: ConfigManifest = {
               "name": "maxDepth",
               "type": "(number | undefined)"
             }
-          ]
+          ],
+          "schema": "FormatDetails",
+          "writes": "members"
         },
         {
           "name": "formatAbout",
@@ -2985,7 +3073,9 @@ export const configManifest: ConfigManifest = {
               "name": "hideUris",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "FormatAbout",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -3047,6 +3137,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             }
           ],
+          "schema": "BasicFeatureFilter",
+          "writes": "members",
           "shorthand": {
             "list": "expressions"
           }
@@ -3134,6 +3226,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "FeatureColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -3181,6 +3275,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "SectionFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3197,7 +3293,9 @@ export const configManifest: ConfigManifest = {
               "name": "description",
               "type": "string"
             }
-          ]
+          ],
+          "schema": "CanvasFeatureLabels",
+          "writes": "members"
         },
         {
           "name": "connectorColor",
@@ -3340,6 +3438,8 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
+          "schema": "Rows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3407,6 +3507,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "FeatureColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -3441,6 +3543,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3469,7 +3573,8 @@ export const configManifest: ConfigManifest = {
               "name": "group",
               "type": "string"
             }
-          ]
+          ],
+          "schema": "RowGroup"
         },
         {
           "name": "facet",
@@ -3485,6 +3590,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "Facet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3594,7 +3701,8 @@ export const configManifest: ConfigManifest = {
                   "name": "value",
                   "type": "(string | undefined)"
                 }
-              ]
+              ],
+              "schema": "TagFilter"
             },
             {
               "name": "spliced",
@@ -3624,7 +3732,9 @@ export const configManifest: ConfigManifest = {
                   "name": "nonCanonical",
                   "type": "(CategoryFilter | undefined)"
                 }
-              ]
+              ],
+              "schema": "JunctionFilter",
+              "writes": "members"
             },
             {
               "name": "connections",
@@ -3642,9 +3752,13 @@ export const configManifest: ConfigManifest = {
                   "name": "minInterchromReads",
                   "type": "number"
                 }
-              ]
+              ],
+              "schema": "ConnectionFilter",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "AlignmentsFilter",
+          "writes": "members"
         },
         {
           "name": "facet",
@@ -3665,6 +3779,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "SectionFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3698,6 +3814,8 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
+          "schema": "AlignmentsSort",
+          "writes": "whole",
           "shorthand": {
             "string": "type"
           }
@@ -3765,6 +3883,8 @@ export const configManifest: ConfigManifest = {
               "type": "(boolean | undefined)"
             }
           ],
+          "schema": "AlignmentsColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -3843,6 +3963,8 @@ export const configManifest: ConfigManifest = {
               "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
+          "schema": "AlignmentsBaseColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -3867,7 +3989,9 @@ export const configManifest: ConfigManifest = {
               "name": "shownModifications",
               "type": "string[]"
             }
-          ]
+          ],
+          "schema": "AlignmentsModifications",
+          "writes": "members"
         },
         {
           "name": "scales",
@@ -3934,13 +4058,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "showLegend",
@@ -3966,7 +4095,9 @@ export const configManifest: ConfigManifest = {
               "name": "minAlleleFraction",
               "type": "number"
             }
-          ]
+          ],
+          "schema": "CoverageBand",
+          "writes": "members"
         },
         {
           "name": "pileup",
@@ -4008,7 +4139,9 @@ export const configManifest: ConfigManifest = {
               "name": "fadeLowFrequency",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "Pileup",
+          "writes": "members"
         },
         {
           "name": "sashimi",
@@ -4030,7 +4163,9 @@ export const configManifest: ConfigManifest = {
               "name": "showCounts",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "Sashimi",
+          "writes": "members"
         },
         {
           "name": "readConnections",
@@ -4064,13 +4199,17 @@ export const configManifest: ConfigManifest = {
                   "name": "field",
                   "type": "AlignmentsArcColorField"
                 }
-              ]
+              ],
+              "schema": "AlignmentsArcColor",
+              "writes": "members"
             },
             {
               "name": "showOrdinaryPairs",
               "type": "(boolean | undefined)"
             }
-          ]
+          ],
+          "schema": "ReadConnections",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -4187,6 +4326,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "ChordColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -4365,7 +4506,8 @@ export const configManifest: ConfigManifest = {
                   "name": "value",
                   "type": "(string | undefined)"
                 }
-              ]
+              ],
+              "schema": "TagFilter"
             },
             {
               "name": "spliced",
@@ -4395,7 +4537,9 @@ export const configManifest: ConfigManifest = {
                   "name": "nonCanonical",
                   "type": "(CategoryFilter | undefined)"
                 }
-              ]
+              ],
+              "schema": "JunctionFilter",
+              "writes": "members"
             },
             {
               "name": "connections",
@@ -4413,9 +4557,13 @@ export const configManifest: ConfigManifest = {
                   "name": "minInterchromReads",
                   "type": "number"
                 }
-              ]
+              ],
+              "schema": "ConnectionFilter",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "AlignmentsFilter",
+          "writes": "members"
         },
         {
           "name": "facet",
@@ -4436,6 +4584,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "SectionFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -4469,6 +4619,8 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
+          "schema": "LGVSyntenySort",
+          "writes": "whole",
           "shorthand": {
             "string": "type"
           }
@@ -4536,6 +4688,8 @@ export const configManifest: ConfigManifest = {
               "type": "(boolean | undefined)"
             }
           ],
+          "schema": "LGVSyntenyColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -4615,6 +4769,8 @@ export const configManifest: ConfigManifest = {
               "type": "(AlignmentsBaseColorScale | undefined)"
             }
           ],
+          "schema": "AlignmentsBaseColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -4639,7 +4795,9 @@ export const configManifest: ConfigManifest = {
               "name": "shownModifications",
               "type": "string[]"
             }
-          ]
+          ],
+          "schema": "AlignmentsModifications",
+          "writes": "members"
         },
         {
           "name": "scales",
@@ -4706,13 +4864,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "showLegend",
@@ -4738,7 +4901,9 @@ export const configManifest: ConfigManifest = {
               "name": "minAlleleFraction",
               "type": "number"
             }
-          ]
+          ],
+          "schema": "LGVSyntenyCoverage",
+          "writes": "members"
         },
         {
           "name": "pileup",
@@ -4780,7 +4945,9 @@ export const configManifest: ConfigManifest = {
               "name": "fadeLowFrequency",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "Pileup",
+          "writes": "members"
         },
         {
           "name": "sashimi",
@@ -4802,7 +4969,9 @@ export const configManifest: ConfigManifest = {
               "name": "showCounts",
               "type": "boolean"
             }
-          ]
+          ],
+          "schema": "Sashimi",
+          "writes": "members"
         },
         {
           "name": "readConnections",
@@ -4836,13 +5005,17 @@ export const configManifest: ConfigManifest = {
                   "name": "field",
                   "type": "AlignmentsArcColorField"
                 }
-              ]
+              ],
+              "schema": "AlignmentsArcColor",
+              "writes": "members"
             },
             {
               "name": "showOrdinaryPairs",
               "type": "(boolean | undefined)"
             }
-          ]
+          ],
+          "schema": "ReadConnections",
+          "writes": "members"
         },
         {
           "name": "lodMode",
@@ -4965,6 +5138,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "MultiWayGeneColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -5013,6 +5188,8 @@ export const configManifest: ConfigManifest = {
               "type": "LaneRowsField"
             }
           ],
+          "schema": "LaneRows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -5076,6 +5253,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "RibbonColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -5233,6 +5412,8 @@ export const configManifest: ConfigManifest = {
                           "type": "string"
                         }
                       ],
+                      "schema": "MarkLocus",
+                      "writes": "whole",
                       "shorthand": {
                         "string": "pos"
                       }
@@ -5317,6 +5498,8 @@ export const configManifest: ConfigManifest = {
                           "type": "(string | undefined)"
                         }
                       ],
+                      "schema": "MarkColor",
+                      "writes": "whole",
                       "shorthand": {
                         "string": "field"
                       },
@@ -5373,6 +5556,8 @@ export const configManifest: ConfigManifest = {
                           "type": "(string | undefined)"
                         }
                       ],
+                      "schema": "MarkShape",
+                      "writes": "whole",
                       "shorthand": {
                         "string": "field"
                       }
@@ -5411,12 +5596,16 @@ export const configManifest: ConfigManifest = {
                           "liftsNumbers": true
                         }
                       ],
+                      "schema": "MarkSize",
+                      "writes": "whole",
                       "shorthand": {
                         "number": "value",
                         "string": "field"
                       }
                     }
-                  ]
+                  ],
+                  "schema": "MarkEncoding",
+                  "writes": "members"
                 },
                 {
                   "name": "transform",
@@ -5431,6 +5620,7 @@ export const configManifest: ConfigManifest = {
                   "type": "number"
                 }
               ],
+              "schema": "Mark",
               "defaultEntries": [
                 {
                   "mark": "bar",
@@ -5440,7 +5630,8 @@ export const configManifest: ConfigManifest = {
                 }
               ]
             }
-          ]
+          ],
+          "schema": "MultiWayLaneLayer"
         },
         {
           "name": "splitStrands",
@@ -5555,6 +5746,8 @@ export const configManifest: ConfigManifest = {
               "type": "JexlExpression[]"
             }
           ],
+          "schema": "FeatureFilter",
+          "writes": "members",
           "shorthand": {
             "list": "expressions"
           }
@@ -5642,6 +5835,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "FeatureColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -5689,6 +5884,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "SectionFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -5705,7 +5902,9 @@ export const configManifest: ConfigManifest = {
               "name": "description",
               "type": "string"
             }
-          ]
+          ],
+          "schema": "CanvasFeatureLabels",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -5795,6 +5994,8 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             }
           ],
+          "schema": "VariantFilter",
+          "writes": "members",
           "shorthand": {
             "list": "expressions"
           }
@@ -5850,6 +6051,8 @@ export const configManifest: ConfigManifest = {
               "type": "SampleRowsField"
             }
           ],
+          "schema": "SampleRows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -5901,6 +6104,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "VariantCellColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -5940,6 +6145,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -5958,6 +6165,8 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             }
           ],
+          "schema": "Facet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -6083,6 +6292,8 @@ export const configManifest: ConfigManifest = {
               "type": "(LDColorScale | undefined)"
             }
           ],
+          "schema": "LDColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           },
@@ -6214,6 +6425,8 @@ export const configManifest: ConfigManifest = {
               "type": "QuantitativeRowsField"
             }
           ],
+          "schema": "QuantitativeRows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -6240,6 +6453,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -6295,6 +6510,8 @@ export const configManifest: ConfigManifest = {
               "type": "(string | undefined)"
             }
           ],
+          "schema": "WiggleColor",
+          "writes": "whole",
           "shorthand": {
             "string": "value"
           },
@@ -6390,13 +6607,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "showLegend",
@@ -6553,6 +6775,8 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
+          "schema": "MafColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           },
@@ -6686,6 +6910,8 @@ export const configManifest: ConfigManifest = {
               "type": "SampleRowsField"
             }
           ],
+          "schema": "SampleRows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -6712,6 +6938,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -6740,7 +6968,9 @@ export const configManifest: ConfigManifest = {
               "name": "minAlleleFraction",
               "type": "number"
             }
-          ]
+          ],
+          "schema": "CoverageBand",
+          "writes": "members"
         },
         {
           "name": "showAlignments",
@@ -6811,13 +7041,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "conservation",
@@ -6835,7 +7070,9 @@ export const configManifest: ConfigManifest = {
               "name": "unit",
               "type": "MafConservationUnit"
             }
-          ]
+          ],
+          "schema": "MafConservation",
+          "writes": "members"
         },
         {
           "name": "rowIdentityAutoZoom",
@@ -6930,6 +7167,8 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
+          "schema": "HicColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           },
@@ -7041,6 +7280,8 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "MarkLocus",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "pos"
                   }
@@ -7125,6 +7366,8 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
+                  "schema": "MarkColor",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "field"
                   },
@@ -7181,6 +7424,8 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
+                  "schema": "MarkShape",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "field"
                   }
@@ -7219,12 +7464,16 @@ export const configManifest: ConfigManifest = {
                       "liftsNumbers": true
                     }
                   ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
                   "shorthand": {
                     "number": "value",
                     "string": "field"
                   }
                 }
-              ]
+              ],
+              "schema": "MarkEncoding",
+              "writes": "members"
             },
             {
               "name": "transform",
@@ -7239,6 +7488,7 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             }
           ],
+          "schema": "Mark",
           "defaultEntries": [
             {
               "mark": "point",
@@ -7275,6 +7525,8 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
+          "schema": "MarkFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7310,6 +7562,8 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
+          "schema": "Rows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7336,6 +7590,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7425,13 +7681,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "origin",
@@ -7454,6 +7715,8 @@ export const configManifest: ConfigManifest = {
               "type": "JexlExpression[]"
             }
           ],
+          "schema": "FeatureFilter",
+          "writes": "members",
           "shorthand": {
             "list": "expressions"
           }
@@ -7548,6 +7811,8 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "MarkLocus",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "pos"
                   }
@@ -7632,6 +7897,8 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
+                  "schema": "MarkColor",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "field"
                   },
@@ -7688,6 +7955,8 @@ export const configManifest: ConfigManifest = {
                       "type": "(string | undefined)"
                     }
                   ],
+                  "schema": "MarkShape",
+                  "writes": "whole",
                   "shorthand": {
                     "string": "field"
                   }
@@ -7726,12 +7995,16 @@ export const configManifest: ConfigManifest = {
                       "liftsNumbers": true
                     }
                   ],
+                  "schema": "MarkSize",
+                  "writes": "whole",
                   "shorthand": {
                     "number": "value",
                     "string": "field"
                   }
                 }
-              ]
+              ],
+              "schema": "MarkEncoding",
+              "writes": "members"
             },
             {
               "name": "transform",
@@ -7745,7 +8018,8 @@ export const configManifest: ConfigManifest = {
               "name": "maxBpPerPx",
               "type": "number"
             }
-          ]
+          ],
+          "schema": "Mark"
         },
         {
           "name": "transform",
@@ -7774,6 +8048,8 @@ export const configManifest: ConfigManifest = {
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | windowConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
           ],
+          "schema": "MarkFacet",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7809,6 +8085,8 @@ export const configManifest: ConfigManifest = {
               "type": "string"
             }
           ],
+          "schema": "Rows",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7835,6 +8113,8 @@ export const configManifest: ConfigManifest = {
               "type": "(CssColor | undefined)"
             }
           ],
+          "schema": "RowColor",
+          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7924,13 +8204,18 @@ export const configManifest: ConfigManifest = {
                       "type": "string"
                     }
                   ],
+                  "schema": "ValueScaleRule",
                   "shorthand": {
                     "number": "value"
                   }
                 }
-              ]
+              ],
+              "schema": "ValueScale",
+              "writes": "members"
             }
-          ]
+          ],
+          "schema": "Scales",
+          "writes": "members"
         },
         {
           "name": "origin",
@@ -7953,6 +8238,8 @@ export const configManifest: ConfigManifest = {
               "type": "JexlExpression[]"
             }
           ],
+          "schema": "FeatureFilter",
+          "writes": "members",
           "shorthand": {
             "list": "expressions"
           }

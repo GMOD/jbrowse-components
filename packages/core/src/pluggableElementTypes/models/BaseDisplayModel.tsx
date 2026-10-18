@@ -454,10 +454,12 @@ function stateModelFactory() {
     .actions(self => ({
       /**
        * #action
-       * Write a draft over `plot`: each setting it changes is replaced whole,
-       * so a member left out of an object goes back to its default, and `null`
-       * resets the setting. A draft the schema refuses, or naming a setting
-       * outside the plot, throws before anything is written.
+       * Write a draft over `plot` as a settings bag writes: a setting left out
+       * stays, `null` resets one, a channel (`writes: 'whole'`, such as
+       * `color` or `facet`) is replaced whole, and any other object takes the
+       * members the draft names, so a `filter` list keeps the filter's other
+       * tests. A draft the schema refuses, or naming a setting outside the
+       * plot, throws before anything is written.
        */
       applyPlot(draft: Plot) {
         const { configuration } = self as unknown as DisplayModel

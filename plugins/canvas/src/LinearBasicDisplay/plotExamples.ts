@@ -10,8 +10,12 @@ export const PLOT_EXAMPLES: PlotExample[] = [
     description: 'forward strand red, reverse blue',
   },
   {
-    plot: '{ "filter": ["jexl:feature.type == \'gene\'"] }',
+    plot: '{ "filter": { "genes": "only" } }',
     description: 'genes only',
+  },
+  {
+    plot: '{ "filter": ["jexl:feature.score > 100"] }',
+    description: 'scores above 100',
   },
   {
     plot: '{ "facet": null, "color": null }',

@@ -50,6 +50,18 @@ test('facet, color and filter read back as the box shows them', () => {
   })
 })
 
+test("a plot's filter list writes the expressions and keeps the gene category", () => {
+  const d = display()
+  d.setGenesFilter('only')
+  expect(d.plot).toEqual({ filter: { genes: 'only' } })
+  d.applyPlot({ filter: ['jexl:feature.score > 5'] })
+  expect(d.plot).toEqual({
+    filter: { expressions: ['jexl:feature.score > 5'], genes: 'only' },
+  })
+  d.applyPlot({ filter: { genes: null } })
+  expect(d.plot).toEqual({ filter: ['jexl:feature.score > 5'] })
+})
+
 test('a string is the one-value form: the facet field, or the constant color', () => {
   const d = display()
   d.applyDisplaySettings({ facet: 'strand', color: 'red' })
@@ -78,7 +90,7 @@ test('strand takes a range like any other field', () => {
   expect(d.categoricalColorField?.color('-1')).toBe('blue')
 })
 
-test('an object replaces the setting whole, and null clears it', () => {
+test('a channel object replaces the setting whole, and null clears it', () => {
   const d = display()
   d.applyPlot({ color: { field: 'source', range: ['red'] } })
   d.applyPlot({ color: 'red' })

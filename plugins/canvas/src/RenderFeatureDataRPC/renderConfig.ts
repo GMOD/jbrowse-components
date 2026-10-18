@@ -67,7 +67,7 @@ export function workerColorOf({
  * The display's `filter` as the worker reads it: the jexl expressions, and on
  * `LinearBasicDisplay` the gene category.
  */
-export interface FeatureFilter {
+export interface WorkerFeatureFilter {
   expressions: string[]
   genes?: CategoryFilter
 }
@@ -91,7 +91,7 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   mouseover: string
-  filter: FeatureFilter
+  filter: WorkerFeatureFilter
   // `number | string` because the slot declares `contextVariable: ['feature']`
   // and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
   // union makes any new direct read a type error rather than a Float32Array full

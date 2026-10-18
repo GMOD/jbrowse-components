@@ -737,7 +737,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // matrix into a band a fraction of the tree sidebar's height, so the
   // gathered block the section claims was not in the frame; the dendrogram
   // testid is up before the matrix has redrawn, so a settle wait is where a
-  // retry starts. And `minorAlleleFrequencyFilter: 0.01` left four columns,
+  // retry starts. And `filter.minMinorAlleleFrequency: 0.01` left four columns,
   // each expanded to a few hundred px by the columns layout and orange down
   // most of the rows -- which reads as a variant the whole cohort carries,
   // the opposite of the hotspot the page says survives the filter. Check what

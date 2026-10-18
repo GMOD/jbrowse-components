@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import { defaultFilterFlags } from '../shared/util.ts'
 import configSchemaFactory from './configSchema.ts'
 import {
   DEFAULT_MIN_INTERCHROM_READS,
@@ -43,4 +44,12 @@ test('the arc menu constant is the filter.connections.minInterchromReads default
       'minInterchromReads',
     ]),
   ).toBe(DEFAULT_MIN_INTERCHROM_READS)
+})
+
+test('the Filter menu reset is the filter flag-mask default', () => {
+  const conf = displayConf()
+  expect({
+    flagInclude: readConfObject(conf, ['filter', 'flagInclude']),
+    flagExclude: readConfObject(conf, ['filter', 'flagExclude']),
+  }).toEqual(defaultFilterFlags)
 })

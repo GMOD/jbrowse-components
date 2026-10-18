@@ -24,7 +24,7 @@ export const connectionFilterConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description:
-        'only, exclude, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise',
+        '`only`, `exclude`, or unset for unfiltered: connections to a mate or split segment on another chromosome, an arc or a connector where both chromosomes are displayed and a tick at each breakpoint otherwise',
     },
     /**
      * #slot
@@ -33,7 +33,7 @@ export const connectionFilterConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description:
-        'only, exclude, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one',
+        '`only`, `exclude`, or unset for unfiltered: connections to a mate or split segment elsewhere on the same chromosome and outside the loaded window, drawn as vertical lines. A connector joins two laid-out reads, so it is never one',
     },
     /**
      * #slot

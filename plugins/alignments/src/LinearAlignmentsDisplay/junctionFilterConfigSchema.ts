@@ -32,7 +32,7 @@ export const junctionFilterConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description:
-        'only, exclude, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical',
+        '`only`, `exclude`, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical',
     },
   },
   { closed: true },

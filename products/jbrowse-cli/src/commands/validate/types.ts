@@ -16,6 +16,13 @@ export interface SlotEntry {
   type: string
   /** present when the slot is a nested sub-schema (adapter.index and friends) */
   subSlots?: SlotEntry[]
+  /** A sub-schema slot: the schema's name, its config reference page. */
+  schema?: string
+  /**
+   * A sub-schema slot: how a settings bag writes it, member by member or
+   * replaced whole (the schema's `writes` option).
+   */
+  writes?: 'whole' | 'members'
   /**
    * A list of sub-schemas that draws these entries until a config writes its
    * own (a display's default plot), which the rules read where the slot is

@@ -118,19 +118,29 @@ test('the text refuses a key the plot does not hold', () => {
   expect(parsePlot('{ "facet": null }', ['facet'])).toEqual({ facet: null })
 })
 
-test('a draft writes only what moved, and a namespace whole', () => {
+test('a draft writes only what moved, a namespace member by member', () => {
   const conf = display({ scales: { y: { domainMin: 0, domainMax: 9 } } })
   const draft = {
     ...plotOf(conf),
-    scales: { y: { domainMin: 0 } },
+    scales: { y: { domainMin: 2 } },
     facet: null,
   }
   const writes = plotWrites(conf, draft)
-  expect(writes).toEqual({ scales: { y: { domainMin: 0 } } })
+  expect(writes).toEqual({ scales: { y: { domainMin: 2, domainMax: 9 } } })
   for (const [key, value] of Object.entries(writes)) {
     setConf(conf, key as 'scales', value)
   }
-  expect(plotOf(conf).scales).toEqual({ y: { domainMin: 0 } })
+  expect(plotOf(conf).scales).toEqual({ y: { domainMin: 2, domainMax: 9 } })
+  expect(plotWrites(conf, { scales: { y: { domainMax: null } } })).toEqual({
+    scales: { y: { domainMin: 2 } },
+  })
+})
+
+test('a channel is written whole', () => {
+  const conf = display({ facet: { field: 'HP', domain: ['1', '2'] } })
+  expect(plotWrites(conf, { facet: { field: 'HP' } })).toEqual({
+    facet: 'HP',
+  })
 })
 
 test('a setting spelled another way but lifting the same writes nothing', () => {

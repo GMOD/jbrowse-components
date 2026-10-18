@@ -150,8 +150,9 @@ const PlotDialog = observer(function PlotDialog({
               </li>
             ))}
           </ul>
-          A setting left out stays as it is, an object replaces the setting
-          whole, and <code>null</code> resets it.
+          A setting or member left out stays as it is, and <code>null</code>{' '}
+          resets it. An object whose members are alternatives, such as a color
+          or a facet, is replaced whole.
         </DialogContentText>
       </Collapse>
       {model.plotExamples.length ? (

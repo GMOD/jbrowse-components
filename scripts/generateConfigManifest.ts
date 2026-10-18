@@ -151,6 +151,13 @@ function slotsOf(type) {
       // A sub-schema is an object slot with slots of its own (adapter.index,
       // track.displays[]); the validator recurses into these.
       subSlots: sub ? slotsOf(prop) : undefined,
+      // the sub-schema by name and how a settings bag writes it, which the
+      // config reference states on that schema's page
+      schema: subMeta?.name,
+      writes:
+        subMeta && !prop.name?.endsWith('[]')
+          ? (subOptions.writes ?? 'members')
+          : undefined,
       // A list of sub-schemas drawing entries of its own until a config
       // writes some (a display's default plot), which the validator's rules
       // read where the file leaves the slot unwritten.

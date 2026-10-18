@@ -7,7 +7,6 @@ import {
 import { CATEGORY_FILTERS } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { defaultFilterFlags } from '../shared/util.ts'
 import { connectionFilterConfigSchema } from './connectionFilterConfigSchema.ts'
 import { junctionFilterConfigSchema } from './junctionFilterConfigSchema.ts'
 import { tagFilterConfigSchema } from './tagFilterConfigSchema.ts'
@@ -24,7 +23,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * read has to carry, and the four read categories, each `only`, `exclude` or
  * unset for unfiltered; the default excludes unmapped, QC-failed and duplicate
  * reads (flag 1540). `junctions` tests the splice junctions and `connections`
- * the connections between mates and split segments.
+ * the connections between mates and split segments. Every test must hold, so
+ * two categories AND together: `{ split: 'only', svSignal: 'only' }` keeps the
+ * split reads alone.
  *
  * #example
  * ```js
@@ -51,7 +52,9 @@ export const alignmentsFilterConfigSchema = ConfigurationSchema(
      */
     flagInclude: {
       type: 'number',
-      defaultValue: defaultFilterFlags.flagInclude,
+      // A literal, as the config docgen prints the source text;
+      // configDefaultParity.test.ts holds it to `defaultFilterFlags`.
+      defaultValue: 0,
       description:
         'a read passes only with every one of these SAM flag bits set, samtools -f',
     },
@@ -60,7 +63,7 @@ export const alignmentsFilterConfigSchema = ConfigurationSchema(
      */
     flagExclude: {
       type: 'number',
-      defaultValue: defaultFilterFlags.flagExclude,
+      defaultValue: 1540,
       description:
         'a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads',
     },
@@ -152,6 +155,8 @@ export const readFilterMembers = Object.keys(definition).filter(
   member => !isBareConfigurationSchemaType(definition[member]),
 ) as (keyof ReadFilter)[]
 
+// Spelled out rather than mapped off `readFilterMembers`, so each read is typed
+// against `ReadFilter`; the schema test pins the two lists equal.
 /** The read members, as the worker, the menus and the dialog read them, each at its default where unset. */
 export function readFilterOf(
   filter: Instance<typeof alignmentsFilterConfigSchema>,

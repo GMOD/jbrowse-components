@@ -16,6 +16,7 @@ import {
   scaleEndsOf,
   withImpliedField,
 } from '../util/colorScale.ts'
+import { mergeConfSettings } from './getConf.ts'
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
@@ -149,13 +150,16 @@ export function parsePlot(text: string, keys: readonly string[]): Plot {
   return parsed as Plot
 }
 
-function merged(draft: Plot, current: Plot) {
-  const out: Plot = { ...current }
-  for (const [key, value] of Object.entries(draft)) {
+// as a settings bag writes, so an object declaring `writes: 'members'` takes
+// the members a draft names and keeps the rest
+function merged(conf: AnyConfigurationModel, draft: Plot, current: Plot) {
+  const stated = Object.fromEntries(
+    Object.entries(draft).filter(([, value]) => value !== undefined),
+  )
+  const out = mergeConfSettings(getType(conf), current, stated)
+  for (const [key, value] of Object.entries(stated)) {
     if (value === null) {
       delete out[key]
-    } else if (value !== undefined) {
-      out[key] = value
     }
   }
   return out
@@ -166,6 +170,10 @@ function merged(draft: Plot, current: Plot) {
  * A draft as the display's config would hold it, through the schema's own
  * lift and checks: a shorthand becomes its object, a default falls off, and
  * what a config file is refused for throws, a key outside the plot included.
+ * The draft writes over the plot as a settings bag does: a setting it leaves
+ * out stays, `null` resets one, an object declaring `writes: 'whole'` replaces
+ * the setting, and any other object takes the members it names, a `null`
+ * member resetting that member.
  * The node is never attached, so nothing on the display is touched; a display
  * reads its typed members off it. The draft is copied first, since MST
  * freezes what it creates from.
@@ -178,7 +186,7 @@ export function liftPlot(
   return refusingUndeclaredKeys(() =>
     getType(conf).create({
       displayId: LIFT_ID,
-      ...structuredClone(merged(draft, plotOf(conf))),
+      ...structuredClone(merged(conf, draft, plotOf(conf))),
     }),
   ) as AnyConfigurationModel
 }

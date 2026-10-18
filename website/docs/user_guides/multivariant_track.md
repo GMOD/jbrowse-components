@@ -57,10 +57,9 @@ takes a full column no matter how many of its genotypes are no-calls.
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
 
 Either filter can be preset so the track loads already filtered, with the
-[`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-minorallelefrequencyfilter)
-and
-[`maxMissingnessFilter`](/docs/config/linearmultisamplevariantdisplay/#slot-maxmissingnessfilter)
-display slots. See
+[`minMinorAlleleFrequency`](/docs/config/variantfilter/#slot-minminorallelefrequency)
+and [`maxMissingness`](/docs/config/variantfilter/#slot-maxmissingness) members
+of the display's `filter`. See
 [configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
 ## Rows: per sample or per haplotype

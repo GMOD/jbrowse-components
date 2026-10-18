@@ -95,13 +95,13 @@ test('the display’s filters drop records before any cell is painted', async ()
   const all = await engine.variants(DOG_VCF)
   const common = await engine.variants({
     ...DOG_VCF,
-    display: { minorAlleleFrequencyFilter: 0.3 },
+    display: { filter: { minMinorAlleleFrequency: 0.3 } },
   })
   expect(common.variants.start.length).toBeGreaterThan(0)
   expect(common.variants.start.length).toBeLessThan(all.variants.start.length)
   const late = await engine.variants({
     ...DOG_VCF,
-    display: { filter: ['jexl:get(feature,"start") > 38262000'] },
+    display: { filter: ['jexl:feature.start > 38262000'] },
   })
   expect(Math.min(...late.variants.start)).toBeGreaterThan(38262000)
 })

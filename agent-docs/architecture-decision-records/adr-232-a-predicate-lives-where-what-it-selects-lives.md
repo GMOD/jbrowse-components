@@ -95,7 +95,10 @@ review of the revised plan.
    merges member by member. A channel whose members are alternatives (every
    color object, `facet`, `rows`, `sort`, `rowColor`) writes whole. A shorthand
    may also be a list, so `filter: ['jexl:…']` stays legal and merges as
-   `{ expressions: [...] }`.
+   `{ expressions: [...] }`. A plot write (`applyPlot`, "Edit plot...")
+   follows the same mode, so the dialog's "QUAL above 30" example writes
+   `filter.expressions` and leaves the MAF and missingness thresholds; a
+   `null` member resets that member.
 
 ### The alignments display
 
@@ -271,6 +274,8 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 - Chain layout's cross-region links read no filter: they join one molecule's
   alignments, as its connecting lines do, and draw with the curved connectors
   off.
+- The breakpoint split view's overlay reads `filter.expressions` alone, so
+  it can draw a connector to a feature that `filter.genes` hides.
 - `hideSelfAlignments` and `hideUnlabelled` keep their names, and MAF's
   `showReferenceRow` stays a top-level toggle of the row the worker named as
   the reference; `rows.kept` is the reader's own selection.

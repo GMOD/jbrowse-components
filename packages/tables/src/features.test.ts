@@ -51,6 +51,25 @@ test('a GFF3 region comes back as the feature display lays it out', async () => 
   expect(t.arrows.position.length).toBeGreaterThan(0)
 })
 
+test("the display filter's gene category splits the features", async () => {
+  const all = await engine.features({ ...GFF3, display: GROW })
+  const genes = await engine.features({
+    ...GFF3,
+    display: { ...GROW, filter: { genes: 'only' } },
+  })
+  const rest = await engine.features({
+    ...GFF3,
+    display: { ...GROW, filter: { genes: 'exclude' } },
+  })
+  expect(genes.features.type).toContain('gene')
+  expect(genes.features.type).not.toContain('contig')
+  expect(rest.features.type).toContain('contig')
+  expect(rest.features.type).not.toContain('gene')
+  expect(genes.features.id.length + rest.features.id.length).toBe(
+    all.features.id.length,
+  )
+})
+
 test('the display settings reach the tables', async () => {
   const shown = await engine.features({ ...GFF3, display: GROW })
   const bare = await engine.features({

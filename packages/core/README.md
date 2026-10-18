@@ -1276,10 +1276,13 @@ import { layerTables } from '@jbrowse/core/util/featureTransforms'
 
 A draft as the display's config would hold it, through the schema's own lift and
 checks: a shorthand becomes its object, a default falls off, and what a config
-file is refused for throws, a key outside the plot included. The node is never
-attached, so nothing on the display is touched; a display reads its typed
-members off it. The draft is copied first, since MST freezes what it creates
-from.
+file is refused for throws, a key outside the plot included. The draft writes
+over the plot as a settings bag does: a setting it leaves out stays, `null`
+resets one, an object declaring `writes: 'whole'` replaces the setting, and any
+other object takes the members it names, a `null` member resetting that member.
+The node is never attached, so nothing on the display is touched; a display
+reads its typed members off it. The draft is copied first, since MST freezes
+what it creates from.
 
 ```js
 import { liftPlot } from '@jbrowse/core/configuration'

@@ -233,7 +233,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },
@@ -292,7 +292,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },
@@ -1116,7 +1116,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },
@@ -1142,7 +1142,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },
@@ -1155,7 +1155,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ],
       "adapter": {
@@ -4591,7 +4591,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },
@@ -5307,7 +5307,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "showOnlyGenes": true
+          "filter": { "genes": "only" }
         }
       ]
     },

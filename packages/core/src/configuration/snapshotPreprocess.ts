@@ -2,7 +2,12 @@ import { isJexl } from '../util/jexlStrings.ts'
 import { isPlainObject } from '../util/objectUtils.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import { bareFormOf, isConstantEntry, shorthandTargets } from './schemaTypes.ts'
+import {
+  bareFormOf,
+  isBareConfigurationSchemaType,
+  isConstantEntry,
+  shorthandTargets,
+} from './schemaTypes.ts'
 
 import type { RetiredSpelling } from './configurationSchema.ts'
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
@@ -172,7 +177,33 @@ export function liftRetiredSpellings(
   const spellings = Object.fromEntries(
     Object.entries(retired).filter(([name]) => !declared.has(name)),
   )
-  return applyRetiredSpellings(spellings, snapshot, name => declared.has(name))
+  return Object.keys(spellings).some(key => key in snapshot)
+    ? applyRetiredSpellings(
+        spellings,
+        withMemberShorthandsLifted(schema, snapshot),
+        name => declared.has(name),
+      )
+    : snapshot
+}
+
+// A member written in its shorthand, `filter: ['jexl:…']`, as the object it
+// lifts into, so a retired spelling lifting into the same member lands beside
+// it rather than under a list it cannot merge with.
+function withMemberShorthandsLifted(
+  { definition }: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+) {
+  const out = { ...snapshot }
+  for (const [key, value] of Object.entries(snapshot)) {
+    const member = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const meta = isBareConfigurationSchemaType(member)
+      ? getConfigurationSchemaMetadata(member)
+      : undefined
+    if (meta?.options.shorthand !== undefined) {
+      out[key] = liftShorthand(meta, value)
+    }
+  }
+  return out
 }
 
 /**

@@ -138,23 +138,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Every test the display applies, in one object, read by every part
-       * that draws the data a test names: the read members (the flag masks, a
-       * read name, `tags`, and the four read categories), which run before
-       * every band, so coverage counts only the reads they pass;
-       * `junctions`, the splice junctions the sashimi arcs and their counts
-       * draw; and `connections`, the connections the arcs, the read cloud and
-       * the connectors over the pileup draw.
-       *
-       * default filter flags is exclude 1540
-       * read unmapped (0x4)
-       * read fails platform/vendor quality checks (0x200)
-       * read is PCR or optical duplicate (0x400)
-       *
-       * A read category takes `"only"` or `"exclude"`, and is absent when it
-       * isn't filtering — `{ "svSignal": "only" }` for the split reads, the
-       * SV-size indels and the discordant pairs. `svSignal`, `singletons`,
-       * `split` and `spliced`.
+       * Every test the display applies, read by every part that draws the
+       * data a test names, and every test must hold. The read members (the
+       * flag masks, `minMapq`, `readName`, `tags` and the read categories
+       * `spliced`, `svSignal`, `singletons` and `split`, each `"only"`,
+       * `"exclude"` or unset) run before every band, so coverage counts only
+       * the reads they pass; by default `flagExclude` drops unmapped,
+       * QC-failed and duplicate reads (1540). `junctions` tests the splice
+       * junctions the sashimi arcs and their counts draw, and `connections`
+       * the connections the arcs, the read cloud and the connectors over the
+       * pileup draw.
        */
       filter: alignmentsFilterConfigSchema,
       /**

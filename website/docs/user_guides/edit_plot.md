@@ -55,10 +55,10 @@ stacks one section per strand and colors each feature by its type.
 
 ## Writing and applying
 
-- A setting left out stays as it is.
-- An object replaces the setting whole: a member you delete returns to its
-  default.
-- `null` resets a setting.
+- A setting left out stays as it is, and so does a member left out of `filter`.
+- `null` resets a setting, or one member of `filter`.
+- `color`, `facet`, `rows`, `sort` and each axis under `scales` are replaced
+  whole: a member you delete from one of them returns to its default.
 - A string is a setting's one-value form, such as a facet's field or a constant
   color.
 

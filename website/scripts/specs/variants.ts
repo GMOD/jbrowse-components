@@ -14,8 +14,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // genotype matrix — one column per variant, one row per sample. Loaded against
 // the local build (bare ?config=, prefixed with localhost by the generator) so
 // the current multi-sample variant display code runs, not the older
-// released one the remote config was authored against. `maxMissingnessFilter`
-// is the no-call ceiling config slot (1 = keep every variant).
+// released one the remote config was authored against. `filter.maxMissingness`
+// is the no-call ceiling (1 = keep every variant).
 //
 // ONE SESSION, TWO LANES, not two screenshots stacked (review: "can consider
 // making this a single screenshot with a copy of the track duplicated ... the

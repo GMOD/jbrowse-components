@@ -54,8 +54,8 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 The `'{"filter":{"genes":"only"}}'` after the GFF is a raw-JSON per-track
 override (any display setting can be set this way). NCBI RefSeq GFFs have
 non-gene support features (`region`, `match`, `biological_region`) that would
-otherwise render as unnamed rows above the genes; `showOnlyGenes` restricts the
-track to gene/transcript features.
+otherwise render as unnamed rows above the genes; the `filter`'s
+`"genes":"only"` keeps the track to gene/transcript features.
 
 ## Basic usage
 
@@ -577,7 +577,8 @@ translation (green start codons, red stops). This human example zooms into a
 `TP53` intron/CDS boundary so the gene track's structure reads at base level:
 the intron thins to a connector line, the coding exon begins as a solid CDS
 block, and that block edge lines up with a specific reference base and reading
-frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
+frame. The `filter`'s `"genes":"only"` keeps the RefSeq track to its gene
+features:
 
 <!-- jb2export: gene_track -->
 

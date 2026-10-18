@@ -130,7 +130,8 @@ setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
   those two biotypes blue and orange, and every other its own color
 - `{ "color": "#1f77b4" }` one color for everything
-- `{ "filter": ["jexl:feature.type == 'gene'"] }` genes only
+- `{ "filter": { "genes": "only" } }` genes only
+- `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
 - `{ "facet": null, "color": null }` ungrouped, default color
 
 The dialog lists the same examples. This one groups by biotype in a chosen
