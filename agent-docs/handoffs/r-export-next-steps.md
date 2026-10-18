@@ -93,3 +93,18 @@ Still open:
   within the row, which reads as fine stripes.
 - The strand facet could also stack every section's coverage above every
   section's reads, the old R layout, as an option for both apps.
+
+## Dropped 0.9 branch (2026-10-18)
+
+An unlanded branch ("emit ggjbrowse 0.9's frozen contract", 6d0ef8c951) lost to
+main's assembly reader and 0.10.0 work. Three ideas from it survive, checked
+against ggjbrowse 0.10.0:
+
+- `jbrowse_features()` takes `color_by_cds =` and `amino_acids =`. The export
+  passes neither, so a feature track's CDS coloring and amino acids drop.
+- `jbrowse_stack()` can title its bands from named arguments; the export
+  writes `jbrowse_stack(a, b)`.
+- The menu label reads "Export R script"; "(beta)" is Colin's call.
+
+The branch's `jbrowse_genotypes()` and `view = list(colorByCDS, showAminoAcids)`
+do not exist in ggjbrowse.
