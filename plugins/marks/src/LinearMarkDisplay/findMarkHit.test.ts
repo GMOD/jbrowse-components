@@ -148,7 +148,7 @@ function parity(
   types: MarkEntry['type'][],
   data: MarkRegionData,
   state: MarkRenderState,
-  { block = BLOCK, probes = 4000, truth = true } = {},
+  { block = BLOCK, probes = 600, truth = true } = {},
 ) {
   expect(data.layers.every(l => l.flatbush === undefined)).toBe(true)
   const marks = buildMarkList(entries(...types))

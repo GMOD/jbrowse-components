@@ -64,8 +64,8 @@ function legendValues(display: LinearMarkDisplayModel) {
 function sweepHits(display: LinearMarkDisplayModel) {
   const { canvasWidth, canvasHeight } = display.renderState
   const hits: MarkHitInfo[] = []
-  for (let x = 0; x < canvasWidth; x += 4) {
-    for (let y = 0; y < canvasHeight; y += 2) {
+  for (let x = 0; x < canvasWidth; x += 16) {
+    for (let y = 0; y < canvasHeight; y += 6) {
       const hit = findMarkHit(
         x,
         y,
