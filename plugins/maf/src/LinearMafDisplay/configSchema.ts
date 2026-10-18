@@ -10,11 +10,20 @@ import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebar
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { DEFAULTS } from './displayDefaults.ts'
+import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
 import { mafColorConfigSchema } from './mafColorConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { MAF_Y_FIELDS } from './rowRenderings.ts'
 
+import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/** The v4 mafviewer plugin's row settings, top-level there. */
+const retiredMafSpellings: Record<string, RetiredSpelling> = {
+  rowProportion: v => ({ alignments: { rowProportion: v } }),
+  showAllLetters: v => ({ alignments: { showAllLetters: v } }),
+  showAsUpperCase: v => ({ alignments: { showAsUpperCase: v } }),
+}
 
 /**
  * #config LinearMafDisplay
@@ -69,22 +78,6 @@ export default function configSchemaF() {
       }),
       ...rowHeightConfigSchemaFields(),
       /**
-       * #slot
-       */
-      rowProportion: {
-        type: 'number',
-        defaultValue: DEFAULTS.rowProportion,
-        description: 'fraction of the row height each glyph fills',
-      },
-      /**
-       * #slot
-       */
-      showAllLetters: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showAllLetters,
-        description: "draw every base's letter, not only the mismatches'",
-      },
-      /**
        * #slot color
        * The field the aligned cells are colored by; see
        * [MafColor](../mafcolor).
@@ -107,14 +100,6 @@ export default function configSchemaF() {
         description:
           "the value a row's bar height shows: identity, or unset for none",
         plot: true,
-      },
-      /**
-       * #slot
-       */
-      showAsUpperCase: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showAsUpperCase,
-        description: 'uppercase all base letters',
       },
       ...treeSidebarConfigSchemaFields({
         tree: 'show the species tree sidebar',
@@ -167,15 +152,12 @@ export default function configSchemaF() {
        */
       coverage: coverageBandConfigSchema,
       /**
-       * #slot
-       * Show the per-sample alignment rows. When off, only the bands above
-       * them render.
+       * #slot alignments
+       * The per-species rows, which take the height the bands above them
+       * leave: `show`, `rowProportion`, `showAllLetters`, `showAsUpperCase`,
+       * `showInversions` and `showAnnotations`.
        */
-      showAlignments: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showAlignments,
-        description: 'show the per-sample alignment rows',
-      },
+      alignments: mafAlignmentsConfigSchema,
       /**
        * #slot
        * The coverage band's value scale, spelled as the alignments display's:
@@ -207,16 +189,6 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Show the per-species CDS reading-frame overlay from the configured
-       * `annotationAdapter` (UCSC `mafFrames`). No effect without one.
-       */
-      showAnnotations: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showAnnotations,
-        description: 'show the per-species CDS reading-frame overlay',
-      },
-      /**
-       * #slot
        * Draw the reference species as a row of its own. Under mismatch coloring
        * every cell in it matches by definition, so UCSC omits it. The row the
        * worker named as the reference (`refSampleId`) is the one dropped.
@@ -230,16 +202,6 @@ export default function configSchemaF() {
         defaultValue: DEFAULTS.showReferenceRow,
         description: 'give the reference species a row of its own',
       },
-      /**
-       * #slot
-       * Overlay a strand-flip (inversion) indicator: inverted blocks get a
-       * diagonal hatch.
-       */
-      showInversions: {
-        type: 'boolean',
-        defaultValue: DEFAULTS.showInversions,
-        description: 'hatch strand-flipped (inverted) alignment blocks',
-      },
     },
     // #region schemaOptions
     {
@@ -248,6 +210,7 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      retired: retiredMafSpellings,
     },
     // #endregion
   )

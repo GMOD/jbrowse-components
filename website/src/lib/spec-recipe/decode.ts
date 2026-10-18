@@ -189,6 +189,7 @@ const BAND_OBJECTS = new Set([
   'readConnections',
   'conservation',
   'variants',
+  'alignments',
 ])
 
 // A band's `show` and `mark` are one radio on the read connections ("None",

@@ -117,6 +117,7 @@ test("each display's plot settings", () => {
     LinearBasicDisplay: ['color', 'facet', 'filter', 'labels'],
     LinearHicDisplay: ['color'],
     LinearMafDisplay: [
+      'alignments',
       'color',
       'conservation',
       'coverage',

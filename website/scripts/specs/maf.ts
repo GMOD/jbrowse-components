@@ -287,7 +287,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // conservation banding reads as one texture
               type: 'LinearMafDisplay',
               rowHeight: 8,
-              rowProportion: 0.9,
+              alignments: { rowProportion: 0.9 },
               rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
           ],
@@ -406,7 +406,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // Compact preset so all 26 species fit without scrolling
               type: 'LinearMafDisplay',
               rowHeight: 8,
-              rowProportion: 0.9,
+              alignments: { rowProportion: 0.9 },
               color: 'chromosome',
               rows: { kept: CE11_26WAY_NON_REFERENCE },
             },
@@ -851,7 +851,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // sidebar reading as two brackets over a blank column. Topology
               // only, and the block of dropouts gets a bracket that says so.
               showBranchLength: false,
-              rowProportion: 1,
+              alignments: { rowProportion: 1 },
             },
             // FORCE, the Bandage drawing. The anchored layout was here first,
             // on the argument that it shares the linear view's x axis. Reviewed

@@ -29,19 +29,19 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get rowProportion(): number {
-      return getConf(self, 'rowProportion')
+      return getConf(self, ['alignments', 'rowProportion'])
     },
     /**
      * #getter
      */
     get showAllLetters(): boolean {
-      return getConf(self, 'showAllLetters')
+      return getConf(self, ['alignments', 'showAllLetters'])
     },
     /**
      * #getter
      */
     get showAsUpperCase(): boolean {
-      return getConf(self, 'showAsUpperCase')
+      return getConf(self, ['alignments', 'showAsUpperCase'])
     },
     /**
      * #getter
@@ -53,7 +53,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get showAlignments(): boolean {
-      return getConf(self, 'showAlignments')
+      return getConf(self, ['alignments', 'show'])
     },
     /**
      * #getter
@@ -181,13 +181,13 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get showAnnotations(): boolean {
-      return getConf(self, 'showAnnotations')
+      return getConf(self, ['alignments', 'showAnnotations'])
     },
     /**
      * #getter
      */
     get showInversions(): boolean {
-      return getConf(self, 'showInversions')
+      return getConf(self, ['alignments', 'showInversions'])
     },
     /**
      * #getter
@@ -204,13 +204,13 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setRowProportion(n: number) {
-      setConf(self, 'rowProportion', n)
+      setConf(self, ['alignments', 'rowProportion'], n)
     },
     /**
      * #action
      */
     setShowAllLetters(f: boolean) {
-      setConf(self, 'showAllLetters', f)
+      setConf(self, ['alignments', 'showAllLetters'], f)
     },
     /**
      * #action
@@ -225,7 +225,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowAsUpperCase(arg: boolean) {
-      setConf(self, 'showAsUpperCase', arg)
+      setConf(self, ['alignments', 'showAsUpperCase'], arg)
     },
     /**
      * #action
@@ -249,7 +249,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowAlignments(arg: boolean) {
-      setConf(self, 'showAlignments', arg)
+      setConf(self, ['alignments', 'show'], arg)
     },
     /**
      * #action
@@ -279,13 +279,13 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setShowAnnotations(arg: boolean) {
-      setConf(self, 'showAnnotations', arg)
+      setConf(self, ['alignments', 'showAnnotations'], arg)
     },
     /**
      * #action
      */
     setShowInversions(arg: boolean) {
-      setConf(self, 'showInversions', arg)
+      setConf(self, ['alignments', 'showInversions'], arg)
     },
     /**
      * #action

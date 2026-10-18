@@ -1717,7 +1717,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: rowHeightPath(value, presets) }
       : undefined
   },
-  rowProportion: (value, { displayType }) =>
+  'alignments.rowProportion': (value, { displayType }) =>
     typeof value === 'number' && displayType === 'LinearMafDisplay'
       ? {
           path: `${TRACK_MENU} → Row height`,

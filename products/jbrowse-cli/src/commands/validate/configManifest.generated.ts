@@ -6646,14 +6646,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "rowProportion",
-          "type": "number"
-        },
-        {
-          "name": "showAllLetters",
-          "type": "boolean"
-        },
-        {
           "name": "color",
           "type": "MafColorConfigurationSchema",
           "subSlots": [
@@ -6785,10 +6777,6 @@ export const configManifest: ConfigManifest = {
           "type": "(MafYField | undefined)"
         },
         {
-          "name": "showAsUpperCase",
-          "type": "boolean"
-        },
-        {
           "name": "showTree",
           "type": "boolean"
         },
@@ -6898,8 +6886,36 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "showAlignments",
-          "type": "boolean"
+          "name": "alignments",
+          "type": "MafAlignmentsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "rowProportion",
+              "type": "number"
+            },
+            {
+              "name": "showAllLetters",
+              "type": "boolean"
+            },
+            {
+              "name": "showAsUpperCase",
+              "type": "boolean"
+            },
+            {
+              "name": "showInversions",
+              "type": "boolean"
+            },
+            {
+              "name": "showAnnotations",
+              "type": "boolean"
+            }
+          ],
+          "schema": "MafAlignments",
+          "writes": "members"
         },
         {
           "name": "scales",
@@ -7004,15 +7020,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showAnnotations",
-          "type": "boolean"
-        },
-        {
           "name": "showReferenceRow",
-          "type": "boolean"
-        },
-        {
-          "name": "showInversions",
           "type": "boolean"
         }
       ],
@@ -7020,7 +7028,10 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "rowProportion",
+        "showAllLetters",
+        "showAsUpperCase"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

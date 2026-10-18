@@ -12920,6 +12920,77 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "MafAlignments": {
+      "title": "MafAlignments",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "show the per-species alignment rows.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "rowProportion": {
+          "description": "fraction of the row height each glyph fills.",
+          "default": 0.8,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "showAllLetters": {
+          "description": "draw every base's letter, not only the mismatches'.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showAsUpperCase": {
+          "description": "uppercase all base letters.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showInversions": {
+          "description": "hatch strand-flipped (inverted) alignment blocks.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "showAnnotations": {
+          "description": "show the per-species CDS reading-frame overlay.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "MafConservation": {
       "title": "MafConservation",
       "type": "object",
@@ -13007,26 +13078,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "rowProportion": {
-          "description": "fraction of the row height each glyph fills.",
-          "default": 0.8,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "showAllLetters": {
-          "description": "draw every base's letter, not only the mismatches'.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "color": {
           "if": {
             "type": "null"
@@ -13042,16 +13093,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "const": "identity"
-          }
-        },
-        "showAsUpperCase": {
-          "description": "uppercase all base letters.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "showTree": {
@@ -13128,14 +13169,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CoverageBand"
           }
         },
-        "showAlignments": {
-          "description": "show the per-sample alignment rows.",
-          "default": true,
+        "alignments": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "$ref": "#/$defs/MafAlignments"
           }
         },
         "scales": {
@@ -13164,29 +13203,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showAnnotations": {
-          "description": "show the per-species CDS reading-frame overlay.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "showReferenceRow": {
           "description": "give the reference species a row of its own.",
           "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showInversions": {
-          "description": "hatch strand-flipped (inverted) alignment blocks.",
-          "default": false,
           "if": {
             "type": "null"
           },
@@ -13207,6 +13226,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "rowProportion": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showAllLetters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showAsUpperCase": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -17829,20 +17860,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowProportion": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
-            },
-            "showAllLetters": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
-            },
             "color": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/color"
             },
             "y": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/y"
-            },
-            "showAsUpperCase": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
             },
             "showTree": {
               "anyOf": [
@@ -17917,8 +17939,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "coverage": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/coverage"
             },
-            "showAlignments": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAlignments"
+            "alignments": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/alignments"
             },
             "scales": {
               "anyOf": [
@@ -17936,14 +17958,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowIdentityAutoZoom": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowIdentityAutoZoom"
             },
-            "showAnnotations": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAnnotations"
-            },
             "showReferenceRow": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showReferenceRow"
-            },
-            "showInversions": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInversions"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -17984,6 +18000,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
+            },
+            "rowProportion": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowProportion"
+            },
+            "showAllLetters": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAllLetters"
+            },
+            "showAsUpperCase": {
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/showAsUpperCase"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
