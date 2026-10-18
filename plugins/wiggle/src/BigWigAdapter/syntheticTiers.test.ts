@@ -59,14 +59,19 @@ function perBaseOracle(
     min: number
     max: number
   }[] = []
+  let lo = 0
   for (let bs = extent.start; bs < extent.end; bs += b) {
+    while (lo < records.length && records[lo]!.end <= bs) {
+      lo++
+    }
     let sum = 0
     let count = 0
     let min = Infinity
     let max = -Infinity
     let first = -1
     let last = -1
-    for (const r of records) {
+    for (let i = lo; i < records.length && records[i]!.start < bs + b; i++) {
+      const r = records[i]!
       if (Number.isNaN(r.score)) {
         continue
       }

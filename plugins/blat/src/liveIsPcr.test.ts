@@ -1,12 +1,12 @@
 /**
  * Live UCSC round-trip: a real hgPcr response, parsed into amplicon features.
  *
- * Skipped unless UCSC_API_KEY is set, since it needs an account key (keyless
- * hgPcr is behind a Cloudflare Turnstile) and the network. ispcrQuery.test.ts
- * covers the parsing offline against a fixture; what only a live run can show is
- * that the `<PRE>`-wrapped FASTA header this code scans for is the shape the
- * server actually sends, and that an amplicon comes back spanning exactly the
- * window its primers were taken from.
+ * Skipped unless LIVE_UCSC=1 and UCSC_API_KEY are both set, since it needs an
+ * account key (keyless hgPcr is behind a Cloudflare Turnstile) and the network.
+ * ispcrQuery.test.ts covers the parsing offline against a fixture; what only a
+ * live run can show is that the `<PRE>`-wrapped FASTA header this code scans
+ * for is the shape the server actually sends, and that an amplicon comes back
+ * spanning exactly the window its primers were taken from.
  *
  * Primers are derived from the reference rather than hardcoded, so every
  * coordinate asserted here is computed from the window that produced them: a
@@ -116,7 +116,7 @@ function productAtLocus(products: SimpleFeatureSerialized[]) {
   return found
 }
 
-const maybe = apiKey ? describe : describe.skip
+const maybe = apiKey && process.env.LIVE_UCSC ? describe : describe.skip
 
 maybe('live UCSC in-silico PCR round-trip', () => {
   let ref = ''
