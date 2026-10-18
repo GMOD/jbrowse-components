@@ -8,7 +8,7 @@ description: "ADR-232 is built, reviewed and released in v5.0.0-beta.15, with jb
 [ADR-232](../architecture-decision-records/adr-232-a-predicate-lives-where-what-it-selects-lives.md)
 is built and shipped in v5.0.0-beta.15. jb2hubs (pangenome links, the bovine
 config) and ggjbrowse (engine built from the beta.15 tag with
-`scripts/build-js.sh`, its R settings renamed) follow its names.
+`~/src/ggjbrowse/scripts/build-js.sh`, its R settings renamed) follow its names.
 
 ## Waiting on Colin
 
@@ -20,7 +20,7 @@ config) and ggjbrowse (engine built from the beta.15 tag with
   `react-linear-genome-view2`. After the hand publish and its trusted-publisher
   setup, `gh run rerun 39155641995 --failed` publishes the rest (pnpm skips a
   package already at the version). ggjbrowse then takes releases with
-  `scripts/take-release.sh` again.
+  `~/src/ggjbrowse/scripts/take-release.sh` again.
 - **Sashimi lane placement**: the arcs keep the overlay by default and draw
   in a strip below coverage while it is hidden. Colin may want a
   ggjbrowse-style lane above coverage: ask before building.
