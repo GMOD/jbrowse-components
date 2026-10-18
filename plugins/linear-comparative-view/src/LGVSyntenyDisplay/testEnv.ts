@@ -68,7 +68,7 @@ export function createSyntenyEnv({
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
   extend?.(pluginManager)
-  const configSchema = configSchemaF(pluginManager)
+  const configSchema = configSchemaF()
 
   if (adapter) {
     pluginManager.addAdapterType(

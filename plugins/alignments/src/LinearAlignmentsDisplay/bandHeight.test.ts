@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 
+import { requireReadsConf } from './configSlotViews.ts'
 import { bootAlignmentsDisplay } from './testUtils.ts'
 
 // Builds a real LinearAlignmentsDisplay so the floor is exercised through the
@@ -71,7 +72,7 @@ describe('resizable band height floor', () => {
     display.setReadConnectionsHeight(10)
     expect(display.readConnectionsHeight).toBe(20)
 
-    setConf(display, ['sashimi', 'height'], 8)
+    setConf(requireReadsConf(display), ['sashimi', 'height'], 8)
     display.setSashimiHeight(9)
     expect(display.sashimiHeight).toBe(9)
 
@@ -90,7 +91,7 @@ describe('a stated band height past its ceiling', () => {
   it('is drawn at the height the layout reserves', () => {
     const display = createDisplay()
     setConf(display, ['coverage', 'height'], 5000)
-    setConf(display, ['sashimi', 'height'], 5000)
+    setConf(requireReadsConf(display), ['sashimi', 'height'], 5000)
     setConf(display, ['readConnections', 'height'], 5000)
     const ceiling = display.fitTargetHeight - 20
     expect(display.bandHeights).toEqual({

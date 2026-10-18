@@ -5963,39 +5963,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "JunctionFilter": {
-      "title": "JunctionFilter",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "minReads": {
-          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "nonCanonical": {
-          "description": "\`only\`, \`exclude\`, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "only",
-              "exclude"
-            ]
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "ConnectionFilter": {
       "title": "ConnectionFilter",
       "type": "object",
@@ -6033,6 +6000,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "JunctionFilter": {
+      "title": "JunctionFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "minReads": {
+          "description": "a junction draws only with at least this many supporting reads; 1 draws every junction.",
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "nonCanonical": {
+          "description": "\`only\`, \`exclude\`, or unset for unfiltered: junctions whose splice motif is none of GT-AG, GC-AG or AT-AC. The motif is read off the reference, so filtering needs a sequence adapter, and a junction whose motif could not be read counts as canonical.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
           }
         }
       },
@@ -6147,20 +6147,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "junctions": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/JunctionFilter"
-          }
-        },
         "connections": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/ConnectionFilter"
+          }
+        },
+        "junctions": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/JunctionFilter"
           }
         }
       },
@@ -6463,121 +6463,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "additionalProperties": false
         }
       ]
-    },
-    "AlignmentsBaseColor": {
-      "title": "AlignmentsBaseColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "",
-          "enum": [
-            "",
-            "baseQuality",
-            "base",
-            "modifications",
-            "bisulfite"
-          ],
-          "type": "string"
-        },
-        {
-          "title": "AlignmentsBaseColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "field": {
-              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
-              "default": "",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "",
-                  "baseQuality",
-                  "base",
-                  "modifications",
-                  "bisulfite"
-                ]
-              }
-            },
-            "scale": {
-              "description": "none draws no layer and keeps the field for a switch back.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "const": "none"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "AlignmentsModifications": {
-      "title": "AlignmentsModifications",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "threshold": {
-          "description": "hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine.",
-          "default": 10,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "unmodified": {
-          "description": "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
-          "default": "hidden",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "hidden",
-              "calls",
-              "all"
-            ]
-          }
-        },
-        "cytosineContext": {
-          "description": "cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
-          "default": "CG",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "CG",
-              "CHG",
-              "CHH",
-              "all"
-            ]
-          }
-        },
-        "shownModifications": {
-          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "ValueScaleRule": {
       "title": "ValueScaleRule",
@@ -6921,61 +6806,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Sashimi": {
-      "title": "Sashimi",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "show": {
-          "description": "draw the sashimi arcs.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "height": {
-          "description": "height of the strip below coverage that down arcs draw in, in pixels.",
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "placement": {
-          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down.",
-          "default": "up",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "up",
-              "down",
-              "auto"
-            ]
-          }
-        },
-        "showCounts": {
-          "description": "draw the supporting-read count on each arc.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
     "AlignmentsArcColor": {
       "title": "AlignmentsArcColor",
       "type": "object",
@@ -7073,6 +6903,176 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showOrdinaryPairs": {
           "description": "draw the ordinary pairs beside the ones carrying a category: concordant pairs as arcs, pairs of modal insert size in the cloud; unset follows the mark.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "AlignmentsBaseColor": {
+      "title": "AlignmentsBaseColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "enum": [
+            "",
+            "baseQuality",
+            "base",
+            "modifications",
+            "bisulfite"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "AlignmentsBaseColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "",
+                  "baseQuality",
+                  "base",
+                  "modifications",
+                  "bisulfite"
+                ]
+              }
+            },
+            "scale": {
+              "description": "none draws no layer and keeps the field for a switch back.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "none"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AlignmentsModifications": {
+      "title": "AlignmentsModifications",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "threshold": {
+          "description": "hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine.",
+          "default": 10,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "unmodified": {
+          "description": "unmodified sites painted blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
+          "default": "hidden",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "hidden",
+              "calls",
+              "all"
+            ]
+          }
+        },
+        "cytosineContext": {
+          "description": "cytosine context the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
+          "default": "CG",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "CG",
+              "CHG",
+              "CHH",
+              "all"
+            ]
+          }
+        },
+        "shownModifications": {
+          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "Sashimi": {
+      "title": "Sashimi",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the sashimi arcs.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the strip below coverage that down arcs draw in, in pixels.",
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "placement": {
+          "description": "where the arcs draw: up over the coverage histogram, down in a strip below it, or auto, which sends a junction down where it would cross another. Without the coverage band every arc draws down.",
+          "default": "up",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "up",
+              "down",
+              "auto"
+            ]
+          }
+        },
+        "showCounts": {
+          "description": "draw the supporting-read count on each arc.",
+          "default": false,
           "if": {
             "type": "null"
           },
@@ -7198,22 +7198,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsColor"
           }
         },
-        "baseColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsBaseColor"
-          }
-        },
-        "modifications": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsModifications"
-          }
-        },
         "scales": {
           "if": {
             "type": "null"
@@ -7248,20 +7232,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Pileup"
           }
         },
-        "sashimi": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Sashimi"
-          }
-        },
         "readConnections": {
           "if": {
             "type": "null"
           },
           "else": {
             "$ref": "#/$defs/ReadConnections"
+          }
+        },
+        "baseColor": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsBaseColor"
+          }
+        },
+        "modifications": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsModifications"
+          }
+        },
+        "sashimi": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Sashimi"
           }
         },
         "maxFeatureScreenDensity": {
@@ -7775,6 +7775,126 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "BaseAlignmentsFilter": {
+      "title": "BaseAlignmentsFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tagFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "flagInclude": {
+          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "flagExclude": {
+          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
+          "default": 1540,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "minMapq": {
+          "description": "a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "readName": {
+          "description": "the one read name shown; unset shows every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "tags": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TagFilter"
+            }
+          }
+        },
+        "spliced": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "svSignal": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "alone": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "split": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "connections": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ConnectionFilter"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LGVSyntenySort": {
       "title": "LGVSyntenySort",
       "anyOf": [
@@ -8196,7 +8316,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/AlignmentsFilter"
+            "$ref": "#/$defs/BaseAlignmentsFilter"
           }
         },
         "facet": {
@@ -8233,22 +8353,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/LGVSyntenyColor"
           }
         },
-        "baseColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsBaseColor"
-          }
-        },
-        "modifications": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsModifications"
-          }
-        },
         "scales": {
           "if": {
             "type": "null"
@@ -8281,14 +8385,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Pileup"
-          }
-        },
-        "sashimi": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/Sashimi"
           }
         },
         "readConnections": {
@@ -15240,12 +15336,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/color"
             },
-            "baseColor": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/baseColor"
-            },
-            "modifications": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
-            },
             "scales": {
               "anyOf": [
                 {
@@ -15272,11 +15362,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "pileup": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileup"
             },
-            "sashimi": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
-            },
             "readConnections": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/readConnections"
+            },
+            "baseColor": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/baseColor"
+            },
+            "modifications": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
+            },
+            "sashimi": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -18390,12 +18486,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "baseColor": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/baseColor"
-            },
-            "modifications": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"
-            },
             "scales": {
               "anyOf": [
                 {
@@ -18424,9 +18514,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "pileup": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileup"
-            },
-            "sashimi": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sashimi"
             },
             "readConnections": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/readConnections"

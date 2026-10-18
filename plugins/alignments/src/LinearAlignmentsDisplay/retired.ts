@@ -6,9 +6,9 @@ import {
 import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
 
 import {
-  alignmentsFilterConfigSchema,
+  baseAlignmentsFilterConfigSchema,
   readFilterMembers,
-} from './alignmentsFilterConfigSchema.ts'
+} from './baseAlignmentsFilterConfigSchema.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
@@ -237,7 +237,9 @@ function sortSlot(value: unknown): DisplayEntry {
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
 // the feature went rather than moved.
-const filterMeta = getConfigurationSchemaMetadata(alignmentsFilterConfigSchema)!
+const filterMeta = getConfigurationSchemaMetadata(
+  baseAlignmentsFilterConfigSchema,
+)!
 
 // A v4 filterBy was the whole read filter, so its lift names every read member
 // it leaves out as unset: merged over a sub-node's or another view's, it

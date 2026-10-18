@@ -47,8 +47,8 @@ decision. Steps 1-5 and two review rounds are on main; nothing is pushed.
 3. **Step 7, `variants`** on the multi-sample variant display: `{ show,
    height, showLabels }` replaces `showVariantLane`, `variantLaneHeight`,
    `variantLaneLabels`, flagged `plot`; beta-only, no lift. jb2hubs'
-   pangenome configs and `website/src/components/pangenomeLinks.ts` update in
-   step.
+   pangenome configs and `~/src/jb2hubs/website/src/components/pangenomeLinks.ts`
+   update in step.
 4. **Step 8, MAF `alignments`:** `{ show, rowProportion, showAllLetters,
    showAsUpperCase, showInversions, showAnnotations }`, flagged `plot`,
    lifting the v4 mafviewer plugin's `rowProportion`, `showAllLetters`,
@@ -57,10 +57,10 @@ decision. Steps 1-5 and two review rounds are on main; nothing is pushed.
    'fit'` (LD, Hi-C; beta-only), `displayDirectionalChevrons` →
    `showChevrons` with a `retired` lift (v4.3.0).
 6. **External writers, when ggjbrowse takes the next `@jbrowse/tables`
-   release** (it bundles a published copy, `scripts/take-release.sh`):
+   release** (it bundles a published copy, `~/src/ggjbrowse/scripts/take-release.sh`):
    `showOnlyGenes` → `filter: { genes: 'only' }` (`R/synteny.R:715`,
    `tests/testthat/test-features.R:33`, `test-synteny.R:52`,
-   `test-multiway.R:105`, `tutorials/rnaseq.Rmd:91`, `scripts/gallery.R`),
+   `test-multiway.R:105`, `tutorials/rnaseq.Rmd:91`, `~/src/ggjbrowse/scripts/gallery.R`),
    `minorAlleleFrequencyFilter`/`maxMissingnessFilter` →
    `filter.minMinorAlleleFrequency`/`filter.maxMissingness`
    (`R/variants.R:37`), `singletons` → `alone` (`R/alignments.R:50`), and

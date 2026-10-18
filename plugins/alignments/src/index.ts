@@ -39,7 +39,10 @@ export default class AlignmentsPlugin extends Plugin {
 export { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
 export { alignmentsSortConfigSchema } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 export { ALIGNMENTS_FIELD_PRESETS } from './shared/alignmentsColor.ts'
-export { linearAlignmentsDisplayConfigSchemaFactory } from './LinearAlignmentsDisplay/index.ts'
+export {
+  baseLinearAlignmentsDisplayConfigSchema,
+  linearAlignmentsDisplayConfigSchemaFactory,
+} from './LinearAlignmentsDisplay/index.ts'
 export type {
   AlignmentLane,
   LaneSection,

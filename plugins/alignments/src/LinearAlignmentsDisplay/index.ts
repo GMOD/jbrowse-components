@@ -38,4 +38,5 @@ export default function register(pluginManager: PluginManager) {
 }
 
 export { default as linearAlignmentsDisplayConfigSchemaFactory } from './configSchema.ts'
+export { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
 export type { LinearAlignmentsDisplayModel } from './model.ts'

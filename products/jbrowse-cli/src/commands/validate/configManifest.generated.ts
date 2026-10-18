@@ -3721,22 +3721,6 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "junctions",
-              "type": "JunctionFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minReads",
-                  "type": "number"
-                },
-                {
-                  "name": "nonCanonical",
-                  "type": "(CategoryFilter | undefined)"
-                }
-              ],
-              "schema": "JunctionFilter",
-              "writes": "members"
-            },
-            {
               "name": "connections",
               "type": "ConnectionFilterConfigurationSchema",
               "subSlots": [
@@ -3754,6 +3738,22 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "ConnectionFilter",
+              "writes": "members"
+            },
+            {
+              "name": "junctions",
+              "type": "JunctionFilterConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "minReads",
+                  "type": "number"
+                },
+                {
+                  "name": "nonCanonical",
+                  "type": "(CategoryFilter | undefined)"
+                }
+              ],
+              "schema": "JunctionFilter",
               "writes": "members"
             }
           ],
@@ -3951,49 +3951,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "baseColor",
-          "type": "AlignmentsBaseColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "AlignmentsBaseColorField"
-            },
-            {
-              "name": "scale",
-              "type": "(AlignmentsBaseColorScale | undefined)"
-            }
-          ],
-          "schema": "AlignmentsBaseColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "modifications",
-          "type": "AlignmentsModificationsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "threshold",
-              "type": "number"
-            },
-            {
-              "name": "unmodified",
-              "type": "ModificationUnmodified"
-            },
-            {
-              "name": "cytosineContext",
-              "type": "CytosineContext"
-            },
-            {
-              "name": "shownModifications",
-              "type": "string[]"
-            }
-          ],
-          "schema": "AlignmentsModifications",
-          "writes": "members"
-        },
-        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -4144,30 +4101,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "sashimi",
-          "type": "SashimiConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            },
-            {
-              "name": "height",
-              "type": "number"
-            },
-            {
-              "name": "placement",
-              "type": "SashimiPlacement"
-            },
-            {
-              "name": "showCounts",
-              "type": "boolean"
-            }
-          ],
-          "schema": "Sashimi",
-          "writes": "members"
-        },
-        {
           "name": "readConnections",
           "type": "ReadConnectionsConfigurationSchema",
           "subSlots": [
@@ -4209,6 +4142,73 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "ReadConnections",
+          "writes": "members"
+        },
+        {
+          "name": "baseColor",
+          "type": "AlignmentsBaseColorConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "field",
+              "type": "AlignmentsBaseColorField"
+            },
+            {
+              "name": "scale",
+              "type": "(AlignmentsBaseColorScale | undefined)"
+            }
+          ],
+          "schema": "AlignmentsBaseColor",
+          "writes": "whole",
+          "shorthand": {
+            "string": "field"
+          }
+        },
+        {
+          "name": "modifications",
+          "type": "AlignmentsModificationsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "threshold",
+              "type": "number"
+            },
+            {
+              "name": "unmodified",
+              "type": "ModificationUnmodified"
+            },
+            {
+              "name": "cytosineContext",
+              "type": "CytosineContext"
+            },
+            {
+              "name": "shownModifications",
+              "type": "string[]"
+            }
+          ],
+          "schema": "AlignmentsModifications",
+          "writes": "members"
+        },
+        {
+          "name": "sashimi",
+          "type": "SashimiConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "placement",
+              "type": "SashimiPlacement"
+            },
+            {
+              "name": "showCounts",
+              "type": "boolean"
+            }
+          ],
+          "schema": "Sashimi",
           "writes": "members"
         }
       ],
@@ -4476,7 +4476,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "AlignmentsFilterConfigurationSchema",
+          "type": "BaseAlignmentsFilterConfigurationSchema",
           "subSlots": [
             {
               "name": "flagInclude",
@@ -4526,22 +4526,6 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "junctions",
-              "type": "JunctionFilterConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "minReads",
-                  "type": "number"
-                },
-                {
-                  "name": "nonCanonical",
-                  "type": "(CategoryFilter | undefined)"
-                }
-              ],
-              "schema": "JunctionFilter",
-              "writes": "members"
-            },
-            {
               "name": "connections",
               "type": "ConnectionFilterConfigurationSchema",
               "subSlots": [
@@ -4562,7 +4546,7 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "schema": "AlignmentsFilter",
+          "schema": "BaseAlignmentsFilter",
           "writes": "members"
         },
         {
@@ -4757,49 +4741,6 @@ export const configManifest: ConfigManifest = {
           "fieldDefault": "strand"
         },
         {
-          "name": "baseColor",
-          "type": "AlignmentsBaseColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "AlignmentsBaseColorField"
-            },
-            {
-              "name": "scale",
-              "type": "(AlignmentsBaseColorScale | undefined)"
-            }
-          ],
-          "schema": "AlignmentsBaseColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "modifications",
-          "type": "AlignmentsModificationsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "threshold",
-              "type": "number"
-            },
-            {
-              "name": "unmodified",
-              "type": "ModificationUnmodified"
-            },
-            {
-              "name": "cytosineContext",
-              "type": "CytosineContext"
-            },
-            {
-              "name": "shownModifications",
-              "type": "string[]"
-            }
-          ],
-          "schema": "AlignmentsModifications",
-          "writes": "members"
-        },
-        {
           "name": "scales",
           "type": "ScalesConfigurationSchema",
           "subSlots": [
@@ -4947,30 +4888,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "Pileup",
-          "writes": "members"
-        },
-        {
-          "name": "sashimi",
-          "type": "SashimiConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            },
-            {
-              "name": "height",
-              "type": "number"
-            },
-            {
-              "name": "placement",
-              "type": "SashimiPlacement"
-            },
-            {
-              "name": "showCounts",
-              "type": "boolean"
-            }
-          ],
-          "schema": "Sashimi",
           "writes": "members"
         },
         {

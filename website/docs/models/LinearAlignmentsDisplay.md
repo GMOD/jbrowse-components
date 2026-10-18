@@ -151,6 +151,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-showconnectors">**showConnectors**</span><br><code>boolean</code> |  |
 | <span id="getter-fadelowbasequality">**fadeLowBaseQuality**</span><br><code>boolean</code> |  |
 | <span id="getter-fadelowfrequency">**fadeLowFrequency**</span><br><code>boolean</code> |  |
+| <span id="getter-hassashimi">**hasSashimi**</span><br><code>boolean</code> | Whether the display declares the sashimi band, which a synteny block, having no introns, has no use for. |
 | <span id="getter-showsashimi">**showSashimi**</span><br><code>boolean</code> |  |
 | <span id="getter-sashimiheight">**sashimiHeight**</span><br><code>number</code> |  |
 | <span id="getter-sashimiplacement">**sashimiPlacement**</span><br><code>"auto" &#124; "down" &#124; "up"</code> |  |

@@ -215,6 +215,7 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | `expressions` on the alignments filter in 5.0 | No figure asks for a per-read expression, and adding the member later breaks nothing |
 | A dialog line per plot declaration (`plot: '<line>'`) | A second owner of each slot's description (ADR-091's objection), copied lines already listing members step 3 removes; the dialog links each key to the config reference instead |
 | Plot-word kinds compared at every depth, with an allowlist | Slot types give noise (`boolean` beside `maybeBoolean`, `color` beside `maybeColor`) and coarse kinds find nothing past the top level, where `filter` is the one mismatch step 4 removes |
+| A schema `omits` option, dropping inherited slots, for LGVSyntenyDisplay's `sashimi`, `filter.junctions`, `baseColor` and `modifications` | Colin chose a shared base: `BaseLinearAlignmentsDisplay` and `BaseAlignmentsFilter` hold what both displays read, and the model reads the four through `readsConfOf`, so an unguarded read fails to compile where an omitted slot would read `undefined` |
 
 ## Consequences
 
@@ -272,11 +273,6 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 9. **The sweep's "now" rows.**
 
 ### Loose edges
-
-- LGVSyntenyDisplay inherits `sashimi` and `filter.junctions` from the
-  alignments schema, though a synteny block has no introns; its track menu
-  offers neither. A schema has no way to drop an inherited slot, so leaving
-  them off needs either that or a shared base the alignments display extends.
 
 - A read-category edit still refetches: the worker compacts the reads, and
   Idea 2 leaves the category filters in the worker.

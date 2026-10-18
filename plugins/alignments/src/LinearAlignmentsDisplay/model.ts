@@ -135,6 +135,7 @@ import {
   alignmentsConfigProblems,
   configSlotActions,
   configSlotViews,
+  requireReadsConf,
 } from './configSlotViews.ts'
 import {
   applyChainStrandFrames,
@@ -221,12 +222,15 @@ import type {
   SortSetting,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
+import type {
+  BaseLinearAlignmentsDisplayConfigModel,
+  BaseLinearAlignmentsDisplayConfigSchema,
+} from './baseConfigSchema.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
-import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
 import type { AlignmentsUnit } from './constants.ts'
 import type { AlignmentLane } from './lanes.ts'
 import type { QualitySpan } from './qualitySpans.ts'
@@ -361,7 +365,7 @@ export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
  * ```
  */
 export default function stateModelFactory(
-  configSchema: LinearAlignmentsDisplayConfigSchema,
+  configSchema: BaseLinearAlignmentsDisplayConfigSchema,
 ) {
   return (
     types
@@ -1493,7 +1497,7 @@ export default function stateModelFactory(
             return [
               ...superConfigProblemsOf(conf),
               ...alignmentsConfigProblems(
-                conf as Instance<LinearAlignmentsDisplayConfigSchema>,
+                conf as BaseLinearAlignmentsDisplayConfigModel,
               ),
             ]
           },
@@ -2836,7 +2840,9 @@ export default function stateModelFactory(
             showCoverage: self.showCoverage,
             // The junctions ride with coverage, so a sashimi toggle with the
             // band shown refetches nothing; without it they ride with the arcs.
-            junctions: self.showCoverage || self.showSashimi,
+            // A display without the sashimi band fetches none.
+            junctions:
+              self.hasSashimi && (self.showCoverage || self.showSashimi),
             // `readConnections` is not here: the SA tag walk it could gate also
             // feeds linked reads and the curved connectors (see
             // `extractFeatureArrays`).
@@ -3068,16 +3074,17 @@ export default function stateModelFactory(
            */
           setBaseLayer(layer?: BaseLayer) {
             if (!compareStructural(layer, self.baseLayer)) {
+              const conf = requireReadsConf(self)
               setConf(
-                self,
+                conf,
                 'baseColor',
                 colorForField(
-                  writtenColorOf(self.configuration.baseColor),
+                  writtenColorOf(conf.baseColor),
                   layer ? BASE_COLOR_FIELDS[layer.type] : '',
                 ),
               )
               if (layer?.modifications) {
-                setConf(self, 'modifications', layer.modifications)
+                setConf(conf, 'modifications', layer.modifications)
               }
             }
           },
@@ -3270,7 +3277,7 @@ export default function stateModelFactory(
            */
           setSashimiHeight(height: number) {
             setConf(
-              self,
+              requireReadsConf(self),
               ['sashimi', 'height'],
               clampBandHeight(
                 self.sashimiHeight,

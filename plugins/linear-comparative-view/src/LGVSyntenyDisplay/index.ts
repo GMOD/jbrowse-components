@@ -7,7 +7,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF(pluginManager)
+    const configSchema = configSchemaF()
     const { ReactComponent } = pluginManager.getDisplayType(
       'LinearAlignmentsDisplay',
     )

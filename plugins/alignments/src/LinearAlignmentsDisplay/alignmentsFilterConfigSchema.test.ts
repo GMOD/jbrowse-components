@@ -2,11 +2,11 @@ import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
 
 import { READ_CATEGORY_KEYS } from '../shared/types.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
+import { alignmentsFilterConfigSchema } from './alignmentsFilterConfigSchema.ts'
 import {
-  alignmentsFilterConfigSchema,
   readFilterMembers,
   readFilterOf,
-} from './alignmentsFilterConfigSchema.ts'
+} from './baseAlignmentsFilterConfigSchema.ts'
 
 function filterOf(snap: Record<string, unknown> = {}) {
   return readFilterOf(alignmentsFilterConfigSchema.create(snap))

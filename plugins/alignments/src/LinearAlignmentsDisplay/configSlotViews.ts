@@ -17,12 +17,15 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
+import { sortOf } from './alignmentsSortConfigSchema.ts'
 import {
   readFilterMembers,
   readFilterOf,
-} from './alignmentsFilterConfigSchema.ts'
-import { sortOf } from './alignmentsSortConfigSchema.ts'
-import { drawnReadConnectionsOf } from './constants.ts'
+} from './baseAlignmentsFilterConfigSchema.ts'
+import {
+  DEFAULT_MIN_SASHIMI_READS,
+  drawnReadConnectionsOf,
+} from './constants.ts'
 
 import type {
   AlignmentsColorEncoding,
@@ -40,7 +43,8 @@ import type {
   ReadColorBy,
   JunctionFilter,
 } from '../shared/types.ts'
-import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
+import type { BaseLinearAlignmentsDisplayConfigModel } from './baseConfigSchema.ts'
+import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
 import type {
   AlignmentsUnit,
   ReadConnectionsMark,
@@ -48,7 +52,7 @@ import type {
   ReadConnectionsPlacement,
   SashimiPlacement,
 } from './constants.ts'
-import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Every track-menu toggle that is nothing but its config slot, read with
@@ -72,7 +76,7 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * `facet` the `unit` cannot group by.
  */
 export function alignmentsConfigProblems(
-  conf: Instance<LinearAlignmentsDisplayConfigSchema>,
+  conf: BaseLinearAlignmentsDisplayConfigModel,
 ) {
   return [
     ...alignmentsColorProblems({
@@ -91,7 +95,32 @@ export function alignmentsConfigProblems(
 
 export interface ConfigSlotSelf extends IStateTreeNode {
   type: string
-  configuration: Instance<LinearAlignmentsDisplayConfigSchema>
+  configuration: BaseLinearAlignmentsDisplayConfigModel
+}
+
+/**
+ * The display's configuration when it declares `sashimi`, `filter.junctions`,
+ * `baseColor` and `modifications`, which LGVSyntenyDisplay's leaves out.
+ * `getConf` reads an undeclared slot as undefined without failing, so every
+ * read of the four goes through here, and a display without them answers off.
+ */
+export function readsConfOf(
+  conf: BaseLinearAlignmentsDisplayConfigModel,
+): LinearAlignmentsDisplayConfigModel | undefined {
+  return 'sashimi' in conf
+    ? (conf as LinearAlignmentsDisplayConfigModel)
+    : undefined
+}
+
+/** `readsConfOf`, for a write or a test: a display without the four throws. */
+export function requireReadsConf(self: ConfigSlotSelf) {
+  const conf = readsConfOf(self.configuration)
+  if (!conf) {
+    throw new Error(
+      `${self.type} has no sashimi, filter.junctions, baseColor or modifications`,
+    )
+  }
+  return conf
 }
 
 export function configSlotViews(self: ConfigSlotSelf) {
@@ -159,17 +188,28 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get fadeLowFrequency(): boolean {
       return getConf(self, ['pileup', 'fadeLowFrequency'])
     },
+    /**
+     * #getter
+     * Whether the display declares the sashimi band, which a synteny block,
+     * having no introns, has no use for.
+     */
+    get hasSashimi(): boolean {
+      return readsConfOf(self.configuration) !== undefined
+    },
     /** #getter */
     get showSashimi(): boolean {
-      return getConf(self, ['sashimi', 'show'])
+      const conf = readsConfOf(self.configuration)
+      return conf ? readConfObject(conf, ['sashimi', 'show']) : false
     },
     /** #getter */
     get sashimiHeight(): number {
-      return getConf(self, ['sashimi', 'height'])
+      const conf = readsConfOf(self.configuration)
+      return conf ? readConfObject(conf, ['sashimi', 'height']) : 0
     },
     /** #getter */
     get sashimiPlacement(): SashimiPlacement {
-      return getConf(self, ['sashimi', 'placement'])
+      const conf = readsConfOf(self.configuration)
+      return conf ? readConfObject(conf, ['sashimi', 'placement']) : 'up'
     },
     /**
      * #getter
@@ -181,14 +221,22 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /** #getter */
     get showSashimiCounts(): boolean {
-      return getConf(self, ['sashimi', 'showCounts'])
+      const conf = readsConfOf(self.configuration)
+      return conf ? readConfObject(conf, ['sashimi', 'showCounts']) : false
     },
     /** #getter */
     get junctionFilter(): JunctionFilter {
-      return {
-        minReads: getConf(self, ['filter', 'junctions', 'minReads']),
-        nonCanonical: getConf(self, ['filter', 'junctions', 'nonCanonical']),
-      }
+      const conf = readsConfOf(self.configuration)
+      return conf
+        ? {
+            minReads: readConfObject(conf, ['filter', 'junctions', 'minReads']),
+            nonCanonical: readConfObject(conf, [
+              'filter',
+              'junctions',
+              'nonCanonical',
+            ]),
+          }
+        : { minReads: DEFAULT_MIN_SASHIMI_READS }
     },
     /** #getter */
     get showReadConnections(): boolean {
@@ -325,7 +373,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get modificationSettings(): ModificationColorBy {
-      return getConf(self, 'modifications')
+      const conf = readsConfOf(self.configuration)
+      return conf ? readConfObject(conf, 'modifications') : {}
     },
     /**
      * #getter
@@ -358,13 +407,16 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * modification fields read beside it; undefined while none is drawn.
      */
     get baseLayer(): BaseLayer | undefined {
-      return baseLayerOf(
-        {
-          field: getConf(self, ['baseColor', 'field']),
-          scale: getConf(self, ['baseColor', 'scale']),
-        },
-        this.modificationSettings,
-      )
+      const conf = readsConfOf(self.configuration)
+      return conf
+        ? baseLayerOf(
+            {
+              field: readConfObject(conf, ['baseColor', 'field']),
+              scale: readConfObject(conf, ['baseColor', 'scale']),
+            },
+            this.modificationSettings,
+          )
+        : undefined
     },
     /**
      * #getter
@@ -407,12 +459,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
 // they were, the `junctions` and `connections` objects among them; `undefined`
 // clears a category back to unfiltered.
 function patchFilter(
-  self: ConfigSlotSelf,
+  conf: BaseLinearAlignmentsDisplayConfigModel,
   path: readonly string[],
   patch: object,
 ) {
   for (const [member, value] of Object.entries(patch)) {
-    setConf(self, ['filter', ...path, member] as never, value)
+    setConf(conf, ['filter', ...path, member] as never, value)
   }
 }
 
@@ -434,7 +486,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
         )
       }
       patchFilter(
-        self,
+        self.configuration,
         [],
         Object.fromEntries(
           readFilterMembers.map(member => [member, filterBy[member]]),
@@ -506,28 +558,28 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * in their own strip (`effectiveSashimiPlacement`).
      */
     setShowSashimi(show: boolean) {
-      setConf(self, ['sashimi', 'show'], show)
+      setConf(requireReadsConf(self), ['sashimi', 'show'], show)
     },
 
     /**
      * #action
      */
     setSashimiPlacement(placement: SashimiPlacement) {
-      setConf(self, ['sashimi', 'placement'], placement)
+      setConf(requireReadsConf(self), ['sashimi', 'placement'], placement)
     },
 
     /**
      * #action
      */
     setShowSashimiCounts(show: boolean) {
-      setConf(self, ['sashimi', 'showCounts'], show)
+      setConf(requireReadsConf(self), ['sashimi', 'showCounts'], show)
     },
 
     /**
      * #action
      */
     setJunctionFilter(patch: Partial<JunctionFilter>) {
-      patchFilter(self, ['junctions'], patch)
+      patchFilter(requireReadsConf(self), ['junctions'], patch)
     },
 
     /**
@@ -579,7 +631,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setConnectionFilter(patch: Partial<ConnectionFilter>) {
-      patchFilter(self, ['connections'], patch)
+      patchFilter(self.configuration, ['connections'], patch)
     },
   }
 }

@@ -1,25 +1,13 @@
 ---
 id: alignmentsfilter
 title: AlignmentsFilter
-description: "Every test the alignments display applies, in one object, its filter slot, read by every part that draws the data a test names."
+description: "Every test the alignments display applies, in one object, its filter slot, read by every part that draws the data a test names: the base filter's read members and connections, and junctions, which…"
 sidebar_label: Display -> AlignmentsFilter
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts).
 
 ## Example usage
-
-```js
-{ type: 'LinearAlignmentsDisplay', filter: { svSignal: 'only' } }
-```
-
-```js
-{ type: 'LinearAlignmentsDisplay', filter: { minMapq: 20 } }
-```
-
-```js
-{ type: 'LinearAlignmentsDisplay', filter: { tags: [{ tag: 'HP', value: '1' }] } }
-```
 
 ```js
 {
@@ -29,14 +17,13 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 Every test the alignments display applies, in one object, its `filter`
-slot, read by every part that draws the data a test names. The read members
-are the SAM flag masks, a minimum mapping quality, a read name, the tags a
-read has to carry, and the four read categories, each `only`, `exclude` or
-unset for unfiltered; the default excludes unmapped, QC-failed and duplicate
-reads (flag 1540). `junctions` tests the splice junctions and `connections`
-the connections between mates and split segments. Every test must hold, so
-two categories AND together: `{ split: 'only', svSignal: 'only' }` keeps the
-split reads alone.
+slot, read by every part that draws the data a test names: the base filter's
+read members and `connections`, and `junctions`, which tests the splice
+junctions.
+
+## Related links
+
+- **Base config:** [BaseAlignmentsFilter](../basealignmentsfilter)
 
 ## Config slots
 
@@ -45,6 +32,8 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-junctions">**junctions**</span><br>[JunctionFilter](../junctionfilter) | The splice junctions drawn: `minReads` (default 2) and `nonCanonical`. |
+| <span class="slot-group">Inherited from [BaseAlignmentsFilter](../basealignmentsfilter)</span> | <span class="slot-group-count">10 slots</span> |
 | <span id="slot-flaginclude">**flagInclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | a read passes only with every one of these SAM flag bits set, samtools -f |
 | <span id="slot-flagexclude">**flagExclude**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1540</code> | a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads |
 | <span id="slot-minmapq">**minMapq**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | a read passes only with a mapping quality of at least this; a read whose mapping quality is unavailable (255) fails it. Unset passes every read |
@@ -54,5 +43,4 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-svsignal">**svSignal**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads carrying SV evidence, and the rest of their pair in the same displayed region. A read is evidence when it is split, carries an insertion or deletion of 50 bp or more, or is a paired primary read the aligner did not call concordant (no 0x2, a mate unmapped or on another chromosome, or a pair not facing FR). Both ends must be placed: a read at MAPQ 0 carries no evidence, a split read counts only when some other piece in its SA tag has MAPQ above 0, and a discordant read only when its mate does, where the MQ tag records it. |
 | <span id="slot-alone">**alone**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads with no other alignment of themselves in the window, no mate and no split or supplementary segment there. A mate unmapped, on another chromosome or outside the window counts, as does a single-end read with no SA tag. |
 | <span id="slot-split">**split**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (only, exclude) | `only`, `exclude`, or unset for unfiltered: reads with a supplementary segment, a chimeric alignment. |
-| <span id="slot-junctions">**junctions**</span><br>[JunctionFilter](../junctionfilter) | The splice junctions drawn: `minReads` (default 2) and `nonCanonical`. |
 | <span id="slot-connections">**connections**</span><br>[ConnectionFilter](../connectionfilter) | The connections drawn: `interchrom`, `offscreenMates` and `minInterchromReads` (default 2). |

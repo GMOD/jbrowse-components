@@ -22,7 +22,7 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 
 ## Related links
 
-- **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Extended by:** [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)
 - **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
 - **Extended by:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

@@ -1,6 +1,7 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 
 import { tagColorFor } from '../shared/alignmentsColor.ts'
+import { requireReadsConf } from './configSlotViews.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import {
   bootAlignmentsDisplay,
@@ -382,11 +383,18 @@ describe('alignments colorBy', () => {
 
   it('None keeps the per-base field under none, as the read fill does', () => {
     const { display } = createDisplay({ baseColor: 'modifications' })
-    const field = getConf(display, ['baseColor', 'field'])
+    const field = readConfObject(requireReadsConf(display), [
+      'baseColor',
+      'field',
+    ])
     display.setBaseLayer()
     expect(display.baseLayer).toBeUndefined()
-    expect(getConf(display, ['baseColor', 'field'])).toBe(field)
-    expect(getConf(display, ['baseColor', 'scale'])).toBe('none')
+    expect(
+      readConfObject(requireReadsConf(display), ['baseColor', 'field']),
+    ).toBe(field)
+    expect(
+      readConfObject(requireReadsConf(display), ['baseColor', 'scale']),
+    ).toBe('none')
   })
 
   it('a ramp with its ends reversed is a notice', () => {

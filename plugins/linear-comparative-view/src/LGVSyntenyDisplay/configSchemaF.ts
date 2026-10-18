@@ -1,17 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
+import { baseLinearAlignmentsDisplayConfigSchema } from '@jbrowse/plugin-alignments'
 import { lodModeSlot } from '@jbrowse/synteny-core'
 
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-
 /**
  * #config LGVSyntenyDisplay
  * Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
- * colored the way an alignments display draws reads.
+ * colored the way an alignments display draws reads. It has the alignments
+ * display's bands and settings but the sashimi band, `filter.junctions`,
+ * `baseColor` and `modifications`: a synteny block has no introns, basecaller
+ * tags or qualities.
  *
  * #example
  * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
@@ -38,7 +39,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * }
  * ```
  */
-function configSchemaF(pluginManager: PluginManager) {
+export default function configSchemaF() {
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
     {
@@ -93,13 +94,10 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration:
-        linearAlignmentsDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: baseLinearAlignmentsDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )
 }
-
-export default configSchemaF
 
 export type LGVSyntenyDisplayConfigModel = ReturnType<typeof configSchemaF>

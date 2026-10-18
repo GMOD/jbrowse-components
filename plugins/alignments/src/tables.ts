@@ -47,13 +47,13 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import BamAdapterF from './BamAdapter/index.ts'
 import CramAdapterF from './CramAdapter/index.ts'
-import { readFilterOf } from './LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts'
 import { sortOf } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 import {
   bakedColorExtent,
   bakedColorScale,
   linearFieldExtent,
 } from './LinearAlignmentsDisplay/bakedColorScale.ts'
+import { readFilterOf } from './LinearAlignmentsDisplay/baseAlignmentsFilterConfigSchema.ts'
 import { attachChainFields } from './LinearAlignmentsDisplay/chainFields.ts'
 import {
   READ_COLOR_CATEGORY_BY_INDEX,
