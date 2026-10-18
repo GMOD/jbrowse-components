@@ -1,15 +1,16 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
+import { connectorColorShift } from '../../features/arcs/arcColors.ts'
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
-import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
+import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { shouldOutlineReads } from './rendererTypes.ts'
 
 import type { PaletteColorKey } from '../../shaders/colors.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
-import type { ColorPalette, RGBColor, RenderState } from './rendererTypes.ts'
+import type { RGBColor, RenderState } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -82,30 +83,6 @@ const READ_CATEGORY_UBO_SLOTS: readonly (readonly [
   ([category, slot]) => [slot, category as ReadColorCategory] as const,
 )
 
-// Takes the shader's own generated setter, which writes every component of an
-// element — so the alpha lane cannot be left out here. The shaders read `.xyz`
-// and set their own, which is what made the fourth store look optional, and a
-// uniform slot left unwritten keeps whatever the last block render put there.
-function writePaletteSlots(
-  f: Float32Array,
-  c: ColorPalette,
-  set: (
-    f32: Float32Array,
-    i: number,
-    v0: number,
-    v1: number,
-    v2: number,
-    v3: number,
-  ) => void,
-  slotCount: number,
-  categories: readonly ReadColorCategory[],
-) {
-  for (let i = 0; i < slotCount; i++) {
-    const rgb = c.readCategoryColors[categories[i]!]
-    set(f, i, rgb[0], rgb[1], rgb[2], 1)
-  }
-}
-
 /**
  * The color half of the struct, which is frame-constant: every input is
  * display-wide, so the renderer writes it once ahead of the block loop.
@@ -124,17 +101,23 @@ export function writePileupPalette(
   for (const [slot, key] of PALETTE_UBO_SLOTS) {
     u32[slot] = packRgb(c[key])
   }
-  // Driven by the SHADER's slot count, not the palette's, so a palette that
-  // fell out of step leaves an undefined behind here rather than silently
-  // painting stale colors in the slots it didn't reach; paletteUboParity.test.ts
-  // holds each slot to its category's color. Resolved against `c`, the themed
-  // palette, as the read-connection band's feeds are.
-  writePaletteSlots(
-    f32,
+  // The arcs' palette under the same field, resolved against `c`, the themed
+  // palette, as the read-connection band's feeds are. Driven by the SHADER's
+  // slot count, not the palette's, so a palette that fell out of step leaves
+  // an undefined behind here rather than silently painting stale colors in the
+  // slots it didn't reach. The generated setter writes every component of an
+  // element, so the alpha lane cannot be left out: the shaders read `.xyz`,
+  // and a slot left unwritten keeps whatever the last block render put there.
+  const connectorPalette = buildArcColorPalette(
     c,
-    readShader.setUniformLinkedReadColor,
-    USLOTS.linkedReadColor.length,
-    LINKED_READ_SLOT_CATEGORY,
+    state.readConnectionsColorField,
+  )
+  for (let i = 0; i < USLOTS.linkedReadColor.length; i++) {
+    const rgb = connectorPalette[i]!
+    readShader.setUniformLinkedReadColor(f32, i, rgb[0], rgb[1], rgb[2], 1)
+  }
+  u32[UU.connectorColorShift] = connectorColorShift(
+    state.readConnectionsColorField,
   )
   for (const [slot, category] of READ_CATEGORY_UBO_SLOTS) {
     const rgb = c.readCategoryColors[category]

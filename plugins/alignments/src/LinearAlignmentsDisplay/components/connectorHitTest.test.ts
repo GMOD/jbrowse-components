@@ -65,6 +65,7 @@ const feeds = buildConnectorFeeds({
   featureSpacing: 0,
   pileupHeight: 100,
   colors: makeTestPalette(),
+  colorField: 'insertSizeAndOrientation',
 })
 
 const sec: SectionRender = {

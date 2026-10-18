@@ -2,7 +2,8 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
+import { connectorColorShift } from '../../features/arcs/arcColors.ts'
+import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import {
   UNIFORM_OFFSET_U32,
   UNIFORM_SLOT_ARRAYS,
@@ -95,6 +96,7 @@ function frameUniforms() {
     makeTestRenderState({
       showModifications: false,
       colors: COLORS,
+      readConnectionsColorField: 'pairOrientation',
       sections: [SECTION],
     }),
   )
@@ -146,14 +148,24 @@ function expectedSlot(key: PaletteColorKey) {
 }
 
 describe('the indexed palette uniforms', () => {
+  // The arcs' palette under the field the render state names, which the
+  // shift selects out of each connector's color type.
   test.each(UNIFORM_SLOT_ARRAYS.linkedReadColor.map((o, i) => [i, o]))(
-    'linkedReadColor slot %i holds its category color',
+    'linkedReadColor slot %i holds the arc slot color under the field',
     (i, offset) => {
-      expect(f32Slot(offset)).toEqual(
-        expectedSlot(readCategoryPaletteKeys[LINKED_READ_SLOT_CATEGORY[i]!]),
-      )
+      const rgb = buildArcColorPalette(COLORS, 'pairOrientation')[i]!
+      expect(f32Slot(offset)).toEqual([
+        ...Float32Array.of(rgb[0], rgb[1], rgb[2], 1),
+      ])
     },
   )
+
+  test('the connector shift selects the field the render state names', () => {
+    expect(u32[UNIFORM_OFFSET_U32.connectorColorShift]).toBe(
+      connectorColorShift('pairOrientation'),
+    )
+    expect(connectorColorShift('pairOrientation')).not.toBe(0)
+  })
 
   // Driven off `readCategoryPaletteKeys` rather than off the slot array, since
   // the categories index the array by name through READ_COLOR_CATEGORY — the

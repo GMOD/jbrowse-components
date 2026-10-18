@@ -9,37 +9,20 @@ import {
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 import {
-  LINKED_READ_COLOR_PAIR_LL,
-  LINKED_READ_COLOR_PAIR_LR,
-  LINKED_READ_COLOR_PAIR_RL,
-  LINKED_READ_COLOR_PAIR_RR,
-  LINKED_READ_COLOR_SPLIT_INV,
-  LINKED_READ_COLOR_SPLIT_NORMAL,
-  connectionLabel,
-} from '../features/linkedReads/compute.ts'
-import { readColorCategoryLabel } from '../shared/legendUtils.ts'
-import {
   ARC_SLOT_CATEGORY,
   arcSlotCategory,
   buildArcColorPalette,
-  buildLinkedReadColorPalette,
 } from './palettes.ts'
 
-import type {
-  ReadColorCategory,
-  SwatchCategory,
-} from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ColorPalette } from './colors.ts'
-
-// A pileup draws one meaning through three vocabularies — read fills, arc /
-// read-cloud overlays, linked-read connectors — and each used to carry its own
-// color table, agreeing by comment. That is how the overlays came to be baked
+// A pileup draws one meaning through two vocabularies — read fills, and the
+// read connections (arcs, read cloud and connectors) — and each used to carry
+// its own color table, agreeing by comment. That is how the overlays came to be baked
 // from the module palette while the read fills resolved through the theme: in
 // the default light palette the divergence is invisible, and light is where
 // every figure is captured.
 //
 // The color half of this file is now a TAUTOLOGY, and deliberately kept as one.
-// ARC_SLOT_CATEGORY / LINKED_READ_SLOT_CATEGORY say what a slot means and the
+// ARC_SLOT_CATEGORY says what a slot means and the
 // color is resolved through `swatchPaletteKeys`, the read fills' own table, so
 // there is one table and nothing left to reconcile. What these assertions still
 // buy is the wiring: they fail if any path goes back to a baked constant, or if
@@ -61,13 +44,7 @@ const OVERRIDDEN = makeTestPalette({
 })
 
 describe('overlay palettes follow the theme', () => {
-  test.each([
-    [
-      'arc',
-      (c: ColorPalette) => buildArcColorPalette(c, 'insertSizeAndOrientation'),
-    ],
-    ['linked read', buildLinkedReadColorPalette],
-  ])('%s palette resolves against the palette it is given', (_name, build) => {
+  test('the arc palette resolves against the palette it is given', () => {
     // Nothing is left over from the module constants: every slot has to be one
     // of the values this palette carries.
     const carried = new Set(
@@ -75,7 +52,10 @@ describe('overlay palettes follow the theme', () => {
         .filter(c => Array.isArray(c))
         .map(c => c.join(',')),
     )
-    for (const slot of build(OVERRIDDEN)) {
+    for (const slot of buildArcColorPalette(
+      OVERRIDDEN,
+      'insertSizeAndOrientation',
+    )) {
       expect(carried).toContain(slot.join(','))
     }
   })
@@ -101,49 +81,6 @@ describe('overlay palettes follow the theme', () => {
       ])
     }
   })
-
-  // Same claim for the connector palette, whose slots are the orientation codes
-  // plus the two split junctions.
-  test('each connector slot equals the read swatch it shares a meaning with', () => {
-    const linked = buildLinkedReadColorPalette(OVERRIDDEN)
-    const expected: [number, ReadColorCategory][] = [
-      [LINKED_READ_COLOR_PAIR_LR, 'pairLR'],
-      [LINKED_READ_COLOR_PAIR_RL, 'pairRL'],
-      [LINKED_READ_COLOR_PAIR_RR, 'pairRR'],
-      [LINKED_READ_COLOR_PAIR_LL, 'pairLL'],
-      [LINKED_READ_COLOR_SPLIT_NORMAL, 'splitDeletion'],
-      [LINKED_READ_COLOR_SPLIT_INV, 'splitInversion'],
-    ]
-    for (const [slot, category] of expected) {
-      expect([category, rgb255(linked[slot]!)]).toEqual([
-        category,
-        categorySwatchColor(category as SwatchCategory, OVERRIDDEN),
-      ])
-    }
-  })
-})
-
-// The other half of the same problem, in strings rather than colors. Both files
-// carry a comment saying these must agree word for word — legendUtils because
-// "one box can show both", `connectionLabel` because "a color means one thing
-// whether the reader met it on a swatch, a fill or a curve". They are two hand-
-// kept tables, and `getAlignmentsColorScales` de-dupes the connections
-// section against the already-keyed rows on `${color} ${label}`: drift one
-// string and the same connection is keyed twice in one box under two wordings.
-// One of these has already drifted once ("deletion"), and it was caught by
-// somebody reading a legend.
-describe('connector labels match the read key word for word', () => {
-  test.each([
-    [LINKED_READ_COLOR_PAIR_LR, 'pairLR'],
-    [LINKED_READ_COLOR_PAIR_RL, 'pairRL'],
-    [LINKED_READ_COLOR_PAIR_RR, 'pairRR'],
-    [LINKED_READ_COLOR_PAIR_LL, 'pairLL'],
-  ] as [number, ReadColorCategory][])(
-    'connector %i uses the same wording as its read swatch',
-    (colorType, category) => {
-      expect(connectionLabel(colorType)).toBe(readColorCategoryLabel(category))
-    },
-  )
 })
 
 // A pair with no computed orientation (po 0) is 'noOrientation' to the read fills

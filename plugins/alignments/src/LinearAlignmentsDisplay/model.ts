@@ -1314,6 +1314,7 @@ export default function stateModelFactory(
                 lines: self.showLinkedReadLines,
                 scope: self.bezierArcScope,
                 canonicalRefName: this.canonicalRefName,
+                refNameAt: i => self.loadedRegions.get(i)?.refName,
                 admits: self.showConnectors ? this.connectorFilter : undefined,
               },
               key =>
@@ -1929,7 +1930,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The connection types (LINKED_READ_COLOR_*) drawn in view, by the
+         * The color types (`connectorColorType`) drawn in view, by the
          * overlay's curves and by the straight-line pass beside them, so the
          * key lists every connector color on screen. Empty while the legend is
          * hidden so the scan is skipped.
@@ -1962,6 +1963,10 @@ export default function stateModelFactory(
           return bezierConnectionLegendItems(
             this.connectionColorTypes,
             palette,
+            self.readConnectionsColorField,
+            [...self.connectorsByGroup.values()].some(c =>
+              c.overlayPairs.some(p => p.c.interchrom && !p.c.isSplit),
+            ),
             self.declaredReadLabels.categories,
           )
         },
@@ -2321,6 +2326,7 @@ export default function stateModelFactory(
                   featureSpacing: self.featureSpacing,
                   pileupHeight: sec.pileupHeight,
                   colors,
+                  colorField: self.readConnectionsColorField,
                   labels: self.declaredReadLabels.categories,
                 }),
               ]),
@@ -2557,6 +2563,7 @@ export default function stateModelFactory(
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             colors: palette,
+            readConnectionsColorField: self.readConnectionsColorField,
             chainMode: self.unit === 'chain',
             showLinkedReadLines: self.showLinkedReadLines,
             collapseSections: self.collapseSections,

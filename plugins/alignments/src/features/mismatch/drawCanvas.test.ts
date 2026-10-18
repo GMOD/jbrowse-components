@@ -36,6 +36,7 @@ function recordingCtx() {
 function baseState(overrides: Partial<RenderState> = {}): RenderState {
   return {
     scrollTop: 0,
+    readConnectionsColorField: 'insertSizeAndOrientation',
     featureHeight: 10,
     featureSpacing: 0,
     coverageHeight: 0,

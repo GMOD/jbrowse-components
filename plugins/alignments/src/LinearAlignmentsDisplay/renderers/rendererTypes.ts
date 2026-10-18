@@ -10,6 +10,7 @@ import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -66,6 +67,9 @@ export interface RenderState {
   // repaints its divs and not the canvas.
   // Color palette from theme
   colors: ColorPalette
+  // The field the read connections paint, which picks the connectors' slot
+  // out of each one's color type.
+  readConnectionsColorField: ArcColorField
   // The display's `unit` is 'chain'. A shader uniform is an int at the GPU
   // boundary, so the unit stops at the model and renderers get the boolean.
   chainMode: boolean

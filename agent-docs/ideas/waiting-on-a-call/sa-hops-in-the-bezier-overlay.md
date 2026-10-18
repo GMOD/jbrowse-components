@@ -63,8 +63,8 @@ window widened to the ends of the chain, plus the extrapolating projector below,
 and neither is a consequence of the other.
 
 **Both answers already exist one band up**, and they are split by exactly the
-test the overlay already computes in `classifyPair` (`interchromOf` →
-`LINKED_READ_COLOR_INTERCHROM`). `resolveArcs` decides:
+test the overlay already computes in `classifyPair` (`interchromOf`, then
+`ARC_COLOR_INTERCHROM`). `resolveArcs` decides:
 
 - **Same chromosome** — keep the real geometry. The arc's leg rises at the
   on-screen foot and the curve runs off the block edge (`arcTouchesRegion`, whose

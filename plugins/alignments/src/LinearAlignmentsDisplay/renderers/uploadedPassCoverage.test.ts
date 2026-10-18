@@ -101,7 +101,7 @@ function fullyPopulated() {
 
     linkedReadLinePositions: new Uint32Array([START + 10, START + 90]),
     linkedReadLineYs: new Uint16Array([0, 0]),
-    linkedReadLineColorTypes: new Uint8Array([0]),
+    linkedReadLineColorTypes: new Uint16Array([0]),
     numLinkedReadLines: 1,
 
     coverageGpuBinCount: 1,

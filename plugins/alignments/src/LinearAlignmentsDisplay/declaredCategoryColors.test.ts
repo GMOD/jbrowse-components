@@ -1,10 +1,7 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { colorNotices } from '@jbrowse/core/util/colorScale'
 
-import {
-  buildArcColorPalette,
-  buildLinkedReadColorPalette,
-} from '../shaders/palettes.ts'
+import { buildArcColorPalette } from '../shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../shaders/slang/read.iface.generated.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
@@ -283,7 +280,7 @@ describe('color.value fills the reads no field colors', () => {
     )
   })
 
-  test('arcs, connection curves and the other neutral buckets keep the theme', () => {
+  test('the read connections and the other neutral buckets keep the theme', () => {
     const palette = paletteFor({ value: 'steelblue' })
     for (const category of [
       'pairLR',
@@ -299,8 +296,6 @@ describe('color.value fills the reads no field colors', () => {
     for (const field of ['insertSize', 'pairOrientation'] as const) {
       expect(rgb255(buildArcColorPalette(palette, field)[0]!)).toBe(neutral)
     }
-    const curves = buildLinkedReadColorPalette(palette)
-    expect([rgb255(curves[0]!), rgb255(curves[1]!)]).toEqual([neutral, neutral])
   })
 
   test("a declared '' level colors the no-value read over value", () => {

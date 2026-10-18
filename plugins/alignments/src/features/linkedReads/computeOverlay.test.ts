@@ -1,4 +1,8 @@
-import { namesToBlock, readNameAt } from '@jbrowse/alignments-core'
+import {
+  PAIR_DIRECTION_NUM,
+  namesToBlock,
+  readNameAt,
+} from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -29,14 +33,14 @@ const PALETTE = makeTestPalette({
   colorSplitInversion: [0.6, 0.6, 0.6],
 })
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
+import { arcCategoryColor } from '../../shaders/palettes.ts'
 import {
-  LINKED_READ_COLOR_INTERCHROM,
-  LINKED_READ_COLOR_PAIR_LR,
-  LINKED_READ_COLOR_PAIR_RR,
-  LINKED_READ_COLOR_PAIR_UNKNOWN,
-  LINKED_READ_COLOR_SPLIT_INV,
-} from './compute.ts'
+  ARC_COLOR_INTERCHROM,
+  COLOR_DEFAULT,
+  COLOR_SPLIT_INV_LL,
+  connectorColorType,
+  pairColorType,
+} from '../arcs/arcColors.ts'
 import {
   bezierConnectionLegendItems,
   bezierDipReservePx,
@@ -49,7 +53,7 @@ import { buildConnectorFeeds } from './connectorFeed.ts'
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ConnectionFilter } from '../../shared/types.ts'
+import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
 import type { LinkedPair } from './compute.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 
@@ -71,6 +75,7 @@ function drawnConnectors(opts: {
   pileupHeight: number
   scrollTop: number
   colors: ColorPalette
+  colorField?: ArcColorField
   labels?: Partial<Record<SwatchCategory, string>>
   regions?: LinkRegion[]
 }) {
@@ -91,7 +96,10 @@ function drawnConnectors(opts: {
     arrowPx: 0,
   }
   const frame = { canvasWidth: 1e9, canvasHeight: 1e9 }
-  const feeds = buildConnectorFeeds(opts)
+  const feeds = buildConnectorFeeds({
+    colorField: 'insertSizeAndOrientation',
+    ...opts,
+  })
   return [...feeds].flatMap(([regionIdx, feed]) =>
     feed.hits.flatMap((hit, i) => {
       const block = canvasWideBlock(regionIdx, frame.canvasWidth)
@@ -306,18 +314,14 @@ describe('connectors — split-read tangent direction', () => {
   })
 })
 
-describe('connectors — distinct inversion hue + tooltip label', () => {
-  // A split-read inversion gets its OWN color (colorSplitReadInversion), distinct
-  // from the RR-pair blue, so the connector matches the magenta read fill and the
-  // two categories are tellable apart in the legend.
-  const rr = rgb255(
-    buildLinkedReadColorPalette(PALETTE)[LINKED_READ_COLOR_PAIR_RR]!,
-  )
-  const splitInv = rgb255(
-    buildLinkedReadColorPalette(PALETTE)[LINKED_READ_COLOR_SPLIT_INV]!,
-  )
+describe('connectors — the arc band colors and labels', () => {
+  // A connector paints as the arc over the same connection: an inversion
+  // junction in the color of the pair class spanning it, named as the arc key
+  // names it.
+  const rr = rgb255(arcCategoryColor(PALETTE, 'pairRR'))
+  const invLL = rgb255(arcCategoryColor(PALETTE, 'splitInvLL'))
 
-  it('split inversion: own inversion hue, distinct from RR, labeled', () => {
+  it("split inversion: the LL-type junction, in the LL pair's color", () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -334,12 +338,12 @@ describe('connectors — distinct inversion hue + tooltip label', () => {
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
-    expect(splitInv).not.toBe(rr) // no longer shares the RR-pair blue
-    expect(arcs[0]!.stroke).toBe(splitInv)
-    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    expect(invLL).toBe(rgb255(arcCategoryColor(PALETTE, 'pairLL')))
+    expect(arcs[0]!.stroke).toBe(invLL)
+    expect(arcs[0]!.label).toBe('Split read (inversion, LL-type)')
   })
 
-  it('RR pair: navy blue, distinct label', () => {
+  it('RR pair: the RR color and label', () => {
     const data = makeData({
       names: ['p', 'p'],
       flags: [
@@ -347,7 +351,7 @@ describe('connectors — distinct inversion hue + tooltip label', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
       ],
       strands: [1, 1],
-      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
       positions: [
         [100, 200],
         [300, 400],
@@ -378,7 +382,7 @@ describe('connectors — paired tangent direction', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
       ],
       strands: [1, 1],
-      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
       positions: [
         [100, 200],
         [300, 400],
@@ -432,7 +436,7 @@ describe('connectors — discordant curves dip', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
       ],
       strands: [1, 1],
-      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
       positions: [
         [100, 200],
         [300, 400],
@@ -462,7 +466,7 @@ describe('connectors — discordant curves dip', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
       ],
       strands: [1, 1],
-      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
       positions: [
         [1000, 1100],
         [21_000, 21_100],
@@ -500,10 +504,7 @@ describe('connectors — discordant curves dip', () => {
                   SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
                 ],
                 strands: [1, 1],
-                orientations: [
-                  LINKED_READ_COLOR_PAIR_RR,
-                  LINKED_READ_COLOR_PAIR_RR,
-                ],
+                orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
                 positions,
                 ys: [0, 0],
               }),
@@ -549,7 +550,7 @@ describe('bezierDipReservePx', () => {
         SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
       ],
       strands: [1, 1],
-      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      orientations: [PAIR_DIRECTION_NUM.RR, PAIR_DIRECTION_NUM.RR],
       positions: [
         [1000, 1100],
         [21_000, 21_100],
@@ -592,7 +593,7 @@ describe('bezierDipReservePx', () => {
         names: ['p'],
         flags: [SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR],
         strands: [1],
-        orientations: [LINKED_READ_COLOR_PAIR_LR],
+        orientations: [PAIR_DIRECTION_NUM.LR],
         positions: [[1000, 1100]],
         ys,
       })
@@ -822,7 +823,7 @@ describe('enumerateBezierPairs — the list is what gets drawn', () => {
         [100, 200],
         [600, 700],
       ],
-      orientations: [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_LR],
+      orientations: [PAIR_DIRECTION_NUM.LR, PAIR_DIRECTION_NUM.LR],
       ys: [0, 0],
     })
     expect(enumerateBezierPairs(new Map([[0, normalPair]]))).toHaveLength(0)
@@ -904,7 +905,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
     // The same arc as before the dash existed: the connector is real, only its
     // directness is not, so nothing about the geometry or the label moves.
     expect(arcs[0]!.d).toMatch(/^M 25359568 5 C .* 25359111 17$/)
-    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    expect(arcs[0]!.label).toBe('Split read (inversion, LL-type)')
     expect(arcs[0]!.dash).toBe(HIDDEN_SEGMENT_DASH)
     expect(hiddenSegmentsNote(arcs[0]!.hiddenSegmentsBetween!)).toBe(
       'hidden segments not in view: chr10:600,001-600,199, chr12:700,001-700,183',
@@ -971,6 +972,8 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
 // its connecting-line pass is per region, so nothing joins them. This overlay is
 // the only pass that resolves both ends, and `crossRegion` is it doing exactly
 // that job and nothing the per-region pass already covers.
+const chr1chr2 = (i: number) => ['chr1', 'chr2'][i]
+
 describe('enumerateBezierPairs — crossRegion scope', () => {
   // A split read whose supplementary was fetched in region 1, plus a second read
   // wholly inside region 0 whose junction the per-region line already draws.
@@ -1036,11 +1039,16 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+      pairs: enumerateBezierPairs(
+        twoRegions,
+        'crossRegion',
+        undefined,
+        chr1chr2,
+      ),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toBe('M 2500 5 L 9000 5')
-    expect(arcs[0]!.label).toBe('Split alignment (same strand)')
+    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
   })
 
   it('dips an inverted split between two chromosomes', () => {
@@ -1062,10 +1070,12 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
           [1, inverted],
         ]),
         'crossRegion',
+        undefined,
+        chr1chr2,
       ),
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
     const { sy1, cp1y, cp2y } = controlPoints(arcs[0]!.d)
     expect(cp1y).toBeGreaterThan(sy1)
     expect(cp2y).toBeGreaterThan(sy1)
@@ -1073,7 +1083,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
 
   // A fusion onto a minus-strand partner, viewed with that partner's region
   // flipped: both segments point right on screen, so the molecule reads
-  // straight across the seam and keeps its inverted color.
+  // straight across the seam, in the inter-chromosomal color its arc takes.
   it('draws an inverted split straight when one partner region is flipped', () => {
     const inverted = makeData({
       names: ['r'],
@@ -1096,11 +1106,13 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
           [1, inverted],
         ]),
         'crossRegion',
+        undefined,
+        chr1chr2,
       ),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ 5 L [\d.]+ 5$/)
-    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
   })
 
   const dips = (d: string) => {
@@ -1326,42 +1338,51 @@ describe('a same-strand junction across segments nothing fetched', () => {
 // The key is built from the palette and labels the overlay itself draws with,
 // so a color the reader met on screen is keyed by that same color.
 describe('bezierConnectionLegendItems', () => {
-  // classifyPair gives slot 7 to mate links only, so it takes the read fill's
-  // wording for a mate on another chromosome, not the split-alignment wording.
-  it('names the inter-chromosomal slot as the mate link it draws', () => {
-    expect(
-      bezierConnectionLegendItems([LINKED_READ_COLOR_INTERCHROM], PALETTE)[0]!
-        .label,
-    ).toBe('Inter-chromosomal')
+  const field = 'insertSizeAndOrientation'
+  const every = (slot: number) => connectorColorType(() => slot)
+  const labels = (
+    colorTypes: number[],
+    f: ArcColorField = field,
+    interchromFromMatePair = false,
+  ) =>
+    bezierConnectionLegendItems(
+      colorTypes,
+      PALETTE,
+      f,
+      interchromFromMatePair,
+    ).map(i => i.label)
+
+  // As the arc key does: the split reads' wording, unless a mate link crosses.
+  it('names the inter-chromosomal slot for what crosses', () => {
+    expect(labels([every(ARC_COLOR_INTERCHROM)])).toEqual([
+      'Split alignment (interchromosomal)',
+    ])
+    expect(labels([every(ARC_COLOR_INTERCHROM)], field, true)).toEqual([
+      'Inter-chromosomal',
+    ])
   })
 
-  it('keys the connection colors in view, sorted, in the arcs own words', () => {
+  it('keys the connection colors in view in the arc key own words', () => {
     expect(
-      bezierConnectionLegendItems(
-        [LINKED_READ_COLOR_SPLIT_INV, LINKED_READ_COLOR_PAIR_RR],
-        PALETTE,
-      ).map(i => i.label),
-    ).toEqual(['RR - Both mates reverse strand', 'Split alignment (inverted)'])
+      labels([
+        every(COLOR_SPLIT_INV_LL),
+        connectorColorType(f => pairColorType(f, 3, 0, undefined)),
+      ]),
+    ).toEqual([
+      'RR - Both mates reverse strand',
+      'Split read (inversion, LL-type)',
+    ])
   })
 
-  // Slots 0 and 1 are both `pairLR` in LINKED_READ_SLOT_CATEGORY, so a view
-  // holding an LR mate link and one whose orientation the worker never computed
-  // drew ONE grey and listed it twice, under two names. The lower slot's
-  // wording survives, which is the neutral one: `connectionLabel` refuses to
-  // call slot 0 an LR because nothing measured that orientation, and a row
-  // covering both pair kinds must not claim it either.
-  it('keys one row per color, not one per slot', () => {
+  // An LR pair and one whose orientation the worker never computed share the
+  // arcs' baseline slot, so they key one row, named for the field.
+  it('keys one row per category, not one per connector kind', () => {
+    const lr = connectorColorType(f => pairColorType(f, 1, 0, undefined))
+    const unknown = connectorColorType(f => pairColorType(f, 0, 0, undefined))
+    expect(labels([lr, unknown])).toHaveLength(1)
     expect(
-      bezierConnectionLegendItems(
-        [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_UNKNOWN],
-        PALETTE,
-      ),
-    ).toEqual([{ color: expect.any(String), label: 'Read pair' }])
-    // …and the LR wording still stands on its own when slot 0 is absent
-    expect(
-      bezierConnectionLegendItems([LINKED_READ_COLOR_PAIR_LR], PALETTE)[0]!
-        .label,
-    ).toBe('LR - Normal pair orientation')
+      labels([lr, unknown, every(COLOR_DEFAULT)], 'pairOrientation'),
+    ).toEqual(['LR - Normal pair orientation'])
   })
 })
 
@@ -1380,12 +1401,7 @@ describe('connectorFilterOf', () => {
         ids: ['w1', 'w2', 'm1', 'r-primary'],
         flags: [first, second, first, 0],
         strands: [1, -1, 1, 1],
-        orientations: [
-          LINKED_READ_COLOR_PAIR_LR,
-          LINKED_READ_COLOR_PAIR_LR,
-          0,
-          0,
-        ],
+        orientations: [PAIR_DIRECTION_NUM.LR, PAIR_DIRECTION_NUM.LR, 0, 0],
         positions: [
           [100, 200],
           [300, 400],

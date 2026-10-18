@@ -1,6 +1,7 @@
 import { PAIR_DIRECTION_NUM, splitJunctionKind } from '@jbrowse/alignments-core'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
+import { ARC_COLOR_FIELDS } from '../../shared/arcColorOptions.ts'
 import { pairCategory } from '../../shared/pairCategory.ts'
 
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -128,14 +129,43 @@ function splitJunctionColor(arc: PendingArc) {
   }
   const p1IsLower =
     arc.p1Bp === arc.p2Bp ? arc.p1Dir === -1 : arc.p1Bp < arc.p2Bp
-  const lowerDir = p1IsLower ? arc.p1Dir : arc.p2Dir
-  return kind === 'inversion'
+  return splitJunctionSlot(
+    kind === 'inversion',
+    p1IsLower ? arc.p1Dir : arc.p2Dir,
+  )
+}
+
+/** A split junction's slot, by whether it inverts and which way the read extends from its lower foot. */
+export function splitJunctionSlot(inversion: boolean, lowerDir: number) {
+  return inversion
     ? lowerDir === -1
       ? COLOR_SPLIT_INV_LL
       : COLOR_SPLIT_INV_RR
     : lowerDir === -1
       ? COLOR_SPLIT_FORWARD
       : COLOR_SPLIT_BACK
+}
+
+/** The slot a split junction of class `junctionSlot` paints under `colorField`, which has none for it under `insertSize`. */
+export function splitColorType(
+  colorField: ArcColorField,
+  junctionSlot: number,
+) {
+  return colorField === 'insertSize' ? COLOR_DEFAULT : junctionSlot
+}
+
+/** The slot a mate link paints under `colorField`. */
+export function pairColorType(
+  colorField: ArcColorField,
+  pairOrientationNum: number,
+  tlen: number,
+  stats: InsertSizeBand | undefined,
+) {
+  return (
+    ARC_SLOT_OF_CATEGORY.get(
+      pairCategory(colorField, pairOrientationNum, tlen, stats),
+    ) ?? COLOR_DEFAULT
+  )
 }
 
 // The palette slot a pair category paints in. `pairLR` and `noOrientation` have no
@@ -166,7 +196,7 @@ export function getArcColorType(args: {
   // its inversion junctions correctly. Resolved before the insert class below
   // because that is a paired concept and a junction has no TLEN to classify.
   if (!hasPaired || arc.isSplit) {
-    return colorField === 'insertSize' ? COLOR_DEFAULT : splitJunctionColor(arc)
+    return splitColorType(colorField, splitJunctionColor(arc))
   }
   // TLEN, and only TLEN, through the function `readColorCategory` classifies
   // with, so an arc and the reads under it cannot key the same pair two
@@ -175,11 +205,32 @@ export function getArcColorType(args: {
   // into `normal`, so those arcs went red over reads that stayed grey, and the
   // span's outlier cut ran over the arcs IN VIEW, so an arc's color changed
   // as you panned.
-  return (
-    ARC_SLOT_OF_CATEGORY.get(
-      pairCategory(colorField, arc.pairOrientationNum, arc.tlen, arc.stats),
-    ) ?? COLOR_DEFAULT
-  )
+  return pairColorType(colorField, arc.pairOrientationNum, arc.tlen, arc.stats)
+}
+
+// alignmentsUniforms.slang's CONNECTOR_COLOR_BITS: the bits each field's slot
+// takes in a connector's color type.
+const CONNECTOR_COLOR_BITS = 4
+
+/**
+ * A connector's color type: its slot under each of `ARC_COLOR_FIELDS`, packed
+ * CONNECTOR_COLOR_BITS apiece, so the connectors are classified once and the
+ * field picks a slot at paint time (`linkedReadColorSlot`). A recolor then
+ * reuses the classified connectors, as it reuses the layout.
+ */
+export function connectorColorType(
+  slotUnder: (field: ArcColorField) => number,
+) {
+  let packed = 0
+  for (let i = 0; i < ARC_COLOR_FIELDS.length; i++) {
+    packed |= slotUnder(ARC_COLOR_FIELDS[i]!) << (i * CONNECTOR_COLOR_BITS)
+  }
+  return packed
+}
+
+/** The shift `linkedReadColorSlot` takes to read `colorField`'s slot out of a connector's color type. */
+export function connectorColorShift(colorField: ArcColorField) {
+  return ARC_COLOR_FIELDS.indexOf(colorField) * CONNECTOR_COLOR_BITS
 }
 
 /** A color type's palette slot, the last slot for one past the palette. */

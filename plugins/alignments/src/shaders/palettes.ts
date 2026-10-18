@@ -11,18 +11,10 @@ import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
-// One table per overlay, saying what each slot MEANS. The color follows from
-// the palette's `readCategoryColors`, the read fills' own table, so an overlay
-// slot and the read swatch of the same meaning cannot be two colors.
-//
-// **Indexing `readCategoryColor` from the linked-read pass instead —
-// dropping its table — has been proposed and declined.** The color is
-// already one derivation, so it retires an index space and nothing else:
-// `linkedReadColor` is in the pileup block and dropping it would reach a
-// 512-byte ring slot, the saving ARCHITECTURAL_LIMITS priced and parked — "the
-// slot count is the oversized term, not the slot size" — and slots 1-4 there
-// ARE `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to
-// keep true by construction.
+// The table saying what each slot of the read connections MEANS, for the arcs,
+// the read cloud and the connectors over the pileup alike. The color follows
+// from the palette's `readCategoryColors`, the read fills' own table, so a
+// connection slot and the read swatch of the same meaning cannot be two colors.
 
 // What an arc slot can mean: a read category, or a split-junction class that
 // only an arc carries.
@@ -45,25 +37,6 @@ export const ARC_SLOT_CATEGORY = [
   'splitInvLL',
   'splitInvRR',
 ] as const satisfies readonly (SwatchCategory | ArcSplitCategory)[]
-
-// Slot → meaning for the linked-read connectors, matching LINKED_READ_COLOR_* in
-// features/linkedReads/compute.ts. Slot 0 is the unknown baseline: it takes the
-// same swatch as LR but is not labelled as LR (see `connectionLabel`).
-//
-// Slot 7 was a second copy of that fallback and unreachable — neither
-// `pairedColorType` nor `splitColorType` could emit it — so giving it to
-// `interchrom` costs no uniform space: the array is still eight entries and
-// `LINKED_READ_COLOR_SLOTS` in alignmentsUniforms.slang does not move.
-export const LINKED_READ_SLOT_CATEGORY = [
-  'pairLR',
-  'pairLR',
-  'pairRL',
-  'pairRR',
-  'pairLL',
-  'splitDeletion',
-  'splitInversion',
-  'interchrom',
-] as const satisfies readonly SwatchCategory[]
 
 /**
  * What an arc or read-cloud color slot means. The baseline slot, and any slot
@@ -107,11 +80,5 @@ export function buildArcColorPalette(
 ) {
   return ARC_SLOT_CATEGORY.map((_, slot) =>
     arcCategoryColor(c, arcSlotCategory(slot, colorField)),
-  )
-}
-
-export function buildLinkedReadColorPalette(c: ColorPalette) {
-  return LINKED_READ_SLOT_CATEGORY.map(
-    category => c.readCategoryColors[category],
   )
 }

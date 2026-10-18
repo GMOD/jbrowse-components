@@ -151,7 +151,7 @@ const EMPTY_PILEUP_STUBS = {
   connectingLineYs: new Uint16Array(),
   linkedReadLinePositions: new Uint32Array(),
   linkedReadLineYs: new Uint16Array(),
-  linkedReadLineColorTypes: new Uint8Array(),
+  linkedReadLineColorTypes: new Uint16Array(),
   numLinkedReadLines: 0,
   overlapPositions: new Uint32Array(),
   overlapYs: new Uint16Array(),
@@ -630,6 +630,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     return {
       canvasWidth: 200,
       canvasHeight: 200,
+      readConnectionsColorField: 'insertSizeAndOrientation',
       scrollTop: 0,
       featureHeight: 10,
       featureSpacing: 1,

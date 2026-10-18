@@ -145,7 +145,7 @@ function makeChainData(opts: {
     overlapYs: new Uint16Array(0),
     linkedReadLinePositions: new Uint32Array(0),
     linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
+    linkedReadLineColorTypes: new Uint16Array(0),
     numLinkedReadLines: 0,
   }
 }

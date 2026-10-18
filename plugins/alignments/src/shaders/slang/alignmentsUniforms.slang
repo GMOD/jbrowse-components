@@ -16,12 +16,16 @@ module alignmentsUniforms;
 import colorPack;
 import hpmath;
 
-// The size of `linkedReadColor` in the block below. Declared as a constant
-// rather than spelled into the array bound because the TS side has to build a
-// palette of exactly this length — the generated `UNIFORM_SLOT_ARRAYS` entry
-// has one word offset per slot, so a palette of the wrong size is caught there
-// rather than by writing off the end.
-public static const uint LINKED_READ_COLOR_SLOTS = 8u;
+// The size of `linkedReadColor` in the block below: the arc palette's,
+// `ARC_SLOT_CATEGORY`, since the connectors paint as the arcs do. Declared as a
+// constant rather than spelled into the array bound because the TS side has to
+// build a palette of exactly this length — the generated `UNIFORM_SLOT_ARRAYS`
+// entry has one word offset per slot, so a palette of the wrong size is caught
+// there rather than by writing off the end.
+public static const uint LINKED_READ_COLOR_SLOTS = 11u;
+// Bits per color field in a connector's `colorType`, which holds its arc slot
+// under each of the three fields.
+public static const uint CONNECTOR_COLOR_BITS = 4u;
 // One slot per read color category (read.slang's RC_*, which are dense from 0).
 // It lives here rather than with the RC_* block because the uniform declaring it
 // does, and imports only resolve one way. read.slang re-exports it so
@@ -104,9 +108,11 @@ public struct Uniforms {
   // between two read fills, so it takes its own theme slot (`readOverlap`)
   // rather than the foreground.
   public uint colorOverlap;
-  // Linked-read connecting-line palette (linkedReadBezier mode). 8 slots so
-  // every paired-orientation (unknown/LR/RL/RR/LL) and split-strand pairing
-  // (RF/FR/same) has its own color, looked up by per-instance colorType.
+  // Which field's slot a connector's `colorType` paints: the field's index
+  // times CONNECTOR_COLOR_BITS (`connectorColorShift` in TS).
+  public uint connectorColorShift;
+  // The connectors' palette, the arcs' under the same field, looked up by
+  // `linkedReadColorSlot`.
   public float4 linkedReadColor[LINKED_READ_COLOR_SLOTS];
   // Read fill color per RC_* category, baked on the CPU.
   //
@@ -177,11 +183,12 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// Which palette slot a linked-read connector's color type reads: a clamp,
-// not a wrap, so an out-of-range slot resolves to the last color on every
-// backend rather than to a different real one.
-public uint linkedReadColorSlot(uint idx) {
-  return min(idx, LINKED_READ_COLOR_SLOTS - 1u);
+// Which palette slot a connector's color type reads under the field `shift`
+// selects: a clamp, not a wrap, so an out-of-range slot resolves to the last
+// color on every backend rather than to a different real one.
+public uint linkedReadColorSlot(uint colorType, uint shift) {
+  uint slot = (colorType >> shift) & ((1u << CONNECTOR_COLOR_BITS) - 1u);
+  return min(slot, LINKED_READ_COLOR_SLOTS - 1u);
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so

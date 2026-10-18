@@ -22,7 +22,7 @@ const DATA: LinkedReadLinesUploadData = {
   // reading them back through the u32 view a check rather than a restatement:
   // both encodings occupy the same word, so a float write keeps the stride and
   // decodes to a palette slot nobody chose.
-  linkedReadLineColorTypes: new Uint8Array([3, 7]),
+  linkedReadLineColorTypes: new Uint16Array([3, 7]),
   numLinkedReadLines: 2,
 }
 

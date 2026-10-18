@@ -47,6 +47,6 @@ export function sizeAlpha(spanPx: number): number {
   return _t0
 }
 
-export function linkedReadColorSlot(idx: number): number {
-  return _min(idx, 7)
+export function linkedReadColorSlot(colorType: number, shift: number): number {
+  return _min((((colorType >>> shift) & 15) >>> 0), 10)
 }

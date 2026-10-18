@@ -162,7 +162,7 @@ describe('a connector-only change uploads only the line pass', () => {
     ...data,
     linkedReadLinePositions: new Uint32Array([START + 10, START + 60]),
     linkedReadLineYs: new Uint16Array([0, 0]),
-    linkedReadLineColorTypes: new Uint8Array([1]),
+    linkedReadLineColorTypes: new Uint16Array([1]),
     numLinkedReadLines: 1,
   })
 

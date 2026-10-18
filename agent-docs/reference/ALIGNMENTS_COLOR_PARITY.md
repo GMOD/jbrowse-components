@@ -1,21 +1,23 @@
 ---
 name: alignments-color-parity
-description: How are a pileup's three color vocabularies (read fills, arc overlays, linked-read connectors) kept in agreement? Read before touching arc color or the alignments legend.
+description: How are a pileup's two color vocabularies (read fills, and the read connections the arcs, read cloud and connectors draw) kept in agreement? Read before touching arc color or the alignments legend.
 audience: internal
 kind: spec
 ---
 
 # Alignments color parity
 
-A pileup draws one meaning through three vocabularies that share the screen and
-one legend box: read fills (`readColorCategory`, `colorUtils.ts`), arc overlays
-(`getArcColorType`, `features/arcs/arcColors.ts`) and linked-read connectors
-(`LINKED_READ_COLOR_*`, `features/linkedReads/compute.ts`).
+A pileup draws one meaning through two vocabularies that share the screen and
+one legend box: read fills (`readColorCategory`, `colorUtils.ts`), and the read
+connections (`features/arcs/arcColors.ts`). The arcs and the read cloud take
+`getArcColorType`'s slot; a connector over the pileup carries its slot under
+each color field (`connectorColorType`), and `linkedReadColorSlot` picks the
+field's at paint time, so a recolor reclassifies nothing (ADR-232).
 
 ## The rule: derive, do not reconcile
 
-Each overlay has **one table saying what a slot MEANS**, and the color follows:
-`ARC_SLOT_CATEGORY` / `LINKED_READ_SLOT_CATEGORY` (`shaders/palettes.ts`) →
+The read connections have **one table saying what a slot MEANS**, and the
+color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
 `arcSlotCategory(slot, colorField)` → `palette.readCategoryColors[category]`
 (`readCategoryColorsOf`, built once per palette over `declaredReadCategoryColors`)
 → the color `color` declares for the category.
@@ -29,9 +31,8 @@ An override reaches the GPU uniforms, the Canvas2D fill, the key and the band
 together. **When adding a slot**, add it to the meaning table. Do not add a color,
 and do not add a `case` to a classifier that already has a table.
 
-Labels derive the same way: `connectionLabel` reads wording through the read key,
-with `SPLIT_JUNCTION_LABELS` (`packages/alignments-core/src/connectionLabels.ts`)
-overriding the two junction rows. `getAlignmentsColorScales` de-dupes connections
+Labels derive the same way: `arcColorCategoryLabel` reads wording through the
+read key, with `ARC_SPLIT_LABELS` naming the four junction rows. `getAlignmentsColorScales` de-dupes connections
 against keyed rows on `` `${color} ${label}` ``, so a drifted string silently keys
 one connection twice.
 

@@ -497,9 +497,9 @@ export const colorShortInsert = '#f582c0'
 // lightness alone.
 //
 // The dark end is affordable at all because this slot has the loosest
-// requirements in the palette: it is a READ FILL ONLY, in neither
-// `ARC_SLOT_CATEGORY` nor `LINKED_READ_SLOT_CATEGORY`, so it never has to
-// survive a hairline stroke.
+// requirements in the palette: it is a READ FILL ONLY, not in
+// `ARC_SLOT_CATEGORY`, the read connections' table, so it never has to survive
+// a hairline stroke.
 //
 // IGV goes further than any of this: `setPairOrientation` requires
 // `mate.isMapped()`, so an unmapped mate falls through every branch and takes

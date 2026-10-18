@@ -2,18 +2,14 @@ import { readNameAt, spanOf } from '@jbrowse/alignments-core'
 import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 import { discordantDipPx } from '@jbrowse/sv-core'
 
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
-// Canvas2D/SVG spelled it `colorType % palette.length`, which agrees with the
-// shader's clamp on every slot in use and resolves an out-of-range one to a
-// different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { getArcLegendItems } from '../../shared/legendUtils.ts'
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
+import { connectorColorShift } from '../arcs/arcColors.ts'
 import {
-  LINKED_READ_COLOR_MAPS_BACK,
-  connectionLabel,
-  connectorPaletteSlot,
+  crossesChromosomes,
   isGpuLinkedReadLine,
   iterLinkedPairs,
   linkedReadLinesByRegion,
@@ -22,9 +18,10 @@ import {
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ConnectionFilter } from '../../shared/types.ts'
+import type { ArcCategory } from '../../shaders/palettes.ts'
+import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
-import type { LinkedPair } from './compute.ts'
+import type { LinkedPair, RefNameAt } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -61,44 +58,24 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  */
 export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 
-// Legend swatches for the connection types actually drawn as bezier/line arcs,
-// built from the same palette and labels the overlay itself uses
-// (linkedReadColorPalette + connectionLabel) so the on-screen key can never
-// disagree with what's drawn. `colorTypes` is the set of LINKED_READ_COLOR_*
-// present in view; sorted so the legend order is stable as reads stream in.
-//
-// One row per COLOR, because two color types can resolve to one swatch and the
-// pair that does is drawn together: slots 0 and 1 are both `pairLR` in
-// LINKED_READ_SLOT_CATEGORY, so a view holding an LR mate link and one whose
-// orientation the worker never computed listed the identical grey twice, under
-// two names. The lower slot's wording wins, which is the neutral one — slot 0
-// is `connectionLabel`'s "Read pair" precisely because calling that grey LR
-// would assert an orientation nothing measured, and once the two share a row
-// the grey really does cover both. The read/arc key resolves the same collision
-// in `oneRowPerMeaning`; this list never passes through it.
+// Legend swatches for the connector colors in view, in the arc key's rows and
+// wording, since the connectors paint as the arcs do: its inter-chromosomal row
+// names split reads unless a mate link crosses too, as the arc key's does.
 export function bezierConnectionLegendItems(
   colorTypes: Iterable<number>,
   colors: ColorPalette,
+  colorField: ArcColorField,
+  interchromFromMatePair: boolean,
   declared?: Partial<Record<SwatchCategory, string>>,
 ): LegendItem[] {
-  const palette = buildLinkedReadColorPalette(colors)
-  const byColor = new Map<string, LegendItem>()
-  for (const colorType of [...colorTypes].sort((a, b) => a - b)) {
-    const color = rgb255(
-      palette[linkedReadColorSlot(connectorPaletteSlot(colorType))]!,
+  const shift = connectorColorShift(colorField)
+  const categories = new Set<ArcCategory>()
+  for (const colorType of colorTypes) {
+    categories.add(
+      arcSlotCategory(linkedReadColorSlot(colorType, shift), colorField),
     )
-    // A maps-back split keeps a row beside the RL pairs it shares a color
-    // with, whose label describes mates.
-    const key =
-      colorType === LINKED_READ_COLOR_MAPS_BACK ? `${color} split` : color
-    if (!byColor.has(key)) {
-      byColor.set(key, {
-        color,
-        label: connectionLabel(colorType, declared),
-      })
-    }
   }
-  return [...byColor.values()]
+  return getArcLegendItems(categories, colors, interchromFromMatePair, declared)
 }
 
 // Enumerate the linked pairs of a laid-out region map, which the connector
@@ -127,6 +104,7 @@ export function enumerateBezierPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   scope: BezierArcScope = 'all',
   canonicalRefName?: CanonicalRefName,
+  refNameAt?: RefNameAt,
 ): LinkedPair[] {
   if (
     scope === 'none' ||
@@ -145,7 +123,11 @@ export function enumerateBezierPairs(
   const predicate =
     scope === 'crossRegion' ? isCrossRegionPair : isBezierArcPair
   const out: LinkedPair[] = []
-  for (const pair of iterLinkedPairs(laidOutPileupMap, canonicalRefName)) {
+  for (const pair of iterLinkedPairs(
+    laidOutPileupMap,
+    canonicalRefName,
+    refNameAt,
+  )) {
     if (predicate(pair)) {
       out.push(pair)
     }
@@ -163,18 +145,16 @@ export function enumerateBezierPairs(
  */
 export function connectorFilterOf(
   { interchrom, offscreenMates, minInterchromReads }: ConnectionFilter,
-  refNameAt: (displayedRegionIndex: number) => string | undefined,
+  refNameAt: RefNameAt,
   belowFloor: () => ReadonlySet<string>,
 ) {
   return ({ e1, e2, c }: LinkedPair) => {
-    const crossesChromosomes =
-      e1.displayedRegionIndex !== e2.displayedRegionIndex &&
-      refNameAt(e1.displayedRegionIndex) !== refNameAt(e2.displayedRegionIndex)
+    const crosses = crossesChromosomes(e1, e2, refNameAt)
     return (
-      passesCategory(crossesChromosomes, interchrom) &&
+      passesCategory(crosses, interchrom) &&
       passesCategory(false, offscreenMates) &&
       !(
-        crossesChromosomes &&
+        crosses &&
         !c.isSplit &&
         minInterchromReads > 1 &&
         belowFloor().has(readNameAt(e1.data, e1.readIdx))
@@ -206,16 +186,20 @@ export function resolveConnectors(
     lines,
     scope,
     canonicalRefName,
+    refNameAt,
     admits,
   }: {
     lines: boolean
     scope: BezierArcScope
     canonicalRefName?: CanonicalRefName
+    // what tells a connection crossing chromosomes, which paints
+    // inter-chromosomal as its arc does
+    refNameAt?: RefNameAt
     admits?: (pair: LinkedPair) => boolean
   },
 ): GroupConnectors {
   if (!lines) {
-    const pairs = enumerateBezierPairs(map, scope, canonicalRefName)
+    const pairs = enumerateBezierPairs(map, scope, canonicalRefName, refNameAt)
     return {
       lines: NO_LINES,
       overlayPairs: admits ? pairs.filter(admits) : pairs,
@@ -223,7 +207,7 @@ export function resolveConnectors(
   }
   const straight: LinkedPair[] = []
   const rest: LinkedPair[] = []
-  for (const pair of iterLinkedPairs(map, canonicalRefName)) {
+  for (const pair of iterLinkedPairs(map, canonicalRefName, refNameAt)) {
     if (!admits || admits(pair)) {
       ;(isGpuLinkedReadLine(pair) ? straight : rest).push(pair)
     }

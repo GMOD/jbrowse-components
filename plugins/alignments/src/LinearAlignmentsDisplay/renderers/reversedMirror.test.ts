@@ -208,7 +208,7 @@ function pileupData(): PileupDataResult {
     connectingLineYs: new Uint16Array([0]),
     linkedReadLinePositions: new Uint32Array([1005, 1044]),
     linkedReadLineYs: new Uint16Array([0, 1]),
-    linkedReadLineColorTypes: new Uint8Array([0]),
+    linkedReadLineColorTypes: new Uint16Array([0]),
     numLinkedReadLines: 1,
     modCovPackedBuffer: new ArrayBuffer(0),
     snpPackedBuffer: new ArrayBuffer(0),

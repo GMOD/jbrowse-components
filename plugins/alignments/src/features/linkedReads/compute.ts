@@ -1,71 +1,25 @@
 import {
-  CONNECTION_LABELS,
-  PAIR_DIRECTION_NUM,
   classifyConnection,
   isAbnormalConnection,
+  pairFieldEntry,
   readGroupConnections,
   readNameAt,
 } from '@jbrowse/alignments-core'
 
-import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import {
+  ARC_COLOR_INTERCHROM,
+  COLOR_DEFAULT,
+  connectorColorType,
+  pairColorType,
+  splitColorType,
+  splitJunctionSlot,
+} from '../arcs/arcColors.ts'
 
-import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { ConnectionKind } from '@jbrowse/alignments-core'
-
-// Color slots for the linked-read connecting lines and bezier curves, shared by
-// Canvas2D / SVG and the GPU palette uniform; the order matches
-// linkedReadColorPalette in shaders/palettes.ts. The four pair slots are the
-// worker's orientation codes, taken from PAIR_DIRECTION_NUM so the two
-// orderings cannot be renumbered apart.
-export const LINKED_READ_COLOR_PAIR_UNKNOWN = 0
-export const LINKED_READ_COLOR_PAIR_LR = PAIR_DIRECTION_NUM.LR
-export const LINKED_READ_COLOR_PAIR_RL = PAIR_DIRECTION_NUM.RL
-export const LINKED_READ_COLOR_PAIR_RR = PAIR_DIRECTION_NUM.RR
-export const LINKED_READ_COLOR_PAIR_LL = PAIR_DIRECTION_NUM.LL
-// The split-read slots continue past the pair block; they have no orientation
-// code of their own, so they number off its end.
-export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
-export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
-// A mate link whose two ends are on different chromosomes, in the slot that
-// was a dead duplicate of the LR fallback, so the palette keeps its eight
-// entries. Its own slot because orientation is meaningless across a
-// translocation yet arrives populated and plausible: `@gmod/bam` resolves
-// `selfIsLeft` from `refId < mateRefId` and hands back a real code off an
-// ordering of chromosome ids.
-export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
-
-// The bezier-arc hover tooltip's and legend row's wording, shared with the
-// breakpoint split view through CONNECTION_LABELS. Slot 0 takes LR's swatch, but
-// calling it LR would assert an orientation nothing measured.
-// `declared` is `color.labels` by bucket, as the read key names it.
-// A split junction that maps back over its own read. Not a palette slot: the
-// overlay alone draws it, in the color of the RL pairs that span such a
-// junction (`connectorPaletteSlot`), under the arc band's name for the class.
-export const LINKED_READ_COLOR_MAPS_BACK = LINKED_READ_COLOR_INTERCHROM + 1
-const MAPS_BACK_LABEL = 'Split read (duplication-type)'
-
-export function connectorPaletteSlot(colorType: number) {
-  return colorType === LINKED_READ_COLOR_MAPS_BACK
-    ? LINKED_READ_COLOR_PAIR_RL
-    : colorType
-}
-
-export function connectionLabel(
-  colorType: number,
-  declared: Partial<Record<SwatchCategory, string>> = {},
-) {
-  if (colorType === LINKED_READ_COLOR_MAPS_BACK) {
-    return MAPS_BACK_LABEL
-  }
-  const category = LINKED_READ_SLOT_CATEGORY[colorType]
-  return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
-    ? CONNECTION_LABELS.readPair
-    : (declared[category] ?? CONNECTION_LABELS[category])
-}
 
 // No refName, unlike the arc path's entry: every comparison this path makes is
 // between two on-screen entries, and the overlay resolves each end's refName
@@ -76,19 +30,6 @@ export interface ReadEntry {
   displayedRegionIndex: number
   readIdx: number
   data: LaidOutPileupData
-}
-
-// The slot each connection kind draws in: the inverse of
-// LINKED_READ_SLOT_CATEGORY, which names the swatch a slot takes.
-const LINKED_READ_SLOT: Record<ConnectionKind, number> = {
-  readPair: LINKED_READ_COLOR_PAIR_UNKNOWN,
-  pairLR: LINKED_READ_COLOR_PAIR_LR,
-  pairRL: LINKED_READ_COLOR_PAIR_RL,
-  pairRR: LINKED_READ_COLOR_PAIR_RR,
-  pairLL: LINKED_READ_COLOR_PAIR_LL,
-  splitDeletion: LINKED_READ_COLOR_SPLIT_NORMAL,
-  splitInversion: LINKED_READ_COLOR_SPLIT_INV,
-  interchrom: LINKED_READ_COLOR_INTERCHROM,
 }
 
 // Group reads across all displayed regions by readName. Used by both the
@@ -133,7 +74,11 @@ export interface ClassifiedPair {
   // A same-strand split whose next segment starts back upstream of where the
   // last one ended, so the read covers the stretch between twice.
   mapsBack: boolean
+  // The connection's arc slot under each color field (`connectorColorType`).
   colorType: number
+  // Whether it paints inter-chromosomal: a mate on another chromosome, or a
+  // connection whose two ends sit in regions of different chromosomes.
+  interchrom: boolean
   // A split-read junction (drives the fold-back of the second endpoint's bezier
   // handle) vs a paired mate link. Same `isSplit` the resolver assigns; carried
   // through so the overlay doesn't re-derive it.
@@ -147,8 +92,10 @@ export function classifyPair(
   e1: ReadEntry,
   e2: ReadEntry,
   isSplit: boolean,
+  crossesChromosomes = false,
 ): ClassifiedPair {
   const { kind, bp1, s1, bp2, s2 } = classifyConnection({ e1, e2, isSplit })
+  const interchrom = kind === 'interchrom' || crossesChromosomes
   // The rule the arc band classes a junction by (`splitJunctionColor`): the read
   // extends right from its lower foot and left from its higher one. A split's
   // first foot is a trailing edge and its second a leading one, so the read
@@ -166,9 +113,69 @@ export function classifyPair(
     s2,
     isNormal: !mapsBack && !isAbnormalConnection(kind),
     mapsBack,
-    colorType: mapsBack ? LINKED_READ_COLOR_MAPS_BACK : LINKED_READ_SLOT[kind],
+    colorType: connectionColorType(
+      e1,
+      e2,
+      interchrom ? 'interchrom' : kind,
+      isSplit,
+      lowerFootDir(bp1, s1, bp2, s2),
+    ),
+    interchrom,
     isSplit,
   }
+}
+
+// Which way a split read extends from its lower foot: against s1 from the
+// first, along s2 from the second, the first foot lower on one base when it
+// extends left.
+function lowerFootDir(bp1: number, s1: number, bp2: number, s2: number) {
+  return bp1 < bp2 || (bp1 === bp2 && s1 === 1) ? -s1 : s2
+}
+
+// The slots the arc band paints the same connection in (`getArcColorType`),
+// which takes one crossing chromosomes as inter-chromosomal, a split read's
+// included.
+function connectionColorType(
+  e1: ReadEntry,
+  e2: ReadEntry,
+  kind: ConnectionKind,
+  isSplit: boolean,
+  lowerDir: number,
+) {
+  if (kind === 'interchrom') {
+    return connectorColorType(() => ARC_COLOR_INTERCHROM)
+  }
+  if (isSplit) {
+    const junction =
+      kind === 'splitDeletion' || kind === 'splitInversion'
+        ? splitJunctionSlot(kind === 'splitInversion', lowerDir)
+        : COLOR_DEFAULT
+    return connectorColorType(field => splitColorType(field, junction))
+  }
+  const { data, readIdx } = pairFieldEntry(e1, e2)
+  return connectorColorType(field =>
+    pairColorType(
+      field,
+      data.readPairOrientations[readIdx]!,
+      data.readInsertSizes[readIdx]!,
+      data.insertSizeStats,
+    ),
+  )
+}
+
+/** The refName of a displayed region, by its index. */
+export type RefNameAt = (displayedRegionIndex: number) => string | undefined
+
+/** Whether a connection's two ends sit in regions of different chromosomes. */
+export function crossesChromosomes(
+  e1: ReadEntry,
+  e2: ReadEntry,
+  refNameAt: RefNameAt,
+) {
+  return (
+    e1.displayedRegionIndex !== e2.displayedRegionIndex &&
+    refNameAt(e1.displayedRegionIndex) !== refNameAt(e2.displayedRegionIndex)
+  )
 }
 
 export interface LinkedPair {
@@ -197,6 +204,7 @@ export interface LinkedPair {
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   canonicalRefName?: CanonicalRefName,
+  refNameAt?: RefNameAt,
 ): Generator<LinkedPair> {
   for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
     // Pure fast path, NOT a correctness gate — a singleton group yields no
@@ -216,7 +224,12 @@ export function* iterLinkedPairs(
         yield {
           e1,
           e2,
-          c: classifyPair(e1, e2, isSplit),
+          c: classifyPair(
+            e1,
+            e2,
+            isSplit,
+            !!refNameAt && crossesChromosomes(e1, e2, refNameAt),
+          ),
           hiddenSegmentsBetween,
           segments: entries,
         }
@@ -276,7 +289,7 @@ export function linkedReadLinesByRegion(
     out.set(idx, {
       linkedReadLinePositions: Uint32Array.from(bucket.positions),
       linkedReadLineYs: Uint16Array.from(bucket.ys),
-      linkedReadLineColorTypes: Uint8Array.from(bucket.colorTypes),
+      linkedReadLineColorTypes: Uint16Array.from(bucket.colorTypes),
       numLinkedReadLines: bucket.colorTypes.length,
     })
   }

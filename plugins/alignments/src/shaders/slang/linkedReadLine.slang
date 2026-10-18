@@ -1,6 +1,7 @@
 // Linked-read connecting line for `linkedReadBezier` mode. Per-instance
 // 6-vertex quad with per-endpoint Y (mates can sit on different rows when
-// a column sort is in effect) and palette-indexed color (8 slots, see
+// a column sort is in effect) and palette-indexed color: the arc palette,
+// indexed by the slot `connectorColorShift` picks out of the color type (see
 // `linkedReadColor*` in alignmentsUniforms.slang).
 //
 // **A quad, because a native line cannot carry a width.** This was a 2-vertex
@@ -63,8 +64,8 @@ struct VsOut {
 
 // linkedReadColorSlot (alignmentsUniforms) is the index rule, split out so the
 // Canvas2D/SVG overlay can read the generated twin instead of spelling its own.
-float3 linkedReadColorByIndex(uint idx, Uniforms u) {
-  return u.linkedReadColor[linkedReadColorSlot(idx)].xyz;
+float3 linkedReadColorByIndex(uint colorType, Uniforms u) {
+  return u.linkedReadColor[linkedReadColorSlot(colorType, u.connectorColorShift)].xyz;
 }
 
 [shader("vertex")]

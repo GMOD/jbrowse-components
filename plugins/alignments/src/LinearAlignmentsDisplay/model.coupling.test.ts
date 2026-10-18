@@ -1,4 +1,8 @@
-import { namesToBlock, readNameAt } from '@jbrowse/alignments-core'
+import {
+  PAIR_DIRECTION_NUM,
+  namesToBlock,
+  readNameAt,
+} from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
@@ -16,10 +20,9 @@ import {
   baseWorkerPileupData,
   makePileupDataResult,
 } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  LINKED_READ_COLOR_PAIR_LR,
-  LINKED_READ_COLOR_PAIR_RL,
-} from '../features/linkedReads/compute.ts'
+import { connectorColorShift } from '../features/arcs/arcColors.ts'
+import { arcSlotCategory } from '../shaders/palettes.ts'
+import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { colorFieldOf } from '../shared/alignmentsColor.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
@@ -116,6 +119,22 @@ function createDisplay({ withRegions = false } = {}) {
     ])
   }
   return display
+}
+
+// What the connectors in view paint, in the arc band's vocabulary.
+function connectionCategories(display: {
+  connectionColorTypes: Iterable<number>
+  readConnectionsColorField: Parameters<typeof connectorColorShift>[0]
+}) {
+  const field = display.readConnectionsColorField
+  return [...display.connectionColorTypes]
+    .map(ct =>
+      arcSlotCategory(
+        linkedReadColorSlot(ct, connectorColorShift(field)),
+        field,
+      ),
+    )
+    .toSorted()
 }
 
 describe('alignments display cross-feature coupling', () => {
@@ -856,10 +875,10 @@ describe('curved connectors', () => {
               readFlags: new Uint16Array([first, second, first, second]),
               readStrands: new Int8Array([1, -1, -1, 1]),
               readPairOrientations: new Uint8Array([
-                LINKED_READ_COLOR_PAIR_LR,
-                LINKED_READ_COLOR_PAIR_LR,
-                LINKED_READ_COLOR_PAIR_RL,
-                LINKED_READ_COLOR_PAIR_RL,
+                PAIR_DIRECTION_NUM.LR,
+                PAIR_DIRECTION_NUM.LR,
+                PAIR_DIRECTION_NUM.RL,
+                PAIR_DIRECTION_NUM.RL,
               ]),
             },
           },
@@ -902,9 +921,7 @@ describe('curved connectors', () => {
     display.setShowLegend(true)
     display.toggleGroupCollapsed('')
     expect(display.connectorsByGroup.get('')?.lines.size).toBe(0)
-    expect([...display.connectionColorTypes]).toEqual([
-      LINKED_READ_COLOR_PAIR_RL,
-    ])
+    expect(connectionCategories(display)).toEqual(['pairRL'])
   })
 
   // `filter.connections` reaches the connectors with the arc band off, the
@@ -993,10 +1010,7 @@ describe('curved connectors', () => {
   test("the key names the straight lines' color as well as the curves'", () => {
     const display = connectorDisplay()
     display.setShowLegend(true)
-    expect([...display.connectionColorTypes].sort()).toEqual([
-      LINKED_READ_COLOR_PAIR_LR,
-      LINKED_READ_COLOR_PAIR_RL,
-    ])
+    expect(connectionCategories(display)).toEqual(['normalInsert', 'pairRL'])
   })
 })
 

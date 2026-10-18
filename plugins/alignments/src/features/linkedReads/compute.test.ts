@@ -13,23 +13,24 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  LINKED_READ_COLOR_INTERCHROM,
-  LINKED_READ_COLOR_PAIR_LL,
-  LINKED_READ_COLOR_PAIR_LR,
-  LINKED_READ_COLOR_PAIR_RL,
-  LINKED_READ_COLOR_PAIR_RR,
-  LINKED_READ_COLOR_SPLIT_INV,
-  LINKED_READ_COLOR_MAPS_BACK,
-  LINKED_READ_COLOR_SPLIT_NORMAL,
-  classifyPair,
-  connectionLabel,
-  groupReadsByName,
-} from './compute.ts'
+import { arcSlotCategory } from '../../shaders/palettes.ts'
+import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { connectorColorShift } from '../arcs/arcColors.ts'
+import { classifyPair, groupReadsByName } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 import type { ReadEntry } from './compute.ts'
+
+// What a connector of `colorType` paints under `field`, in the arc band's
+// vocabulary.
+function paints(colorType: number, field: ArcColorField = 'pairOrientation') {
+  return arcSlotCategory(
+    linkedReadColorSlot(colorType, connectorColorShift(field)),
+    field,
+  )
+}
 
 // The straight-line pass's records, as the display resolves them.
 function linesOf(
@@ -141,11 +142,26 @@ describe('classifyPair — paired reads', () => {
     })
   }
 
+  // The arc band's classes, so a long-insert pair's connector is not the
+  // normal pair its arc says it is not.
+  it('a long-insert LR pair paints as the arcs do under each field', () => {
+    const data = {
+      ...makePairedData(1),
+      readInsertSizes: Float32Array.of(5000, -5000),
+      insertSizeStats: { lower: 200, upper: 600 },
+    }
+    const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
+    expect(c.isNormal).toBe(true)
+    expect(paints(c.colorType, 'insertSizeAndOrientation')).toBe('longInsert')
+    expect(paints(c.colorType, 'insertSize')).toBe('longInsert')
+    expect(paints(c.colorType, 'pairOrientation')).toBe('pairLR')
+  })
+
   it('LR → PAIR_LR color, normal, 3-prime endpoints, isSplit=false', () => {
     const data = makePairedData(1)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.isSplit).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_LR)
+    expect(paints(c.colorType)).toBe('pairLR')
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // fwd 3-prime = end
     expect(c.bp2).toBe(300) // rev 3-prime = start
@@ -155,21 +171,21 @@ describe('classifyPair — paired reads', () => {
     const data = makePairedData(2)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.isSplit).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
+    expect(paints(c.colorType)).toBe('pairRL')
     expect(c.isNormal).toBe(false)
   })
 
   it('RR → PAIR_RR color, not normal', () => {
     const data = makePairedData(3)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_RR)
+    expect(paints(c.colorType)).toBe('pairRR')
     expect(c.isNormal).toBe(false)
   })
 
   it('LL → PAIR_LL color, not normal', () => {
     const data = makePairedData(4)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_LL)
+    expect(paints(c.colorType)).toBe('pairLL')
     expect(c.isNormal).toBe(false)
   })
 
@@ -193,7 +209,7 @@ describe('classifyPair — paired reads', () => {
       interchrom: [1, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_INTERCHROM)
+    expect(paints(c.colorType)).toBe('interchrom')
     // and it draws as a curve, the display's mark for discordant
     expect(c.isNormal).toBe(false)
   })
@@ -217,7 +233,7 @@ describe('classifyPair — paired reads', () => {
       interchrom: [1, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(paints(c.colorType)).toBe('splitForward')
     expect(c.isNormal).toBe(true)
   })
 })
@@ -248,7 +264,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
       [100, 200],
       [300, 400],
     ],
-    orientations: [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_RL],
+    orientations: [1, 2],
     ys: [0, 0],
   })
 
@@ -258,7 +274,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
       makeEntry(splitMateOffScreenPrimary, 1),
       false,
     )
-    expect(supplementaryFirst.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
+    expect(paints(supplementaryFirst.colorType)).toBe('pairRL')
     // The whole point: a normal pair inside one region never reaches the
     // overlay, so the LR misreading took this curve off screen entirely.
     expect(supplementaryFirst.isNormal).toBe(false)
@@ -278,7 +294,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
         [100, 200],
         [300, 400],
       ],
-      orientations: [LINKED_READ_COLOR_PAIR_RL, LINKED_READ_COLOR_PAIR_RL],
+      orientations: [2, 2],
       ys: [0, 0],
     })
     const c = classifyPair(
@@ -286,7 +302,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
       makeEntry(bothPrimaries, 1),
       false,
     )
-    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
+    expect(paints(c.colorType)).toBe('pairRL')
     expect(c.isNormal).toBe(false)
   })
 
@@ -298,7 +314,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
       makeEntry(splitMateOffScreenPrimary, 1),
       true,
     )
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
+    expect(paints(c.colorType)).toBe('splitInvLL')
   })
 })
 
@@ -321,7 +337,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(paints(c.colorType)).toBe('splitForward')
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // e1 fwd: read-trailing (3') edge = end
     expect(c.bp2).toBe(300) // e2 fwd: read-leading (5') edge = start
@@ -343,9 +359,8 @@ describe('classifyPair — split long reads', () => {
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect([c.bp1, c.bp2]).toEqual([600, 200])
     expect(c.mapsBack).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_MAPS_BACK)
+    expect(paints(c.colorType)).toBe('splitBack')
     expect(c.isNormal).toBe(false)
-    expect(connectionLabel(c.colorType)).toBe('Split read (duplication-type)')
   })
 
   it('two segments meeting on one base skip nothing and map back over nothing', () => {
@@ -362,7 +377,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.mapsBack).toBe(false)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(paints(c.colorType)).toBe('splitForward')
   })
 
   it('both rev, e1 left of e2 in read order → maps back, strand-flipped edges', () => {
@@ -381,13 +396,13 @@ describe('classifyPair — split long reads', () => {
     expect(c.isSplit).toBe(true)
     // a reverse read runs leftward, so a next segment to the right is behind it
     expect(c.mapsBack).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_MAPS_BACK)
+    expect(paints(c.colorType)).toBe('splitBack')
     expect(c.isNormal).toBe(false)
     expect(c.bp1).toBe(100) // e1 rev: read-trailing (3') edge = start
     expect(c.bp2).toBe(400) // e2 rev: read-leading (5') edge = end
   })
 
-  it('fwd+rev inversion → SPLIT_INV, connects a2↔b2 (both ends), real s2', () => {
+  it('fwd+rev inversion → LL-type, connects a2↔b2 (both ends), real s2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -401,7 +416,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
+    expect(paints(c.colorType)).toBe('splitInvLL')
     expect(c.isNormal).toBe(false)
     // The fix: a1 fwd → a.end (200, =a2); b rev → b.end (400, =b2). Connects
     // a2↔b2, not a2↔b1 (300) which landed on the far edge of the rev segment.
@@ -413,7 +428,7 @@ describe('classifyPair — split long reads', () => {
     expect(c.s2).toBe(-1)
   })
 
-  it('rev+fwd inversion → SPLIT_INV, connects a.start↔b.start, real s2', () => {
+  it('rev+fwd inversion → RR-type, connects a.start↔b.start, real s2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -427,7 +442,7 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
+    expect(paints(c.colorType)).toBe('splitInvRR')
     expect(c.isNormal).toBe(false)
     expect(c.bp1).toBe(100) // e1 rev: read-trailing edge = start
     expect(c.bp2).toBe(300) // e2 fwd: read-leading edge = start
@@ -640,7 +655,7 @@ describe('the straight-line records', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('pairLR')
     expect(lines.linkedReadLinePositions[0]).toBe(200) // fwd 3-prime
     expect(lines.linkedReadLinePositions[1]).toBe(300) // rev 3-prime
   })
@@ -680,9 +695,7 @@ describe('the straight-line records', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(
-      LINKED_READ_COLOR_SPLIT_NORMAL,
-    )
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('splitForward')
     expect(lines.linkedReadLinePositions[0]).toBe(200) // right edge of left alignment
     expect(lines.linkedReadLinePositions[1]).toBe(300) // left edge of right alignment
     expect(lines.linkedReadLineYs[0]).toBe(0)
@@ -709,9 +722,7 @@ describe('the straight-line records', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(
-      LINKED_READ_COLOR_SPLIT_NORMAL,
-    )
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('splitForward')
     expect(lines.linkedReadLinePositions[0]).toBe(300)
     expect(lines.linkedReadLinePositions[1]).toBe(200)
   })
@@ -739,7 +750,7 @@ describe('the straight-line records', () => {
     expect(lines.linkedReadLinePositions[1]).toBe(300)
   })
 
-  it('excludes split inversions (SPLIT_INV) — the connector mark draws them', () => {
+  it('excludes split inversions — the connector mark draws them', () => {
     const data = makeData({
       names: ['r1', 'r1'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -844,10 +855,8 @@ describe('the straight-line records', () => {
     const lines = result.get(0)!
     // Both pairs emit lines: the LR paired reads and the FR split reads
     expect(lines.numLinkedReadLines).toBe(2)
-    expect(lines.linkedReadLineColorTypes[0]).toBe(LINKED_READ_COLOR_PAIR_LR)
-    expect(lines.linkedReadLineColorTypes[1]).toBe(
-      LINKED_READ_COLOR_SPLIT_NORMAL,
-    )
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('pairLR')
+    expect(paints(lines.linkedReadLineColorTypes[1]!)).toBe('splitForward')
   })
 })
 

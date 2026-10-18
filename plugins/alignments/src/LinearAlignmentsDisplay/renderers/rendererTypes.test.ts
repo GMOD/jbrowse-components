@@ -35,6 +35,7 @@ function makeState(
 ): RenderState & ArcBandInput {
   return {
     scrollTop: 0,
+    readConnectionsColorField: 'insertSizeAndOrientation',
     readConnectionsLineWidth: 1,
     linkRegions: [],
     showOutline: false,

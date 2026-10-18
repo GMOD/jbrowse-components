@@ -3,9 +3,9 @@ import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
-  LINKED_READ_COLOR_PAIR_RR,
-  connectionLabel,
-} from '../features/linkedReads/compute.ts'
+  connectorColorType,
+  pairColorType,
+} from '../features/arcs/arcColors.ts'
 import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
 import {
   alignmentsColorEncoding,
@@ -146,12 +146,11 @@ describe('color.labels names the key rows range colors', () => {
       'Inverted',
     )
     expect(
-      connectionLabel(LINKED_READ_COLOR_PAIR_RR, declared.categories),
-    ).toBe('Inverted')
-    expect(
       bezierConnectionLegendItems(
-        [LINKED_READ_COLOR_PAIR_RR],
+        [connectorColorType(f => pairColorType(f, 3, 0, undefined))],
         palette,
+        'pairOrientation',
+        false,
         declared.categories,
       )[0]!.label,
     ).toBe('Inverted')

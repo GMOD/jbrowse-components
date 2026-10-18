@@ -29,7 +29,7 @@ review of the revised plan.
   (`features/linkedReads/`), and "Inter-chromosomal evidence → Hide" leaves
   their curves on screen.
 - **The two connection marks disagree in color.** The connectors paint by pair
-  orientation (`LINKED_READ_SLOT_CATEGORY`), the arcs by
+  orientation (an eight-slot table of their own), the arcs by
   `readConnectionsColorField`, which resolves to `insertSizeAndOrientation`
   under the default read color. The display draws a long-insert pair as a
   long-insert arc over a connector painted as a normal pair.
@@ -265,6 +265,10 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 5. **The sashimi fallback.** Built: the placement row greys out without
    coverage, as every arc draws down.
 6. **The connectors' color**, a picture change shot before and after.
+   Built: each connector carries its arc slot under every color field, packed
+   in its color type, and the field picks one at paint time, so a recolor
+   reclassifies nothing; a split read joining two chromosomes paints
+   inter-chromosomal, as its arc does.
 7. **`variants`** on the multi-sample variant display, flagged `plot`. The
    names are beta-only, so no lift; jb2hubs' pangenome configs and share links
    (`website/src/components/pangenomeLinks.ts`) update in step.

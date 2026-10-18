@@ -13,7 +13,7 @@
 export interface LinkedReadLinesUploadData {
   linkedReadLinePositions: Uint32Array
   linkedReadLineYs: Uint16Array
-  linkedReadLineColorTypes: Uint8Array
+  linkedReadLineColorTypes: Uint16Array
   numLinkedReadLines: number
 }
 
@@ -21,7 +21,7 @@ export function emptyLinkedReadLinesUploadData(): LinkedReadLinesUploadData {
   return {
     linkedReadLinePositions: new Uint32Array(0),
     linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
+    linkedReadLineColorTypes: new Uint16Array(0),
     numLinkedReadLines: 0,
   }
 }

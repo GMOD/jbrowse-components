@@ -1,21 +1,13 @@
-import {
-  colorPairLL,
-  colorPairLR,
-  colorPairRL,
-  colorPairRR,
-  colorSplitReadInversion,
-  colorSupplementary,
-} from '@jbrowse/core/ui/palette'
-import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-
 import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
-import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
+import { ARC_COLOR_FIELDS } from '../../shared/arcColorOptions.ts'
+import { connectorColorType } from '../arcs/arcColors.ts'
 import { LINKED_READ_LINE_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { ArcColorField } from '../../shared/types.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -23,13 +15,21 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // Real distinguishable colors, so "which slot did it read" is answerable from
 // the stroke string. makeTestPalette's default is all-zero, where every slot
 // resolves to the same CSS and a wrong index is invisible.
+const ARC_COLORED = [
+  'normalInsert',
+  'pairLR',
+  'longInsert',
+  'shortInsert',
+  'interchrom',
+  'pairLL',
+  'pairRR',
+  'pairRL',
+  'splitDeletion',
+] as const
 const STOCK = makeTestPalette({
-  colorPairLR: cssColorToNormalizedRgb(colorPairLR),
-  colorPairRL: cssColorToNormalizedRgb(colorPairRL),
-  colorPairRR: cssColorToNormalizedRgb(colorPairRR),
-  colorPairLL: cssColorToNormalizedRgb(colorPairLL),
-  colorSupplementary: cssColorToNormalizedRgb(colorSupplementary),
-  colorSplitInversion: cssColorToNormalizedRgb(colorSplitReadInversion),
+  readCategoryColors: Object.fromEntries(
+    ARC_COLORED.map((category, i) => [category, [i / 10, 0.5, 1 - i / 10]]),
+  ),
 })
 
 function recordingCtx() {
@@ -78,55 +78,65 @@ function oneLine(colorType: number): LinkedReadLinesUploadData {
   return {
     linkedReadLinePositions: new Uint32Array([1050, 1150]),
     linkedReadLineYs: new Uint16Array([0, 0]),
-    linkedReadLineColorTypes: new Uint8Array([colorType]),
+    linkedReadLineColorTypes: new Uint16Array([colorType]),
     numLinkedReadLines: 1,
   }
 }
 
-function strokeFor(colorType: number) {
+function strokeFor(colorType: number, field: ArcColorField) {
   const { ctx, strokes } = recordingCtx()
-  LINKED_READ_LINE_MARK.paintBlock(ctx, oneLine(colorType), BLOCK, state())
+  LINKED_READ_LINE_MARK.paintBlock(ctx, oneLine(colorType), BLOCK, {
+    ...state(),
+    readConnectionsColorField: field,
+  })
   return strokes[0]!
 }
 
-const expectedStroke = (slot: number) =>
-  rgba255(buildLinkedReadColorPalette(STOCK)[slot]!, LINKED_READ_LINE_ALPHA)
+const expectedStroke = (field: ArcColorField, slot: number) =>
+  rgba255(buildArcColorPalette(STOCK, field)[slot]!, LINKED_READ_LINE_ALPHA)
 
 // The palette-index rule is `linkedReadColorSlot` (a CLAMP, generated from
-// alignmentsUniforms.slang). This pass spelled it `colorType % css.length` — a
-// WRAP, which agrees with the clamp on every slot in use and so survives review,
-// and which for an out-of-range slot resolves to a different REAL color rather
-// than to the last one. The rule's own unit test could not catch this, because
-// what drifted was the call site, not the rule; the connector mark had already
-// been moved onto it and this one had not.
+// alignmentsUniforms.slang), which reads the field's slot out of the packed
+// color type. This pass once spelled it `colorType % css.length` — a WRAP,
+// which for an out-of-range slot resolves to a different REAL color rather
+// than to the last one.
 describe('linked-read connector strokes follow the generated slot rule', () => {
-  it('reads the slot the color type names, for every slot in the palette', () => {
-    buildLinkedReadColorPalette(STOCK).forEach((_, slot) => {
-      expect(strokeFor(slot)).toBe(expectedStroke(slot))
-    })
-  })
+  it.each(ARC_COLOR_FIELDS)(
+    'under %s, paints the arc slot packed for that field',
+    field => {
+      buildArcColorPalette(STOCK, field).forEach((_, slot) => {
+        expect(
+          strokeFor(
+            connectorColorType(() => slot),
+            field,
+          ),
+        ).toBe(expectedStroke(field, slot))
+      })
+    },
+  )
 
-  it('clamps an out-of-range color type to the last slot, never wrapping', () => {
-    const palette = buildLinkedReadColorPalette(STOCK)
-    const last = palette.length - 1
-    for (const past of [palette.length, palette.length + 2, 99]) {
-      expect(strokeFor(past)).toBe(expectedStroke(last))
-      // The same rule the GPU and the SVG overlay index through.
-      expect(strokeFor(past)).toBe(expectedStroke(linkedReadColorSlot(past)))
-    }
-  })
-
-  // Where the wrap and the clamp actually part company, which is NOT at the
-  // first out-of-range index: slot 7 is the unknown/fallback baseline and takes
-  // LR's swatch, the same one slot 0 takes, so `8 % 8 === 0` happened to paint
-  // the clamp's color. Slots 1 and 9 are LR too. Index 10 is the first that
-  // wraps onto a slot with a color of its own (2, pairRL) — so this is the
-  // assertion the palette's own shape leaves available to distinguish the two.
-  it('paints slot 10 the fallback, not the RL it would wrap onto', () => {
-    const palette = buildLinkedReadColorPalette(STOCK)
-    expect(expectedStroke(10 % palette.length)).not.toBe(
-      expectedStroke(palette.length - 1),
+  it('reads only the field it paints', () => {
+    const colorType = connectorColorType(field =>
+      field === 'pairOrientation' ? 6 : 1,
     )
-    expect(strokeFor(10)).toBe(expectedStroke(palette.length - 1))
+    expect(strokeFor(colorType, 'pairOrientation')).toBe(
+      expectedStroke('pairOrientation', 6),
+    )
+    expect(strokeFor(colorType, 'insertSize')).toBe(
+      expectedStroke('insertSize', 1),
+    )
+  })
+
+  it('clamps a slot past the palette to the last slot, never wrapping', () => {
+    const field = 'insertSizeAndOrientation'
+    const last = buildArcColorPalette(STOCK, field).length - 1
+    for (const past of [last + 1, 15]) {
+      expect(
+        strokeFor(
+          connectorColorType(() => past),
+          field,
+        ),
+      ).toBe(expectedStroke(field, last))
+    }
   })
 })
