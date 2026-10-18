@@ -5420,15 +5420,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "displayDirectionalChevrons": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "maxHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "displayDirectionalChevrons": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11030,6 +11030,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "displayDirectionalChevrons": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "maxHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14905,14 +14909,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "outline": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outline"
             },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
+            },
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
-            },
-            "displayDirectionalChevrons": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
@@ -16142,6 +16146,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "outline": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outline"
+            },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/displayDirectionalChevrons"
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"

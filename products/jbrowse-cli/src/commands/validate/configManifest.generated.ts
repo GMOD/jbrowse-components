@@ -3349,9 +3349,9 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
+        "displayDirectionalChevrons",
         "maxHeight",
         "renderer",
-        "displayDirectionalChevrons",
         "showDescriptions"
       ],
       "droppedKeys": [
@@ -5832,6 +5832,7 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
+        "displayDirectionalChevrons",
         "maxHeight",
         "renderer",
         "showDescriptions"
