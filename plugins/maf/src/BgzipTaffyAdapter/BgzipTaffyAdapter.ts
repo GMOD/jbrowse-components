@@ -140,12 +140,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
 
   async doSetup(signal?: AbortSignal): Promise<SetupData> {
     const [tai, runLengthEncodeBases] = await Promise.all([
-      readTaiIndex(
-        this.getConf('taiLocation'),
-        this.getConf('tafGzLocation'),
-        this.pluginManager,
-        signal,
-      ),
+      readTaiIndex(this.getConf('taiLocation'), this.pluginManager, signal),
       this.readHeader(signal),
     ])
     return { ...tai, runLengthEncodeBases }

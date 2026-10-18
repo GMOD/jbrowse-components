@@ -335,32 +335,24 @@ describe('queryBlockSpan', () => {
   // A dense MAF puts ~190KB of compressed data between two sparse entries, so
   // bounding the last chromosome's tail at one block dropped its last several
   // kb with no error.
-  test('the last chromosome bounds its tail at the file size', () => {
-    const index: IndexData = new Map([
-      ['chr1', [entry(0, 0), entry(100, 1000)]],
-    ])
-    const span = queryBlockSpan(index, 'chr1', 50, 99999, 200_000)!
-    expect(span.ranPastEnd).toBe(true)
-    expect(span.endBlock).toBe(200_000)
-    expect(span.readLength).toBe(200_000)
-  })
-
-  test('without a file size the last chromosome falls back to one block', () => {
+  test('the last chromosome reads its tail to the end of the file', () => {
     const index: IndexData = new Map([
       ['chr1', [entry(0, 0), entry(100, 1000)]],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
-    expect(span.endBlock).toBe(span.startBlock)
+    expect(span.ranPastEnd).toBe(true)
+    expect(span.toEnd).toBe(true)
     expect(span.readLength).toBe(65536)
   })
 
-  test('the cushion never reads past the file size', () => {
+  test('an earlier chromosome bounds its tail at the next one', () => {
     const index: IndexData = new Map([
-      ['chr1', [entry(0, 0), entry(100, 1000), entry(200, 2000)]],
+      ['chr1', [entry(0, 0), entry(100, 1000)]],
+      ['chr2', [entry(0, 300_000)]],
     ])
-    const span = queryBlockSpan(index, 'chr1', 0, 50, 3000)!
-    expect(span.ranPastEnd).toBe(false)
-    expect(span.readLength).toBe(3000)
+    const span = queryBlockSpan(index, 'chr1', 50, 99999)!
+    expect(span.toEnd).toBe(false)
+    expect(span.readLength).toBe(300_000 + 65536)
   })
 
   // `readLength` is what both `getFeatures` and `getRegionByteSize` use. A

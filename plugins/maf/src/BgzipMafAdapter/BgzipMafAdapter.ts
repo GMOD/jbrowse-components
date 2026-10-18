@@ -31,7 +31,6 @@ export default class BgzipMafAdapter extends MafTaiAdapterBase<BgzipMafAdapterCo
     setup: opts =>
       readTaiIndex(
         this.getConf('taiLocation'),
-        this.getConf('mafGzLocation'),
         this.pluginManager,
         opts.signal,
       ),

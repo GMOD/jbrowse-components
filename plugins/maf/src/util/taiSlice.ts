@@ -8,31 +8,52 @@ import type { IndexData } from './taiIndex.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
 
-/** A parsed `.tai` plus the size of the bgzf file it indexes. */
+/** A parsed `.tai` */
 export interface TaiIndex {
   index: IndexData
-  /**
-   * What bounds a read past the last chromosome's last sparse entry.
-   * Undefined when the handle cannot report one — `RemoteFile.stat` answers 0
-   * when CORS hides `Content-Range` — and that read falls back to one block.
-   */
-  fileSize: number | undefined
 }
 
 export async function readTaiIndex(
   taiLocation: FileLocation,
-  gzLocation: FileLocation,
   pluginManager?: PluginManager,
   signal?: AbortSignal,
 ): Promise<TaiIndex> {
-  const [text, { size }] = await Promise.all([
-    openLocation(taiLocation, pluginManager).readFile({
-      encoding: 'utf8',
-      signal,
-    }),
-    openLocation(gzLocation, pluginManager).stat(),
-  ])
-  return { index: parseTaiIndex(text), fileSize: size > 0 ? size : undefined }
+  const text = await openLocation(taiLocation, pluginManager).readFile({
+    encoding: 'utf8',
+    signal,
+  })
+  return { index: parseTaiIndex(text) }
+}
+
+/**
+ * Read from `start` to the end of the file, `first` bytes and then twice as
+ * many each time, until a read comes back short.
+ */
+export async function readToEnd(
+  file: ReturnType<typeof openLocation>,
+  start: number,
+  first: number,
+  signal?: AbortSignal,
+) {
+  const parts: Uint8Array[] = []
+  let at = start
+  let step = first
+  for (;;) {
+    const bytes = await file.read(step, at, { signal })
+    parts.push(bytes)
+    at += bytes.length
+    if (bytes.length < step) {
+      break
+    }
+    step *= 2
+  }
+  const result = new Uint8Array(at - start)
+  let offset = 0
+  for (const part of parts) {
+    result.set(part, offset)
+    offset += part.length
+  }
+  return result
 }
 
 /**
@@ -54,7 +75,6 @@ export async function readTaiIndex(
  */
 export async function readTaiSlice({
   index,
-  fileSize,
   refName,
   start,
   end,
@@ -64,7 +84,6 @@ export async function readTaiSlice({
   signal,
 }: {
   index: IndexData
-  fileSize?: number
   refName: string
   start: number
   end: number
@@ -73,7 +92,7 @@ export async function readTaiSlice({
   statusCallback?: StatusCallback
   signal?: AbortSignal
 }) {
-  const span = queryBlockSpan(index, refName, start, end, fileSize)
+  const span = queryBlockSpan(index, refName, start, end)
   if (!span) {
     return undefined
   }
@@ -84,6 +103,7 @@ export async function readTaiSlice({
     startBlock,
     endBlock,
     readLength,
+    toEnd,
   } = span
 
   const file = openLocation(location, pluginManager)
@@ -91,7 +111,10 @@ export async function readTaiSlice({
     await updateStatus(
       'Downloading alignments',
       statusCallback,
-      () => file.read(readLength, startBlock, { signal }),
+      () =>
+        toEnd
+          ? readToEnd(file, startBlock, readLength, signal)
+          : file.read(readLength, startBlock, { signal }),
       signal,
     ),
   )
@@ -113,22 +136,14 @@ export async function readTaiSlice({
 /**
  * Byte budget for a region set from the `.tai` alone: exactly the `readLength`
  * {@link readTaiSlice} passes to `file.read`, through the same
- * `queryBlockSpan`. No block download. A chromosome absent from the index
- * resolves no span and so costs nothing, which is the only case reporting 0.
+ * `queryBlockSpan`, or its first step for a read to the end of the file. No
+ * block download. A chromosome absent from the index resolves no span and so
+ * costs nothing, which is the only case reporting 0.
  */
-export function taiRegionByteSize(
-  { index, fileSize }: TaiIndex,
-  regions: Region[],
-) {
+export function taiRegionByteSize({ index }: TaiIndex, regions: Region[]) {
   let bytes = 0
   for (const region of regions) {
-    const span = queryBlockSpan(
-      index,
-      region.refName,
-      region.start,
-      region.end,
-      fileSize,
-    )
+    const span = queryBlockSpan(index, region.refName, region.start, region.end)
     if (span) {
       bytes += span.readLength
     }

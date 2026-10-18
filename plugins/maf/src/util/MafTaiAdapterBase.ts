@@ -64,7 +64,6 @@ export abstract class MafTaiAdapterBase<
     const onQueriedChr = makeRefChrFilter(query.refName)
     const slice = await readTaiSlice({
       index: setup.index,
-      fileSize: setup.fileSize,
       refName: query.refName,
       start: query.start,
       end: query.end,

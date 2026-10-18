@@ -215,8 +215,13 @@ export interface QueryBlockSpan {
    * inside one bracket, or one running past a chromosome's last sparse entry)
    * makes the span zero-width while the read is a full block. Reporting the
    * span alone told the gate a real 64KB download was free.
+   *
+   * With `toEnd`, only the first step of a read that runs to the end of the
+   * file, whose length nothing knows without asking the server.
    */
   readLength: number
+  /** past the last chromosome's last sparse entry: the read runs to EOF */
+  toEnd: boolean
 }
 
 /**
@@ -241,16 +246,14 @@ const MIN_BLOCK_SIZE = 65536
  *
  * A query past the last sparse entry has no cushion entry to bound at, and
  * taffy gives no guarantee that entry is near the chromosome's data end — so
- * it bounds at the next chromosome's first block, or on the last chromosome at
- * `fileSize`. Without a file size (CORS hiding `Content-Range`) that read is
- * one block, which truncates a final bracket larger than 64KB.
+ * it bounds at the next chromosome's first block, or on the last chromosome
+ * runs to the end of the file (`toEnd`).
  */
 export function queryBlockSpan(
   index: IndexData,
   refName: string,
   queryStart: number,
   queryEnd: number,
-  fileSize?: number,
 ): QueryBlockSpan | undefined {
   const records = index.get(refName)
   const selected = records?.length
@@ -261,17 +264,18 @@ export function queryBlockSpan(
   if (selected !== undefined && firstEntry !== undefined) {
     const { nextEntry, ranPastEnd } = selected
     const startBlock = firstEntry.virtualOffset.blockPosition
-    const endBlock = ranPastEnd
-      ? (nextChrStartBlock(index, refName) ?? fileSize ?? startBlock)
+    const bound = ranPastEnd
+      ? nextChrStartBlock(index, refName)
       : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
-    const readEnd = Math.max(endBlock, startBlock) + MIN_BLOCK_SIZE
+    const endBlock = bound ?? startBlock
     span = {
       firstEntry,
       nextEntry,
       ranPastEnd,
       startBlock,
       endBlock,
-      readLength: Math.min(readEnd, fileSize ?? readEnd) - startBlock,
+      readLength: Math.max(endBlock, startBlock) + MIN_BLOCK_SIZE - startBlock,
+      toEnd: bound === undefined,
     }
   }
   return span
