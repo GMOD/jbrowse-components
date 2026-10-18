@@ -50,7 +50,8 @@ function editColor(
     | 'domain'
     | 'range'
     | 'domainMin'
-    | 'domainMax',
+    | 'domainMax'
+    | 'unknown',
   value: unknown,
 ) {
   setConf(display.conf.marks[0]!, ['encoding', 'color', slot], value)
@@ -113,6 +114,25 @@ test('a categorical color crosses as its field, and its domain and range repaint
     ],
   })
   expect(layerOf(display).colorKey).toBeUndefined()
+})
+
+test('unknown repaints the categories the domain leaves out, fetching nothing', () => {
+  const display = loaded([
+    {
+      mark: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'type', domain: ['gene'], range: ['purple'] },
+      },
+    },
+  ])
+  const before = JSON.stringify(display.rpcProps())
+
+  editColor(display, 'unknown', '#cccccc')
+
+  expect(JSON.stringify(display.rpcProps())).toBe(before)
+  const [purple, grey] = ['purple', '#cccccc'].map(c => cssColorToABGR(c))
+  expect(colorLane(display)).toEqual([purple, grey, purple])
 })
 
 test('categories the hash puts on one color each take their own, and keep it as regions arrive', () => {

@@ -1,6 +1,7 @@
 import { DEAL_COLOR_DIFFERENCE, colorDifference } from '../ui/colors.ts'
 import {
   NO_VALUE_LABEL,
+  OTHER_VALUES_LABEL,
   categoricalField,
   dealKeyColors,
   dealShownKeyColors,
@@ -168,4 +169,36 @@ test('dealShownKeyColors deals what is shown apart even after the session has he
       )
     }
   }
+})
+
+test('unknown paints every key the domain leaves out, and the no-value key', () => {
+  const field = categoricalField('type', {
+    domain: ['a', 'b'],
+    range: ['red', 'blue'],
+    unknown: 'grey',
+  })
+  expect(['a', 'b', 'c', 'd', ''].map(field.color)).toEqual([
+    'red',
+    'blue',
+    'grey',
+    'grey',
+    'grey',
+  ])
+  expect(field.colorAmong?.('c', new Set(['c']))).toBe('grey')
+  expect(field.unknown).toBe('grey')
+  expect(OTHER_VALUES_LABEL).toBe('Other')
+})
+
+test("unknown '' paints the left-out keys the no-value grey, and unset deals them", () => {
+  const grey = categoricalField('type', { domain: ['a'], unknown: '' })
+  expect(grey.color('c')).toBe(NO_CATEGORY_COLOR)
+  const dealt = categoricalField('type', { domain: ['a'] })
+  expect(dealt.color('c')).not.toBe(NO_CATEGORY_COLOR)
+  expect(dealt.unknown).toBeUndefined()
+})
+
+test("a field's own vocabulary is the domain unknown reads", () => {
+  const strand = categoricalField('strand', { unknown: 'grey' })
+  expect(strand.color('1')).toBe('tomato')
+  expect(strand.color('7')).toBe('grey')
 })

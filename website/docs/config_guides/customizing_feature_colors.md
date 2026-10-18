@@ -127,6 +127,10 @@ CDSs back:
 }
 ```
 
+- **`unknown` greys the rest in one go.** `"unknown": "#bdc3c7"` in place of the
+  `CDS` entry paints every type the `domain` leaves out that grey, and the key
+  names them one row, Other. An unexpected type then gets no row of its own,
+  which was the signal to go back to the type list.
 - **Two names for the repeat flanks** because the pipeline renamed the type
   across releases, and a file uses whichever name its release used. A renamed
   type is the usual reason a key is missing.

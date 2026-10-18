@@ -320,3 +320,44 @@ describe('derivedColorScale', () => {
     expect(source.rowPaintsCandidateColor(0)).toBe(true)
   })
 })
+
+describe('a key over a field with unknown', () => {
+  const field = categoricalField('type', {
+    domain: ['a'],
+    range: ['red'],
+    unknown: 'grey',
+  })
+  const GREY = 0xff808080
+
+  test('names the row of values the domain leaves out Other', () => {
+    const [scale] = derivedColorScale(
+      [
+        [
+          { rowIndex: 0, value: 'a', color: RED },
+          { rowIndex: 0, value: 'c', color: GREY },
+          { rowIndex: 0, value: 'b', color: GREY },
+        ],
+      ],
+      allRowsPaint,
+      { id: 'color', field },
+    )
+    expect(scale?.entries.map(e => [e.label, e.values])).toEqual([
+      ['a', ['a']],
+      ['Other', ['b', 'c']],
+    ])
+  })
+
+  test('leaves a row of only the no-value key its own name', () => {
+    const [scale] = derivedColorScale(
+      [
+        [
+          { rowIndex: 0, value: 'a', color: RED },
+          { rowIndex: 0, value: '', color: GREY },
+        ],
+      ],
+      allRowsPaint,
+      { id: 'color', field },
+    )
+    expect(scale?.entries.map(e => e.label)).toEqual(['a', NO_VALUE_LABEL])
+  })
+})

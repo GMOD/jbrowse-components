@@ -25,6 +25,13 @@ export const NO_VALUE_LABEL = '(no value)'
 
 /**
  * #api
+ * The key's row for the values a color's `domain` leaves out, which its
+ * `unknown` paints one color.
+ */
+export const OTHER_VALUES_LABEL = 'Other'
+
+/**
+ * #api
  * One categorical field as every channel reads it — a facet's sections, a
  * color's range entries, a key's rows. `key` files a value, `compare`
  * orders keys (the `domain` first, the rest by `compareGroupKeys`, `''`
@@ -50,6 +57,8 @@ export interface CategoricalField {
   color: (key: string) => string
   /** `key`'s color dealt with `batch`, as `dealKeyColors` deals one */
   colorAmong?: (key: string, batch: ReadonlySet<string>) => string
+  /** What every key `domain` leaves out paints, where one color does. */
+  unknown?: string
 }
 
 /**
@@ -80,7 +89,8 @@ export function keyNames(
  * config spells them for a reader rather than as the data does. `held` deals
  * each key the domain does not list a color of its own on first sight
  * (`categoricalScale`); the caller keeps it for as long as the colors should
- * hold.
+ * hold. `unknown` paints every such key, and the no-value key, one color
+ * instead, `''` the no-value grey.
  */
 export function categoricalField(
   field: string,
@@ -89,11 +99,13 @@ export function categoricalField(
     range = [],
     labels = [],
     held,
+    unknown,
   }: {
     domain?: readonly string[]
     range?: readonly string[]
     labels?: readonly string[]
     held?: HeldSlots
+    unknown?: string
   } = {},
 ): CategoricalField {
   // a field with a vocabulary of its own reads it on every channel, a facet's
@@ -111,10 +123,14 @@ export function categoricalField(
   const label = (key: string) =>
     named(key) ?? (key === '' ? NO_VALUE_LABEL : key)
   const jexlField = isJexl(field)
+  const other = unknown === undefined ? undefined : unknown || NO_CATEGORY_COLOR
+  const listed = new Set(order)
+  const unlisted = (key: string) => other !== undefined && !listed.has(key)
   let colorOf: CategoricalScale<string> | undefined
   return {
     field,
     domain: order,
+    ...(other === undefined ? {} : { unknown: other }),
     key: value => {
       const key = valueText(value)
       return key === '' ? (vocabulary?.missing ?? key) : key
@@ -126,6 +142,9 @@ export function categoricalField(
         ? label(key)
         : (named(key) ?? `${field}: ${key === '' ? 'none' : key}`),
     color: key => {
+      if (unlisted(key)) {
+        return other!
+      }
       if (key === '') {
         return NO_CATEGORY_COLOR
       }
@@ -133,6 +152,9 @@ export function categoricalField(
       return colorOf(key)
     },
     colorAmong: (key, batch) => {
+      if (unlisted(key)) {
+        return other!
+      }
       if (key === '') {
         return NO_CATEGORY_COLOR
       }

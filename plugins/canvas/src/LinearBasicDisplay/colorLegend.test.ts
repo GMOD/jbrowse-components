@@ -132,6 +132,7 @@ describe('derived color key', () => {
     field: string
     domain?: string[]
     range?: string[]
+    unknown?: string
   }) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -330,6 +331,32 @@ describe('derived color key', () => {
         ),
       ])
     })
+  })
+
+  it("paints the values the domain leaves out in unknown's color, keyed as one Other row", () => {
+    const display = coloredDisplay({
+      field: 'biotype',
+      domain: ['lncRNA'],
+      range: ['#ff0000'],
+      unknown: '#cccccc',
+    })
+    expect(display.paintColorValue?.('snoRNA')).toBe('#cccccc')
+    expect(display.paintColorValue?.('')).toBe('#cccccc')
+    expect(
+      display.legendSpec.sections[0]?.items.map(i => [i.label, i.color]),
+    ).toEqual([
+      ['lncRNA', abgrToCssRgba(cssColorToABGR('#ff0000'))],
+      ['Other', abgrToCssRgba(cssColorToABGR('#cccccc'))],
+    ])
+  })
+
+  it("paints the left-out values the no-value grey where unknown is ''", () => {
+    const display = coloredDisplay({
+      field: 'biotype',
+      domain: ['lncRNA'],
+      unknown: '',
+    })
+    expect(display.paintColorValue?.('snoRNA')).toBe(NO_CATEGORY_COLOR)
   })
 
   it('names a listed value by its label, and heads the key with the title', () => {

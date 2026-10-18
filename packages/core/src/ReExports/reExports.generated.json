@@ -2743,6 +2743,7 @@
       "package": "@jbrowse/core",
       "names": [
         "NO_VALUE_LABEL",
+        "OTHER_VALUES_LABEL",
         "STRAND_FIELD",
         "SV_TYPE_FIELD",
         "categoricalField",

@@ -12,6 +12,7 @@ import {
   colorRampSlots,
   colorRangeSlot,
   colorTitleSlot,
+  colorUnknownSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
@@ -119,6 +120,7 @@ export const markColorSchema = ConfigurationSchema(
       range:
         "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
     }),
+    ...colorUnknownSlot,
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorTitleSlot,

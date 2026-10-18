@@ -649,6 +649,29 @@ test('a categorical color key lists its breaks in their order', () => {
   ).toEqual([['3', '1']])
 })
 
+test('a categorical color key names the values its unknown paints Other', () => {
+  const grey = cssColorToABGR('#cccccc')
+  const painted: ColorScaleTable = {
+    kind: 'categorical',
+    field: 'type',
+    domain: ['a'],
+    entries: [
+      { value: 'a', color: cssColorToABGR('red') },
+      { value: 'b', color: grey },
+      { value: 'c', color: grey },
+    ],
+  }
+  expect(
+    rowLabels(
+      markColorScales(
+        buildMarkLegend([region(painted)], undefined, () => ({
+          unknown: '#cccccc',
+        })),
+      ),
+    ),
+  ).toEqual([['a', 'Other']])
+})
+
 // As ggplot2 draws a layer's key glyphs in the layer's fixed aesthetics.
 test('a shape key draws its shapes in the one color its mark paints, and in the text color otherwise', () => {
   const [layer] = shapeRegion([['index', 'diamond']]).layers

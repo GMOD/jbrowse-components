@@ -35,6 +35,12 @@ export interface CategoricalRef {
   domain?: (string | number)[]
   /** What a key names each `domain` value, one each in order. */
   labels?: string[]
+  /**
+   * The color every value `domain` leaves out paints, and a feature with no
+   * value, as d3's `ordinal.unknown`; `''` is the no-value grey. Unset, each
+   * takes a palette color of its own.
+   */
+  unknown?: string
 }
 
 /**

@@ -191,3 +191,15 @@ test("a preset's domain is the order labels name, and a threshold with no cuts c
     problems({ field: 'band', domain: ['5'], labels: ['a', 'b', 'c'] }),
   ).toEqual(['labels-domain'])
 })
+
+test('unknown with no domain paints every value, which a written color says and the empty one does not', () => {
+  expect(rules({ field: 'type', unknown: 'grey' })).toEqual(['unknown-domain'])
+  expect(rules({ field: 'type', unknown: '' })).toEqual([])
+  expect(rules({ field: 'type', domain: ['a'], unknown: 'grey' })).toEqual([])
+  expect(
+    colorProblems(
+      { field: 'strand', unknown: 'grey' },
+      { strand: { scale: 'categorical', domain: ['1', '-1'] } },
+    ),
+  ).toEqual([])
+})

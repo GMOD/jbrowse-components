@@ -24,6 +24,18 @@ Auto-generated from the config schema in the source — see the [config guide](/
 {
   type: 'LinearBasicDisplay',
   color: {
+    field: 'type',
+    domain: ['prophage', 'plasmid'],
+    range: ['#d95f02', '#1b9e77'],
+    unknown: '#cccccc',
+  },
+}
+```
+
+```js
+{
+  type: 'LinearBasicDisplay',
+  color: {
     field: 'score',
     scale: 'threshold',
     domain: [0.5, 0.9],
@@ -75,6 +87,7 @@ A setting written to it replaces it whole, since its members are alternatives: a
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does except that an itemRgb of 0,0,0 or 0 paints black and a comma-free one reads as a packed integer, and the key names the colors in domain; unset is linear for score and categorical for any other field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme |
+| <span id="slot-unknown">**unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain: unset the next palette color where the display deals one, a color that color, "" none from this setting, so a row keeps its own and a feature the no-value grey |
 | <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, redyellowblue) | a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it |
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written |

@@ -309,9 +309,11 @@ readable.
   `domain` lists values in legend order and spends `range` from the first entry;
   values it leaves out follow, sorted. Each value it leaves out takes a color of
   its own the first time the track shows it, and keeps it as other regions load;
-  one no other value competes with paints the color derived from itself. One row
-  per color, so two values painted alike share a row. A key of one color, or
-  over 20 rows, is not drawn.
+  one no other value competes with paints the color derived from itself.
+  `unknown`, d3's name, paints every value the domain leaves out one color
+  instead, a feature with no value too, and the key names them one row, Other.
+  One row per color, so two values painted alike share a row. A key of one
+  color, or over 20 rows, is not drawn.
 
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domainMin": 0, "domainMax": 50, "range": ["white", "red"] }`
@@ -939,6 +941,7 @@ each reported under its id:
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. |
 | `field-spells-constant` | warning | A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
+| `unknown-domain` | warning | A categorical color's `unknown` with no `domain`, so it paints every value. |
 | `window-frame` | warning | A `window`'s `frame` other than two whole row offsets or `null`, the first not past the second, so the step reads its default. |
 | `unread-gap` | warning | A `gapBp` on a mark that draws no line. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |

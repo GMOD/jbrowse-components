@@ -291,6 +291,7 @@ export interface ScaleProblem {
     | 'domain-quantile'
     | 'log-floor'
     | 'labels-domain'
+    | 'unknown-domain'
   /** the slot to look at, relative to the scale's own object */
   slot: string
   message: string
@@ -375,6 +376,7 @@ export interface ColorSlots {
   domainMax?: number
   domainQuantile?: number
   labels?: readonly unknown[]
+  unknown?: string
 }
 
 function numberOf(value: unknown) {
@@ -412,6 +414,7 @@ export function colorSlotsOf(member: (name: string) => unknown): ColorSlots {
     domain: listOf(member('domain')),
     range: listOf(member('range')),
     labels: listOf(member('labels')),
+    unknown: stringOf(member('unknown')),
   }
 }
 
@@ -487,6 +490,14 @@ export function colorProblems(
     problems.push(
       ...scaleEndProblems({ ...color, type: scale }, { reverse: true }),
     )
+  }
+  if (scale === 'categorical' && written.unknown && domain.length === 0) {
+    problems.push({
+      rule: 'unknown-domain',
+      slot: 'unknown',
+      message:
+        'unknown paints every value domain leaves out, and with no domain that is every value; list the values that keep their own colors in domain',
+    })
   }
   const { labels = [] } = color
   const named =

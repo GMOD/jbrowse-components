@@ -759,6 +759,19 @@ test('labels name the domain values of a categorical color', () => {
   ])
 })
 
+test('unknown with no domain paints every value of a categorical color', () => {
+  const colored = (color: Record<string, unknown>) => [
+    {
+      mark: 'bar',
+      encoding: { y: 'score', color: { field: 'type', ...color } },
+    },
+  ]
+  expect(found(colored({ domain: ['a'], unknown: 'grey' }))).toEqual([])
+  expect(found(colored({ unknown: 'grey' }))).toEqual([
+    'warning unknown-domain mark 0 encoding.color.unknown',
+  ])
+})
+
 test('labels name the domain values of a shape, and a constant shape names none', () => {
   const shaped = (shape: unknown) => [
     { mark: 'point', encoding: { y: 'score', shape } },

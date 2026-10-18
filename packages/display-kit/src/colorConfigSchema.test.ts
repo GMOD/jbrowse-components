@@ -176,6 +176,7 @@ describe('colorSettingOf', () => {
       domainMax: undefined,
       domainMid: undefined,
       domainQuantile: 0.9,
+      unknown: undefined,
     })
   })
 

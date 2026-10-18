@@ -66,16 +66,15 @@ export function keySettingOf(
     return {}
   }
   if (channel === 'color') {
-    const { title, labels, breaks, descending, missingLabel } = withPreset(
-      mark.encoding.color,
-      FEATURE_FIELD_PRESETS,
-    )
+    const { title, labels, breaks, descending, missingLabel, unknown } =
+      withPreset(mark.encoding.color, FEATURE_FIELD_PRESETS)
     return {
       title,
       labels: [...labels],
       breaks: [...breaks],
       descending,
       missingLabel,
+      unknown,
     }
   }
   const { title, labels, breaks, missingLabel } = mark.encoding.shape
@@ -115,6 +114,8 @@ export interface MarkKeySetting {
   descending?: boolean
   missingLabel?: string
   swatchColor?: string
+  /** The color `unknown` paints the values the domain leaves out, one row named Other. */
+  unknown?: string
 }
 
 /**
@@ -355,8 +356,11 @@ function keyField(
   const own = categoricalField(scale.field, {
     domain: scale.domain,
     labels: key.labels,
+    unknown: key.unknown,
   })
-  return facet?.field === scale.field ? { ...facet, label: own.label } : own
+  return facet?.field === scale.field
+    ? { ...facet, label: own.label, unknown: own.unknown }
+    : own
 }
 
 // A key's rows as its channel lists them: only the values `breaks` names, in

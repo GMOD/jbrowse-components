@@ -279,7 +279,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/cacheBudgets': ['decompressedBytesBudget'],
   '@jbrowse/core/util/calculateDynamicBlocks': ['default'],
   '@jbrowse/core/util/calculateStaticBlocks': ['default'],
-  '@jbrowse/core/util/categoricalField': ['NO_VALUE_LABEL', 'STRAND_FIELD', 'SV_TYPE_FIELD', 'categoricalField', 'dealKeyColors', 'dealShownKeyColors', 'heldSlotsOf', 'keyNames'],
+  '@jbrowse/core/util/categoricalField': ['NO_VALUE_LABEL', 'OTHER_VALUES_LABEL', 'STRAND_FIELD', 'SV_TYPE_FIELD', 'categoricalField', 'dealKeyColors', 'dealShownKeyColors', 'heldSlotsOf', 'keyNames'],
   '@jbrowse/core/util/chooseGridPitch': ['chooseGridPitch'],
   '@jbrowse/core/util/color': ['CSS_COLOR_NAMES', 'MISCONFIGURED_COLOR', 'NO_CATEGORY_COLOR', 'emphasize', 'isNamedColor', 'makeContrasting', 'namedColorToHex', 'randomColor', 'relight'],
   '@jbrowse/core/util/color/cssColorsLevel4': ['CSS_COLOR_NAMES', 'isNamedColor', 'namedColorToHex'],

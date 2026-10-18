@@ -69,6 +69,7 @@ const KEY_MEMBERS = ['title', 'descending', 'missingLabel'] as const
  * key's title, row order and name for no value.
  */
 export const SCALE_MEMBERS = [
+  'unknown',
   'scheme',
   'reverse',
   'domainMin',
@@ -252,6 +253,7 @@ export function withChannelScale(
     ...(isRamp(scale) && isRamp(channelScale(mark, channel)) ? ['range'] : []),
     'title',
     'missingLabel',
+    ...(scale === 'categorical' ? ['unknown'] : []),
   ]
   return writeChannel(mark, channel, {
     field: channelField(mark, channel) || undefined,
@@ -275,7 +277,10 @@ export function withScaleMember(
       ? undefined
       : member === 'reverse' || member === 'descending'
         ? value === 'true'
-        : member === 'scheme' || member === 'title' || member === 'missingLabel'
+        : member === 'scheme' ||
+            member === 'title' ||
+            member === 'missingLabel' ||
+            member === 'unknown'
           ? value
           : Number(value)
   return writeChannel(mark, channel, {

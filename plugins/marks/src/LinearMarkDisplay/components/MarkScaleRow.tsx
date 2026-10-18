@@ -27,6 +27,7 @@ const MEMBER_LABELS: Partial<Record<ScaleMember, string>> = {
   domainQuantile: 'quantile',
   title: 'key title',
   missingLabel: 'key name for no value',
+  unknown: 'color for values not listed',
 }
 
 // What each list is, in the words of the scale it belongs to.
@@ -248,6 +249,14 @@ const MarkScaleRow = observer(function MarkScaleRow({
             onMember('descending', next ? 'true' : '')
           }}
           label="key lists the highest first"
+        />
+      ) : null}
+      {channel === 'color' && scale === 'categorical' ? (
+        <MemberField
+          mark={mark}
+          channel={channel}
+          member="unknown"
+          onMember={onMember}
         />
       ) : null}
       {channel === 'color' || channel === 'shape' ? (

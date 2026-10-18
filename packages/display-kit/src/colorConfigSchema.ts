@@ -93,6 +93,7 @@ export interface ColorSetting {
   labels?: readonly string[]
   title?: string | undefined
   descending?: boolean
+  unknown?: string | undefined
 }
 
 const PAINTED_SLOTS = [
@@ -100,6 +101,7 @@ const PAINTED_SLOTS = [
   'scale',
   'domain',
   'range',
+  'unknown',
   'scheme',
   'reverse',
   'domainMin',
@@ -244,14 +246,16 @@ export function colorRangeSlot({
 /**
  * The color for a value missing from `domain`, as d3's `ordinal.unknown`: unset,
  * the next palette color where the display deals one; a color, that color;
- * `""`, no color from this setting, so the value keeps its own. `range`
- * entries past the domain go unread while it is set.
+ * `""`, no color from this setting, so a row keeps its own and a feature or
+ * mark takes the no-value grey. On a feature or mark it also paints a feature
+ * with no value, and the key lists every value it paints as one row, Other.
+ * `range` entries past the domain go unread while it is set.
  */
 export const colorUnknownSlot = {
   unknown: {
     type: 'maybeColor',
     description:
-      'color for a value missing from domain: unset the next palette color where the display deals one, a color that color, "" none from this setting',
+      'color for a value missing from domain: unset the next palette color where the display deals one, a color that color, "" none from this setting, so a row keeps its own and a feature the no-value grey',
   },
 } as const
 
@@ -521,6 +525,7 @@ export function colorEncodingOf<V extends string | undefined>(
         domain: listed(color.domain),
         range: listed(color.range),
         labels: listed(color.labels ?? []),
+        unknown: color.unknown,
       }
     case 'threshold':
       return {
@@ -672,6 +677,7 @@ export function categoricalColorField(
         range: encoding.range,
         labels: encoding.labels,
         held,
+        unknown: encoding.unknown,
       })
     : undefined
 }
@@ -718,6 +724,17 @@ export function colorFieldOf(
  * {
  *   type: 'LinearBasicDisplay',
  *   color: { field: 'gene_biotype', range: ['#1f77b4', '#ff7f0e'] },
+ * }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearBasicDisplay',
+ *   color: {
+ *     field: 'type',
+ *     domain: ['prophage', 'plasmid'],
+ *     range: ['#d95f02', '#1b9e77'],
+ *     unknown: '#cccccc',
+ *   },
  * }
  * ```
  * ```js
@@ -779,6 +796,7 @@ export const colorConfigSchema = ConfigurationSchema(
       range:
         "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme",
     }),
+    ...colorUnknownSlot,
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorDomainEndsSlots,

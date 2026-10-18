@@ -1,4 +1,5 @@
 import { MAX_LEGEND_ITEMS, legendIsReadable } from '../ui/legendSpec.ts'
+import { OTHER_VALUES_LABEL } from './categoricalField.ts'
 import { abgrToCssRgba, cssColorToABGR } from './colorBits.ts'
 
 import type { CategoricalEntry, CategoricalScale } from '../ui/colorScale.ts'
@@ -156,14 +157,21 @@ export function derivedColorScale<T>(
     besides?: readonly string[]
   },
 ): CategoricalScale[] {
+  const listed = new Set(field.domain)
   const painted = unionLegendCandidates(regions, resolve).map(
     ({ values, color }) => {
       const sorted = values.toSorted(field.compare)
       const value = sorted[0]!
+      const other =
+        field.unknown !== undefined &&
+        sorted.some(v => v !== '' && !listed.has(v)) &&
+        sorted.every(v => !listed.has(v))
       return {
         value,
         values: sorted,
-        label: sorted.map(v => field.label(v)).join(', '),
+        label: other
+          ? OTHER_VALUES_LABEL
+          : sorted.map(v => field.label(v)).join(', '),
         color: abgrToCssRgba(color),
         ...(value === '' ? { missing: true } : {}),
       }

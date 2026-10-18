@@ -253,13 +253,14 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 `labels` names the `domain`'s values in a key, one each in order, where a config
 spells them for a reader rather than as the data does. `held` deals each key the
 domain does not list a color of its own on first sight (`categoricalScale`); the
-caller keeps it for as long as the colors should hold.
+caller keeps it for as long as the colors should hold. `unknown` paints every
+such key, and the no-value key, one color instead, `''` the no-value grey.
 
 ```js
 import { categoricalField } from '@jbrowse/core/util/categoricalField'
 
 // type signature
-(field: string, { domain, range, labels, held, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; }) => CategoricalField
+(field: string, { domain, range, labels, held, unknown, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; unknown?: string | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -1499,6 +1500,20 @@ import { numericDomain } from '@jbrowse/core/util/thresholdScale'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
+
+### OTHER_VALUES_LABEL
+
+The key's row for the values a color's `domain` leaves out, which its `unknown`
+paints one color.
+
+```js
+import { OTHER_VALUES_LABEL } from '@jbrowse/core/util/categoricalField'
+
+// type signature
+;('Other')
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
 
 ### parsePlot
 
