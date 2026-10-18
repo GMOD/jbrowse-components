@@ -26,9 +26,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
  * histogram with the sashimi arcs over it, the read connections, and the
  * pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
- * and `pileup`, holding whether it draws, its height and its own filter; the
- * settings every band shares, the read `filter`, `unit`, `facet`, `sort` and
- * `color`, sit beside them.
+ * and `pileup`, holding whether it draws and its height; the settings every
+ * band shares sit beside them: `filter`, which holds the read, junction and
+ * connection tests, `unit`, `facet`, `sort` and `color`.
  *
  * #example
  * Minimal BAM track — no display override needed for defaults. See the
@@ -234,7 +234,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot coverage
        * The coverage histogram band: `show`, `height` (default 45),
-       * `showInterbaseIndicators` and `filter.minAlleleFraction`, a flat floor
+       * `showInterbaseIndicators` and `minAlleleFraction`, a flat floor
        * on each allele segment's share of its position's depth, distinct from
        * `pileup.fadeLowFrequency`.
        */
@@ -248,14 +248,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot sashimi
        * The splice-junction arcs, drawn in the coverage band: `show`,
-       * `height`, `placement`, `showCounts` and `filter`.
+       * `height`, `placement` and `showCounts`; `filter.junctions` says which
+       * junctions draw.
        */
       sashimi: sashimiConfigSchema,
       /**
        * #slot readConnections
        * The connections between mates and split segments: `show` (default
        * off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`,
-       * `color`, `showOrdinaryPairs` and `filter`.
+       * `color` and `showOrdinaryPairs`; `filter.connections` says which
+       * connections draw.
        */
       readConnections: readConnectionsConfigSchema,
     },

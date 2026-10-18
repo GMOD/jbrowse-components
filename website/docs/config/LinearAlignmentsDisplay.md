@@ -85,9 +85,9 @@ counts, dropping junctions under five reads and the non-canonical ones:
 Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
 histogram with the sashimi arcs over it, the read connections, and the
 pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
-and `pileup`, holding whether it draws, its height and its own filter; the
-settings every band shares, the read `filter`, `unit`, `facet`, `sort` and
-`color`, sit beside them.
+and `pileup`, holding whether it draws and its height; the settings every
+band shares sit beside them: `filter`, which holds the read, junction and
+connection tests, `unit`, `facet`, `sort` and `color`.
 
 ## Related links
 
@@ -117,10 +117,10 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-modifications">**modifications**</span><br>[AlignmentsModifications](../alignmentsmodifications) | Settings for the `modifications` and `bisulfite` color fields: `threshold` (percent, default 10), `unmodified`, `cytosineContext` and `shownModifications`. |
 | <span id="slot-scales">**scales**</span><br>[ValueScale](../valuescale) | The coverage band's value scale — the one thing on this display drawn against an axis, the pileup having no value and the arcs their own `arcBandYScale`. `symlogConstant` starts at 1 rather than the wiggle family's 0, which makes symlog exactly `log(depth+1)`: the knee sits at one read, the smallest depth there is. `domainQuantile` stays at 1, the deepest base in view; the Coverage axis panel's Clip extreme outliers writes 0.99, which stops the axis at twice the 99th percentile of the covered bins' peaks, and misses a collapsed-repeat pile-up once it covers more than 1% of the view. |
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Show the color-scheme legend overlay. Defaults to off |
-| <span id="slot-coverage">**coverage**</span><br>[CoverageBand](../coverageband) | The coverage histogram band: `show`, `height` (default 45), `showInterbaseIndicators` and `filter.minAlleleFraction`, a flat floor on each allele segment's share of its position's depth, distinct from `pileup.fadeLowFrequency`. |
+| <span id="slot-coverage">**coverage**</span><br>[CoverageBand](../coverageband) | The coverage histogram band: `show`, `height` (default 45), `showInterbaseIndicators` and `minAlleleFraction`, a flat floor on each allele segment's share of its position's depth, distinct from `pileup.fadeLowFrequency`. |
 | <span id="slot-pileup">**pileup**</span><br>[Pileup](../pileup) | The stacked reads: `show`, `readHeight` (default 7), `maxLayoutHeight`, and the parts drawn on each read. |
-| <span id="slot-sashimi">**sashimi**</span><br>[Sashimi](../sashimi) | The splice-junction arcs, drawn in the coverage band: `show`, `height`, `placement`, `showCounts` and `filter`. |
-| <span id="slot-readconnections">**readConnections**</span><br>[ReadConnections](../readconnections) | The connections between mates and split segments: `show` (default off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`, `color`, `showOrdinaryPairs` and `filter`. |
+| <span id="slot-sashimi">**sashimi**</span><br>[Sashimi](../sashimi) | The splice-junction arcs, drawn in the coverage band: `show`, `height`, `placement` and `showCounts`; `filter.junctions` says which junctions draw. |
+| <span id="slot-readconnections">**readConnections**</span><br>[ReadConnections](../readconnections) | The connections between mates and split segments: `show` (default off), `mark` (`arc` or `cloud`), `height`, `placement`, `lineWidth`, `color` and `showOrdinaryPairs`; `filter.connections` says which connections draw. |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fixed, grow, fit) = <code>'fixed'</code> | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `pileup.readHeight` and scrolls; `grow` expands the track to show every read at that height; `fit` squeezes reads so every uncollapsed section fills the display without scrolling |
 | <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see pileup.maxLayoutHeight)<br>_advanced_ |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">2 slots</span> |
