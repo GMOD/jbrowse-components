@@ -51,9 +51,7 @@ async function rowNavCalls(views: Record<string, unknown>[]) {
   return navs.map(n => n.mock.calls)
 }
 
-// A row naming its own tracks must not also open the track a gene symbol was
-// found in, which on a GenArk panel put two copies of the gene track side by
-// side, and a host padding a symbol locus needs `grow` to reach the row.
+// a row naming its own tracks must not also open the hit track
 test('a row loc forwards grow and defaults showHitTrack from its tracks', async () => {
   const calls = await rowNavCalls([
     { assembly: 'volvox', loc: 'TP53', grow: 0.2, tracks: ['volvox_genes'] },

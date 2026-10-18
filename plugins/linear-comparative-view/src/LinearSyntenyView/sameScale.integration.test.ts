@@ -188,8 +188,7 @@ test('both spellings re-fit, and the nested one says it is deprecated', async ()
   expect(nested.views[0]!.bpPerPx).toBeCloseTo(nested.views[1]!.bpPerPx)
 })
 
-// A row placed on a locus keeps the locus: the shared scale is the coarsest
-// placed row's, not the ceiling, which drew a gene launch at chromosome scale.
+// the ceiling would draw a gene launch at chromosome scale
 test('rows placed on loci share the coarsest locus scale', async () => {
   const view = await launch({
     sameScale: true,

@@ -43,8 +43,7 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
     loc?: string
     // fractional zoom-out around `loc`, e.g. 0.2 pads 20% on each side
     grow?: number
-    // whether a searched-name `loc` also opens the track the name was found in;
-    // defaults to true only when the row lists no `tracks`
+    // also open the track a searched `loc` was found in; default: no `tracks`
     showHitTrack?: boolean
     assembly: string
     // a bare trackId string, or { trackId, ...displayOptions } to configure the

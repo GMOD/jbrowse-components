@@ -286,8 +286,6 @@ function applyLevelHeights(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
   }
 }
 
-// Rows placed on a locus share the coarsest placed row's scale, so every locus
-// stays in view; the ceiling would zoom a gene launch out to whole contigs.
 function applyLaunchScale(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
   const placed = self.views.filter(
     (v, i) => v.initialized && init.views[i]?.loc,
