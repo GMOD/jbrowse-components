@@ -474,10 +474,10 @@ Three of its schemes are described here:
 
 - **Reference position** ramps hue over the window the subgraph was cut from,
   red at its start to magenta at its end, with a key in the top right naming the
-  interval. A segment with no reference coordinate draws flat charcoal, outside
-  the ramp, so a hue always marks a position on the reference. A linear track
-  can reproduce only this scheme exactly, because it is a function of two
-  numbers and a midpoint.
+  interval. A segment off the backbone draws flat charcoal, outside the ramp, so
+  a hue always marks a position on the reference. A linear track can reproduce
+  only this scheme exactly, because it is a function of two numbers and a
+  midpoint.
 - **Stable rank** is the rank ladder above: rank 0 blue, then a ramp for the
   rest.
 - **Depth** is how many paths walk each segment, which is core-versus-accessory

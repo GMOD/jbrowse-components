@@ -171,7 +171,7 @@ The graph has four kinds of object:
   position
 - a **bubble** is a place where haplotypes disagree
 - an **allele** is a haplotype's sequence in place of the reference, drawn in
-  charcoal because it has no reference position
+  charcoal because the reference path does not visit it
 - an **edge** that skips sequence is a deletion, drawn as a dashed arc
 
 ## Opening the haplotype the HLA-DRB5 allele came from {#opening-the-haplotype-an-allele-came-from}
