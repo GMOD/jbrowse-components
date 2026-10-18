@@ -286,6 +286,12 @@ costs a `retired` entry kept for good, so the trivial ones go now.
   off.
 - The breakpoint split view's overlay reads `filter.expressions` alone, so
   it can draw a connector to a feature that `filter.genes` hides.
+- The model getters keep their names where a slot moved into a band: the
+  variant display's `showVariantLane`, `variantLaneHeight` and
+  `variantLaneLabels` read `variants`, and MAF's `showAlignments`,
+  `rowProportion` and the rest read `alignments`.
+- The breakpoint split view's connectors color by orientation alone, in their
+  own view's key, where the alignments display's take the arcs' field.
 - `hideSelfAlignments` and `hideUnlabelled` keep their names, and MAF's
   `showReferenceRow` stays a top-level toggle of the row the worker named as
   the reference; `rows.kept` is the reader's own selection.
