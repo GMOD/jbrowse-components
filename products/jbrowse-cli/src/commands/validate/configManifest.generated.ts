@@ -3314,7 +3314,7 @@ export const configManifest: ConfigManifest = {
           "type": "subfeatureLabels"
         },
         {
-          "name": "displayDirectionalChevrons",
+          "name": "showChevrons",
           "type": "boolean"
         },
         {
@@ -3351,6 +3351,7 @@ export const configManifest: ConfigManifest = {
         "outline",
         "maxHeight",
         "renderer",
+        "displayDirectionalChevrons",
         "showDescriptions"
       ],
       "droppedKeys": [
@@ -6181,8 +6182,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "squashToHeight",
-          "type": "boolean"
+          "name": "heightMode",
+          "type": "TriangleHeightMode"
         },
         {
           "name": "lineZoneHeight",
@@ -7067,8 +7068,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "squashToHeight",
-          "type": "boolean"
+          "name": "heightMode",
+          "type": "TriangleHeightMode"
         },
         {
           "name": "color",

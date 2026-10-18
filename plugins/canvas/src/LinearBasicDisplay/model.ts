@@ -101,8 +101,8 @@ export default function stateModelFactory(
         return self.displayMode === 'collapsed' ? 'none' : this.subfeatureLabels
       },
 
-      get displayDirectionalChevrons(): boolean {
-        return getConf(self, 'displayDirectionalChevrons')
+      get showChevrons(): boolean {
+        return getConf(self, 'showChevrons')
       },
 
       // Raw slot rather than getConf: a jexl
@@ -216,8 +216,8 @@ export default function stateModelFactory(
         setConf(self, ['filter', 'genes'], value)
       },
 
-      setDisplayDirectionalChevrons(value: boolean) {
-        setConf(self, 'displayDirectionalChevrons', value)
+      setShowChevrons(value: boolean) {
+        setConf(self, 'showChevrons', value)
       },
 
       setUtrColor(color?: string) {
@@ -298,8 +298,8 @@ export default function stateModelFactory(
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            toggleItem('Chevrons', self.displayDirectionalChevrons, show => {
-              self.setDisplayDirectionalChevrons(show)
+            toggleItem('Chevrons', self.showChevrons, show => {
+              self.setShowChevrons(show)
             }),
           ]
         },

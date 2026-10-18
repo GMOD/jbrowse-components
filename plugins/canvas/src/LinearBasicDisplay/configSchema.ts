@@ -107,10 +107,10 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      displayDirectionalChevrons: {
+      showChevrons: {
         type: 'boolean',
         description:
-          'Display directional chevrons on intron lines to indicate strand direction. Defaults to on',
+          'draw chevrons on intron lines pointing the way the feature reads',
         defaultValue: true,
       },
       /**
@@ -179,6 +179,10 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
+      // v4.3.0's name for `showChevrons`
+      retired: {
+        displayDirectionalChevrons: showChevrons => ({ showChevrons }),
+      },
     },
   )
 }

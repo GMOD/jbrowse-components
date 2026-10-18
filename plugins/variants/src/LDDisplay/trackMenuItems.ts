@@ -1,13 +1,14 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { fitToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
 
 import type { LDMetric, LDSnp } from '../RenderLDDataRPC/ldTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { TriangleHeightMode } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface LDMenuSelf extends IStateTreeNode {
@@ -19,7 +20,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   showLegend: boolean
   showLabels: boolean
   showVerticalGuides: boolean
-  squashToHeight: boolean
+  heightMode: TriangleHeightMode
   variantLayout: 'genomic' | 'columns'
   setFocalSnp: (snp: LDSnp | undefined) => void
   setLDMetric: (metric: LDMetric) => void
@@ -27,7 +28,7 @@ export interface LDMenuSelf extends IStateTreeNode {
   setShowLegend: (arg: boolean) => void
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
-  setSquashToHeight: (arg: boolean) => void
+  setHeightMode: (mode: TriangleHeightMode) => void
   setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
 
@@ -79,7 +80,7 @@ function layoutMenuItem(self: LDMenuSelf): MenuItem {
     label: 'Layout',
     icon: ViewQuiltIcon,
     subMenu: [
-      squashToHeightCheckboxItem(self),
+      fitToHeightCheckboxItem(self),
       toggleItem(
         'Size cells by genomic distance',
         self.variantLayout === 'genomic',

@@ -4,7 +4,7 @@ import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr, getDialogHost } from '@jbrowse/core/util'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { fitToHeightCheckboxItem } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { colorSchemeMenuItem } from '@jbrowse/display-kit/colorByMenu'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core/chrome'
 import BalanceIcon from '@mui/icons-material/Balance'
@@ -16,6 +16,7 @@ import type { ColorRangeHost } from './components/ColorRangeDialog.tsx'
 import type { HicColorScale } from './hicColorConfigSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
+import type { TriangleHeightMode } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const ColorRangeDialog = lazy(() => import('./components/ColorRangeDialog.tsx'))
@@ -26,7 +27,7 @@ interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
   saturationQuantile: number
   showLegend: boolean
   showResolutionControls: boolean
-  squashToHeight: boolean
+  heightMode: TriangleHeightMode
   colorScheme: ColorSchemeName
   hasResolutions: boolean
   canStepResolutionFiner: boolean
@@ -40,7 +41,7 @@ interface HicMenuSelf extends ColorRangeHost, IStateTreeNode {
   setColorFollowsPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setShowResolutionControls: (f: boolean) => void
-  setSquashToHeight: (f: boolean) => void
+  setHeightMode: (mode: TriangleHeightMode) => void
   setColorScheme: (scheme: ColorSchemeName) => void
   setActiveNormalization: (s: string) => void
   stepResolution: (delta: number) => void
@@ -107,7 +108,7 @@ function layoutMenuItem(self: HicMenuSelf): MenuItem {
   return {
     label: 'Layout',
     icon: ViewQuiltIcon,
-    subMenu: [squashToHeightCheckboxItem(self)],
+    subMenu: [fitToHeightCheckboxItem(self)],
   }
 }
 

@@ -12,7 +12,7 @@ what the hi-C display IS, so it belongs with the proposals.
 
 The display draws the rotated triangle — canvas x is a pair's midpoint, y its
 separation — so the two bottom corners are the part of the box its edges never
-reach, and `yScalar` (`squashToHeight`) stretches the triangle to the display
+reach, and `yScalar` (`heightMode: 'fit'`) stretches the triangle to the display
 height rather than filling that box. What a corner wants is contacts whose far end is off screen:
 the point `(x, y)` draws the pair `(x - y, x + y)`, so the deepest corner — left
 edge, apex height — asks for data **half a visible span past the edge**, i.e. a

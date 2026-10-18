@@ -483,7 +483,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/trackHeightConfigSchemaFields': ['trackHeightConfigSchemaFields'],
   '@jbrowse/display-kit/TrackHeightIndicator': ['default'],
   '@jbrowse/display-kit/TrackHeightMixin': ['default'],
-  '@jbrowse/display-kit/TriangleMatrixMixin': ['default', 'squashToHeightCheckboxItem', 'triangleMatrixConfigSchemaFields'],
+  '@jbrowse/display-kit/TriangleMatrixMixin': ['default', 'fitToHeightCheckboxItem', 'triangleMatrixConfigSchemaFields'],
   '@jbrowse/display-kit/TriangleMatrixSvgLayer': ['default'],
   '@jbrowse/display-kit/triangleTransform': ['computeTriangleYScalar', 'enterTriangleCellSpace', 'triangleAxis', 'triangleDataToScreen', 'triangleScreenToData', 'triangleViewTransform'],
   '@jbrowse/display-kit/types': ['VIEW_TRACK_LABEL_MODES'],

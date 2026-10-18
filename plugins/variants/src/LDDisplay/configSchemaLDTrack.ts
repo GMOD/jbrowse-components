@@ -116,7 +116,7 @@ export default function ldTrackDisplayConfigSchema() {
       retired: {
         ...retiredBaseDisplaySpellings,
         ldMetric: field => ({ color: { field } }),
-        fitToHeight: squashToHeight => ({ squashToHeight }),
+        fitToHeight: fit => ({ heightMode: fit ? 'fit' : 'fixed' }),
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useGenomicPositions: genomic => ({
           variantLayout: genomic ? 'genomic' : 'columns',

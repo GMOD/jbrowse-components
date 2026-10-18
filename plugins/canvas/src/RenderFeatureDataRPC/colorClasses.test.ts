@@ -204,7 +204,7 @@ describe('the theme is not an RPC cache key', () => {
   it('nor is "Chevrons", which the render state carries', () => {
     const { display } = createTestEnvironment().createDisplay()
     const before = display.rpcProps()
-    display.setDisplayDirectionalChevrons(false)
+    display.setShowChevrons(false)
     expect(display.rpcProps()).toEqual(before)
     expect(display.renderState.hideChevrons).toBe(true)
   })

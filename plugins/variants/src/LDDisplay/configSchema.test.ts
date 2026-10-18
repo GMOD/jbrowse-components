@@ -23,7 +23,7 @@ function make(snap: Record<string, unknown> = {}) {
 
 test('keeps what its mixins read, and its identifier', () => {
   expect(slots()).toEqual(
-    expect.arrayContaining(['height', 'showLegend', 'squashToHeight']),
+    expect.arrayContaining(['height', 'showLegend', 'heightMode']),
   )
   expect(make().displayId).toBe('ld-test')
 })

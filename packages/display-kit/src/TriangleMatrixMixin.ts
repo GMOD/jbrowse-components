@@ -11,9 +11,18 @@ import {
   triangleViewTransform,
 } from './triangleTransform.ts'
 
+import type { HeightMode } from './heightMode.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+/** The canvas display's `heightMode` without `grow`: a triangle's height is its base's. */
+const TRIANGLE_HEIGHT_MODES = [
+  'fixed',
+  'fit',
+] as const satisfies readonly HeightMode[]
+
+export type TriangleHeightMode = (typeof TRIANGLE_HEIGHT_MODES)[number]
 
 /** The slots a triangle display declares for this mixin. */
 export const triangleMatrixConfigSchemaFields = {
@@ -28,11 +37,12 @@ export const triangleMatrixConfigSchemaFields = {
   /**
    * #slot
    */
-  squashToHeight: {
-    type: 'boolean',
-    defaultValue: false,
+  heightMode: {
+    type: 'stringEnum',
+    model: types.enumeration('TriangleHeightMode', [...TRIANGLE_HEIGHT_MODES]),
+    defaultValue: 'fixed',
     description:
-      'squash the triangle vertically to fill the display height instead of drawing square cells',
+      "fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height",
   },
 } as const
 
@@ -68,7 +78,7 @@ export interface TriangleFrame {
 /**
  * #stateModel TriangleMatrixMixin
  * #category display
- * #crossCuttingMixin A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `squashToHeight` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
+ * #crossCuttingMixin A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `heightMode` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
  */
 export default function TriangleMatrixMixin<D extends TrianglePayload>() {
   return types
@@ -83,8 +93,8 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
       /**
        * #getter
        */
-      get squashToHeight(): boolean {
-        return getConf(hostOf(self), 'squashToHeight')
+      get heightMode(): TriangleHeightMode {
+        return getConf(hostOf(self), 'heightMode')
       },
       /**
        * #getter
@@ -137,7 +147,7 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
        */
       get yScalar(): number {
         return computeTriangleYScalar({
-          squashToHeight: self.squashToHeight,
+          squashToHeight: self.heightMode === 'fit',
           displayHeight: self.matrixHeight,
           triangleWidth: hostOf(self).host.totalWidthPxWithoutBorders,
         })
@@ -192,21 +202,23 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
       /**
        * #action
        */
-      setSquashToHeight(value: boolean) {
-        setConf(hostOf(self), 'squashToHeight', value)
+      setHeightMode(mode: TriangleHeightMode) {
+        setConf(hostOf(self), 'heightMode', mode)
       },
     }))
 }
 
 /** The "Fit to display height" row both triangle menus list. */
-export function squashToHeightCheckboxItem(self: {
-  squashToHeight: boolean
-  setSquashToHeight: (arg: boolean) => void
+export function fitToHeightCheckboxItem(self: {
+  heightMode: TriangleHeightMode
+  setHeightMode: (mode: TriangleHeightMode) => void
 }): MenuItem {
   return toggleItem(
     'Fit to display height',
-    self.squashToHeight,
-    self.setSquashToHeight,
+    self.heightMode === 'fit',
+    fit => {
+      self.setHeightMode(fit ? 'fit' : 'fixed')
+    },
     {
       helpText:
         'Squash the triangle vertically to fill the display height instead of drawing square cells at its natural half-width height.',

@@ -252,7 +252,7 @@ tolerance ball for "did this figure move".
     Every Hi-C figure wants this — if a matrix "looks like noise", it is this
     before it is the data. And `useLogScale` is the opposite of a fix on a deep
     file: it pushes every bin to the top of the ramp and returns solid red.
-  - **`squashToHeight` is usually the wrong reflex.** A pair's contacts are
+  - **`heightMode: 'fit'` is usually the wrong reflex.** A pair's contacts are
     drawn at depth `|x2-x1|/2`, so with two 2 Mb windows the cross-block apex is
     ~280 css px down, not the ~990 px the full wedge is tall. Squashing spent
     half the frame on the empty long-range corner; leaving it off kept square

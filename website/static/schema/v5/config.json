@@ -5144,8 +5144,8 @@
             "enum": ["none", "below", "overlay"]
           }
         },
-        "displayDirectionalChevrons": {
-          "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
+        "showChevrons": {
+          "description": "draw chevrons on intron lines pointing the way the feature reads.",
           "default": true,
           "if": {
             "type": "null"
@@ -5263,6 +5263,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "displayDirectionalChevrons": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11439,14 +11443,14 @@
             "type": "boolean"
           }
         },
-        "squashToHeight": {
-          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "default": false,
+        "heightMode": {
+          "description": "fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height.",
+          "default": "fixed",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "enum": ["fixed", "fit"]
           }
         },
         "lineZoneHeight": {
@@ -12932,14 +12936,14 @@
             "type": "boolean"
           }
         },
-        "squashToHeight": {
-          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "default": false,
+        "heightMode": {
+          "description": "fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height.",
+          "default": "fixed",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "enum": ["fixed", "fit"]
           }
         },
         "color": {
@@ -14336,8 +14340,8 @@
             "subfeatureLabels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
             },
-            "displayDirectionalChevrons": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
+            "showChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
             },
             "transcriptTypes": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
@@ -14412,6 +14416,9 @@
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+            },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
@@ -15943,8 +15950,8 @@
             "showLegend": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
             },
-            "squashToHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/squashToHeight"
+            "heightMode": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/heightMode"
             },
             "lineZoneHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
@@ -17647,8 +17654,8 @@
             "showLegend": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showLegend"
             },
-            "squashToHeight": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
+            "heightMode": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/heightMode"
             },
             "color": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/color"

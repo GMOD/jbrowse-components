@@ -159,7 +159,7 @@ describe('cellToScreen and screenToCell are inverses', () => {
     ['fit-to-height squash', true],
   ])('%s', (_label, squash) => {
     const { display } = loadedDisplay({ zoomedOut: true })
-    display.setSquashToHeight(squash)
+    display.setHeightMode(squash ? 'fit' : 'fixed')
     expect(squash ? display.yScalar !== 1 : display.yScalar === 1).toBe(true)
 
     const { boundaries } = display.rpcData!

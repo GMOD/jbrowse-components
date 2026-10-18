@@ -5304,8 +5304,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "displayDirectionalChevrons": {
-          "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
+        "showChevrons": {
+          "description": "draw chevrons on intron lines pointing the way the feature reads.",
           "default": true,
           "if": {
             "type": "null"
@@ -5425,6 +5425,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "displayDirectionalChevrons": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11840,14 +11844,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "squashToHeight": {
-          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "default": false,
+        "heightMode": {
+          "description": "fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height.",
+          "default": "fixed",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "enum": [
+              "fixed",
+              "fit"
+            ]
           }
         },
         "lineZoneHeight": {
@@ -13395,14 +13402,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "squashToHeight": {
-          "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "default": false,
+        "heightMode": {
+          "description": "fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height.",
+          "default": "fixed",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "enum": [
+              "fixed",
+              "fit"
+            ]
           }
         },
         "color": {
@@ -14824,8 +14834,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "subfeatureLabels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/subfeatureLabels"
             },
-            "displayDirectionalChevrons": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
+            "showChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showChevrons"
             },
             "transcriptTypes": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/transcriptTypes"
@@ -14900,6 +14910,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+            },
+            "displayDirectionalChevrons": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/displayDirectionalChevrons"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
@@ -16464,8 +16477,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLegend"
             },
-            "squashToHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/squashToHeight"
+            "heightMode": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/heightMode"
             },
             "lineZoneHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
@@ -18208,8 +18221,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/showLegend"
             },
-            "squashToHeight": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/squashToHeight"
+            "heightMode": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/heightMode"
             },
             "color": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/color"

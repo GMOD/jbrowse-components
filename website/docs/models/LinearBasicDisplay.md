@@ -92,7 +92,7 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;</code></pre></dialog></span> | The config typed off this display's own schema, reclaiming its slots for direct reads the way `configuration` above does for `getConf`. |
 | <span id="getter-subfeaturelabels">**subfeatureLabels**</span><br><code>"below" &#124; "none" &#124; "overlay"</code> |  |
 | <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"below" &#124; "none" &#124; "overlay"</code> |  |
-| <span id="getter-displaydirectionalchevrons">**displayDirectionalChevrons**</span><br><code>boolean</code> |  |
+| <span id="getter-showchevrons">**showChevrons**</span><br><code>boolean</code> |  |
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  |
 | <span id="getter-geneglyphmode">**geneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "longestCoding"</code> |  |
 | <span id="getter-genesfilter">**genesFilter**</span><br><code>"exclude" &#124; "only" &#124; undefined</code> |  |
@@ -173,7 +173,7 @@ From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="method-obser
 | <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "longestCoding") =&gt; void</code> |  |
 | <span id="action-dismissgeneglyphnotice">**dismissGeneGlyphNotice**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only" &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setdisplaydirectionalchevrons">**setDisplayDirectionalChevrons**</span><br><code>(value: boolean) =&gt; void</code> |  |
+| <span id="action-setshowchevrons">**setShowChevrons**</span><br><code>(value: boolean) =&gt; void</code> |  |
 | <span id="action-setutrcolor">**setUtrColor**</span><br><code>(color?: string &#124; undefined) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>

@@ -44,6 +44,13 @@ test('a retired color key becomes the slot that replaced it', () => {
   expect(readConfObject(conf, ['color', 'value'])).toBe('red')
 })
 
+test("v4.3.0's displayDirectionalChevrons becomes showChevrons", () => {
+  const conf = pluginManager()
+    .getDisplayType('LinearBasicDisplay')
+    .configSchema.create({ ...base, displayDirectionalChevrons: false })
+  expect(readConfObject(conf, 'showChevrons')).toBe(false)
+})
+
 // A v4 name the entry spells is the entry's own setting, so it has to beat a
 // current name the shorthand carries — which it can do only by already being
 // the current name when the two merge. `basicRetired` is declared for that

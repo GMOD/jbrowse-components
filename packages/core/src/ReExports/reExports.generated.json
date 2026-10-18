@@ -4855,7 +4855,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
-        "squashToHeightCheckboxItem",
+        "fitToHeightCheckboxItem",
         "triangleMatrixConfigSchemaFields"
       ],
       "worker": "real"

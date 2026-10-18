@@ -60,7 +60,7 @@ function matrix(trackId: string, height: number) {
   return {
     trackId,
     // Named explicitly, though the track resolves to it anyway, because the
-    // figure-recipe builder needs a display type to map `squashToHeight` to its
+    // figure-recipe builder needs a display type to map `heightMode` to its
     // menu item: that slot is shared with the two LD heatmaps, so unlike
     // `useColorPercentile` the field name alone cannot settle which display it means,
     // and an unresolved entry lands in spec-recipe-unmapped.txt instead of
@@ -70,13 +70,13 @@ function matrix(trackId: string, height: number) {
     color: { scale: 'linear' },
     useColorPercentile: true,
     selectedNormalization: 'NONE',
-    // Square bins, NOT squashToHeight. A pair's contacts are drawn at depth
+    // Square bins, NOT heightMode: 'fit'. A pair's contacts are drawn at depth
     // |x2-x1|/2, so with the two breakpoints ~560 css px apart on screen the
     // fusion block's apex is only ~280px down — and each region's own triangle
     // apexes at ~296px. Both therefore fit in a ~380px track at natural scale.
     // Squashing the full ~990px wedge into 360px instead spent half the frame on
     // the empty long-range corner below the data.
-    squashToHeight: false,
+    heightMode: 'fixed',
   }
 }
 

@@ -496,7 +496,7 @@ export async function featureTables(
   })
   const key = scales.find(scale => scale.kind === 'categorical')
   const entries = key?.entries.filter(e => e.color !== undefined) ?? []
-  const hideChevrons = !readConfObject(conf, 'displayDirectionalChevrons')
+  const hideChevrons = !readConfObject(conf, 'showChevrons')
   const labels = {
     showLabels: stage.showLabels,
     showDescriptions: stage.showDescriptions,

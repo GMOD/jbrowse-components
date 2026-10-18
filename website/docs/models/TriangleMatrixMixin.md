@@ -7,7 +7,7 @@ sidebar_label: Mixin -> TriangleMatrixMixin
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TriangleMatrixMixin.ts).
 
-A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `squashToHeight` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
+A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `heightMode` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
 
 ## Volatiles
 
@@ -21,7 +21,7 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-squashtoheight">**squashToHeight**</span><br><code>boolean</code> |  |
+| <span id="getter-heightmode">**heightMode**</span><br><code>"fit" &#124; "fixed"</code> |  |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Overridable hook (default 0): px reserved above the matrix. |
 | <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> | The canvas spans the scrolled content, boundary padding included. |
 | <span id="getter-viewtransform">**viewTransform**</span><br><code>{ viewScale: number; viewOffsetX: number; }</code> |  |
@@ -46,4 +46,4 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 | Member | Description |
 | --- | --- |
 | <span id="action-setrpcdata">**setRpcData**</span><br><code>(data: D) =&gt; void</code> |  |
-| <span id="action-setsquashtoheight">**setSquashToHeight**</span><br><code>(value: boolean) =&gt; void</code> |  |
+| <span id="action-setheightmode">**setHeightMode**</span><br><code>(mode: "fit" &#124; "fixed") =&gt; void</code> |  |

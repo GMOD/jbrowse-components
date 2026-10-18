@@ -931,10 +931,11 @@ const SHOW_LEGEND_DISPLAYS = new Set([
 // display's trackMenus.ts says so in as many words).
 const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 
-// The two displays declaring `squashToHeight`, both of which draw a triangle
-// whose natural height is half the view width: the Hi-C contact matrix and the
-// LD heatmap. They share one menu-item helper, so they share the label.
-const SQUASH_TO_HEIGHT_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
+// The two displays whose `heightMode` is `fixed` or `fit`, both of which draw a
+// triangle whose natural height is half the view width: the Hi-C contact
+// matrix and the LD heatmap. They share one menu-item helper, so they share
+// the label.
+const TRIANGLE_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
 
 // showInterchrom, showLongRange, readConnectionsHeight and sort are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
@@ -1406,19 +1407,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'A signed offset from the zoom-derived binsize, not an absolute one, so it keeps tracking zoom. Reset returns to auto. Positive is coarser, which is what turns a sparse speckled matrix into visible domain blocks.',
         }
       : undefined,
-  // Not Hi-C-only: LinearHicDisplay and the two LD displays all declare it, and
-  // all three list the one shared squashToHeightCheckboxItem in a Layout
-  // submenu, so the path is the same for each. Gated on a resolved display type
-  // rather than by name, since the name alone does not settle which it is.
-  squashToHeight: (value, { displayType }) =>
-    typeof value === 'boolean' &&
-    displayType &&
-    SQUASH_TO_HEIGHT_DISPLAYS.has(displayType)
-      ? {
-          path: `${TRACK_MENU} → Layout → Fit to display height (${value ? 'checked' : 'unchecked'})`,
-          note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
-        }
-      : undefined,
   variantLayout: (value, { displayType }) =>
     (value === 'genomic' || value === 'columns') && displayType
       ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
@@ -1762,7 +1750,17 @@ export const trackFields: Record<string, FieldRecipe> = {
   featureHeight: readHeightStep,
   'pileup.readHeight': readHeightStep,
   // 'Track sizing' is a subheader inside the same submenu as the size presets
+  // A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
+  // in a Layout submenu, so the path is the same for each.
   heightMode: (value, { noun, displayType }) => {
+    if (displayType && TRIANGLE_DISPLAYS.has(displayType)) {
+      return value === 'fit' || value === 'fixed'
+        ? {
+            path: `${TRACK_MENU} → Layout → Fit to display height (${value === 'fit' ? 'checked' : 'unchecked'})`,
+            note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
+          }
+        : undefined
+    }
     const option = getHeightModeOptions(noun).find(o => o.value === value)
     return option
       ? {

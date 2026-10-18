@@ -55,7 +55,7 @@ test(
     await findDisplayPainted('hic-display', delay)
 
     const display = view.tracks[0]!.displays[0] as LinearHicDisplayModel
-    display.setSquashToHeight(true)
+    display.setHeightMode('fit')
     const { yScalar } = display
     expect(yScalar).not.toBe(1)
 

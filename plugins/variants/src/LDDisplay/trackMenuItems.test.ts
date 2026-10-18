@@ -20,7 +20,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     showLegend: false,
     showLabels: false,
     showVerticalGuides: true,
-    squashToHeight: false,
+    heightMode: 'fixed' as const,
     useGenomicPositions: false,
     setFocalSnp: jest.fn(),
     setLDMetric: jest.fn(),
@@ -28,7 +28,7 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     setShowLegend: jest.fn(),
     setShowLabels: jest.fn(),
     setShowVerticalGuides: jest.fn(),
-    setSquashToHeight: jest.fn(),
+    setHeightMode: jest.fn(),
     setVariantLayout: jest.fn(),
     ...overrides,
   }

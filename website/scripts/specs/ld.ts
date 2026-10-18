@@ -174,7 +174,7 @@ function agPageTrack(cameroonTrackId: string, pop: AgPopulation) {
 // than that cuts the block flat at its boundary, which reads as a block
 // continuing past the frame.
 //
-// `squashToHeight` was rendered at 240 on both panels and rejected: scaling y
+// `heightMode: 'fit'` was rendered at 240 on both panels and rejected: scaling y
 // compresses each cell, so the 2La block came back as a pale hatched wedge
 // rather than a solid one, and the long-range pairs it brings into frame are
 // white, so the lane stays half blank anyway. The saving is taken where a panel

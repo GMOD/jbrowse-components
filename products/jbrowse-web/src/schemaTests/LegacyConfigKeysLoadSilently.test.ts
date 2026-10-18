@@ -311,7 +311,7 @@ test.each([
   ['MultiLinearVariantDisplay', 'showRowLabels', true],
   ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],
   ['LinearVariantMatrixDisplay', 'showRowLabels', false],
-  ['LDTrackDisplay', 'squashToHeight', true],
+  ['LDTrackDisplay', 'heightMode', 'fit'],
   ['LDTrackDisplay', 'variantLayout', 'columns'],
 ] as const)('%s: a v4 key lands on %s', (type, slot, value) => {
   expect(readConfObject(loaded(byDisplay(type)), slot as string)).toEqual(value)

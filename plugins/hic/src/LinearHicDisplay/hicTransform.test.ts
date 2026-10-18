@@ -91,7 +91,7 @@ describe('hitTest inverts what the renderer drew', () => {
     ['fit-to-height squash', true],
   ])('%s', (_label, squash) => {
     const { display } = createDisplay()
-    display.setSquashToHeight(squash)
+    display.setHeightMode(squash ? 'fit' : 'fixed')
     // held here rather than read back off the payload: the packed buffer no
     // longer carries bin columns, and the point of this suite is that the bins
     // that went in come back out the far end of the transform
