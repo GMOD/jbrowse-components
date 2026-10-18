@@ -44,7 +44,7 @@ export type ReadFilterSnapshot = {
   flagInclude?: number
   flagExclude?: number
   minMapq?: number
-  tags?: { tag: string; value: string }[]
+  tags?: { tag: string; value?: string }[]
   junctions?: Record<string, unknown>
   connections?: Record<string, unknown>
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
@@ -691,7 +691,7 @@ const modifiers: Record<string, Modifier> = {
           ...(readFilterSnapOf(r).tags ?? []),
           {
             tag: parseStr('filterTag', tag, 'a SAM tag name'),
-            value: value ?? '',
+            ...(value ? { value } : {}),
           },
         ],
       }

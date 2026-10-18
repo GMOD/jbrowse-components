@@ -1,14 +1,14 @@
 ---
 id: tagfilter
 title: TagFilter
-description: "One tag a read has to carry to pass, with the value it has to hold where one is named."
+description: "One tag a read has to carry to pass, with the value it has to hold where one is named. An entry naming no tag tests nothing."
 sidebar_label: Display -> TagFilter
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/tagFilterConfigSchema.ts).
 
 One tag a read has to carry to pass, with the value it has to hold where
-one is named.
+one is named. An entry naming no tag tests nothing.
 
 ## Config slots
 

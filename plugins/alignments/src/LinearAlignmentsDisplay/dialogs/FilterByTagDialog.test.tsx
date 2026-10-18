@@ -27,10 +27,8 @@ const submit = () => {
   fireEvent.click(screen.getByText('Submit'))
 }
 
-// The value box is optional in the UI but not in the filter: `filterTagValue`
-// compares the read's value against whatever is stored, so a literal '' matched
-// nothing and wiped the track. '*' is the "has this tag" spelling the box's
-// helper text offers.
+// A literal '' matched nothing and wiped the track; an empty box is an unset
+// value, which passes any read carrying the tag.
 test('a tag with no value filters for reads carrying it, not for an empty value', () => {
   const { setReadFilter } = renderDialog()
   fireEvent.change(screen.getByLabelText('Tag name'), {
@@ -38,11 +36,10 @@ test('a tag with no value filters for reads carrying it, not for an empty value'
   })
   submit()
   expect(setReadFilter).toHaveBeenCalledWith(
-    expect.objectContaining({ tags: [{ tag: 'HP', value: '*' }] }),
+    expect.objectContaining({ tags: [{ tag: 'HP' }] }),
   )
-  // and that is the value that keeps a tagged read rather than dropping it
-  expect(filterTagValue('1', '*')).toBe(false)
-  expect(filterTagValue('1', '')).toBe(true)
+  expect(filterTagValue('1', undefined)).toBe(false)
+  expect(filterTagValue(undefined, undefined)).toBe(true)
 })
 
 test('a minimum mapping quality is stored as a number, and an empty box clears it', () => {

@@ -85,7 +85,7 @@ export const alignmentsFilterConfigSchema = ConfigurationSchema(
     /**
      * #slot
      * The tags a read has to carry, every one of them: a `{ tag, value }`
-     * each, the value `*` or unset passing any read with the tag.
+     * each, an unset value passing any read with the tag.
      */
     tags: types.array(tagFilterConfigSchema),
     /**

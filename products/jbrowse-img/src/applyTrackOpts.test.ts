@@ -376,6 +376,12 @@ describe('alignments settings a static export cannot reach any other way', () =>
     })
   })
 
+  test('a tag filter with no value passes any read carrying the tag', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['filterTag:HP']).snap.filter,
+    ).toEqual({ tags: [{ tag: 'HP' }] })
+  })
+
   test('the new alignments modifiers warn on a wiggle track', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { snap } = buildDisplaySnapshot('wiggle', [

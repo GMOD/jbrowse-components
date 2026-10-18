@@ -181,12 +181,12 @@ export function filterSpliced(
       : false
 }
 
-// An absent value means the same as '*' — "reads that carry this tag" — which
-// is what a hand-written `tags: [{tag: 'HP'}]` can only have meant.
-// Comparing against the absent value stringified kept exactly the reads
-// LACKING the tag.
-export function filterTagValue(readVal: unknown, filterVal = '*') {
-  return filterVal === '*' ? readVal === undefined : `${readVal}` !== filterVal
+// An unset value passes any read carrying the tag: comparing against it
+// stringified kept exactly the reads LACKING the tag.
+export function filterTagValue(readVal: unknown, filterVal?: string) {
+  return filterVal === undefined
+    ? readVal === undefined
+    : `${readVal}` !== filterVal
 }
 
 interface FilterableRead {
@@ -207,10 +207,12 @@ export function dropsRead(filterBy: ReadFilter | undefined) {
     readName,
     spliced,
   } = filterBy ?? {}
+  // an entry naming no tag tests nothing
+  const tagTests = tags?.filter(tf => tf.tag !== '') ?? []
   return (read: FilterableRead) =>
     filterReadFlag(read.flags, flagInclude, flagExclude) ||
     (readName !== undefined && read.name !== readName) ||
-    !!tags?.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
+    tagTests.some(tf => filterTagValue(read.getTag(tf.tag), tf.value)) ||
     filterSpliced(
       spliced,
       () => (read.cigarCategoryBits & CIGAR_HAS_SKIP) !== 0,

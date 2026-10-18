@@ -34,6 +34,17 @@ test.each(READ_CATEGORY_KEYS)(
   },
 )
 
+test('a `*` or empty tag value is unset, the one spelling of any value', () => {
+  expect(
+    filterOf({
+      tags: [
+        { tag: 'HP', value: '*' },
+        { tag: 'RG', value: '' },
+      ],
+    }).tags,
+  ).toEqual([{ tag: 'HP' }, { tag: 'RG' }])
+})
+
 test("a v4 session's single tagFilter lifts into tags", () => {
   expect(
     filterOf({ split: 'only', tagFilter: { tag: 'HP', value: '1' } }),

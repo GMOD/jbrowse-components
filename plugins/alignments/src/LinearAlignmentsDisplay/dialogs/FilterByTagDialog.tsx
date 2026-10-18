@@ -239,8 +239,8 @@ const TagFilterSection = observer(function TagFilterSection(props: {
             size="small"
             margin="none"
             value={row.value}
-            placeholder="*"
-            helperText="* matches any value"
+            placeholder="any"
+            helperText="Empty matches any value"
             onChange={event => {
               update(row.id, { value: event.target.value })
             }}
@@ -364,11 +364,13 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   }
 
   const handleSubmit = () => {
-    // An empty value box means `*`, the "carries this tag" spelling
-    // (filterTagValue); a literal '' would match no read and empty the track.
+    // An empty value box is an unset value, which passes any read carrying
+    // the tag (filterTagValue)
     const tags = tagRows
       .filter(r => r.tag !== '')
-      .map(r => ({ tag: r.tag, value: r.value === '' ? '*' : r.value }))
+      .map(r =>
+        r.value === '' ? { tag: r.tag } : { tag: r.tag, value: r.value },
+      )
     model.setReadFilter({
       // Spread first: the read categories live in `readFilter` too and are edited
       // from the track menu, so a Submit here must carry them through rather
