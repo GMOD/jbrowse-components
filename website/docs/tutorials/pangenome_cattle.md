@@ -163,9 +163,9 @@ each row's label bar, mapping the sample table's `lineage` column through
   `rows.labels` writes each breed beside its row
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
   a second alternate allele in a separate color
-- `showVariantLane` draws each call once in a lane above the rows, across the
-  reference span it replaces, labelled with its VCF ID (the graph nodes that
-  bound it) and the allele change
+- `variants` draws each call once in a band above the rows, across the reference
+  span it replaces, labelled with its VCF ID (the graph nodes that bound it) and
+  the allele change
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -184,7 +184,7 @@ each row's label bar, mapping the sample table's `lineage` column through
     {
       "type": "LinearMultiSampleVariantDisplay",
       "unit": "haplotype",
-      "showVariantLane": true,
+      "variants": { "show": true },
       "rows": {
         "domain": [
           "ANG",

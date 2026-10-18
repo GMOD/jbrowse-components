@@ -53,6 +53,8 @@ export const basicRetired: Record<
   color3: (utrColor: unknown) => ({ utrColor }),
   outline: (outlineColor: unknown) =>
     outlineColor ? { showOutline: true, outlineColor } : {},
+  // v4.3.0's renderer slot
+  displayDirectionalChevrons: (showChevrons: unknown) => ({ showChevrons }),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
   renderer: liftRenderer,

@@ -179,10 +179,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
-      // v4.3.0's name for `showChevrons`
-      retired: {
-        displayDirectionalChevrons: showChevrons => ({ showChevrons }),
-      },
     },
   )
 }

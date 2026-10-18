@@ -899,6 +899,12 @@ describe('curved connectors', () => {
     display.setCoverageHeight(display.coverageHeight + 20)
     display.colorByField('strand')
     expect(display.connectorsByGroup).toBe(connectors)
+    // the field the connectors paint under, which their color type carries
+    // for every field
+    const field = display.readConnectionsColorField
+    display.colorByField('pairOrientation')
+    expect(display.readConnectionsColorField).not.toBe(field)
+    expect(display.connectorsByGroup).toBe(connectors)
     dispose()
   })
 

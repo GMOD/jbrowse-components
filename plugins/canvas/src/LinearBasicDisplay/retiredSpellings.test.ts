@@ -44,10 +44,19 @@ test('a retired color key becomes the slot that replaced it', () => {
   expect(readConfObject(conf, ['color', 'value'])).toBe('red')
 })
 
-test("v4.3.0's displayDirectionalChevrons becomes showChevrons", () => {
+// v4.3.0 spelt it on the renderer; a beta spelt it on the display
+test.each([
+  {
+    renderer: {
+      type: 'CanvasFeatureRenderer',
+      displayDirectionalChevrons: false,
+    },
+  },
+  { displayDirectionalChevrons: false },
+])('displayDirectionalChevrons becomes showChevrons: %j', spelling => {
   const conf = pluginManager()
     .getDisplayType('LinearBasicDisplay')
-    .configSchema.create({ ...base, displayDirectionalChevrons: false })
+    .configSchema.create({ ...base, ...spelling })
   expect(readConfObject(conf, 'showChevrons')).toBe(false)
 })
 
