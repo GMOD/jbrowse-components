@@ -1,6 +1,6 @@
 ---
 name: adr-232-external-writers-and-figures
-description: "ADR-232 is built, reviewed and released in v5.0.0-beta.15, with jb2hubs and ggjbrowse moved to its names (2026-10-18). Left: @jbrowse/tables never reached npm, which stopped beta.15's publish after 52 of 60 packages, and the sashimi lane question."
+description: "ADR-232 is built, reviewed and released in v5.0.0-beta.15, with jb2hubs and ggjbrowse moved to its names (2026-10-18). Left: @jbrowse/tables' trusted publisher, whose 404 stopped beta.15's publish after 52 of 60 packages, and the sashimi lane question."
 ---
 
 # ADR-232: what is left after beta.15
@@ -12,15 +12,16 @@ config) and ggjbrowse (engine built from the beta.15 tag with
 
 ## Waiting on Colin
 
-- **`@jbrowse/tables` needs its first publish by hand.** npm trusted
-  publishing cannot create a package, so beta.15's Publish run 404ed on it and
-  `pnpm publish -r` stopped there. Still at beta.14: `@jbrowse/tables`,
-  `plugin-data-management`, `plugin-sv-inspector`, `jbrowse-blat-proxy`,
-  `img`, `react-app2`, `react-circular-genome-view2`,
-  `react-linear-genome-view2`. After the hand publish and its trusted-publisher
-  setup, `gh run rerun 39155641995 --failed` publishes the rest (pnpm skips a
-  package already at the version). ggjbrowse then takes releases with
-  `~/src/ggjbrowse/scripts/take-release.sh` again.
+- **`@jbrowse/tables` has no working trusted publisher.** Its one release,
+  5.0.0-beta.13, was published by hand; CI's OIDC exchange 404s for it alone
+  (every other package publishes as GitHub Actions), so beta.15's Publish run
+  stopped there with `pnpm publish -r`. Still at beta.14 or earlier:
+  `@jbrowse/tables`, `plugin-data-management`, `plugin-sv-inspector`,
+  `jbrowse-blat-proxy`, `img`, `react-app2`, `react-circular-genome-view2`,
+  `react-linear-genome-view2`. Once npm trusts `GMOD/jbrowse-components`'
+  `publish.yml` for it, `gh run rerun 39155641995 --failed` publishes the rest
+  (pnpm skips a package already at the version), and ggjbrowse takes releases
+  with `~/src/ggjbrowse/scripts/take-release.sh` again.
 - **Sashimi lane placement**: the arcs keep the overlay by default and draw
   in a strip below coverage while it is hidden. Colin may want a
   ggjbrowse-style lane above coverage: ask before building.
