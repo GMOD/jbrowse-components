@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "all nine steps are built; left are the external writers, jb2hubs and ggjbrowse (handoffs/adr-232-external-writers-and-figures.md)"
+  first_move: "built and shipped in v5.0.0-beta.15, external writers moved; left is the first npm publish of @jbrowse/tables (handoffs/adr-232-external-writers-and-figures.md)"
 ---
 
 # ADR-232's config renames land before 5.0.0
