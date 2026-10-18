@@ -35,8 +35,23 @@ test('without --refseq sequence track is absent', async () => {
 })
 
 test('--track names the sequence track of an assembly written in shorthand', async () => {
+  // Answers a byte range, as the file fetcher requires of a host
   const server = createServer((req, res) => {
-    res.end(readFileSync(path.join(path.dirname(volvoxFasta), req.url)))
+    const file = readFileSync(path.join(path.dirname(volvoxFasta), req.url))
+    const range = /bytes=(\d+)-(\d*)/.exec(req.headers.range ?? '')
+    if (range) {
+      const start = Number(range[1])
+      const end = range[2]
+        ? Math.min(Number(range[2]), file.length - 1)
+        : file.length - 1
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${file.length}`,
+        'Content-Length': end - start + 1,
+      })
+      res.end(file.subarray(start, end + 1))
+    } else {
+      res.end(file)
+    }
   })
   await new Promise(resolve => server.listen(0, resolve))
   const uri = `http://localhost:${server.address().port}/volvox.fa`

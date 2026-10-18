@@ -46,8 +46,7 @@ you release the slider:
   below the threshold, so singletons and near-monomorphic sites drop out and the
   common, population-informative variants remain.
 - **Missingness** hides variants whose fraction of uncalled alleles rises above
-  the threshold. Its
-  [default](/docs/config/linearmultisamplevariantdisplay/#slot-maxmissingnessfilter)
+  the threshold. Its [default](/docs/config/variantfilter/#slot-maxmissingness)
   keeps every variant; lowering it drops the poorly-genotyped columns that are
   mostly missing data.
 
