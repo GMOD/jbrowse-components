@@ -1,6 +1,6 @@
 ---
 name: adr-232-external-writers-and-figures
-description: "ADR-232's nine steps and the LGVSyntenyDisplay base schema are built (2026-10-18). Left: Colin's call on four cancer_sv figures step 6 recolors, then their reshoot, and the external writers (jb2hubs at the next deploy, ggjbrowse with the next @jbrowse/tables release)."
+description: "ADR-232's nine steps and the LGVSyntenyDisplay base schema are built and reviewed (2026-10-18). Left: the external writers (jb2hubs at the deploy that ships beta 15, ggjbrowse with its @jbrowse/tables) and the sashimi lane question."
 ---
 
 # ADR-232: the figures and the external writers
@@ -12,19 +12,6 @@ the shared `BaseLinearAlignmentsDisplay` schema.
 
 ## Waiting on Colin
 
-- **Step 6 recolors four figures**: `cancer_sv/derivative_inserts`,
-  `derivative_synteny`, `k562_fusion_inspector_reads` and
-  `k562_bcr_abl_split`. A connector paints as its arc does, and the arc band
-  paints any connection between chromosomes inter-chromosomal. So the
-  templated-insert hops in `derivative_inserts`, gold (same strand) and
-  purple (inverted) before, turn the arcs' orange; the inverted segments stay
-  purple in the read fills. Giving a cross-chromosome split a strand class
-  would be an arc-band change, since the arc vocabulary has no such class.
-- Once he accepts: reshoot the four
-  (`generate-screenshots.ts --exact --filter …` from `website/`, after
-  `pnpm --filter @jbrowse/web build`), then
-  `node website/scripts/figures.ts push --exact --filter …` and commit
-  `figures.lock`. No caption names a connector color.
 - **Sashimi lane placement**: the arcs keep the overlay by default and draw
   in a strip below coverage while it is hidden. Colin may want a
   ggjbrowse-style lane above coverage: ask before building.
@@ -32,22 +19,17 @@ the shared `BaseLinearAlignmentsDisplay` schema.
 ## External writers
 
 - **jb2hubs, at the deploy that ships step 7.** The names were beta-only, so
-  nothing lifts them: `website/pangenome-config/bovine-arsucd12.json:160`
-  (`showVariantLane`), `website/src/components/pangenomeLinks.ts:93-95` and
-  its test at `:109` move to `variants: { show, height, showLabels }`.
-- **ggjbrowse, when it takes the next `@jbrowse/tables` release** (it bundles
-  a published copy, `~/src/ggjbrowse/scripts/take-release.sh`):
-  - `showOnlyGenes` → `filter: { genes: 'only' }` (`R/synteny.R:715`,
-    `tests/testthat/test-features.R:33`, `test-synteny.R:52`,
-    `test-multiway.R:105`, `tutorials/rnaseq.Rmd:91`,
-    `~/src/ggjbrowse/scripts/gallery.R`);
-  - `minorAlleleFrequencyFilter`/`maxMissingnessFilter` →
-    `filter.minMinorAlleleFrequency`/`filter.maxMissingness`
-    (`R/variants.R:37`);
-  - `singletons` → `alone` (`R/alignments.R:50`);
-  - `displayDirectionalChevrons` → `showChevrons` (`R/features.R:49`,
-    `tests/testthat/test-features.R:28`), which a `retired` lift still loads;
-  - `autoplot.R:313,331`'s junction band, which still requires coverage.
+  nothing lifts them: `~/src/jb2hubs/website/pangenome-config/bovine-arsucd12.json`
+  (`showVariantLane`, published by its `upload.sh`) and
+  `~/src/jb2hubs/website/src/components/pangenomeLinks.ts` and its test move
+  to `variants: { show, height, showLabels }`.
+- **ggjbrowse, when it takes the beta's `@jbrowse/tables`**
+  (`~/src/ggjbrowse/scripts/take-release.sh`): `showOnlyGenes` →
+  `filter: { genes: 'only' }`, `minorAlleleFrequencyFilter`/
+  `maxMissingnessFilter` → `filter.minMinorAlleleFrequency`/
+  `filter.maxMissingness`, `singletons` → `alone`,
+  `displayDirectionalChevrons` → `showChevrons` (no lift), and the junction
+  band in `R/autoplot.R`, which still requires coverage.
 
 ## Settled (don't reopen without new evidence)
 

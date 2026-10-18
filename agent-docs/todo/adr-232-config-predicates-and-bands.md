@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "all nine steps are built; left are Colin's call on the four figures step 6 recolors, and the external writers (handoffs/adr-232-external-writers-and-figures.md)"
+  first_move: "all nine steps are built; left are the external writers, jb2hubs and ggjbrowse (handoffs/adr-232-external-writers-and-figures.md)"
 ---
 
 # ADR-232's config renames land before 5.0.0

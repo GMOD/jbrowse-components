@@ -184,7 +184,7 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | `filter.tagFilters` → `filter.tags` | now, with the alignments filter |
 | `filter.singletons` → `filter.alone` | now: samtools' singletons are a paired read with its mate unmapped, a subset, and `filter.connections.offscreenMates` names a narrower set; v4's read cloud `drawSingletons: false` lifts into it |
 | `squashToHeight` → `heightMode: 'fit'` | now: beta-only, no external writer |
-| `displayDirectionalChevrons` → `showChevrons` | now, with a `retired` lift (v4.3.0) |
+| `displayDirectionalChevrons` → `showChevrons` | now, with no lift: v4.3.0 spelt it on the renderer, and Colin judged the setting too niche to carry one |
 | canvas `displayMode`, which holds size presets and `collapsed` | later, with a lift |
 | multi-row `rowHeight: 0` → `heightMode: 'fit'` | later: needs `HeightModeMixin` on five displays |
 | a MultiWay `ribbons` object for `ribbonColor`, `drawCurves`, `bridgeSkippedLanes` | later |

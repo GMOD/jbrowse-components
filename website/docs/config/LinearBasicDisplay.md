@@ -115,5 +115,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `outline` | moved into a current slot |
 | `maxHeight` | ignored |
 | `renderer` | moved into a current slot |
-| `displayDirectionalChevrons` | moved into a current slot |
 | `showDescriptions` | moved into a current slot |

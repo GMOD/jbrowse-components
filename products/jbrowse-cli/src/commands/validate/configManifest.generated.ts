@@ -3349,7 +3349,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
-        "displayDirectionalChevrons",
         "maxHeight",
         "renderer",
         "showDescriptions"
@@ -5832,7 +5831,6 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline",
-        "displayDirectionalChevrons",
         "maxHeight",
         "renderer",
         "showDescriptions"
