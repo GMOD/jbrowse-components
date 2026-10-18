@@ -367,7 +367,7 @@ config, so name your own `trackId` instead):
           {
             "trackId": "GCF_030704535.1-ncbiRefSeq",
             "type": "LinearBasicDisplay",
-            "showOnlyGenes": true,
+            "filter": { "genes": "only" },
             "displayMode": "compact"
           },
           {

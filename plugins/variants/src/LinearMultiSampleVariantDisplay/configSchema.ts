@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -17,6 +16,7 @@ import {
   VARIANT_UNITS,
 } from '../shared/constants.ts'
 import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
+import { variantFilterConfigSchema } from './variantFilterConfigSchema.ts'
 import { DEFAULT_VARIANT_LANE_HEIGHT } from './variantTopBands.ts'
 
 /**
@@ -151,7 +151,12 @@ export default function configSchemaFactory() {
         defaultValue: 20,
         advanced: true,
       },
-      ...jexlFilterConfigSchemaFields,
+      /**
+       * #slot filter
+       * The variants the display draws: the jexl `expressions`, a minimum
+       * minor allele frequency and a maximum missingness.
+       */
+      filter: variantFilterConfigSchema,
       ...rowHeightConfigSchemaFields(),
       ...treeSidebarConfigSchemaFields({
         tree: 'Show the sample clustering tree in the sidebar',
@@ -211,26 +216,6 @@ export default function configSchemaFactory() {
         defaultValue: true,
         description:
           "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue",
-      },
-      /**
-       * #slot
-       */
-      minorAlleleFrequencyFilter: {
-        type: 'number',
-        defaultValue: 0,
-        advanced: true,
-        description:
-          'Hide variants whose minor allele frequency is below this threshold',
-      },
-      /**
-       * #slot
-       */
-      maxMissingnessFilter: {
-        type: 'number',
-        defaultValue: 1,
-        advanced: true,
-        description:
-          'Hide variants whose fraction of uncalled alleles is above this threshold; 1 keeps every variant',
       },
       /**
        * #slot
@@ -342,10 +327,13 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // v4's two multi-sample displays spelt the sidebar labels and the
-      // reference-allele paint as booleans, named a color scheme the
-      // `color` object has no member for, and carried the wiggle scale slots
-      // the matrix never read.
+      // reference-allele paint as booleans, kept the allele-frequency floor
+      // outside the filter, named a color scheme the `color` object has no
+      // member for, and carried the wiggle scale slots the matrix never read.
       retired: {
+        minorAlleleFrequencyFilter: (minMinorAlleleFrequency: unknown) => ({
+          filter: { minMinorAlleleFrequency },
+        }),
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),

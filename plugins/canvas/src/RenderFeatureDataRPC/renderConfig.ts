@@ -5,6 +5,7 @@ import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 export {
@@ -62,6 +63,15 @@ export function workerColorOf({
   }
 }
 
+/**
+ * The display's `filter` as the worker reads it: the jexl expressions, and on
+ * `LinearBasicDisplay` the gene category.
+ */
+export interface FeatureFilter {
+  expressions: string[]
+  genes?: CategoryFilter
+}
+
 // Fully enumerated — no index signature, so a typo on any property is a type
 // error rather than silently typing as `unknown`.
 export interface DisplayConfig {
@@ -81,9 +91,7 @@ export interface DisplayConfig {
   subParts: string
   impliedUTRs: boolean
   mouseover: string
-  filter: string[]
-  // Not a jexl filter, so it never reaches the "Filter by..." dialog.
-  hideSourceFeatures: boolean
+  filter: FeatureFilter
   // `number | string` because the slot declares `contextVariable: ['feature']`
   // and so may hold a `jexl:` expression. Read it through `featureHeightPx`; the
   // union makes any new direct read a type error rather than a Float32Array full
@@ -122,7 +130,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   impliedUTRs: true,
   mouseover: true,
   filter: true,
-  hideSourceFeatures: true,
   featureHeight: true,
   color: true,
   connectorColor: true,
@@ -148,7 +155,6 @@ export type GeneGlyphSettings = Pick<
   | 'containerTypes'
   | 'subParts'
   | 'impliedUTRs'
-  | 'hideSourceFeatures'
   | 'connectorColor'
   | 'utrColor'
 >
@@ -169,7 +175,6 @@ export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
   containerTypes: ['proteoform_orf'],
   subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
   impliedUTRs: true,
-  hideSourceFeatures: true,
   connectorColor: undefined,
   utrColor: undefined,
 }

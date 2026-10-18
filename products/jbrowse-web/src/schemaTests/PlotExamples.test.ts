@@ -4,6 +4,8 @@ import path from 'node:path'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaMetadata,
+  isBareConfigurationSchemaType,
+  isSlotDefinitionEntry,
   liftPlot,
   parsePlot,
   plotKeysOf,
@@ -197,4 +199,27 @@ test('a key is a plot setting on every display declaring it, or on none', () => 
     .filter(key => unflagged.has(key))
     .map(key => `${key}: unflagged on ${unflagged.get(key)!.join(', ')}`)
   expect(split).toEqual([])
+})
+
+// A plot word reads the same way on every display: a slot, one object, or a
+// list of objects. An agent writing `filter` to a feature track and an
+// alignments track writes one shape to both.
+test('a plot setting is the same kind of entry on every display declaring it', () => {
+  const kinds = new Map<string, Set<string>>()
+  for (const { conf } of withPlot) {
+    const { definition } = getConfigurationSchemaMetadata(conf)!
+    for (const key of plotKeysOf(conf)) {
+      const entry = definition[key]
+      const kind = isSlotDefinitionEntry(entry)
+        ? 'slot'
+        : isBareConfigurationSchemaType(entry)
+          ? 'object'
+          : 'list'
+      kinds.set(key, new Set([...(kinds.get(key) ?? []), kind]))
+    }
+  }
+  const mixed = [...kinds]
+    .filter(([, of]) => of.size > 1)
+    .map(([key, of]) => `${key}: ${[...of].join(' and ')}`)
+  expect(mixed).toEqual([])
 })

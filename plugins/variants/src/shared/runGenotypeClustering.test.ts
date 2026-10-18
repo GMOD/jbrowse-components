@@ -40,8 +40,8 @@ const THREE = [
 
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {
-    minorAlleleFrequencyFilter: 0,
-    maxMissingnessFilter: 1,
+    minMinorAlleleFrequency: 0,
+    maxMissingness: 1,
     sourcesBase: THREE,
     clusterableSources: THREE,
     editableSources: THREE,
@@ -84,8 +84,8 @@ describe('runGenotypeClustering', () => {
       expect.objectContaining({
         regions,
         sources: model.clusterableSources,
-        minorAlleleFrequencyFilter: 0,
-        maxMissingnessFilter: 1,
+        minMinorAlleleFrequency: 0,
+        maxMissingness: 1,
         unit: 'sample',
       }),
     )
@@ -125,8 +125,8 @@ describe('runGenotypeClustering', () => {
 
   it('passes through the display filter values', async () => {
     const model = makeModel({
-      minorAlleleFrequencyFilter: 0.05,
-      maxMissingnessFilter: 0.2,
+      minMinorAlleleFrequency: 0.05,
+      maxMissingness: 0.2,
     })
     const rpcManager = makeRpcManager(async () => ({
       order: [0, 1, 2],
@@ -146,8 +146,8 @@ describe('runGenotypeClustering', () => {
       'session-1',
       'MultiSampleVariantClusterGenotypeMatrix',
       expect.objectContaining({
-        minorAlleleFrequencyFilter: 0.05,
-        maxMissingnessFilter: 0.2,
+        minMinorAlleleFrequency: 0.05,
+        maxMissingness: 0.2,
       }),
     )
   })

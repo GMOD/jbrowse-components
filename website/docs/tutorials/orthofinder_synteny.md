@@ -445,7 +445,7 @@ under the rice gene track:
           {
             "trackId": "rice_genes",
             "type": "LinearBasicDisplay",
-            "showOnlyGenes": true,
+            "filter": { "genes": "only" },
             "displayMode": "compact"
           },
           {

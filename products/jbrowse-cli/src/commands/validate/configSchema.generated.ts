@@ -4688,6 +4688,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "BasicFeatureFilter": {
+      "title": "BasicFeatureFilter",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JexlExpression"
+          }
+        },
+        {
+          "title": "BasicFeatureFilter",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "expressions": {
+              "description": "jexl: expressions a feature must pass to be drawn.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/JexlExpression"
+                }
+              }
+            },
+            "genes": {
+              "description": "only, exclude, or unset for unfiltered: gene-like top-level features.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "only",
+                  "exclude"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "FeatureColor": {
       "title": "FeatureColor",
       "anyOf": [
@@ -5046,15 +5093,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "filter": {
-          "description": "jexl: expressions a feature must pass to be drawn.",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/JexlExpression"
-            }
+            "$ref": "#/$defs/BasicFeatureFilter"
           }
         },
         "mouseover": {
@@ -5215,15 +5258,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CanvasFeatureLabels"
           }
         },
-        "showOnlyGenes": {
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
           "if": {
@@ -5354,16 +5388,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "impliedUTRs": {
           "description": "draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "hideSourceFeatures": {
-          "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
           "default": true,
           "if": {
             "type": "null"
@@ -10624,6 +10648,41 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "FeatureFilter": {
+      "title": "FeatureFilter",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JexlExpression"
+          }
+        },
+        {
+          "title": "FeatureFilter",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "expressions": {
+              "description": "jexl: expressions a feature must pass to be drawn.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/JexlExpression"
+                }
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LinearVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -10682,15 +10741,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "filter": {
-          "description": "jexl: expressions a feature must pass to be drawn.",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/JexlExpression"
-            }
+            "$ref": "#/$defs/FeatureFilter"
           }
         },
         "mouseover": {
@@ -10913,6 +10968,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
+    },
+    "VariantFilter": {
+      "title": "VariantFilter",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"expressions\\": ... }\`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JexlExpression"
+          }
+        },
+        {
+          "title": "VariantFilter",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "expressions": {
+              "description": "jexl: expressions a feature must pass to be drawn.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/JexlExpression"
+                }
+              }
+            },
+            "minMinorAlleleFrequency": {
+              "description": "a variant draws only with a minor allele frequency of at least this; 0 keeps every variant.",
+              "default": 0,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "maxMissingness": {
+              "description": "a variant draws only with at most this share of its alleles uncalled; 1 keeps every variant.",
+              "default": 1,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "SampleRows": {
       "title": "SampleRows",
@@ -11200,15 +11310,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "filter": {
-          "description": "jexl: expressions a feature must pass to be drawn.",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/JexlExpression"
-            }
+            "$ref": "#/$defs/VariantFilter"
           }
         },
         "rowHeight": {
@@ -11320,26 +11426,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "minorAlleleFrequencyFilter": {
-          "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "maxMissingnessFilter": {
-          "description": "Hide variants whose fraction of uncalled alleles is above this threshold; 1 keeps every variant.",
-          "default": 1,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short display to its rows rather than to its key. Defaults to on.",
           "default": true,
@@ -11437,6 +11523,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minorAlleleFrequencyFilter": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13655,15 +13745,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "filter": {
-          "description": "jexl: expressions a feature must pass to be drawn.",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/JexlExpression"
-            }
+            "$ref": "#/$defs/FeatureFilter"
           }
         },
         "maxFeatureScreenDensity": {
@@ -13877,15 +13963,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "filter": {
-          "description": "jexl: expressions a feature must pass to be drawn.",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/JexlExpression"
-            }
+            "$ref": "#/$defs/FeatureFilter"
           }
         },
         "maxFeatureScreenDensity": {
@@ -14583,9 +14665,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "labels": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/labels"
             },
-            "showOnlyGenes": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOnlyGenes"
-            },
             "connectorColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/connectorColor"
             },
@@ -14618,9 +14697,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "impliedUTRs": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/impliedUTRs"
-            },
-            "hideSourceFeatures": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
             },
             "maxDisplayedBpPerPx": {
               "anyOf": [
@@ -15991,12 +16067,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "shadeByDosage": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/shadeByDosage"
             },
-            "minorAlleleFrequencyFilter": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
-            },
-            "maxMissingnessFilter": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxMissingnessFilter"
-            },
             "rowColor": {
               "anyOf": [
                 {
@@ -16021,6 +16091,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "variantLaneLabels": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
+            },
+            "minorAlleleFrequencyFilter": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"
             },
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"

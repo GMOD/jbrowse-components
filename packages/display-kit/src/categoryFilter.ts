@@ -1,7 +1,16 @@
 import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 
-import type { CategoryFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+/**
+ * A category in a filter: `only` its members, `exclude` them, or unset for
+ * unfiltered. No third `all` member: the absent filter and the inactive filter
+ * are one state, and a stored `all` would be a second spelling of it that
+ * every count of active filters would have to know about.
+ */
+export const CATEGORY_FILTERS = ['only', 'exclude'] as const
+
+export type CategoryFilter = (typeof CATEGORY_FILTERS)[number]
 
 export interface CategoryFilterLabels {
   noun: string
@@ -12,8 +21,8 @@ export interface CategoryFilterLabels {
 }
 
 // One submenu per filter category, three radios inside: every row, only the
-// category's, or none of them. The read categories, the non-canonical
-// junctions and the two connection categories all take it, so a category
+// category's, or none of them. The alignments read, junction and connection
+// categories and the feature display's genes all take it, so a category
 // filter reads and writes the same way wherever it sits.
 //
 // The choice shows on the parent row (`withHint`), so which categories are

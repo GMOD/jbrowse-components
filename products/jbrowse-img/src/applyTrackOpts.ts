@@ -49,8 +49,9 @@ export type ReadFilterSnapshot = {
   connections?: Record<string, unknown>
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
 
-// The read-filter half of a snapshot's `filter`, which on a feature display is
-// a jexl list instead; the alignments modifiers compose onto it.
+// The read-filter half of an alignments snapshot's `filter`; the alignments
+// modifiers compose onto it. A feature display's `filter` rides in on the
+// snapshot, its list shorthand included.
 function readFilterSnapOf(r: BuildResult): ReadFilterSnapshot {
   const { filter } = r.snap
   return filter && !Array.isArray(filter) ? filter : {}
@@ -926,7 +927,9 @@ export async function applyDisplayOpts(
   // `flags:`, `filterTag:` and the four categories composes onto what the config
   // already said instead of erasing its siblings.
   const readFilter =
-    typeof snap.filter === 'object' && !Array.isArray(snap.filter)
+    category === 'alignments' &&
+    typeof snap.filter === 'object' &&
+    !Array.isArray(snap.filter)
       ? snap.filter
       : undefined
   const { filter: _filter, ...rest } = snap

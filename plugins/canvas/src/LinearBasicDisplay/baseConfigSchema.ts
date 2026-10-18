@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -41,7 +41,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         growMaxHeight:
           'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes',
       }),
-      ...jexlFilterConfigSchemaFields,
+      /**
+       * #slot filter
+       * The features the display draws: `expressions`, a list of `jexl:`
+       * tests.
+       */
+      filter: featureFilterConfigSchema,
       // Not a fallback for the byte axis: an index size cannot tell a few
       // large features from many tiny ones.
       /**

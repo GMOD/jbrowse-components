@@ -95,8 +95,8 @@ export interface VariantTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it for a
    * `LinearMultiSampleVariantDisplay`: `color`, `unit` (`'allele'` or
-   * `'haplotype'`), `filter`, `minorAlleleFrequencyFilter`,
-   * `maxMissingnessFilter`, `referenceDrawingMode`, `shadeByDosage`, the
+   * `'haplotype'`), `filter` (`expressions`, `minMinorAlleleFrequency`,
+   * `maxMissingness`), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
    * default display.
    */
@@ -191,7 +191,7 @@ export async function variantTables(
   )
   const unit: VariantUnit = readConfObject(conf, 'unit')
   const shade: boolean = readConfObject(conf, 'shadeByDosage')
-  const filters: string[] = readConfObject(conf, 'filter')
+  const filters: string[] = readConfObject(conf.filter, 'expressions')
   const arrangement = {
     domain: readConfObject(conf.rows, 'domain'),
     labels: readConfObject(conf.rows, 'labels'),
@@ -229,11 +229,11 @@ export async function variantTables(
           .sort()
       : undefined,
     referenceDrawingMode: readConfObject(conf, 'referenceDrawingMode'),
-    minorAlleleFrequencyFilter: readConfObject(
-      conf,
-      'minorAlleleFrequencyFilter',
+    minMinorAlleleFrequency: readConfObject(
+      conf.filter,
+      'minMinorAlleleFrequency',
     ),
-    maxMissingnessFilter: readConfObject(conf, 'maxMissingnessFilter'),
+    maxMissingness: readConfObject(conf.filter, 'maxMissingness'),
     filters: filters.length
       ? new SerializableFilterChain({ filters, jexl: pluginManager.jexl })
       : undefined,

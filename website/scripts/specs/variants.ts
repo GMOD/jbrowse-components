@@ -276,21 +276,21 @@ export const variantsSpecs: ScreenshotSpec[] = [
           loc: 'ST4.03ch01:23,700,000-26,100,000',
           // Inline display props fold into the display snapshot
           // (normalizeTrackInit) and real config slots route onto the display
-          // config, so `maxMissingnessFilter` sets the slot.
+          // config, so `filter.maxMissingness` sets the slot.
           tracks: [
             {
               trackId: 'potato_missingness_1',
               type: 'LinearMultiSampleVariantDisplay',
               variantLayout: 'columns',
               height: 300,
-              maxMissingnessFilter: 1,
+              filter: { maxMissingness: 1 },
             },
             {
               trackId: 'potato_missingness_01',
               type: 'LinearMultiSampleVariantDisplay',
               variantLayout: 'columns',
               height: 300,
-              maxMissingnessFilter: 0.1,
+              filter: { maxMissingness: 0.1 },
             },
           ],
         },

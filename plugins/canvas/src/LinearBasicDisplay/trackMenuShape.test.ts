@@ -29,6 +29,14 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
+function click(item: MenuItem) {
+  if ('onClick' in item) {
+    item.onClick()
+  } else {
+    throw new Error(`"${labelOf(item)}" is not clickable`)
+  }
+}
+
 describe('canvas track menu shape', () => {
   it('keeps the menu open for every radio and checkbox that only writes a setting', () => {
     const { createDisplay } = createTestEnvironment()
@@ -119,7 +127,7 @@ describe('canvas track menu shape', () => {
     )
   })
 
-  it('offers Filter by... at the top level until a recovery item joins it', () => {
+  it('lists the recovery rows under Filter by... beside the gene category', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
@@ -130,6 +138,7 @@ describe('canvas track menu shape', () => {
     const filtering = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
     expect(filtering.map(labelOf)).toEqual([
       'Edit filters...',
+      'Genes',
       'Show 1 hidden feature',
       'Clear all filters',
     ])
@@ -161,13 +170,32 @@ describe('canvas track menu shape', () => {
 
     display.hideFeature('gene1')
     expect(activeCount(display.featureNarrowings())).toBe(1)
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
     expect(activeCount(display.featureNarrowings())).toBe(2)
     expect(
       display
         .trackMenuItems()
         .some((i: MenuItem) => labelOf(i) === 'Filter by... (2)'),
     ).toBe(true)
+  })
+
+  it('offers the gene category under Filter by..., all, only or hidden', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const filter = subMenuOf(display.trackMenuItems(), 'Filter by...')
+    expect(filter.map(labelOf)).toEqual(['Edit filters...', 'Genes'])
+    const genes = subMenuOf(filter, 'Genes')
+    expect(genes.map(labelOf)).toEqual([
+      'All features',
+      'Only genes',
+      'Hide genes',
+    ])
+
+    click(find(genes, 'Hide genes'))
+    expect(display.genesFilter).toBe('exclude')
+    const after = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
+    click(find(subMenuOf(after, 'Genes — hidden'), 'All features'))
+    expect(display.genesFilter).toBeUndefined()
   })
 
   it('offers the label rungs as one flat radio group', () => {
@@ -177,7 +205,6 @@ describe('canvas track menu shape', () => {
 
     expect(show.map(labelOf)).toEqual([
       'Outline',
-      'Only genes',
       'Chevrons',
       'Labels',
       'Auto',

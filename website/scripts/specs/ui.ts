@@ -436,7 +436,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           // spec used to have to hide by selector.
           color: '#4a5568',
         },
-        // showLabels:'name' forces gene names on at this zoom; showOnlyGenes
+        // showLabels:'name' forces gene names on at this zoom; `genes: 'only'`
         // drops the per-transcript subfeatures so RHD/RHCE read as single
         // labelled glyphs under the matrix
         {
@@ -444,7 +444,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           type: 'LinearBasicDisplay',
           height: 120,
           showLabels: 'name',
-          showOnlyGenes: true,
+          filter: { genes: 'only' },
         },
       ],
     },
@@ -568,7 +568,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           // collapse to gene glyphs so the pinned+highlighted EDEN gene reads
           // cleanly against the stack (reviewer)
-          showOnlyGenes: true,
+          filter: { genes: 'only' },
         },
       ],
     }),
@@ -736,7 +736,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               height: 400,
             },
             // showLabels:'name' forces gene names on (the default 'auto' hides
-            // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
+            // them at this 5Mb zoom past maxLabelFeatureDensity); `genes: 'only'`
             // drops the per-transcript subfeatures so only gene-level glyphs
             // render. heightMode 'fit' puts the whole stack inside the lane: at
             // 5Mb the fit ladder lands on its `bodies` rung, i.e. no names, and
@@ -749,7 +749,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 140,
               showLabels: 'name',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               heightMode: 'fit',
             },
           ],
@@ -814,7 +814,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 140,
               showLabels: 'name',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               heightMode: 'fit',
             },
           ],
@@ -991,7 +991,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // RHD -- the subject of the figure -- used to sit below this
               // lane's 110px fold, and the reviewer reasonably reported not
               // seeing it. Two settings fix that together: `longestCoding`
-              // draws one glyph per gene (`showOnlyGenes` alone still stacked a
+              // draws one glyph per gene (`genes: 'only'` alone still stacked a
               // dozen RHD transcript rows at this zoom, which grew the lane to
               // 470px and pushed the coverage tracks off instead), and
               // heightMode 'grow' sizes the lane to whatever rows that leaves,
@@ -1000,7 +1000,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
               geneGlyphMode: 'longestCoding',
               showLabels: 'name',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             ...['HG00113', 'HG00096', 'HG00097'].map(s => ({
               trackId: `${s}.final`,

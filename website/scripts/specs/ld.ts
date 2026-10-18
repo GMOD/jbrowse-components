@@ -408,13 +408,13 @@ export const ldSpecs: ScreenshotSpec[] = [
           tracks: [
             // The genes, so the band has something to be over (review: "we need
             // to add the gene track ... we need to see why this is important").
-            // showOnlyGenes because 3 Mb of RefSeq is otherwise a wall of
+            // `genes: 'only'` because 3 Mb of RefSeq is otherwise a wall of
             // transcripts and the point is which gene the block sits on.
             {
               trackId: 'hg38-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
               height: 60,
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             // The lane an LD triangle cannot draw (reviewer: "would a 'fst'
             // track make sense"): the block is not only long, its variants are
@@ -636,7 +636,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             // might be useful to show the gene track in the first figure of
             // the lct panel in the zoom out").
             //
-            // showOnlyGenes for the same reason as below, and `collapsed`
+            // `genes: 'only'` for the same reason as below, and `collapsed`
             // because 40 Mb of RefSeq stacks into rows that are all the same
             // statement at this width: what a reader can take off the lane
             // here is where genes are, not which transcript is which.
@@ -645,7 +645,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               displayMode: 'collapsed',
               height: 40,
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             {
               trackId: 'kgp_lct_fst_scan',
@@ -814,7 +814,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           loc: 'chr2L',
           // No gene track. A whole arm is ~38 kb per pixel, so a gene is well
           // under one pixel and the track contributes nothing but a "Too many
-          // features" banner across the top; showOnlyGenes changes which
+          // features" banner across the top; `genes: 'only'` changes which
           // features are admitted, not whether they can be resolved.
           tracks: [
             // On top, so both blocks below have their extent over them.
@@ -997,7 +997,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
               height: 60,
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             // The causal variant marked independently of the rows it lands on.
             // The filter is an exact phenotypeList match, and it survives the
@@ -1124,7 +1124,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
               height: 60,
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             {
               trackId: 'hg38-clinvarMain',

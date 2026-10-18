@@ -17,8 +17,8 @@ export function genotypeMatrixKey(model: ReducedModel) {
     ? ([
         'genotypeMatrix',
         model.clusterableSources.map(s => s.name).join('\t'),
-        model.minorAlleleFrequencyFilter,
-        model.maxMissingnessFilter,
+        model.minMinorAlleleFrequency,
+        model.maxMissingness,
         model.unit,
         // a SerializableFilterChain, whose toJSON is its expression list
         model.filters,

@@ -7,6 +7,7 @@ import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -32,6 +33,7 @@ import type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './configSchema.ts'
+import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
@@ -114,11 +116,8 @@ export default function stateModelFactory(
         return getConf(self, 'geneGlyphMode')
       },
 
-      // A config slot, not a display prop: MST drops a snapshot key the
-      // schema never declared, so a config carrying `showOnlyGenes` silently
-      // did nothing.
-      get showOnlyGenes(): boolean {
-        return getConf(self, 'showOnlyGenes')
+      get genesFilter(): CategoryFilter | undefined {
+        return getConf(self, ['filter', 'genes'])
       },
 
       // Off the live zoom: off the debounced one, a region fetched in the
@@ -200,17 +199,6 @@ export default function stateModelFactory(
         )
       },
     }))
-    .views(self => {
-      const { rpcProps: superRpcProps } = self
-      return {
-        rpcProps() {
-          return {
-            ...superRpcProps(),
-            showOnlyGenes: self.showOnlyGenes,
-          }
-        },
-      }
-    })
     .actions(self => ({
       setSubfeatureLabels(value: DisplayConfig['subfeatureLabels']) {
         setConf(self, 'subfeatureLabels', value)
@@ -224,8 +212,8 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
-      setShowOnlyGenes(value: boolean) {
-        setConf(self, 'showOnlyGenes', value)
+      setGenesFilter(value?: CategoryFilter) {
+        setConf(self, ['filter', 'genes'], value)
       },
 
       setDisplayDirectionalChevrons(value: boolean) {
@@ -273,26 +261,43 @@ export default function stateModelFactory(
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
       const superFeatureNarrowings = self.featureNarrowings
+      const superFilterSubMenuItems = self.filterSubMenuItems
       return {
-        // "Only genes" is a worker-side admission filter, so it is one
-        // of this display's narrowings; otherwise the track menu never offers
-        // "Clear filters".
         featureNarrowings() {
           return {
             ...superFeatureNarrowings(),
-            showOnlyGenes: {
-              count: self.showOnlyGenes ? 1 : 0,
+            genes: {
+              count: self.genesFilter ? 1 : 0,
               clear: () => {
-                self.setShowOnlyGenes(false)
+                self.setGenesFilter(undefined)
               },
             },
           }
         },
 
+        filterSubMenuItems() {
+          return [
+            ...superFilterSubMenuItems(),
+            categoryFilterItem(
+              {
+                noun: 'Genes',
+                all: 'All features',
+                only: 'Only genes',
+                exclude: 'Hide genes',
+                helpText:
+                  'Gene-like top-level features: every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS.',
+              },
+              self.genesFilter,
+              genes => {
+                self.setGenesFilter(genes)
+              },
+            ),
+          ]
+        },
+
         showSubmenuCheckboxItems() {
           return [
             ...superShowSubmenuCheckboxItems(),
-            toggleItem('Only genes', self.showOnlyGenes, self.setShowOnlyGenes),
             toggleItem('Chevrons', self.displayDirectionalChevrons, show => {
               self.setDisplayDirectionalChevrons(show)
             }),

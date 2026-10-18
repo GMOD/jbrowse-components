@@ -322,7 +322,7 @@ VNTR row and the TRGT genotypes:
           {
             "trackId": "hg38_ncbiRefSeq_ucsc",
             "type": "LinearBasicDisplay",
-            "showOnlyGenes": true,
+            "filter": { "genes": "only" },
             "displayMode": "compact",
             "height": 40
           },

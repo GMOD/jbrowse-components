@@ -196,7 +196,7 @@ const TRIO_GENE_LANE = {
   trackId: 'ncbi_refseq_109_hg38_latest',
   type: 'LinearBasicDisplay',
   displayMode: 'compact',
-  showOnlyGenes: true,
+  filter: { genes: 'only' },
   // was `showDescriptions: false`, meaning "names suffice here". That has no
   // home on the unified labels enum, so migrateBasicConfigSnapshot resolves it
   // to 'auto' — descriptions do come back at low density. Written as what it

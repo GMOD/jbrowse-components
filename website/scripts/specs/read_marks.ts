@@ -25,7 +25,7 @@ const geneTrack = {
   trackId: 'ncbi_refseq_hg38',
   type: 'LinearBasicDisplay',
   height: 50,
-  showOnlyGenes: true,
+  filter: { genes: 'only' },
   geneGlyphMode: 'longestCoding',
 }
 

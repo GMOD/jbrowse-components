@@ -59,7 +59,7 @@ export function laneDisplayConfig({
     // Filtering already happened: the records reaching the lane are the ones
     // this display's own worker-side `configuredFilters()` admitted, so a second
     // pass here would be a second, differently-spelled filter.
-    filter: [],
+    filter: { expressions: [] },
     // The gene half at what a LinearVariantDisplay sends, all of it inert for
     // a record with no subfeatures.
     ...GENE_GLYPH_DEFAULTS,

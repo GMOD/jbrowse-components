@@ -1,3 +1,4 @@
+import { filterExpressionsOf } from '@jbrowse/core/util/jexlFilters'
 import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 
 import type { FeatureFacet } from './facet.ts'
@@ -40,10 +41,12 @@ function colorExpression(color: unknown) {
 
 /** A draft's `jexl:` color or filter that does not compile, by setting. */
 export function plotJexlProblems(draft: Plot, jexl: JexlInstance) {
-  const filter = Array.isArray(draft.filter) ? (draft.filter as unknown[]) : []
   const expressions = [
     { setting: 'color', code: colorExpression(draft.color) },
-    ...filter.map(code => ({ setting: 'filter', code })),
+    ...filterExpressionsOf(draft.filter).map(code => ({
+      setting: 'filter',
+      code,
+    })),
   ]
   return expressions.flatMap(({ setting, code }) => {
     if (!isJexl(code)) {

@@ -86,6 +86,7 @@ export type { ShowLabelsMode } from './LinearBasicDisplay/showLabelsMode.ts'
 export type {
   DisplayConfig,
   DisplayMode,
+  FeatureFilter,
 } from './RenderFeatureDataRPC/renderConfig.ts'
 // A display drawing single records lays them out with the gene half at these.
 export { GENE_GLYPH_DEFAULTS } from './RenderFeatureDataRPC/renderConfig.ts'

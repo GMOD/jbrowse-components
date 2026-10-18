@@ -1,4 +1,7 @@
+import type { CategoryFilter } from '@jbrowse/display-kit/categoryFilter'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
+
+export type { CategoryFilter }
 
 export type { ArcColorField } from './arcColorOptions.ts'
 
@@ -152,15 +155,6 @@ export interface TagFilter {
   tag: string
   value?: string
 }
-
-/**
- * A read-category filter: keep only the reads in the category, or drop them.
- * Absent means the category is not filtered on, which is why every one of these
- * fields is optional rather than carrying a third `'all'` member — the absent
- * filter and the inactive filter are the same state, and a stored `'all'` would
- * be a second spelling of it that `activeFilterCount` would have to know about.
- */
-export type CategoryFilter = 'only' | 'exclude'
 
 /** The junctions the display draws: its `filter.junctions`, read as `junctionFilter`. */
 export interface JunctionFilter {

@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { CATEGORY_FILTERS } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
-
-import { CATEGORY_FILTERS } from './categoryFilters.ts'
 
 /**
  * #config JunctionFilter

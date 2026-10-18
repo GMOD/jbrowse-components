@@ -4,13 +4,13 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeRadioSubMenu, withHint } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
+import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 
 import {
   READ_CATEGORIES,
   activeReadCategoryCount,
 } from '../../shared/readCategoryFilters.ts'
 import { defaultFilterFlags } from '../../shared/util.ts'
-import { categoryFilterItem } from './categoryFilterItem.ts'
 
 import type { ReadCategorySpec } from '../../shared/readCategoryFilters.ts'
 import type { ReadFilter } from '../../shared/types.ts'

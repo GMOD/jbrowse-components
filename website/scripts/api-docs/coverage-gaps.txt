@@ -50,7 +50,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1343)
+# model members with no description (1342)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -637,18 +637,18 @@ LinearBasicDisplay.displayDirectionalChevrons
 LinearBasicDisplay.effectiveGeneGlyphMode
 LinearBasicDisplay.effectiveSubfeatureLabels
 LinearBasicDisplay.featureNarrowings
+LinearBasicDisplay.filterSubMenuItems
 LinearBasicDisplay.geneGlyphCollapsed
 LinearBasicDisplay.geneGlyphMode
 LinearBasicDisplay.geneGlyphNoticeDismissed
 LinearBasicDisplay.geneGlyphTrimmedGenes
-LinearBasicDisplay.rpcProps
+LinearBasicDisplay.genesFilter
 LinearBasicDisplay.setDisplayDirectionalChevrons
 LinearBasicDisplay.setGeneGlyphMode
-LinearBasicDisplay.setShowOnlyGenes
+LinearBasicDisplay.setGenesFilter
 LinearBasicDisplay.setSubfeatureLabels
 LinearBasicDisplay.setUtrColor
 LinearBasicDisplay.showGeneGlyphNotice
-LinearBasicDisplay.showOnlyGenes
 LinearBasicDisplay.showSubmenuCheckboxItems
 LinearBasicDisplay.showSubmenuRadioGroups
 LinearBasicDisplay.showsEveryIsoform
@@ -930,7 +930,6 @@ LinearMultiSampleVariantDisplay.clearDisplaySpecificData
 LinearMultiSampleVariantDisplay.clearSettingsBakedData
 LinearMultiSampleVariantDisplay.featureWidgetType
 LinearMultiSampleVariantDisplay.fetchNeeded
-LinearMultiSampleVariantDisplay.minorAlleleFrequencyFilter
 LinearMultiSampleVariantDisplay.nrow
 LinearMultiSampleVariantDisplay.referenceDrawingMode
 LinearMultiSampleVariantDisplay.renderState
@@ -945,8 +944,8 @@ LinearMultiSampleVariantDisplay.setHoveredCell
 LinearMultiSampleVariantDisplay.setHoveredLaneMark
 LinearMultiSampleVariantDisplay.setHoveredMatrixCell
 LinearMultiSampleVariantDisplay.setLineZoneHeight
-LinearMultiSampleVariantDisplay.setMafFilter
-LinearMultiSampleVariantDisplay.setMaxMissingnessFilter
+LinearMultiSampleVariantDisplay.setMaxMissingness
+LinearMultiSampleVariantDisplay.setMinMinorAlleleFrequency
 LinearMultiSampleVariantDisplay.setReferenceDrawingMode
 LinearMultiSampleVariantDisplay.setShowRowSeparators
 LinearMultiSampleVariantDisplay.setShowTooltips

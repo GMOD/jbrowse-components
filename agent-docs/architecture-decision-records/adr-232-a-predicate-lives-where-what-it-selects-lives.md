@@ -61,7 +61,7 @@ review of the revised plan.
 1. **A predicate lives where what it selects lives.**
    - A display's `filter` holds its tests on the records it fetched and on the
      data derived from them. A display declares `filter` only when its model
-     reads one (`jexlFilterConfigSchemaFields.ts:4-12` records the bug
+     reads one (`featureFilterConfigSchema.ts` records the bug
      otherwise).
    - A hidden facet section is `facet.hidden`; a row selection is `rows.kept`.
    - A `show*` slot toggles something drawn and never filters.
@@ -145,8 +145,8 @@ readConnections: { show, mark, height, placement, lineWidth, color, showOrdinary
 
 | Display | After |
 | --- | --- |
-| LinearBasicDisplay, LinearVariantDisplay | `filter: { expressions, genes }`; `showOnlyGenes` becomes `genes: 'only'`, with `exclude` built too; `hideSourceFeatures` goes and the source record always drops |
-| LinearMarkDisplay | `filter: { expressions }` |
+| LinearBasicDisplay | `filter: { expressions, genes }`; `showOnlyGenes` becomes `genes: 'only'`, with `exclude` built too; `hideSourceFeatures` goes and the source record always drops |
+| LinearVariantDisplay, LinearMarkDisplay | `filter: { expressions }` |
 | LinearMultiSampleVariantDisplay | `filter: { expressions, minMinorAlleleFrequency, maxMissingness }`; `variants: { show, height, showLabels }` replaces `showVariantLane`, `variantLaneHeight`, `variantLaneLabels` |
 | LinearMafDisplay | `alignments: { show, rowProportion, showAllLetters, showAsUpperCase, showInversions, showAnnotations }`; `showReferenceRow` stays top-level |
 | LDDisplay, LinearHicDisplay | `heightMode: 'fixed' \| 'fit'` replaces the triangle's `squashToHeight` |
@@ -154,6 +154,19 @@ readConnections: { show, mark, height, placement, lineWidth, color, showOrdinary
 
 `minMinorAlleleFrequency` names the measure whole: allele frequency is not the
 minor allele's, which is at most 0.5.
+
+- `featureFilterConfigSchema` (display-kit) is `FeatureFilter`, `{ expressions }`
+  with its list shorthand; `BasicFeatureFilter` and `VariantFilter` extend it.
+  Each display declares `filter` itself, so no spread table hides the
+  sub-schema from the config reference.
+- The worker reads the whole `filter` off the display config, so `genes`
+  travels as a member and no `showOnlyGenes` RPC argument stands beside it.
+- `genes` is a category as a read category is, under "Filter by... → Genes"
+  through the one `categoryFilterItem`. `CATEGORY_FILTERS` and that item live
+  in `@jbrowse/display-kit/categoryFilter`, read by both plugins.
+- The model and RPC names follow the config words: `minMinorAlleleFrequency`
+  and `maxMissingness`, with `setMinMinorAlleleFrequency` and
+  `setMaxMissingness`.
 
 ### The pre-5.0 sweep
 

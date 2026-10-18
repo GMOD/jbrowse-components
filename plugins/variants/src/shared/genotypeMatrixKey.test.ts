@@ -29,7 +29,7 @@ test('the arguments the matrix is built from do re-key it', () => {
   const d = display()
   const before = JSON.stringify(genotypeMatrixKey(d))
 
-  d.setMafFilter(0.05)
+  d.setMinMinorAlleleFrequency(0.05)
   const withMaf = JSON.stringify(genotypeMatrixKey(d))
   expect(withMaf).not.toBe(before)
 

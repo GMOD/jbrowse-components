@@ -13,7 +13,7 @@ export interface GroupByScanModel extends IStateTreeNode {
   // features carry never counts as a section.
   rpcProps: () => Pick<
     GetGroupByCandidatesArgs,
-    'displayConfig' | 'showOnlyGenes' | 'soloFeatureIds' | 'hiddenFeatureIds'
+    'displayConfig' | 'soloFeatureIds' | 'hiddenFeatureIds'
   >
   // The display's own gate budget, so the scan is refused wherever the render
   // fetch would be rather than downloading a region the track refused.
@@ -32,8 +32,7 @@ export function scanGroupByCandidates(
   self: GroupByScanModel,
   opts: GroupByScanOptions,
 ) {
-  const { displayConfig, showOnlyGenes, soloFeatureIds, hiddenFeatureIds } =
-    self.rpcProps()
+  const { displayConfig, soloFeatureIds, hiddenFeatureIds } = self.rpcProps()
   const onTrack = onTrackAssembly(self)
   return getSession(self).rpcManager.call(
     getRpcSessionId(self),
@@ -41,7 +40,6 @@ export function scanGroupByCandidates(
     {
       adapterConfig: self.adapterConfig,
       displayConfig,
-      showOnlyGenes,
       soloFeatureIds,
       hiddenFeatureIds,
       byteLimit: self.resolvedByteLimit(),

@@ -54,7 +54,11 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     const { display } = createDisplay()
     expect(display.configuredFilters()).toEqual([])
 
-    setConf(display, 'filter', ["jexl:get(feature,'name')=='BRCA1'"])
+    setConf(
+      display,
+      ['filter', 'expressions'],
+      ["jexl:get(feature,'name')=='BRCA1'"],
+    )
     expect(display.configuredFilters()).toEqual([
       "jexl:get(feature,'name')=='BRCA1'",
     ])
@@ -63,7 +67,11 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
   it('refuses a bare expression', () => {
     const { display } = createDisplay()
     expect(() => {
-      setConf(display, 'filter', ["get(feature,'name')=='BRCA1'"])
+      setConf(
+        display,
+        ['filter', 'expressions'],
+        ["get(feature,'name')=='BRCA1'"],
+      )
     }).toThrow(/is not an expression/)
   })
 
@@ -75,7 +83,9 @@ describe.each(CASES)('%s jexl filters', (_name, createDisplay) => {
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(0)
 
     display.setFilter(["jexl:get(feature,'score')>99"])
-    expect(getConf(display, 'filter')).toEqual(["jexl:get(feature,'score')>99"])
+    expect(getConf(display, ['filter', 'expressions'])).toEqual([
+      "jexl:get(feature,'score')>99",
+    ])
     expect(activeCount({ filter: jexlFilterNarrowing(display) })).toBe(1)
 
     display.setFilter([])
@@ -108,7 +118,7 @@ test("a v4.3 session's jexlFiltersSetting on a variant display lands in its filt
     { type: 'LinearVariantDisplay', displayId: 'd', ...lifted },
     { pluginManager },
   )
-  expect(readConfObject(conf, 'filter')).toEqual([
+  expect(readConfObject(conf, ['filter', 'expressions'])).toEqual([
     "jexl:get(feature,'score')>99",
   ])
 })

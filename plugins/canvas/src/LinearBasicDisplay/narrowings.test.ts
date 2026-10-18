@@ -17,7 +17,7 @@ describe('declared narrowings drive count and clear together', () => {
     display.toggleSoloFeature('gene1')
     display.applySolo()
     display.hideFeature('gene2')
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
 
     expect(activeCount(display.featureNarrowings())).toBe(4)
 

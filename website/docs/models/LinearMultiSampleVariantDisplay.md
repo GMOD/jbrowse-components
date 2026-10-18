@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 ## Example usage
 
-`unit`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
+`unit`, `rowColor`, `rows` and `filter` are
 config (see the display's config schema), read at runtime through `getConf`
 and written as session edits to the track's config — they are NOT plain MST
 properties. Set them in a track's `displays` array to change the default:
@@ -22,6 +22,7 @@ displays: [
     unit: 'haplotype',
     rowColor: 'population',
     rows: { domain: ['NA12878', 'NA12891'] },
+    filter: { minMinorAlleleFrequency: 0.05 },
   },
 ]
 ```
@@ -168,8 +169,8 @@ From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo
 | <span id="getter-colorfield">**colorField**</span><br><code>string</code> | The field the alt cells paint by, '' while they paint the genotype colors or a constant. |
 | <span id="getter-shadebydosage">**shadeByDosage**</span><br><code>boolean</code> | Whether an alt cell's hue is composed with the genotype's alt dosage. The main thread paints it, so a toggle refetches nothing. |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> |  |
-| <span id="getter-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br><code>number</code> |  |
-| <span id="getter-maxmissingnessfilter">**maxMissingnessFilter**</span><br><code>number</code> | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant |
+| <span id="getter-minminorallelefrequency">**minMinorAlleleFrequency**</span><br><code>number</code> | Min minor allele frequency a variant needs to draw; 0 keeps every variant |
+| <span id="getter-maxmissingness">**maxMissingness**</span><br><code>number</code> | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant |
 | <span id="getter-filters">**filters**</span><br><code>SerializableFilterChain &#124; undefined</code> | The jexl filter expressions as the RPC's `filters` arg. |
 | <span id="getter-referencedrawingmode">**referenceDrawingMode**</span><br><code>string</code> |  |
 | <span id="getter-colorbyattributes">**colorByAttributes**</span><br><code>string[]</code> | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources carry except internal plumbing. |
@@ -271,7 +272,7 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="getter-showtree">[`showT
 | <span id="method-basefilters">**baseFilters**</span><br><code>() =&gt; string[]</code> | What the track's config declares for `filter`, which "Clear all filters" returns to. |
 | <span id="method-featurebyid">**featureById**</span><br><code>(featureId: string) =&gt; Feature &#124; undefined</code> | The record a click on the rows, the lane or the matrix resolved to, positional fields only: its genotypes live in the cell payload. |
 | <span id="method-expandrows">**expandRows**</span><br><code>(rows: ProcessedSource[]) =&gt; ProcessedSource[]</code> | `TreeSidebarMixin`'s hook: phased mode draws a row per haplotype, once `samplePloidy` lands or the order names them. |
-| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124; undefined; minorAlleleFrequencyFilter: number; maxMissingnessFilter: number; filters: SerializableFilterChain &#124; undefined; unit: "haplotype" &#124; "sample"; color: CellHueRead; referenceDrawingMode: string; }</code></pre></dialog></span> |  |
+| <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { layout: "columns" &#124; "genomic"; sampleFilter: string[] &#124; undefined; minMinorAlleleFrequency: number; maxMissingness: number; filters: SerializableFilterChain &#124; undefined; unit: "haplotype" &#124; "sample"; color: CellHueRead; referenceDrawingMode: string; }</code></pre></dialog></span> |  |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Items for the right-click menu, built from the record `contextMenuInfo` carries. |
 | <span id="method-connectorlineatscreenx">**connectorLineAtScreenX**</span><br><code>(screenX: number) =&gt; ConnectorCoord &#124; undefined</code> | The connector for the column under `screenX` (the crosshair), or undefined off the ends and over a column with no genomic x. |
@@ -309,8 +310,8 @@ From [TreeSidebarMixin](../treesidebarmixin): <span id="method-svgsidebarwidth">
 | <span id="action-setsources">**setSources**</span><br><code>(sources: Source[], adapterConfig?: any) =&gt; void</code> |  |
 | <span id="action-setrowcolorfield">**setRowColorField**</span><br><code>(field: string) =&gt; void</code> | Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' for None, through the mixin's `setRowColorChoice`. The tint is resolved on every read of `sources`, so a recolor moves no rows and drops no cluster tree. |
 | <span id="action-setfacet">**setFacet**</span><br><code>(field: string) =&gt; void</code> | Band the sample rows so each value of a metadata attribute (e.g. 'population') is contiguous, or pass '' to clear the facet. Writes the `facet` object, keeping a declared band order while the field is the one already banding, which is the whole of it: the banding is applied on every read of `bandedSources`, over the arranged order. |
-| <span id="action-setmaffilter">**setMafFilter**</span><br><code>(arg: number) =&gt; void</code> |  |
-| <span id="action-setmaxmissingnessfilter">**setMaxMissingnessFilter**</span><br><code>(arg: number) =&gt; void</code> |  |
+| <span id="action-setminminorallelefrequency">**setMinMinorAlleleFrequency**</span><br><code>(arg: number) =&gt; void</code> |  |
+| <span id="action-setmaxmissingness">**setMaxMissingness**</span><br><code>(arg: number) =&gt; void</code> |  |
 | <span id="action-setunit">**setUnit**</span><br><code>(unit: "haplotype" &#124; "sample") =&gt; void</code> |  |
 | <span id="action-setfittoheight">**setFitToHeight**</span><br><code>() =&gt; void</code> | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows. |
 | <span id="action-setreferencedrawingmode">**setReferenceDrawingMode**</span><br><code>(arg: string) =&gt; void</code> |  |

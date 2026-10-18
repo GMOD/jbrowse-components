@@ -36,7 +36,6 @@ export async function executeRenderFeatureData({
     peptides,
     geneticCodeId,
     sequenceAdapter,
-    showOnlyGenes,
     soloFeatureIds,
     hiddenFeatureIds,
     expandedGeneIds,
@@ -67,7 +66,6 @@ export async function executeRenderFeatureData({
   const admit = buildFeatureAdmission({
     config,
     jexl: pluginManager.jexl,
-    showOnlyGenes,
     soloFeatureIds,
     hiddenFeatureIds,
   })

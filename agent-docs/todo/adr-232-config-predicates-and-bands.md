@@ -5,7 +5,7 @@ metadata:
   area: config
   category: ready
   order: 1
-  first_move: "step 4 of ADR-232's order of work (steps 1 to 3 are built): `filter` becomes an object on the canvas, mark and multi-sample variant displays, its `expressions` member taking the jexl list, with every `Array.isArray(filter)` reader the step names moving in the same commit"
+  first_move: "step 5 of ADR-232's order of work (steps 1 to 4 are built): the sashimi fallback, junction extraction and motifs under a derived `coverage.show || sashimi.show`, with the LGVSynteny `sashimi.show` default"
 ---
 
 # ADR-232's config renames land before 5.0.0

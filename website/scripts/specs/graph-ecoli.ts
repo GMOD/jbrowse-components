@@ -448,7 +448,7 @@ function strainGeneLane(trackId: string) {
   return {
     trackId,
     type: 'LinearBasicDisplay',
-    showOnlyGenes: true,
+    filter: { genes: 'only' },
     displayMode: 'compact',
     // was `showDescriptions: false`, which has no home on the unified labels
     // enum — migrateBasicConfigSnapshot resolves it to 'auto', so descriptions
@@ -801,7 +801,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
             {
               trackId: 'K12_genes',
               type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               displayMode: 'compact',
               // as in strainGeneLane: the retired `showDescriptions: false`
               // resolved to 'auto'

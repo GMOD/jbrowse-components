@@ -16,21 +16,21 @@ const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 // cell type. They are hosted rather than in test_data because they are the same
 // files the embedded UMAP demo fetches.
 
-const genes = {
+const geneLane = {
   trackId: 'ncbi_refseq_hg38',
   type: 'LinearBasicDisplay',
   displayMode: 'compact',
-  showOnlyGenes: true,
   height: 60,
 }
 
-// The same lane for the multi-region marker panel, where showOnlyGenes is not
-// enough: several of those windows hold a gene with a dozen RefSeq isoforms, and
+const genes = { ...geneLane, filter: { genes: 'only' } }
+
+// The same lane for the multi-region marker panel, where the gene filter is
+// not enough: several of those windows hold a gene with a dozen RefSeq isoforms, and
 // stacked they push the gene's own label out of a 60px lane. One transcript per
 // gene keeps each column labelled with the marker it is.
 const oneTranscriptPerGene = {
-  ...genes,
-  showOnlyGenes: false,
+  ...geneLane,
   geneGlyphMode: 'longestCoding',
   height: 80,
 }

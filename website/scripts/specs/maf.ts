@@ -446,7 +446,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             // NCBI RefSeq gene track on top (longest-coding transcript only):
             // the exon/CDS structure of GAPDH lines up with the conserved
-            // (blue) coding bands in the heatmap below. showOnlyGenes drops
+            // (blue) coding bands in the heatmap below. `genes: 'only'` drops
             // the individual transcript features (each drawn under its own
             // UUID id, since GAPDH has several isoforms here) down to one
             // gene-level glyph per locus (reviewer).
@@ -454,7 +454,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_genes_hg38_ucsc',
               type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             {
               trackId: 'hg38.multiz470way',
@@ -619,7 +619,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_genes_hg38_ucsc',
               type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
             },
             {
               trackId: 'hg38.multiz470way',
@@ -721,7 +721,7 @@ export const mafSpecs: ScreenshotSpec[] = [
   // (`tabix hg38.gff.gz NC_000006.12:31972057-32055418`) that is 24
   // non_allelic_homologous_recombination_region, 10 enhancer, 9
   // nucleotide_motif, 9 biological_region and 5 meiotic_recombination_region
-  // against 6 genes and 3 pseudogenes. `showOnlyGenes` admits gene/pseudogene/
+  // against 6 genes and 3 pseudogenes. `genes: 'only'` admits gene/pseudogene/
   // transcript/container/CDS types and nothing else (featureAdmission.ts), so
   // the nine are all that reach the lane; `longestCoding` keeps each of them to
   // one glyph. Same pair maf_470way already uses on the same track.
@@ -778,7 +778,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_genes_hg38_ucsc',
               type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               geneGlyphMode: 'longestCoding',
               heightMode: 'grow',
             },

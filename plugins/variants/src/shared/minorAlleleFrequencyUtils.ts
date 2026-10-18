@@ -114,9 +114,9 @@ export function featureMissingness(feature: Feature) {
 }
 
 interface SiteThresholds {
-  minorAlleleFrequencyFilter: number
+  minMinorAlleleFrequency: number
   /** 1 or undefined keeps every site */
-  maxMissingnessFilter?: number
+  maxMissingness?: number
 }
 
 /**
@@ -126,12 +126,12 @@ interface SiteThresholds {
  */
 export function passesSiteThresholds(
   summary: ReturnType<typeof summarizeAlleleCounts>,
-  { minorAlleleFrequencyFilter, maxMissingnessFilter = 1 }: SiteThresholds,
+  { minMinorAlleleFrequency, maxMissingness = 1 }: SiteThresholds,
 ) {
   return (
     summary.calledAlleleCount > 0 &&
-    summary.minorAlleleFrequency >= minorAlleleFrequencyFilter &&
-    summary.missingness <= maxMissingnessFilter
+    summary.minorAlleleFrequency >= minMinorAlleleFrequency &&
+    summary.missingness <= maxMissingness
   )
 }
 

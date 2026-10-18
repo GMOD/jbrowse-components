@@ -288,7 +288,7 @@ export type VariantLayoutBackend =
  * per-cell feature widget on click.
  *
  * #example
- * `unit`, `rowColor`, `rows` and `minorAlleleFrequencyFilter` are
+ * `unit`, `rowColor`, `rows` and `filter` are
  * config (see the display's config schema), read at runtime through `getConf`
  * and written as session edits to the track's config — they are NOT plain MST
  * properties. Set them in a track's `displays` array to change the default:
@@ -300,6 +300,7 @@ export type VariantLayoutBackend =
  *     unit: 'haplotype',
  *     rowColor: 'population',
  *     rows: { domain: ['NA12878', 'NA12891'] },
+ *     filter: { minMinorAlleleFrequency: 0.05 },
  *   },
  * ]
  * ```
@@ -810,7 +811,7 @@ export function stateModelFactory(
            * #action
            */
           setFilter(f?: string[]) {
-            setConf(self, 'filter', f ?? self.baseFilters())
+            setConf(self, ['filter', 'expressions'], f ?? self.baseFilters())
           },
           /**
            * #action
@@ -895,14 +896,14 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setMafFilter(arg: number) {
-            setConf(self, 'minorAlleleFrequencyFilter', arg)
+          setMinMinorAlleleFrequency(arg: number) {
+            setConf(self, ['filter', 'minMinorAlleleFrequency'], arg)
           },
           /**
            * #action
            */
-          setMaxMissingnessFilter(arg: number) {
-            setConf(self, 'maxMissingnessFilter', arg)
+          setMaxMissingness(arg: number) {
+            setConf(self, ['filter', 'maxMissingness'], arg)
           },
           /**
            * #action
@@ -1006,9 +1007,11 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Min minor allele frequency a variant needs to draw; 0 keeps every
+         * variant
          */
-        get minorAlleleFrequencyFilter(): number {
-          return getConf(self, 'minorAlleleFrequencyFilter')
+        get minMinorAlleleFrequency(): number {
+          return getConf(self, ['filter', 'minMinorAlleleFrequency'])
         },
 
         /**
@@ -1016,8 +1019,8 @@ export function stateModelFactory(
          * Max fraction of no-call genotypes a variant may have before it's
          * hidden; 1 keeps every variant
          */
-        get maxMissingnessFilter(): number {
-          return getConf(self, 'maxMissingnessFilter')
+        get maxMissingness(): number {
+          return getConf(self, ['filter', 'maxMissingness'])
         },
 
         /**
@@ -1217,8 +1220,8 @@ export function stateModelFactory(
           return {
             layout: self.variantLayout,
             sampleFilter: self.sampleFilter,
-            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            maxMissingnessFilter: self.maxMissingnessFilter,
+            minMinorAlleleFrequency: self.minMinorAlleleFrequency,
+            maxMissingness: self.maxMissingness,
             filters: self.filters,
             unit: self.unit,
             color: self.cellHue.read,

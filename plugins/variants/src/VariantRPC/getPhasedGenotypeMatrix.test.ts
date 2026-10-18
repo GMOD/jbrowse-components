@@ -67,8 +67,8 @@ async function build({
       sessionId: 'test',
       regions: [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'test' }],
       sources,
-      minorAlleleFrequencyFilter: 0,
-      maxMissingnessFilter: 1,
+      minMinorAlleleFrequency: 0,
+      maxMissingness: 1,
       samplePloidy,
     },
   })

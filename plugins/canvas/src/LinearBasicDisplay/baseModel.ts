@@ -330,15 +330,15 @@ export default function baseStateModelFactory(
 
       /**
        * #method
-       * The filters the `filter` config slot holds.
+       * The jexl filters `filter.expressions` holds.
        */
       configuredFilters(): string[] {
         return configuredJexlFilters(self)
       },
       /**
        * #method
-       * What the track's config declares for `filter`, which "Clear all
-       * filters" returns to.
+       * What the track's config declares for `filter.expressions`, which
+       * "Clear all filters" returns to.
        */
       baseFilters(): string[] {
         return baseJexlFilters(self)
@@ -666,7 +666,6 @@ export default function baseStateModelFactory(
           displayConfig: {
             ...workerConfig,
             subfeatureLabels: self.effectiveSubfeatureLabels,
-            filter: self.configuredFilters(),
             // A facet other than strand needs a stamp per feature, so only
             // it joins the cache key: a strand facet never refetches.
             ...(self.facet === undefined || self.facet.field === STRAND_FIELD
@@ -1269,11 +1268,15 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Write the `filter` slot (already-`jexl:`-prefixed expressions);
-         * undefined returns it to what the track's config declares.
+         * Write `filter.expressions` (already-`jexl:`-prefixed); undefined
+         * returns them to what the track's config declares.
          */
         setFilter(filters?: string[]) {
-          setConf(self, 'filter', filters ?? self.baseFilters())
+          setConf(
+            self,
+            ['filter', 'expressions'],
+            filters ?? self.baseFilters(),
+          )
         },
 
         /**
@@ -1737,6 +1740,14 @@ export default function baseStateModelFactory(
        */
       showSubmenuRadioGroups(): MenuItem[] {
         return showSubmenuRadioGroups(self)
+      },
+      /**
+       * #method
+       * Overridable hook (default none): the rows "Filter by..." lists
+       * beside the dialog, one per `filter` member a display adds.
+       */
+      filterSubMenuItems(): MenuItem[] {
+        return []
       },
     }))
     .views(self => ({

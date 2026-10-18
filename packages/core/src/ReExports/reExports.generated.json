@@ -3256,6 +3256,7 @@
       "names": [
         "baseJexlFilters",
         "configuredJexlFilters",
+        "filterExpressionsOf",
         "jexlFilterNarrowing",
         "retiredFilterState"
       ],
@@ -4100,6 +4101,14 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-kit/categoryFilter": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "CATEGORY_FILTERS",
+        "categoryFilterItem"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/ChromeHighlight": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4343,6 +4352,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/featureFilterConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "featureFilterConfigSchema",
+        "retiredFilterSpelling"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/fetchEachRegion": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4554,14 +4571,6 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "installPerRegionFetchAutoruns"
-      ],
-      "worker": "real"
-    },
-    "@jbrowse/display-kit/jexlFilterConfigSchemaFields": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "jexlFilterConfigSchemaFields",
-        "retiredFilterSpelling"
       ],
       "worker": "real"
     },

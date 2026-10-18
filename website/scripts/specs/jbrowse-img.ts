@@ -125,7 +125,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
     // reduced-representation gene view (drop mRNA/exon/CDS speckle, keep gene
     // glyphs) so the RefSeq track reads cleanly at this multi-gene zoom
-    '{"showOnlyGenes":true}',
+    '{"filter":{"genes":"only"}}',
     '--bigbed',
     'https://jbrowse.org/genomes/hg19/clinGen/clinGenGeneDisease.bb',
     '--bigwig',
@@ -310,7 +310,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // at base level, so the gene track shows readable structure — the intron thins
   // to a line, the CDS exon begins as a solid block, and that block edge lines up
   // with a specific reference base and the translation frame (docs "Gene tracks
-  // and the reference sequence"). showOnlyGenes keeps the RefSeq rows to gene
+  // and the reference sequence"). `genes: 'only'` keeps the RefSeq rows to gene
   // features; geneGlyphMode:longestCoding collapses TP53's isoform thicket to
   // its single longest coding transcript, so one clean structure reads instead
   // of a stack of near-identical rows. Supersedes the old standalone `sequence`
@@ -321,7 +321,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--track',
     'hg38-ncbiRefSeqCurated',
     'height:60',
-    '{"showOnlyGenes":true,"geneGlyphMode":"longestCoding"}',
+    '{"filter":{"genes":"only"},"geneGlyphMode":"longestCoding"}',
     '--refseq',
     '--loc',
     'chr17:7,675,018-7,675,098',

@@ -4,10 +4,10 @@ import {
   isBareConfigurationSchemaType,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { CATEGORY_FILTERS } from '@jbrowse/display-kit/categoryFilter'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { defaultFilterFlags } from '../shared/util.ts'
-import { CATEGORY_FILTERS } from './categoryFilters.ts'
 import { connectionFilterConfigSchema } from './connectionFilterConfigSchema.ts'
 import { junctionFilterConfigSchema } from './junctionFilterConfigSchema.ts'
 import { tagFilterConfigSchema } from './tagFilterConfigSchema.ts'

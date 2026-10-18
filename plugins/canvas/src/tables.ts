@@ -93,7 +93,7 @@ export interface FeatureTablesArgs {
   /**
    * The display's config as a track's `displays` entry writes it: `color`,
    * `displayMode`, `showLabels`, `geneGlyphMode`, `subfeatureLabels`,
-   * `filter`, `showOnlyGenes`, `featureHeight`, `facet` and the rest of a
+   * `filter`, `featureHeight`, `facet` and the rest of a
    * `LinearBasicDisplay`'s slots. Unset draws the default display.
    */
   display?: Record<string, unknown>
@@ -410,7 +410,6 @@ export async function featureTables(
           colorByCDS,
           peptides: aminoAcids && shouldRenderPeptideBackground(bpPerPx),
           geneticCodeId,
-          showOnlyGenes: readConfObject(conf, 'showOnlyGenes'),
           byteLimit,
           statusCallback: () => {},
         } satisfies RpcExecuteArgs<'RenderFeatureData'>,

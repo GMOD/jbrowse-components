@@ -186,14 +186,14 @@ export function makeHeaderRemapper(columnByName: Map<string, number>) {
  */
 export function analyzeVariants({
   features,
-  minorAlleleFrequencyFilter = 0,
-  maxMissingnessFilter = 1,
+  minMinorAlleleFrequency = 0,
+  maxMissingness = 1,
   filterChain,
   report,
 }: {
   features: Feature[]
-  minorAlleleFrequencyFilter?: number
-  maxMissingnessFilter?: number
+  minMinorAlleleFrequency?: number
+  maxMissingness?: number
   filterChain?: SerializableFilterChain
   report?: ProgressReporter
 }): AnalyzedVariants {
@@ -204,11 +204,11 @@ export function analyzeVariants({
   let hasSvType = false
 
   const passing =
-    minorAlleleFrequencyFilter > 0 || maxMissingnessFilter < 1
+    minMinorAlleleFrequency > 0 || maxMissingness < 1
       ? getFilteredVariants({
           features,
-          minorAlleleFrequencyFilter,
-          maxMissingnessFilter,
+          minMinorAlleleFrequency,
+          maxMissingness,
           filterChain,
         }).map(v => v.feature)
       : filterChain
@@ -390,8 +390,8 @@ export function analyzeVariants({
     const { mostFrequentAlt } = summary
     if (
       passesSiteThresholds(summary, {
-        minorAlleleFrequencyFilter,
-        maxMissingnessFilter,
+        minMinorAlleleFrequency,
+        maxMissingness,
       })
     ) {
       const featureId = feature.id()

@@ -531,14 +531,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the `filter` slot
+         * the jexl filters `filter.expressions` holds
          */
         get configuredFilters() {
           return () => configuredJexlFilters(self)
         },
         /**
          * #getter
-         * What the track's config declares for `filter`, which "Clear all
+         * What the track's config declares for `filter.expressions`, which "Clear all
          * filters" returns to.
          */
         get baseFilters() {
@@ -1734,11 +1734,15 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * Write the `filter` slot; undefined returns it to what the track's
-         * config declares.
+         * Write `filter.expressions`; undefined returns them to what the
+         * track's config declares.
          */
         setFilter(filters?: string[]) {
-          setConf(self, 'filter', filters ?? self.baseFilters())
+          setConf(
+            self,
+            ['filter', 'expressions'],
+            filters ?? self.baseFilters(),
+          )
         },
         /**
          * #action

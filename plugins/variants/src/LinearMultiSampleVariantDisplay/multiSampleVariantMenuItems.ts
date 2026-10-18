@@ -371,15 +371,15 @@ export function variantTrackMenuItems(
       // below, and the group clear is what resets the whole set.
       narrowings: {
         maf: {
-          count: self.minorAlleleFrequencyFilter > 0 ? 1 : 0,
+          count: self.minMinorAlleleFrequency > 0 ? 1 : 0,
           clear: () => {
-            self.setMafFilter(0)
+            self.setMinMinorAlleleFrequency(0)
           },
         },
         missingness: {
-          count: self.maxMissingnessFilter < 1 ? 1 : 0,
+          count: self.maxMissingness < 1 ? 1 : 0,
           clear: () => {
-            self.setMaxMissingnessFilter(1)
+            self.setMaxMissingness(1)
           },
         },
         filter: jexlFilterNarrowing(self),
@@ -407,13 +407,13 @@ export function variantTrackMenuItems(
           step: 0.01,
           format: n => (n === 0 ? 'off' : n.toFixed(2)),
           commitOnRelease: true,
-          getValue: () => self.minorAlleleFrequencyFilter,
-          isDefault: self.minorAlleleFrequencyFilter === 0,
+          getValue: () => self.minMinorAlleleFrequency,
+          isDefault: self.minMinorAlleleFrequency === 0,
           onChange: n => {
-            self.setMafFilter(n)
+            self.setMinMinorAlleleFrequency(n)
           },
           onReset: () => {
-            self.setMafFilter(0)
+            self.setMinMinorAlleleFrequency(0)
           },
         }),
         makeSizeMenu({
@@ -425,13 +425,13 @@ export function variantTrackMenuItems(
           // 1 keeps every variant, i.e. the filter is off
           format: n => (n === 1 ? 'off' : n.toFixed(2)),
           commitOnRelease: true,
-          getValue: () => self.maxMissingnessFilter,
-          isDefault: self.maxMissingnessFilter === 1,
+          getValue: () => self.maxMissingness,
+          isDefault: self.maxMissingness === 1,
           onChange: n => {
-            self.setMaxMissingnessFilter(n)
+            self.setMaxMissingness(n)
           },
           onReset: () => {
-            self.setMaxMissingnessFilter(1)
+            self.setMaxMissingness(1)
           },
         }),
       ],

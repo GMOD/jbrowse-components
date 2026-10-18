@@ -237,7 +237,7 @@ The config below is the same setting on the hub's gene track:
     }
   },
   "displayDefaults": {
-    "showOnlyGenes": true,
+    "filter": { "genes": "only" },
     "color": { "field": "gene" }
   }
 }

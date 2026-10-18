@@ -6,6 +6,7 @@ import {
   SUBFEATURE_LABELS,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import baseConfigSchemaFactory from './baseConfigSchema.ts'
+import { basicFeatureFilterConfigSchema } from './basicFeatureFilterConfigSchema.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -58,14 +59,11 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        */
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
       /**
-       * #slot
-       * Draw only gene-like top-level features, dropping everything else the
-       * file carries — the config form of the track menu's "Only genes".
+       * #slot filter
+       * The features the display draws: the jexl `expressions`, and `genes`,
+       * the gene-like features as a category.
        */
-      showOnlyGenes: {
-        type: 'boolean',
-        defaultValue: false,
-      },
+      filter: basicFeatureFilterConfigSchema,
       /**
        * #slot
        */
@@ -117,7 +115,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * feature types the gene-only view (`showOnlyGenes`) admits beside
+       * feature types the gene category (`filter.genes`) counts beside
        * every gene, transcript and RNA type, plus the fallback for recognizing
        * a CHILDLESS transcript as one of a gene's isoforms.
        */
@@ -173,15 +171,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         description:
           'draw the stretch of each exon outside the CDS that no UTR row covers as a UTR, or with no exon rows, a CDS end no UTR row reaches out to the transcript bounds',
         defaultValue: GENE_GLYPH_DEFAULTS.impliedUTRs,
-      },
-      /**
-       * #slot
-       */
-      hideSourceFeatures: {
-        type: 'boolean',
-        description:
-          'hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute',
-        defaultValue: GENE_GLYPH_DEFAULTS.hideSourceFeatures,
       },
     },
     {

@@ -58,7 +58,7 @@ const AMYLASE_HG38 = 'chr1:103,520,894-103,832,637'
 export function hpyloriSyntenyWithGenes({
   geneColor,
 }: { geneColor?: { field: string } } = {}) {
-  // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
+  // `genes: 'only'` collapses each locus to its gene glyph (no CDS/mRNA
   // sub-features), so the lane reads as a tidy row of genes rather than nested
   // boxes
   const geneTrack = (trackId: string) => ({
@@ -66,7 +66,7 @@ export function hpyloriSyntenyWithGenes({
     // the hosted config can't be read at build time, so the figure recipe only
     // knows which display a `color` expression belongs to if the spec says
     type: 'LinearBasicDisplay',
-    showOnlyGenes: true,
+    filter: { genes: 'only' },
     // no key: each gene already prints its symbol, and a key per panel lists a
     // different subset and covers the genes at the right edge
     ...(geneColor ? { color: geneColor, showLegend: false } : {}),
@@ -245,13 +245,13 @@ const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 // which is also why a note on the retired hprc_chm13_allele's hs1 gene lane
 // said that file "has nothing in this window". It may well have.
 //
-// `showOnlyGenes` because the palindrome's members each carry a stack of
+// `genes: 'only'` because the palindrome's members each carry a stack of
 // isoforms and what this lane is read for is where a NAME sits relative to the
 // centre.
 const CHRY_GENE_LANE = {
   trackId: 'hs1_chrY_genes',
   type: 'LinearBasicDisplay',
-  showOnlyGenes: true,
+  filter: { genes: 'only' },
   geneGlyphMode: 'longestCoding',
   displayMode: 'compact',
   // NAMES ONLY. The default 'auto' adds each gene's description at this
@@ -302,13 +302,13 @@ function tnnt3Session(
             assembly: 'hs1',
             loc: 'chr11:1,964,700-2,038,700',
             // the hs1 GFF is RefSeq All plus regulatory/"biological region"
-            // features, so showOnlyGenes is what makes it read like the
+            // features, so `genes: 'only'` is what makes it read like the
             // curated hg38 track above
             tracks: [
               {
                 trackId: 'hs1-genes',
                 geneGlyphMode: 'longestCoding',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
               },
             ],
             trackLabels: 'offset',
@@ -652,7 +652,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
           {
             trackId: 'K12_genes',
             type: 'LinearBasicDisplay',
-            showOnlyGenes: true,
+            filter: { genes: 'only' },
             displayMode: 'compact',
           },
           // Tall enough that a row is a band a drag can be aimed at: the
@@ -684,7 +684,7 @@ const GRASSES_RICE_LANES = sessionSpec(
           {
             trackId: 'rice_genes',
             type: 'LinearBasicDisplay',
-            showOnlyGenes: true,
+            filter: { genes: 'only' },
             displayMode: 'compact',
           },
           {
@@ -713,7 +713,7 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
           {
             trackId: 'GCF_030704535.1-ncbiRefSeq',
             type: 'LinearBasicDisplay',
-            showOnlyGenes: true,
+            filter: { genes: 'only' },
             displayMode: 'compact',
             showLabels: 'auto',
           },
@@ -1197,7 +1197,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // Gene-level ortholog zoom: drill into a window of the conserved
-  // block (grape chr11 / peach chrG7 / cacao chr9). showOnlyGenes collapses each locus
+  // block (grape chr11 / peach chrG7 / cacao chr9). `genes: 'only'` collapses each locus
   // to its gene glyph and compact displayMode packs the rows, so the ribbons
   // read one ortholog at a time. All three run in the same (forward)
   // orientation, so no [rev] flips are needed. The fan at the right of the
@@ -1226,7 +1226,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     // builder can't look the track up to learn its display,
                     // and without one it can't say where 'compact' is set.
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     // was `showDescriptions: false`, meaning "names suffice
                     // here". That has no home on the unified labels enum, so
@@ -1246,7 +1246,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'GCF_030704535.1-ncbiRefSeq',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
                     // to 'auto'
@@ -1261,7 +1261,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'GCF_000208745.1-ncbiRefSeq',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
                     // to 'auto'
@@ -1350,7 +1350,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
                 // as above: the retired `showDescriptions: false` resolved to
                 // 'auto'
@@ -1412,7 +1412,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
                 showLabels: 'auto',
               },
@@ -1467,7 +1467,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'GCF_030704535.1-ncbiRefSeq',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
                 showLabels: 'auto',
               },
@@ -1616,7 +1616,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'human_genes',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
               },
               {
@@ -1658,7 +1658,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'tomato_genes',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
                 // Ensembl's tomato GFF3 names every gene `gene:gene-Solyc04g…`,
                 // so the labels are three lines of identifier that say nothing
@@ -1708,7 +1708,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'melanogaster_genes',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
               },
               {
@@ -2831,7 +2831,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'sorghum_genes',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -2845,7 +2845,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'rice_genes',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -2861,7 +2861,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'maize_genes',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     showLabels: 'none',
                     height: 40,
@@ -3200,7 +3200,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // 1,205,000-1,275,000), so its ribbon runs roughly horizontal and the stx2
   // island bulges into the bare right side of the Sakai row.
   //
-  // showOnlyGenes drops the CDS lanes and the full-width `region` feature that
+  // `genes: 'only'` drops the CDS lanes and the full-width `region` feature that
   // RefSeq GFFs carry for the whole chromosome. No minAlignmentLength: at this
   // zoom the short alignments are signal, not noise.
   {
@@ -3222,7 +3222,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'K12_genes',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
                     // to 'auto'
@@ -3240,7 +3240,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                   {
                     trackId: 'Sakai_genes',
                     type: 'LinearBasicDisplay',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     displayMode: 'compact',
                     // as above: the retired `showDescriptions: false` resolved
                     // to 'auto'
@@ -3357,7 +3357,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'K12_genes',
                 type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
+                filter: { genes: 'only' },
                 displayMode: 'compact',
                 // as above: the retired `showDescriptions: false` resolved to
                 // 'auto'
@@ -3770,7 +3770,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // ones it did, which is what stops the figure reading as "every gene has an
   // ortholog".
   //
-  // showOnlyGenes on both rows: the default draws every mRNA isoform, and the
+  // `genes: 'only'` on both rows: the default draws every mRNA isoform, and the
   // figure is about which gene pairs with which, not about transcript
   // structure. Straight chords, not curves - at this zoom a curve leaves its
   // gene vertically and only aims at its partner mid-band, which is exactly the
@@ -3790,7 +3790,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'grape_genes',
                   type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
+                  filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -3804,7 +3804,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'peach_genes',
                   type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
+                  filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -3858,7 +3858,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'grape_genes',
                   type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
+                  filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -3872,7 +3872,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'peach_genes',
                   type: 'LinearBasicDisplay',
-                  showOnlyGenes: true,
+                  filter: { genes: 'only' },
                   displayMode: 'compact',
                   showLabels: 'auto',
                   height: 70,
@@ -5154,7 +5154,7 @@ export const syntenyVideoFixtures = {
             {
               trackId: 'GCF_030704535.1-ncbiRefSeq',
               type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               displayMode: 'compact',
               showLabels: 'auto',
             },

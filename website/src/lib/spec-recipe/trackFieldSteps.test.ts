@@ -159,3 +159,18 @@ test('turning read connections off is the None overlay radio', () => {
     stepPaths('readConnections', 'off', 'LinearAlignmentsDisplay'),
   ).toEqual(['Track menu → Read connections → None'])
 })
+
+test("a feature filter's members are the rows of its display's Filter by... menu", () => {
+  expect(
+    stepPaths('filter.expressions', ['jexl:feature.score > 5'], 'LinearBasicDisplay'),
+  ).toEqual(['Track menu → Filter by... → add the expression'])
+  expect(stepPaths('filter.genes', 'only', 'LinearBasicDisplay')).toEqual([
+    'Track menu → Filter by... → Genes → Only genes',
+  ])
+  expect(stepPaths('filter.genes', 'exclude', 'LinearBasicDisplay')).toEqual([
+    'Track menu → Filter by... → Genes → Hide genes',
+  ])
+  expect(
+    stepPaths('filter.maxMissingness', 0.1, 'LinearMultiSampleVariantDisplay'),
+  ).toEqual(['Track menu → Filter by... → Missingness → 0.10'])
+})

@@ -840,13 +840,13 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiSampleVariantDisplay',
 ])
 
-// The alignments display's `filter` is an object of read members, which the
-// read-category step reads as it reads v4's `filterBy`.
-const filterStep: FieldRecipe = (value, { displayType }) => {
-  if (!Array.isArray(value)) {
-    return readCategoryPath(value)
-  }
-  const filters = value.filter(f => typeof f === 'string')
+// A feature display's jexl `filter.expressions`; the alignments display's read
+// members are `filter`'s own entry, which the read-category step reads as it
+// reads v4's `filterBy`.
+const expressionsStep: FieldRecipe = (value, { displayType }) => {
+  const filters = Array.isArray(value)
+    ? value.filter(f => typeof f === 'string')
+    : []
   return filters.length && displayType && FILTER_MENU_DISPLAYS.has(displayType)
     ? {
         path: `${TRACK_MENU} → Filter by... → add ${filters.length === 1 ? 'the expression' : `the ${filters.length} expressions`}`,
@@ -1373,7 +1373,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   modifications: modificationsStep,
   rowColor: rowColorStep,
   facet: facetStep,
-  filter: filterStep,
+  filter: readCategoryPath,
+  'filter.expressions': expressionsStep,
   // These two are declared by LinearHicDisplay alone, so as with the
   // alignments-only fields the name settles the display and an unresolved entry
   // can still be answered.
@@ -1853,7 +1854,14 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
         }
       : undefined,
-  showOnlyGenes: checkbox('Show... → Only genes'),
+  // The category row LinearBasicDisplay adds to "Filter by..." (model.ts).
+  'filter.genes': value =>
+    categoryStep(
+      `${TRACK_MENU} → Filter by... → Genes`,
+      value,
+      'genes',
+      'Genes counts every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS; the rest of a GFF, such as NCBI region and match rows, is not a gene.',
+    ),
   // Three sibling checkboxes in the reference-sequence track's Show... submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
   showForward: checkbox('Show... → Forward'),
@@ -1887,11 +1895,11 @@ export const trackFields: Record<string, FieldRecipe> = {
   // Two inline sliders under the multi-sample variant "Filter by..." submenu
   // (labels verified in LinearMultiSampleVariantDisplay/multiSampleVariantMenuItems.ts). Both re-fetch
   // on release; a value of 0 (MAF) / 1 (missingness) turns the filter off.
-  minorAlleleFrequencyFilter: numberField(n => ({
+  'filter.minMinorAlleleFrequency': numberField(n => ({
     path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${n.toFixed(2)}`,
     note: 'Hides variants whose minor allele frequency is below this.',
   })),
-  maxMissingnessFilter: numberField(n => ({
+  'filter.maxMissingness': numberField(n => ({
     path: `${TRACK_MENU} → Filter by... → Missingness → ${n.toFixed(2)}`,
     note: 'Hides variants whose fraction of no-call genotypes is above this; 1 keeps every variant.',
   })),

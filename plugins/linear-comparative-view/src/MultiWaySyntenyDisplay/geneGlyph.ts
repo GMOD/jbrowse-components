@@ -1,4 +1,5 @@
 import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
+import { filterExpressionsOf } from '@jbrowse/core/util/jexlFilters'
 import {
   featureType,
   getSubfeatures,
@@ -49,11 +50,13 @@ function featureDisplayOf(entry?: TrackConfigEntry) {
 }
 
 /**
- * The `filter` the gene track's own feature display admits features by, so
- * the lane drops what that track drops. Takes a preprocessed entry.
+ * The jexl `filter.expressions` the gene track's own feature display admits
+ * features by, so the lane drops what that track drops. Its `genes` category
+ * stays the track's: the lane draws the genes alone whatever it says. Takes a
+ * preprocessed entry.
  */
 export function laneGeneFilter(entry?: TrackConfigEntry): string[] {
-  return strings(featureDisplayOf(entry)?.filter, [])
+  return filterExpressionsOf(featureDisplayOf(entry)?.filter)
 }
 
 /**

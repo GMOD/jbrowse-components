@@ -258,7 +258,7 @@ test('a duplicated sample ID counts every column, as getFilteredVariants does', 
   )
   const [variant] = getFilteredVariants({
     features: [feature],
-    minorAlleleFrequencyFilter: 0,
+    minMinorAlleleFrequency: 0,
   })
   expect(variant).toBeDefined()
   const display = summarizeAlleleCounts(calculateAlleleCountsFast(feature))

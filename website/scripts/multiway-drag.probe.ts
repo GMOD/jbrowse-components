@@ -61,7 +61,7 @@ const multiwayTrack = {
 const geneTrack = {
   trackId: 'GCF_030704535.1-ncbiRefSeq',
   type: 'LinearBasicDisplay',
-  showOnlyGenes: true,
+  filter: { genes: 'only' },
   displayMode: 'compact',
 }
 function session(withMultiway: boolean) {

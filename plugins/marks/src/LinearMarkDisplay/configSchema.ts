@@ -5,7 +5,7 @@ import {
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
-import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import { featureFilterConfigSchema } from '@jbrowse/display-kit/featureFilterConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -536,7 +536,12 @@ export function configSchemaFactory() {
         defaultValue: true,
         description: 'draw the color key',
       },
-      ...jexlFilterConfigSchemaFields,
+      /**
+       * #slot filter
+       * The features the display draws: `expressions`, a list of `jexl:`
+       * tests.
+       */
+      filter: featureFilterConfigSchema,
     },
     {
       explicitlyTyped: true,

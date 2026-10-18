@@ -146,41 +146,64 @@ describe('the display config schema', () => {
     })
   })
 
-  describe('minorAlleleFrequencyFilter config slot', () => {
-    it('has default value of 0', () => {
+  describe('filter', () => {
+    it('defaults to keeping every variant', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-9',
+        displayId: 'test-filter-default',
       })
-      expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0)
+      expect(
+        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
+      ).toBe(0)
+      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(1)
+      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([])
     })
 
-    it('can be set to a custom value', () => {
+    it('holds the thresholds beside the expressions', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-10',
+        displayId: 'test-filter-custom',
+        filter: {
+          expressions: ['jexl:feature.QUAL > 30'],
+          minMinorAlleleFrequency: 0.05,
+          maxMissingness: 0.2,
+        },
+      })
+      expect(
+        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
+      ).toBe(0.05)
+      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(0.2)
+      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
+        'jexl:feature.QUAL > 30',
+      ])
+    })
+
+    it("lifts v4's minorAlleleFrequencyFilter and jexlFilters into it", () => {
+      const config = configSchema.create({
+        type: 'LinearMultiSampleVariantDisplay',
+        displayId: 'test-filter-v4',
         minorAlleleFrequencyFilter: 0.05,
+        jexlFilters: ['feature.QUAL > 30'],
       })
-      expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0.05)
-    })
-  })
-
-  describe('maxMissingnessFilter config slot', () => {
-    it('defaults to 1 (keep every variant)', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-missingness-default',
-      })
-      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(1)
+      expect(
+        readConfObject(config, ['filter', 'minMinorAlleleFrequency']),
+      ).toBe(0.05)
+      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
+        'jexl:feature.QUAL > 30',
+      ])
     })
 
-    it('can be set to a custom value', () => {
+    it('takes a list as its expressions, and a bag merges its members', () => {
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-missingness-custom',
-        maxMissingnessFilter: 0.2,
+        displayId: 'test-filter-shorthand',
+        filter: ['jexl:feature.QUAL > 30'],
       })
-      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(0.2)
+      applyConfSettings(config, { filter: { maxMissingness: 0.1 } })
+      expect(readConfObject(config, ['filter', 'expressions'])).toEqual([
+        'jexl:feature.QUAL > 30',
+      ])
+      expect(readConfObject(config, ['filter', 'maxMissingness'])).toBe(0.1)
     })
   })
 })

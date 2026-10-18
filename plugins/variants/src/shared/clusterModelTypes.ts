@@ -16,8 +16,8 @@ export interface ReducedModel
   // Always resolved off a config slot with a default (0 / 1), so both clustering
   // entry points forward the display's real thresholds rather than restating
   // "off" defaults of their own.
-  minorAlleleFrequencyFilter: number
-  maxMissingnessFilter: number
+  minMinorAlleleFrequency: number
+  maxMissingness: number
   filters?: SerializableFilterChain
   adapterConfig: Record<string, unknown>
   unit: VariantUnit

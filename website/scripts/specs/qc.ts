@@ -138,11 +138,11 @@ const gnomadCoverageTrack = (height = 70, extent?: string) => ({
   ...(extent ? { extent } : {}),
 })
 
-const geneTrack = (height: number, showOnlyGenes: boolean) => ({
+const geneTrack = (height: number, onlyGenes: boolean) => ({
   trackId: 'hg38-ncbiRefSeqCurated',
   type: 'LinearBasicDisplay',
   height,
-  showOnlyGenes,
+  ...(onlyGenes ? { filter: { genes: 'only' } } : {}),
   // ONE TRANSCRIPT PER GENE (reviewer, on two of the three figures here: "use
   // longestisoform on the gene track"). Collapsing raises the display's loud
   // chip at the right edge of the lane — "Longest isoform" on this track, whose
@@ -695,7 +695,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'hg38-genes',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     // COLLAPSED to one transcript, the opposite of what
                     // geneTrack() above does, and for the opposite reason. Both
                     // tracks here are configured autoHeight, so 'all' is not a
@@ -719,7 +719,7 @@ export const qcSpecs: ScreenshotSpec[] = [
                 tracks: [
                   {
                     trackId: 'hs1-genes',
-                    showOnlyGenes: true,
+                    filter: { genes: 'only' },
                     geneGlyphMode: 'longestCoding',
                     // review: "hide descriptions from t2t gene track". This is
                     // RefSeq All, so every pseudogene under the segdup carries a

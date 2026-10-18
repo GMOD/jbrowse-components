@@ -63,7 +63,8 @@ Track-menu toggles:
 - Display mode - _Normal_, _Compact_, or _Super-compact_ feature heights
 - Show subfeature labels - each transcript's name on its row
 - Show... → Chevrons - strand chevrons along the intron lines (on by default)
-- Show... → Only genes - hides non-gene features
+- Filter by... → Genes - _Only genes_ hides non-gene features, _Hide genes_ the
+  genes
 - Group by... - _Strand_ packs the forward-strand features into one labelled
   section above the reverse-strand ones, unstranded features last, so convergent
   and divergent neighbours read apart. _Attribute..._ opens a dialog for a

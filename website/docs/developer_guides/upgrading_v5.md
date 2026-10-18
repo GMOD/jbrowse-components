@@ -501,9 +501,9 @@ thickness only says whether the transcript codes. Those features now parse as
 `transcript` with `exon` children, which is what a coding BED12 has always done
 one step further along.
 
-For a site, the feature reports a type where it reported none, so
-`showOnlyGenes` admits it, the hover readout numbers its exons and gives an HGVS
-`n.` coordinate, "Get sequence" offers the spliced cDNA, "Collapse introns" is
+For a site, the feature reports a type where it reported none, so `filter.genes`
+counts it as a gene, the hover readout numbers its exons and gives an HGVS `n.`
+coordinate, "Get sequence" offers the spliced cDNA, "Collapse introns" is
 offered on it, and "Save track data" round-trips it byte-exact where it used to
 demote the record to BED6 — one row per block, with the name and the score
 dropped. The feature-details panel stops listing the six raw columns the

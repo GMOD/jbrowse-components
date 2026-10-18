@@ -77,6 +77,13 @@ test('a junction filter in a settings bag reaches its own setter', async () => {
   expect(display.readFilter).not.toHaveProperty('junctions')
 })
 
+test("a feature track's filter object rides in on the snapshot", async () => {
+  const { view, display, calls } = fakeView()
+  await applyDisplayOpts(view, 't', 'feature', ['{"filter":{"genes":"only"}}'])
+  expect(calls[0]).toEqual({ filter: { genes: 'only' } })
+  expect(display.readFilter).not.toHaveProperty('genes')
+})
+
 test('filterBy is kept out of the snapshot showTrack replaces slots from', async () => {
   const { view, calls } = fakeView()
   await applyDisplayOpts(view, 't', 'alignments', ['height:400', 'split:only'])

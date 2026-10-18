@@ -164,11 +164,15 @@ describe('canvas display filters', () => {
     expect(display.configuredFilters()).toEqual([])
   })
 
-  it('setFilter writes the filter slot', () => {
+  it('setFilter writes filter.expressions and leaves the gene category', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
+    display.setGenesFilter('only')
     display.setFilter([`jexl:get(feature,'score')>5`])
-    expect(getConf(display, 'filter')).toEqual([`jexl:get(feature,'score')>5`])
+    expect(getConf(display, ['filter', 'expressions'])).toEqual([
+      `jexl:get(feature,'score')>5`,
+    ])
     expect(display.configuredFilters()).toEqual([`jexl:get(feature,'score')>5`])
+    expect(display.genesFilter).toBe('only')
   })
 
   it('an empty list clears the filters the track config declares', () => {
@@ -212,15 +216,18 @@ describe('canvas display filters', () => {
     expect(activeCount(empty.featureNarrowings())).toBe(0)
   })
 
-  it('rpcProps().displayConfig.filter carries the filters', () => {
+  it('rpcProps().displayConfig.filter carries the whole filter', () => {
     const display = createDisplay([`jexl:get(feature,'type')=='gene'`])
-    expect(display.rpcProps().displayConfig.filter).toEqual([
-      `jexl:get(feature,'type')=='gene'`,
-    ])
+    expect(display.rpcProps().displayConfig.filter).toEqual({
+      expressions: [`jexl:get(feature,'type')=='gene'`],
+      genes: undefined,
+    })
     display.setFilter([`jexl:get(feature,'score')>5`])
-    expect(display.rpcProps().displayConfig.filter).toEqual([
-      `jexl:get(feature,'score')>5`,
-    ])
+    display.setGenesFilter('exclude')
+    expect(display.rpcProps().displayConfig.filter).toEqual({
+      expressions: [`jexl:get(feature,'score')>5`],
+      genes: 'exclude',
+    })
   })
 })
 

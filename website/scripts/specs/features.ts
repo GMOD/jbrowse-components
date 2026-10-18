@@ -354,7 +354,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 220,
           subfeatureLabels: 'overlay',
-          showOnlyGenes: true,
+          filter: { genes: 'only' },
         },
       ],
     }),

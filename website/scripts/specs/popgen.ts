@@ -301,7 +301,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
               // which is ~28.6 css px here, and 100 cut the fourth row through
               // the middle of its glyphs.
               height: 115,
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               // Name-only highlights: resolveFeatureHighlights boxes the match
               // AND pins it to the top row. Without that Cyp6g1 sits seven rows
               // down a ~120-gene wall of CG numbers, so the one gene the figure

@@ -57,9 +57,12 @@ describe('multi-sample variant filter sliders', () => {
     )!
     fireEvent.change(input, { target: { value: 0.2 } })
 
-    expect(model.minorAlleleFrequencyFilter).toBeCloseTo(0.2)
+    expect(model.minMinorAlleleFrequency).toBeCloseTo(0.2)
     expect(
-      readConfObject(model.configuration, 'minorAlleleFrequencyFilter'),
+      readConfObject(model.configuration, [
+        'filter',
+        'minMinorAlleleFrequency',
+      ]),
     ).toBeCloseTo(0.2)
     expect(screen.getByText('MAF: 0.20')).toBeTruthy()
   })
@@ -76,6 +79,6 @@ describe('multi-sample variant filter sliders', () => {
       .getByTestId('max-missingness-slider')
       .querySelector('input')!
     fireEvent.change(input, { target: { value: 0.3 } })
-    expect(model.maxMissingnessFilter).toBeCloseTo(0.3)
+    expect(model.maxMissingness).toBeCloseTo(0.3)
   })
 })

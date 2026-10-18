@@ -110,25 +110,40 @@ function settingEntries(key: string, value: unknown): [string, unknown][] {
     ? bandEntries(key, value)
     : key === 'filter' && isPlainObject(value)
       ? filterEntries(value)
-      : [[key, value]]
+      : key === 'filter' && Array.isArray(value)
+        ? [['filter.expressions', value]]
+        : [[key, value]]
 }
 
-// The read members stay one `filter` entry, as the Filter menu reads them;
-// each member of `junctions` and `connections` is a row of its own in the
-// sashimi and read connections menus.
+// The members a feature display's `filter` holds, each a row of its own in
+// its "Filter by..." menu.
+const FEATURE_FILTER_MEMBERS = new Set([
+  'expressions',
+  'genes',
+  'minMinorAlleleFrequency',
+  'maxMissingness',
+])
+
+// The alignments read members stay one `filter` entry, as the Filter menu
+// reads them; each member of `junctions` and `connections` is a row of its own
+// in the sashimi and read connections menus, as each feature filter member is
+// in its display's Filter menu.
 function filterEntries(filter: Record<string, unknown>): [string, unknown][] {
   const members = Object.entries(filter)
-  const read = members.filter(([, value]) => !isPlainObject(value))
+  const read = members.filter(
+    ([member, value]) =>
+      !isPlainObject(value) && !FEATURE_FILTER_MEMBERS.has(member),
+  )
   return [
     ...(read.length
       ? [['filter', Object.fromEntries(read)] as [string, unknown]]
       : []),
-    ...members.flatMap(([member, value]) =>
+    ...members.flatMap(([member, value]): [string, unknown][] =>
       isPlainObject(value)
-        ? Object.entries(value).map(
-            ([sub, v]) => [`filter.${member}.${sub}`, v] as [string, unknown],
-          )
-        : [],
+        ? Object.entries(value).map(([sub, v]) => [`filter.${member}.${sub}`, v])
+        : FEATURE_FILTER_MEMBERS.has(member)
+          ? [[`filter.${member}`, value]]
+          : [],
     ),
   ]
 }

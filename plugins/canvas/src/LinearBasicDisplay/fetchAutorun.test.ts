@@ -544,14 +544,16 @@ describe('SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     await waitFor(() => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
       const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
-      expect(lastArgs).toMatchObject({ showOnlyGenes: true })
+      expect(lastArgs).toMatchObject({
+        displayConfig: { filter: { genes: 'only' } },
+      })
     })
   })
 
@@ -568,7 +570,7 @@ describe('SettingsInvalidate autorun', () => {
     display.markCanvasDrawn()
     expect(display.displayPhase).toBe('ready')
 
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
     expect(display.rpcDataMap.size).toBe(1)
     expect(display.loadedRegions.size).toBe(1)
     expect(display.staleSettingsDrawn).toBe(true)
@@ -587,7 +589,7 @@ describe('SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
     jest.advanceTimersByTime(800)
 
     // waitFor, not a bare read: fetchRegions consults the async byte gate
@@ -596,7 +598,9 @@ describe('SettingsInvalidate autorun', () => {
       expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     })
     const lastArgs = mockRpcCall.mock.calls.at(-1)![2]
-    expect(lastArgs).toMatchObject({ showOnlyGenes: true })
+    expect(lastArgs).toMatchObject({
+      displayConfig: { filter: { genes: 'only' } },
+    })
   })
 
   it('does not double-fetch when settings change before the initial FetchVisibleRegions fires', async () => {
@@ -604,7 +608,7 @@ describe('SettingsInvalidate autorun', () => {
     mockRpcCall.mockResolvedValue(makeFeatureData())
     const { display } = createDisplay()
 
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -614,7 +618,9 @@ describe('SettingsInvalidate autorun', () => {
     })
 
     expect(mockRpcCall).toHaveBeenCalledTimes(1)
-    expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ showOnlyGenes: true })
+    expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({
+      displayConfig: { filter: { genes: 'only' } },
+    })
   })
 })
 
@@ -1584,7 +1590,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'containerTypes',
     'featureHeight',
     'filter',
-    'hideSourceFeatures',
     'impliedUTRs',
     'labels',
     'mouseover',
@@ -1726,13 +1731,13 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
 
-    display.setShowOnlyGenes(true)
+    display.setGenesFilter('only')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
-      showOnlyGenes: true,
+      displayConfig: { filter: { genes: 'only' } },
     })
   })
 

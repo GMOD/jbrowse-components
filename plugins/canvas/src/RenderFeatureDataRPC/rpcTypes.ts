@@ -41,7 +41,6 @@ export interface RenderFeatureDataArgs extends GatedFetchArgs {
   // Translation-table fallback for transcripts whose features lack a
   // transl_table attribute.
   geneticCodeId?: number
-  showOnlyGenes?: boolean
   // Matched against feature.id() (the uniqueId) rather than run as a jexl
   // filter, since jexlFeatureProxy cannot reach the uniqueId.
   soloFeatureIds?: string[]
@@ -58,11 +57,7 @@ export interface GetGroupByCandidatesArgs
     GatedFetchArgs,
     Pick<
       RenderFeatureDataArgs,
-      | 'adapterConfig'
-      | 'displayConfig'
-      | 'showOnlyGenes'
-      | 'soloFeatureIds'
-      | 'hiddenFeatureIds'
+      'adapterConfig' | 'displayConfig' | 'soloFeatureIds' | 'hiddenFeatureIds'
     > {
   regions: Region[]
 }
@@ -280,7 +275,8 @@ export interface FlatbushItem extends HitItemBase {
   // unless a facet other than strand asked for it.
   groupKey?: string
   densityFade: boolean
-  // A type "Only genes" keeps, whose name claims the fit height first.
+  // A type the gene category (`filter.genes`) counts, whose name claims the
+  // fit height first.
   // Absent in fixtures predating the field.
   gene?: boolean
   // Whether "Collapse introns" has a gap to close here. Decided in the worker

@@ -5,13 +5,13 @@ import {
   toggleItem,
   withSubHeader,
 } from '@jbrowse/core/ui/menuItems'
+import { categoryFilterItem } from '@jbrowse/display-kit/categoryFilter'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import {
   DEFAULT_MIN_INTERCHROM_READS,
   READ_CONNECTIONS_OPTIONS,
 } from '../constants.ts'
-import { categoryFilterItem } from './categoryFilterItem.ts'
 import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { ConnectionFilter } from '../../shared/types.ts'

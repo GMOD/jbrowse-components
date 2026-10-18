@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { retiredFilterSpelling } from './jexlFilterConfigSchemaFields.ts'
+import { retiredFilterSpelling } from './featureFilterConfigSchema.ts'
 import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -28,8 +28,8 @@ export const retiredBaseDisplaySpellings = {
  * Shared base config for linear displays — its slots (`height`,
  * `fetchSizeLimit`) are common to all of them. The GPU stack's
  * `LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
- * it too. `filter` is not here: it lives in
- * `jexlFilterConfigSchemaFields`, which only the displays that read it spread.
+ * it too. `filter` is not here: only the displays that read it declare it,
+ * `featureFilterConfigSchema` or an extension of it.
  * Nor is `mouseover`, which a display declares only where its hover reads it.
  */
 const baseLinearDisplayConfigSchema = ConfigurationSchema(

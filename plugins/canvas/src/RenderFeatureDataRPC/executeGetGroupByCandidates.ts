@@ -26,7 +26,6 @@ export async function executeGetGroupByCandidates({
   const {
     regions,
     displayConfig,
-    showOnlyGenes,
     soloFeatureIds,
     hiddenFeatureIds,
     byteLimit,
@@ -50,7 +49,6 @@ export async function executeGetGroupByCandidates({
   const admit = buildFeatureAdmission({
     config: displayConfig,
     jexl: pluginManager.jexl,
-    showOnlyGenes,
     soloFeatureIds,
     hiddenFeatureIds,
   })

@@ -32,8 +32,8 @@ export async function runGenotypeClustering({
 }) {
   const {
     clusterableSources: rows,
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
+    minMinorAlleleFrequency,
+    maxMissingness,
     filters,
     adapterConfig,
     unit,
@@ -52,8 +52,8 @@ export async function runGenotypeClustering({
       rpcManager.call(sessionId, 'MultiSampleVariantClusterGenotypeMatrix', {
         regions,
         sources: rows,
-        minorAlleleFrequencyFilter,
-        maxMissingnessFilter,
+        minMinorAlleleFrequency,
+        maxMissingness,
         filters,
         adapterConfig,
         signal,
@@ -67,8 +67,8 @@ export async function runGenotypeClustering({
     // long and the caption is one line.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'unit', value: unit },
-      { name: 'MAF filter', value: String(minorAlleleFrequencyFilter) },
-      { name: 'max missingness', value: String(maxMissingnessFilter) },
+      { name: 'MAF filter', value: String(minMinorAlleleFrequency) },
+      { name: 'max missingness', value: String(maxMissingness) },
       ...(filters ? [{ name: 'track filters', value: 'active' }] : []),
     ]),
   })

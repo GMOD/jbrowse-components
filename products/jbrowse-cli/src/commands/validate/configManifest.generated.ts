@@ -3036,7 +3036,20 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "JexlExpression[]"
+          "type": "BasicFeatureFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "expressions",
+              "type": "JexlExpression[]"
+            },
+            {
+              "name": "genes",
+              "type": "(CategoryFilter | undefined)"
+            }
+          ],
+          "shorthand": {
+            "list": "expressions"
+          }
         },
         {
           "name": "mouseover",
@@ -3187,10 +3200,6 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "showOnlyGenes",
-          "type": "boolean"
-        },
-        {
           "name": "connectorColor",
           "type": "(JexlString | (CssColor | undefined))"
         },
@@ -3232,10 +3241,6 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "impliedUTRs",
-          "type": "boolean"
-        },
-        {
-          "name": "hideSourceFeatures",
           "type": "boolean"
         }
       ],
@@ -5543,7 +5548,16 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "JexlExpression[]"
+          "type": "FeatureFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "expressions",
+              "type": "JexlExpression[]"
+            }
+          ],
+          "shorthand": {
+            "list": "expressions"
+          }
         },
         {
           "name": "mouseover",
@@ -5766,7 +5780,24 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "JexlExpression[]"
+          "type": "VariantFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "expressions",
+              "type": "JexlExpression[]"
+            },
+            {
+              "name": "minMinorAlleleFrequency",
+              "type": "number"
+            },
+            {
+              "name": "maxMissingness",
+              "type": "number"
+            }
+          ],
+          "shorthand": {
+            "list": "expressions"
+          }
         },
         {
           "name": "rowHeight",
@@ -5884,14 +5915,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "minorAlleleFrequencyFilter",
-          "type": "number"
-        },
-        {
-          "name": "maxMissingnessFilter",
-          "type": "number"
-        },
-        {
           "name": "showLegend",
           "type": "boolean"
         },
@@ -5965,6 +5988,7 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
+        "minorAlleleFrequencyFilter",
         "renderingMode",
         "showSidebarLabels",
         "showReferenceAlleles",
@@ -7423,7 +7447,16 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "JexlExpression[]"
+          "type": "FeatureFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "expressions",
+              "type": "JexlExpression[]"
+            }
+          ],
+          "shorthand": {
+            "list": "expressions"
+          }
         }
       ],
       "legacyKeys": [
@@ -7913,7 +7946,16 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "filter",
-          "type": "JexlExpression[]"
+          "type": "FeatureFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "expressions",
+              "type": "JexlExpression[]"
+            }
+          ],
+          "shorthand": {
+            "list": "expressions"
+          }
         }
       ],
       "legacyKeys": [

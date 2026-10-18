@@ -10,12 +10,11 @@ import type { Reversible } from '../ui/filterMenuItems.ts'
 
 /**
  * The feature-filter contract, shared by every display offering a "Filter
- * by..." row: the **`filter` config slot** holds the filters applied, as
- * `jexl:` expressions (`jexlFilterConfigSchemaFields` in display-kit, spread
- * by the canvas base display schema, the mark display schema and the shared
- * multi-sample variant schema). The dialog, a feature's "Filter" actions and
- * "Edit plot..." all write that slot, and the session keeps the write as it
- * keeps any track setting, so "Reset track settings" returns it with the
+ * by..." row: **`filter.expressions`** holds the filters applied, as `jexl:`
+ * expressions (`featureFilterConfigSchema` in display-kit, on the canvas, mark
+ * and multi-sample variant displays). The dialog, a feature's "Filter" actions
+ * and "Edit plot..." all write that member, and the session keeps the write as
+ * it keeps any track setting, so "Reset track settings" returns it with the
  * rest.
  */
 export interface JexlFilterSource {
@@ -31,27 +30,36 @@ export interface JexlFilterSource {
 export interface JexlFilterModel extends JexlFilterSource {
   /** What the track's config declares, which "Clear all filters" returns to. */
   baseFilters: () => string[]
-  /** Write the slot; undefined returns it to {@link baseFilters}. */
+  /** Write the expressions; undefined returns them to {@link baseFilters}. */
   setFilter: (filters?: string[]) => void
 }
 
-/** What the `filter` config slot holds: a display's `configuredFilters`. */
+/** What `filter.expressions` holds: a display's `configuredFilters`. */
 export function configuredJexlFilters(
   self: Parameters<typeof getConf>[0],
 ): string[] {
-  return getConf(self, 'filter')
+  return getConf(self, ['filter', 'expressions'])
 }
 
 /**
- * What the track's config declares for this display's `filter`, before the
- * session wrote any: a display's `baseFilters`. Empty in a session that keeps
- * no base.
+ * The expressions a config entry's `filter` states, in either spelling: the
+ * object's `expressions`, or the list shorthand. For a reader of a snapshot,
+ * where no schema has lifted the shorthand yet.
+ */
+export function filterExpressionsOf(filter: unknown): string[] {
+  const list = Array.isArray(filter)
+    ? filter
+    : (filter as { expressions?: unknown } | undefined)?.expressions
+  return Array.isArray(list) ? list.map(String) : []
+}
+
+/**
+ * What the track's config declares for this display's `filter.expressions`,
+ * before the session wrote any: a display's `baseFilters`. Empty in a session
+ * that keeps no base.
  */
 export function baseJexlFilters(self: object): string[] {
-  const declared = baseDisplayConfig(self).filter
-  return Array.isArray(declared)
-    ? declared.map(f => ensureJexlPrefix(String(f)))
-    : []
+  return filterExpressionsOf(baseDisplayConfig(self).filter)
 }
 
 /**
@@ -76,14 +84,20 @@ export function jexlFilterNarrowing(self: JexlFilterModel): Reversible {
 }
 
 /**
- * A v4 session's display-instance `jexlFiltersSetting`, which is the `filter`
- * slot now: the retired state the canvas and single-sample variant displays
- * declare (ADR-168).
+ * A v4 session's display-instance `jexlFiltersSetting`, which is
+ * `filter.expressions` now: the retired state the canvas and single-sample
+ * variant displays declare (ADR-168).
  */
 export const retiredFilterState: RetiredDisplayState = {
   keys: ['jexlFiltersSetting'],
   lift: ({ jexlFiltersSetting }) =>
     Array.isArray(jexlFiltersSetting)
-      ? { filter: jexlFiltersSetting.map(f => ensureJexlPrefix(String(f))) }
+      ? {
+          filter: {
+            expressions: jexlFiltersSetting.map(f =>
+              ensureJexlPrefix(String(f)),
+            ),
+          },
+        }
       : {},
 }

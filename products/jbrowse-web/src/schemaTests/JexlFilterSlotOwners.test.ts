@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaDefinition,
-  isSlotDefinitionEntry,
+  isConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 
 import corePlugins from '../corePlugins.ts'
@@ -9,8 +9,9 @@ import corePlugins from '../corePlugins.ts'
 // The filter slot sat on `baseLinearDisplayConfigSchema`, so eleven display
 // schemas published it and three models read it. On the other eight a track
 // config declaring filters passed `jbrowse validate`, loaded, and filtered
-// nothing. The slot is `jexlFilterConfigSchemaFields` now, spread only by the
-// schemas whose displays read it through `configuredJexlFilters`.
+// nothing. The slot is `featureFilterConfigSchema` or an extension of it now,
+// declared only by the schemas whose displays read it through
+// `configuredJexlFilters`.
 //
 // Here for the reason `ConfigSlotDefaults.test.ts` next door is: jbrowse-web is
 // the only place the whole plugin set is assembled. A display added to the list
@@ -20,7 +21,7 @@ const pluginManager = new PluginManager(
   corePlugins.map(P => new P()),
 ).createPluggableElements()
 
-test('only the displays that read filter publish it', () => {
+test('only the displays that read filter.expressions publish it', () => {
   const publishing: string[] = []
   for (const element of pluginManager.getElementTypesInGroup('display')) {
     const { name, configSchema } = element as {
@@ -35,7 +36,10 @@ test('only the displays that read filter publish it', () => {
         )
       : undefined
     const entry = definition?.filter
-    if (entry && isSlotDefinitionEntry(entry)) {
+    if (
+      isConfigurationSchemaType(entry) &&
+      getConfigurationSchemaDefinition(entry)?.expressions
+    ) {
       publishing.push(name)
     }
   }

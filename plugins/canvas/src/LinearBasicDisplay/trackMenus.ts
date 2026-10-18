@@ -90,6 +90,7 @@ interface TrackMenuSelf extends GroupByMenuSelf, PlotDisplay {
   showSubmenuMenuItems: () => MenuItem[]
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
+  filterSubMenuItems: () => MenuItem[]
   openFilterDialog: () => void
 }
 
@@ -236,6 +237,7 @@ function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
     onEdit: () => {
       self.openFilterDialog()
     },
+    subItems: self.filterSubMenuItems(),
     priority: TRACK_MENU_PRIORITY.recovery,
   })
 }

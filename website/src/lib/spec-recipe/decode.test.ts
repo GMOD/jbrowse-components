@@ -34,3 +34,23 @@ test('nesting leaves the entries it was handed as they were', () => {
   nestedSettings(Object.fromEntries(entries))
   expect(entries).toEqual(flatSettings(display))
 })
+
+// each member of a feature display's filter is a row of its own in its menu
+test('a feature filter flattens member by member, its list shorthand included', () => {
+  expect(
+    flatSettings({
+      filter: {
+        expressions: ['jexl:feature.score > 5'],
+        genes: 'only',
+        maxMissingness: 0.1,
+      },
+    }),
+  ).toEqual([
+    ['filter.expressions', ['jexl:feature.score > 5']],
+    ['filter.genes', 'only'],
+    ['filter.maxMissingness', 0.1],
+  ])
+  expect(flatSettings({ filter: ['jexl:feature.score > 5'] })).toEqual([
+    ['filter.expressions', ['jexl:feature.score > 5']],
+  ])
+})

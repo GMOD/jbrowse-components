@@ -40,7 +40,7 @@ export const scatacSpecs: ScreenshotSpec[] = [
               trackId: 'ncbi_refseq_109_hg38_latest',
               type: 'LinearBasicDisplay',
               displayMode: 'compact',
-              showOnlyGenes: true,
+              filter: { genes: 'only' },
               height: 80,
             },
             {

@@ -7,7 +7,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // the whole reason gene_prediction_review.md exists, and the picture only reads
 // if both annotations are in it at a zoom where the gap is visible.
 //
-// showOnlyGenes on the GENCODE track drops the region and biological_region
+// `genes: 'only'` on the GENCODE track drops the region and biological_region
 // features a full annotation carries, which otherwise paint a bar across the
 // whole row above the genes.
 export const annotationSpecs: ScreenshotSpec[] = [
@@ -26,7 +26,7 @@ export const annotationSpecs: ScreenshotSpec[] = [
         {
           trackId: 'gencode_47',
           type: 'LinearBasicDisplay',
-          showOnlyGenes: true,
+          filter: { genes: 'only' },
           height: 170,
         },
       ],

@@ -57,7 +57,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
           height: 90,
-          showOnlyGenes: true,
+          filter: { genes: 'only' },
         },
       ],
     }),

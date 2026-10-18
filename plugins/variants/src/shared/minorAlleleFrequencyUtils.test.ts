@@ -307,7 +307,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0.2,
+      minMinorAlleleFrequency: 0.2,
     })
 
     expect(result).toHaveLength(1)
@@ -324,7 +324,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0,
+      minMinorAlleleFrequency: 0,
       filterChain: new SerializableFilterChain({
         filters: ["jexl:get(feature,'end')-get(feature,'start')<10"],
         jexl: createJexlInstance(),
@@ -348,7 +348,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0,
+      minMinorAlleleFrequency: 0,
     })
 
     expect(result).toHaveLength(1)
@@ -368,7 +368,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0,
+      minMinorAlleleFrequency: 0,
     })
 
     expect(result).toHaveLength(1)
@@ -389,7 +389,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0.01,
+      minMinorAlleleFrequency: 0.01,
     })
 
     expect(result).toHaveLength(0)
@@ -405,7 +405,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0,
+      minMinorAlleleFrequency: 0,
     })
 
     expect(result.map(r => r.feature.id())).toEqual(['allRef', 'allAlt'])
@@ -422,7 +422,7 @@ describe('getFilteredVariants', () => {
     ]
 
     expect(
-      getFilteredVariants({ features, minorAlleleFrequencyFilter: 0 }),
+      getFilteredVariants({ features, minMinorAlleleFrequency: 0 }),
     ).toHaveLength(0)
   })
 
@@ -441,7 +441,7 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features: features2,
-      minorAlleleFrequencyFilter: 0.2,
+      minMinorAlleleFrequency: 0.2,
     })
 
     expect(result).toHaveLength(1)
@@ -450,7 +450,7 @@ describe('getFilteredVariants', () => {
   it('handles empty feature list', () => {
     const result = getFilteredVariants({
       features: [],
-      minorAlleleFrequencyFilter: 0.01,
+      minMinorAlleleFrequency: 0.01,
     })
 
     expect(result).toHaveLength(0)
@@ -478,8 +478,8 @@ describe('getFilteredVariants', () => {
 
     const result = getFilteredVariants({
       features,
-      minorAlleleFrequencyFilter: 0,
-      maxMissingnessFilter: 0.5,
+      minMinorAlleleFrequency: 0,
+      maxMissingness: 0.5,
     })
 
     expect(result).toHaveLength(1)
@@ -500,15 +500,15 @@ describe('getFilteredVariants', () => {
     expect(
       getFilteredVariants({
         features,
-        minorAlleleFrequencyFilter: 0,
-        maxMissingnessFilter: 1,
+        minMinorAlleleFrequency: 0,
+        maxMissingness: 1,
       }),
     ).toHaveLength(1)
     // undefined behaves the same as the no-filter ceiling
     expect(
       getFilteredVariants({
         features,
-        minorAlleleFrequencyFilter: 0,
+        minMinorAlleleFrequency: 0,
       }),
     ).toHaveLength(1)
   })
@@ -528,8 +528,8 @@ describe('getFilteredVariants', () => {
     expect(
       getFilteredVariants({
         features,
-        minorAlleleFrequencyFilter: 0,
-        maxMissingnessFilter: 0.4,
+        minMinorAlleleFrequency: 0,
+        maxMissingness: 0.4,
       }),
     ).toHaveLength(1)
   })

@@ -175,7 +175,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           // shorter than raising the height, in a figure whose subject is the
           // 2504-row heatmap underneath.
           //
-          // NOT `showOnlyGenes`, which was rendered and compared: its gene-like
+          // NOT `genes: 'only'`, which was rendered and compared: its gene-like
           // set admits 'pseudogene' by name (featureAdmission.ts), so both extra
           // rows survive it and the frame is pixel-identical — with a "One
           // isoform" chip added.
