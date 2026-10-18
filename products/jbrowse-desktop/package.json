@@ -112,8 +112,8 @@
     "@electron/packager": "^20.3.0",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/selenium-webdriver": "^4.35.7",
-    "electron": "^44.8.0",
-    "electron-chromedriver": "^44.8.0",
+    "electron": "^44.9.0",
+    "electron-chromedriver": "^44.9.0",
     "esbuild": "^0.28.2",
     "selenium-webdriver": "^4.51.0"
   },
