@@ -108,9 +108,9 @@ export const alignmentsFilterConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
-     * `only`, `exclude`, or unset for unfiltered: reads whose mate and supplementary segments are all outside the window.
+     * `only`, `exclude`, or unset for unfiltered: reads with no other alignment of themselves in the window, no mate and no split or supplementary segment there. A mate unmapped, on another chromosome or outside the window counts, as does a single-end read with no SA tag.
      */
-    singletons: {
+    alone: {
       type: 'maybeStringEnum',
       model: types.enumeration('CategoryFilter', [...CATEGORY_FILTERS]),
       description: 'only, exclude, or unset for unfiltered',
@@ -169,7 +169,7 @@ export function readFilterOf(
     tags: readConfObject(filter, 'tags'),
     spliced: readConfObject(filter, 'spliced'),
     svSignal: readConfObject(filter, 'svSignal'),
-    singletons: readConfObject(filter, 'singletons'),
+    alone: readConfObject(filter, 'alone'),
     split: readConfObject(filter, 'split'),
   }
 }

@@ -514,12 +514,7 @@ interface Modifier {
 // pull the alignments plugin into the CLI's own bundle. `Covers` below is what
 // makes the list equivalent to importing it — a fifth category fails the build
 // here and names itself.
-const READ_CATEGORY_KEYS = [
-  'spliced',
-  'svSignal',
-  'singletons',
-  'split',
-] as const
+const READ_CATEGORY_KEYS = ['spliced', 'svSignal', 'alone', 'split'] as const
 export type AssertAllReadCategoriesListed = AssertTrue<
   Covers<ReadCategoryKey, typeof READ_CATEGORY_KEYS>
 >

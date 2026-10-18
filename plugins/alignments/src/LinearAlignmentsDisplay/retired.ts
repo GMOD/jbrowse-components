@@ -260,6 +260,11 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   sortedBy: sortSlot,
   trackMaxHeight: value => ({ pileup: { maxLayoutHeight: value } }),
   hideMismatchesSetting: value => ({ pileup: { showMismatches: !value } }),
+  // the read cloud's "Show singletons" and "Show proper pairs"
+  drawSingletons: value =>
+    value === false ? { filter: { alone: 'exclude' } } : {},
+  drawProperPairs: value =>
+    value === false ? { readConnections: { showOrdinaryPairs: false } } : {},
 }
 
 // The pre-4.x display was a container whose track-menu settings sat on these

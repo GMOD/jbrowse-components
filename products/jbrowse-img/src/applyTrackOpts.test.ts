@@ -302,7 +302,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   // script pass a category through from a variable that may be empty.
   test('a category set to all stores nothing', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['singletons:all']).snap.filter,
+      buildDisplaySnapshot('alignments', ['alone:all']).snap.filter,
     ).toEqual({})
   })
 

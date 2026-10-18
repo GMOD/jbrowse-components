@@ -3713,7 +3713,7 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "singletons",
+              "name": "alone",
               "type": "(CategoryFilter | undefined)"
             },
             {
@@ -4518,7 +4518,7 @@ export const configManifest: ConfigManifest = {
               "type": "(CategoryFilter | undefined)"
             },
             {
-              "name": "singletons",
+              "name": "alone",
               "type": "(CategoryFilter | undefined)"
             },
             {
@@ -8904,6 +8904,8 @@ export const configManifest: ConfigManifest = {
       "SNPCoverageDisplay",
       "colorBy",
       "colorBySetting",
+      "drawProperPairs",
+      "drawSingletons",
       "filterBy",
       "filterBySetting",
       "hideMismatchesSetting",

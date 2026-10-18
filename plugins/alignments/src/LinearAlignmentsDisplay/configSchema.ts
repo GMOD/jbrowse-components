@@ -141,7 +141,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * Every test the display applies, read by every part that draws the
        * data a test names, and every test must hold. The read members (the
        * flag masks, `minMapq`, `readName`, `tags` and the read categories
-       * `spliced`, `svSignal`, `singletons` and `split`, each `"only"`,
+       * `spliced`, `svSignal`, `alone` and `split`, each `"only"`,
        * `"exclude"` or unset) run before every band, so coverage counts only
        * the reads they pass; by default `flagExclude` drops unmapped,
        * QC-failed and duplicate reads (1540). `junctions` tests the splice

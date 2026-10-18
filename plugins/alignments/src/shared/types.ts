@@ -199,9 +199,9 @@ export interface ReadFilter {
   // a paired primary read the aligner did not call concordant, with both ends
   // placed (`svSignalTier`).
   svSignal?: CategoryFilter
-  // A read whose mate and supplementary segments are all absent from this
-  // window, so it stands alone (samtools calls these "singletons").
-  singletons?: CategoryFilter
+  // A read with no other alignment of itself in this window: no mate and no
+  // split or supplementary segment here.
+  alone?: CategoryFilter
   // Part of a chimeric/split alignment: the aligner emitted a supplementary
   // segment for the read (SAM flag 0x800), read off the SA tag rather than off
   // what this window happened to fetch.
@@ -210,7 +210,7 @@ export interface ReadFilter {
 
 export const READ_CATEGORY_KEYS = [
   'svSignal',
-  'singletons',
+  'alone',
   'split',
   'spliced',
 ] as const satisfies readonly (keyof ReadFilter)[]

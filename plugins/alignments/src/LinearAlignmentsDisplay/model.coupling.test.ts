@@ -1005,7 +1005,7 @@ describe('read categories + filter submenu', () => {
     const filters = menuSubItems(items, 'Filter by...')
     for (const noun of [
       'SV evidence',
-      'Reads without a mate',
+      'Reads alone in the window',
       'Split alignments',
       'Spliced reads',
     ]) {

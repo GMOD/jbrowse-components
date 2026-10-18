@@ -1,6 +1,6 @@
 ---
 name: category-filters-leave-coverage-whole
-description: The category filters (`svSignal`, `split`, `spliced`, `singletons`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Idea 1 landed as ADR-229 and ADR-230 declined Idea 3; Idea 2 is left.
+description: The category filters (`svSignal`, `split`, `spliced`, `alone`, `readName`) stop thinning the coverage band, with the tooltip and SNP hit test counting every read through a per-position table. Idea 1 landed as ADR-229 and ADR-230 declined Idea 3; Idea 2 is left.
 ---
 
 # Category filters that leave coverage whole
@@ -31,7 +31,7 @@ One worker call per displayed region:
    `readName`, `tags` and `spliced`.
 2. **`sampleFeatures`:** dedupe, then `minMapq` per record.
 3. **Insert-size stats** (`computePairedInsertSizeStats`) over that sample.
-4. **`selectChains`:** `singletons`, `svSignal` and `split` per chain grouped
+4. **`selectChains`:** `alone`, `svSignal` and `split` per chain grouped
    by name.
 5. **`partitionFeatures`** cuts facet sections; **`extractFeatureArrays`**
    fills `readCategoryBits` per section.
@@ -62,7 +62,7 @@ coverage whole. A user who wants one category's depth facets by it.
 
 | Thins coverage (which reads count) | Leaves it whole (which reads are drawn) |
 | --- | --- |
-| `flagInclude`, `flagExclude`, `minMapq`, `tags` | `svSignal`, `split`, `spliced`, `singletons`, `readName` |
+| `flagInclude`, `flagExclude`, `minMapq`, `tags` | `svSignal`, `split`, `spliced`, `alone`, `readName` |
 
 **The worker change**, after ADR-112's rule that a layer owns its transform:
 

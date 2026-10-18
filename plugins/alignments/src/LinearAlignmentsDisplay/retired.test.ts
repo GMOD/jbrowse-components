@@ -152,6 +152,19 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
   })
 })
 
+// v4's read cloud toggled these off from its menu; on, they asked for nothing
+test("the read cloud's hidden singletons and proper pairs lift", () => {
+  expect(
+    retiredState.lift({ drawSingletons: false, drawProperPairs: false }),
+  ).toEqual({
+    filter: { alone: 'exclude' },
+    readConnections: { showOrdinaryPairs: false },
+  })
+  expect(
+    retiredState.lift({ drawSingletons: true, drawProperPairs: true }),
+  ).toEqual({})
+})
+
 // a v4 filterBy was the whole filter, so the display's own replaces the
 // sub-node's rather than inheriting its tag filter
 test("an instance's v4 filter replaces its sub-node's whole", () => {

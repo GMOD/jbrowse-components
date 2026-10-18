@@ -80,7 +80,7 @@ function mateKey(f: Feature) {
   return `${name}\0${Math.min(start, nextPos)}\0${Math.max(start, nextPos)}`
 }
 
-function isSingletonChain(mateCounts: Map<string, number>) {
+function isAloneChain(mateCounts: Map<string, number>) {
   return (chain: Feature[]) =>
     chain.length === 1 && mateCounts.get(mateKey(chain[0]!)) === 1
 }
@@ -131,8 +131,8 @@ export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
 //
 // PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
 // "chain of one" means "one alignment in THIS window", and in a multi-region
-// view a read whose two alignments land in different windows is a singleton in
-// both. `singletons` is absent by default, so this only bites a user who sets
+// view a read whose two alignments land in different windows is alone in both.
+// `alone` is absent by default, so this only bites a user who sets
 // it; the menu's help text names the scope for that reason. `split` is the one
 // that routes around it, by reading the SA tag rather than counting what this
 // call happened to fetch (`chainIsSplit`) — the same move is not available for
@@ -140,26 +140,18 @@ export function sampleFeatures(features: Feature[], filterBy?: ReadFilter) {
 // moving the filter to the main thread, where the coverage histogram these also
 // thin is no longer being computed.
 export function selectChains(sample: Feature[], filterBy?: ReadFilter) {
-  const { svSignal, singletons, split } = filterBy ?? {}
-  if (
-    svSignal === undefined &&
-    singletons === undefined &&
-    split === undefined
-  ) {
+  const { svSignal, alone, split } = filterBy ?? {}
+  if (svSignal === undefined && alone === undefined && split === undefined) {
     return sample
   }
   let rawChains = Object.values(groupBy(sample, featureChainKey))
-  if (singletons !== undefined) {
+  if (alone !== undefined) {
     const mateCounts = new Map<string, number>()
     for (const f of sample) {
       const key = mateKey(f)
       mateCounts.set(key, (mateCounts.get(key) ?? 0) + 1)
     }
-    rawChains = keepCategory(
-      rawChains,
-      singletons,
-      isSingletonChain(mateCounts),
-    )
+    rawChains = keepCategory(rawChains, alone, isAloneChain(mateCounts))
   }
   rawChains = keepCategory(rawChains, svSignal, isSvSignalChain)
   rawChains = keepCategory(rawChains, split, chainIsSplit)

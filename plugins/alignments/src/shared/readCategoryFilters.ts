@@ -47,18 +47,19 @@ export const READ_CATEGORIES = [
       'window holds.',
   },
   {
-    key: 'singletons',
-    noun: 'Reads without a mate',
-    only: 'Only reads without a mate',
-    exclude: 'Hide reads without a mate',
+    key: 'alone',
+    noun: 'Reads alone in the window',
+    only: 'Only reads alone in the window',
+    exclude: 'Hide reads alone in the window',
     helpText:
-      'Reads whose mate and split/supplementary segments are all absent from ' +
-      'the same window, so the read stands alone (samtools calls these ' +
-      '"singletons"). Grouped by read name, so it applies to a plain pileup ' +
-      'too. "Window", not "view": each displayed region is fetched and ' +
-      'grouped on its own, so in a multi-region view (a fusion with one ' +
-      'window per partner) a read whose two alignments land in different ' +
-      'windows counts as alone in both.',
+      'Reads with no other alignment of the same read in the window: no ' +
+      'mate and no split or supplementary segment here. That takes in a ' +
+      'mate that is unmapped, on another chromosome or outside the window, ' +
+      'and a single-end read with no SA tag. Grouped by read name, so it ' +
+      'applies to a plain pileup too. "Window", not "view": each displayed ' +
+      'region is fetched and grouped on its own, so in a multi-region view ' +
+      '(a fusion with one window per partner) a read whose two alignments ' +
+      'land in different windows counts as alone in both.',
   },
   {
     key: 'split',

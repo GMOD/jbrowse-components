@@ -261,7 +261,7 @@ describe('filterChainFeatures split', () => {
   })
 })
 
-describe('filterChainFeatures singletons', () => {
+describe('filterChainFeatures alone', () => {
   const lone = new SimpleFeature({
     uniqueId: 'lone-1',
     refName: 'ctgA',
@@ -275,14 +275,14 @@ describe('filterChainFeatures singletons', () => {
   test('"exclude" drops chains of one and keeps the paired ones', () => {
     const features = [lone, ...pair('mated', 'F1R2', 0)]
     expect(
-      names(filterChainFeatures(features, filt({ singletons: 'exclude' }))),
+      names(filterChainFeatures(features, filt({ alone: 'exclude' }))),
     ).toEqual(['mated'])
   })
 
   test('"only" keeps the chains of one', () => {
     const features = [lone, ...pair('mated', 'F1R2', 0)]
     expect(
-      names(filterChainFeatures(features, filt({ singletons: 'only' }))),
+      names(filterChainFeatures(features, filt({ alone: 'only' }))),
     ).toEqual(['lone'])
   })
 
@@ -306,7 +306,7 @@ describe('filterChainFeatures singletons', () => {
       secondary('multi-2', 1300, 1000),
       secondary('multi-3', 5000, 9000),
     ]
-    const kept = filterChainFeatures(features, filt({ singletons: 'exclude' }))
+    const kept = filterChainFeatures(features, filt({ alone: 'exclude' }))
     expect(kept.map(f => f.id())).toEqual(['multi-1', 'multi-2'])
   })
 })
@@ -319,12 +319,12 @@ test('filterChainFeatures ANDs the categories', () => {
     ...pair('plainDiscordant', 'F1F2', PAIRED | PROPER_PAIR),
     lone!,
   ]
-  // svSignal:only drops plainProper; singletons:exclude drops the lone read
+  // svSignal:only drops plainProper; alone:exclude drops the lone read
   expect(
     names(
       filterChainFeatures(
         features,
-        filt({ svSignal: 'only', singletons: 'exclude' }),
+        filt({ svSignal: 'only', alone: 'exclude' }),
       ),
     ),
   ).toEqual(['plainDiscordant'])

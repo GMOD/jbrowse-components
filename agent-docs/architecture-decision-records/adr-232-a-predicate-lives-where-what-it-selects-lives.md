@@ -107,7 +107,7 @@ review of the revised plan.
 ```js
 filter: {
   flagInclude, flagExclude, minMapq, tags,          // which reads count
-  readName, svSignal, split, spliced, singletons,   // which reads draw
+  readName, svSignal, split, spliced, alone,        // which reads draw
   junctions: { minReads, nonCanonical },
   connections: { interchrom, offscreenMates, minInterchromReads },
 },
@@ -181,6 +181,7 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | Item | Call |
 | --- | --- |
 | `filter.tagFilters` → `filter.tags` | now, with the alignments filter |
+| `filter.singletons` → `filter.alone` | now: samtools' singletons are a paired read with its mate unmapped, a subset, and `filter.connections.offscreenMates` names a narrower set; v4's read cloud `drawSingletons: false` lifts into it |
 | `squashToHeight` → `heightMode: 'fit'` | now: beta-only, no external writer |
 | `displayDirectionalChevrons` → `showChevrons` | now, with a `retired` lift (v4.3.0) |
 | canvas `displayMode`, which holds size presets and `collapsed` | later, with a lift |
