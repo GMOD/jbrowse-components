@@ -122,4 +122,4 @@ export {
   plotOf,
   plotWrites,
 } from './plot.ts'
-export type { Plot, PlotExample } from './plot.ts'
+export type { Plot, PlotExample, PlotWriteOptions } from './plot.ts'

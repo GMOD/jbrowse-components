@@ -23,7 +23,11 @@ import { ElementId } from '../../util/types/mst.ts'
 import { displaySetterName } from '../../util/unknownSnapshotKeys.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
-import type { Plot, PlotExample } from '../../configuration/plot.ts'
+import type {
+  Plot,
+  PlotExample,
+  PlotWriteOptions,
+} from '../../configuration/plot.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
@@ -422,10 +426,11 @@ function stateModelFactory() {
        * A draft as the config would hold it, merged over `plot`, throwing what
        * a config file would be refused for. Nothing on the display changes.
        */
-      liftPlot(draft: Plot): AnyConfigurationModel {
+      liftPlot(draft: Plot, options?: PlotWriteOptions): AnyConfigurationModel {
         return liftPlotDraft(
           (self as unknown as DisplayModel).configuration,
           draft,
+          options,
         )
       },
       /**
@@ -434,9 +439,13 @@ function stateModelFactory() {
        * `liftPlot` does: `configProblemsOf` the lifted draft. The draft still
        * applies, and draws what it can.
        */
-      plotProblems(draft: Plot): string[] {
+      plotProblems(draft: Plot, options?: PlotWriteOptions): string[] {
         return self.configProblemsOf(
-          liftPlotDraft((self as unknown as DisplayModel).configuration, draft),
+          liftPlotDraft(
+            (self as unknown as DisplayModel).configuration,
+            draft,
+            options,
+          ),
         )
       },
       /**
@@ -444,10 +453,14 @@ function stateModelFactory() {
        * What applying a draft would write, by setting: the lifted value where
        * it differs from `plot`, `null` where it resets one. Throws a refusal.
        */
-      plotWrites(draft: Plot): Record<string, unknown> {
+      plotWrites(
+        draft: Plot,
+        options?: PlotWriteOptions,
+      ): Record<string, unknown> {
         return plotWritesOf(
           (self as unknown as DisplayModel).configuration,
           draft,
+          options,
         )
       },
     }))
@@ -458,12 +471,16 @@ function stateModelFactory() {
        * stays, `null` resets one, a channel (`writes: 'whole'`, such as
        * `color` or `facet`) is replaced whole, and any other object takes the
        * members the draft names, so a `filter` list keeps the filter's other
-       * tests. A draft the schema refuses, or naming a setting outside the
-       * plot, throws before anything is written.
+       * tests. Under `whole` the draft is the plot entire, as the "Edit
+       * plot..." text is: a setting it leaves out resets. A draft the schema
+       * refuses, or naming a setting outside the plot, throws before anything
+       * is written.
        */
-      applyPlot(draft: Plot) {
+      applyPlot(draft: Plot, options?: PlotWriteOptions) {
         const { configuration } = self as unknown as DisplayModel
-        for (const [key, value] of Object.entries(self.plotWrites(draft))) {
+        for (const [key, value] of Object.entries(
+          self.plotWrites(draft, options),
+        )) {
           setConf(configuration, key, value)
         }
       },

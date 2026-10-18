@@ -55,10 +55,10 @@ stacks one section per strand and colors each feature by its type.
 
 ## Writing and applying
 
-- A setting left out stays as it is, and so does a member left out of `filter`.
-- `null` resets a setting, or one member of `filter`.
-- `color`, `facet`, `rows`, `sort` and each axis under `scales` are replaced
-  whole: a member you delete from one of them returns to its default.
+- The text is the whole plot: a setting or a member you delete returns to its
+  default.
+- An example lands over the plot as it stands and changes only what it names, so
+  an example writing a `filter` list keeps the filter's other tests in the text.
 - A string is a setting's one-value form, such as a facet's field or a constant
   color.
 

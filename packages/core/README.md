@@ -1280,15 +1280,15 @@ file is refused for throws, a key outside the plot included. The draft writes
 over the plot as a settings bag does: a setting it leaves out stays, `null`
 resets one, an object declaring `writes: 'whole'` replaces the setting, and any
 other object takes the members it names, a `null` member resetting that member.
-The node is never attached, so nothing on the display is touched; a display
-reads its typed members off it. The draft is copied first, since MST freezes
-what it creates from.
+Under `whole` the draft is the plot entire. The node is never attached, so
+nothing on the display is touched; a display reads its typed members off it. The
+draft is copied first, since MST freezes what it creates from.
 
 ```js
 import { liftPlot } from '@jbrowse/core/configuration'
 
 // type signature
-(conf: AnyConfigurationModel, draft: Plot) => AnyConfigurationModel
+(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => AnyConfigurationModel
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
@@ -1624,18 +1624,25 @@ import { plotOf } from '@jbrowse/core/configuration'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
 
+### PlotWriteOptions
+
+How a draft lands on the plot. By default it patches, as a settings bag does;
+`whole` takes it for the whole plot, as the "Edit plot..." text is.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)
+
 ### plotWrites
 
 What applying a draft writes: each setting whose lifted value differs from the
 plot, as the lifted value, and `null` for one it resets. A value spelled another
-way but lifting to the same setting writes nothing. Throws a refusal before
-anything is written.
+way but lifting to the same setting writes nothing. Under `whole`, a setting the
+draft leaves out writes its reset. Throws a refusal before anything is written.
 
 ```js
 import { plotWrites } from '@jbrowse/core/configuration'
 
 // type signature
-(conf: AnyConfigurationModel, draft: Plot) => Record<string, unknown>
+(conf: AnyConfigurationModel, draft: Plot, options?: PlotWriteOptions) => Record<string, unknown>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/plot.ts)

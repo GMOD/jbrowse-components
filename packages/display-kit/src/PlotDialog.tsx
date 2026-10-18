@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { parsePlot } from '@jbrowse/core/configuration'
+import { parsePlot, plotOf } from '@jbrowse/core/configuration'
 import {
   ExternalLink,
   MonospaceTextField,
@@ -16,16 +16,26 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { Plot, PlotExample } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  Plot,
+  PlotExample,
+  PlotWriteOptions,
+} from '@jbrowse/core/configuration'
 
 export interface PlotDialogHost {
   plotKeys: string[]
   plot: Plot
+  /** A draft as the config would hold it; throws a refusal. */
+  liftPlot: (draft: Plot) => AnyConfigurationModel
   /** Throws what a config file would be refused for. */
-  plotProblems: (draft: Plot) => string[]
+  plotProblems: (draft: Plot, options?: PlotWriteOptions) => string[]
   /** What applying would write, by setting, `null` for a reset. */
-  plotWrites: (draft: Plot) => Record<string, unknown>
-  applyPlot: (draft: Plot) => void
+  plotWrites: (
+    draft: Plot,
+    options?: PlotWriteOptions,
+  ) => Record<string, unknown>
+  applyPlot: (draft: Plot, options?: PlotWriteOptions) => void
   /** The display type's worked examples, each a button filling the text. */
   plotExamples: readonly PlotExample[]
   /** The display type's page in the config reference. */
@@ -51,17 +61,30 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// An example over the plot as it stands, so the text shows everything that
-// applying it would leave in place.
-function withExample(plot: Plot, example: PlotExample) {
-  return JSON.stringify({ ...plot, ...JSON.parse(example.plot) }, null, 2)
+// The text is the whole plot: a line deleted from it resets that setting.
+const WHOLE: PlotWriteOptions = { whole: true }
+
+// A draft laid over the plot as a settings bag lands, so the text shows
+// everything applying it leaves in place, a filter's other tests included.
+// A draft the schema refuses lands key by key instead, so the box shows it and
+// says why under it.
+function plotText(host: PlotDialogHost, draft?: Plot) {
+  let plot = host.plot
+  if (draft) {
+    try {
+      plot = plotOf(host.liftPlot(draft))
+    } catch {
+      plot = { ...host.plot, ...draft }
+    }
+  }
+  return JSON.stringify(plot, null, 2)
 }
 
 function readDraft(host: PlotDialogHost, text: string) {
   try {
     const plot = parsePlot(text, host.plotKeys)
-    const problems = host.plotProblems(plot)
-    const writes = Object.entries(host.plotWrites(plot))
+    const problems = host.plotProblems(plot, WHOLE)
+    const writes = Object.entries(host.plotWrites(plot, WHOLE))
     const sets = writes.filter(([, v]) => v !== null).map(([k]) => k)
     const clears = writes.filter(([, v]) => v === null).map(([k]) => k)
     const summary =
@@ -87,9 +110,7 @@ const PlotDialog = observer(function PlotDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [text, setText] = useState(() =>
-    JSON.stringify({ ...model.plot, ...seed }, null, 2),
-  )
+  const [text, setText] = useState(() => plotText(model, seed))
   const [showHelp, setShowHelp] = useState(false)
   const { plot, problems, summary, error } = readDraft(model, text)
   const { openPlotForm } = model
@@ -118,7 +139,7 @@ const PlotDialog = observer(function PlotDialog({
       }
       onSubmit={() => {
         if (plot) {
-          model.applyPlot(plot)
+          model.applyPlot(plot, WHOLE)
           handleClose()
         }
       }}
@@ -150,9 +171,9 @@ const PlotDialog = observer(function PlotDialog({
               </li>
             ))}
           </ul>
-          A setting or member left out stays as it is, and <code>null</code>{' '}
-          resets it. An object whose members are alternatives, such as a color
-          or a facet, is replaced whole.
+          The text is the whole plot: a setting or member deleted from it
+          returns to its default. An example lands over the plot as it stands,
+          so the text keeps what the example leaves alone.
         </DialogContentText>
       </Collapse>
       {model.plotExamples.length ? (
@@ -167,7 +188,7 @@ const PlotDialog = observer(function PlotDialog({
                 variant="outlined"
                 sx={{ textTransform: 'none' }}
                 onClick={() => {
-                  setText(withExample(model.plot, example))
+                  setText(plotText(model, JSON.parse(example.plot)))
                 }}
               >
                 {example.description}

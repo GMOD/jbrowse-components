@@ -8,6 +8,11 @@ summary: "Every display's grammar settings are one object, its `plot`: the slots
 ## Status
 
 Accepted (2026-10-01). Step 1 of the grammar-unity handoff's order of work.
+Amended by [ADR-232](adr-232-a-predicate-lives-where-what-it-selects-lives.md):
+the hand list gives way to declared plot words, and a draft patches the plot
+as a settings bag does (a `writes: 'members'` object takes the members named),
+while the dialog's text states the whole plot (`applyPlot(draft, { whole:
+true })`, a deleted line resetting).
 Supersedes the JSON-box halves of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) (`parseChannelSpec`
 over `preProcessConfigSnapshot`) and

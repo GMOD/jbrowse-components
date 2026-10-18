@@ -23,6 +23,11 @@ function setup({
   const model = {
     plotKeys: ['marks', 'facet', 'rows', 'scales'],
     plot,
+    // no schema here, so a draft lands over the plot key by key; a display's
+    // own lift is pinned in plugins/canvas's plotDialog.test.tsx
+    liftPlot: () => {
+      throw new Error('no schema')
+    },
     plotProblems: jest.fn(plotProblems),
     plotWrites: (draft: Plot) =>
       Object.fromEntries(
@@ -112,7 +117,7 @@ it('says what a draft sets and resets, and applies it', () => {
   type(draft)
   expect(screen.getByText('Sets facet. Resets rows')).toBeInTheDocument()
   fireEvent.click(apply())
-  expect(model.applyPlot).toHaveBeenCalledWith(draft)
+  expect(model.applyPlot).toHaveBeenCalledWith(draft, { whole: true })
   expect(handleClose).toHaveBeenCalled()
 })
 
@@ -161,7 +166,10 @@ it('applies a draft whose rules report a problem, having said so', () => {
   )
   expect(apply()).toBeEnabled()
   fireEvent.click(apply())
-  expect(model.applyPlot).toHaveBeenCalledWith({ marks: [{ mark: 'bar' }] })
+  expect(model.applyPlot).toHaveBeenCalledWith(
+    { marks: [{ mark: 'bar' }] },
+    { whole: true },
+  )
 })
 
 it('leads back to the form with the draft, unapplied', () => {

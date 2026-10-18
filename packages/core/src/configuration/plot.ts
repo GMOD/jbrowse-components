@@ -150,12 +150,35 @@ export function parsePlot(text: string, keys: readonly string[]): Plot {
   return parsed as Plot
 }
 
+/**
+ * #api core/configuration
+ * How a draft lands on the plot. By default it patches, as a settings bag
+ * does; `whole` takes it for the whole plot, as the "Edit plot..." text is.
+ */
+export interface PlotWriteOptions {
+  /**
+   * A setting the draft leaves out resets, and each setting it names is
+   * replaced by what it says, so the draft states the plot entire.
+   */
+  whole?: boolean
+}
+
 // as a settings bag writes, so an object declaring `writes: 'members'` takes
 // the members a draft names and keeps the rest
-function merged(conf: AnyConfigurationModel, draft: Plot, current: Plot) {
+function merged(
+  conf: AnyConfigurationModel,
+  draft: Plot,
+  current: Plot,
+  { whole = false }: PlotWriteOptions,
+) {
   const stated = Object.fromEntries(
     Object.entries(draft).filter(([, value]) => value !== undefined),
   )
+  if (whole) {
+    return Object.fromEntries(
+      Object.entries(stated).filter(([, value]) => value !== null),
+    )
+  }
   const out = mergeConfSettings(getType(conf), current, stated)
   for (const [key, value] of Object.entries(stated)) {
     if (value === null) {
@@ -173,7 +196,7 @@ function merged(conf: AnyConfigurationModel, draft: Plot, current: Plot) {
  * The draft writes over the plot as a settings bag does: a setting it leaves
  * out stays, `null` resets one, an object declaring `writes: 'whole'` replaces
  * the setting, and any other object takes the members it names, a `null`
- * member resetting that member.
+ * member resetting that member. Under `whole` the draft is the plot entire.
  * The node is never attached, so nothing on the display is touched; a display
  * reads its typed members off it. The draft is copied first, since MST
  * freezes what it creates from.
@@ -181,12 +204,13 @@ function merged(conf: AnyConfigurationModel, draft: Plot, current: Plot) {
 export function liftPlot(
   conf: AnyConfigurationModel,
   draft: Plot,
+  options: PlotWriteOptions = {},
 ): AnyConfigurationModel {
   checkKeys(draft, plotKeysOf(conf))
   return refusingUndeclaredKeys(() =>
     getType(conf).create({
       displayId: LIFT_ID,
-      ...structuredClone(merged(conf, draft, plotOf(conf))),
+      ...structuredClone(merged(conf, draft, plotOf(conf), options)),
     }),
   ) as AnyConfigurationModel
 }
@@ -196,20 +220,24 @@ export function liftPlot(
  * What applying a draft writes: each setting whose lifted value differs from
  * the plot, as the lifted value, and `null` for one it resets. A value
  * spelled another way but lifting to the same setting writes nothing.
+ * Under `whole`, a setting the draft leaves out writes its reset.
  * Throws a refusal before anything is written.
  */
 export function plotWrites(
   conf: AnyConfigurationModel,
   draft: Plot,
+  options: PlotWriteOptions = {},
 ): Record<string, unknown> {
   const current = plotOf(conf)
-  const lifted = plotOf(liftPlot(conf, draft))
+  const lifted = plotOf(liftPlot(conf, draft, options))
+  const keys = options.whole
+    ? new Set([...Object.keys(current), ...Object.keys(draft)])
+    : Object.keys(draft).filter(key => draft[key] !== undefined)
   const writes: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(draft)) {
-    if (value === undefined || compareStructural(lifted[key], current[key])) {
-      continue
+  for (const key of keys) {
+    if (!compareStructural(lifted[key], current[key])) {
+      writes[key] = lifted[key] ?? null
     }
-    writes[key] = value === null ? null : (lifted[key] ?? null)
   }
   return writes
 }

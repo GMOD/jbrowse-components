@@ -95,10 +95,12 @@ review of the revised plan.
    merges member by member. A channel whose members are alternatives (every
    color object, `facet`, `rows`, `sort`, `rowColor`) writes whole. A shorthand
    may also be a list, so `filter: ['jexl:…']` stays legal and merges as
-   `{ expressions: [...] }`. A plot write (`applyPlot`, "Edit plot...")
-   follows the same mode, so the dialog's "QUAL above 30" example writes
-   `filter.expressions` and leaves the MAF and missingness thresholds; a
-   `null` member resets that member.
+   `{ expressions: [...] }`. An agent's plot write (`applyPlot`) follows the same mode,
+   so a `filter` list writes `filter.expressions` and leaves the MAF and
+   missingness thresholds, a `null` member resetting that member. The "Edit
+   plot..." text is the whole plot instead (`{ whole: true }`): an example
+   lands over the plot as a bag does, so the text shows what it leaves, and a
+   line deleted from the text resets.
 
 ### The alignments display
 
