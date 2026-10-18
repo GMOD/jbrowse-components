@@ -2,11 +2,13 @@ import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 
 import {
+  colorPaintOf,
   dnDsRatio,
   rampNorm,
   resolveNumericMode,
   strandLevels,
 } from './colorRamps.ts'
+import { syntenyColorConfigSchema } from './syntenyColorConfigSchema.ts'
 
 import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 
@@ -198,9 +200,27 @@ describe('a declared ramp', () => {
       [0, 0, 0, 255],
       [255, 255, 255, 255],
     ])
-    expect(ramp('dnds', {}, { reverse: true }).stops).toEqual(
+    expect(ramp('dnds', {}, { reverse: false }).stops).toEqual(
       ramp('dnds').stops.toReversed(),
     )
+  })
+
+  test('dN/dS turns redyellowblue round, so low reads blue', () => {
+    expect(ramp('dnds').stops).toEqual(
+      colorRampStops({ scheme: 'redyellowblue' }).toReversed(),
+    )
+    expect(ramp('dnds').stops[0]).toEqual([69, 117, 180, 255])
+  })
+
+  test("a color config's unset reverse leaves the dN/dS preset's turn in place", () => {
+    const paint = (snap: Record<string, unknown>) =>
+      colorPaintOf(syntenyColorConfigSchema.create(snap))
+    expect(ramp('dnds', {}, paint({ field: 'dnds' })).stops).toEqual(
+      ramp('dnds').stops,
+    )
+    expect(
+      ramp('dnds', {}, paint({ field: 'dnds', reverse: false })).stops,
+    ).toEqual(ramp('dnds').stops.toReversed())
   })
 
   test("a pinned end moves the domain and names itself in the preset's format", () => {

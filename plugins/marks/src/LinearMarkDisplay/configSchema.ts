@@ -466,7 +466,7 @@ export function configSchemaFactory() {
       facet: markFacetSchema,
       /**
        * #slot rows
-       * One row per value of a field, for bar and point marks: `"source"` over
+       * One row per value of a field: `"source"` over
        * a multi-BigWig is one xyplot per file. The worker splits the features
        * on the field as it does for `facet`, and the rows take the tree
        * sidebar, the row labels, clustering and the arrangement dialog, whose

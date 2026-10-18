@@ -181,7 +181,8 @@ export const MEASURE_FIELD_PRESETS = {
     domainMin: 0,
     domainMax: 2,
     domainMid: 1,
-    scheme: 'blueyellowred',
+    scheme: 'redyellowblue',
+    reverse: true,
     title: 'dN/dS',
   },
   syntenicDepth: {

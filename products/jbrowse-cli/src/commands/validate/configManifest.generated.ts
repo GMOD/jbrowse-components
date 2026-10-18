@@ -3203,7 +3203,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -3484,7 +3484,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -3863,7 +3863,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -4652,7 +4652,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -5142,7 +5142,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -5205,7 +5205,8 @@ export const configManifest: ConfigManifest = {
               "domainMin": 0,
               "domainMax": 2,
               "domainMid": 1,
-              "scheme": "blueyellowred",
+              "scheme": "redyellowblue",
+              "reverse": true,
               "title": "dN/dS"
             },
             "syntenicDepth": {
@@ -5391,7 +5392,7 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "reverse",
-                          "type": "boolean"
+                          "type": "(boolean | undefined)"
                         },
                         {
                           "name": "domainMid",
@@ -5729,7 +5730,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -6419,7 +6420,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "reverse",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "domainMid",
@@ -7278,7 +7279,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "reverse",
-                      "type": "boolean"
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "domainMid",
@@ -7809,7 +7810,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "reverse",
-                      "type": "boolean"
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "domainMid",

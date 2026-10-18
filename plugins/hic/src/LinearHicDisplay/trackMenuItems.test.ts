@@ -106,7 +106,7 @@ describe('hic track menu shape', () => {
       ['Redblue', false],
       ['Purpleorange', false],
       ['Redgreyblue', false],
-      ['Blueyellowred', false],
+      ['Redyellowblue', false],
       ['Log scale', false],
       ['Emphasize faint contacts (95th percentile)', true],
     ])

@@ -20,10 +20,12 @@ Most of these displays take a `facet` object: `{ field, domain }`. `field` is a
 feature attribute, a dotted path into a structured one (`INFO.SVTYPE`), or a
 `jexl:` expression — whatever value it returns gets its own section. `domain` is
 a list of values: the ones it names stack first, in that order, and every other
-value found in the data follows, sorted. A value in `domain` that the data never
-produces is simply never drawn — `domain` orders sections, it does not create
-them, so naming one ahead of time costs nothing and refetches nothing when it
-later appears.
+value found in the data follows, sorted. Rows a file lists, such as a VCF's
+samples, a multi-BigWig's subtracks or a MAF's species, keep the file's order
+past the `domain` instead. A value in `domain` that the data never produces is
+simply never drawn — `domain` orders sections, it does not create them, so
+naming one ahead of time costs nothing and refetches nothing when it later
+appears.
 
 A short form exists for the common case of no ordering: `"facet": "tags.HP"` is
 `"facet": { "field": "tags.HP", "domain": [] }`.

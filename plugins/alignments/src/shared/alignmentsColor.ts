@@ -47,7 +47,7 @@ export type AlignmentsColorScale = (typeof ALIGNMENTS_COLOR_SCALES)[number]
 export interface AlignmentsColorSetting extends ColorSetting {
   scale: AlignmentsColorScale | undefined
   scheme: ColorSchemeName | undefined
-  reverse: boolean
+  reverse: boolean | undefined
   domainMin: number | undefined
   domainMax: number | undefined
   domainMid: number | undefined

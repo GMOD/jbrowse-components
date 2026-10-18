@@ -42,8 +42,10 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot domain
-     * The row order: the rows listed lead, in this order, and the rest keep
-     * the order they arrived in. A clustering run, the arrangement dialog and
+     * The row order: the rows listed lead, in this order. The rest keep the
+     * order their source lists them in (a VCF's samples, a multi-BigWig's
+     * subtracks, a MAF's species), or sort, digits by magnitude, where the
+     * rows are values found on features. A clustering run, the arrangement dialog and
      * "Sort rows here" all write it, and a run rotates its dendrogram towards
      * it rather than discarding it.
      */
@@ -51,7 +53,7 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        'the row order: the rows listed lead, in this order, and the rest keep the order they arrived in',
+        "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features",
     },
     /**
      * #slot labels

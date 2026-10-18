@@ -108,8 +108,8 @@ Two names mean something else here. Vega-Lite's `row` is a facet channel; on
 this display `encoding.row` is the band a feature stands in, the integer a
 `pileup` step writes, and the facet is the display's own `facet`. And a
 positional channel is a bare field where Vega-Lite's has a scale, because the y
-scale is the display's `scales.y` and every mark reads one axis. Stacked bars
-and an `opacity` channel have no row: a bar stands on its own from the baseline.
+scale is the display's `scales.y` and every mark reads one axis. There is no
+stacked bar and no `opacity` channel: a bar stands on its own from the baseline.
 A mark's size is `encoding.size`, as its color is `encoding.color`: a number is
 a point's diameter, a rule's thickness or a link's stroke, and a field maps a
 link's width.
@@ -296,9 +296,12 @@ numbers.
 scale, so the legend reads the same table the colors came from. A constant is
 `{ "value": "steelblue" }`, or a `value` holding a jexl callback that answers a
 color per feature; a color name written bare is reported as a field no feature
-holds. A color written with an alpha, `rgba()` or `#rrggbbaa`, paints at that
-opacity, as a constant or as an entry of a `range`, which is how a dense scatter
-or overlapping spans stay readable.
+holds. With `scale` unset, `score` runs through a linear ramp and any other
+field is categorical, a color per distinct value, so a numeric field such as
+RepeatMasker's `milliDiv` needs `"scale": "linear"` written. A color written
+with an alpha, `rgba()` or `#rrggbbaa`, paints at that opacity, as a constant or
+as an entry of a `range`, which is how a dense scatter or overlapping spans stay
+readable.
 
 - **categorical** —
   `{ "field": "strand", "scale": "categorical", "range": ["#1f77b4", "#ff7f0e"] }`
@@ -647,10 +650,9 @@ the shared mechanism across all of them.
 
 ## Rows
 
-The display's `rows` gives each value of a field one row, for bar, point and
-rule marks: over a multi-BigWig, whose features have the file they came from in
-`source`, it draws one xyplot per file, the value axis repeated on each row tall
-enough to hold it.
+The display's `rows` gives each value of a field one row: over a multi-BigWig,
+whose features have the file they came from in `source`, it draws one xyplot per
+file, the value axis repeated on each row tall enough to hold it.
 
 ```json
 "displays": [

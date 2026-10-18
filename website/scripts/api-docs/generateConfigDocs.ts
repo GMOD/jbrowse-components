@@ -311,24 +311,25 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 // definition (`normal`), which reads as a live alternative rather than
 // superseded history. The override's own row already carries the base's other
 // fields, since `resolveInheritedSlotMeta` merges them the way the runtime does.
-function slotsTable(ownSlots: Item[], bases: ConfigWithHeader[]) {
+function slotsTable(name: string, ownSlots: Item[], bases: ConfigWithHeader[]) {
   const seen = new Set<string>()
   const groups = [
-    { slots: filterUnseenByName(seen, ownSlots), from: undefined },
+    { slots: filterUnseenByName(seen, ownSlots), from: undefined, name },
     ...bases.map(config => ({
       slots: filterUnseenByName(seen, config.slots),
       from: `[${config.header.name}](../${config.header.id})`,
+      name: config.header.name,
     })),
   ]
   const all = groups.flatMap(g => g.slots)
-  const rows = groups.flatMap(({ slots, from }) => {
+  const rows = groups.flatMap(({ slots, from, name }) => {
     const visible = slots.filter(
       s => !isContainerSlot(s, slotMetaFor(s).meta, all),
     )
     return visible.length
       ? [
           ...(from === undefined ? [] : [slotGroupRow(from, visible.length)]),
-          ...visible.map(s => slotRow(s)),
+          ...visible.map(s => slotRow(s, name)),
         ]
       : []
   })
@@ -673,6 +674,7 @@ export interface ManifestSlot {
   subSlots?: ManifestSlot[]
   schema?: string
   writes?: 'whole' | 'members'
+  liftsNumbers?: true
 }
 interface ManifestEntry {
   slots: ManifestSlot[]
@@ -767,6 +769,32 @@ function schemaWrites(name: string) {
     writesBySchema = found
   }
   return writesBySchema.get(name)
+}
+
+// The string-list slots whose schema reads a number written in them as its
+// string, by schema name: a ramp's `domain: [0, 100]` is legal JSON for a
+// `stringArray`, which the bare type name would deny.
+let numberSlotsBySchema: Map<string, Set<string>> | undefined
+
+function liftsNumbers(schema: string, slot: string) {
+  if (!numberSlotsBySchema) {
+    const found = new Map<string, Set<string>>()
+    const visit = (name: string, slots: ManifestSlot[] = []) => {
+      for (const s of slots) {
+        if (s.liftsNumbers) {
+          found.set(name, (found.get(name) ?? new Set()).add(s.name))
+        }
+        if (s.schema) {
+          visit(s.schema, s.subSlots)
+        }
+      }
+    }
+    for (const [name, entry] of Object.entries(configManifest())) {
+      visit(name, entry.slots)
+    }
+    numberSlotsBySchema = found
+  }
+  return numberSlotsBySchema.get(schema)?.has(slot) ?? false
 }
 
 // A setting's write mode, which a reader editing the JSON cannot see in it.
@@ -917,7 +945,7 @@ function renderConfig(
   // 50-slot display page stays 50 lines rather than 250.
   const category = configCategory(header.name, header.category)
   const isBase = isBaseSchema(header, links)
-  const table = slotsTable(slots, bases)
+  const table = slotsTable(header.name, slots, bases)
   const slotsSection = table
     ? section(
         '## Config slots',
@@ -1442,9 +1470,9 @@ function slotGroupRow(from: string, count: number) {
 // slot is"), while the description is the column that actually needs the width;
 // as three columns they squeezed a paragraph of prose into a quarter of the
 // table.
-function slotRow(item: Item) {
+function slotRow(item: Item, schema: string) {
   const { meta } = slotMetaFor(item)
-  const type = slotTypeCell(meta, item.schemaPage)
+  const type = `${slotTypeCell(meta, item.schemaPage)}${liftsNumbers(schema, item.name) ? ' of strings or numbers' : ''}`
   const dflt = slotDefaultCell(item, meta)
   const cells = [
     [

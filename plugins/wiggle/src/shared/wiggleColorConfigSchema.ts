@@ -71,14 +71,18 @@ export const wiggleColorSchema = ConfigurationSchema(
     },
     /**
      * #slot field
-     * `score`, the value each bar carries. Unset, the color paints
-     * `value`, or `score` while `value` is unset too, which `jbrowse
-     * validate` reads alike.
+     * `score`, which stands for the plotted value whatever field `y` names,
+     * since a quantitative display colors only the value it plots. Unset, the
+     * color paints `value`, or `score` while `value` is unset too, which
+     * `jbrowse validate` reads alike. Any other name is refused, which also
+     * keeps a feature track's `displayDefaults.color` over a field of its
+     * features off this display.
      */
     field: {
       type: 'maybeStringEnum',
       model: types.enumeration('WiggleColorField', [...WIGGLE_COLOR_FIELDS]),
-      description: 'score, the value each bar carries',
+      description:
+        "score, standing for the plotted value whatever field y names; the only field a quantitative display's color maps",
     },
     /**
      * #slot scale

@@ -10,8 +10,8 @@
  * white, ColorBrewer's RdBu and PuOr; `redgreyblue` diverges through a grey
  * middle, which stays visible on a white page where a white middle would
  * not, as `identity` paints;
- * `blueyellowred` is ColorBrewer's RdYlBu turned round, so low reads cool and
- * high hot through a pale yellow middle, as `dnds` paints.
+ * `redyellowblue` is ColorBrewer's RdYlBu through a pale yellow middle, Vega's
+ * name and direction; `dnds` turns it round so low reads cool and high hot.
  */
 export const COLOR_SCHEMES = [
   'viridis',
@@ -25,7 +25,7 @@ export const COLOR_SCHEMES = [
   'redblue',
   'purpleorange',
   'redgreyblue',
-  'blueyellowred',
+  'redyellowblue',
 ] as const
 
 /** #api */

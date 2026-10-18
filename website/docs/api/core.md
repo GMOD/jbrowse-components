@@ -207,14 +207,14 @@ ColorBrewer's, from white; `redblue` and `purpleorange` diverge through
 white, ColorBrewer's RdBu and PuOr; `redgreyblue` diverges through a grey
 middle, which stays visible on a white page where a white middle would
 not, as `identity` paints;
-`blueyellowred` is ColorBrewer's RdYlBu turned round, so low reads cool and
-high hot through a pale yellow middle, as `dnds` paints.
+`redyellowblue` is ColorBrewer's RdYlBu through a pale yellow middle, Vega's
+name and direction; `dnds` turns it round so low reads cool and high hot.
 
 ```js
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 
 // type signature
-readonly ["viridis", "magma", "inferno", "cividis", "juicebox", "fall", "reds", "blues", "redblue", "purpleorange", "redgreyblue", "blueyellowred"]
+readonly ["viridis", "magma", "inferno", "cividis", "juicebox", "fall", "reds", "blues", "redblue", "purpleorange", "redgreyblue", "redyellowblue"]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -373,7 +373,7 @@ and its siblings do, juicebox, fall, reds and blues do not.
 import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
 
 // type signature
-(scheme: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis") => boolean
+(scheme: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis") => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
@@ -421,7 +421,7 @@ alike.
 import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 
 // type signature
-"blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis"
+"blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis"
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
@@ -1168,7 +1168,7 @@ follows the widened domain with no table baked again.
 import { rampOverExtent } from '@jbrowse/core/util/markEncoding'
 
 // type signature
-(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "blueyellowred" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
+(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "redyellowblue" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)

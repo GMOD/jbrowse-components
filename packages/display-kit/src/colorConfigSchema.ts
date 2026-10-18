@@ -368,10 +368,9 @@ export function dealRowColors(
 /** A ramp's direction. */
 export const colorReverseSlot = {
   reverse: {
-    type: 'boolean',
-    defaultValue: false,
+    type: 'maybeBoolean',
     description:
-      "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval",
+      "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval; unset follows the field's preset, else runs as written",
   },
 } as const
 

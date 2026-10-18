@@ -81,10 +81,11 @@ ramp dark at its low end paints every sparse cell a dark speck.
 **A domain orders and never decides which sections exist**, so no worker request
 carries one and a reorder refetches nothing. The multiway `domain` slot, every
 `rows.domain` (`rowDomain`, ADR-157), every `facet.domain` and the legend order
-are that one rule (`groupKeyComparator`). Unlisted rows keep arrival order
-(`orderRowsByDomain`), since a phylogeny's leaf order and a file's sample order
-mean something; where a tree describes the rows, the domain rotates it
-(`rotateNewickByDomain`).
+are that one rule (`groupKeyComparator`). Past the domain, values found on
+features sort, since the order they arrive in changes with the region, while
+rows a source lists keep its order (`orderRowsByDomain`), since a phylogeny's
+leaf order and a file's sample order mean something; where a tree describes
+the rows, the domain rotates it (`rotateNewickByDomain`).
 
 Declined: filter shorthands such as `{ field, oneOf }`; jexl is the filter
 language, and reading structure back out of jexl is the fragile half.

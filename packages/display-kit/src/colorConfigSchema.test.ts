@@ -171,7 +171,7 @@ describe('colorSettingOf', () => {
       domain: [],
       range: [],
       scheme: undefined,
-      reverse: false,
+      reverse: undefined,
       domainMin: undefined,
       domainMax: undefined,
       domainMid: undefined,

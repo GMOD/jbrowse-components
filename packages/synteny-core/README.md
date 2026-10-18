@@ -493,7 +493,7 @@ displays.
 
 ```js
 // type signature
-{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "blueyellowred"; readonly title: "dN/dS"; }; readonly syntenicDepth: { readonly scale: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly labels: readonly ["One-to-one", "Shared by 2 genes", "Shared by 3 or more"]; readonly title: "Syntenic depth"; }; }
+{ readonly mapq: {…}; readonly identity: {…}; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "redyellowblue"; readonly reverse: true; readonly title: "dN/dS"; }; readonly syntenicDepth: { readonly scale: "threshold"; readonly domain: readonly ["2", "3"]; readonly range: readonly ["#bdbdbd", "#fdae6b", "#e6550d"]; readonly labels: readonly ["One-to-one", "Shared by 2 genes", "Shared by 3 or more"]; readonly title: "Syntenic depth"; }; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
