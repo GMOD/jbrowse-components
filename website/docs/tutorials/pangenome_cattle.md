@@ -110,14 +110,14 @@ tabix-indexed segments and links and the overview.
 }
 ```
 
-## Overview of chr23 with one node per variant region
+## Overview of chr23 with small variants folded {#overview-of-chr23-with-one-node-per-variant-region}
 
 Open
 [chr23 on the portal page](https://genomes.jbrowse.org/pangenomes/bovine/?region=chr23)
-and press **Open in JBrowse**. The whole chromosome opens with the graph drawn
-as one node per bubble, a stretch where the assemblies' paths split and rejoin.
+and press **Open in JBrowse**. The whole chromosome opens with the graph's
+coarse tier, which folds every variant under 10 kb into the reference.
 
-<Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with one node per bubble. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
+<Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with variants under 10 kb folded into the reference. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 BoLA, the cattle major histocompatibility complex (immune genes that vary a lot
 between breeds), contains the heat shock gene _HSPA1A_, the subject of the next

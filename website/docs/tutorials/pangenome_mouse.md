@@ -133,9 +133,9 @@ The bubbles track reads the same build's bubble index:
 
 Open
 [chr13 on the portal page](https://genomes.jbrowse.org/pangenomes/mouse/?region=chr13)
-and press **Open in JBrowse**, which opens the whole chromosome with the graph
-drawn as one node per bubble. Type `chr13:119,440,000-119,600,000` to draw the
-segments there. Then:
+and press **Open in JBrowse**, which opens the whole chromosome with the graph's
+variants under 10 kb folded into the reference. Type
+`chr13:119,440,000-119,600,000` to draw the segments there. Then:
 
 - in the graph track's menu, tick **Show... → Show bubble halos**
 - turn on the bubbles track in the track selector
