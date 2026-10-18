@@ -808,8 +808,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // Both are satisfiable at once only by drawing fewer rows: a
               // label needs 6 px (SvgRowLabels' MIN_TEXT_ROW_HEIGHT) and 464
               // of those is a 2,800 px track. So the base rendering is back,
-              // at the default 15 px a row, over the first sixteen samples of
-              // the alignment's own order.
+              // over the first sixteen samples of the alignment's own order.
               //
               // Row names are `<sample>.<haplotype>`: the TAF's source tokens
               // are `HG00235.2.CM094400.1` and parseAssemblyAndChr takes the
@@ -824,6 +823,9 @@ export const mafSpecs: ScreenshotSpec[] = [
               //
               // The filter SELECTS; ordering is `runClustering`'s, below.
               rows: { kept: HPRC_MAF_ROWS },
+              // The rows divide what the bands leave of the track's fixed
+              // height; this gives the 31 rows about 15 px each.
+              height: 530,
               // CLUSTERED, so the rows read like the callset lane above them
               // (review: "it would be useful to cluster the hprc samples, so it
               // looks similar to the multi-sample variant display").

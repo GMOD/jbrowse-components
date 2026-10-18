@@ -1490,10 +1490,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
       // s1613 is one of the off-reference nodes (SR:i:1 in
       // ecoli_paa_subgraph.gfa): the routes past the island carry their own
-      // donor's coordinates, so the K12 ramp leaves them grey.
+      // donor's coordinates, so the K12 ramp paints them charcoal.
       {
         type: 'text',
-        text: 'grey: the routes past the island',
+        text: 'charcoal: the routes past the island',
         fontSize: 18,
         leader: true,
         anchor: { view: 1, graphNode: 's1613' },
