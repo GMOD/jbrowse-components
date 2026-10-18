@@ -363,7 +363,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 425,
   },
 
-  // Group by strand with Also color by strand ticked, the dialog's default:
+  // Group by → Strand, which colors by strand on a default-colored track:
   // the forward-strand genes pack into one section above the reverse-strand
   // ones, each under a chip naming it, and each section takes its strand's
   // color. A gene-dense window, so both sections hold several genes.

@@ -3,13 +3,22 @@ import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
-import { collapseSectionsItems, hiddenGroupsItems } from './groupByMenu.ts'
+import {
+  collapseSectionsItems,
+  hiddenGroupsItems,
+  sectionOrderResetItems,
+} from './groupByMenu.ts'
 
 import type { AlignmentsUnit } from '../constants.ts'
-import type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
+import type {
+  CollapseSectionsModel,
+  HiddenGroupsModel,
+  SectionOrderMenuModel,
+} from './groupByMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-interface ReadsModel extends CollapseSectionsModel, HiddenGroupsModel {
+interface ReadsModel
+  extends CollapseSectionsModel, HiddenGroupsModel, SectionOrderMenuModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
   showCoverage: boolean
@@ -70,6 +79,7 @@ export function getReadsMenuItems(model: ReadsModel) {
     // it modifies rather than in the Group-by dimension list.
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
+    ...sectionOrderResetItems(model),
     toggleItem(
       'Mismatches',
       model.showMismatches,

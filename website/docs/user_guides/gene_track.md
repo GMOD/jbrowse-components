@@ -64,29 +64,28 @@ Track-menu toggles:
 - Show subfeature labels - each transcript's name on its row
 - Show... → Chevrons - strand chevrons along the intron lines (on by default)
 - Show... → Only genes - hides non-gene features
-- Group by... - opens a dialog. _Strand_ packs the forward-strand features into
-  one labelled section above the reverse-strand ones, unstranded features last,
-  so convergent and divergent neighbours read apart. _Attribute_ takes a feature
-  attribute, `biotype` or `source` say, and packs one section per value, with
-  the features with none last
+- Group by... - _Strand_ packs the forward-strand features into one labelled
+  section above the reverse-strand ones, unstranded features last, so convergent
+  and divergent neighbours read apart. _Attribute..._ opens a dialog for a
+  feature attribute, `biotype` or `source` say, and packs one section per value,
+  with the features with none last
 
 ## Grouping features into sections
 
 Each section has a chip naming it, and the × on a chip hides that section. The
 **Show N hidden** chip at the top of the track, or **Show... → Show N hidden
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
-grouping clears them. **Sections** in the track menu lists the sections drawn,
-each with **Move up**, **Move down** and **Hide section**, and **Reset section
-order** returns them to the sorted order.
+grouping clears them. Drag a chip onto another section to move its section
+there; **Show... → Reset section order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., each biotype in a color of its own. Sections then moves protein_coding to the top." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., each biotype in a color of its own. Dragging the protein_coding chip then moves it to the top." />
 
 The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
 one such as `INFO.SVTYPE`, or `strand`. As an object it adds the section order,
 `{ "field": …, "domain": [...] }`: the values listed stack first, in that order,
-and the rest follow sorted. A reorder from the menu writes the same setting, so
-what a config author declares and what a reader arranges are one setting:
+and the rest follow sorted. A chip drag writes the same setting, so what a
+config author declares and what a reader arranges are one setting:
 
 ```json addtrack
 {
@@ -103,10 +102,10 @@ what a config author declares and what a reader arranges are one setting:
 }
 ```
 
-The dialog's **Also color by strand** (or **by this attribute**) colors each
-section by its value: red and blue by strand, or one color per value, with a key
-naming them. It starts ticked unless the track already has a color of its own,
-and unticking it returns the default color.
+Grouping also colors each section by its value, red and blue by strand or one
+color per attribute value, with a key naming them, unless the track already has
+a color of its own. The attribute dialog's **Also color by this attribute** box
+makes that choice by hand.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped and colored by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip and in its strand's color." src="/img/gene_track_group_by_strand.png" />
 

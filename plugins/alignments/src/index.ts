@@ -62,10 +62,11 @@ export {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getHitMenuItems,
-  getSectionOrderMenuItems,
   getSortMenuItem,
   groupByRadioMenuItem,
   hiddenGroupsItems,
+  sectionOrderOf,
+  sectionOrderResetItems,
   withContextMenuFeature,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export type {

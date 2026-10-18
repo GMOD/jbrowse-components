@@ -1,9 +1,8 @@
-import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-
 import {
   mergeDomain,
+  moveSectionOnto,
   moveSectionTo,
-  sectionOrderMenuItems,
+  resetSectionOrderItems,
 } from './groupByMenu.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -12,18 +11,10 @@ function labelsOf(items: MenuItem[]) {
   return items.map(i => ('label' in i ? i.label : '—'))
 }
 
-function subMenuOf(item: MenuItem | undefined) {
-  return item && 'subMenu' in item ? resolveSubMenu(item) : []
-}
-
 function clickOf(item: MenuItem | undefined) {
   if (item && 'onClick' in item) {
     item.onClick(undefined)
   }
-}
-
-function disabledOf(item: MenuItem | undefined) {
-  return item && 'disabled' in item ? item.disabled : undefined
 }
 
 function sections(...keys: string[]) {
@@ -45,48 +36,30 @@ test('a move clamps to the ends and ignores a key it does not hold', () => {
   expect(moveSectionTo(['a', 'b'], 'nobody', 0)).toEqual(['a', 'b'])
 })
 
-test('moving one section pins every drawn section, in the order now shown', () => {
+test('a drop pins every drawn section in the order now shown, and a drop on itself writes nothing', () => {
   const written: string[][] = []
-  const items = sectionOrderMenuItems({
+  const model = {
     sections: sections('peach', 'cacao', 'grape'),
     domain: ['hidden'],
-    setDomain: domain => {
+    setDomain: (domain: string[]) => {
       written.push(domain)
     },
-    hideGroup: () => {},
-  })
-  expect(labelsOf(items)).toEqual(['Sections'])
-  const rows = subMenuOf(items[0])
-  expect(labelsOf(rows)).toEqual([
-    'PEACH',
-    'CACAO',
-    'GRAPE',
-    'Reset section order',
-  ])
-  expect(labelsOf(subMenuOf(rows[1]))).toEqual([
-    'Move up',
-    'Move down',
-    'Hide section',
-  ])
-  clickOf(subMenuOf(rows[1])[0])
+  }
+  moveSectionOnto(model, 'cacao', 'peach')
+  moveSectionOnto(model, 'grape', 'grape')
+  moveSectionOnto(model, 'grape', 'nobody')
   expect(written).toEqual([['hidden', 'cacao', 'peach', 'grape']])
-  clickOf(rows[3])
-  expect(written[1]).toEqual([])
 })
 
-test('the ends cannot move past themselves, reset is dead with nothing pinned, and one section offers no menu', () => {
-  const model = {
-    sections: sections('peach', 'cacao'),
-    domain: [],
-    setDomain: () => {},
-    hideGroup: () => {},
+test('the reset row shows only while the order is pinned, and clears it', () => {
+  const written: string[][] = []
+  const setDomain = (domain: string[]) => {
+    written.push(domain)
   }
-  const rows = subMenuOf(sectionOrderMenuItems(model)[0])
-  expect(labelsOf(rows)).toEqual(['PEACH', 'CACAO', 'Reset section order'])
-  expect(subMenuOf(rows[0]).map(disabledOf)).toEqual([true, false, false])
-  expect(subMenuOf(rows[1]).map(disabledOf)).toEqual([false, true, false])
-  expect(disabledOf(rows[2])).toBe(true)
-  expect(
-    sectionOrderMenuItems({ ...model, sections: sections('peach') }),
-  ).toEqual([])
+  expect(resetSectionOrderItems(undefined)).toEqual([])
+  expect(resetSectionOrderItems({ domain: [], setDomain })).toEqual([])
+  const rows = resetSectionOrderItems({ domain: ['b'], setDomain })
+  expect(labelsOf(rows)).toEqual(['Reset section order'])
+  clickOf(rows[0])
+  expect(written).toEqual([[]])
 })

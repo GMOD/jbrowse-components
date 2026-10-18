@@ -11,6 +11,7 @@ import {
   groupSectionLabel,
   sectionKey,
 } from './groupLabelStyle.ts'
+import { useSectionDrag } from './useSectionDrag.ts'
 
 import type React from 'react'
 
@@ -50,19 +51,33 @@ export const GroupLabelChips = observer(function GroupLabelChips({
   canvasHeight,
   hiddenCount = 0,
   onShowHidden,
+  onMove,
 }: {
   sections: readonly GroupChipSection[]
   canvasHeight: number
   hiddenCount?: number
   onShowHidden?: () => void
+  onMove?: (key: string, ontoKey: string) => void
 }) {
-  const { classes } = useGroupLabelStyles()
+  const { classes, cx } = useGroupLabelStyles()
+  const drag = useSectionDrag(
+    sections,
+    sections.length > 1 ? onMove : undefined,
+  )
   const chipTops = sections.map(s =>
     groupChipTop(s.top, s.height, canvasHeight),
   )
   const topmost = chipTops.findIndex(t => t !== undefined)
+  const dropLine = drag.dropLineTop
   return (
     <>
+      {dropLine !== undefined ? (
+        <div
+          className={classes.dropLine}
+          style={{ top: Math.max(0, Math.min(dropLine, canvasHeight - 2)) }}
+          data-testid="group-drop-line"
+        />
+      ) : null}
       {sections.map((section, i) => {
         const { top, toggle, action, onHide } = section
         const chipTop = chipTops[i]
@@ -84,7 +99,14 @@ export const GroupLabelChips = observer(function GroupLabelChips({
               style={{ top: chipTop + 1 }}
               data-testid="group-label-chip"
             >
-              <div className={classes.pill}>
+              <div
+                className={cx(
+                  classes.pill,
+                  drag.enabled && classes.draggable,
+                  drag.draggingKey === section.key && classes.dragging,
+                )}
+                {...drag.handlers(section.key)}
+              >
                 {toggle ? (
                   <button
                     type="button"

@@ -613,10 +613,10 @@ Sections order a name holding a number by that number, so chr2 before chr10, and
 the rest by code point. `domain` sets the order: listed values first, the rest
 sorted after. A domain orders the sections and never changes which exist.
 
-**Sections** in the track menu lists the sections drawn, each with **Move up**,
-**Move down** and **Hide section**; a move writes the drawn order back as the
-facet's `domain`, and **Reset section order** clears it. A hidden section leaves
-the legend and the value axis along with the plot.
+Dragging a section's chip onto another section writes the drawn order back as
+the facet's `domain`, and **Show... → Reset section order**<!-- menu-path-ok -->
+clears it. A hidden section leaves the legend and the value axis along with the
+plot.
 
 Haplotagged reads split by their `HP` tag, the tag lifted into a field by a
 `formula` so the chips and the key name it `HP`:

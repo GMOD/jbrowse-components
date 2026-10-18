@@ -435,7 +435,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/foundationView': ['containingHost', 'foundationCanRender', 'onTrackAssembly'],
   '@jbrowse/display-kit/gateCommit': ['measurementOf', 'measurementOfEach', 'openGateCommit'],
   '@jbrowse/display-kit/GlobalFetchMixin': ['blockKeySignature', 'default'],
-  '@jbrowse/display-kit/groupByMenu': ['groupByRadioMenuItem', 'hiddenGroupsItems', 'mergeDomain', 'moveSectionTo', 'resetOrderItem', 'sectionOrderMenuItems', 'sectionRowMenuItems', 'showHiddenItems'],
+  '@jbrowse/display-kit/groupByMenu': ['groupByRadioMenuItem', 'hiddenGroupsItems', 'mergeDomain', 'moveSectionOnto', 'moveSectionTo', 'resetOrderItem', 'resetSectionOrderItems', 'sectionRowMenuItems', 'showHiddenItems'],
   '@jbrowse/display-kit/GroupLabelBox': ['GroupLabelBoxes', 'default'],
   '@jbrowse/display-kit/GroupLabelChips': ['GroupLabelChips'],
   '@jbrowse/display-kit/groupLabelChipStyles': ['useGroupLabelStyles'],

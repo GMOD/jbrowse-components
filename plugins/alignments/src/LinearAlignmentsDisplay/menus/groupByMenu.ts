@@ -1,9 +1,12 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
-import { groupByRadioMenuItem as sharedGroupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
+import {
+  resetSectionOrderItems,
+  groupByRadioMenuItem as sharedGroupByRadioMenuItem,
+} from '@jbrowse/display-kit/groupByMenu'
 
 import { isChainFacetable } from '../../shared/groupFeatures.ts'
 
-import type { ReadDimension } from '../../shared/types.ts'
+import type { Facet, ReadDimension } from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -58,6 +61,31 @@ export function collapseSectionsItems(model: CollapseSectionsModel) {
         ]
       : []
   ) satisfies MenuItem[]
+}
+
+export interface SectionOrderMenuModel {
+  effectiveFacet: Facet | undefined
+  groupOrder: readonly { key: string; label: string }[]
+  setFacet: (facet?: Facet) => void
+}
+
+// The worker is sent no domain, so a reorder refetches nothing. Undefined
+// while chain mode degrades the facet to one section.
+export function sectionOrderOf(model: SectionOrderMenuModel) {
+  const facet = model.effectiveFacet
+  return (
+    facet && {
+      sections: model.groupOrder,
+      domain: facet.domain ?? [],
+      setDomain: (domain: string[]) => {
+        model.setFacet({ ...facet, domain })
+      },
+    }
+  )
+}
+
+export function sectionOrderResetItems(model: SectionOrderMenuModel) {
+  return resetSectionOrderItems(sectionOrderOf(model))
 }
 
 export { hiddenGroupsItems } from '@jbrowse/display-kit/groupByMenu'

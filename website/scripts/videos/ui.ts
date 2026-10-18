@@ -6,8 +6,6 @@ import {
 } from '../specs/features.ts'
 import { uiVideoFixtures } from '../specs/ui.ts'
 import {
-  cascade,
-  leaveMenu,
   LOCATION_BOX,
   openTrackByUrlSteps,
   RUBBERBAND,
@@ -478,7 +476,7 @@ export const uiVideos: VideoSpec[] = [
   {
     name: 'ui/gene_track_sections',
     description:
-      'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from the Group by dialog, each biotype in its own color, then protein_coding moved to the top from the Sections submenu',
+      'NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by, each biotype in its own color, then protein_coding dragged to the top by its chip',
     goal: 'Group genes into sections by biotype, colored, and reorder them',
     url: geneGroupingVideoFixtures.session,
     viewportHeight: 740,
@@ -495,8 +493,8 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Group by...' },
       { type: 'click', text: 'Group by...' },
-      { type: 'waitForText', text: 'Attribute' },
-      { type: 'click', text: 'Attribute', hold: 600 },
+      { type: 'waitForText', text: 'Attribute...' },
+      { type: 'click', text: 'Attribute...', hold: 600 },
       {
         type: 'type',
         selector: '[data-testid="group-by-attribute"]',
@@ -508,21 +506,12 @@ export const uiVideos: VideoSpec[] = [
       { type: 'waitForAppSettled', timeout: 120000 },
       { type: 'delay', ms: 2500 },
       {
-        type: 'click',
-        selector: trackMenu(geneGroupingVideoFixtures.trackId),
-        say: 'Move protein_coding to the top from the Sections menu',
-        hold: 1000,
+        type: 'drag',
+        fromAnchor: { selector: '[data-section-key="protein_coding"]' },
+        toAnchor: { selector: '[data-section-key]' },
+        say: 'Drag the protein_coding chip to the top',
+        hold: 1800,
       },
-      { type: 'waitForText', text: 'Sections' },
-      { type: 'click', text: 'Sections', hold: 800 },
-      {
-        type: 'click',
-        selector: cascade('submenu', 'gene_biotype: protein_coding'),
-        hold: 800,
-      },
-      { type: 'waitForText', text: 'Move up' },
-      { type: 'click', text: 'Move up', hold: 1800 },
-      ...leaveMenu('::-p-text(Move up)'),
       { type: 'waitForAppSettled', timeout: 120000 },
       {
         type: 'delay',
@@ -561,6 +550,8 @@ export const uiVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Group by...' },
       { type: 'click', text: 'Group by...' },
+      { type: 'waitForText', text: 'Attribute...' },
+      { type: 'click', text: 'Attribute...' },
       { type: 'waitForText', text: 'Edit plot...' },
       { type: 'click', text: 'Edit plot...', hold: 800 },
       { type: 'waitForSelector', selector: '[data-testid="plot-json"]' },

@@ -58,6 +58,8 @@ export interface MarkDisplayModel
   showRowLabels: boolean
   rowTreeProvenance?: ClusterProvenance
   hiddenGroups: { size: number }
+  facet: { domain: readonly string[] } | undefined
+  setFacetDomain: (domain: string[]) => void
   hideGroup: (key: string) => void
   showAllGroups: () => void
   showLegend: boolean

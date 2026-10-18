@@ -13,15 +13,16 @@ import {
   colorFieldRows,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
+  groupByRadioMenuItem,
   hiddenGroupsItems,
-  sectionOrderMenuItems,
+  resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import HeightIcon from '@mui/icons-material/Height'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
+import { colorsWithGrouping } from './groupByColor.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -53,7 +54,7 @@ export function inlineRadioGroup<T extends string>(
 }
 
 // Structural for the same reason as `FeatureMenuSelf`;
-interface ShowSubmenuSelf extends HiddenGroupsModel {
+interface ShowSubmenuSelf extends HiddenGroupsModel, FacetSelf {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
   displayMode: DisplayMode
@@ -70,12 +71,17 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
   setDisplayMode: (value: DisplayMode) => void
 }
 
-interface GroupByMenuSelf {
-  openGroupByDialog: () => void
+interface FacetSelf {
   facet: FeatureFacet | undefined
-  groupSections: readonly { key: string; label: string }[]
   setFacet: (facet?: FeatureFacet) => void
-  hideGroup: (key: string) => void
+}
+
+interface GroupByMenuSelf {
+  facet: FeatureFacet | undefined
+  colorSetting: { value?: string }
+  colorField: string | undefined
+  openGroupByDialog: () => void
+  applyGroupBy: (field: string | undefined, colorByGroup: boolean) => void
 }
 
 interface TrackMenuSelf extends GroupByMenuSelf, PlotDisplay {
@@ -87,28 +93,39 @@ interface TrackMenuSelf extends GroupByMenuSelf, PlotDisplay {
   openFilterDialog: () => void
 }
 
-// The Sections submenu is the runtime half of the facet's `domain`: a move writes
-// the drawn order there.
+const ATTRIBUTE = 'attribute'
+
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
-  const { facet } = self
+  const field = self.facet?.field
+  const attribute = field === STRAND_FIELD ? undefined : field
   return [
-    {
-      label: 'Group by...',
-      icon: WorkspacesIcon,
-      onClick: () => {
-        self.openGroupByDialog()
+    groupByRadioMenuItem({
+      current:
+        field === STRAND_FIELD ? field : attribute ? ATTRIBUTE : undefined,
+      options: [{ type: STRAND_FIELD, label: 'Strand' }],
+      onSelect: strand => {
+        self.applyGroupBy(
+          strand,
+          colorsWithGrouping(
+            self.colorSetting.value,
+            self.colorField ?? '',
+            strand,
+          ),
+        )
       },
-    },
-    ...(facet
-      ? sectionOrderMenuItems({
-          sections: self.groupSections,
-          domain: facet.domain,
-          setDomain: domain => {
-            self.setFacet({ field: facet.field, domain })
+      onNone: () => {
+        self.applyGroupBy(undefined, false)
+      },
+      extra: [
+        {
+          type: ATTRIBUTE,
+          label: attribute ? `Attribute (${attribute})...` : 'Attribute...',
+          onClick: () => {
+            self.openGroupByDialog()
           },
-          hideGroup: self.hideGroup,
-        })
-      : []),
+        },
+      ],
+    }),
   ]
 }
 
@@ -117,9 +134,18 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 }
 
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
+  const { facet } = self
   return [
     toggleItem('Outline', self.showOutline, self.setShowOutline),
     ...hiddenGroupsItems(self),
+    ...resetSectionOrderItems(
+      facet && {
+        domain: facet.domain,
+        setDomain: domain => {
+          self.setFacet({ field: facet.field, domain })
+        },
+      },
+    ),
   ]
 }
 

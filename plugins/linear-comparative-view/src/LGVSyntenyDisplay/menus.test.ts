@@ -136,6 +136,9 @@ function makeShowModel(showCoverage: boolean) {
     setCollapseSections: jest.fn(),
     hiddenGroups: new Set<string>(),
     showAllGroups: jest.fn(),
+    effectiveFacet: undefined,
+    groupOrder: [],
+    setFacet: jest.fn(),
   }
 }
 

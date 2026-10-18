@@ -7,7 +7,7 @@ import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
-  sectionOrderMenuItems,
+  resetSectionOrderItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import {
@@ -106,22 +106,18 @@ export function markTrackMenuItems(self: LinearMarkDisplayModel): MenuItem[] {
         ])
       },
     }),
-    ...sectionOrderMenuItems({
-      sections: self.facetLayout.rows ? [] : self.facetLayout.sections,
-      domain: self.facet?.domain ?? [],
-      setDomain: domain => {
-        self.setFacetDomain(domain)
-      },
-      hideGroup: key => {
-        self.hideGroup(key)
-      },
-    }),
     ...(self.drawsRows ? rowsMenuItems(self) : []),
     ...makeShowSubMenu([
       ...(self.drawsRows
         ? [...treeSidebarShowMenuItems(self), showRowLabelsMenuItem(self)]
         : []),
       ...hiddenGroupsItems(self),
+      ...resetSectionOrderItems({
+        domain: self.facet?.domain ?? [],
+        setDomain: domain => {
+          self.setFacetDomain(domain)
+        },
+      }),
       legendCheckboxItem(self),
     ]),
     ...editPlotMenuItems(self),

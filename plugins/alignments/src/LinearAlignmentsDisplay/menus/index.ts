@@ -15,14 +15,15 @@ export {
   collapseSectionsItems,
   groupByRadioMenuItem,
   hiddenGroupsItems,
+  sectionOrderOf,
+  sectionOrderResetItems,
 } from './groupByMenu.ts'
-export type { CollapseSectionsModel, HiddenGroupsModel } from './groupByMenu.ts'
+export type {
+  CollapseSectionsModel,
+  HiddenGroupsModel,
+  SectionOrderMenuModel,
+} from './groupByMenu.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'
-export {
-  getGroupByMenuItem,
-  getSectionOrderMenuItems,
-  getSortMenuItem,
-} from './sortGroup.ts'
-export type { SectionOrderMenuModel } from './sortGroup.ts'
+export { getGroupByMenuItem, getSortMenuItem } from './sortGroup.ts'

@@ -36,6 +36,7 @@ import { defaultPlot } from './plotDefault.ts'
 import { placeTextMarks } from './textMarks.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 import type { MarkRamp } from '@jbrowse/render-core/marks'
@@ -2358,26 +2359,27 @@ test('a facet domain orders the folded sections and stays off the worker request
   expect(rowsOf(display)).toEqual([2, 0, 1])
 })
 
-test('the Sections menu moves a section and writes the drawn order as the facet domain', () => {
+test('a pinned facet domain orders the sections off the worker request, and Show... offers the reset', () => {
   const { display } = facetedEnvironment().createDisplay()
-  const sectionsItem = () =>
-    display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections')
-  expect(sectionsItem()).toBeUndefined()
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
-  const rows = () =>
-    resolveSubMenu(sectionsItem() as Parameters<typeof resolveSubMenu>[0])
-  expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
-    'sample: a',
-    'sample: b',
-    'Reset section order',
-  ])
+  const labels = (items: MenuItem[]) =>
+    items.map(r => ('label' in r ? r.label : undefined))
+  const show = () => {
+    const item = display
+      .trackMenuItems()
+      .find(i => 'label' in i && i.label === 'Show...')
+    return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
+  }
+  expect(labels(display.trackMenuItems())).not.toContain('Sections')
+  expect(labels(show())).not.toContain('Reset section order')
   const fetched = display.rpcProps()
-  const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
-  ;(resolveSubMenu(first)[1] as { onClick: () => void }).onClick()
-  expect(display.facet?.domain).toEqual(['b', 'a'])
+  display.setFacetDomain(['b', 'a'])
   expect(display.rpcProps()).toEqual(fetched)
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
-  ;(rows()[2] as { onClick: () => void }).onClick()
+  const reset = show().find(
+    r => 'label' in r && r.label === 'Reset section order',
+  ) as { onClick: () => void }
+  reset.onClick()
   expect(display.facet?.domain).toEqual([])
 })
 

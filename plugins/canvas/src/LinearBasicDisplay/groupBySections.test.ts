@@ -185,39 +185,52 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
 
-test('the Sections menu moves a section and writes the drawn order as the domain', () => {
+function menuRows(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label === label)
+  return item && 'subMenu' in item ? resolveSubMenu(item) : []
+}
+
+function labelsOf(items: MenuItem[]) {
+  return items.map(i => ('label' in i ? i.label : undefined))
+}
+
+test('Group by is a radio submenu: strand picks directly, attribute names its field', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  const rows = () => menuRows(display.trackMenuItems(), 'Group by...')
+  expect(labelsOf(rows())).toEqual(['None', 'Strand', 'Attribute...'])
+  ;(rows()[1] as { onClick: () => void }).onClick()
+  expect(display.facet?.field).toBe('strand')
+  expect(display.colorByMode).toBe('strand')
+  display.setFacet({ field: 'biotype' })
+  expect(rows().map(i => ('checked' in i ? i.checked : undefined))).toEqual([
+    false,
+    false,
+    true,
+  ])
+  expect(labelsOf(rows())[2]).toBe('Attribute (biotype)...')
+  ;(rows()[0] as { onClick: () => void }).onClick()
+  expect(display.facet).toBeUndefined()
+})
+
+test('no Sections row; the reset sits in Show... once the order is pinned', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
-  expect(
-    display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections'),
-  ).toBeUndefined()
   display.setFacet({ field: 'biotype' })
-  const rows = () => {
-    const item = display
-      .trackMenuItems()
-      .find(i => 'label' in i && i.label === 'Sections')!
-    return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
-  }
-  const labelOf = (i: MenuItem) => ('label' in i ? i.label : undefined)
-  expect(rows().map(labelOf)).toEqual([
-    'biotype: lncRNA',
-    'biotype: protein_coding',
-    'Reset section order',
-  ])
-  const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
-  const moveDown = resolveSubMenu(first)[1] as { onClick: () => void }
-  moveDown.onClick()
-  expect(getConf(display, ['facet', 'domain'])).toEqual([
-    'protein_coding',
-    'lncRNA',
-  ])
+  expect(labelsOf(display.trackMenuItems())).not.toContain('Sections')
+  const show = () => menuRows(display.trackMenuItems(), 'Show...')
+  expect(labelsOf(show())).not.toContain('Reset section order')
+  display.setFacet({ field: 'biotype', domain: ['protein_coding', 'lncRNA'] })
   expect(display.groupSections.map(s => s.key)).toEqual([
     'protein_coding',
     'lncRNA',
   ])
-  const reset = rows()[2] as { onClick: () => void }
+  const reset = show().find(
+    i => 'label' in i && i.label === 'Reset section order',
+  ) as { onClick: () => void }
   reset.onClick()
+  expect(getConf(display, ['facet', 'domain'])).toEqual([])
   expect(display.plot.facet).toBe('biotype')
 })
 

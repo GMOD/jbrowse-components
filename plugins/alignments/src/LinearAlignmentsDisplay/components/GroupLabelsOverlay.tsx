@@ -1,9 +1,11 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
 import { laneExpandable } from '../lanes.ts'
+import { sectionOrderOf } from '../menus/groupByMenu.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
@@ -68,6 +70,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   } = model
   // Hiding the last drawn lane leaves no chip to carry the restore button.
   const canHideLane = renderSections.length > 1
+  const order = sectionOrderOf(model)
   return (
     <GroupLabelChips
       canvasHeight={scroll.canvasHeight}
@@ -75,6 +78,13 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
       onShowHidden={() => {
         model.showAllGroups()
       }}
+      onMove={
+        order
+          ? (key, ontoKey) => {
+              moveSectionOnto(order, key, ontoKey)
+            }
+          : undefined
+      }
       sections={renderSections.map(section => {
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.

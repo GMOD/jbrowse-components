@@ -13,7 +13,6 @@ import {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getHitMenuItems,
-  getSectionOrderMenuItems,
   getSortMenuItem,
   NO_HIDDEN_GROUPS,
 } from '@jbrowse/plugin-alignments'
@@ -304,10 +303,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             }),
             ...getFiltersMenuItems(self),
             getSyntenyGroupByMenuItem(self),
-            // An all-vs-all track stacks a section per mate assembly, and this
-            // display inherits `facet.domain` from the alignments base, so the
-            // reorder menu is the base's too.
-            ...getSectionOrderMenuItems(self),
             ...getSyntenyShowMenuItems(self),
             // Same submenu the synteny view and dotplot show, from one source, so
             // the three surfaces can't word the same setting differently

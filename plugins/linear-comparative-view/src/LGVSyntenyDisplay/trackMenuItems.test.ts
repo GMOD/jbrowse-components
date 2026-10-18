@@ -1,4 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
+import { sectionOrderOf } from '@jbrowse/plugin-alignments'
 
 import { makeEmptyPileupData } from '../../../alignments/src/LinearAlignmentsDisplay/testUtils.ts'
 import { createDisplay } from './testEnv.ts'
@@ -74,40 +76,23 @@ function seedSections(
   )
 }
 
-function sectionRows(display: ReturnType<typeof createDisplay>) {
-  return subMenu(display.trackMenuItems() as MenuItem[], 'Sections')
+function labelsOf(items: MenuItem[]) {
+  return items.map(i => ('label' in i ? i.label : undefined))
 }
 
-test('no Sections menu until a second mate-assembly lane is fetched', () => {
-  const display = createDisplay()
-  expect(
-    (display.trackMenuItems() as MenuItem[]).some(
-      i => 'label' in i && i.label === 'Sections',
-    ),
-  ).toBe(false)
-  display.setFacet({ field: 'mateAssembly' })
-  seedSections(display, ['volvox_random'])
-  expect(
-    (display.trackMenuItems() as MenuItem[]).some(
-      i => 'label' in i && i.label === 'Sections',
-    ),
-  ).toBe(false)
-})
-
-test('Move down on a lane writes the drawn order as the domain', () => {
+test('a lane drop writes the drawn order as the domain, and Show... offers the reset', () => {
   const display = createDisplay({
     trackAssemblyNames: ['volvox', 'volvox_random', 'volvox_two'],
   })
   display.setFacet({ field: 'mateAssembly' })
   seedSections(display, ['volvox_random', 'volvox_two'])
-  expect(
-    sectionRows(display).map(i => ('label' in i ? i.label : undefined)),
-  ).toEqual(['volvox_random', 'volvox_two', 'Reset section order'])
+  const items = () => display.trackMenuItems() as MenuItem[]
+  expect(labelsOf(items())).not.toContain('Sections')
+  expect(labelsOf(subMenu(items(), 'Show...'))).not.toContain(
+    'Reset section order',
+  )
 
-  const moveDown = subMenu(sectionRows(display), 'volvox_random')[1] as {
-    onClick: () => void
-  }
-  moveDown.onClick()
+  moveSectionOnto(sectionOrderOf(display)!, 'volvox_random', 'volvox_two')
   expect(display.facet).toEqual({
     field: 'mateAssembly',
     domain: ['volvox_two', 'volvox_random'],
@@ -116,4 +101,5 @@ test('Move down on a lane writes the drawn order as the domain', () => {
     'volvox_two',
     'volvox_random',
   ])
+  expect(labelsOf(subMenu(items(), 'Show...'))).toContain('Reset section order')
 })

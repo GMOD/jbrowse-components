@@ -1,7 +1,8 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
-import type { FeatureGroupSection } from '../facet.ts'
+import type { FeatureFacet, FeatureGroupSection } from '../facet.ts'
 
 export interface GroupLabelsModel {
   showsGroupLabels: boolean
@@ -9,6 +10,8 @@ export interface GroupLabelsModel {
   scrollTop: number
   height: number
   hiddenGroups: { size: number }
+  facet: FeatureFacet | undefined
+  setFacet: (facet?: FeatureFacet) => void
   hideGroup: (key: string) => void
   showAllGroups: () => void
 }
@@ -21,6 +24,7 @@ const GroupLabelsLayer = observer(function GroupLabelsLayer({
 }: {
   model: GroupLabelsModel
 }) {
+  const { facet } = model
   if (!model.showsGroupLabels) {
     return null
   }
@@ -33,6 +37,23 @@ const GroupLabelsLayer = observer(function GroupLabelsLayer({
       onShowHidden={() => {
         model.showAllGroups()
       }}
+      onMove={
+        facet
+          ? (key, ontoKey) => {
+              moveSectionOnto(
+                {
+                  sections: groupSections,
+                  domain: facet.domain,
+                  setDomain: domain => {
+                    model.setFacet({ field: facet.field, domain })
+                  },
+                },
+                key,
+                ontoKey,
+              )
+            }
+          : undefined
+      }
       sections={groupSections.map(section => ({
         ...section,
         top: section.top - scrollTop,

@@ -14,6 +14,8 @@ function layerModel(
   return {
     height: 200,
     hiddenGroups: new Set(),
+    facet: { field: 'strand', domain: [] },
+    setFacet: jest.fn(),
     hideGroup: jest.fn(),
     showAllGroups: jest.fn(),
     ...model,
@@ -115,6 +117,23 @@ test('the topmost chip on screen carries the restore for hidden sections', () =>
       '[data-testid="group-label-chip"]',
     )!.textContent,
   ).toContain('Reverse strand')
+})
+
+test('dragging a chip onto the section below writes the drawn order as the domain, against the scrolled tops', () => {
+  const model = layerModel({
+    showsGroupLabels: true,
+    groupSections: sections,
+    scrollTop: 50,
+  })
+  const { getAllByTestId } = render(layer(model))
+  const pill = getAllByTestId('group-label-text')[0]!.parentElement!
+  fireEvent.pointerDown(pill, { clientY: 5, button: 0, pointerId: 1 })
+  fireEvent.pointerMove(pill, { clientY: 60, pointerId: 1 })
+  fireEvent.pointerUp(pill, { clientY: 60, pointerId: 1 })
+  expect(model.setFacet).toHaveBeenCalledWith({
+    field: 'strand',
+    domain: ['-1', '1'],
+  })
 })
 
 test('ungrouped draws nothing', () => {

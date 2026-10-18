@@ -1,4 +1,3 @@
-import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
@@ -199,12 +198,40 @@ export function moveSectionTo(
   return out
 }
 
+// The domain pins only what it names, so a move writes the whole drawn order
+// or the unpinned sections re-sort under it.
+function writeSectionMove(
+  model: Pick<SectionOrderModel, 'sections' | 'domain' | 'setDomain'>,
+  key: string,
+  to: number,
+) {
+  const keys = model.sections.map(s => s.key)
+  model.setDomain(mergeDomain(model.domain, moveSectionTo(keys, key, to)))
+}
+
+export function moveSectionOnto(
+  model: Pick<SectionOrderModel, 'sections' | 'domain' | 'setDomain'>,
+  key: string,
+  ontoKey: string,
+) {
+  const to = model.sections.findIndex(s => s.key === ontoKey)
+  if (to >= 0 && key !== ontoKey) {
+    writeSectionMove(model, key, to)
+  }
+}
+
+export function resetSectionOrderItems(
+  model: Pick<SectionOrderModel, 'domain' | 'setDomain'> | undefined,
+) {
+  return model && model.domain.length > 0
+    ? [resetOrderItem(model, 'section')]
+    : []
+}
+
 /**
- * Move up / Move down / Hide for one section, off the order drawn now. A move
- * writes the WHOLE drawn order: the domain pins what it names and leaves the
- * rest to the default sort, so pinning one section would let the others
- * re-sort under it between two moves. `keepMenuOpen`, because moving a
- * section two places is two clicks; the rows' disabled marks update live.
+ * Move up / Move down / Hide for one section, off the order drawn now.
+ * `keepMenuOpen`, because moving a section two places is two clicks; the rows'
+ * disabled marks update live.
  */
 export function sectionRowMenuItems(
   model: SectionOrderModel,
@@ -214,7 +241,7 @@ export function sectionRowMenuItems(
   const keys = model.sections.map(s => s.key)
   const i = keys.indexOf(key)
   const write = (to: number) => {
-    model.setDomain(mergeDomain(model.domain, moveSectionTo(keys, key, to)))
+    writeSectionMove(model, key, to)
   }
   return [
     {
@@ -240,32 +267,6 @@ export function sectionRowMenuItems(
       onClick: () => {
         model.hideGroup(key)
       },
-    },
-  ]
-}
-
-/**
- * The "Sections" submenu every stacking display offers once it has two: one
- * row per section with its moves, and a reset to the default order that is
- * dead while the domain pins nothing. The runtime half of `domain`, so a
- * reader reorders what a config author declares.
- */
-export function sectionOrderMenuItems(model: SectionOrderModel): MenuItem[] {
-  const { sections } = model
-  if (sections.length < 2) {
-    return []
-  }
-  return [
-    {
-      label: 'Sections',
-      icon: SwapVertIcon,
-      subMenu: [
-        ...sections.map(({ key, label }) => ({
-          label,
-          subMenu: sectionRowMenuItems(model, key, 'section'),
-        })),
-        resetOrderItem(model, 'section'),
-      ],
     },
   ]
 }

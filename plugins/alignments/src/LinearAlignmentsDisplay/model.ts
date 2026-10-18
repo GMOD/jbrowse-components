@@ -172,7 +172,6 @@ import {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getGroupByMenuItem,
-  getSectionOrderMenuItems,
   getReadConnectionsMenuItem,
   getReadsMenuItems,
   getSashimiMenuItem,
@@ -3538,7 +3537,6 @@ export default function stateModelFactory(
             }),
             ...getFiltersMenuItems(self, { readCategories: true }),
             getGroupByMenuItem(self),
-            ...getSectionOrderMenuItems(self),
             ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, self.featureNoun, {
               disabled: !self.showPileup,

@@ -8,6 +8,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
@@ -23,6 +24,7 @@ import { colorFieldOf } from '../shared/alignmentsColor.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
+import { sectionOrderOf } from './menus/groupByMenu.ts'
 import {
   bootAlignmentsDisplay,
   clickMenuItem,
@@ -1890,27 +1892,25 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.facet).toEqual({ field: 'tags.RG', domain: [] })
   })
 
-  test('the Sections menu moves a lane and writes the drawn order as the domain', () => {
+  test('a lane drop writes the drawn order as the domain without a refetch, and Show... offers the reset', () => {
     const display = createDisplay({ withRegions: true })
-    expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
     display.setFacet({ field: 'tags.HP' })
     seedGroups(display, [
       { key: '1', label: 'HP: 1' },
       { key: '2', label: 'HP: 2' },
     ])
-    const rows = () => menuSubItems(display.trackMenuItems(), 'Sections')
-    expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
-      'HP: 1',
-      'HP: 2',
-      'Reset section order',
-    ])
-    const moveDown = menuSubItems(rows(), 'HP: 1')[1] as { onClick: () => void }
+    expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
+    const reset = () =>
+      menuSubItems(display.trackMenuItems(), 'Show...').find(
+        r => 'label' in r && r.label === 'Reset section order',
+      ) as { onClick: () => void } | undefined
+    expect(reset()).toBeUndefined()
     const fetched = display.rpcProps()
-    moveDown.onClick()
+    moveSectionOnto(sectionOrderOf(display)!, '1', '2')
     expect(display.facet).toEqual({ field: 'tags.HP', domain: ['2', '1'] })
     expect(display.rpcProps()).toEqual(fetched)
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
-    ;(rows()[2] as { onClick: () => void }).onClick()
+    reset()!.onClick()
     expect(display.facet).toEqual({ field: 'tags.HP', domain: [] })
   })
 

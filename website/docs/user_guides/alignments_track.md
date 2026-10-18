@@ -149,15 +149,15 @@ for haplotype, `RG` for read group, or any other). Groups share one coverage
 scale and reads missing the tag collect in a trailing "none" section. Grouping
 caps at 40 sections; past that the tail merges into one "N merged values"
 section, and the tag dialog refuses a tag that would reach the cap, telling you
-how many distinct values it found in view first. **Sections** in the track menu
-lists the sections drawn, each with **Move up**, **Move down** and **Hide
-section**, and **Reset section order** returns them to the sorted order.
+how many distinct values it found in view first. Drag a section's chip onto
+another section to move it there; **Show... → Reset section
+order**<!-- menu-path-ok --> returns them to the sorted order.
 
 The `facet` setting pre-groups a track, spelled as on the feature tracks: a
 dimension (`"strand"`, `"pairOrientation"`, ...), a tag as `"tags.HP"`, or any
 other read field. The object form adds `domain`, the section order: the values
-listed stack first, in that order, and the rest follow sorted. A reorder from
-the menu writes the same object:
+listed stack first, in that order, and the rest follow sorted. A chip drag
+writes the same object:
 
 ```json addtrack
 {

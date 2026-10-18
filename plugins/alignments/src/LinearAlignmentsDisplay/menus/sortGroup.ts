@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
-import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
@@ -14,7 +13,6 @@ import { groupByRadioMenuItem } from './groupByMenu.ts'
 
 import type {
   ColumnSortType,
-  Facet,
   LayoutOrder,
   SortColumn,
   SortSetting,
@@ -186,13 +184,6 @@ export interface GroupByMenuModel extends GroupByDialogModel {
   unit: AlignmentsUnit
 }
 
-export interface SectionOrderMenuModel {
-  effectiveFacet: Facet | undefined
-  groupOrder: readonly { key: string; label: string }[]
-  setFacet: (facet?: Facet) => void
-  hideGroup: (key: string) => void
-}
-
 // The sort-by-tag dialog both sort surfaces open: the track menu sorts at the
 // center line, the read's right-click menu at the clicked column.
 export function queueSortByTagDialog(
@@ -210,24 +201,6 @@ export function queueSortByTagDialog(
       handleClose,
     },
   ])
-}
-
-// The Sections submenu is the runtime half of `facet.domain`: a move writes
-// the facet back with the drawn order as its domain, which refetches nothing,
-// since the worker is sent no domain. Absent while chain mode degrades the
-// facet to one section.
-export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
-  const facet = model.effectiveFacet
-  return facet
-    ? sectionOrderMenuItems({
-        sections: model.groupOrder,
-        domain: facet.domain ?? [],
-        setDomain: domain => {
-          model.setFacet({ ...facet, domain })
-        },
-        hideGroup: model.hideGroup,
-      })
-    : []
 }
 
 // Every offered dimension selects directly; a tag needs its name (+ optional

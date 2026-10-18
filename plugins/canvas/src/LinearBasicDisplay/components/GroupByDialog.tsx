@@ -2,36 +2,15 @@ import { useState } from 'react'
 
 import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import {
-  Button,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { colorsWithGrouping } from '../groupByColor.ts'
 import AttributeFieldInput from './AttributeFieldInput.tsx'
 import { GROUPING } from './attributeVerdict.ts'
 
 import type { AttributeScanModel } from './AttributeFieldInput.tsx'
 import type { Plot } from '@jbrowse/core/configuration'
-
-const CHOICES = ['none', 'strand', 'attribute'] as const
-
-type Choice = (typeof CHOICES)[number]
-
-function choiceOf(field: string | undefined): Choice {
-  return !field ? 'none' : field === STRAND_FIELD ? 'strand' : 'attribute'
-}
-
-function fieldOf(choice: Choice, attribute: string) {
-  return choice === 'strand'
-    ? STRAND_FIELD
-    : choice === 'attribute' && attribute
-      ? attribute
-      : undefined
-}
 
 export interface GroupByDialogModel extends AttributeScanModel {
   facet: { field: string } | undefined
@@ -52,23 +31,20 @@ const GroupByDialog = observer(function GroupByDialog({
   colorField: string
 }) {
   const current = model.facet?.field
-  const [choice, setChoice] = useState(choiceOf(current))
   const [attribute, setAttribute] = useState(
     current === STRAND_FIELD ? '' : (current ?? ''),
   )
   const [colorChoice, setColorChoice] = useState<boolean>()
-  const field = fieldOf(choice, attribute.trim())
+  const field = attribute.trim() || undefined
   const alsoColor =
-    colorChoice ??
-    ((color === undefined && colorField === '') ||
-      (colorField !== '' && colorField === (field ?? current)))
+    colorChoice ?? colorsWithGrouping(color, colorField, field ?? current)
 
   return (
     <SubmitDialog
       open
-      title="Group by"
+      title="Group by attribute"
       submitText="Apply"
-      submitDisabled={choice !== 'none' && !field}
+      submitDisabled={!field}
       onCancel={handleClose}
       onSubmit={() => {
         model.applyGroupBy(field, alsoColor)
@@ -86,46 +62,24 @@ const GroupByDialog = observer(function GroupByDialog({
       }
     >
       <Typography color="text.secondary" gutterBottom>
-        Packs the features into labelled sections, one per group, stacked in
-        this track.
+        Packs the features into labelled sections, one per value of the
+        attribute, stacked in this track.
       </Typography>
-      <RadioGroup
-        value={choice}
-        onChange={event => {
-          setChoice(CHOICES.find(c => c === event.target.value) ?? 'none')
-        }}
-      >
-        <FormControlLabel value="none" control={<Radio />} label="None" />
-        <FormControlLabel value="strand" control={<Radio />} label="Strand" />
-        <FormControlLabel
-          value="attribute"
-          control={<Radio />}
-          label="Attribute"
+      <AttributeFieldInput
+        model={model}
+        value={attribute}
+        onChange={setAttribute}
+        use={GROUPING}
+        testid="group-by-attribute"
+        placeholder="e.g. biotype"
+      />
+      <div>
+        <LabeledCheckbox
+          checked={alsoColor}
+          onChange={setColorChoice}
+          label="Also color by this attribute"
         />
-      </RadioGroup>
-      {choice === 'attribute' ? (
-        <AttributeFieldInput
-          model={model}
-          value={attribute}
-          onChange={setAttribute}
-          use={GROUPING}
-          testid="group-by-attribute"
-          placeholder="e.g. biotype"
-        />
-      ) : null}
-      {choice === 'none' ? null : (
-        <div>
-          <LabeledCheckbox
-            checked={alsoColor}
-            onChange={setColorChoice}
-            label={
-              choice === 'strand'
-                ? 'Also color by strand'
-                : 'Also color by this attribute'
-            }
-          />
-        </div>
-      )}
+      </div>
     </SubmitDialog>
   )
 })

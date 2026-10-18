@@ -1,4 +1,5 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
@@ -39,6 +40,19 @@ const MarkFacetChips = observer(function MarkFacetChips({
         hiddenCount={model.hiddenGroups.size}
         onShowHidden={() => {
           model.showAllGroups()
+        }}
+        onMove={(key, ontoKey) => {
+          moveSectionOnto(
+            {
+              sections,
+              domain: model.facet?.domain ?? [],
+              setDomain: domain => {
+                model.setFacetDomain(domain)
+              },
+            },
+            key,
+            ontoKey,
+          )
         }}
         sections={sections.map(section => ({
           key: section.key,

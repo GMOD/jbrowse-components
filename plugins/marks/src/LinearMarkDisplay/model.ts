@@ -1673,7 +1673,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * The Sections menu's reorder lands on the declaration.
+         * A chip drag's reorder lands on the declaration.
          */
         setFacetDomain(domain: string[]) {
           if (self.facet) {

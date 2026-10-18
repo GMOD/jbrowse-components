@@ -4432,9 +4432,10 @@
         "groupByRadioMenuItem",
         "hiddenGroupsItems",
         "mergeDomain",
+        "moveSectionOnto",
         "moveSectionTo",
         "resetOrderItem",
-        "sectionOrderMenuItems",
+        "resetSectionOrderItems",
         "sectionRowMenuItems",
         "showHiddenItems"
       ],

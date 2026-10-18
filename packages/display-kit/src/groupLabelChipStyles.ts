@@ -74,6 +74,24 @@ export const useGroupLabelStyles = makeStyles()(theme => {
       pointerEvents: 'none' as const,
     },
     pill,
+    draggable: {
+      pointerEvents: 'auto' as const,
+      cursor: 'grab',
+      touchAction: 'none',
+    },
+    dragging: {
+      cursor: 'grabbing',
+      opacity: 0.7,
+    },
+    dropLine: {
+      position: 'absolute' as const,
+      left: 0,
+      right: 0,
+      height: 2,
+      background: theme.palette.accent,
+      pointerEvents: 'none' as const,
+      zIndex: 7,
+    },
     pillButton: {
       ...unstyledButton,
       ...pill,
