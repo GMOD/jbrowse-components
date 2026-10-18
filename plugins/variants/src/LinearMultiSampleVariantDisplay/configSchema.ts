@@ -4,7 +4,6 @@ import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { SHOW_LABELS_MODES } from '@jbrowse/plugin-canvas'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
@@ -17,7 +16,7 @@ import {
 } from '../shared/constants.ts'
 import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
 import { variantFilterConfigSchema } from './variantFilterConfigSchema.ts'
-import { DEFAULT_VARIANT_LANE_HEIGHT } from './variantTopBands.ts'
+import { variantsBandConfigSchema } from './variantsBandConfigSchema.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
@@ -281,44 +280,12 @@ export default function configSchemaFactory() {
           'widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP',
       },
       /**
-       * #slot
-       * Draw a `LinearVariantDisplay`-style lane above the genotype rows: one
-       * mark per record at its genomic span, colored by whatever "Color by →
-       * Cells" is set to, drawn by that display's own band code. Overlapping
-       * records stack while the band has room and share a row once it has
-       * not; hovering a mark reports the record, clicking opens its details,
-       * and right-clicking opens the menu a genotype cell does. At genomic
-       * positions only.
+       * #slot variants
+       * The band of the variants themselves above the genotype rows, at
+       * their genomic positions: `show` (default off), `height` and
+       * `showLabels`.
        */
-      showVariantLane: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'draw a lane of the variants themselves above the genotype rows, at their genomic positions',
-      },
-      /**
-       * #slot
-       * Height of the variant lane, spent only while `showVariantLane` is on.
-       */
-      variantLaneHeight: {
-        type: 'number',
-        defaultValue: DEFAULT_VARIANT_LANE_HEIGHT,
-        advanced: true,
-      },
-      /**
-       * #slot
-       * Letter the lane's marks with each record's VCF ID and/or its
-       * description, as a `LinearVariantDisplay` letters the same record. What
-       * the band has room for is decided by that display's fit ladder:
-       * descriptions go first, then IDs are thinned, then dropped.
-       */
-      variantLaneLabels: {
-        type: 'stringEnum',
-        model: types.enumeration('variantLaneLabels', [...SHOW_LABELS_MODES]),
-        defaultValue: 'auto',
-        description:
-          "label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull",
-      },
+      variants: variantsBandConfigSchema,
     },
     {
       /**

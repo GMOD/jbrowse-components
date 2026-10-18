@@ -488,7 +488,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // puts ~690 px between the two synteny bands, so the upper ribbon
               // and the lower one can no longer be taken in at once.
               //
-              // `showVariantLane` is the other half of that review ("there
+              // `variants.show` is the other half of that review ("there
               // should be a linearvariantdisplay of same data multivariantdisplay
               // is showing"): the matrix answers WHO carries a record and the
               // lane answers WHAT the records are, the two boxes the whole figure
@@ -520,7 +520,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
                 type: 'LinearMultiSampleVariantDisplay',
                 height: 370,
                 rowColor: 'group',
-                showVariantLane: true,
+                variants: { show: true },
               },
             ],
           },
@@ -863,7 +863,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // inside this display rather than the separate LinearVariantDisplay
           // track it replaced: same records, same fetch, and the mark now sits
           // in the same box as the columns it names.
-          showVariantLane: true,
+          variants: { show: true },
           // 86 rows. The VCF holds one record, so every pixel of width is the
           // one block and the height is all that has to be budgeted.
           height: 900,
@@ -960,7 +960,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // earns its place twice: one record draws as a block over the span it
           // duplicates, the other as an insertion marker at a point, so the two
           // halves differ in the glyph as well as in the genotypes
-          showVariantLane: true,
+          variants: { show: true },
           height: 900,
           ...AMY2B_ROWS,
         },
@@ -1448,7 +1448,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // rather than two: the lane reads the same filtered records the
           // columns do, so the two cannot disagree about which site is being
           // described the way two separately-filtered tracks could.
-          showVariantLane: true,
+          variants: { show: true },
           height: 500,
           ...CYP_ROWS,
           // Only the stop-gained site. THREE neighbours are in frame otherwise

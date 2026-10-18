@@ -11,7 +11,7 @@ import type { DisplayConfig, ShowLabelsMode } from '@jbrowse/plugin-canvas'
  *
  * A literal rather than a config node, because the lane is a *band* and not a
  * display: it has no config schema of its own to read these off, and the ones
- * that matter to it are already slots on this display (`variantLaneLabels`, and
+ * that matter to it are already slots on this display (`variants.showLabels`, and
  * the cell coloring the marks inherit). Everything else is what a variant record
  * needs, which is almost nothing — a variant has no transcripts, no CDS, no
  * strand and no subfeatures, so `findGlyph` lands on `layoutBox` and the whole
@@ -39,7 +39,7 @@ export function laneDisplayConfig({
     // the alpha a jexl-authored cell color can carry.
     color: { value: `jexl:get(feature,'laneColor')`, field: '' },
     featureHeight,
-    // The label content the `variantLaneLabels` slot asked for, expressed the
+    // The label content `variants.showLabels` asked for, expressed the
     // way plugin-canvas expresses it: withholding the jexl IS how a kind is
     // turned off, and these two expressions are that plugin's own defaults, so a
     // lettered mark reads identically to the same record in a

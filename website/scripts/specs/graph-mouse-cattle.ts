@@ -168,7 +168,7 @@ const dock2Spec: ScreenshotSpec = {
 const bovineVariantLane = (height: number) => ({
   trackId: 'bovine_pangenome_vcf',
   type: 'LinearMultiSampleVariantDisplay',
-  showVariantLane: true,
+  variants: { show: true },
   height,
 })
 

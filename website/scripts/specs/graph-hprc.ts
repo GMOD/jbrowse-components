@@ -211,7 +211,7 @@ export const hprcClusterFixtures = {
           {
             trackId: PGBI_TRACK,
             type: 'LinearMultiSampleVariantDisplay',
-            showVariantLane: true,
+            variants: { show: true },
             height: 340,
             filter: ALLELE_FILTER,
           },
@@ -898,7 +898,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: PGBI_TRACK,
               type: 'LinearMultiSampleVariantDisplay',
-              showVariantLane: true,
+              variants: { show: true },
               // 462 haplotype rows fit in no height a figure can afford, so
               // they are a texture either way, and the graph under them is
               // the half this figure is about

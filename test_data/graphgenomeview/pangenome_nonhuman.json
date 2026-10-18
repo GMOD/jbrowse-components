@@ -300,7 +300,7 @@
           "type": "LinearMultiSampleVariantDisplay",
           "displayId": "bovine_pangenome_vcf_regular",
           "unit": "haplotype",
-          "showVariantLane": true,
+          "variants": { "show": true },
           "rows": {
             "domain": [
               "ANG",

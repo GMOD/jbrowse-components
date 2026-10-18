@@ -1540,7 +1540,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item is disabled until the tree is showing and carries branch lengths.',
         }
       : undefined,
-  showVariantLane: (value, { displayType }) =>
+  'variants.show': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)

@@ -58,7 +58,7 @@ export const MIN_VARIANT_LANE_HEIGHT = 8
 export const MAX_VARIANT_LANE_HEIGHT = 120
 
 /**
- * The `variantLaneHeight` slot's default, so the slot and the menu's reset read
+ * `variants.height`'s default, so the slot and the menu's reset read
  * one number. 40px holds the marks, an ID line and a description line.
  */
 export const DEFAULT_VARIANT_LANE_HEIGHT = 40

@@ -155,7 +155,7 @@ function collisions(boxes: TextBox[]) {
 // The figures' 1400px viewport, whose lane is ~1960 px of track.
 function laneAt(records: LaneRecord[], bpPerPx: number) {
   const { display, view } = createTestEnvironment({
-    displayConfig: { showVariantLane: true },
+    displayConfig: { variants: { show: true } },
   }).createDisplay()
   view.setWidth(1960)
   view.setNewView(bpPerPx, 0)

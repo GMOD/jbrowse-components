@@ -5,7 +5,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 test('the layout is a fetch input, and columns spend no band on the lane', () => {
   const { display } = createTestEnvironment({
-    displayConfig: { showVariantLane: true },
+    displayConfig: { variants: { show: true } },
   }).createDisplay()
   expect(display.rpcProps().layout).toBe('genomic')
   expect(display.showVariantLane).toBe(true)

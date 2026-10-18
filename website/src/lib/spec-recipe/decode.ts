@@ -79,10 +79,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 //
 // A graph track's `pane` is flattened the same way: its keys are the graph's
 // settings, each one a control of its own. So is each band object of the
-// alignments and MAF displays (`coverage`, `sashimi`, ...), to one entry per
-// member under its dotted path, `coverage.show`, and so are the junction and
-// connection objects of the alignments display's `filter`,
-// `filter.junctions.minReads`.
+// alignments, MAF and multi-sample variant displays (`coverage`, `sashimi`,
+// `variants`, ...), to one entry per member under its dotted path,
+// `coverage.show`, and so are the junction and connection objects of the
+// alignments display's `filter`, `filter.junctions.minReads`.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {
     return []
@@ -188,6 +188,7 @@ const BAND_OBJECTS = new Set([
   'sashimi',
   'readConnections',
   'conservation',
+  'variants',
 ])
 
 // A band's `show` and `mark` are one radio on the read connections ("None",

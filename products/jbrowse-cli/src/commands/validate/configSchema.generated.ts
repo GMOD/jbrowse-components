@@ -11350,6 +11350,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "VariantsBand": {
+      "title": "VariantsBand",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the variants themselves above the genotype rows, at their genomic positions.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the band in pixels, taken from the rows.",
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "showLabels": {
+          "description": "label text drawn beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both, the band's collision cull deciding what fits.",
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "nameAndDescription",
+              "name",
+              "description",
+              "none"
+            ]
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -11571,39 +11618,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showVariantLane": {
-          "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
-          "default": false,
+        "variants": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "variantLaneHeight": {
-          "default": 40,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "variantLaneLabels": {
-          "description": "label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
-          "default": "auto",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "auto",
-              "nameAndDescription",
-              "name",
-              "description",
-              "none"
-            ]
+            "$ref": "#/$defs/VariantsBand"
           }
         },
         "maxFeatureScreenDensity": {
@@ -16179,14 +16199,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInsertionGlyphs": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showInsertionGlyphs"
             },
-            "showVariantLane": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showVariantLane"
-            },
-            "variantLaneHeight": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneHeight"
-            },
-            "variantLaneLabels": {
-              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variantLaneLabels"
+            "variants": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/variants"
             },
             "minorAlleleFrequencyFilter": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minorAlleleFrequencyFilter"

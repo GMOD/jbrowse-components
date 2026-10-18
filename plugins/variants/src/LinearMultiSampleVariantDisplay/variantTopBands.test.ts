@@ -180,8 +180,8 @@ describe('a resized lane outlives the display instance', () => {
     expect(d.variantLaneHeight).toBe(64)
     // on the config node, not the instance: the display can be destroyed and
     // recreated (untick/retick) and the band the user dragged comes back
-    expect(d.configuration.variantLaneHeight).toBe(64)
-    expect('variantLaneHeight' in getSnapshot(d)).toBe(false)
+    expect(d.configuration.variants.height).toBe(64)
+    expect('variants' in getSnapshot(d)).toBe(false)
   })
 
   test('a drag is clamped by the shared band rule', () => {

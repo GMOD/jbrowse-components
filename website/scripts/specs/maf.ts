@@ -788,7 +788,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // a texture either way; clustering gives the texture edges.
               trackId: 'hprc2_pgbi_grch38',
               type: 'LinearMultiSampleVariantDisplay',
-              showVariantLane: true,
+              variants: { show: true },
               height: 240,
               filter: HPRC_PGBI_ALLELES,
               runClustering: true,

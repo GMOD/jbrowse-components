@@ -704,7 +704,7 @@ export function stateModelFactory(
          * up with the cells under it.
          */
         get showVariantLane(): boolean {
-          return this.atGenomicPositions && getConf(self, 'showVariantLane')
+          return this.atGenomicPositions && getConf(self, ['variants', 'show'])
         },
         /**
          * #getter
@@ -712,7 +712,7 @@ export function stateModelFactory(
          * `topBands.laneHeight`.
          */
         get variantLaneHeight(): number {
-          return getConf(self, 'variantLaneHeight')
+          return getConf(self, ['variants', 'height'])
         },
         /**
          * #getter
@@ -720,7 +720,7 @@ export function stateModelFactory(
          * `laneRenderedLabels`.
          */
         get variantLaneLabels(): ShowLabelsMode {
-          return getConf(self, 'variantLaneLabels')
+          return getConf(self, ['variants', 'showLabels'])
         },
 
         /**
@@ -957,7 +957,7 @@ export function stateModelFactory(
            * rows.
            */
           setShowVariantLane(arg: boolean) {
-            setConf(self, 'showVariantLane', arg)
+            setConf(self, ['variants', 'show'], arg)
           },
           /**
            * #action
@@ -967,7 +967,7 @@ export function stateModelFactory(
           setVariantLaneHeight(arg: number) {
             setConf(
               self,
-              'variantLaneHeight',
+              ['variants', 'height'],
               clampBandHeight(self.variantLaneHeight, arg, VARIANT_LANE_BOUNDS),
             )
           },
@@ -975,7 +975,7 @@ export function stateModelFactory(
            * #action
            */
           setVariantLaneLabels(arg: ShowLabelsMode) {
-            setConf(self, 'variantLaneLabels', arg)
+            setConf(self, ['variants', 'showLabels'], arg)
           },
           /**
            * #action

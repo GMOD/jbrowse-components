@@ -31,7 +31,7 @@ interface LaneRegion {
  *
  * The records come from the cell payload, which already holds each one's span,
  * ID, description, SO type and resolved color, so the band costs no RPC and
- * `showVariantLane` stays a render-tier setting. The packer, the fit ladder, the
+ * `variants.show` stays a render-tier setting. The packer, the fit ladder, the
  * painter and the hit test are plugin-canvas's own, which is what keeps the
  * band and a `LinearVariantDisplay` from drifting apart.
  *

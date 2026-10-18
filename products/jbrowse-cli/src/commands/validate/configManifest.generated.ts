@@ -6097,16 +6097,24 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showVariantLane",
-          "type": "boolean"
-        },
-        {
-          "name": "variantLaneHeight",
-          "type": "number"
-        },
-        {
-          "name": "variantLaneLabels",
-          "type": "variantLaneLabels"
+          "name": "variants",
+          "type": "VariantsBandConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            },
+            {
+              "name": "showLabels",
+              "type": "showLabels"
+            }
+          ],
+          "schema": "VariantsBand",
+          "writes": "members"
         }
       ],
       "legacyKeys": [

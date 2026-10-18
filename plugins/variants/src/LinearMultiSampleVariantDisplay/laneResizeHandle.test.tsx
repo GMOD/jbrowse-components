@@ -42,7 +42,7 @@ test('a lane dragged shut stops at the floor and stays grabbable', () => {
 
 test('a slot above the ceiling drags from the reserved height, not the slot', () => {
   const display = laneDisplay()
-  setConf(display, 'variantLaneHeight', 500)
+  setConf(display, ['variants', 'height'], 500)
   render(<VariantLaneOverlay model={display} />)
 
   drag(screen.getByTestId('variant_lane_resize_handle'), -10)

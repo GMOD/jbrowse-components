@@ -298,7 +298,7 @@ displays — and the band cannot drift from the display it stands in for.
 
 - **Main thread, and no second fetch.** Everything a variant _record_ is already
   rides in the payload, so the band costs no RPC change and no extra bytes, and
-  `showVariantLane` stays a render-tier setting a toggle must not refetch. The
+  `variants.show` stays a render-tier setting a toggle must not refetch. The
   pass is per record (thousands), not per cell (millions), and plugin-canvas
   packs main-thread anyway.
 - **The lane never thins its records.** The shared painter fades each piled
