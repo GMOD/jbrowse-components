@@ -6,7 +6,13 @@ import {
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import {
+  colorEncodingOf,
+  colorFieldOf,
+  colorSnapshotOf,
+} from '@jbrowse/display-kit/colorConfigSchema'
 
+import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import {
   laneColorKey,
   laneFieldKey,
@@ -104,6 +110,35 @@ test('a field keys the values on screen through the channel', () => {
   expect(
     scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
   ).toEqual(['rbcL', 'psbA', NO_VALUE_LABEL])
+})
+
+test("a field's unknown paints the values its domain leaves out one row, Other", () => {
+  const field = categoricalField('cluster', {
+    domain: ['rbcL'],
+    unknown: '#cccccc',
+  })
+  const [scale] = laneFieldKey(
+    [
+      hit('a', 100, 200, field.color('psbA'), 'x', 'psbA'),
+      hit('b', 300, 400, field.color('rbcL'), 'y', 'rbcL'),
+      hit('c', 500, 600, field.color('atpA'), 'z', 'atpA'),
+    ],
+    [0, 800],
+    field,
+  )
+  expect(
+    scale?.kind === 'categorical' ? scale.entries.map(e => e.label) : [],
+  ).toEqual(['rbcL', 'Other'])
+})
+
+test('the gene color config carries unknown to the field it paints through', () => {
+  const conf = geneColorConfigSchema.create({
+    field: 'cluster',
+    domain: ['rbcL'],
+    unknown: '#cccccc',
+  })
+  const field = colorFieldOf(colorEncodingOf(colorSnapshotOf(conf)))
+  expect(field?.color('psbA')).toBe('#cccccc')
 })
 
 test("color's title and labels head and name the field's key", () => {

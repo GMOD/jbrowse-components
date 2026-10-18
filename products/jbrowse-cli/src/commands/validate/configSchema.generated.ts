@@ -4819,7 +4819,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -5640,7 +5640,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -7506,6 +7506,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             },
+            "unknown": {
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
             "labels": {
               "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
@@ -8652,6 +8661,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               }
             },
+            "unknown": {
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
+            },
             "labels": {
               "description": "key label for each domain value, one each in order, or under threshold for each interval from the lowest; one past the list keeps its own name.",
               "if": {
@@ -9145,7 +9163,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own and a feature the no-value grey.",
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
               "if": {
                 "type": "null"
               },
@@ -11321,6 +11339,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "items": {
                   "$ref": "#/$defs/CssColorEntry"
                 }
+              }
+            },
+            "unknown": {
+              "description": "color for a value missing from domain: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting, so a row keeps its own, a variant cell the alt hue and a feature the no-value grey.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
               }
             },
             "labels": {

@@ -4325,6 +4325,10 @@ export const configManifest: ConfigManifest = {
               "type": "CssColorEntry[]"
             },
             {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
+            },
+            {
               "name": "labels",
               "type": "string[]",
               "liftsNumbers": true
@@ -5052,6 +5056,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "labels",
@@ -6027,6 +6035,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "range",
               "type": "CssColorEntry[]"
+            },
+            {
+              "name": "unknown",
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "labels",

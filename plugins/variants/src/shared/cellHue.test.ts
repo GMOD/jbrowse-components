@@ -175,6 +175,22 @@ describe('a record field', () => {
     expect(color).not.toBe(abgr(NO_CATEGORY_COLOR))
   })
 
+  test('paints the values the domain leaves out, and no value, in unknown', () => {
+    const listed = {
+      ...clnsig,
+      domain: ['Pathogenic'],
+      range: ['#aa0000'],
+      unknown: '#cccccc',
+    }
+    const color = hue(listed)
+    expect(color(variant({ CLNSIG: ['Pathogenic'] }))).toBe(abgr('#aa0000'))
+    expect(color(variant({ CLNSIG: ['Benign'] }))).toBe(abgr('#cccccc'))
+    expect(color(variant({}))).toBe(abgr('#cccccc'))
+    const none = hue({ ...listed, unknown: '' })
+    expect(none(variant({ CLNSIG: ['Benign'] }))).toBe(abgr(ALT_HUE))
+    expect(none(variant({}))).toBe(abgr(ALT_HUE))
+  })
+
   test('honours a declared domain and range', () => {
     const color = hue({ ...clnsig, domain: ['Pathogenic'], range: ['#aa0000'] })
     expect(color(variant({ CLNSIG: ['Pathogenic'] }))).toBe(abgr('#aa0000'))

@@ -16,7 +16,8 @@ Adding them is additive: no slot path moves, so it can land after the 5.0.0
 freeze (ADR-120). The call is which displays' keys want them.
 
 `unknown`, d3's color for every value a `domain` leaves out, follows the same
-rule: FeatureColor and MarkColor declare it, since the canvas and mark keys
-name its row Other through `derivedColorScale`, and RowColor had it already.
-The alignments, variant, synteny, chord, multi-way gene and MAF color objects
-join when their keys read it.
+rule: FeatureColor, MarkColor, VariantCellColor, ChordColor and
+MultiWayGeneColor declare it, since their keys name its row Other through
+`derivedColorScale`, and RowColor had it already. The alignments, synteny and
+MAF color objects paint their categories through code of their own and join
+when that code reads it.

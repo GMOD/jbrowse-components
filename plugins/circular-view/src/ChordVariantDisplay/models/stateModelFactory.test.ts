@@ -134,6 +134,17 @@ test('a constant color keys as one row, a field as the values it paints', async 
   expect(
     scale?.kind === 'categorical' && scale.entries.map(e => e.label),
   ).toEqual(['Deletion', 'Inversion'])
+
+  setConf(display, 'color', {
+    field: 'svType',
+    domain: ['DEL'],
+    range: ['#aa0000'],
+    unknown: '#cccccc',
+  })
+  const [listed]: ColorScale[] = display.colorScales
+  expect(
+    listed?.kind === 'categorical' && listed.entries.map(e => e.label),
+  ).toEqual(['Deletion', 'Other'])
 })
 
 test('clicking a chord selects the record and opens its details', async () => {
