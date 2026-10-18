@@ -125,7 +125,7 @@ export default function configSchemaF() {
        *   color: {
        *     field: 'segmean',
        *     scale: 'threshold',
-       *     domain: ['-1', '-0.3', '0.3', '1'],
+       *     domain: [-1, -0.3, 0.3, 1],
        *     range: ['#2166ac', '#92c5de', '#f7f7f7', '#f4a582', '#b2182b'],
        *     labels: ['Deep loss', 'Loss', 'Balanced', 'Gain', 'Amplification'],
        *   },

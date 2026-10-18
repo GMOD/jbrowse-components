@@ -22,7 +22,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 ```js
-{ type: 'LinearSyntenyView', color: { field: 'identity', scale: 'threshold', domain: ['0.95', '0.99'] } }
+{ type: 'LinearSyntenyView', color: { field: 'identity', scale: 'threshold', domain: [0.95, 0.99] } }
 ```
 
 ```js

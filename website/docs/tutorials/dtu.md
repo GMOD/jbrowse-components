@@ -250,7 +250,7 @@ zero and muscle-preferred above. A value on a cut takes the interval above it.
     "color": {
       "field": "dif_called",
       "scale": "threshold",
-      "domain": ["-0.6", "-0.3", "0", "0.3", "0.6"],
+      "domain": [-0.6, -0.3, 0, 0.3, 0.6],
       "range": [
         "#124f95",
         "#2370cc",

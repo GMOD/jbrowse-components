@@ -101,7 +101,7 @@ export function syntenyColorSlots({
  * { type: 'LinearSyntenyView', color: { field: 'identity', scheme: 'magma', domainMin: 0.9 } }
  * ```
  * ```js
- * { type: 'LinearSyntenyView', color: { field: 'identity', scale: 'threshold', domain: ['0.95', '0.99'] } }
+ * { type: 'LinearSyntenyView', color: { field: 'identity', scale: 'threshold', domain: [0.95, 0.99] } }
  * ```
  * ```js
  * {

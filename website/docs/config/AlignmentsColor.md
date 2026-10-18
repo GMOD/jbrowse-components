@@ -30,7 +30,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  color: { field: 'insertSize', domain: ['150', '600'] },
+  color: { field: 'insertSize', domain: [150, 600] },
 }
 ```
 

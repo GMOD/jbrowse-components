@@ -26,7 +26,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: {
     field: 'score',
     scale: 'threshold',
-    domain: ['0.5', '0.9'],
+    domain: [0.5, 0.9],
     range: ['#c6dbef', '#6baed6', '#08519c'],
   },
 }

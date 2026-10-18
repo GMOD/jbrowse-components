@@ -201,7 +201,7 @@ grammar-of-graphics terms, the track's `color` is a color scale that maps the
     "color": {
       "field": "total_copy_number",
       "scale": "threshold",
-      "domain": ["1", "2", "3", "4"],
+      "domain": [1, 2, 3, 4],
       "range": ["#2166ac", "#92c5de", "#e0e0e0", "#f4a582", "#b2182b"],
       "labels": ["CN 0", "CN 1", "CN 2", "CN 3", "CN 4+"],
       "title": "Copy number"
@@ -483,7 +483,7 @@ set [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) to
       "color": {
         "field": "copynumber_state",
         "scale": "threshold",
-        "domain": ["0.5", "1.5"],
+        "domain": [0.5, 1.5],
         "range": ["#2166ac", "#bdbdbd", "#f4a582"],
         "labels": ["Haplotype lost (0)", "One copy", "Two or more copies"],
         "title": "Copy number per haplotype"

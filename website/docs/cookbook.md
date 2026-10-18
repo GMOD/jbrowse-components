@@ -208,15 +208,15 @@ ribbons included:
 `field` names any attribute the track has. On a gene track a transcript's parts
 paint in the transcript's value, or the gene's where the transcript has none.
 
-| Recipe                        | `color`                                                                                      |
-| ----------------------------- | -------------------------------------------------------------------------------------------- |
-| Solid color                   | `"#6a3d9a"`                                                                                  |
-| A color per value             | `{ "field": "type" }`                                                                        |
-| Chosen colors for some values | `{ "field": "type", "domain": ["CDS", "exon"], "range": ["#d62728", "#2ca02c"] }`            |
-| Bins of a number              | `{ "field": "score", "scale": "threshold", "domain": ["7.3"], "range": ["#0068d1", "red"] }` |
-| A gradient along a number     | `{ "field": "score", "scheme": "viridis" }`                                                  |
-| BED file's own colors         | leave `color` unset                                                                          |
-| Anything else                 | a `jexl:` expression over `feature` returning a color                                        |
+| Recipe                        | `color`                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| Solid color                   | `"#6a3d9a"`                                                                                |
+| A color per value             | `{ "field": "type" }`                                                                      |
+| Chosen colors for some values | `{ "field": "type", "domain": ["CDS", "exon"], "range": ["#d62728", "#2ca02c"] }`          |
+| Bins of a number              | `{ "field": "score", "scale": "threshold", "domain": [7.3], "range": ["#0068d1", "red"] }` |
+| A gradient along a number     | `{ "field": "score", "scheme": "viridis" }`                                                |
+| BED file's own colors         | leave `color` unset                                                                        |
+| Anything else                 | a `jexl:` expression over `feature` returning a color                                      |
 
 `score` paints a gradient unless `scale` says otherwise, and any other field a
 color per value; `domainMin` and `domainMax` pin a gradient's ends, which

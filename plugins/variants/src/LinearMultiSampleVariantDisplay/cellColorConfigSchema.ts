@@ -33,7 +33,7 @@ import {
  *   color: {
  *     field: 'INFO.AF',
  *     scale: 'threshold',
- *     domain: ['0.001', '0.01', '0.05'],
+ *     domain: [0.001, 0.01, 0.05],
  *     range: ['#b2182b', '#ef8a62', '#67a9cf', '#2166ac'],
  *   },
  * }

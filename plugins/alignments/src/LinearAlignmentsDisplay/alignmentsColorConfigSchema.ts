@@ -50,7 +50,7 @@ import {
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   color: { field: 'insertSize', domain: ['150', '600'] },
+ *   color: { field: 'insertSize', domain: [150, 600] },
  * }
  * ```
  * ```js

@@ -51,7 +51,7 @@ const RANK_COLOR_DEFAULTS = {
   color: {
     field: 'rank',
     scale: 'threshold',
-    domain: ['1'],
+    domain: [1],
     range: ['rgb(52,152,219)', 'rgb(237,137,44)'],
     labels: ['reference', 'other assemblies'],
     title: 'Segment rank',

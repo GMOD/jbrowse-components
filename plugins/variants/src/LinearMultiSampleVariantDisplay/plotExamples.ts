@@ -7,7 +7,7 @@ export const MULTI_SAMPLE_VARIANT_PLOT_EXAMPLES: PlotExample[] = [
     description: 'alt cells colored by consequence impact',
   },
   {
-    plot: '{ "color": { "field": "INFO.AF", "scale": "threshold", "domain": ["0.01", "0.05"] } }',
+    plot: '{ "color": { "field": "INFO.AF", "scale": "threshold", "domain": [0.01, 0.05] } }',
     description: 'rare, low-frequency and common variants in three colors',
   },
   {
