@@ -175,13 +175,16 @@ The dialog's other tabs take a structure from elsewhere:
 
 Click the arrow beside **Launch** to list everything the dialog can build.
 **Launch 1D protein annotation view** opens a linear genome view whose genome is
-the protein: the plugin registers the UniProt accession as a temporary assembly
+the protein. The plugin registers the UniProt accession as a temporary assembly
 with the amino-acid sequence as its reference, so coordinates are residues. The
-view has a track per UniProt feature type, plus Antigen, Variation, AlphaFold
-confidence (pLDDT) and AlphaMissense scores. All are off at first, so turn them
-on in the track selector under **Session tracks**.
+view opens with these tracks on:
 
-<Figure src="/img/protein/annotation_1d.png" caption="TP53 above the 1D protein view its gene menu launched, with four session tracks in residue coordinates." />
+- **UniProt features**, a section per feature type
+- **Antigen**
+- **AlphaFold confidence** (pLDDT) and **AlphaMissense scores**
+- **ClinVar**, the transcript's missense variants
+
+<Figure src="/img/protein/annotation_1d.png" caption="TP53 above the 1D protein view its gene menu launched, with its tracks in residue coordinates." />
 
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, then the 1D annotation view." />
 

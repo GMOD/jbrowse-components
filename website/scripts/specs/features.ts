@@ -87,8 +87,7 @@ const PROTEIN_LAUNCH_ANCHOR = {
 // page documents is only reachable here.
 //
 // Split out from its one caller for the video tour `proteins/annotation_1d`,
-// which films this same route: the one thing the still cannot say is that the
-// launch opens the view with none of its tracks on.
+// which films this same route.
 //
 // The split button had two more destinations until protein3d 0.9.0 removed them
 // (`Launch MSA view (AlphaFold a3m)` and `Launch 3D structure + MSA view`), both
@@ -761,19 +760,15 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The other view the protein dialog builds, and the one the page describes in
-  // a paragraph with no picture: a linear genome view whose GENOME is the
-  // protein. protein3d registers the UniProt accession as a temporary assembly
-  // whose reference sequence is the amino-acid chain, then turns on a track per
-  // UniProt feature type over it plus Antigen, Variation, pLDDT and
-  // AlphaMissense. Coordinates are residues all the way down, so a reader sees
-  // the same machinery answering a question the genome cannot phrase.
+  // The other view the protein dialog builds: a linear genome view whose
+  // GENOME is the protein. protein3d registers the UniProt accession as a
+  // temporary assembly whose reference sequence is the amino-acid chain, and
+  // opens UniProt features (a section per feature type), Antigen, AlphaFold
+  // confidence, AlphaMissense and ClinVar over it.
   //
-  // Clicked rather than declared: `LaunchView-ProteinView` takes `url`,
-  // `uniprotId`, `connectedView` and the rest, and nothing that opens this view.
-  // The route through the dialog's split button is the only one there is, which
-  // also makes the frame a picture of the button the prose names.
-  //
+  // Clicked rather than declared, so the frame is also a picture of the split
+  // button the prose names. No callouts: protein3d prefixes each trackId with
+  // the view's generated id, so no anchor can name one of its tracks.
   {
     mode: 'url',
     name: 'protein/annotation_1d',
@@ -781,73 +776,18 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readyTimeout: 120000,
-    clicksChange:
-      'launch the 1D protein annotation view and turn on four of its tracks',
+    clicksChange: 'launch the 1D protein annotation view',
     actions: [
       ...OPEN_PROTEIN_LAUNCH_MENU,
       { type: 'click', text: 'Launch 1D protein annotation view' },
-      // The launch adds the tracks to the session and opens the view with none
-      // of them on, so the frame the page wants is four clicks further along.
-      // `No tracks active` is the view's own empty state, and gating on it is
-      // what says the assembly registered and the view navigated.
-      { type: 'waitForText', text: 'No tracks active', timeout: 120000 },
-      { type: 'click', text: 'Open track selector' },
-      // The list opens with its categories collapsed, and everything protein3d
-      // added is under this one.
-      { type: 'click', text: 'Session tracks' },
-      // The last of them to be added, so its row is the selector having
-      // finished filling in.
-      { type: 'waitForText', text: 'AlphaMissense scores', timeout: 120000 },
-      // Four of the nineteen, in the order they stack: the two UniProt feature
-      // types that carry TP53's story, then the two per-residue score tracks.
-      // Every one of them thins out over the terminal tails the DNA-binding
-      // core sits between, which is what makes one frame readable instead of
-      // nineteen bands of the same length.
-      { type: 'click', text: 'DNA binding' },
-      { type: 'click', text: 'Natural variant' },
-      { type: 'click', text: 'AlphaFold confidence' },
-      { type: 'click', text: 'AlphaMissense scores' },
-      // The drawer takes ~400px off the views while it is open and an LGV keeps
-      // its bp-per-pixel across a resize, so the genome view above is captured
-      // at a wider window than the session opened at unless this closes first.
-      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
+      { type: 'waitForText', text: 'type: Natural variant', timeout: 120000 },
+      // opened last, after the transcript's alignment to the entry
+      { type: 'waitForText', text: 'ClinVar', timeout: 120000 },
       { type: 'waitForAppSettled' },
     ],
     // The launch leaves the cursor where the menu item was, which is over the
     // new view's own track area.
     hideTooltip: true,
-    // the two views and nothing under them, from the run's own
-    // `CONTENT CLIPPED BELOW THE FOLD`: at 900 the AlphaMissense heatmap was
-    // cut mid-row, and it is the track a reader has least idea what to expect
-    // of.
-    viewportHeight: 1045,
-    // In the DNA binding lane's empty band, over the stretch each one names, so
-    // the three tracks under it read as one statement per region.
-    annotations: [
-      {
-        type: 'text',
-        text: 'DNA-binding core: confident fold, substitutions predicted pathogenic',
-        fontSize: 18,
-        maxWidth: 700,
-        anchor: {
-          view: 1,
-          trackId: 'P04637-DNA binding',
-          loc: 'P04637:108',
-          fracY: 0.72,
-        },
-      },
-      {
-        type: 'text',
-        text: 'Tails: low confidence, mostly benign',
-        fontSize: 18,
-        maxWidth: 400,
-        anchor: {
-          view: 1,
-          trackId: 'P04637-DNA binding',
-          loc: 'P04637:4',
-          fracY: 0.72,
-        },
-      },
-    ],
+    viewportHeight: 1500,
   },
 ]

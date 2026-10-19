@@ -195,16 +195,13 @@ export const proteinVideos: VideoSpec[] = [
     ],
     tailMs: 1200,
   },
-  // protein3d adds its tracks to the session and turns none of them on, so a
-  // reader who has only seen the figure takes this route and finds nothing:
-  // the view arrives in one state and the figure shows another.
   {
     name: 'proteins/annotation_1d',
     description:
-      "The gene menu to a linear genome view whose genome is a protein: the launch dialog's split button, the 1D view arriving with none of its tracks on, and four of them turned on in residue coordinates",
+      "The gene menu to a linear genome view whose genome is a protein: the launch dialog's split button, then the 1D view arriving with its tracks in residue coordinates",
     goal: "Open TP53's protein as a genome of its own, with tracks on it",
     url: proteinLaunchFixtures.session,
-    // the two views and the drawer open beside them
+    // the genome view and the 1D view's first tracks
     viewportHeight: 1170,
     // the UCSC hub config is ~570 tracks and pulls four remote plugins
     readySelector: '::-p-text(NCBI RefSeq)',
@@ -233,39 +230,18 @@ export const proteinVideos: VideoSpec[] = [
         hold: 2500,
       },
       { type: 'click', text: 'Launch 1D protein annotation view' },
-      // the protein registered as an assembly, and nothing on yet
       {
         type: 'waitForText',
-        text: 'No tracks active',
+        text: 'type: Natural variant',
         timeout: 120000,
         cut: true,
       },
-      {
-        type: 'delay',
-        ms: 2500,
-        say: 'It opens on the amino-acid chain, with its tracks off',
-      },
-      {
-        type: 'click',
-        text: 'Open track selector',
-        say: 'Turn on four tracks from UniProt and AlphaFold',
-      },
-      // everything protein3d added is under this category
-      { type: 'click', text: 'Session tracks', hold: 1500 },
-      { type: 'waitForText', text: 'AlphaMissense scores', timeout: 120000 },
-      { type: 'click', text: 'DNA binding', hold: 1500 },
-      { type: 'click', text: 'Natural variant', hold: 1500 },
-      { type: 'click', text: 'AlphaFold confidence', hold: 1500 },
-      { type: 'click', text: 'AlphaMissense scores', hold: 1500 },
-      {
-        type: 'click',
-        selector: 'button[aria-label="Close drawer"]',
-      },
+      { type: 'waitForText', text: 'ClinVar', timeout: 120000 },
       { type: 'waitForAppSettled' },
       {
         type: 'delay',
         ms: 4000,
-        say: 'A binding region, variants and two AlphaFold scores, residue by residue',
+        say: 'A section per UniProt feature type, then AlphaFold scores, residue by residue',
       },
     ],
     tailMs: 3000,
