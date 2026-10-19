@@ -116,6 +116,7 @@ import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
 import { releaseLaneAssembly } from './laneHolders.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
+  LANE_TEMPLATE_MAX_BP,
   coloredLaneLayer,
   laneLayerCellsOf,
   laneLayerDomains,
@@ -152,7 +153,9 @@ import {
   clipGroupToAnchor,
   groupFeatures,
   laneFetchRegion,
+  laneFetchRegionMaxBp,
   laneIndelsOf,
+  laneTemplateRegion,
   mergeContiguousRegions,
   rowAssembliesOf,
   tickIntervalFor,
@@ -1763,17 +1766,20 @@ export function stateModelFactory(
         if (regions.length) {
           out.set(self.anchorAssemblyName, {
             regions,
-            spanBp: self.visibleBpSpan,
+            templateRegions:
+              laneFetchRegionMaxBp(self.visibleBpSpan) > LANE_TEMPLATE_MAX_BP
+                ? undefined
+                : regions,
             bpPerPx: self.lgv.bpPerPx,
           })
         }
         for (const [assemblyName, frame] of self.rowFrames) {
           if (frame && self.holdsAssembly(assemblyName)) {
-            const spanBp = frame.max - frame.min
+            const template = laneTemplateRegion(frame, LANE_TEMPLATE_MAX_BP)
             out.set(assemblyName, {
               regions: [{ assemblyName, ...laneFetchRegion(frame) }],
-              spanBp,
-              bpPerPx: spanBp / self.canvasWidth,
+              templateRegions: template && [{ assemblyName, ...template }],
+              bpPerPx: (frame.max - frame.min) / self.canvasWidth,
             })
           }
         }

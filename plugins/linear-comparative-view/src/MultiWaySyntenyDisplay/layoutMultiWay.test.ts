@@ -15,6 +15,7 @@ import {
   frameTickXs,
   laneFetchRegion,
   laneFetchRegionMaxBp,
+  laneTemplateRegion,
   laneFetchWindow,
   groupFeatures,
   groupRunSpansOnRow,
@@ -1390,6 +1391,37 @@ test('the fetch region bound is a fact of the span alone', () => {
     expect(end - start).toBeLessThanOrEqual(laneFetchRegionMaxBp(span))
   }
   expect(widths.size).toBe(2)
+})
+
+test('a template region keeps a 1-2 Mb lane under the cap at every pan, and gives up past it', () => {
+  const CAP = 5_000_000
+  const spanFrame = (at: number, span: number): RowFrame => ({
+    refName: 'chr1',
+    min: at,
+    max: at + span,
+    fitMin: at,
+    fitMax: at + span,
+    flipped: false,
+    alsoOn: [],
+    alsoOnMore: 0,
+    alsoAt: [],
+  })
+  const regionsAlongAPan = (span: number) => {
+    const out = []
+    for (let at = 4_000_000; at < 24_000_000; at += 50_000) {
+      out.push(laneTemplateRegion(spanFrame(at, span), CAP))
+    }
+    return out
+  }
+  for (const span of [1_100_000, 1_600_000, 1_990_000]) {
+    expect(laneFetchRegionMaxBp(span)).toBeGreaterThan(CAP)
+    for (const region of regionsAlongAPan(span)) {
+      expect(region!.end - region!.start).toBeLessThanOrEqual(CAP)
+    }
+  }
+  expect(regionsAlongAPan(2_100_000).every(r => r === undefined)).toBe(true)
+  const small = spanFrame(4_000_000, 500_000)
+  expect(laneTemplateRegion(small, CAP)).toEqual(laneFetchRegion(small))
 })
 
 test('a lane whose shared order votes both ways keeps the anchor-order flip', () => {

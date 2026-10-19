@@ -8,11 +8,8 @@ import {
 import type { LaneWindow } from './laneFetch.ts'
 
 function windowOn(assemblyName: string): LaneWindow {
-  return {
-    regions: [{ assemblyName, refName: 'chr1', start: 0, end: 100 }],
-    spanBp: 100,
-    bpPerPx: 1,
-  }
+  const regions = [{ assemblyName, refName: 'chr1', start: 0, end: 100 }]
+  return { regions, templateRegions: regions, bpPerPx: 1 }
 }
 
 const windows = new Map([

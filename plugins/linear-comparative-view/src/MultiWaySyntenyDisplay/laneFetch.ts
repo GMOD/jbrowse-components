@@ -8,9 +8,10 @@ import type { Feature } from '@jbrowse/core/util'
 import type { IsoformSettings } from '@jbrowse/plugin-canvas'
 import type { LodTier } from '@jbrowse/synteny-core'
 
+/** `templateRegions` is what a template layer reads, none past its cap */
 export interface LaneWindow {
   regions: FetchRegion[]
-  spanBp: number
+  templateRegions: FetchRegion[] | undefined
   bpPerPx: number
 }
 

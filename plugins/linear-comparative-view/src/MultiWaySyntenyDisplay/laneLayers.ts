@@ -9,7 +9,7 @@ import {
 import { isThreshold } from '@jbrowse/render-core/marks'
 
 import { regionKey } from './laneFetch.ts'
-import { frameSegments, laneFetchRegionMaxBp } from './layoutMultiWay.ts'
+import { frameSegments } from './layoutMultiWay.ts'
 
 import type { HeldLane, LaneFetchSpec, LaneWindow } from './laneFetch.ts'
 import type { Lane } from './laneStack.ts'
@@ -139,10 +139,10 @@ export function laneLayerReadsOf({
       if (!from) {
         continue
       }
-      const { regions, spanBp } = window
+      const regions = from.template ? window.templateRegions : window.regions
       if (
-        from.template &&
-        (laneFetchRegionMaxBp(spanBp) > LANE_TEMPLATE_MAX_BP ||
+        !regions ||
+        (from.template &&
           regions.some(r => r.end - r.start > LANE_TEMPLATE_MAX_BP))
       ) {
         pastCap[layer] = true

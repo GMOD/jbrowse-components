@@ -929,17 +929,37 @@ export function laneFetchWindow(frame: RowFrame) {
   }
 }
 
-// The grid comes off the rung span alone, so a fitted-extent change cannot
-// double it and refetch every lane.
-export function laneFetchRegion(frame: RowFrame) {
+function snappedFetchRegion(frame: RowFrame, grid: number) {
   const { min, max } = laneFetchWindow(frame)
   const span = frame.max - frame.min
-  const grid = laneFetchGrid(span)
   return {
     refName: frame.refName,
     start: Math.max(0, Math.floor((min - span / 2) / grid) * grid),
     end: Math.ceil((max + span / 2) / grid) * grid,
   }
+}
+
+// The grid comes off the rung span alone, so a fitted-extent change cannot
+// double it and refetch every lane.
+export function laneFetchRegion(frame: RowFrame) {
+  return snappedFetchRegion(frame, laneFetchGrid(frame.max - frame.min))
+}
+
+/**
+ * The region a lane reads a template layer over: the lane fetch's own, or
+ * where that could pass `maxBp`, one on a finer grid down to a quarter of the
+ * span, which refetches more often along a pan but keeps a 1-2 Mb lane's
+ * layers; undefined past that. The bound reads the span, since the snapped
+ * region doubles across a grid line and the layer would blink along a pan.
+ */
+export function laneTemplateRegion(frame: RowFrame, maxBp: number) {
+  const span = frame.max - frame.min
+  for (let grid = laneFetchGrid(span); grid >= span / 4; grid /= 2) {
+    if (grid * (Math.floor((2 * span) / grid) + 2) <= maxBp) {
+      return snappedFetchRegion(frame, grid)
+    }
+  }
+  return undefined
 }
 
 function laneFetchGrid(spanBp: number) {

@@ -43,7 +43,7 @@ of a lane inside a long deletion says so instead of the lane drawing blank.
 | 3 | Walk path states an inversion against GRCh38 | graph plugin `WalkTabixSyntenyAdapter.ts:171` | open |
 | 4 | Chip names an inversion | `MW/layoutMultiWay.ts`, `MW/laneHeader.ts` | done (walk sources state one after 3) |
 | 7 | Lane inside a deletion longer than the window says so | core `clipFeatureToRegion`, display grouping, lane header | open |
-| 6 | Template layers survive a 1-1.6 Mb lane | `MW/laneLayers.ts:145` | open, independent |
+| 6 | Template layers survive a 1-2 Mb lane | `MW/laneLayers.ts:145` | done |
 
 Done-when, per item:
 
@@ -73,7 +73,7 @@ Done-when, per item:
   out before grouping, so nothing frames, votes, profiles or draws on them;
   the lane header names it without a frame. Two-record deletions and walk
   lanes that skip the window are out of reach.
-- **6**: template reads use a finer grid (worst case about 3x the span);
+- **6**: template reads use a finer grid where the lane fetch's could pass the cap, down to a quarter of the span (bound 2.5x the span);
   `bc85b6305b`'s span-bound clause stays, since it stops a pan blink.
 
 ## Waiting on a call
