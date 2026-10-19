@@ -951,12 +951,18 @@ export default defineConfig(
   // The doc generators write markdown and static pages, where a `<br>` is the
   // output itself and no `SanitizedHTML` sniffs it.
   {
-    files: ['website/scripts/**/*'],
+    files: ['website/scripts/**/*', 'scripts/**/*'],
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
       'no-restricted-syntax': [
         'error',
         ...sourceRestrictedSyntax.filter(s => !noHtmlStitching.includes(s)),
+        {
+          selector:
+            "CallExpression[callee.property.name='localeCompare'][arguments.length=1]",
+          message:
+            "Pass a locale: `a.localeCompare(b, 'en')`. A generator's sort order is committed, and the machine's locale (da_DK puts `aa` after `Z`) would otherwise decide it.",
+        },
       ],
     },
   },

@@ -325,7 +325,7 @@ async function main() {
     if (ka[0] !== kb[0]) {
       return ka[0] - kb[0]
     }
-    return ka[1].localeCompare(kb[1])
+    return ka[1].localeCompare(kb[1], 'en')
   })
   console.log(
     `  top ${tChrs.length} chroms, bottom ${qChrs.size} chroms after pruning`,

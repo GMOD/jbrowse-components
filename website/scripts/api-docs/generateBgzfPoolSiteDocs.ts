@@ -77,7 +77,7 @@ export function collectBgzfPoolSites(corpus: SourceCorpus): Site[] {
       file,
     })
   }
-  return out.sort((a, b) => a.reader.localeCompare(b.reader))
+  return out.sort((a, b) => a.reader.localeCompare(b.reader, 'en'))
 }
 
 function renderTable(sites: Site[]) {

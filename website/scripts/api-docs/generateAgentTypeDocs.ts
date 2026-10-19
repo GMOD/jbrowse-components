@@ -18,7 +18,7 @@ export function writeAgentTypeDocs(pages: {
 }) {
   const sorted = (record: Record<string, AgentTypePage>) =>
     Object.fromEntries(
-      Object.entries(record).sort(([a], [b]) => a.localeCompare(b)),
+      Object.entries(record).sort(([a], [b]) => a.localeCompare(b, 'en')),
     )
   writeUnformatted(
     AGENT_TYPE_DOCS_PATH,

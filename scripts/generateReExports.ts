@@ -168,7 +168,7 @@ for (const pkg of SERVED) {
     entryByKey.set(pkg, entry)
   }
 }
-entries.sort((a, b) => a.key.localeCompare(b.key))
+entries.sort((a, b) => a.key.localeCompare(b.key, 'en'))
 
 // ---- resolution ----------------------------------------------------------
 
@@ -443,7 +443,7 @@ async function evaluateFramework(): Promise<FrameworkModule[]> {
               .sort()
           : [],
     }))
-    .sort((a, b) => a.key.localeCompare(b.key))
+    .sort((a, b) => a.key.localeCompare(b.key, 'en'))
 }
 
 const framework = await evaluateFramework()

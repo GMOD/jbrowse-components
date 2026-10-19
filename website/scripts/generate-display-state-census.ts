@@ -115,7 +115,9 @@ function main() {
     })
     // Slots descending, because the section's claim is about the top of this
     // list; ties by name so the output is stable.
-    .sort((a, b) => b.slots - a.slots || a.display.localeCompare(b.display))
+    .sort(
+      (a, b) => b.slots - a.slots || a.display.localeCompare(b.display, 'en'),
+    )
 
   const total = (key: keyof Omit<Census, 'display' | 'plugin'>) =>
     rows.reduce((sum, row) => sum + row[key], 0)

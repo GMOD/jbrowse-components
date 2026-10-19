@@ -63,7 +63,7 @@ export function collectClips(roots: readonly string[]) {
   for (const root of roots) {
     walk(root, root, clips)
   }
-  return clips.sort((a, b) => b.modified.localeCompare(a.modified))
+  return clips.sort((a, b) => b.modified.localeCompare(a.modified, 'en'))
 }
 
 // Duration off the mvhd atom rather than by spawning ffprobe: the review server

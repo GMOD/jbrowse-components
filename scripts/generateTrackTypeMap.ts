@@ -65,7 +65,7 @@ for (const file of files) {
 
 const entries = [...trackTypeOf]
   .filter(([, trackType]) => configNames.has(trackType))
-  .sort(([a], [b]) => a.localeCompare(b))
+  .sort(([a], [b]) => a.localeCompare(b, 'en'))
 
 if (!entries.length) {
   throw new Error('no #trackType tags found; the scan is broken, not the tree')

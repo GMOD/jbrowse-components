@@ -105,7 +105,7 @@ function renderTable(rows: Row[]) {
   return markdownTable(
     ['Format', 'Adapter', 'Track type', ...(anyNote ? ['Notes'] : [])],
     [...rows]
-      .sort((a, b) => a.format.localeCompare(b.format))
+      .sort((a, b) => a.format.localeCompare(b.format, 'en'))
       .map(
         r =>
           `| ${[
@@ -163,11 +163,11 @@ export function writeDisplayTypeDocs(
   const link = (name: string) =>
     configNames.has(name) ? `[](/docs/config/${name.toLowerCase()})` : name
   const rows = [...displayTypesByTrack]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
     .map(
       ([trackType, displays]) =>
         `| ${link(trackType)} | ${[...displays]
-          .sort((a, b) => a.localeCompare(b))
+          .sort((a, b) => a.localeCompare(b, 'en'))
           .map(link)
           .join('<br/>')} |`,
     )
@@ -216,10 +216,10 @@ export function writeDisplayViewTypeDocs(
     }
   }
   const rows = [...byTrack]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
     .flatMap(([trackType, displays]) =>
       [...displays]
-        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName, 'en'))
         .map(
           (d, i) =>
             `| ${i === 0 ? link(trackType) : ''} | ${link(d.displayName)} | ${d.viewType} |`,

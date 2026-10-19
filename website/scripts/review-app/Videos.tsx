@@ -190,7 +190,8 @@ export function Videos() {
 
   // newest first: a review session is about the take just shot
   const sorted = useMemo(
-    () => [...entries].sort((a, b) => b.modified.localeCompare(a.modified)),
+    () =>
+      [...entries].sort((a, b) => b.modified.localeCompare(a.modified, 'en')),
     [entries],
   )
 

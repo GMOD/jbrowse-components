@@ -422,7 +422,7 @@ function collectRegistrations(): Registration[] {
     }
     ts.forEachChild(src, visit)
   }
-  return out.sort((a, b) => a.name.localeCompare(b.name))
+  return out.sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 function resolveComponent(

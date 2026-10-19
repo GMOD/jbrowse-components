@@ -139,13 +139,13 @@ export function collectCrossCuttingMixins(corpus: SourceCorpus) {
       return {
         name,
         supplies,
-        composedBy: [...composers].sort((a, b) => a.localeCompare(b)),
+        composedBy: [...composers].sort((a, b) => a.localeCompare(b, 'en')),
       } satisfies CrossCuttingMixin
     })
     .sort(
       (a, b) =>
         b.composedBy.length - a.composedBy.length ||
-        a.name.localeCompare(b.name),
+        a.name.localeCompare(b.name, 'en'),
     )
 }
 

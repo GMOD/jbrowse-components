@@ -96,7 +96,9 @@ export function collectReExports(): Row[] {
       row.stubbed += 1
     }
   }
-  return [...byPackage.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return [...byPackage.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, 'en'),
+  )
 }
 
 function workerCell(row: Row) {

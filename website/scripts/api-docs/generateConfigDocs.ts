@@ -385,7 +385,7 @@ function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
     }
   }
   for (const names of map.values()) {
-    names.sort((a, b) => a.localeCompare(b))
+    names.sort((a, b) => a.localeCompare(b, 'en'))
   }
   return map
 }
@@ -1895,7 +1895,7 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
     }
   }
   for (const names of map.values()) {
-    names.sort((a, b) => a.localeCompare(b))
+    names.sort((a, b) => a.localeCompare(b, 'en'))
   }
   return map
 }

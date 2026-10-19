@@ -58,7 +58,7 @@ for (const workspaceDir of workspaceDirs) {
 
 const problems: string[] = []
 for (const [packageName, dir] of [...dirByPackageName].sort(([, a], [, b]) =>
-  a.localeCompare(b),
+  a.localeCompare(b, 'en'),
 )) {
   const pkg = readJson<PackageJson>(join(root, dir, 'package.json'))
   const references = Object.entries({

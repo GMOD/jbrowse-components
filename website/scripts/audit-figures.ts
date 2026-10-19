@@ -101,7 +101,7 @@ for (const docPath of walkFiles(docsDir, name => /\.mdx?$/.test(name))) {
 }
 
 const sorted = Object.fromEntries(
-  Object.entries(manifest).sort(([a], [b]) => a.localeCompare(b)),
+  Object.entries(manifest).sort(([a], [b]) => a.localeCompare(b, 'en')),
 )
 // Formatted the way prettier formats it (which collapses a one-element array
 // onto a single line), because the manifest is tracked: writing raw

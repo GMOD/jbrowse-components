@@ -97,7 +97,7 @@ function callers() {
         `would be missing rather than wrong: ${unreadable.join(', ')}`,
     )
   }
-  return rows.sort((a, b) => a.file.localeCompare(b.file))
+  return rows.sort((a, b) => a.file.localeCompare(b.file, 'en'))
 }
 
 function main() {

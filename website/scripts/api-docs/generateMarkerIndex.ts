@@ -25,7 +25,7 @@ import {
 // a run.
 export function writeMarkerIndexDocs() {
   const rows = [...markerBlocksInDocs(), ...generatedBlocksInDocs()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
     .map(
       ([marker, docs]) =>
         `| \`${marker}\` | ${[...docs]

@@ -98,7 +98,7 @@ export function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
   const noSection: string[] = []
   const noArgsFile: string[] = []
   const rows = [...launchArgs]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
     .map(([viewType, argsType]) => {
       const section = sections.get(viewType)
       const argsFile = files.get(argsType)

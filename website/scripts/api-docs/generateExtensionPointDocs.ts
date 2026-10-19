@@ -140,7 +140,7 @@ function collectExtensionPoints(corpus: SourceCorpus): ExtensionPoint[] {
   }
   return [...byId.values()]
     .map(p => ({ ...p, shape: registryKeys.get(p.id) }))
-    .sort((a, b) => a.id.localeCompare(b.id))
+    .sort((a, b) => a.id.localeCompare(b.id, 'en'))
 }
 
 function renderTable(points: ExtensionPoint[]) {

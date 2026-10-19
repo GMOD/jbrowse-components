@@ -352,7 +352,7 @@ const READS = 'packages/core/src/ReExports/publishedPluginReads.json'
 const readsShape = () =>
   `${JSON.stringify(
     Object.fromEntries(
-      Object.entries(pluginReads).sort(([a], [b]) => a.localeCompare(b)),
+      Object.entries(pluginReads).sort(([a], [b]) => a.localeCompare(b, 'en')),
     ),
     null,
     2,
@@ -370,7 +370,7 @@ const siteShape = () => `${JSON.stringify({ plugins }, null, 2)}\n`
 const baselineShape = () =>
   `${JSON.stringify(
     [...report]
-      .sort((a, b) => a.plugin.localeCompare(b.plugin))
+      .sort((a, b) => a.plugin.localeCompare(b.plugin, 'en'))
       .map(({ plugin, breaks }) => ({ plugin, breaks })),
     null,
     2,

@@ -277,7 +277,7 @@ if (unIncluded > FENCE_BASELINE) {
   // last lines under its name, and the post-merge marker carries that summary
   // alone. Truncated there, what survives is the verdict and the worst pages.
   const pages = byPage
-    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0], 'en'))
     .map(([page, fences]) => `  ${String(fences).padStart(3)}  ${page}`)
     .join('\n')
   console.error(

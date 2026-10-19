@@ -334,7 +334,7 @@ function processOneTier({ rows, tSizes, qSizes, tierLabel, outPath }) {
     if (ka[0] !== kb[0]) {
       return ka[0] - kb[0]
     }
-    return ka[1].localeCompare(kb[1])
+    return ka[1].localeCompare(kb[1], 'en')
   })
 
   const flip = computeStrandFlip(filtered)

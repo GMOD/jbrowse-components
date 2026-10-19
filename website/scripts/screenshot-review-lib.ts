@@ -510,7 +510,7 @@ export function collectScreenshots(specs: ScreenshotSpec[]): Screenshot[] {
 
   return [...names]
     .filter(name => !foldedParts.has(name))
-    .sort((a, b) => a.localeCompare(b))
+    .sort((a, b) => a.localeCompare(b, 'en'))
     .map(name => ({
       ...toPart(name),
       // every part, including one that kept its own card because a doc

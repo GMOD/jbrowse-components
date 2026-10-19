@@ -231,7 +231,7 @@ function sortByBaseType(rows: SlotTypeRow[]) {
       : name
   return [...rows].sort(
     (a, b) =>
-      base(a.name).localeCompare(base(b.name)) ||
+      base(a.name).localeCompare(base(b.name), 'en') ||
       Number(a.name.startsWith('maybe')) - Number(b.name.startsWith('maybe')),
   )
 }

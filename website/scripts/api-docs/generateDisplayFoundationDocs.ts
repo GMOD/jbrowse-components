@@ -87,12 +87,15 @@ export function collectFoundations(corpus: SourceCorpus) {
     name,
     brings,
     composes: composedMixins(corpus, defFiles.get(name)!, name),
-    displays: [...(uses.get(name) ?? [])].sort((a, b) => a.localeCompare(b)),
+    displays: [...(uses.get(name) ?? [])].sort((a, b) =>
+      a.localeCompare(b, 'en'),
+    ),
   }))
   // Most-used first, so the common case leads; name breaks ties for stability.
   return foundations.sort(
     (a, b) =>
-      b.displays.length - a.displays.length || a.name.localeCompare(b.name),
+      b.displays.length - a.displays.length ||
+      a.name.localeCompare(b.name, 'en'),
   )
 }
 

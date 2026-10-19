@@ -161,7 +161,7 @@ function readEntry(file: string): Entry {
 const entries = (existsSync(todoDir) ? readdirSync(todoDir) : [])
   .filter(f => f.endsWith('.md'))
   .map(readEntry)
-  .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file))
+  .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file, 'en'))
 
 const byCategory = (category: string) =>
   entries.filter(e => e.category === category)

@@ -82,7 +82,7 @@ function buildTocSection(
       .sort(
         (a, b) =>
           guideRank(urlDir, a.slug) - guideRank(urlDir, b.slug) ||
-          a.title.localeCompare(b.title),
+          a.title.localeCompare(b.title, 'en'),
       )
     if (!entries.length) {
       continue
@@ -117,7 +117,8 @@ function buildTutorialSection(): string[] {
       subcategory: fm.tutorial_subcategory,
     }))
     .sort(
-      (a, b) => rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title),
+      (a, b) =>
+        rank(a.slug) - rank(b.slug) || a.title.localeCompare(b.title, 'en'),
     )
 
   const lines: string[] = []

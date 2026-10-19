@@ -226,7 +226,7 @@ function collectDocs(
         .join('\n')}`,
     )
   }
-  return docs.sort((a, b) => a.file.localeCompare(b.file))
+  return docs.sort((a, b) => a.file.localeCompare(b.file, 'en'))
 }
 
 const tableFor = (docs: Doc[], heading: string) =>

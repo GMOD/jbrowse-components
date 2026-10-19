@@ -303,7 +303,7 @@ function main() {
     }
 
     gaps.sort((a, b) =>
-      a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
+      a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file, 'en'),
     )
 
     const byFile = new Map<string, Gap[]>()

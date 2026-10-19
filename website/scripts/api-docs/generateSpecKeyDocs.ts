@@ -387,7 +387,7 @@ function launchKeysFor(viewType: string, scan: Scan): SpecKey[] {
   return [...tagged, ...inline]
     .filter(k => !STRUCTURAL.has(k.name) && !RESERVED.has(k.name))
     .filter(k => (seen.has(k.name) ? false : seen.add(k.name)))
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 // A `#valueList` names the values one key accepts, and the key it names may be
@@ -425,7 +425,7 @@ function renderGroup(
         !launcherBuilds.has(p.member.name) &&
         !launchNames.has(p.member.name),
     )
-    .sort((a, b) => a.member.name.localeCompare(b.member.name))
+    .sort((a, b) => a.member.name.localeCompare(b.member.name, 'en'))
 
   const missing = props
     .filter(p => !p.member.docs.trim())

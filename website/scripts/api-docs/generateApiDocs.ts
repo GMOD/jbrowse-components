@@ -131,7 +131,7 @@ function packageName(filename: string) {
 }
 
 function sortByName(exports: ApiExport[]) {
-  return [...exports].sort((a, b) => a.name.localeCompare(b.name))
+  return [...exports].sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 function renderGroup({ group, id, exports }: ApiGroup) {

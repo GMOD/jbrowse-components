@@ -69,7 +69,7 @@ for (const file of docFiles(docsDir)) {
     counts.set(rel, n)
   }
 }
-const entries = [...counts].sort(([a], [b]) => a.localeCompare(b))
+const entries = [...counts].sort(([a], [b]) => a.localeCompare(b, 'en'))
 const content = `${HEADER}${entries.map(([doc, n]) => `${doc} ${n}`).join('\n')}\n`
 
 if (check) {

@@ -121,7 +121,7 @@ export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
     (a, b) =>
       Number(b.served) - Number(a.served) ||
       a.shared.length - b.shared.length ||
-      a.name.localeCompare(b.name),
+      a.name.localeCompare(b.name, 'en'),
   )
 }
 

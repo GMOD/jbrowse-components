@@ -67,7 +67,7 @@ const defaultUrls = new Set(Object.values(defaultConfigs))
 
 const snapshot: Record<string, HostedConfig> = {}
 for (const [url, { trackIds, assemblyNames }] of [...references].sort(
-  ([a], [b]) => a.localeCompare(b),
+  ([a], [b]) => a.localeCompare(b, 'en'),
 )) {
   const response = await fetch(url)
   if (!response.ok) {

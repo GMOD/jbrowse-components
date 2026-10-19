@@ -535,7 +535,7 @@ export function assertEveryDisplayTypeIsDocumented(
 ) {
   const missing = [...displayToTrackType.keys()]
     .filter(name => !configNames.has(name))
-    .sort((a, b) => a.localeCompare(b))
+    .sort((a, b) => a.localeCompare(b, 'en'))
   if (missing.length) {
     throw new Error(
       `${missing.length} registered display type(s) have no #config block of their own name, so they get no config page and drop out of every generated table. Give each one an annotated schema file — a schema built from a \`makeConfigSchema(typeName)\` helper cannot be seen, since a #config block is keyed to its file:\n${missing

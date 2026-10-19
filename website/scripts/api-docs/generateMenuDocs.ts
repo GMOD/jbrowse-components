@@ -214,9 +214,9 @@ function collect(corpus: SourceCorpus) {
     )
   }
   return {
-    itemTypes: itemTypes.sort((a, b) => a.value.localeCompare(b.value)),
+    itemTypes: itemTypes.sort((a, b) => a.value.localeCompare(b.value, 'en')),
     fields,
-    builders: builders.sort((a, b) => a.name.localeCompare(b.name)),
+    builders: builders.sort((a, b) => a.name.localeCompare(b.name, 'en')),
   }
 }
 

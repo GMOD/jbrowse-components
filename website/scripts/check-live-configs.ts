@@ -162,7 +162,7 @@ if (network) {
     }),
   )
   for (const result of results.sort((a, b) =>
-    a.config.localeCompare(b.config),
+    a.config.localeCompare(b.config, 'en'),
   )) {
     const ok = result.status === 200
     console.log(`${ok ? '✓' : '✗'} ${result.status}  ${result.config}`)
