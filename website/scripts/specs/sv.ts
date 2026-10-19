@@ -2321,6 +2321,7 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 140,
               // finer bigwig bins so the 500bp-binned log2 shows across chr17
               resolution: 10,
+              scales: { y: { domainMin: 0, domainMax: 140 } },
             },
             {
               trackId: 'hg008_baf',
