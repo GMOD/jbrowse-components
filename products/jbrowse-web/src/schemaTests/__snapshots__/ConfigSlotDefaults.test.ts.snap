@@ -600,7 +600,7 @@ exports[`every registered schema slot default 1`] = `
     "showLegend": "boolean = true",
     "showOutline": "boolean = false",
     "subParts": "string = "CDS,UTR,five_prime_UTR,three_prime_UTR"",
-    "subfeatureLabels": "stringEnum = "none" of ["none","below","overlay"]",
+    "subfeatureLabels": "stringEnum = "auto" of ["auto","none","below","overlay"]",
     "transcriptTypes": "stringArray = ["mRNA","transcript","primary_transcript","V_gene_segment","C_gene_segment","D_gene_segment","J_gene_segment"]",
     "utrColor": "maybeColor = undefined",
   },
