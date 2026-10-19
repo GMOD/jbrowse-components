@@ -82,18 +82,18 @@ export interface ExternalClip {
 
 export const externalClips: ExternalClip[] = [
   {
-    name: 'mcp/agent_geo_ratio_take1',
+    name: 'mcp/agent_geo_ratio_take2',
     width: 1920,
-    height: 1028,
+    height: 1044,
     description:
       'Claude Code over the Desktop MCP socket with the terminal in frame and no shell: four GEO ATAC-seq bigWigs streamed into hg38 at CDKN1A, a deepTools-style log2 nutlin-over-vehicle track derived in the app, then CDKN1A laid beside GAPDH and a gene desert to test whether the gain is a normalization artifact',
   },
   {
-    name: 'mcp/agent_synteny_take1',
+    name: 'mcp/agent_ecoli_take2',
     width: 1920,
-    height: 1222,
+    height: 1044,
     description:
-      'Claude Code over the Desktop MCP socket with a shell: two fly genomes with no published alignment, aligned with minimap2, shown as synteny and dotplot, the largest inversion found and navigated to',
+      'Claude Code over the Desktop MCP socket with a shell and the terminal in frame: E. coli K-12 and O157:H7 Sakai aligned with minimap2 on camera, shown as synteny and a chromosome dotplot, and the Sakai-only islands named off its gene track',
   },
   {
     name: 'mcp/agent_derivative_take2',

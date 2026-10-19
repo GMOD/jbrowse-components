@@ -81,10 +81,8 @@ _No entries._
 
 Empty since 2026-09-02. The interbase stack overrunning its half-band went to
 [ideas/](ideas/README.md), saying at its top why the release does not wait on
-it, and the verdict on the agent demo clips became a reshoot
-([handoffs/reshoot-agent-client-clips](handoffs/reshoot-agent-client-clips.md)).
-The table stays so the next wrong picture v5.0.0 turns on has a
-home.
+it, and the agent demo clips were reshot. The table stays so the next wrong
+picture v5.0.0 turns on has a home.
 
 <!-- BEGIN GENERATED TODO VISUAL-CALL INDEX -->
 

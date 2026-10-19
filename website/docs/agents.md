@@ -19,13 +19,12 @@ stream from GEO by range request, and the ratio is computed against the live
 session the way deepTools `bigwigCompare` would: depth-normalized, finely
 binned, smoothed over a window several bins wide.
 
-<Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="An agent opening hg38 at CDKN1A, adding four GEO ATAC-seq bigWigs, deriving a log2 ratio track and checking it against control loci." />
+<Video src="/media/mcp/agent_geo_ratio_take2.mp4" caption="An agent opening hg38 at CDKN1A, adding four GEO ATAC-seq bigWigs, deriving a log2 ratio track and checking it against control loci." />
 
 Two more with a shell beside the app; only the questions were written in
-advance. The synteny clip shows the JBrowse window alone, captioned with what
-the agent said and sent, and the derivative clip has the terminal in frame.
+advance.
 
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="An agent opening two fly genomes with no published alignment, running minimap2 in the background and adding a whole-genome dotplot." />
+<Video src="/media/mcp/agent_ecoli_take2.mp4" caption="An agent aligning E. coli K-12 against O157:H7 Sakai with minimap2, opening both genomes with the alignment and a dotplot, and zooming to a Sakai-only island at the Shiga toxin 2 genes." />
 
 <Video src="/media/mcp/agent_derivative_take2.mp4" caption="An agent rebuilding a three-chromosome derivative allele from tumor reads, then grouping the reads on it and on the reference by the allele each one runs through." />
 

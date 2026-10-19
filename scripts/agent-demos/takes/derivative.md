@@ -178,9 +178,9 @@ grouped by a tag the agent writes from that classification.
 ## Take 2, 2026-10-19
 
 Shot with `recordDemoTui.mjs`, terminal in frame; the clip is
-`mcp/agent_derivative_take2` (125 s after collapsing static frames with ffmpeg's
-`mpdecimate`). Take 1 (2026-09-01, `agentDemo.mjs`, JBrowse window only) asked
-turn four as "prove no read clips at a junction" and is retired.
+`mcp/agent_derivative_take2`, 173 s as the harness collapses it at the take's
+`SPEEDUP`. Take 1 (2026-09-01, `agentDemo.mjs`, JBrowse window only) asked turn
+four as "prove no read clips at a junction" and is retired.
 
 | Turn                      | Wall  | Outcome                                                                                                                    |
 | ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------- |

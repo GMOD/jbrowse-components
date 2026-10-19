@@ -3263,13 +3263,13 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 572
   },
-  "mcp/agent_geo_ratio_take1": {
+  "mcp/agent_geo_ratio_take2": {
     "width": 1920,
-    "height": 1028
+    "height": 1044
   },
-  "mcp/agent_synteny_take1": {
+  "mcp/agent_ecoli_take2": {
     "width": 1920,
-    "height": 1222
+    "height": 1044
   },
   "mcp/agent_derivative_take2": {
     "width": 1920,

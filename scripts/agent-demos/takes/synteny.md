@@ -175,7 +175,8 @@ Two things the Desktop trial taught, both of which an agent will hit:
 
 Shot once through the harness. `synteny-take1-transcript.txt` beside this file
 is the record; the clip and poster are
-`website/static/media/mcp/agent_synteny_take1.*` (69 s after `encode.mjs`).
+`website/static/media/mcp/agent_synteny_take1.*` (69 s after `encode.mjs`). The
+E. coli take replaced it on the agents page on 2026-10-19.
 
 | Turn                   | Wall  | Outcome                                                                                                                                               |
 | ---------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

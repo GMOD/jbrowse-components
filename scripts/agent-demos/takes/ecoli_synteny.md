@@ -7,7 +7,7 @@ plus 703 kb of Sakai that K-12 has nothing to align to — which turns out to be
 the two Shiga toxin prophages and the LEE island.
 
 ```
-node scripts/agent-demos/recordDemoMac.mjs out/ecoli scripts/agent-demos/takes/ecoli_synteny.mjs
+node scripts/agent-demos/recordDemoTui.mjs ~/agent-takes/ecoli scripts/agent-demos/takes/ecoli_synteny.mjs
 ```
 
 `takes/synteny.mjs` and `takes/agent_synteny_page.mjs` are the fly versions of
@@ -41,7 +41,7 @@ checked in both spellings.
 Two FASTAs, 1.5 and 1.8 MB, about a second:
 
 ```bash
-mkdir -p out/ecoli/cwd && cd out/ecoli/cwd
+mkdir -p ~/agent-takes/ecoli/cwd && cd ~/agent-takes/ecoli/cwd
 curl -sL -o k12.fa.gz https://hgdownload.soe.ucsc.edu/hubs/GCF/000/005/845/GCF_000005845.2/GCF_000005845.2.fa.gz
 curl -sL -o sakai.fa.gz https://hgdownload.soe.ucsc.edu/hubs/GCF/000/008/865/GCF_000008865.2/GCF_000008865.2.fa.gz
 ```
@@ -178,6 +178,22 @@ K-12-only for a net 857,932 bp, and the Stx2 prophage on camera with stx2A at
   config, opens nothing and leaves no empty session; the SYSTEM now points at
   it.
 
+## Take 2, 2026-10-19
+
+Shot on `recordDemoTui.mjs`, all four turns in 264 s of agent time, none of take
+1's four flaws: the clip is `mcp/agent_ecoli_take2`.
+
+| Turn                 | Wall  | Outcome                                                                                                                     |
+| -------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+| align and open       | 119 s | `asm20`, 87 alignments, 4.04 Mb matched; one spec with both hosted assemblies, both `-ncbiGene` tracks and the synteny view |
+| dotplot              | 36 s  | chromosomes only, both axes zoomed out to the full chromosome after the fit                                                 |
+| where the extra goes | 39 s  | 15 Sakai-only gaps of 20 kb or more, 645 kb, and the rest inside aligned blocks                                             |
+| name the islands     | 70 s  | the six largest blocks with their named genes; Stx2 framed with every label legible, the Sakai track raised to 135 px       |
+
+The answer's island list matches the table above to the base (urease and
+tellurite at 1,370,611, Stx2 at 1,246,166, Stx1 at 2,896,004). It ranked Stx2
+first, as take 1 did.
+
 ## Open
 
 - **Check UCSC before shooting.** Turn four reads gene names off the Sakai
@@ -185,7 +201,7 @@ K-12-only for a net 857,932 bp, and the Stx2 prophage on camera with stx2A at
   `hgdownload.soe.ucsc.edu/hubs/GCF/000/008/865/GCF_000008865.2/GCF_000008865.2.chromAlias.txt`
   answered in 0.58 s on 2026-09-16, and took ~6 s on 2026-09-09, when the agent
   spent turn one diagnosing the network.
-- Turn four's "most interesting one" reached Stx2 in Take 1, not LEE.
+- Turn four's "most interesting one" reached Stx2 in both takes, not LEE.
 - **A square dotplot does not fit beside the synteny view.** The app's half of a
   1920x1080 frame is 930x1008, so a plot as tall as it is wide wants ~785 px
   plus ~90 of axis chrome, against ~256 for the synteny view and 48 for the app
