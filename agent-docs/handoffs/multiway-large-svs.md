@@ -1,6 +1,6 @@
 ---
 name: multiway-large-svs
-description: "MultiWaySyntenyDisplay on HPRC haplotype stacks: draw and name what the source states about large SVs against GRCh38 (replacements, inversions, deletions longer than the window), and stack inversion carriers together. Seven fixes in landing order, each with a done-when; the piecewise lane frame waits on Colin's call."
+description: "MultiWaySyntenyDisplay on HPRC haplotype stacks names and draws the large SVs a source states against GRCh38. All seven fixes have landed (here, and the walk aligner in the graph plugin at 1a19e45, unreleased). Open: release the plugin and recheck the walk track; the piecewise lane frame waits on Colin's call."
 ---
 
 # Multi-way lanes: large SVs between haplotypes
@@ -8,86 +8,35 @@ description: "MultiWaySyntenyDisplay on HPRC haplotype stacks: draw and name wha
 ## Goal
 
 On an HPRC haplotype stack, every large SV a source states against GRCh38 draws
-and reads plainly, with no inference: a replacement names both its sides, an
-inversion is named and drawn, inversion carriers stack together, and the header
-of a lane inside a long deletion says so instead of the lane drawing blank.
+and reads plainly, with no inference: a gap names both its sides, an inversion
+is named, inversion carriers stack together, and the header of a lane inside a
+long deletion says so instead of the lane drawing blank.
 
-## Success criteria
+## Where it stands
 
-- Each item below has a unit test that fails with the fix reverted (sabotage).
-- The lane chips read as follows on the hosted `hprc_multiway` PIF track and
-  the gfa-to-tabix walk track:
+How the chip, holes, inversions and window deletions work:
+[MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md) "Where
+things live". Checked on the PIF track of `hprc_multiway` from a dev server,
+2026-10-18:
 
-  | locus | window | lane | chip names |
-  | --- | --- | --- | --- |
-  | MAPT | chr17:45.4-46.8 Mb | H2 (HG01123#1) | an inversion; no netted "35 kb" |
-  | 8p23.1 | chr8:7.0-12.5 Mb | the 7 carriers | an inversion |
-  | CFHR3-CFHR1 | chr1:196.7-196.9 Mb | 4 carriers | "85 kb deletion", as today |
-  | GSTT1 | chr22:23.95-24.06 Mb | HG00099#1 | as today |
+| locus | lanes | chip |
+| --- | --- | --- |
+| MAPT 1.4 Mb | H2 (HG01123#1) | "870 kb inversion" |
+| MAPT 1.4 Mb | HG00133#1, HG00099#1 | "420 kb deletion, 230 kb insertion", hole at the net |
+| 8p23.1 5.5 Mb | 7 carriers | "4 Mb" to "5.1 Mb inversion" |
+| CFHR3-CFHR1 | 4 carriers | "85 kb deletion" |
+| GSTT1 | HG00097#1, HG00099#1 | "54 kb insertion, 37 kb deletion", as the graph track reads |
 
-  Captured from the branch's dev server on the PIF track, 2026-10-18: all four
-  rows hold. MAPT's H2 reads "870 kb inversion"; HG00133#1 and HG00099#1
-  read "420 kb deletion, 230 kb insertion"; GSTT1's PIF lanes now read what
-  the graph track does. The walk track waits on item 3.
-- On walk stacks, the MAPT H2 lane sits at an end of the stack.
-- The R export and the display stack a graph track in the same order.
-- AMY1 and KIV-2 goldens unchanged; MAPT and FLNA goldens move only as items 3
-  and 4 intend.
-- `pnpm verify` and the touched suites green.
+## Next
 
-## Items, in landing order
-
-`MW/` = `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/`.
-
-| # | item | where | status |
-| --- | --- | --- | --- |
-| 5 | R export stacks lanes as a fresh load does | `multiwayTables.ts:482`, model ordering | done |
-| 1 | Chip lists both sides of a one-record replacement; cross-record hole only where pieces abut | `MW/layoutMultiWay.ts:287-310` | done |
-| 2 | Lane order reads strand, flip-invariant | `MW/structureOrder.ts` | done |
-| 3 | Walk path states an inversion against GRCh38 | graph plugin `WalkTabixSyntenyAdapter.ts:171` | open |
-| 4 | Chip names an inversion | `MW/layoutMultiWay.ts`, `MW/laneHeader.ts` | done (walk sources state one after 3) |
-| 7 | Lane inside a deletion longer than the window says so | core `clipFeatureToRegion`, display grouping, lane header | done |
-| 6 | Template layers survive a 1-2 Mb lane | `MW/laneLayers.ts:145` | done |
-
-Done-when, per item:
-
-- **5**: one pure ordering function, gate included (`lanePairsOnAnchor` and
-  `laneFetchKinds.lanePairs`), called by the model and `multiwayTables`; a
-  graph-source fixture orders the same both ways.
-- **1**: across a gap between consecutive pieces cut in one fetch window,
-  within one record or across two where the lane places the anchor stretch
-  nowhere, each side at `SPLIT_AT_GAP_BP` or more lists at its own size
-  ("935 kb deletion, 900 kb insertion"); the hole opens at the net. Built
-  stricter first (across records only where pieces abut); the MAPT capture
-  showed that drop HG00133#1's LRRC37A duplicon hole, which the PIF writes as
-  two records.
-- **2**: `laneProfiles` returns forward, reversed and inserted bands; the distance is
-  `min(d(a,b), d(a, swapBands(b)))`, likewise against the anchor; a lane
-  reversed whole sits with collinear lanes, an in-place inversion carrier at
-  an end.
-- **3**: keep `referenceAligner`; chain only a walk with
-  `min(same, opposite)` singly visited shared bases at `SPLIT_AT_GAP_BP` or
-  more; add only chained records on the strand `referenceAligner` did not
-  choose; one id per record. We measure its per-window time at MAPT and 8p23.
-- **4**: a run is maximal consecutive same-strand pieces of one contig after
-  setting aside nested pieces (`forEachLaneGap`'s reach rule); named
-  "N kb inversion" when both lane neighbours are the other strand and the run
-  sits inside their outer anchor ends, mostly outside what they cover. The
-  inner-end version named 4 of 8p23's 7 carriers; this one names all 7.
-- **7**: the worker emits a deletion op spanning the fetched window as a hole
-  feature with `recordId` and stated length; the display splits hole features
-  out before grouping, so nothing frames, votes, profiles or draws on them;
-  the lane header names it without a frame. Two-record deletions and walk
-  lanes that skip the window are out of reach.
-- **6**: template reads use a finer grid where the lane fetch's could pass
-  the cap, down to a quarter of the span (bound 2.5x the span);
-  `bc85b6305b`'s span-bound clause stays, since it stops a pan blink.
-
-## Waiting on a call
-
-**Piecewise lane frame**: `RowFrame.turns`, the runs opposing the frame's
-direction, mirrored inside `openedBp`, so an inversion draws straight in its
-lane. The pivot sits just outside a turn; overlapping seams cut at their
-midpoint, and the X goes. Same idea as
-[straighten-an-inversion-by-reversing-its-span](../ideas/waiting-on-a-call/straighten-an-inversion-by-reversing-its-span.md),
-deferred 2026-09-24 for LinearSyntenyView rows.
+1. **Release the graph plugin** with 1a19e45 (`anchorAligner`), so the hosted
+   walk track gains FLNA/EMD's 37.6 kb inversion as a reverse record for
+   HG00099#2, HG01960#1 and HG01978#1. Then capture the walk track at FLNA
+   and MAPT: the chip names FLNA's inversion, and MAPT's H2 lane sits at an
+   end of a structure-ordered stack.
+2. **Piecewise lane frame, Colin's call**: `RowFrame.turns`, the runs opposing
+   the frame's direction, mirrored inside `openedBp`, so an inversion draws
+   straight in its lane and the X goes. The pivot sits just outside a turn;
+   overlapping seams cut at their midpoint. Same idea as
+   [straighten-an-inversion-by-reversing-its-span](../ideas/waiting-on-a-call/straighten-an-inversion-by-reversing-its-span.md),
+   deferred 2026-09-24 for LinearSyntenyView rows.
