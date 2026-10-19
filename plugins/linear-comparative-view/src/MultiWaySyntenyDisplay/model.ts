@@ -184,7 +184,11 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
-import { laneFetchesFor, rowsReadAgainstAnchor } from './sourceShape.ts'
+import {
+  laneFetchesFor,
+  rowsReadAgainstAnchor,
+  stacksByStructure,
+} from './sourceShape.ts'
 import { laneProfiles, structureOrder } from './structureOrder.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
@@ -1137,8 +1141,7 @@ export function stateModelFactory(
         const { features, featureOps } = self
         if (
           !features ||
-          !self.adapterCapabilities.includes('lanePairsOnAnchor') ||
-          !self.laneFetchKinds.lanePairs
+          !stacksByStructure(self.adapterCapabilities, self.laneFetchKinds)
         ) {
           self.heldLaneOrder = undefined
           return

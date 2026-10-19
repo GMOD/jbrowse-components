@@ -60,7 +60,12 @@ import { buildRibbonGeometry } from './MultiWaySyntenyDisplay/multiwayGeometry.t
 import {
   laneFetchesFor,
   rowsReadAgainstAnchor,
+  stacksByStructure,
 } from './MultiWaySyntenyDisplay/sourceShape.ts'
+import {
+  laneProfiles,
+  structureOrder,
+} from './MultiWaySyntenyDisplay/structureOrder.ts'
 import { getMate } from './syntenyMate.ts'
 
 import type { LaneLinks } from './MultiWaySyntenyDisplay/alignmentOps.ts'
@@ -402,7 +407,7 @@ function alignmentRows(
  * #api
  * A multi-genome synteny track as the multi-way display stacks it under a
  * linear genome view, as tables: `lanes`, the anchor first and then each
- * mate lane in the order it stacks, with the contig, zoom and orientation
+ * mate lane in the order a fresh load stacks it, with the contig, zoom and orientation
  * it picked; `segments`, the stretches of each lane's sequence across the
  * view, cut where a lane opens a hole for a deletion, each with the px it
  * spans; `blocks`, each alignment's placement on each lane; `ribbons`, what
@@ -479,7 +484,15 @@ export async function multiwayTables(
   const openingsOf = laneOpeningsOf(groups)
   const drawn = (name: string) =>
     selection === undefined || selection.includes(name)
-  const rows = rowAssembliesOf(groups, settings.rowsDomain).filter(
+  const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
+  const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
+  const preferred = stacksByStructure(capabilities, fetches)
+    ? [
+        ...settings.rowsDomain,
+        ...structureOrder(laneProfiles(features, fetched.ops)),
+      ]
+    : settings.rowsDomain
+  const rows = rowAssembliesOf(groups, preferred).filter(
     name => name !== anchor && drawn(name),
   )
 
@@ -549,8 +562,6 @@ export async function multiwayTables(
     return frame ? [{ assemblyName: name, ...laneFetchRegion(frame) }] : []
   }
 
-  const rowsVsAnchor = rowsReadAgainstAnchor(capabilities, starAnchor)
-  const fetches = laneFetchesFor(features, rowsVsAnchor, starAnchor)
   const laneLinks = new Map<string, LaneLinks>()
   if (fetches.lanePairs) {
     await Promise.all(

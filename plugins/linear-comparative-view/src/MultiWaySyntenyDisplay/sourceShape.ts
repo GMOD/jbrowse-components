@@ -29,3 +29,15 @@ export function laneFetchesFor(
     laneRows: named && starAnchor === undefined,
   }
 }
+
+/**
+ * Whether the lanes stack by structure: haplotypes of a source answering lane
+ * pairs on the anchor's blocks, where a ribbon joins neighbours only. Gene
+ * tables and stars stack densest-first
+ */
+export function stacksByStructure(
+  capabilities: readonly string[],
+  fetches: { lanePairs: boolean },
+) {
+  return capabilities.includes('lanePairsOnAnchor') && fetches.lanePairs
+}
