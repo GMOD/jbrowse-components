@@ -1533,7 +1533,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // files at capture time.
   {
     mode: 'url',
-    name: 'pangenome/hprc_gbz_cfhr_lanes',
+    name: 'pangenome/hprc_cfhr_lanes',
     url: portalHaplotypeLanes(PORTAL_LOCI.cfhr),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,

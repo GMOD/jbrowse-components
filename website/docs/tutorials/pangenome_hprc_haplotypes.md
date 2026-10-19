@@ -115,7 +115,7 @@ Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
 et al. 2006) opens a hole across both.
 
-<Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_lanes.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 

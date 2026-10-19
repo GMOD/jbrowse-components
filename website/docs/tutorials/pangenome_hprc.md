@@ -79,15 +79,17 @@ haplotypes aligned there.
 
 <Figure caption="The HPRC page's map of its HLA / MHC example. The boxed button opens the window in JBrowse." src="/img/pangenome/genomes_hprc_loci.png" />
 
-**Open in JBrowse** opens the window in a JBrowse tab; once a row is clicked, it
-opens that form's haplotype as a lane instead. **More about this window** counts
-the forms, names a haplotype for each, and lists every launch:
+**Open in JBrowse** opens the window in a JBrowse tab. Clicking a row draws that
+form's largest change as a graph under the map, cut from the graph's haplotype
+walks, and the button then opens that form's haplotype as a lane. **More about
+this window** counts the forms, names a haplotype for each, and lists every
+launch:
 
 - **Graph**: the region drawn as a graph, with the structural variants each
   haplotype has under it
 - **Variants**: the structural variants each haplotype has, over the genes
 - **Haplotypes**: one lane per structural form, commonest first
-- **BandageJS**: the same haplotypes in
+- **BandageJS**: the same haplotypes' walks in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
 A window over 150 kb offers the graph alone. The page keeps the window in its
@@ -227,16 +229,17 @@ that allele. We'll add it to the graph launch's session:
     {
       "type": "LinearMultiSampleVariantDisplay",
       "unit": "haplotype",
-      "filter": ["jexl:alleleLength(feature)>=50"]
+      "filter": { "expressions": ["jexl:alleleLength(feature)>=50"] }
     }
   ]
 }
 ```
 
 - `unit: "haplotype"` draws one row per haplotype.
-- `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
-  and up, the size of the bubbles minigraph draws. `alleleLength` is the length
-  of the record's longest allele, so it counts an insertion's inserted bases.
+- `filter.expressions` drops records, and `alleleLength(feature)>=50` keeps
+  alleles of 50 bp and up, the size of the bubbles minigraph draws.
+  `alleleLength` is the length of the record's longest allele, so it counts an
+  insertion's inserted bases.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
   spells out each inserted allele, which puts the MHC class II window over the
