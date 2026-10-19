@@ -347,6 +347,24 @@ const skipped: string[] = []
 const timings: { name: string; ms: number }[] = []
 const startedAt = performance.now()
 
+// `pool` relies on every `needs` naming an earlier entry, and a misspelled one
+// would wait on nothing.
+const misordered = GENERATORS.flatMap(
+  ({ name, needs = [], redundantWith }, i) =>
+    [...needs, ...(redundantWith ? [redundantWith] : [])]
+      .filter(n => !GENERATORS.some(g => g.name === n))
+      .map(n => `${name} names '${n}', which is no generator`)
+      .concat(
+        needs
+          .filter(n => GENERATORS.findIndex(g => g.name === n) > i)
+          .map(n => `${name} needs '${n}', which is listed after it`),
+      ),
+)
+if (misordered.length > 0) {
+  console.error(`autogen's GENERATORS list:\n  ${misordered.join('\n  ')}`)
+  process.exit(1)
+}
+
 const matched =
   filters.length > 0
     ? GENERATORS.filter(g =>
