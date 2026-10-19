@@ -8,7 +8,7 @@ import * as ts from 'typescript'
 import {
   BUILD_DIRS,
   GENERATED_NOTICE,
-  isDocFile,
+  docFiles,
   isTsSource,
   isWebsiteDoc,
   walkFiles,
@@ -137,7 +137,7 @@ const LIFECYCLE_HOOKS = new Set([
 // here and every pass that needs an AST reads `sources` rather than reparsing.
 // The enum-constant index used to `createSourceFile` all ~4000 files itself,
 // paying a second full parse (~4s) for trees the program already had.
-export interface DocProgram {
+interface DocProgram {
   program: ts.Program
   sources: ts.SourceFile[]
 }
@@ -1835,7 +1835,7 @@ export function parseTaggedComment(
   }
 }
 
-export interface ParsedNode {
+interface ParsedNode {
   name: string
   docs: string
   examples: Example[]
@@ -1995,7 +1995,7 @@ export function parseSourceFileSyntactic(file: string, text?: string) {
 // that disappears after that check, which otherwise takes the whole run down at
 // the last step, with every page already written and the format sweep never
 // reached. Only ENOENT is swallowed — any other read error is a real problem.
-export function readSourceIfPresent(file: string) {
+function readSourceIfPresent(file: string) {
   try {
     return fs.readFileSync(file, 'utf8')
   } catch (e) {
@@ -2033,7 +2033,7 @@ export function collectTransitive<T>(
   return out
 }
 
-export interface ComposeCall {
+interface ComposeCall {
   // The compose call's own name literal, if it has one. A non-literal first
   // argument counts as a composed type, so a name held in a constant is read
   // off the `#stateModel` tag instead.
@@ -2507,38 +2507,6 @@ export function exampleSection(
   return section(heading, ...bodies)
 }
 
-// Composition is now derived from each model's factory (see
-// resolveComposedModels), so any hand-authored `extends`/`composed of` marker
-// block left in a #stateModel comment is redundant. Strip it from the rendered
-// prose so it does not duplicate the generated inherited-member rows.
-//
-// Removes the marker line and the bullet list that follows it — bullets, their
-// indented continuation lines, and interleaved blanks — but stops at the next
-// column-0 prose line, so description text authored after the block (e.g. a
-// "note: ..." paragraph on the root models) is preserved.
-export function stripComposedBlock(docs: string) {
-  const lines = docs.split('\n')
-  const out: string[] = []
-  let i = 0
-  while (i < lines.length) {
-    if (/^[^\S\n]*(?:extends|composed of)\b/.test(lines[i]!)) {
-      i++
-      while (
-        i < lines.length &&
-        (/^\s*$/.test(lines[i]!) ||
-          /^\s*-\s/.test(lines[i]!) ||
-          /^\s+\S/.test(lines[i]!))
-      ) {
-        i++
-      }
-    } else {
-      out.push(lines[i]!)
-      i++
-    }
-  }
-  return out.join('\n').trim()
-}
-
 // Parse every `#<tag> <a> | <b> | <rest...>` occurrence in a comment into
 // [a, b, rest] tuples, in source order. `a` and `b` are the tag's two required
 // leading fields (e.g. a color's group+label, a jexl function's category+
@@ -2651,13 +2619,6 @@ export function sourceCorpus(
   }
 }
 
-// Recursively list every published .md doc under a directory. Shared by the
-// marker-block generators (color/jexl/extension-point) that rewrite tagged
-// regions embedded in the hand-written guides.
-export function listDocs(dir: string): string[] {
-  return walkFiles(dir, isDocFile)
-}
-
 // Quote a string for literal use inside a RegExp. The marker generators build
 // their patterns out of names read from the docs and the source (a COLOR_TABLE
 // group, a GOTCHA config name), which are authored text and so can hold regex
@@ -2679,7 +2640,7 @@ export function escapeRegExp(s: string) {
 // eight the note here used to be measured against. The relisting stays uncached
 // at 1ms a sweep; the rereading is `readDoc`'s, and format.ts says what it cost.
 function markerDocs() {
-  return [...listDocs('website/docs'), ...listDocs('agent-docs')]
+  return [...docFiles('website/docs'), ...docFiles('agent-docs')]
 }
 
 // Which docs carry each `<!-- MARKER … START -->` pair, and which markers a
@@ -2724,7 +2685,7 @@ const GENERATED_BLOCK = /^<!-- BEGIN GENERATED (.+?) -->$/gm
 
 export function generatedBlocksInDocs() {
   const found = new Map<string, Set<string>>()
-  for (const file of [...markerDocs(), ...listDocs('website/diagrams')]) {
+  for (const file of [...markerDocs(), ...docFiles('website/diagrams')]) {
     // A fence quoting the convention is a doc about a block, not one.
     const prose = readDoc(file).replaceAll(/^```[\s\S]*?^```/gm, '')
     for (const [, name] of prose.matchAll(GENERATED_BLOCK)) {

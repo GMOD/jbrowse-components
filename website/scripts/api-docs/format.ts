@@ -75,7 +75,7 @@ export function writePage(file: string, content: string) {
 // render — it is what keeps the committed page the shape every hand-written doc
 // in the tree has. Only fences in column 0, so an indented one inside a list
 // item is left alone, where a blank line would end the list.
-export function blankLinesAroundFences(text: string) {
+function blankLinesAroundFences(text: string) {
   const lines = text.split('\n')
   const out: string[] = []
   let open: string | undefined

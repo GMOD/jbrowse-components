@@ -140,9 +140,7 @@ base of a `return BaseFactory(args).views(...)` extension chain, through the
 TypeScript checker (alias-followed, and following `const X = factory()`
 exports), so no `extends`/`composed of` comment needs to be written or kept in
 sync. The only requirement is that the `#stateModel` JSDoc sit on the model's
-factory (or its `types.compose`), not an unrelated preceding declaration. Any
-leftover hand-authored `extends`/`composed of` block is stripped from the
-rendered prose so it cannot drift from the derived list.
+factory (or its `types.compose`), not an unrelated preceding declaration.
 
 This mirrors how `#baseConfiguration` derives config inheritance (below).
 

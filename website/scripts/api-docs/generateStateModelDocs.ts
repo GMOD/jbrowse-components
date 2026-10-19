@@ -30,7 +30,6 @@ import {
   repoRelative,
   section,
   startsWithTag,
-  stripComposedBlock,
   suffixCategory,
   withHeaders,
 } from './util.ts'
@@ -160,7 +159,7 @@ export function accumulateModel(
     })
     file.header = {
       name: member.name,
-      docs: stripComposedBlock(member.docs),
+      docs: member.docs.trim(),
       examples: member.examples,
       id: slugify(member.name, { lower: true }),
       selfDeclId: obj.selfDeclId,
@@ -445,7 +444,7 @@ const AGENT_KIND_ORDER: MemberKey[] = [
   'methods',
 ]
 
-export function renderAgentModel(
+function renderAgentModel(
   model: ModelWithHeader,
   ancestors: ModelWithHeader[],
   configNames: Set<string>,

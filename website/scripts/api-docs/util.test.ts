@@ -14,7 +14,6 @@ import {
   repoRelative,
   section,
   sortUnionMembers,
-  stripComposedBlock,
   stripPropertyName,
 } from './util.ts'
 
@@ -226,13 +225,6 @@ describe('exampleSection', () => {
     expect(out).toContain('## Example usage')
     expect(out).toContain('### Example: minimal')
     expect(out).toContain('code')
-  })
-})
-
-describe('stripComposedBlock', () => {
-  test('removes an extends block but keeps later column-0 prose', () => {
-    const input = 'Some description\nextends\n- Base\n- Mixin\nmore prose'
-    expect(stripComposedBlock(input)).toBe('Some description\nmore prose')
   })
 })
 

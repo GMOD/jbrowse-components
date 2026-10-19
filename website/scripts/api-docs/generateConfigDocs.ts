@@ -1576,7 +1576,7 @@ function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
   }
 }
 
-export interface ExampleObject {
+interface ExampleObject {
   // the `type` the object claims, when the manifest carries that type
   typeName: string
   entry: TypedManifestEntry
@@ -1675,7 +1675,7 @@ export function exampleObjects(
 // against it by `jbrowse validate`'s own schema checker. Keys alone are
 // `unknownExampleKeys`' job; this is the values — a constant color written as a
 // field, a number where an enum goes.
-export function exampleSchemaProblems(code: string) {
+function exampleSchemaProblems(code: string) {
   const body = code.trim()
   const value: unknown = vm.runInNewContext(
     `(${body.startsWith('{') ? body : `{${body}}`})`,
@@ -1942,7 +1942,7 @@ function agentSlotLine(item: Item) {
   )
 }
 
-export function renderAgentConfig(
+function renderAgentConfig(
   cfg: ConfigWithHeader,
   bases: ConfigWithHeader[],
   links: DisplayLinkContext,
