@@ -122,6 +122,7 @@ const gsettings = (...args) =>
 // inherits its display and bus from process.env.
 const WIDTH = 1920
 const HEIGHT = 1080
+const TOP_BAR = 36
 const SHELL_DISPLAY = `wl-jbdemo-${process.pid}`
 async function startHeadlessShell() {
   const busFile = path.join(outDir, 'shell-bus.txt')
@@ -606,21 +607,58 @@ try {
     ['-y', '-i', raw, '-vf', `ass=${assFile}`, '-c:a', 'copy', final],
     { stdio: 'inherit' },
   )
+  // Most of a take is the model thinking over a still screen. mpdecimate drops
+  // the frames that barely differ from the last one kept, so every change plays
+  // at 24 fps and the waits vanish; the crop takes off GNOME's top bar.
+  const clip = path.join(outDir, 'clip.mp4')
+  console.log('collapsing the still stretches…')
   spawnSync(
     'ffmpeg',
     [
       '-y',
-      '-ss',
-      '2',
       '-i',
       final,
+      '-vf',
+      [
+        `crop=${WIDTH}:${HEIGHT - TOP_BAR}:0:${TOP_BAR}`,
+        'mpdecimate=hi=3072:lo=1280:frac=0.5:max=0',
+        'setpts=N/24/TB',
+        'tpad=stop_mode=clone:stop_duration=5',
+        'format=yuv420p',
+      ].join(','),
+      '-r',
+      '24',
+      '-an',
+      '-c:v',
+      'libx264',
+      '-preset',
+      'slow',
+      '-crf',
+      '27',
+      '-movflags',
+      '+faststart',
+      clip,
+    ],
+    { stdio: 'inherit' },
+  )
+  // the poster the site uses: the state the take ends in
+  spawnSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-sseof',
+      '-1',
+      '-i',
+      clip,
       '-frames:v',
       '1',
-      path.join(outDir, 'poster.png'),
+      '-q:v',
+      '3',
+      path.join(outDir, 'clip.jpg'),
     ],
     { stdio: 'ignore' },
   )
-  console.log(`\n✓ ${final}`)
+  console.log(`\n✓ ${clip} (uncollapsed: ${final})`)
 } finally {
   cleanup()
 }

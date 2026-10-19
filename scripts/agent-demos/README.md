@@ -25,7 +25,8 @@ hands the working directory and pre-staged files over off camera. Pre-stage into
 and what is still open. A `*-transcript.txt` is a rendered transcript of a clip
 awaiting a verdict; delete it when the clip lands.
 
-`encode.mjs` / `encodeBrowser.mjs` collapse the static stretches.
+`recordDemoTui.mjs` writes `clip.mp4` and `clip.jpg` with the static stretches
+collapsed; `encode.mjs` / `encodeBrowser.mjs` do that for the other harnesses.
 `readTranscript.mjs <outdir>/transcript.json` prints what each turn did. A
 finished clip reaches the media store as in `website/CLAUDE.md` § Videos.
 
