@@ -23,11 +23,13 @@ const UA_PLATFORMS: Partial<Record<NodeJS.Platform, string>> = {
 // with a reset stream. A launch flag reaches the RPC workers' fetches, which
 // page.setUserAgent does not.
 function userAgentArgs() {
+  const executable = findChromeExecutable() ?? puppeteer.executablePath()
+  if (typeof executable !== 'string') {
+    return []
+  }
   try {
     const version = /\d+\.\d+\.\d+\.\d+/.exec(
-      execFileSync(findChromeExecutable() ?? puppeteer.executablePath(), [
-        '--version',
-      ]).toString(),
+      execFileSync(executable, ['--version']).toString(),
     )?.[0]
     const platform = UA_PLATFORMS[process.platform] ?? 'X11; Linux x86_64'
     return version
