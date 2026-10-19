@@ -237,6 +237,12 @@ describe('the changes chip', () => {
     })
   })
 
+  test('names an inversion the shown frame meets by its anchor span', () => {
+    expect(
+      changesOf([{ at: 100_000, bp: 900_000, kind: 'inversion' }])[1]?.text,
+    ).toBe('900 kb inversion')
+  })
+
   test('is absent from the anchor and from a lane whose frame meets no change', () => {
     expect(
       laneHeaderRows([anchorLane, mateLane({})], 2000, '').map(

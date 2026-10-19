@@ -6,6 +6,7 @@ import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 import { forEachLaneGap } from './laneGaps.ts'
 
 import type { SyntenyGroupedMate } from '../syntenyMate.ts'
+import type { LanePiece } from './laneGaps.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export type Span = readonly [number, number]
@@ -103,7 +104,94 @@ export interface LaneOpening {
 export interface LaneChange {
   at: number
   bp: number
-  kind: 'deletion' | 'insertion'
+  kind: 'deletion' | 'insertion' | 'inversion'
+}
+
+interface LaneRun {
+  orientation: number
+  refName: string
+  laneStart: number
+  laneEnd: number
+  anchorStart: number
+  anchorEnd: number
+}
+
+/**
+ * A lane contig's pieces as runs of one strand, a piece nested inside a
+ * longer one set aside as `forEachLaneGap` does, so a paralog hit inside a
+ * segdup splits no run
+ */
+function laneRunsOf(sorted: readonly LanePiece[]) {
+  const runs: LaneRun[] = []
+  let reach = Number.NEGATIVE_INFINITY
+  for (const { lane, anchor } of sorted) {
+    if (lane.end > reach) {
+      reach = lane.end
+      const last = runs.at(-1)
+      if (
+        last?.orientation === lane.orientation &&
+        last.refName === anchor.refName
+      ) {
+        last.laneEnd = Math.max(last.laneEnd, lane.end)
+        last.anchorStart = Math.min(last.anchorStart, anchor.start)
+        last.anchorEnd = Math.max(last.anchorEnd, anchor.end)
+      } else {
+        runs.push({
+          orientation: lane.orientation,
+          refName: anchor.refName,
+          laneStart: lane.start,
+          laneEnd: lane.end,
+          anchorStart: anchor.start,
+          anchorEnd: anchor.end,
+        })
+      }
+    }
+  }
+  return runs
+}
+
+/**
+ * Inversions: a run whose neighbours on both sides are the other strand, in
+ * anchor order, with its anchor span between theirs. Records through a
+ * segdup breakpoint run past each other, so each side may overlap by what the
+ * lane overlaps at that seam. A reverse hit elsewhere on the anchor is no
+ * inversion, and neither the vote nor the drawn direction enters.
+ */
+function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
+  const runs = laneRunsOf(sorted)
+  const out: LaneChange[] = []
+  for (let i = 1; i < runs.length - 1; i++) {
+    const left = runs[i - 1]!
+    const run = runs[i]!
+    const right = runs[i + 1]!
+    if (
+      left.orientation === right.orientation &&
+      run.orientation !== left.orientation &&
+      left.refName === run.refName &&
+      right.refName === run.refName &&
+      run.anchorEnd - run.anchorStart >= SPLIT_AT_GAP_BP
+    ) {
+      const slack =
+        Math.max(0, left.laneEnd - run.laneStart) +
+        Math.max(0, run.laneEnd - right.laneStart)
+      const [lo, hi] =
+        left.orientation > 0
+          ? [left.anchorEnd, right.anchorStart]
+          : [right.anchorEnd, left.anchorStart]
+      if (
+        lo <= hi + slack &&
+        run.anchorStart >= lo - slack &&
+        run.anchorEnd <= hi + slack
+      ) {
+        out.push({
+          at: run.laneStart,
+          bp: run.anchorEnd - run.anchorStart,
+          kind: 'inversion',
+        })
+      }
+    }
+  }
+  return out
 }
 
 const NO_OPENINGS: readonly LaneOpening[] = []
@@ -260,7 +348,9 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
  * Changes: what the records state. Within one record, the anchor and lane
  * gaps are a deletion and an insertion, each listed at its own size once it
  * reaches `SPLIT_AT_GAP_BP`, never netted into one; across two records only an
- * opening's deletion. Named records are genes, whose spacing says nothing.
+ * opening's deletion; and each run of the other strand set in place between
+ * two runs (`laneInversionsOf`). Named records are genes, whose spacing says
+ * nothing.
  */
 export function laneIndelsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
@@ -321,6 +411,7 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
         changes.push({ at, bp: net, kind: 'deletion' })
       }
     })
+    changes.push(...laneInversionsOf(list))
     if (openings.length) {
       openingsByLane.set(key, openings)
     }

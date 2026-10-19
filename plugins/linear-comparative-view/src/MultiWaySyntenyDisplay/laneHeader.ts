@@ -48,7 +48,7 @@ export interface LaneHeaderRow {
   inline: boolean
   /** the genome this lane's ribbons are read against, where it is not the lane above */
   against?: string
-  /** the deletions and insertions against the anchor the shown frame meets */
+  /** the deletions, insertions and inversions against the anchor the shown frame meets */
   changes?: { text: string; anchor: string }
 }
 

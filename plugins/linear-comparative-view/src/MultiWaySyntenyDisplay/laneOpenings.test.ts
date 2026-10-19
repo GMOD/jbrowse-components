@@ -561,6 +561,75 @@ describe('what a lane states across a gap against the anchor', () => {
   })
 })
 
+describe('an inversion the lane carries against the anchor', () => {
+  const [ref, at] = CARRIERS['HG01123.1']
+  const run = (
+    id: string,
+    lane: number,
+    anchor: number,
+    length: number,
+    orientation: number,
+  ) =>
+    piece(
+      id,
+      WINDOW_START + anchor,
+      WINDOW_START + anchor + length,
+      [{ assemblyName: 'HG01123.1', refName: ref, start: at + lane }],
+      orientation,
+    )
+  const named = (features: SimpleFeature[]) =>
+    laneIndelsOf(groupFeatures(features))
+      .changes('HG01123.1', ref)
+      .filter(c => c.kind === 'inversion')
+
+  test('names a run of the other strand set in place between two collinear runs', () => {
+    expect(
+      named([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 40_000, 900_000, -1),
+        run('r', 940_000, 940_000, 40_000, 1),
+      ]),
+    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+  })
+
+  test('names a forward run inside a lane reversed whole', () => {
+    expect(
+      named([
+        run('l', 0, 940_000, 40_000, -1),
+        run('m', 40_000, 40_000, 900_000, 1),
+        run('r', 940_000, 0, 40_000, -1),
+      ]),
+    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+  })
+
+  test('names nothing for a reverse hit elsewhere on the anchor between collinear runs', () => {
+    expect(
+      named([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 5_000_000, 900_000, -1),
+        run('r', 940_000, 40_000, 40_000, 1),
+      ]),
+    ).toEqual([])
+  })
+
+  test('a paralog hit nested inside a flank splits no run', () => {
+    expect(
+      named([
+        run('l', 0, 0, 40_000, 1),
+        run('p', 10_000, 3_000_000, 15_000, -1),
+        run('m', 40_000, 40_000, 900_000, -1),
+        run('r', 940_000, 940_000, 40_000, 1),
+      ]),
+    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+  })
+
+  test('names nothing with one flank', () => {
+    expect(
+      named([run('l', 0, 0, 40_000, 1), run('m', 40_000, 40_000, 900_000, -1)]),
+    ).toEqual([])
+  })
+})
+
 describe('a pivot inside a hole', () => {
   // the lane's first piece carries a 4 kb insertion, then a 30 kb deletion
   const record = (id: string, start: number, end: number, mate: Span) =>
