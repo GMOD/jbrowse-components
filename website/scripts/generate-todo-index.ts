@@ -189,14 +189,17 @@ for (const { category, marker } of TABLES) {
     path: todoPath,
     marker,
     text: content,
-    body: markdownTableLines(
-      ['Item', 'Area', 'First move'],
-      byCategory(category).map(e => [
-        `[${e.title}](todo/${e.file})`,
-        e.area,
-        e.firstMove,
-      ]),
-    ),
+    body:
+      byCategory(category).length === 0
+        ? ['_No entries._']
+        : markdownTableLines(
+            ['Item', 'Area', 'First move'],
+            byCategory(category).map(e => [
+              `[${e.title}](todo/${e.file})`,
+              e.area,
+              e.firstMove,
+            ]),
+          ),
   })
 }
 
@@ -211,9 +214,11 @@ content = spliceGeneratedBlock({
   // Wrapped, because this block is prose in a hand-wrapped file rather than a
   // table — an 80-column paragraph among 80-column paragraphs.
   body: wrap(
-    `${numberWord(entries.length, true)} ${entries.length === 1 ? 'entry is' : 'entries are'} on the list: ${clauses
-      .slice(0, -1)
-      .join(', ')}, and ${clauses.at(-1)}.`,
+    entries.length === 0
+      ? 'The list is empty.'
+      : `${numberWord(entries.length, true)} ${entries.length === 1 ? 'entry is' : 'entries are'} on the list: ${clauses
+          .slice(0, -1)
+          .join(', ')}, and ${clauses.at(-1)}.`,
   ),
 })
 
