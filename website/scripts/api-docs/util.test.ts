@@ -321,6 +321,12 @@ describe('replaceMarkerRegions', () => {
     )
   })
 
+  test('refuses to publish an empty block', () => {
+    expect(() => splice('<!-- T START -->\n\n<!-- T END -->', ' \n')).toThrow(
+      /rendered nothing/,
+    )
+  })
+
   test('rewrites EVERY pair, not just the first', () => {
     // A non-global replace left the second block on the previous run's content
     // forever, and `--check` could not see it: the text it compares is the same

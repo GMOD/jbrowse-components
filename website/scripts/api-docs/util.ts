@@ -2844,11 +2844,17 @@ export function replaceMarkerRegions({
       `${file}: ${starts - regions} \`${startMarker}\` with no matching \`${endMarker}\`. The block between them is never generated, and the generator would report the doc as up to date.`,
     )
   }
+  // An empty block reads as "nothing here" while it usually means the
+  // generator's source parse stopped matching.
+  if (starts > 0 && !block.trim()) {
+    throw new Error(
+      `${file}: \`${startMarker}\` rendered nothing. Fix the generator's source read rather than publish an empty block.`,
+    )
+  }
   const notice = isWebsiteDoc(file) ? '' : `${GENERATED_NOTICE}\n\n`
   return text.replace(
     region,
-    () =>
-      `${startMarker}\n\n${block ? `${notice}${block}\n\n` : ''}${endMarker}`,
+    () => `${startMarker}\n\n${notice}${block}\n\n${endMarker}`,
   )
 }
 
