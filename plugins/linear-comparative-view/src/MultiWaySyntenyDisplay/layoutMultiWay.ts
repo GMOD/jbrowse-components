@@ -97,12 +97,14 @@ export interface LaneOpening {
 }
 
 /**
- * What a lane's records state at lane bp `at`: `bp` of anchor its sequence
- * lacks, or `bp` of its own sequence the anchor lacks. One record's gap can
- * state both, and each is its own change.
+ * What a lane's records state over lane bp `at` to `at + laneBp`: `bp` of
+ * anchor its sequence lacks, `bp` of its own sequence the anchor lacks, or an
+ * inverted stretch of `bp` anchor. One record's gap can state both of the
+ * first two, and each is its own change.
  */
 export interface LaneChange {
   at: number
+  laneBp: number
   bp: number
   kind: 'deletion' | 'insertion' | 'inversion'
 }
@@ -185,6 +187,7 @@ function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
       ) {
         out.push({
           at: run.laneStart,
+          laneBp: run.laneEnd - run.laneStart,
           bp: run.anchorEnd - run.anchorStart,
           kind: 'inversion',
         })
@@ -285,9 +288,15 @@ export function frameOpenings(frame: RowFrame) {
   return frame.openings ?? NO_OPENINGS
 }
 
+// Two pieces of one record cut in one fetch window; between two windows lies
+// anchor the fetch never read, which the record states nothing about
 function oneRecord(left: MatePlacement, right: MatePlacement) {
   const record: unknown = left.feature.get('recordId')
-  return record !== undefined && record === right.feature.get('recordId')
+  return (
+    record !== undefined &&
+    record === right.feature.get('recordId') &&
+    left.feature.get('clipWindow') === right.feature.get('clipWindow')
+  )
 }
 
 /**
@@ -391,10 +400,10 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
           openings.push({ at, bp: net })
         }
         if (anchorGap >= SPLIT_AT_GAP_BP) {
-          changes.push({ at, bp: anchorGap, kind: 'deletion' })
+          changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion' })
         }
         if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
-          changes.push({ at, bp: laneGap, kind: 'insertion' })
+          changes.push({ at, laneBp: laneGap, bp: laneGap, kind: 'insertion' })
         }
       } else if (
         laneGap >= 0 &&
@@ -408,7 +417,7 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
         )
       ) {
         openings.push({ at, bp: net })
-        changes.push({ at, bp: net, kind: 'deletion' })
+        changes.push({ at, laneBp: 0, bp: net, kind: 'deletion' })
       }
     })
     changes.push(...laneInversionsOf(list))
@@ -635,7 +644,8 @@ export function groupSpansLanes(group: PlacedGroup) {
 // Densest lane first, after the lanes `preferred` names, in its order.
 /**
  * Lanes densest first, `preferred` ones leading in its order; `placeless`
- * lanes, which the window shows none of, follow the rest
+ * lanes, which the window shows none of, sit at the foot whatever `preferred`
+ * says, since a frameless lane between two others leaves both gutters empty
  */
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
@@ -664,7 +674,6 @@ export function rowAssembliesOf(
     }))
     .sort((a, b) => b.density - a.density || a.appearance - b.appearance)
     .map(lane => lane.assemblyName)
-  present.push(...new Set(placeless.filter(name => !evidence.has(name))))
   const byKey = new Map<string, string[]>()
   for (const assemblyName of present) {
     const key = keyOf(assemblyName)
@@ -676,7 +685,11 @@ export function rowAssembliesOf(
       pinned.add(assemblyName)
     }
   }
-  return [...pinned, ...present.filter(name => !pinned.has(name))]
+  return [
+    ...pinned,
+    ...present.filter(name => !pinned.has(name)),
+    ...new Set(placeless.filter(name => !evidence.has(name))),
+  ]
 }
 
 export function tickIntervalFor(spanBp: number) {

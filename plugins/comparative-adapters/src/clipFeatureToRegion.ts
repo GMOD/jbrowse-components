@@ -143,12 +143,14 @@ function clippedFeature(
   mate: SerializedMate,
   { suffix, cigar, spansWindow, ...clipped }: Piece,
   keepAlignment: boolean,
+  window: Interval,
 ) {
   const source = feature.toJSON()
   const data: SimpleFeatureSerialized = {
     ...source,
     uniqueId: `${feature.id()}${suffix}`,
     recordId: feature.id(),
+    clipWindow: `${window.start}-${window.end}`,
     start: clipped.start,
     end: clipped.end,
     mate: { ...mate, start: clipped.mateStart, end: clipped.mateEnd },
@@ -184,7 +186,9 @@ function clippedFeature(
  * suffix, so each run is its own group to a display grouping on it — one
  * placement per run rather than one ribbon across the gap. Every piece names
  * its record's id in `recordId`, so a gap between two pieces of one record
- * reads as the deletion the alignment states. With `splitAtGapBp`, a record
+ * reads as the deletion the alignment states, and `clipWindow` names the
+ * window it was cut in, since a gap between two windows is no part of the
+ * record. With `splitAtGapBp`, a record
  * whose gap between two runs holds the whole window, a deletion longer than
  * the window, yields that gap alone, marked `spansWindow`: its own extent the
  * deleted stretch, its mate's the lane bp between the runs. A feature with no
@@ -206,6 +210,6 @@ export function clipFeatureToRegion(
       window,
       splitAtGapBp,
       keepAlignment,
-    ).map(piece => clippedFeature(feature, mate, piece, keepAlignment))
+    ).map(piece => clippedFeature(feature, mate, piece, keepAlignment, window))
   }
 }

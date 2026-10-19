@@ -321,6 +321,14 @@ test('row assemblies come out densest lane first, domain pinning over that', () 
   ])
 })
 
+test('a lane the window shows none of sits at the foot, though the domain names it first', () => {
+  expect(
+    rowAssembliesOf(groupFeatures(features), ['grape2', 'cacao'], undefined, [
+      'grape2',
+    ]),
+  ).toEqual(['cacao', 'peach', 'grape2'])
+})
+
 test('domain pins a lane it names through an alias', () => {
   const canonical = (name: string) =>
     name === 'Theobroma_cacao' ? 'cacao' : name

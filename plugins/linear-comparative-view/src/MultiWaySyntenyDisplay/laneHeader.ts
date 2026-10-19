@@ -72,11 +72,7 @@ function laneChanges(
   }
   const { start, end } = region
   const changes = stated
-    .filter(({ at, bp, kind }) =>
-      kind === 'deletion'
-        ? at >= start && at <= end
-        : at <= end && at + bp >= start,
-    )
+    .filter(({ at, laneBp }) => at <= end && at + laneBp >= start)
     .toSorted((a, b) => b.bp - a.bp)
   const listed = changes
     .slice(0, LISTED_CHANGES)

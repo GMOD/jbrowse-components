@@ -518,7 +518,9 @@ describe('what a lane states across a gap against the anchor', () => {
   test('an insertion between two runs of one record, at its breakpoint, its length', () => {
     expect(read(gapped(0, 30_000, ['r', 'r']))).toEqual({
       openings: [],
-      changes: [{ at: at + 40_000, bp: 30_000, kind: 'insertion' }],
+      changes: [
+        { at: at + 40_000, laneBp: 30_000, bp: 30_000, kind: 'insertion' },
+      ],
     })
   })
 
@@ -537,8 +539,8 @@ describe('what a lane states across a gap against the anchor', () => {
     expect(read(gapped(935_000, 900_000, ['r', 'r']))).toEqual({
       openings: [{ at: at + 40_000, bp: 35_000 }],
       changes: [
-        { at: at + 40_000, bp: 935_000, kind: 'deletion' },
-        { at: at + 40_000, bp: 900_000, kind: 'insertion' },
+        { at: at + 40_000, laneBp: 0, bp: 935_000, kind: 'deletion' },
+        { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'insertion' },
       ],
     })
   })
@@ -547,8 +549,8 @@ describe('what a lane states across a gap against the anchor', () => {
     expect(read(gapped(905_000, 900_000, ['r', 'r']))).toEqual({
       openings: [],
       changes: [
-        { at: at + 40_000, bp: 905_000, kind: 'deletion' },
-        { at: at + 40_000, bp: 900_000, kind: 'insertion' },
+        { at: at + 40_000, laneBp: 0, bp: 905_000, kind: 'deletion' },
+        { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'insertion' },
       ],
     })
   })
@@ -558,6 +560,22 @@ describe('what a lane states across a gap against the anchor', () => {
       openings: [],
       changes: [],
     })
+  })
+
+  test('one record cut in two fetch windows states nothing about the anchor between them', () => {
+    const inWindow = (window: string) => (f: SimpleFeature) =>
+      new SimpleFeature({ ...f.toJSON(), clipWindow: window })
+    const [left, right] = gapped(400_000, 400_000, ['r', 'r']).map(
+      g => g.feature as SimpleFeature,
+    )
+    expect(
+      read(
+        groupFeatures([
+          inWindow('0-100000')(left!),
+          inWindow('500000-600000')(right!),
+        ]),
+      ),
+    ).toEqual({ openings: [], changes: [] })
   })
 })
 
@@ -589,7 +607,9 @@ describe('an inversion the lane carries against the anchor', () => {
         run('m', 40_000, 40_000, 900_000, -1),
         run('r', 940_000, 940_000, 40_000, 1),
       ]),
-    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+    ).toEqual([
+      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+    ])
   })
 
   test('names a forward run inside a lane reversed whole', () => {
@@ -599,7 +619,9 @@ describe('an inversion the lane carries against the anchor', () => {
         run('m', 40_000, 40_000, 900_000, 1),
         run('r', 940_000, 0, 40_000, -1),
       ]),
-    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+    ).toEqual([
+      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+    ])
   })
 
   test('names nothing for a reverse hit elsewhere on the anchor between collinear runs', () => {
@@ -620,7 +642,9 @@ describe('an inversion the lane carries against the anchor', () => {
         run('m', 40_000, 40_000, 900_000, -1),
         run('r', 940_000, 940_000, 40_000, 1),
       ]),
-    ).toEqual([{ at: at + 40_000, bp: 900_000, kind: 'inversion' }])
+    ).toEqual([
+      { at: at + 40_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+    ])
   })
 
   test('names nothing with one flank', () => {

@@ -492,9 +492,12 @@ export async function multiwayTables(
         ...structureOrder(laneProfiles(features, fetched.ops)),
       ]
     : settings.rowsDomain
-  const rows = rowAssembliesOf(groups, preferred).filter(
-    name => name !== anchor && drawn(name),
-  )
+  const rows = rowAssembliesOf(
+    groups,
+    preferred,
+    undefined,
+    fetched.deletions.map(d => d.assemblyName),
+  ).filter(name => name !== anchor && drawn(name))
 
   const shown = shownGroups(groups, axis)
   const place = anchorPlacer(axis, width)

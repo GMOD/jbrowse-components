@@ -160,7 +160,8 @@ cost is linear in lanes.
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
   words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Between two runs of one
-  record, the anchor gap and the lane gap each list at their own size once they
+  record cut in one fetch window (`clipWindow`; between two windows lies anchor
+  the fetch never read), the anchor gap and the lane gap each list at their own size once they
   reach `SPLIT_AT_GAP_BP`, so a 935 kb stretch replaced by 900 kb reads "935 kb
   deletion, 900 kb insertion". The hole opens at the net of the two, so what
   follows sits under its own anchor stretch. Netting the chip into one deletion

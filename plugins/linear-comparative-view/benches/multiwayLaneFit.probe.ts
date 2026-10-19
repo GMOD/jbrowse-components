@@ -107,7 +107,9 @@ const fetched = groupFeatures(
         )
         .pipe(toArray()),
     )
-  ).map(f => new SimpleFeature(f.toJSON())),
+  )
+    .filter(f => !f.get('spansWindow'))
+    .map(f => new SimpleFeature(f.toJSON())),
 )
 const openingsOf = laneOpeningsOf(fetched)
 

@@ -189,9 +189,9 @@ describe('the changes chip', () => {
     },
   })
   const deletions: LaneChange[] = [
-    { at: 10_000, bp: 18_000, kind: 'deletion' },
-    { at: 50_000, bp: 30_000, kind: 'deletion' },
-    { at: 400_000, bp: 1_234_567, kind: 'deletion' },
+    { at: 10_000, laneBp: 0, bp: 18_000, kind: 'deletion' },
+    { at: 50_000, laneBp: 0, bp: 30_000, kind: 'deletion' },
+    { at: 400_000, laneBp: 0, bp: 1_234_567, kind: 'deletion' },
   ]
   const changesOf = (changes: LaneChange[]) =>
     laneHeaderRows(
@@ -208,9 +208,9 @@ describe('the changes chip', () => {
     expect(
       changesOf([
         ...deletions,
-        { at: 20_000, bp: 54_000, kind: 'insertion' },
-        { at: 140_000, bp: 11_000, kind: 'insertion' },
-        { at: 300_000, bp: 90_000, kind: 'insertion' },
+        { at: 20_000, laneBp: 54_000, bp: 54_000, kind: 'insertion' },
+        { at: 140_000, laneBp: 11_000, bp: 11_000, kind: 'insertion' },
+        { at: 300_000, laneBp: 90_000, bp: 90_000, kind: 'insertion' },
       ]),
     ).toEqual([
       undefined,
@@ -229,7 +229,7 @@ describe('the changes chip', () => {
     })
     expect(
       laneHeaderRows([anchorLane, wide], 2000, '', undefined, undefined, () => [
-        { at: 1000, bp: 1_234_567, kind: 'deletion' },
+        { at: 1000, laneBp: 0, bp: 1_234_567, kind: 'deletion' },
       ])[1]!.changes,
     ).toEqual({
       text: '1.2 Mb deletion',
@@ -239,7 +239,9 @@ describe('the changes chip', () => {
 
   test('names an inversion the shown frame meets by its anchor span', () => {
     expect(
-      changesOf([{ at: 100_000, bp: 900_000, kind: 'inversion' }])[1]?.text,
+      changesOf([
+        { at: 100_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+      ])[1]?.text,
     ).toBe('900 kb inversion')
   })
 

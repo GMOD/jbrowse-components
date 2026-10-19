@@ -113,7 +113,9 @@ const features = (
       )
       .pipe(toArray()),
   )
-).map(f => new SimpleFeature(f.toJSON()))
+)
+  .filter(f => !f.get('spansWindow'))
+  .map(f => new SimpleFeature(f.toJSON()))
 const groups = groupFeatures(features)
 const lanes = rowAssembliesOf(groups, []).filter(a => a !== ANCHOR)
 console.log(
