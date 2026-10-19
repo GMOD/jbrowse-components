@@ -7,6 +7,9 @@ sidebar_label: Adapter -> FromConfigRegionsAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigRegionsAdapter/configSchema.ts).
 
+Supplies an assembly's reference names and sizes inline in the config, with
+no sequence.
+
 ## Example usage
 
 Supplies refNames+sizes with no sequence, as the adapter of an assembly's
@@ -25,9 +28,6 @@ Supplies refNames+sizes with no sequence, as the adapter of an assembly's
   },
 }
 ```
-
-Supplies an assembly's reference names and sizes inline in the config, with
-no sequence.
 
 ## Related links
 

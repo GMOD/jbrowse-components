@@ -7,6 +7,24 @@ sidebar_label: Adapter -> MultiPairwiseSyntenyAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiPairwiseSyntenyAdapter/configSchema.ts).
 
+Composes pairwise synteny adapters that all name one assembly — the anchor —
+into the star an N-genome view draws from one track: hg38 against each UCSC
+genome's liftOver PIF, say. A query on the anchor fans out to every child and
+concatenates; a query naming one mate reaches only the child holding that
+pair, which a PIF answers from the mate's own perspective; a mate pair no
+child aligns is empty rather than an error, since a star has no such edge.
+
+The anchor is inferred as the one assembly every child names, so it is never
+written twice. Each child is any pairwise synteny adapter config with its
+`assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
+
+Every mate is a lane the multiway display's picker offers, and the display
+reads only the children for the lanes it draws: the track's own
+`assemblyNames` beside the anchor until the reader picks others. So a star
+over every liftOver file a genome has costs a window only the reads of the
+lanes on screen, and the track's `assemblyNames` is where its default lanes
+are chosen.
+
 ## Example usage
 
 ```js
@@ -34,24 +52,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-Composes pairwise synteny adapters that all name one assembly — the anchor —
-into the star an N-genome view draws from one track: hg38 against each UCSC
-genome's liftOver PIF, say. A query on the anchor fans out to every child and
-concatenates; a query naming one mate reaches only the child holding that
-pair, which a PIF answers from the mate's own perspective; a mate pair no
-child aligns is empty rather than an error, since a star has no such edge.
-
-The anchor is inferred as the one assembly every child names, so it is never
-written twice. Each child is any pairwise synteny adapter config with its
-`assemblyNames` (PairwiseIndexedPAFAdapter, PAFAdapter, ChainAdapter, ...).
-
-Every mate is a lane the multiway display's picker offers, and the display
-reads only the children for the lanes it draws: the track's own
-`assemblyNames` beside the anchor until the reader picks others. So a star
-over every liftOver file a genome has costs a window only the reads of the
-lanes on screen, and the track's `assemblyNames` is where its default lanes
-are chosen.
 
 ## Related links
 

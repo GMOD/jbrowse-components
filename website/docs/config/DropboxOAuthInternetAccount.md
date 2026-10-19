@@ -7,6 +7,9 @@ sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
 
+Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
+endpoints and domains filled in.
+
 ## Example usage
 
 The Dropbox endpoints are pre-filled, so an entry needs only your own OAuth
@@ -21,9 +24,6 @@ hand in the Add Track form.
   clientId: 'your-dropbox-app-key',
 }
 ```
-
-Signs requests for Dropbox files with an OAuth 2.0 token, with the Dropbox
-endpoints and domains filled in.
 
 ## Related links
 

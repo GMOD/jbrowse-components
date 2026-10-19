@@ -7,6 +7,8 @@ sidebar_label: Display -> LinearHicDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts).
 
+The Hi-C contact matrix as a triangle over the view.
+
 ## Example usage
 
 A `HicTrack` whose display pins the color scale's top, so two tracks set
@@ -29,8 +31,6 @@ alike share one scale, and runs one binsize coarser than the zoom picks:
   ],
 }
 ```
-
-The Hi-C contact matrix as a triangle over the view.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearhicdisplay).
 

@@ -7,6 +7,9 @@ sidebar_label: Connection -> UCSCTrackHubConnection
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
 
+Adds the tracks a UCSC track hub's `hub.txt` declares for each matching
+assembly to the session.
+
 ## Example usage
 
 An entry in the config's `connections`. The hub's `hub.txt` is read on
@@ -23,9 +26,6 @@ truth. `assemblyNames` limits which of the hub's genomes are used.
   hubTxtLocation: { uri: 'https://example.com/hub.txt' },
 }
 ```
-
-Adds the tracks a UCSC track hub's `hub.txt` declares for each matching
-assembly to the session.
 
 ## Related links
 

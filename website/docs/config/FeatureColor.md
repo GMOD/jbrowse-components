@@ -7,6 +7,18 @@ sidebar_label: Display -> FeatureColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/colorConfigSchema.ts).
 
+The canvas feature displays' `color` setting: a CSS color or `jexl:`
+callback in `value`, or a field whose values each take a range color,
+whose numbers each take the color of the interval between cut points they
+fall in, or whose numbers run along a color ramp, with a key. A string is
+the constant; the object binds the field, and `scale: "none"` beside a
+field paints the constant while keeping the field for the way back.
+`scale: "identity"` keeps each feature's color, whether a file's itemRgb or
+what a `value` callback returns, and names the colors `domain` lists in the
+key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
+which otherwise reads as no color, and reads a comma-free itemRgb as a packed
+integer.
+
 ## Example usage
 
 ```js
@@ -61,18 +73,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-The canvas feature displays' `color` setting: a CSS color or `jexl:`
-callback in `value`, or a field whose values each take a range color,
-whose numbers each take the color of the interval between cut points they
-fall in, or whose numbers run along a color ramp, with a key. A string is
-the constant; the object binds the field, and `scale: "none"` beside a
-field paints the constant while keeping the field for the way back.
-`scale: "identity"` keeps each feature's color, whether a file's itemRgb or
-what a `value` callback returns, and names the colors `domain` lists in the
-key. Like UCSC's `itemRgb on`, it paints an itemRgb of `0,0,0` or `0` black,
-which otherwise reads as no color, and reads a comma-free itemRgb as a packed
-integer.
 
 ## Config slots
 

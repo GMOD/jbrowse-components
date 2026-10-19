@@ -7,6 +7,8 @@ sidebar_label: Display -> LinearVariantDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
 
+Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+
 ## Example usage
 
 Minimal `VariantTrack` config. See the
@@ -42,8 +44,6 @@ Taller track. The `displayDefaults` object shorthand is equivalent to
   displayDefaults: { height: 200 },
 }
 ```
-
-Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
 ## Related links
 

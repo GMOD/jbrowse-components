@@ -7,6 +7,12 @@ sidebar_label: Display -> SampleRows
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sampleRowsConfigSchema.ts).
 
+The `rows` of a display whose rows are the file's samples, one each, with
+nothing else a row could be: the multi-sample variant display and the
+multiple alignment display. `sample` is the one field, so the object is
+the arrangement a reader gives the rows, written whole as every display's
+`rows` is; `rows: "sample"` names the field and arranges nothing.
+
 ## Example usage
 
 ```js
@@ -19,12 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   rows: { domain: ['mm10'], labels: { mm10: 'Mouse' }, kept: ['mm10', 'hg38'] },
 }
 ```
-
-The `rows` of a display whose rows are the file's samples, one each, with
-nothing else a row could be: the multi-sample variant display and the
-multiple alignment display. `sample` is the one field, so the object is
-the arrangement a reader gives the rows, written whole as every display's
-`rows` is; `rows: "sample"` names the field and arranges nothing.
 
 ## Config slots
 

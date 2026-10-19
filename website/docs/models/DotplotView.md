@@ -7,6 +7,9 @@ sidebar_label: View -> DotplotView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts).
 
+Plots the alignments between two assemblies, one on each axis, as a dot
+plot.
+
 ## Example usage
 
 Hand-authored under `defaultSession.views`, with every setting written
@@ -24,9 +27,6 @@ directly on the view object. `views` lists the two assemblies on the axes and
 
 `autoDiagonalize` and a per-axis `loc` on each `views` entry are the other
 launch keys; everything else is a property below.
-
-Plots the alignments between two assemblies, one on each axis, as a dot
-plot.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

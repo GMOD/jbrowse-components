@@ -7,6 +7,9 @@ sidebar_label: Track -> MultiQuantitativeTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts).
 
+Holds several quantitative signals, such as one BigWig per sample, which
+`LinearWiggleDisplay` draws one row per source by default.
+
 ## Example usage
 
 Overlays several bigwig files as one track. `bigWigs` is the shorthand form
@@ -28,9 +31,6 @@ of `MultiWiggleAdapter` — equivalent to a `subadapters` array of individual
   },
 }
 ```
-
-Holds several quantitative signals, such as one BigWig per sample, which
-`LinearWiggleDisplay` draws one row per source by default.
 
 ## Related links
 

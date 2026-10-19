@@ -7,6 +7,13 @@ sidebar_label: Root -> FormatDetails
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
 
+Holds jexl callbacks that add, rewrite or hide fields in the feature-details
+panel. Every track has this schema, and so does the root config as
+`configuration.formatDetails`, which applies to every track at once. Where
+both are set, the callbacks merge with the track's object over the session's,
+so a track can override individual keys the global callback added, and the
+numeric slots take the track's value when the track sets one.
+
 ## Example usage
 
 On a track. The callback returns an object merged over the feature: a new key
@@ -28,13 +35,6 @@ is turned into a link for you, so no `<a>` markup is needed:
   },
 }
 ```
-
-Holds jexl callbacks that add, rewrite or hide fields in the feature-details
-panel. Every track has this schema, and so does the root config as
-`configuration.formatDetails`, which applies to every track at once. Where
-both are set, the callbacks merge with the track's object over the session's,
-so a track can override individual keys the global callback added, and the
-numeric slots take the track's value when the track sets one.
 
 ## Config slots
 

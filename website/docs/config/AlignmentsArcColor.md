@@ -7,6 +7,14 @@ sidebar_label: Display -> AlignmentsArcColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsArcColorConfigSchema.ts).
 
+The alignments displays' `readConnections.color` setting colors the
+read-connection arcs and the read cloud. Empty, the default, the arcs take
+the reads' `color` field where it is one an arc paints (`insertSize`,
+`pairOrientation`, `insertSizeAndOrientation`), and paint
+`insertSizeAndOrientation` under any other. A field set here colors the
+arcs whatever the reads show. A bare string is refused rather than read as
+the field, since the reads' `color` reads one as a constant.
+
 ## Example usage
 
 ```js
@@ -23,14 +31,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { field: 'insertSize' },
 }
 ```
-
-The alignments displays' `readConnections.color` setting colors the
-read-connection arcs and the read cloud. Empty, the default, the arcs take
-the reads' `color` field where it is one an arc paints (`insertSize`,
-`pairOrientation`, `insertSizeAndOrientation`), and paint
-`insertSizeAndOrientation` under any other. A field set here colors the
-arcs whatever the reads show. A bare string is refused rather than read as
-the field, since the reads' `color` reads one as a constant.
 
 ## Config slots
 

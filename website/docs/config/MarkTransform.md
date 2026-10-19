@@ -7,6 +7,32 @@ sidebar_label: Display -> MarkTransform
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
 
+One step of a `transform` list, which runs over the region's features in
+order, each step reading what the one before it produced. A step names its
+`type` and takes that step's settings; a key belonging to another step
+is refused at load.
+
+`filter` keeps the features an expression admits; `formula` writes an
+expression's value into a field; `bin` snaps each feature to a
+genome-aligned bin, or with `fields` cuts it into a piece per bin it
+overlaps; `aggregate` folds each group into one feature with
+its summaries; `window` writes each feature with summaries over the
+features of its group around it in start order, a moving average over a
+fixed number of features; `coverage` replaces the
+features with runs of how many
+overlap each stretch; `flatten` fans out an array or a record field;
+`cells` replaces each aligned row with its runs of match, mismatch and gap
+against the reference it was fanned out of and an interbase insertion per
+run of reference gaps, with `state`, `base`, `match` and `length` written;
+`pileup` writes
+each feature's row in a greedy first-fit packing; `mate` yields one
+feature per other end a record states, the `mate` a paired adapter fills
+in (BEDPE, STAR-Fusion), each VCF `ALT` naming a locus, or a paired read's
+`next_ref` and `next_pos`, with `mate.refName`, `mate.start`, `mate.end`
+and `mate.mateDirection`, the record's `mateDirection`, the `alt` it
+came from and `svType` written, a record with no other end dropped and a
+pair of ends yielding one feature.
+
 ## Example usage
 
 Count features per bin that follows the zoom:
@@ -45,32 +71,6 @@ transform: [
   },
 ]
 ```
-
-One step of a `transform` list, which runs over the region's features in
-order, each step reading what the one before it produced. A step names its
-`type` and takes that step's settings; a key belonging to another step
-is refused at load.
-
-`filter` keeps the features an expression admits; `formula` writes an
-expression's value into a field; `bin` snaps each feature to a
-genome-aligned bin, or with `fields` cuts it into a piece per bin it
-overlaps; `aggregate` folds each group into one feature with
-its summaries; `window` writes each feature with summaries over the
-features of its group around it in start order, a moving average over a
-fixed number of features; `coverage` replaces the
-features with runs of how many
-overlap each stretch; `flatten` fans out an array or a record field;
-`cells` replaces each aligned row with its runs of match, mismatch and gap
-against the reference it was fanned out of and an interbase insertion per
-run of reference gaps, with `state`, `base`, `match` and `length` written;
-`pileup` writes
-each feature's row in a greedy first-fit packing; `mate` yields one
-feature per other end a record states, the `mate` a paired adapter fills
-in (BEDPE, STAR-Fusion), each VCF `ALT` naming a locus, or a paired read's
-`next_ref` and `next_pos`, with `mate.refName`, `mate.start`, `mate.end`
-and `mate.mateDirection`, the record's `mateDirection`, the `alt` it
-came from and `svType` written, a record with no other end dropped and a
-pair of ends yielding one feature.
 
 ## Config slots
 

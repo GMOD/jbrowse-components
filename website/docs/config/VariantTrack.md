@@ -7,6 +7,9 @@ sidebar_label: Track -> VariantTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantTrack/configSchema.ts).
 
+A feature track that also has `ChordDisplayType` registered to it and custom
+feature details in `LinearVariantDisplay`
+
 ## Example usage
 
 ```js
@@ -51,9 +54,6 @@ display names. A `jexl:` value works here for per-feature coloring:
   displayDefaults: { color: 'darkblue' },
 }
 ```
-
-A feature track that also has `ChordDisplayType` registered to it and custom
-feature details in `LinearVariantDisplay`
 
 ## Related links
 

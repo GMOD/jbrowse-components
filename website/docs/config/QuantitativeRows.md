@@ -7,6 +7,11 @@ sidebar_label: Display -> QuantitativeRows
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/quantitativeRowsConfigSchema.ts).
 
+A quantitative display's `rows`: `source` is the one field a quantitative row
+can be, since a wiggle has a score per base and a subtrack name, and
+nothing else to put on rows. The arrangement members are the shared `Rows`
+object's.
+
 ## Example usage
 
 ```js
@@ -19,11 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
 }
 ```
-
-A quantitative display's `rows`: `source` is the one field a quantitative row
-can be, since a wiggle has a score per base and a subtrack name, and
-nothing else to put on rows. The arrangement members are the shared `Rows`
-object's.
 
 ## Config slots
 

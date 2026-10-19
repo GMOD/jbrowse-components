@@ -7,6 +7,13 @@ sidebar_label: Display -> AlignmentsModifications
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts).
 
+The alignments displays' `modifications` setting configures the
+`modifications` and `bisulfite` fields of
+[AlignmentsBaseColor](../alignmentsbasecolor). The by-type view paints each MM/ML call its type's color above
+`threshold`; `unmodified: 'calls'` paints the unmodified side blue as well,
+and `unmodified: 'all'` paints every cytosine in `cytosineContext` whether
+the basecaller listed it or not, which is the methylation view.
+
 ## Example usage
 
 ```js
@@ -24,13 +31,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   modifications: { shownModifications: ['a'], threshold: 50 },
 }
 ```
-
-The alignments displays' `modifications` setting configures the
-`modifications` and `bisulfite` fields of
-[AlignmentsBaseColor](../alignmentsbasecolor). The by-type view paints each MM/ML call its type's color above
-`threshold`; `unmodified: 'calls'` paints the unmodified side blue as well,
-and `unmodified: 'all'` paints every cytosine in `cytosineContext` whether
-the basecaller listed it or not, which is the methylation view.
 
 ## Config slots
 

@@ -7,22 +7,6 @@ sidebar_label: Adapter -> MultiGenomePAFAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomePAFAdapter/configSchema.ts).
 
-## Example usage
-
-```js
-{
-  type: 'SyntenyTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['grape', 'peach', 'cacao'],
-  adapter: {
-    type: 'MultiGenomePAFAdapter',
-    uri: 'all_vs_all.paf.gz',
-    assemblyNames: ['grape', 'peach', 'cacao'],
-  },
-}
-```
-
 Loads a single PAF holding alignments among several genomes, where every
 sequence name is PanSN-prefixed with its assembly (`sample#haplotype#contig`).
 The file may state any set of pairs: a complete all-vs-all (`minimap2 all.fa
@@ -38,6 +22,22 @@ all" — including samples not listed in `assemblyNames`, and labels those
 mates by their PanSN prefix. `assemblyNames` therefore only needs to list
 the assemblies you actually load into JBrowse and want the track to appear
 on.
+
+## Example usage
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['grape', 'peach', 'cacao'],
+  adapter: {
+    type: 'MultiGenomePAFAdapter',
+    uri: 'all_vs_all.paf.gz',
+    assemblyNames: ['grape', 'peach', 'cacao'],
+  },
+}
+```
 
 ## Related links
 

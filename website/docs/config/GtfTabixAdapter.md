@@ -7,6 +7,8 @@ sidebar_label: Adapter -> GtfTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfTabixAdapter/configSchema.ts).
 
+Reads bgzip-compressed, tabix-indexed GTF files.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
@@ -34,8 +36,6 @@ JBrowse infers `GtfTabixAdapter` and `FeatureTrack` from `genes.gtf.gz`, and `na
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads bgzip-compressed, tabix-indexed GTF files.
 
 ## Related links
 

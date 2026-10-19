@@ -7,6 +7,10 @@ sidebar_label: Display -> LDTrackDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
 
+Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file —
+PLINK `--r2` output and the formats that follow it. JBrowse does not compute
+LD from genotypes; run plink (or an equivalent) and point this at the result.
+
 ## Example usage
 
 ```js
@@ -31,10 +35,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```
 
 ## Overview
-
-Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file —
-PLINK `--r2` output and the formats that follow it. JBrowse does not compute
-LD from genotypes; run plink (or an equivalent) and point this at the result.
 
 ### LDTrackDisplay - Identifier
 

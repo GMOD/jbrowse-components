@@ -7,6 +7,9 @@ sidebar_label: Adapter -> SPARQLAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `rdf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/rdf/src/SPARQLAdapter/configSchema.ts).
 
+Fetches features from a SPARQL endpoint, substituting the queried region into
+a query template.
+
 ## Example usage
 
 `{refName}`, `{start}` and `{end}` are substituted per request, so the
@@ -31,9 +34,6 @@ result columns become feature fields, so the query has to select at least
   },
 }
 ```
-
-Fetches features from a SPARQL endpoint, substituting the queried region into
-a query template.
 
 ## Related links
 

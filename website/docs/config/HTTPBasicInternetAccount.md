@@ -7,6 +7,9 @@ sidebar_label: Internet Account -> HTTPBasicInternetAccount
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
 
+Prompts for a username and password, and sends them in an HTTP Basic
+`Authorization` header on requests to a matching domain.
+
 ## Example usage
 
 An entry in the config's `internetAccounts`. JBrowse prompts for the username
@@ -22,9 +25,6 @@ sends them as an `Authorization: Basic …` header from then on.
   domains: ['data.mylab.org'],
 }
 ```
-
-Prompts for a username and password, and sends them in an HTTP Basic
-`Authorization` header on requests to a matching domain.
 
 ## Related links
 

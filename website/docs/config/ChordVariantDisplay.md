@@ -7,6 +7,9 @@ sidebar_label: Display -> ChordVariantDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/configSchema.ts).
 
+Draws the structural variants of a `VariantTrack` in a `CircularView`, each
+translocation as a chord across the circle.
+
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
@@ -35,9 +38,6 @@ chord's resting color, a constant or a field of the record with a key, and
   ],
 }
 ```
-
-Draws the structural variants of a `VariantTrack` in a `CircularView`, each
-translocation as a chord across the circle.
 
 ## Related links
 

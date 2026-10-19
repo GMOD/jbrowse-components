@@ -7,6 +7,13 @@ sidebar_label: Display -> LinearBasicDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
 
+Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
+similar file. The display adds the gene-glyph slots (isoforms, subparts,
+UTRs, chevrons) to the shared canvas base. The color slots `color`,
+`connectorColor` and `utrColor` are display-level, set inside a track's
+`displays` array, each a CSS color or a `jexl:` expression for per-feature
+coloring.
+
 ## Example usage
 
 A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
@@ -33,13 +40,6 @@ or `superCompact`), or `collapsed` for a single-row overview:
   ],
 }
 ```
-
-Draws the genes and other features of a `FeatureTrack`, from a BED, GFF or
-similar file. The display adds the gene-glyph slots (isoforms, subparts,
-UTRs, chevrons) to the shared canvas base. The color slots `color`,
-`connectorColor` and `utrColor` are display-level, set inside a track's
-`displays` array, each a CSS color or a `jexl:` expression for per-feature
-coloring.
 
 ## Related links
 

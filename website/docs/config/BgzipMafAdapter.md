@@ -7,6 +7,16 @@ sidebar_label: Adapter -> BgzipMafAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
 
+A bgzip-compressed MAF with a Taffy `.tai` index — the form whole-genome
+multiple alignments are actually distributed in. HPRC release 2 publishes
+`hprc-v2.1-mc-grch38.full.maf.gz` (53 GB, 464 haplotypes) with a sibling
+`.tai`, and Cactus/taffy write the pair for any HAL export. The index gives
+random access, so a locus is a small ranged read rather than a download: a
+10 kb query against HPRC's own index resolves to about 924 KB.
+
+Use `BgzipTaffyAdapter` for TAF (taffy's own, more compact format),
+`MafTabixAdapter` for a `maf2bed` BED, and `BigMafAdapter` for bigMaf.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the sibling `.tai` index; `nhUri` names the
@@ -24,16 +34,6 @@ Newick tree:
   },
 }
 ```
-
-A bgzip-compressed MAF with a Taffy `.tai` index — the form whole-genome
-multiple alignments are actually distributed in. HPRC release 2 publishes
-`hprc-v2.1-mc-grch38.full.maf.gz` (53 GB, 464 haplotypes) with a sibling
-`.tai`, and Cactus/taffy write the pair for any HAL export. The index gives
-random access, so a locus is a small ranged read rather than a download: a
-10 kb query against HPRC's own index resolves to about 924 KB.
-
-Use `BgzipTaffyAdapter` for TAF (taffy's own, more compact format),
-`MafTabixAdapter` for a `maf2bed` BED, and `BigMafAdapter` for bigMaf.
 
 ## Related links
 

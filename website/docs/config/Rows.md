@@ -7,6 +7,11 @@ sidebar_label: Display -> Rows
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowsConfigSchema.ts).
 
+The `rows` setting of the displays that draw one row per value of a field,
+with the dendrogram sidebar beside them: the field, and the arrangement a
+reader gives the rows. A string is the field; the object adds the order,
+the labels, the tree with its provenance and the focus, each by value.
+
 ## Example usage
 
 ```js
@@ -23,11 +28,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   rows: { field: 'source', domain: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
 }
 ```
-
-The `rows` setting of the displays that draw one row per value of a field,
-with the dendrogram sidebar beside them: the field, and the arrangement a
-reader gives the rows. A string is the field; the object adds the order,
-the labels, the tree with its provenance and the focus, each by value.
 
 ## Related links
 

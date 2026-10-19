@@ -7,6 +7,9 @@ sidebar_label: Adapter -> BedAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
 
+Reads plain-text BED files. The adapter loads the whole file into memory, so
+use `BedTabixAdapter` for large files.
+
 ## Example usage
 
 ```js
@@ -37,9 +40,6 @@ JBrowse infers `BedAdapter` and `FeatureTrack` from `features.bed`, and `name` d
 Named BED columns past `name`/`score`/`strand` (`itemRgb`, `thickStart`, ...) are only guaranteed for BED12 or a track with an `autoSql`/`columnNames`. For a BED7-BED11 file JBrowse cannot know what the extra columns mean, so it exposes them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as `undefined` in a jexl callback. Set `columnNames` to refer to them by name.
 
 :::
-
-Reads plain-text BED files. The adapter loads the whole file into memory, so
-use `BedTabixAdapter` for large files.
 
 ## Related links
 

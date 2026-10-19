@@ -7,6 +7,9 @@ sidebar_label: Adapter -> GtfAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
 
+Reads plain-text GTF files, optionally gzipped. The adapter loads the whole
+file into memory, so use `GtfTabixAdapter` for large files.
+
 ## Example usage
 
 The `uri` shorthand works for plain or gzipped GTF:
@@ -33,9 +36,6 @@ JBrowse infers `GtfAdapter` and `FeatureTrack` from `genes.gtf`, and `name` defa
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads plain-text GTF files, optionally gzipped. The adapter loads the whole
-file into memory, so use `GtfTabixAdapter` for large files.
 
 ## Related links
 

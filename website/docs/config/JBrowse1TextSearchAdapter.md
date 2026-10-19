@@ -7,6 +7,10 @@ sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
+Searches a names index written by JBrowse 1's `generate-names.pl`. The
+`tracks` and `assemblyNames` slots list the tracks and assemblies the index
+covers.
+
 ## Example usage
 
 An entry in `aggregateTextSearchAdapters`, pointing at the `names/`
@@ -20,10 +24,6 @@ search index is reused rather than rebuilt with `jbrowse text-index`:
   assemblyNames: ['hg19'],
 }
 ```
-
-Searches a names index written by JBrowse 1's `generate-names.pl`. The
-`tracks` and `assemblyNames` slots list the tracks and assemblies the index
-covers.
 
 ## Config slots
 

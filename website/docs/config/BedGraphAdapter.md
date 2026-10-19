@@ -7,6 +7,13 @@ sidebar_label: Adapter -> BedGraphAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
 
+Reads plain-text bedGraph signal files. The adapter loads the whole file into
+memory, so use `BedGraphTabixAdapter` for large files.
+
+Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
+one value column each, named by the header, or a `source` column naming each
+row's, which is the form Save track data writes.
+
 ## Example usage
 
 ```js
@@ -31,13 +38,6 @@ JBrowse infers `BedGraphAdapter` and `QuantitativeTrack` from `signal.bedGraph`,
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads plain-text bedGraph signal files. The adapter loads the whole file into
-memory, so use `BedGraphTabixAdapter` for large files.
-
-Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
-one value column each, named by the header, or a `source` column naming each
-row's, which is the form Save track data writes.
 
 ## Related links
 

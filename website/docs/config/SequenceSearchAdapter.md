@@ -7,6 +7,11 @@ sidebar_label: Adapter -> SequenceSearchAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
 
+Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
+track is displayed against. Setting it by hand pins the scan to one sequence
+source, and the track keeps scanning that source after the assembly's
+sequence changes.
+
 ## Example usage
 
 `search` is a regular expression matched against the assembly's sequence, so
@@ -45,11 +50,6 @@ second site:
   },
 }
 ```
-
-Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
-track is displayed against. Setting it by hand pins the scan to one sequence
-source, and the track keeps scanning that source after the assembly's
-sequence changes.
 
 ## Related links
 

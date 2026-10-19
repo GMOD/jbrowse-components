@@ -7,6 +7,11 @@ sidebar_label: Display -> CoverageBand
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/alignments-core/src/coverageBandConfigSchema.ts).
 
+The coverage histogram band of the alignments and MAF displays, their
+`coverage` setting: whether it draws, its height, the insertion and clip
+marks drawn in it, and which allele segments it colors. Its value axis is
+the display's `scales`.
+
 ## Example usage
 
 ```js
@@ -16,11 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```js
 { type: 'LinearAlignmentsDisplay', coverage: { show: false } }
 ```
-
-The coverage histogram band of the alignments and MAF displays, their
-`coverage` setting: whether it draws, its height, the insertion and clip
-marks drawn in it, and which allele segments it colors. Its value axis is
-the display's `scales`.
 
 ## Related links
 

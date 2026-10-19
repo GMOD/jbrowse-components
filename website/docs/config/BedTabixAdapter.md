@@ -7,6 +7,8 @@ sidebar_label: Adapter -> BedTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedTabixAdapter/configSchema.ts).
 
+Reads bgzip-compressed, tabix-indexed BED files.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
@@ -34,8 +36,6 @@ JBrowse infers `BedTabixAdapter` and `FeatureTrack` from `features.bed.gz`, and 
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads bgzip-compressed, tabix-indexed BED files.
 
 ## Related links
 

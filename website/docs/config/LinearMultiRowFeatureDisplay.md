@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearMultiRowFeatureDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts).
 
+Paints interval features as colored blocks on stacked rows partitioned by a
+feature attribute ("chromosome / ancestry painting").
+
 ## Example usage
 
 A custom BED with a column naming each row, its columns named by a
@@ -53,9 +56,6 @@ no configuration at all, and `color.scale: 'identity'` names it in the key.
 To color per feature off some other attribute, set the `color` slot to a
 `jexl:` expression reading it.
 Omit `rows.domain` and the rows sort by value.
-
-Paints interval features as colored blocks on stacked rows partitioned by a
-feature attribute ("chromosome / ancestry painting").
 
 ## Related links
 

@@ -7,6 +7,12 @@ sidebar_label: Display -> LGVSyntenyDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts).
 
+Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
+colored the way an alignments display draws reads. It has the alignments
+display's bands and settings but the sashimi band, `filter.junctions`,
+`baseColor` and `modifications`: a synteny block has no introns, basecaller
+tags or qualities.
+
 ## Example usage
 
 Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
@@ -33,12 +39,6 @@ display type:
   ],
 }
 ```
-
-Draws a `SyntenyTrack`'s alignments in a linear genome view, stacked and
-colored the way an alignments display draws reads. It has the alignments
-display's bands and settings but the sashimi band, `filter.junctions`,
-`baseColor` and `modifications`: a synteny block has no introns, basecaller
-tags or qualities.
 
 ## Related links
 

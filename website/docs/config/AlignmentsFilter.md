@@ -7,6 +7,11 @@ sidebar_label: Display -> AlignmentsFilter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsFilterConfigSchema.ts).
 
+Every test the alignments display applies, in one object, its `filter`
+slot, read by every part that draws the data a test names: the base filter's
+read members and `connections`, and `junctions`, which tests the splice
+junctions.
+
 ## Example usage
 
 ```js
@@ -15,11 +20,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   filter: { junctions: { minReads: 5, nonCanonical: 'exclude' } },
 }
 ```
-
-Every test the alignments display applies, in one object, its `filter`
-slot, read by every part that draws the data a test names: the base filter's
-read members and `connections`, and `junctions`, which tests the splice
-junctions.
 
 ## Related links
 

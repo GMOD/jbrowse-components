@@ -7,6 +7,12 @@ sidebar_label: Adapter -> BedGraphTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphTabixAdapter/configSchema.ts).
 
+Reads bgzip-compressed, tabix-indexed bedGraph signal files.
+
+Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
+one value column each, named by the header, or a `source` column naming each
+row's, which is the form Save track data writes.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index:
@@ -33,12 +39,6 @@ JBrowse infers `BedGraphTabixAdapter` and `QuantitativeTrack` from `signal.bedGr
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads bgzip-compressed, tabix-indexed bedGraph signal files.
-
-Several signals in one file are a `MultiQuantitativeTrack`'s subtracks:
-one value column each, named by the header, or a `source` column naming each
-row's, which is the form Save track data writes.
 
 ## Related links
 

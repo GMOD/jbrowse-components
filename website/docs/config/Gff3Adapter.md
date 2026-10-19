@@ -7,6 +7,9 @@ sidebar_label: Adapter -> Gff3Adapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/configSchema.ts).
 
+Reads plain-text GFF3 files. The adapter loads the whole file into memory,
+so use `Gff3TabixAdapter` for large files.
+
 ## Example usage
 
 ```js
@@ -31,9 +34,6 @@ JBrowse infers `Gff3Adapter` and `FeatureTrack` from `genes.gff3`, and `name` de
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads plain-text GFF3 files. The adapter loads the whole file into memory,
-so use `Gff3TabixAdapter` for large files.
 
 ## Related links
 

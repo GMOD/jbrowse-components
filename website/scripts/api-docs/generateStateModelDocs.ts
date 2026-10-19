@@ -397,8 +397,8 @@ function renderModel(
   // the member tables are h2 sections of their own, so the intro prose is
   // emitted bare rather than under an `## Overview` heading it would outweigh
   const body = section(
-    exampleSection(header.examples),
     header.docs,
+    exampleSection(header.examples),
     configLinkSection(header.name, header.id, configNames),
     // A model that composes others and declares nothing of its own renders a
     // page of entirely other models' members, which reads as its surface when

@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearSyntenyDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/configSchemaF.ts).
 
+Draws a `SyntenyTrack` in a `LinearSyntenyView`, as ribbons joining the
+aligned regions of two stacked linear genome views.
+
 ## Example usage
 
 A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
@@ -28,9 +31,6 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
   },
 }
 ```
-
-Draws a `SyntenyTrack` in a `LinearSyntenyView`, as ribbons joining the
-aligned regions of two stacked linear genome views.
 
 ## Related links
 

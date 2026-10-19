@@ -7,16 +7,16 @@ sidebar_label: Display -> MultiWayGeneColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColorConfigSchema.ts).
 
+The multi-way synteny display's gene `color`: a CSS color or `jexl:`
+callback in `value`, or a field whose values each take a range color, or
+whose numbers each take the color of the interval between cut points they
+fall in, with a key. A string is the constant; the object binds the field.
+
 ## Example usage
 
 ```js
 { type: 'MultiWaySyntenyDisplay', color: { field: 'cluster' } }
 ```
-
-The multi-way synteny display's gene `color`: a CSS color or `jexl:`
-callback in `value`, or a field whose values each take a range color, or
-whose numbers each take the color of the interval between cut points they
-fall in, with a key. A string is the constant; the object binds the field.
 
 ## Config slots
 

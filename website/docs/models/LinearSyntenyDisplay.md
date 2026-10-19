@@ -7,6 +7,11 @@ sidebar_label: Display -> LinearSyntenyDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
 
+Pure-data model. The containing LinearSyntenyView owns the shared GPU
+backend, the upload autorun (which watches every display's `instanceData`
+and keys it by `displayKey`), and the render autorun. This display holds
+only per-track state and the `renderParams` the view reads out.
+
 ## Example usage
 
 A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs
@@ -33,11 +38,6 @@ the query (first) and target (second) assembly names, matched by the track's
   ],
 }
 ```
-
-Pure-data model. The containing LinearSyntenyView owns the shared GPU
-backend, the upload autorun (which watches every display's `instanceData`
-and keys it by `displayKey`), and the render autorun. This display holds
-only per-track state and the `renderParams` the view reads out.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearsyntenydisplay).
 

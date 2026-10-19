@@ -7,6 +7,12 @@ sidebar_label: Display -> MarkSize
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markSizeConfigSchema.ts).
 
+A mark's size in px, as `color` is its color: a point's diameter, a rule's
+thickness or a link's stroke. A number is the constant every instance
+takes, and is written to `value`; a string is a feature field, and is
+written to `field`, which a link reads through a linear or log scale into a px range,
+so a score becomes a width the way a ramp makes it a color.
+
 ## Example usage
 
 ```js
@@ -19,12 +25,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   encoding: { size: { field: 'score', scale: 'log', range: [1, 8] } },
 }
 ```
-
-A mark's size in px, as `color` is its color: a point's diameter, a rule's
-thickness or a link's stroke. A number is the constant every instance
-takes, and is written to `value`; a string is a feature field, and is
-written to `field`, which a link reads through a linear or log scale into a px range,
-so a score becomes a width the way a ramp makes it a color.
 
 ## Config slots
 

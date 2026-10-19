@@ -7,6 +7,16 @@ sidebar_label: View -> SyntenyColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorConfigSchema.ts).
 
+The linear synteny and dotplot views' `color` setting, which every track
+in the view paints with: one color for every alignment, or a field of each
+alignment — its strand, the sequence at either end, the anchor
+assembly's, the track it came from, a measurement through its preset
+(`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
+`syntenicDepth` grey for a one-to-one ortholog and orange where genes share
+one),
+or a column the tracks declare in `attributeColumns`. A string is the
+constant.
+
 ## Example usage
 
 ```js
@@ -37,16 +47,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-The linear synteny and dotplot views' `color` setting, which every track
-in the view paints with: one color for every alignment, or a field of each
-alignment — its strand, the sequence at either end, the anchor
-assembly's, the track it came from, a measurement through its preset
-(`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
-`syntenicDepth` grey for a one-to-one ortholog and orange where genes share
-one),
-or a column the tracks declare in `attributeColumns`. A string is the
-constant.
 
 ## Config slots
 

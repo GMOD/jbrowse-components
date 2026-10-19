@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearMultiSampleVariantDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts).
 
+Multi-sample variant display drawing one genotype row per sample, with a
+per-cell feature widget on click.
+
 ## Example usage
 
 `unit`, `rowColor`, `rows` and `filter` are
@@ -72,9 +75,6 @@ whose leaves are exactly its rows in order, and a clustering run under bands
 clusters each band apart and writes one forest. A whole-cohort tree under a
 facet set afterwards draws where a band happens to be a clade, and the hint
 counts the bands without one.
-
-Multi-sample variant display drawing one genotype row per sample, with a
-per-cell feature widget on click.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmultisamplevariantdisplay).
 

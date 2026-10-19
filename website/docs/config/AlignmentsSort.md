@@ -7,19 +7,6 @@ sidebar_label: Display -> AlignmentsSort
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts).
 
-## Example usage
-
-```js
-{ type: 'LinearAlignmentsDisplay', sort: 'spliced' }
-```
-
-```js
-{
-  type: 'LinearAlignmentsDisplay',
-  sort: { type: 'tag', tag: 'HP', pos: 1999, refName: 'ctgA' },
-}
-```
-
 The alignments displays' `sort` setting: the pileup's row order. A
 whole-window order is a string — `"position"` (by start, the default),
 `"length"` (widest first), `"spliced"` (reads whose CIGAR has a skip
@@ -33,6 +20,19 @@ not call concordant, each with both ends placed above MAPQ 0, as the
 or the `insertion`, `softclip` or `hardclip` there, or up to `within` bases
 either side; the reads not over it lay out by position. On another
 chromosome a column sort orders by position.
+
+## Example usage
+
+```js
+{ type: 'LinearAlignmentsDisplay', sort: 'spliced' }
+```
+
+```js
+{
+  type: 'LinearAlignmentsDisplay',
+  sort: { type: 'tag', tag: 'HP', pos: 1999, refName: 'ctgA' },
+}
+```
 
 ## Related links
 

@@ -7,6 +7,14 @@ sidebar_label: Adapter -> MotifListAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/MotifListAdapter/configSchema.ts).
 
+Scans the reference for a list of named motifs, e.g. restriction enzyme
+recognition sites.
+
+Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
+track is displayed against. Setting it by hand pins the scan to one sequence
+source, and the track keeps scanning that source after the assembly's
+sequence changes.
+
 ## Example usage
 
 ```js
@@ -21,14 +29,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-Scans the reference for a list of named motifs, e.g. restriction enzyme
-recognition sites.
-
-Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
-track is displayed against. Setting it by hand pins the scan to one sequence
-source, and the track keeps scanning that source after the assembly's
-sequence changes.
 
 ## Config slots
 

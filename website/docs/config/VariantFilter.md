@@ -7,6 +7,10 @@ sidebar_label: Display -> VariantFilter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/variantFilterConfigSchema.ts).
 
+The tests the multi-sample variant display applies to the records it
+fetched, its `filter`: the jexl `expressions` every feature filter takes,
+and two thresholds on what the record's genotypes say about the site.
+
 ## Example usage
 
 ```js
@@ -15,10 +19,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   filter: { minMinorAlleleFrequency: 0.05, maxMissingness: 0.1 },
 }
 ```
-
-The tests the multi-sample variant display applies to the records it
-fetched, its `filter`: the jexl `expressions` every feature filter takes,
-and two thresholds on what the record's genotypes say about the site.
 
 ## Related links
 

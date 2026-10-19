@@ -7,6 +7,14 @@ sidebar_label: Display -> AlignmentsBaseColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts).
 
+The alignments displays' `baseColor` setting: the per-base variable painted
+as a cell per base over the reads, whatever `color` fills them with.
+`modifications` paints the MM/ML calls and `bisulfite` the conversion state
+against the reference, both under the display's `modifications` settings;
+`baseQuality` and `base` paint every aligned base. A string is the field.
+While a modification field paints, mismatches draw grey, and a read that no
+`color` paints takes a pale strand tint.
+
 ## Example usage
 
 ```js
@@ -21,14 +29,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   modifications: { unmodified: 'calls' },
 }
 ```
-
-The alignments displays' `baseColor` setting: the per-base variable painted
-as a cell per base over the reads, whatever `color` fills them with.
-`modifications` paints the MM/ML calls and `bisulfite` the conversion state
-against the reference, both under the display's `modifications` settings;
-`baseQuality` and `base` paint every aligned base. A string is the field.
-While a modification field paints, mismatches draw grey, and a read that no
-`color` paints takes a pale strand tint.
 
 ## Config slots
 

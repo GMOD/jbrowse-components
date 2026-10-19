@@ -7,6 +7,8 @@ sidebar_label: Display -> LinearAlignmentsDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
 
+State model factory for LinearAlignmentsDisplay
+
 ## Example usage
 
 The display goes in a track's `displays` array; here are three complete
@@ -71,8 +73,6 @@ Long reads with split/mate reads connected by arcs:
   ],
 }
 ```
-
-State model factory for LinearAlignmentsDisplay
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearalignmentsdisplay).
 

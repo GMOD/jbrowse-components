@@ -7,6 +7,9 @@ sidebar_label: Adapter -> VcfAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfAdapter/configSchema.ts).
 
+Reads plain-text (non-bgzipped) VCF files. The adapter loads the whole file
+into memory, so use `VcfTabixAdapter` for large files.
+
 ## Example usage
 
 ```js
@@ -31,9 +34,6 @@ JBrowse infers `VcfAdapter` and `VariantTrack` from `variants.vcf`, and `name` d
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads plain-text (non-bgzipped) VCF files. The adapter loads the whole file
-into memory, so use `VcfTabixAdapter` for large files.
 
 ## Related links
 

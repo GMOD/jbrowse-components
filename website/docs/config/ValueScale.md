@@ -7,6 +7,26 @@ sidebar_label: Display -> ValueScale
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/valueScaleConfigSchema.ts).
 
+The value scale of a quantitative display, written as `scales.y`: the
+wiggle plot, the alignments coverage band and the mark display, the
+Manhattan plot among them, each have one, with the axis guides it draws —
+its ticks, its `grid`, its `rules` and its `title`.
+
+Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
+left unset autoscales over the loaded regions, and `zero` sets whether an
+autoscaled linear or symlog axis reaches 0 whatever those regions hold.
+
+Two defaults come from the display rather than from the scale.
+`domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
+at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
+display and at `1` on the coverage band.
+
+Every scale has the same guides: `rules`, reference lines at chosen
+values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
+caption beside the axis. A rule naming no `color` draws in the one color
+the chrome rules every plot in, so a red line is a claim its author makes
+rather than a meaning a display assigns.
+
 ## Example usage
 
 A log axis floored at 1:
@@ -61,26 +81,6 @@ suggestive one:
   },
 }
 ```
-
-The value scale of a quantitative display, written as `scales.y`: the
-wiggle plot, the alignments coverage band and the mark display, the
-Manhattan plot among them, each have one, with the axis guides it draws —
-its ticks, its `grid`, its `rules` and its `title`.
-
-Vega-Lite's spelling: a pinned end is `domainMin` or `domainMax`, an end
-left unset autoscales over the loaded regions, and `zero` sets whether an
-autoscaled linear or symlog axis reaches 0 whatever those regions hold.
-
-Two defaults come from the display rather than from the scale.
-`domainQuantile` starts at `0.99` on the wiggle plot, fencing a spike, and
-at `1`, the extremes, on the coverage band and the mark display. `symlogConstant` starts at `0` on the wiggle family and the mark
-display and at `1` on the coverage band.
-
-Every scale has the same guides: `rules`, reference lines at chosen
-values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
-caption beside the axis. A rule naming no `color` draws in the one color
-the chrome rules every plot in, so a red line is a claim its author makes
-rather than a meaning a display assigns.
 
 ## Config slots
 

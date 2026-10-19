@@ -7,6 +7,9 @@ sidebar_label: Adapter -> TwoBitAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts).
 
+Reads a UCSC `.2bit` reference sequence, optionally with a `chrom.sizes`
+file to speed up loading.
+
 ## Example usage
 
 A `.2bit` file is self-contained; add `chromSizes` to skip an initial
@@ -22,9 +25,6 @@ full-file scan on genomes with many contigs:
   },
 }
 ```
-
-Reads a UCSC `.2bit` reference sequence, optionally with a `chrom.sizes`
-file to speed up loading.
 
 ## Related links
 

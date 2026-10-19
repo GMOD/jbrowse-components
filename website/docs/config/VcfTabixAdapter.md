@@ -7,6 +7,8 @@ sidebar_label: Adapter -> VcfTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfTabixAdapter/configSchema.ts).
 
+Reads bgzip-compressed, tabix-indexed VCF files.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
@@ -40,8 +42,6 @@ JBrowse infers `VcfTabixAdapter` and `VariantTrack` from `variants.vcf.gz`, and 
 TBI cannot index a chromosome longer than 512 Mb, which some plant and animal genomes exceed. Index those with CSI instead: pass `csi: true` alongside the `uri` shorthand, or set both `index.location` and `index.indexType: 'CSI'` explicitly.
 
 :::
-
-Reads bgzip-compressed, tabix-indexed VCF files.
 
 ## Related links
 

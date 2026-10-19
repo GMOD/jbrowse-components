@@ -7,6 +7,9 @@ sidebar_label: Adapter -> PAFAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PAFAdapter/configSchema.ts).
 
+Reads PAF pairwise alignment files, as written by minimap2 or wfmash, into
+memory.
+
 ## Example usage
 
 A PAF has no index, but it needs the query and target assembly names (query
@@ -32,9 +35,6 @@ first):
 `assemblyNames` is `[query, target]`, which is the **reverse** of the order minimap2 and nucmer take their inputs (`minimap2 target.fa query.fa`). Getting it backwards draws every alignment against the wrong assembly, and the adapter raises no error. Set the named `queryAssembly` and `targetAssembly` fields instead and the ordering can't be misread.
 
 :::
-
-Reads PAF pairwise alignment files, as written by minimap2 or wfmash, into
-memory.
 
 ## Related links
 

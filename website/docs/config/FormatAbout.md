@@ -7,6 +7,12 @@ sidebar_label: Root -> FormatAbout
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatAboutConfigSchema.ts).
 
+Holds jexl callbacks that add, rewrite or hide fields in a track's About
+dialog. Every track has this schema, and so does the root config as
+`configuration.formatAbout`, which applies to every track at once. Where both
+are set the track's object is spread over the session's, so a track can
+override individual keys the global callback added.
+
 ## Example usage
 
 On a track. The callback's variable is `config`, not `feature`, since the
@@ -28,12 +34,6 @@ dialog shows the track's configuration and no feature:
   },
 }
 ```
-
-Holds jexl callbacks that add, rewrite or hide fields in a track's About
-dialog. Every track has this schema, and so does the root config as
-`configuration.formatAbout`, which applies to every track at once. Where both
-are set the track's object is spread over the session's, so a track can
-override individual keys the global callback added.
 
 ## Config slots
 

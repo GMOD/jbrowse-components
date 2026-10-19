@@ -7,6 +7,14 @@ sidebar_label: Display -> LDColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/ldColorConfigSchema.ts).
 
+The LD display's `color` setting paints the statistic the cells show,
+`r2` or `dprime`, through a linear scale onto a named `scheme`. An unset `scheme` is the
+metric's own, reds for r² and blues for D'. The domain is the statistic's
+0 to 1 rather than the loaded values', so one r² paints one color on every
+track; `domainMin` and `domainMax` narrow it. The slots are the shared
+color object's, so `jbrowse validate` and "Edit plot..." judge them as they
+judge any other display's.
+
 ## Example usage
 
 ```js
@@ -15,14 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { field: 'dprime', scheme: 'viridis', domainMin: 0.2 },
 }
 ```
-
-The LD display's `color` setting paints the statistic the cells show,
-`r2` or `dprime`, through a linear scale onto a named `scheme`. An unset `scheme` is the
-metric's own, reds for r² and blues for D'. The domain is the statistic's
-0 to 1 rather than the loaded values', so one r² paints one color on every
-track; `domainMin` and `domainMax` narrow it. The slots are the shared
-color object's, so `jbrowse validate` and "Edit plot..." judge them as they
-judge any other display's.
 
 ## Config slots
 

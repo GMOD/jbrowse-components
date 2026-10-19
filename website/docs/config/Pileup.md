@@ -7,6 +7,9 @@ sidebar_label: Display -> Pileup
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/pileupConfigSchema.ts).
 
+The alignments display's `pileup` setting: the band of stacked reads, its
+read height and layout cap, and the parts drawn on each read.
+
 ## Example usage
 
 ```js
@@ -15,9 +18,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   pileup: { readHeight: 3, showSoftClipping: true },
 }
 ```
-
-The alignments display's `pileup` setting: the band of stacked reads, its
-read height and layout cap, and the parts drawn on each read.
 
 ## Config slots
 

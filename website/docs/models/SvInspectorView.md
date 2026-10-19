@@ -7,6 +7,11 @@ sidebar_label: View -> SvInspectorView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sv-inspector` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
 
+Shows a file of structural variants as a table beside a circular view that
+draws them as chords. The model holds a
+[SpreadsheetView](../spreadsheetview) and a
+[CircularView](../circularview) side by side, without extending either.
+
 ## Example usage
 
 ```js
@@ -17,11 +22,6 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
   fileType: 'VCF',
 }
 ```
-
-Shows a file of structural variants as a table beside a circular view that
-draws them as chords. The model holds a
-[SpreadsheetView](../spreadsheetview) and a
-[CircularView](../circularview) side by side, without extending either.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

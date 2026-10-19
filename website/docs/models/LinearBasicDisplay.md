@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearBasicDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts).
 
+GPU-accelerated feature display with gene-specific UI on top of the shared
+canvas base display (`LinearCanvasBaseDisplay`).
+
 ## Example usage
 
 A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
@@ -33,9 +36,6 @@ or `superCompact`), or `collapsed` for a single-row overview:
   ],
 }
 ```
-
-GPU-accelerated feature display with gene-specific UI on top of the shared
-canvas base display (`LinearCanvasBaseDisplay`).
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearbasicdisplay).
 

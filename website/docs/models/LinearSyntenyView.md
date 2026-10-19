@@ -7,6 +7,9 @@ sidebar_label: View -> LinearSyntenyView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
 
+Stacks a linear genome view per genome, and draws the synteny tracks
+between adjacent rows as ribbons joining the aligned regions.
+
 ## Example usage
 
 Hand-authored under `defaultSession.views`, with every setting written
@@ -27,9 +30,6 @@ a ribbon:
 The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
 `sameScale` and `collapseEmptyRows`; everything else is a property below and
 needs no list to join.
-
-Stacks a linear genome view per genome, and draws the synteny tracks
-between adjacent rows as ribbons joining the aligned regions.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

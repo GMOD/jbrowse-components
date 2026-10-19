@@ -7,6 +7,9 @@ sidebar_label: Adapter -> BlastTabularAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
+Reads BLAST tabular output (`-outfmt 6` or `7`) as pairwise alignments
+between a query and a target assembly.
+
 ## Example usage
 
 The default `columns` are BLAST's own `-outfmt 6` order, so a file produced
@@ -49,9 +52,6 @@ where present:
   },
 }
 ```
-
-Reads BLAST tabular output (`-outfmt 6` or `7`) as pairwise alignments
-between a query and a target assembly.
 
 ## Related links
 

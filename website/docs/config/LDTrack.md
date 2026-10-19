@@ -7,6 +7,9 @@ sidebar_label: Track -> LDTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
 
+Track type for displaying pre-computed linkage disequilibrium data
+(e.g., from PLINK --r2 output)
+
 ## Example usage
 
 `PlinkLDTabixAdapter` accepts the minimal `uri` shorthand below — it expects
@@ -35,9 +38,6 @@ JBrowse infers `PlinkLDTabixAdapter` and `LDTrack` from `plink.ld.gz`, and `name
   assemblyNames: ['hg38'],
 }
 ```
-
-Track type for displaying pre-computed linkage disequilibrium data
-(e.g., from PLINK --r2 output)
 
 ## Related links
 

@@ -7,6 +7,12 @@ sidebar_label: Display -> SectionFacet
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sectionFacetConfigSchema.ts).
 
+The facet of a display that stacks labelled sections, each of which a
+reader can hide from its chip: Facet's `field` and `domain`, and the
+sections hidden. A hide-set rather than a show-set, so a section a later
+region discovers shows; a new `field` starts with none hidden. Only here,
+since the row displays' Facet reads no hidden band.
+
 ## Example usage
 
 ```js
@@ -15,12 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   facet: { field: 'gene_biotype', hidden: ['misc_RNA'] },
 }
 ```
-
-The facet of a display that stacks labelled sections, each of which a
-reader can hide from its chip: Facet's `field` and `domain`, and the
-sections hidden. A hide-set rather than a show-set, so a section a later
-region discovers shows; a new `field` starts with none hidden. Only here,
-since the row displays' Facet reads no hidden band.
 
 ## Related links
 

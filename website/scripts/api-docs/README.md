@@ -186,9 +186,8 @@ run with the file named.
 ## Adding examples with `#example`
 
 Any `#config`, `#stateModel`, `#slot`, `#getter`, `#action`, `#method`, or
-`#api` block can carry one or more `#example` sections. Examples are rendered
-prominently at the top of the generated page (before the prose description), so
-they are the first thing a reader sees.
+`#api` block can carry one or more `#example` sections. A page's examples render
+under its opening description and above its slot or member tables.
 
 Write an `#example` block **after** the rest of the doc text:
 
@@ -247,13 +246,13 @@ A slot- or member-level label titles its example inside the dialog.
 
 ### Where `#example` can appear
 
-| Tag                         | Renders at                                      |
-| --------------------------- | ----------------------------------------------- |
-| `#config`                   | Top of the config page (`## Example usage`)     |
-| `#stateModel`               | Top of the model page (`## Example usage`)      |
-| `#slot`                     | In the slot's Description cell, behind a dialog |
-| a member tag (`#getter`, …) | In the member's Description cell, same dialog   |
-| `#api`                      | After the type signature (`#### Example usage`) |
+| Tag                         | Renders at                                        |
+| --------------------------- | ------------------------------------------------- |
+| `#config`                   | Under the page's description (`## Example usage`) |
+| `#stateModel`               | Under the page's description (`## Example usage`) |
+| `#slot`                     | In the slot's Description cell, behind a dialog   |
+| a member tag (`#getter`, …) | In the member's Description cell, same dialog     |
+| `#api`                      | After the type signature (`#### Example usage`)   |
 
 ### Coverage is tracked in `coverage-gaps.txt`
 

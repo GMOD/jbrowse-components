@@ -7,6 +7,13 @@ sidebar_label: Display -> LinearAlignmentsDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts).
 
+Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
+histogram with the sashimi arcs over it, the read connections, and the
+pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
+and `pileup`, holding whether it draws and its height; the settings every
+band shares sit beside them: `filter`, which holds the read, junction and
+connection tests, `unit`, `facet`, `sort` and `color`.
+
 ## Example usage
 
 Minimal BAM track — no display override needed for defaults. See the
@@ -81,13 +88,6 @@ counts, dropping junctions under five reads and the non-canonical ones:
   },
 }
 ```
-
-Draws the reads of an `AlignmentsTrack` as a stack of bands: the coverage
-histogram with the sashimi arcs over it, the read connections, and the
-pileup. Each band is one object, `coverage`, `sashimi`, `readConnections`
-and `pileup`, holding whether it draws and its height; the settings every
-band shares sit beside them: `filter`, which holds the read, junction and
-connection tests, `unit`, `facet`, `sort` and `color`.
 
 ## Related links
 

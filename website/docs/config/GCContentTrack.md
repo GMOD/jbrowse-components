@@ -7,6 +7,12 @@ sidebar_label: Track -> GCContentTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentTrack/configSchema.ts).
 
+GC content, or GC skew, of the assembly's sequence, computed as the view
+moves by a `GCContentAdapter` and drawn by the wiggle display. The adapter
+holds the window, the step and the mode; the track menu's GC parameters
+write them there. The reference sequence track's menu has "Add GC
+content track", which makes one.
+
 ## Example usage
 
 ```js
@@ -36,12 +42,6 @@ GC skew over a small, overlapping sliding window for a smoother signal
   },
 }
 ```
-
-GC content, or GC skew, of the assembly's sequence, computed as the view
-moves by a `GCContentAdapter` and drawn by the wiggle display. The adapter
-holds the window, the step and the mode; the track menu's GC parameters
-write them there. The reference sequence track's menu has "Add GC
-content track", which makes one.
 
 ## Related links
 

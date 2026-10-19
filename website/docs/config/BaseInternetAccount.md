@@ -7,11 +7,11 @@ sidebar_label: Internet Account -> BaseInternetAccount
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseInternetAccountConfig.ts).
 
-## Overview
-
 Holds an internet account's name and description, the domains it handles,
 and the request header it sends credentials in. Every internet account type
 has these slots.
+
+## Overview
 
 ### BaseInternetAccount - Identifier
 

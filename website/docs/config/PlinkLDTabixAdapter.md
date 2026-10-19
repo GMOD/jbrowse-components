@@ -7,31 +7,6 @@ sidebar_label: Adapter -> PlinkLDTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts).
 
-## Example usage
-
-```js
-{
-  type: 'LDTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'PlinkLDTabixAdapter',
-    uri: 'https://example.com/study.sorted.ld.gz',
-  },
-}
-```
-
-JBrowse infers `PlinkLDTabixAdapter` and `LDTrack` from `study.sorted.ld.gz`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
-
-```js
-{
-  trackId: 'my_track',
-  uri: 'https://example.com/study.sorted.ld.gz',
-  assemblyNames: ['hg38'],
-}
-```
-
 Adapter for reading pre-computed LD data from a PLINK LD table
 (tabix-indexed), either PLINK 2.0's .vcor or PLINK 1.9's .ld.
 
@@ -85,6 +60,31 @@ Used by the
 (LocusZoom-style r² to an index SNP). See either guide for generating the
 table. `--r2-phased` is the statistic the LD display computes from genotypes,
 so it is the one whose cells compare with a live triangle.
+
+## Example usage
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://example.com/study.sorted.ld.gz',
+  },
+}
+```
+
+JBrowse infers `PlinkLDTabixAdapter` and `LDTrack` from `study.sorted.ld.gz`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my_track',
+  uri: 'https://example.com/study.sorted.ld.gz',
+  assemblyNames: ['hg38'],
+}
+```
 
 ## Related links
 

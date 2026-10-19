@@ -7,6 +7,11 @@ sidebar_label: Display -> LinearWiggleDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
 
+The quantitative display: one plot per rendering, drawn over one source or
+over many. `rows: 'source'` puts each source in a separate row, with the
+clustering sidebar, row labels and separators beside them, and holds the
+arrangement a reader sets; unset, every source shares one plot box.
+
 ## Example usage
 
 A complete `QuantitativeTrack` config to paste into `tracks`:
@@ -62,11 +67,6 @@ defaultSession: {
   ],
 }
 ```
-
-The quantitative display: one plot per rendering, drawn over one source or
-over many. `rows: 'source'` puts each source in a separate row, with the
-clustering sidebar, row labels and separators beside them, and holds the
-arrangement a reader sets; unset, every source shares one plot box.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearwiggledisplay).
 

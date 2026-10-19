@@ -7,16 +7,16 @@ sidebar_label: Display -> FeatureFilter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/featureFilterConfigSchema.ts).
 
+The tests a feature display applies to the records it fetched, its `filter`
+slot. A display that adds more tests extends this schema. A list is
+shorthand for `{ expressions: [...] }`, and a settings bag names the members
+one by one.
+
 ## Example usage
 
 ```js
 { type: 'LinearBasicDisplay', filter: ["jexl:feature.score > 100"] }
 ```
-
-The tests a feature display applies to the records it fetched, its `filter`
-slot. A display that adds more tests extends this schema. A list is
-shorthand for `{ expressions: [...] }`, and a settings bag names the members
-one by one.
 
 ## Related links
 

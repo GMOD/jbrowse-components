@@ -7,6 +7,9 @@ sidebar_label: Track -> SyntenyTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/SyntenyTrack/configSchema.ts).
 
+Holds alignments between assemblies, such as a minimap2 PAF, for the linear
+synteny view, the dot plot view and the linear genome view.
+
 ## Example usage
 
 A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
@@ -28,9 +31,6 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
   },
 }
 ```
-
-Holds alignments between assemblies, such as a minimap2 PAF, for the linear
-synteny view, the dot plot view and the linear genome view.
 
 ## Related links
 

@@ -7,6 +7,16 @@ sidebar_label: Adapter -> SamAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/SamAdapter/configSchema.ts).
 
+Reads plain-text SAM alignments, from a file or an inline string.
+
+There is no index, so the whole file is loaded and held in memory — this is
+for small files (a BLAT result, a handful of assembled contigs, a test case).
+Use BAM or CRAM for anything sequencing-scale.
+
+Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+automatically supplies it from the enclosing assembly's sequence track. It is
+what per-base mismatches are computed against for records with no MD tag.
+
 ## Example usage
 
 ```js
@@ -31,16 +41,6 @@ JBrowse infers `SamAdapter` and `AlignmentsTrack` from `sample.sam`, and `name` 
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads plain-text SAM alignments, from a file or an inline string.
-
-There is no index, so the whole file is loaded and held in memory — this is
-for small files (a BLAT result, a handful of assembled contigs, a test case).
-Use BAM or CRAM for anything sequencing-scale.
-
-Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
-automatically supplies it from the enclosing assembly's sequence track. It is
-what per-base mismatches are computed against for records with no MD tag.
 
 ## Related links
 

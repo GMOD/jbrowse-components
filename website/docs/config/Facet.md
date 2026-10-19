@@ -7,6 +7,13 @@ sidebar_label: Display -> Facet
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/facetConfigSchema.ts).
 
+The `facet` setting of the feature, multi-sample variant, multi-row and
+alignments displays: one labelled section of the track per value of a field. A string
+is the field; the object adds the order. The mark display's `MarkFacet`
+adds the steps each section runs. On the multi-sample variant displays the
+field is a sample attribute from the samples file, such as `population`,
+and it bands the sample rows by its value, with no chip.
+
 ## Example usage
 
 ```js
@@ -26,13 +33,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   facet: { field: 'tags.HP', domain: ['1', '2'] },
 }
 ```
-
-The `facet` setting of the feature, multi-sample variant, multi-row and
-alignments displays: one labelled section of the track per value of a field. A string
-is the field; the object adds the order. The mark display's `MarkFacet`
-adds the steps each section runs. On the multi-sample variant displays the
-field is a sample attribute from the samples file, such as `population`,
-and it bands the sample rows by its value, with no chip.
 
 ## Related links
 

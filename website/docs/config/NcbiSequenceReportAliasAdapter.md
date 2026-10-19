@@ -7,6 +7,9 @@ sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
+Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
+file.
+
 ## Example usage
 
 Goes on an ASSEMBLY, under `refNameAliases` — not on a track. The file ships
@@ -61,9 +64,6 @@ searchable as an alias:
   },
 }
 ```
-
-Reads refName aliases for an assembly from an NCBI `sequence_report.tsv`
-file.
 
 ## Config slots
 

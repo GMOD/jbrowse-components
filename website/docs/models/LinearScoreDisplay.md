@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearScoreDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/model.ts).
 
+The worked-example score display: one value per feature, drawn as a box
+along the genome. The developer guides walk through this model.
+
 ## Example usage
 
 The display attaches to any `FeatureTrack`, so a track naming it in
@@ -32,9 +35,6 @@ The display attaches to any `FeatureTrack`, so a track naming it in
   ],
 }
 ```
-
-The worked-example score display: one value per feature, drawn as a box
-along the genome. The developer guides walk through this model.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearscoredisplay).
 

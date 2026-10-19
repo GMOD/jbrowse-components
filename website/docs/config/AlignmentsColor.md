@@ -7,6 +7,18 @@ sidebar_label: Display -> AlignmentsColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts).
 
+The alignments displays' `color` setting: one color for every read, or a
+field of each read. A read dimension colors by its fixed levels
+(`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
+`insertSizeAndOrientation`, `mateRefName`) or bins (`mapq`, the four a
+facet over it stacks), `tags.XX` reads a SAM tag, and any other name reads
+the read as a facet over it does: `mateAssembly`, a feature attribute, a
+dotted path into one or a `jexl:` expression. A string is the constant.
+`split`, `spliced`, `pairing` and `svSignal` color nothing: reads keep their
+arcs' colors, and a facet sections them by those.
+The per-base layer over the reads is
+[AlignmentsBaseColor](../alignmentsbasecolor).
+
 ## Example usage
 
 ```js
@@ -40,18 +52,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { field: 'pairOrientation', domain: ['RR'], range: ['#d95f02'] },
 }
 ```
-
-The alignments displays' `color` setting: one color for every read, or a
-field of each read. A read dimension colors by its fixed levels
-(`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
-`insertSizeAndOrientation`, `mateRefName`) or bins (`mapq`, the four a
-facet over it stacks), `tags.XX` reads a SAM tag, and any other name reads
-the read as a facet over it does: `mateAssembly`, a feature attribute, a
-dotted path into one or a `jexl:` expression. A string is the constant.
-`split`, `spliced`, `pairing` and `svSignal` color nothing: reads keep their
-arcs' colors, and a facet sections them by those.
-The per-base layer over the reads is
-[AlignmentsBaseColor](../alignmentsbasecolor).
 
 ## Related links
 

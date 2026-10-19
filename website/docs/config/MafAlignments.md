@@ -7,14 +7,14 @@ sidebar_label: Display -> MafAlignments
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafAlignmentsConfigSchema.ts).
 
+The MAF display's `alignments` setting: the per-species rows, the band
+that takes the height the bands above it leave, and what each row draws.
+
 ## Example usage
 
 ```js
 { type: 'LinearMafDisplay', alignments: { showAllLetters: true } }
 ```
-
-The MAF display's `alignments` setting: the per-species rows, the band
-that takes the height the bands above it leave, and what each row draws.
 
 ## Config slots
 

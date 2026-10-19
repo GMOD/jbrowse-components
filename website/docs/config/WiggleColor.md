@@ -7,6 +7,16 @@ sidebar_label: Display -> WiggleColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/wiggleColorConfigSchema.ts).
 
+The quantitative display's `color`: one CSS color for every bar, or `score`
+through a scale. Through a `threshold` scale it is the bicolor plot — a
+color each side of one cut, the `origin` where the domain names none, and a
+color per band where it names more — and through `linear` a gradient across
+the y domain, through the y scale's own type, which colors each bar, point
+and density cell by its score. A line still parts in the gradient's two end
+colors. A subtrack's own color is `rowColor`'s. A wiggle colors per
+signal rather than per feature, so a `jexl:` callback over a feature has
+nothing to read here.
+
 ## Example usage
 
 ```js
@@ -27,16 +37,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { field: 'score', scale: 'linear', scheme: 'viridis' },
 }
 ```
-
-The quantitative display's `color`: one CSS color for every bar, or `score`
-through a scale. Through a `threshold` scale it is the bicolor plot — a
-color each side of one cut, the `origin` where the domain names none, and a
-color per band where it names more — and through `linear` a gradient across
-the y domain, through the y scale's own type, which colors each bar, point
-and density cell by its score. A line still parts in the gradient's two end
-colors. A subtrack's own color is `rowColor`'s. A wiggle colors per
-signal rather than per feature, so a `jexl:` callback over a feature has
-nothing to read here.
 
 ## Config slots
 

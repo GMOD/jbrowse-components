@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearMultiSampleVariantDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts).
 
+Draws the genotypes in a multi-sample `VariantTrack`, one row per sample or
+per phased haplotype.
+
 ## Example usage
 
 Minimal `VariantTrack` config selecting this display type. The `displays`
@@ -97,9 +100,6 @@ separate at their positions:
   variantLayout: 'columns',
 }
 ```
-
-Draws the genotypes in a multi-sample `VariantTrack`, one row per sample or
-per phased haplotype.
 
 ## Related links
 

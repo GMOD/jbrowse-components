@@ -7,16 +7,16 @@ sidebar_label: Display -> LGVSyntenySort
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenySortConfigSchema.ts).
 
+The LGVSyntenyDisplay's `sort` setting: the
+[AlignmentsSort](../alignmentssort) object with `type` defaulting to
+`length`, so big syntenic blocks cluster at the top instead of interleaving
+with small ones.
+
 ## Example usage
 
 ```js
 { type: 'LGVSyntenyDisplay', sort: 'position' }
 ```
-
-The LGVSyntenyDisplay's `sort` setting: the
-[AlignmentsSort](../alignmentssort) object with `type` defaulting to
-`length`, so big syntenic blocks cluster at the top instead of interleaving
-with small ones.
 
 ## Related links
 

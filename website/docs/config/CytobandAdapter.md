@@ -7,6 +7,9 @@ sidebar_label: Adapter -> CytobandAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
 
+Reads an assembly's cytoband file, which the linear genome view draws as
+ideogram banding in its overview bar.
+
 ## Example usage
 
 Goes on an ASSEMBLY, under `cytobands` — not on a track. It draws the
@@ -31,9 +34,6 @@ ideogram banding in the linear genome view's overview bar:
   },
 }
 ```
-
-Reads an assembly's cytoband file, which the linear genome view draws as
-ideogram banding in its overview bar.
 
 ## Config slots
 

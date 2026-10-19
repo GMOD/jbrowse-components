@@ -7,6 +7,21 @@ sidebar_label: Display -> LinearWiggleDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
 
+Draws quantitative signal as bars, points, a line or a color strip (`span`),
+for one source or many; `rows: 'source'` draws each source in a separate row.
+
+Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
+the *adapter* rather than here — see `MultiWiggleAdapter`'s `subadapters`
+slot, where `group` drives the sidebar clustering tree and `color` sets each
+source's line or fill.
+
+These are display-level slots: set them inside a track's `displays` to
+change its defaults (setting them at the track top level has no effect).
+The object shorthand `displayDefaults: { key: value }` is equivalent to the
+full `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
+array form — see
+[configuring displays](/docs/config_guides/tracks#configuring-displays).
+
 ## Example usage
 
 Minimal `QuantitativeTrack` config. See the
@@ -57,21 +72,6 @@ Taller track, log scale, custom color:
   },
 }
 ```
-
-Draws quantitative signal as bars, points, a line or a color strip (`span`),
-for one source or many; `rows: 'source'` draws each source in a separate row.
-
-Per-source metadata (a `name`, `color` and `group` for each) is preloaded on
-the *adapter* rather than here — see `MultiWiggleAdapter`'s `subadapters`
-slot, where `group` drives the sidebar clustering tree and `color` sets each
-source's line or fill.
-
-These are display-level slots: set them inside a track's `displays` to
-change its defaults (setting them at the track top level has no effect).
-The object shorthand `displayDefaults: { key: value }` is equivalent to the
-full `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
-array form — see
-[configuring displays](/docs/config_guides/tracks#configuring-displays).
 
 ## Related links
 

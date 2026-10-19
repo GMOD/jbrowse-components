@@ -7,6 +7,9 @@ sidebar_label: Track -> FeatureTrack
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/FeatureTrack/configSchema.ts).
 
+Holds gene and other feature annotations, such as a GFF3 or BED file, which
+`LinearBasicDisplay` usually draws.
+
 ## Example usage
 
 A minimal hand-authored entry in the top-level `tracks` array — `adapter`
@@ -56,9 +59,6 @@ value gives per-feature coloring:
 ```
 
 ## Overview
-
-Holds gene and other feature annotations, such as a GFF3 or BED file, which
-`LinearBasicDisplay` usually draws.
 
 ### FeatureTrack - Identifier
 

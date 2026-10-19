@@ -7,6 +7,9 @@ sidebar_label: Adapter -> RefNameAliasAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts).
 
+Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
+other tab-separated table of aliases.
+
 ## Example usage
 
 Goes on an ASSEMBLY, under `refNameAliases` — not on a track. Writing
@@ -58,9 +61,6 @@ the header; `refNameColumn` takes a zero-based index instead.
   },
 }
 ```
-
-Reads refName aliases for an assembly from a UCSC `chromAlias` file or any
-other tab-separated table of aliases.
 
 ## Config slots
 

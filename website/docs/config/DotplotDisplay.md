@@ -7,6 +7,8 @@ sidebar_label: Display -> DotplotDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
 
+Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
+
 ## Example usage
 
 The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
@@ -35,8 +37,6 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 ```
 
 ## Overview
-
-Draws a `SyntenyTrack` as a dot plot inside a `DotplotView`.
 
 ### DotplotDisplay - Identifier
 

@@ -7,6 +7,12 @@ sidebar_label: Display -> MarkLocus
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markLocusConfigSchema.ts).
 
+A mark's far end as a position that may lie on another sequence: `pos`,
+the feature field holding its coordinate, and `chrom`, the field holding
+its refName, as a paired record states its mate. A field name written
+directly on the encoding sets `pos`, on the feature's sequence.
+Left unwritten behind a `mate` step, it is the other end the step found.
+
 ## Example usage
 
 A BEDPE-like file whose second end sits in separate columns:
@@ -17,12 +23,6 @@ A BEDPE-like file whose second end sits in separate columns:
   encoding: { x2: { chrom: 'chrom2', pos: 'start2' } },
 }
 ```
-
-A mark's far end as a position that may lie on another sequence: `pos`,
-the feature field holding its coordinate, and `chrom`, the field holding
-its refName, as a paired record states its mate. A field name written
-directly on the encoding sets `pos`, on the feature's sequence.
-Left unwritten behind a `mate` step, it is the other end the step found.
 
 ## Config slots
 

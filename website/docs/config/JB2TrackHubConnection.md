@@ -7,6 +7,9 @@ sidebar_label: Connection -> JB2TrackHubConnection
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
 
+Adds the tracks of another JBrowse 2 `config.json` to the session, along
+with any assemblies it declares that the session lacks.
+
 ## Example usage
 
 An entry in the config's `connections`, pointing at another JBrowse 2
@@ -23,9 +26,6 @@ others subscribe to.
   configJsonLocation: { uri: 'https://example.com/jbrowse/config.json' },
 }
 ```
-
-Adds the tracks of another JBrowse 2 `config.json` to the session, along
-with any assemblies it declares that the session lacks.
 
 ## Related links
 

@@ -7,6 +7,11 @@ sidebar_label: Adapter -> BamAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/BamAdapter/configSchema.ts).
 
+Reads BAM alignment files, with a BAI or CSI index.
+
+Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+automatically supplies it from the enclosing assembly's sequence track.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.bai` index (pass `csi: true` for a
@@ -35,11 +40,6 @@ JBrowse infers `BamAdapter` and `AlignmentsTrack` from `sample.bam`, and `name` 
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads BAM alignment files, with a BAI or CSI index.
-
-Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
-automatically supplies it from the enclosing assembly's sequence track.
 
 ## Related links
 

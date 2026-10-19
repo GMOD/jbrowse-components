@@ -7,6 +7,9 @@ sidebar_label: Connection -> BaseConnection
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts).
 
+Holds a connection's name and the assemblies its tracks belong to. Every
+connection type has these slots.
+
 :::caution Gotcha
 
 JBrowse fetches the hub's track list when the connection loads and holds it in memory, and does **not** write it into a saved or shared session. The session stores only the tracks you open (under `connectionTrackConfigs`, keyed by `trackId`), so a shared session stays small even for a very large hub.
@@ -14,9 +17,6 @@ JBrowse fetches the hub's track list when the connection loads and holds it in m
 :::
 
 ## Overview
-
-Holds a connection's name and the assemblies its tracks belong to. Every
-connection type has these slots.
 
 ### BaseConnection - Identifier
 

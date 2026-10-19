@@ -7,6 +7,9 @@ sidebar_label: Adapter -> DeltaAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/DeltaAdapter/configSchema.ts).
 
+Reads MUMmer `.delta` alignment files, which need the query and target
+assembly names.
+
 ## Example usage
 
 ```js
@@ -23,9 +26,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-Reads MUMmer `.delta` alignment files, which need the query and target
-assembly names.
 
 ## Related links
 

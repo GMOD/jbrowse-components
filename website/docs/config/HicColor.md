@@ -7,6 +7,14 @@ sidebar_label: Display -> HicColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).
 
+The Hi-C display's `color`: a bin's contact count through a `linear` or
+`log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
+counts, saturating at their `domainQuantile`, the 95th percentile by
+default, or at their maximum at a quantile of 1; setting it gives every
+zoom, and every track that sets the same number, one scale. The slots are
+the shared color object's, so `jbrowse validate` and "Edit plot..." judge
+them as they judge any other display's.
+
 ## Example usage
 
 ```js
@@ -15,14 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { scale: 'log', scheme: 'viridis', domainMax: 500 },
 }
 ```
-
-The Hi-C display's `color`: a bin's contact count through a `linear` or
-`log` scale onto a named `scheme`. An unset `domainMax` follows the loaded
-counts, saturating at their `domainQuantile`, the 95th percentile by
-default, or at their maximum at a quantile of 1; setting it gives every
-zoom, and every track that sets the same number, one scale. The slots are
-the shared color object's, so `jbrowse validate` and "Edit plot..." judge
-them as they judge any other display's.
 
 ## Config slots
 

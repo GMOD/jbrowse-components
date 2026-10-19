@@ -7,6 +7,14 @@ sidebar_label: Display -> MarkFacet
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markFacetConfigSchema.ts).
 
+The mark display's `facet`: the [Facet](../facet) the feature and alignments
+displays take, one labelled section of the track per value of a field, plus
+the steps the facet runs separately over each section's features, after the
+display's `transform` and before every mark's `transform`. A `pileup` here
+packs each section into separate rows, and every mark then draws in them. A
+string is the field; with no field the steps run over the one section there
+is.
+
 ## Example usage
 
 ```js
@@ -16,14 +24,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   marks: [{ mark: 'span' }],
 }
 ```
-
-The mark display's `facet`: the [Facet](../facet) the feature and alignments
-displays take, one labelled section of the track per value of a field, plus
-the steps the facet runs separately over each section's features, after the
-display's `transform` and before every mark's `transform`. A `pileup` here
-packs each section into separate rows, and every mark then draws in them. A
-string is the field; with no field the steps run over the one section there
-is.
 
 ## Related links
 

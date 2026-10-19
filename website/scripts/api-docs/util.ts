@@ -2501,9 +2501,6 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
 // pages, '#### Example usage' for API exports, '**Example:**' for slot/member
 // level. Sub-example labels nest one level deeper (### for ##, ##### for ####,
 // _italic_ for non-heading markers).
-//
-// note, if provided, is rendered in italics after all example content — useful
-// for a "see Slots below" hint on config pages.
 export function exampleSection(
   examples: Example[],
   heading = '## Example usage',

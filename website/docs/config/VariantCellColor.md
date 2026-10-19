@@ -7,6 +7,17 @@ sidebar_label: Display -> VariantCellColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts).
 
+The multi-sample variant display's `color` setting: the hue of every
+genotype cell with an alt allele, which `shadeByDosage` then lightens for a
+heterozygote. Unset, the cells paint the genotype colors. A CSS color or
+`jexl:` callback in `value` paints every alt cell of a variant; a `field`
+gives each of its values a color with a key. Three fields are presets:
+`impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
+structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
+Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
+`jexl:` expression — and a numeric one cut into intervals by a `threshold`
+scale. A string is the constant.
+
 ## Example usage
 
 ```js
@@ -24,17 +35,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-The multi-sample variant display's `color` setting: the hue of every
-genotype cell with an alt allele, which `shadeByDosage` then lightens for a
-heterozygote. Unset, the cells paint the genotype colors. A CSS color or
-`jexl:` callback in `value` paints every alt cell of a variant; a `field`
-gives each of its values a color with a key. Three fields are presets:
-`impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
-structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
-Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
-`jexl:` expression — and a numeric one cut into intervals by a `threshold`
-scale. A string is the constant.
 
 ## Config slots
 

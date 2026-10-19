@@ -7,6 +7,20 @@ sidebar_label: Display -> MafColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafColorConfigSchema.ts).
 
+The MAF display's `color` setting colors each species row's aligned cells
+by one field.
+`mismatch` paints a base only where it differs from the reference,
+`base` every base, `identity` the mean identity to the reference along a
+ramp, `chromosome` each block by the rank of its source chromosome within
+the row, and `codon` each codon by its amino-acid change, given an
+`annotationAdapter`. A string is the field. Each field has one scale:
+`identity` runs from `domainMin` 0 to `domainMax` 1 along the
+`redgreyblue` scheme, as every display's identity does, and the others are
+categorical. The bases and the
+codons paint the theme's colors. The slots are the shared color object's,
+so `jbrowse validate` and "Edit plot..." judge them as they judge any other
+display's.
+
 ## Example usage
 
 ```js
@@ -23,20 +37,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   color: { field: 'identity', domainMin: 0.7, scheme: 'viridis' },
 }
 ```
-
-The MAF display's `color` setting colors each species row's aligned cells
-by one field.
-`mismatch` paints a base only where it differs from the reference,
-`base` every base, `identity` the mean identity to the reference along a
-ramp, `chromosome` each block by the rank of its source chromosome within
-the row, and `codon` each codon by its amino-acid change, given an
-`annotationAdapter`. A string is the field. Each field has one scale:
-`identity` runs from `domainMin` 0 to `domainMax` 1 along the
-`redgreyblue` scheme, as every display's identity does, and the others are
-categorical. The bases and the
-codons paint the theme's colors. The slots are the shared color object's,
-so `jbrowse validate` and "Edit plot..." judge them as they judge any other
-display's.
 
 ## Config slots
 

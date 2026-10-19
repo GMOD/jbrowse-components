@@ -7,6 +7,12 @@ sidebar_label: Display -> RibbonColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
 
+The multi-way synteny display's `ribbonColor` setting: one color for every
+ribbon, or a field each ribbon carries: the record's strand, a measurement
+through its preset (`identity`, `mapq`, `dnds`, `syntenicDepth`), or a column the table
+declares in `attributeColumns`, through the same slots as the synteny
+view's [SyntenyColor](../syntenycolor). A string is the constant.
+
 ## Example usage
 
 ```js
@@ -34,12 +40,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   ribbonColor: { field: 'group', domain: ['core', 'shell'] },
 }
 ```
-
-The multi-way synteny display's `ribbonColor` setting: one color for every
-ribbon, or a field each ribbon carries: the record's strand, a measurement
-through its preset (`identity`, `mapq`, `dnds`, `syntenicDepth`), or a column the table
-declares in `attributeColumns`, through the same slots as the synteny
-view's [SyntenyColor](../syntenycolor). A string is the constant.
 
 ## Config slots
 

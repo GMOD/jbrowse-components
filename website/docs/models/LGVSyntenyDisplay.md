@@ -7,6 +7,9 @@ sidebar_label: Display -> LGVSyntenyDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
 
+Draws where a `SyntenyTrack`'s alignments fall in a plain linear genome
+view, with menu items that open them in a synteny view.
+
 ## Example usage
 
 Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
@@ -33,9 +36,6 @@ display type:
   ],
 }
 ```
-
-Draws where a `SyntenyTrack`'s alignments fall in a plain linear genome
-view, with menu items that open them in a synteny view.
 
 The configuration slots for this model are documented on its [config schema page](../../config/lgvsyntenydisplay).
 

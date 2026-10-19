@@ -7,6 +7,9 @@ sidebar_label: Adapter -> BgzipFastaAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/BgzipFastaAdapter/configSchema.ts).
 
+Reads a bgzip-compressed FASTA reference sequence, with its `.fai` and
+`.gzi` indexes.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
@@ -21,9 +24,6 @@ The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
   },
 }
 ```
-
-Reads a bgzip-compressed FASTA reference sequence, with its `.fai` and
-`.gzi` indexes.
 
 ## Related links
 

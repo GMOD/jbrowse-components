@@ -7,6 +7,12 @@ sidebar_label: Display -> LinearMarkDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/configSchema.ts).
 
+A grammar of graphics over a feature, alignments or variant track: a list of
+marks — bars, points, rules, lines, spans, text or links — each with an encoding naming which
+feature fields feed its channels and a transform list run before it. One fetch per
+region evaluates every encoding in the worker; the marks draw in order over
+one score axis.
+
 ## Example usage
 
 A BED score column as bars, colored by strand, with the key on screen,
@@ -43,12 +49,6 @@ per px:
   ],
 }
 ```
-
-A grammar of graphics over a feature, alignments or variant track: a list of
-marks — bars, points, rules, lines, spans, text or links — each with an encoding naming which
-feature fields feed its channels and a transform list run before it. One fetch per
-region evaluates every encoding in the worker; the marks draw in order over
-one score axis.
 
 ## Related links
 

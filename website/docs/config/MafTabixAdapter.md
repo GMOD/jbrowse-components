@@ -7,6 +7,10 @@ sidebar_label: Adapter -> MafTabixAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
 
+Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
+`nhLocation` newick tree orders and labels the species rows; `refAssemblyName`
+names the MAF's reference species when it differs from the assembly name.
+
 ## Example usage
 
 ```js
@@ -23,10 +27,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-Multiple alignment format converted to a bgzipped, tabix-indexed BED. The
-`nhLocation` newick tree orders and labels the species rows; `refAssemblyName`
-names the MAF's reference species when it differs from the assembly name.
 
 ## Related links
 

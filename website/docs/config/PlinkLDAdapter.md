@@ -7,31 +7,6 @@ sidebar_label: Adapter -> PlinkLDAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchema.ts).
 
-## Example usage
-
-```js
-{
-  type: 'LDTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'PlinkLDAdapter',
-    uri: 'https://example.com/study.ld',
-  },
-}
-```
-
-JBrowse infers `PlinkLDAdapter` and `LDTrack` from `study.ld`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
-
-```js
-{
-  trackId: 'my_track',
-  uri: 'https://example.com/study.ld',
-  assemblyNames: ['hg38'],
-}
-```
-
 Adapter for reading pre-computed LD data from a PLINK LD table, either PLINK
 2.0's .vcor or PLINK 1.9's .ld.
 Loads the entire file into memory - suitable for small to medium files.
@@ -67,6 +42,31 @@ Writes `study.vcor`, tab-delimited with a commented header:
 
 PLINK 1.9's `plink --bfile study --r2 --out study` writes the same table as
 `study.ld`, space-padded with a bare header, and loads too.
+
+## Example usage
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDAdapter',
+    uri: 'https://example.com/study.ld',
+  },
+}
+```
+
+JBrowse infers `PlinkLDAdapter` and `LDTrack` from `study.ld`, and `name` defaults to the file name. In a config declaring one assembly, `assemblyNames` comes from there too — see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my_track',
+  uri: 'https://example.com/study.ld',
+  assemblyNames: ['hg38'],
+}
+```
 
 ## Related links
 

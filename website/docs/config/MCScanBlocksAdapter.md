@@ -7,32 +7,6 @@ sidebar_label: Adapter -> MCScanBlocksAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts).
 
-## Example usage
-
-`uri` is the shorthand for the anchor `.blocks` file, and each BED is its
-path:
-
-```js
-{
-  type: 'SyntenyTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['grape', 'peach', 'cacao'],
-  adapter: {
-    type: 'MCScanBlocksAdapter',
-    uri: 'grape.blocks',
-    blockAssemblies: ['grape', 'peach', 'cacao'],
-    bedLocations: ['grape.bed', 'peach.bed', 'cacao.bed'],
-  },
-}
-```
-
-:::caution Gotcha
-
-`blockAssemblies` and `bedLocations` are positional against the table's own columns, which is not necessarily the order `assemblyNames` lists or the order the genomes were given to whatever wrote the table. Get it wrong and every gene is looked up in another genome's BED; the track fails with the column order named, rather than drawing empty. The table has no coordinates, so the adapter places each gene by matching its id against column 4 of its column's BED, byte for byte. One column whose BED places none of its ids fails the track naming that column, since the rest still resolve and only the bands touching that genome would have been empty. BED column 1 has to match the assembly's reference sequence names, which is the one mismatch that still draws nothing rather than erroring.
-
-:::
-
 Loads a multi-genome MCScan (jcvi) `.blocks` file: a reference-anchored,
 tab-delimited table where column 0 is a reference gene and each further
 column is that gene's ortholog in another genome (`.` = no ortholog),
@@ -60,6 +34,32 @@ copy at a time names every pair not touching that duplication once per row.
 See the [ortholog tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao), which
 covers building the table from jcvi, OrthoFinder, reciprocal best hits or
 MCScanX, and stacking the genomes in one view.
+
+## Example usage
+
+`uri` is the shorthand for the anchor `.blocks` file, and each BED is its
+path:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['grape', 'peach', 'cacao'],
+  adapter: {
+    type: 'MCScanBlocksAdapter',
+    uri: 'grape.blocks',
+    blockAssemblies: ['grape', 'peach', 'cacao'],
+    bedLocations: ['grape.bed', 'peach.bed', 'cacao.bed'],
+  },
+}
+```
+
+:::caution Gotcha
+
+`blockAssemblies` and `bedLocations` are positional against the table's own columns, which is not necessarily the order `assemblyNames` lists or the order the genomes were given to whatever wrote the table. Get it wrong and every gene is looked up in another genome's BED; the track fails with the column order named, rather than drawing empty. The table has no coordinates, so the adapter places each gene by matching its id against column 4 of its column's BED, byte for byte. One column whose BED places none of its ids fails the track naming that column, since the rest still resolve and only the bands touching that genome would have been empty. BED column 1 has to match the assembly's reference sequence names, which is the one mismatch that still draws nothing rather than erroring.
+
+:::
 
 ## Related links
 

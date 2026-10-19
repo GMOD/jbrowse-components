@@ -7,6 +7,9 @@ sidebar_label: View -> LinearGenomeView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
 
+Stacks tracks under a horizontal axis of one or more genomic regions laid
+end to end, which the user scrolls, zooms and searches.
+
 ## Example usage
 
 A `LinearGenomeView` is what you hand-author under `defaultSession.views`, and
@@ -41,9 +44,6 @@ await view.navToLocString('chr1:2,000,000-2,100,000')
 view.showTrack('alignments')
 view.zoomTo(view.bpPerPx * 2) // zoom out 2x
 ```
-
-Stacks tracks under a horizontal axis of one or more genomic regions laid
-end to end, which the user scrolls, zooms and searches.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

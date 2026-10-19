@@ -7,14 +7,14 @@ sidebar_label: Display -> BaseLinearDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
 
-## Overview
-
 Shared base config for linear displays — its slots (`height`,
 `fetchSizeLimit`) are common to all of them. The GPU stack's
 `LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
 it too. `filter` is not here: only the displays that read it declare it,
 `featureFilterConfigSchema` or an extension of it.
 Nor is `mouseover`, which a display declares only where its hover reads it.
+
+## Overview
 
 ### BaseLinearDisplay - Identifier
 

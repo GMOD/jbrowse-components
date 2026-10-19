@@ -7,15 +7,15 @@ sidebar_label: Display -> BasicFeatureFilter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/basicFeatureFilterConfigSchema.ts).
 
+The tests `LinearBasicDisplay` applies to the features it fetched, its
+`filter`: the jexl `expressions` every display's feature filter takes, and
+the gene-like features as a category.
+
 ## Example usage
 
 ```js
 { type: 'LinearBasicDisplay', filter: { genes: 'only' } }
 ```
-
-The tests `LinearBasicDisplay` applies to the features it fetched, its
-`filter`: the jexl `expressions` every display's feature filter takes, and
-the gene-like features as a category.
 
 ## Related links
 

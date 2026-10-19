@@ -7,14 +7,14 @@ sidebar_label: Display -> LGVSyntenyCoverage
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyCoverageConfigSchema.ts).
 
+The LGVSyntenyDisplay's `coverage` setting: the
+[CoverageBand](../coverageband) object with `show` defaulting to off.
+
 ## Example usage
 
 ```js
 { type: 'LGVSyntenyDisplay', coverage: { show: true } }
 ```
-
-The LGVSyntenyDisplay's `coverage` setting: the
-[CoverageBand](../coverageband) object with `show` defaulting to off.
 
 ## Related links
 

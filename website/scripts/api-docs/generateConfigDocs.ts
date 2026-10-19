@@ -1011,10 +1011,8 @@ function renderConfig(
         })
       : header.examples
   const exSection = exampleSection(examples)
-  const docsSection = overviewSection(
-    stripNameTautology(header.docs, header.name),
-    overviewParts,
-  )
+  const lead = stripNameTautology(header.docs, header.name)
+  const docsSection = overviewSection(overviewParts)
   const relatedSection = relatedLines.length
     ? section('## Related links', relatedLines.join('\n'))
     : ''
@@ -1026,9 +1024,8 @@ function renderConfig(
     .map(g => section(':::caution Gotcha', g, ':::'))
     .join('\n\n')
 
-  // Lead with the pasteable example and a short overview, then point the reader
-  // at where this config connects (Related links) before the slot reference —
-  // navigation before the long tail of fields, not buried beneath it.
+  // Open with what the type is, then the pasteable example, then where this
+  // config connects (Related links) before the slot reference.
   return docPage({
     id: header.id,
     title: header.name,
@@ -1040,6 +1037,7 @@ function renderConfig(
     notes: `Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
     body: section(
+      lead,
       exSection,
       gotchaSection,
       docsSection,

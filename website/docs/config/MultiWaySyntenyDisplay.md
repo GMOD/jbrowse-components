@@ -7,6 +7,9 @@ sidebar_label: Display -> MultiWaySyntenyDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/configSchema.ts).
 
+Draws a multi-genome `SyntenyTrack` in a linear genome view as one lane per
+assembly, with ribbons joining each gene's placements in adjacent lanes.
+
 ## Example usage
 
 Selected on a multi-genome `SyntenyTrack` (an `MCScanBlocksAdapter` listing
@@ -71,9 +74,6 @@ cluster, and ribbons colored by percent identity:
   ],
 }
 ```
-
-Draws a multi-genome `SyntenyTrack` in a linear genome view as one lane per
-assembly, with ribbons joining each gene's placements in adjacent lanes.
 
 ## Related links
 

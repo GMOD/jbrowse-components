@@ -7,6 +7,10 @@ sidebar_label: Display -> RowGroup
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/rowGroupConfigSchema.ts).
 
+One entry of the multi-row feature display's `rowGroups`: a row joins the
+`group` of the first entry whose `match` regex its name matches, and
+`rowColor: { field: 'group' }` colors the groups.
+
 ## Example usage
 
 ```js
@@ -18,10 +22,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   ],
 }
 ```
-
-One entry of the multi-row feature display's `rowGroups`: a row joins the
-`group` of the first entry whose `match` regex its name matches, and
-`rowColor: { field: 'group' }` colors the groups.
 
 ## Config slots
 

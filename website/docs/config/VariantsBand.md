@@ -7,12 +7,6 @@ sidebar_label: Display -> VariantsBand
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/variantsBandConfigSchema.ts).
 
-## Example usage
-
-```js
-{ type: 'LinearMultiSampleVariantDisplay', variants: { show: true } }
-```
-
 The multi-sample variant display's `variants` setting: a
 `LinearVariantDisplay`-style band above the genotype rows, one mark per
 record at its genomic span, colored by whatever "Color by → Cells" is set
@@ -20,6 +14,12 @@ to. Overlapping records stack while the band has room and share a row once
 it has not; hovering a mark reports the record, clicking opens its details,
 and right-clicking opens the menu a genotype cell does. At genomic positions
 only.
+
+## Example usage
+
+```js
+{ type: 'LinearMultiSampleVariantDisplay', variants: { show: true } }
+```
 
 ## Config slots
 

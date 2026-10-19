@@ -7,6 +7,12 @@ sidebar_label: Display -> RowArrangement
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).
 
+The `rows` setting of a display whose rows are samples or species rather
+than the values of a field. It holds the arrangement a reader gives the
+rows, which every product writes as a session edit to this object: the
+order, the labels, the tree with its provenance and the focus, each by row
+name. The field-keyed displays' `Rows` object is this plus `field`.
+
 ## Example usage
 
 ```js
@@ -15,12 +21,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   rows: { domain: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
 }
 ```
-
-The `rows` setting of a display whose rows are samples or species rather
-than the values of a field. It holds the arrangement a reader gives the
-rows, which every product writes as a session edit to this object: the
-order, the labels, the tree with its provenance and the focus, each by row
-name. The field-keyed displays' `Rows` object is this plus `field`.
 
 ## Related links
 

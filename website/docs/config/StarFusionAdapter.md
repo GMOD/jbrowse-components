@@ -7,6 +7,9 @@ sidebar_label: Adapter -> StarFusionAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/StarFusionAdapter/configSchema.ts).
 
+Reads the gene fusions that STAR-Fusion predicts, from its
+`star-fusion.fusion_predictions.tsv` output.
+
 ## Example usage
 
 ```js
@@ -31,9 +34,6 @@ JBrowse infers `StarFusionAdapter` and `VariantTrack` from `star-fusion.fusion_p
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads the gene fusions that STAR-Fusion predicts, from its
-`star-fusion.fusion_predictions.tsv` output.
 
 ## Related links
 

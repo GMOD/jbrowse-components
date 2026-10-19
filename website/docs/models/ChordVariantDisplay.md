@@ -7,6 +7,9 @@ sidebar_label: Display -> ChordVariantDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts).
 
+Draws the structural variants of a `VariantTrack` in a `CircularView`, each
+translocation as a chord across the circle.
+
 ## Example usage
 
 The circular-view display for a `VariantTrack` of structural variants;
@@ -32,9 +35,6 @@ is what creates it; its colors are the config slots on
   ],
 }
 ```
-
-Draws the structural variants of a `VariantTrack` in a `CircularView`, each
-translocation as a chord across the circle.
 
 The configuration slots for this model are documented on its [config schema page](../../config/chordvariantdisplay).
 

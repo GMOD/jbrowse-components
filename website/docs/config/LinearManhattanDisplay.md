@@ -7,6 +7,12 @@ sidebar_label: Display -> LinearManhattanDisplay
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
 
+The Manhattan plot: the default display of a GWAS track, and one a
+FeatureTrack can switch to. It is the mark display with a point per feature
+at its `score` as its default plot, so every mark, scale, facet and row
+setting applies, and a plot whose encoding names `r2` or `ld_role` joins
+each SNP's r² to the index SNP from the `GWASAdapter`'s `ldAdapter`.
+
 ## Example usage
 
 Minimal `GWASTrack` config. See the
@@ -116,12 +122,6 @@ A selection scan as a plain `FeatureTrack`: a point per window at its
   ],
 }
 ```
-
-The Manhattan plot: the default display of a GWAS track, and one a
-FeatureTrack can switch to. It is the mark display with a point per feature
-at its `score` as its default plot, so every mark, scale, facet and row
-setting applies, and a plot whose encoding names `r2` or `ld_role` joins
-each SNP's r² to the index SNP from the `GWASAdapter`'s `ldAdapter`.
 
 ## Related links
 

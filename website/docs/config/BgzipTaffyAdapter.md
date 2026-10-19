@@ -7,6 +7,9 @@ sidebar_label: Adapter -> BgzipTaffyAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipTaffyAdapter/configSchema.ts).
 
+Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
+`.tai` index.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the sibling `.tai` index; `nhUri` names the
@@ -24,9 +27,6 @@ Newick tree:
   },
 }
 ```
-
-Reads a bgzip-compressed TAF (Taffy) multiple alignment file through its
-`.tai` index.
 
 ## Related links
 

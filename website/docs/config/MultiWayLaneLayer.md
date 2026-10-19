@@ -7,6 +7,9 @@ sidebar_label: Display -> MultiWayLaneLayer
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneLayerConfigSchema.ts).
 
+One row of data drawn in every lane through that lane's own frame, from
+each genome's own track, on one value scale shared by every lane.
+
 ## Example usage
 
 GC percent as bars above every lane's genes, from each genome's UCSC
@@ -42,9 +45,6 @@ lane, a hub star's lanes on genomes the session lacks included:
   ],
 }
 ```
-
-One row of data drawn in every lane through that lane's own frame, from
-each genome's own track, on one value scale shared by every lane.
 
 ## Config slots
 

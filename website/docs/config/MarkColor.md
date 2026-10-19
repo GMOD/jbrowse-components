@@ -7,6 +7,15 @@ sidebar_label: Display -> MarkColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).
 
+A mark's `encoding.color`: one CSS color or `jexl:` callback for every
+instance, or a field through a categorical scale (a `range` color per
+value), a `linear` or `log` scale (a ramp between `domainMin` and
+`domainMax`, `domainMid` placing its middle stop where a diverging ramp
+turns) or a `threshold` scale (a `range` color per interval between the
+cut points `domain` lists). A string is the field, as every channel's is
+inside `encoding`; a constant is `{ value }`. A scale is what the legend
+describes.
+
 ## Example usage
 
 ```js
@@ -70,15 +79,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-A mark's `encoding.color`: one CSS color or `jexl:` callback for every
-instance, or a field through a categorical scale (a `range` color per
-value), a `linear` or `log` scale (a ramp between `domainMin` and
-`domainMax`, `domainMid` placing its middle stop where a diverging ramp
-turns) or a `threshold` scale (a `range` color per interval between the
-cut points `domain` lists). A string is the field, as every channel's is
-inside `encoding`; a constant is `{ value }`. A scale is what the legend
-describes.
 
 ## Config slots
 

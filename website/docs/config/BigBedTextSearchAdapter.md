@@ -7,6 +7,12 @@ sidebar_label: Adapter -> BigBedTextSearchAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BigBedTextSearchAdapter/configSchema.ts).
 
+Finds features by the names a BigBed was built to look up, its
+`bedToBigBed -extraIndex` columns, which a UCSC hub declares with
+`searchIndex`. The hub's `searchTrix` index, when given, adds prefix and
+case-insensitive matching. A UCSC track hub connection configures one for
+its first gene track declaring a `searchIndex`, GenArk's `ncbiRefSeq`.
+
 ## Example usage
 
 ```js
@@ -17,12 +23,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   ixxFilePath: { uri: 'ixIxx/ncbiRefSeq.ixx' },
 }
 ```
-
-Finds features by the names a BigBed was built to look up, its
-`bedToBigBed -extraIndex` columns, which a UCSC hub declares with
-`searchIndex`. The hub's `searchTrix` index, when given, adds prefix and
-case-insensitive matching. A UCSC track hub connection configures one for
-its first gene track declaring a `searchIndex`, GenArk's `ncbiRefSeq`.
 
 ## Config slots
 

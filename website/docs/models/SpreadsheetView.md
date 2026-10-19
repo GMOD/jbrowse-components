@@ -7,6 +7,9 @@ sidebar_label: View -> SpreadsheetView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `spreadsheet-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
 
+Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose
+rows open their genomic location in a new view.
+
 ## Example usage
 
 Hand-authored under `defaultSession.views`, with every setting written
@@ -22,9 +25,6 @@ assembly that resolves genomic coordinates in the rows:
   fileType: 'VCF',
 }
 ```
-
-Shows a tabular file, such as a VCF, BED or CSV, as a filterable table whose
-rows open their genomic location in a new view.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

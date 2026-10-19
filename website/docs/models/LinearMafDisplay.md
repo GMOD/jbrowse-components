@@ -7,6 +7,9 @@ sidebar_label: Display -> LinearMafDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/stateModel.ts).
 
+Draws the multiple alignment in a `MafTrack`, one row per aligned species,
+under a conservation band.
+
 ## Example usage
 
 A complete `MafTrack` config to paste into `tracks`. `samples` lists the
@@ -34,9 +37,6 @@ height in px (or `0` to stretch rows to fill the track height):
   ],
 }
 ```
-
-Draws the multiple alignment in a `MafTrack`, one row per aligned species,
-under a conservation band.
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearmafdisplay).
 

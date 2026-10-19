@@ -7,6 +7,12 @@ sidebar_label: Adapter -> MCScanSimpleAnchorsAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts).
 
+Reads synteny blocks from an MCScan (jcvi) `.anchors.simple` file and the
+two BED files that place its genes.
+
+See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
+also covers converting an MCScanX run into these files.
+
 ## Example usage
 
 ```js
@@ -30,12 +36,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 A block row names four genes, the first and last on each side, and the adapter places all four by matching column 4 of a BED byte for byte. A row with any of the four missing is dropped, so a partial mismatch draws fewer blocks than the file holds rather than erroring, and only a file where no row resolves fails the track. Ids get mangled by isoform suffixes and by jcvi stripping suffixes unless run with `--no_strip_names`. BED column 1 has to match the assembly's reference sequence names too, and a name the assembly does not have draws nothing at all.
 
 :::
-
-Reads synteny blocks from an MCScan (jcvi) `.anchors.simple` file and the
-two BED files that place its genes.
-
-See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
-also covers converting an MCScanX run into these files.
 
 ## Related links
 

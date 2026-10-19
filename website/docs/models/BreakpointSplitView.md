@@ -7,6 +7,10 @@ sidebar_label: View -> BreakpointSplitView
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `breakpoint-split-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts).
 
+Stacks linear genome views of the regions on each side of a
+structural-variant breakpoint, and draws the reads and variant calls that
+join them across the panels.
+
 ## Example usage
 
 Hand-authored under `defaultSession.views`, with every setting written
@@ -26,10 +30,6 @@ flank a structural-variant breakpoint:
 
 Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to
 set per-panel display options (e.g. a shorter alignments height).
-
-Stacks linear genome views of the regions on each side of a
-structural-variant breakpoint, and draws the reads and variant calls that
-join them across the panels.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 

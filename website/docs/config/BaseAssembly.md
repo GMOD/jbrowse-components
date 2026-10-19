@@ -7,6 +7,8 @@ sidebar_label: Assembly Management -> BaseAssembly
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyConfigSchema.ts).
 
+A `BaseAssembly` corresponds to the assemblies section of the config
+
 ## Example usage
 
 ### Example: minimal
@@ -113,8 +115,6 @@ separately:
 ```
 
 ## Overview
-
-A `BaseAssembly` corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 

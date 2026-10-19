@@ -7,6 +7,9 @@ sidebar_label: Connection -> JBrowse1Connection
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
+Adds the tracks of a JBrowse 1 data directory to the session, translated to
+their JBrowse 2 equivalents.
+
 ## Example usage
 
 An entry in the config's `connections`, pointing at a JBrowse 1 data
@@ -23,9 +26,6 @@ an existing JBrowse 1 instance's data without re-processing it.
   dataDirLocation: { uri: 'https://example.com/jbrowse1/data/' },
 }
 ```
-
-Adds the tracks of a JBrowse 1 data directory to the session, translated to
-their JBrowse 2 equivalents.
 
 ## Related links
 

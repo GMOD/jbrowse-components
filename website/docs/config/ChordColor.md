@@ -7,16 +7,16 @@ sidebar_label: Display -> ChordColor
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).
 
+A variant chord's `color`: a CSS color or `jexl:` callback in `value` for
+every chord, or a `field` of the record whose values each take a range
+color, with a key on the circle. `svType` paints the structural-variant
+classes the variant displays paint. A string is the constant.
+
 ## Example usage
 
 ```js
 { type: 'ChordVariantDisplay', color: { field: 'svType' }, opacity: 0.45 }
 ```
-
-A variant chord's `color`: a CSS color or `jexl:` callback in `value` for
-every chord, or a `field` of the record whose values each take a range
-color, with a key on the circle. `svType` paints the structural-variant
-classes the variant displays paint. A string is the constant.
 
 ## Config slots
 

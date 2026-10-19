@@ -7,6 +7,14 @@ sidebar_label: Adapter -> CramAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
 
+Reads CRAM alignments, fetching only the containers overlapping the visible
+region through the `.crai` index. Decoding happens against the enclosing
+assembly's sequence, so it has to be the reference the file was compressed
+against; a mismatched one isn't rejected, it just decodes into mismatches.
+
+JBrowse fills in `sequenceAdapter` from the enclosing assembly's sequence
+track, so a config never specifies it.
+
 ## Example usage
 
 The `uri` shorthand auto-resolves the `.crai` index:
@@ -33,14 +41,6 @@ JBrowse infers `CramAdapter` and `AlignmentsTrack` from `sample.cram`, and `name
   assemblyNames: ['hg38'],
 }
 ```
-
-Reads CRAM alignments, fetching only the containers overlapping the visible
-region through the `.crai` index. Decoding happens against the enclosing
-assembly's sequence, so it has to be the reference the file was compressed
-against; a mismatched one isn't rejected, it just decodes into mismatches.
-
-JBrowse fills in `sequenceAdapter` from the enclosing assembly's sequence
-track, so a config never specifies it.
 
 ## Related links
 

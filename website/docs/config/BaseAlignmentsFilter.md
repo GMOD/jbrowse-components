@@ -7,6 +7,15 @@ sidebar_label: Display -> BaseAlignmentsFilter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/baseAlignmentsFilterConfigSchema.ts).
 
+The `filter` both alignments-shaped displays read, LinearAlignmentsDisplay
+and LGVSyntenyDisplay. The read members are the SAM flag masks, a minimum
+mapping quality, a read name, the tags a read must have, and the four
+read categories, each `only`, `exclude` or unset for unfiltered; the default
+excludes unmapped, QC-failed and duplicate reads (flag 1540). `connections`
+tests the connections between mates and split segments. Every test must
+hold, so two categories both apply: `{ split: 'only', svSignal: 'only' }`
+keeps the split reads alone.
+
 ## Example usage
 
 ```js
@@ -20,15 +29,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ```js
 { type: 'LinearAlignmentsDisplay', filter: { tags: [{ tag: 'HP', value: '1' }] } }
 ```
-
-The `filter` both alignments-shaped displays read, LinearAlignmentsDisplay
-and LGVSyntenyDisplay. The read members are the SAM flag masks, a minimum
-mapping quality, a read name, the tags a read must have, and the four
-read categories, each `only`, `exclude` or unset for unfiltered; the default
-excludes unmapped, QC-failed and duplicate reads (flag 1540). `connections`
-tests the connections between mates and split segments. Every test must
-hold, so two categories both apply: `{ split: 'only', svSignal: 'only' }`
-keeps the split reads alone.
 
 ## Related links
 

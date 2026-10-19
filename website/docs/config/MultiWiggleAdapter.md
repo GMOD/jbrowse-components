@@ -7,6 +7,9 @@ sidebar_label: Adapter -> MultiWiggleAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiWiggleAdapter/configSchema.ts).
 
+Reads several BigWig files as the sources of one multi-row quantitative
+track.
+
 ## Example usage
 
 The `bigWigs` shorthand: a plain array of BigWig URLs, one subtrack each
@@ -82,9 +85,6 @@ track shows only the subtracks the table lists:
   },
 }
 ```
-
-Reads several BigWig files as the sources of one multi-row quantitative
-track.
 
 ## Related links
 

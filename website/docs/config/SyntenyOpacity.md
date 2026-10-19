@@ -7,6 +7,13 @@ sidebar_label: View -> SyntenyOpacity
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyOpacityConfigSchema.ts).
 
+The synteny views' `opacity` setting, as `color` is their color: one
+opacity for every alignment, or a field of each alignment read into
+opacities. A number is the constant and is written to `value`; a string is
+the field and is written to `field`. Under a field, `range` holds the opacities
+themselves, so a field that fades a dense view keeps it dim by writing a
+low range.
+
 ## Example usage
 
 ```js
@@ -28,13 +35,6 @@ Auto-generated from the config schema in the source — see the [config guide](/
   },
 }
 ```
-
-The synteny views' `opacity` setting, as `color` is their color: one
-opacity for every alignment, or a field of each alignment read into
-opacities. A number is the constant and is written to `value`; a string is
-the field and is written to `field`. Under a field, `range` holds the opacities
-themselves, so a field that fades a dense view keeps it dim by writing a
-low range.
 
 ## Config slots
 

@@ -7,6 +7,9 @@ sidebar_label: Adapter -> NCListAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
+Reads a JBrowse 1 NCList feature store, the per-reference `trackData.json`
+files that the JBrowse 1 formatting scripts write.
+
 ## Example usage
 
 Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's
@@ -27,9 +30,6 @@ is substituted per sequence, which is how the store is laid out on disk:
   },
 }
 ```
-
-Reads a JBrowse 1 NCList feature store, the per-reference `trackData.json`
-files that the JBrowse 1 formatting scripts write.
 
 ## Related links
 

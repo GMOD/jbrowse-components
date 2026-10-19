@@ -7,6 +7,11 @@ sidebar_label: Adapter -> CrisprGuideAdapter
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
 
+Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
+track is displayed against. Setting it by hand pins the scan to one sequence
+source, and the track keeps scanning that source after the assembly's
+sequence changes.
+
 ## Example usage
 
 The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — and the adapter
@@ -58,11 +63,6 @@ guides are found in the right places and drawn cutting in the wrong ones:
   },
 }
 ```
-
-Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
-track is displayed against. Setting it by hand pins the scan to one sequence
-source, and the track keeps scanning that source after the assembly's
-sequence changes.
 
 ## Related links
 

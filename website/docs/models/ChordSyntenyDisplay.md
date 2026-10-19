@@ -7,6 +7,9 @@ sidebar_label: Display -> ChordSyntenyDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordSyntenyDisplay/models/stateModelFactory.ts).
 
+Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
+spans of each alignment.
+
 ## Example usage
 
 The circular-view display for a `SyntenyTrack`: each alignment is drawn as a
@@ -38,9 +41,6 @@ colors are the config slots on [](/docs/config/chordsyntenydisplay):
 A track aligning two assemblies needs both of them on the circle, which is
 the view's `assembly: ['hg38', 'mm39']` — see the
 [synteny track guide](/docs/config_guides/synteny_track).
-
-Draws a `SyntenyTrack` in a `CircularView`, with a ribbon joining the two
-spans of each alignment.
 
 The configuration slots for this model are documented on its [config schema page](../../config/chordsyntenydisplay).
 
