@@ -1,3 +1,4 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { LITERAL } from '../RenderFeatureDataRPC/colorClasses.ts'
@@ -357,4 +358,49 @@ describe('a family other than rect still inks', () => {
     // the arrowhead sits just past the span's 200px end
     expect(ink[0]).toMatchObject({ left: 200, width: 7 })
   })
+})
+
+test('the tooltip drops a row the drawn name already says', () => {
+  const { display } = setUp()
+
+  display.setHover('g1', undefined, ['GENE1', 'exon 2/3'])
+  expect(display.shownTooltipRows).toEqual(['exon 2/3'])
+
+  display.setHover('g1', undefined, ['GENE1'])
+  expect(display.shownTooltipRows).toBeUndefined()
+})
+
+test('the tooltip keeps a name its label does not draw', () => {
+  const { display } = setUp()
+  display.setShowLabels('none')
+
+  display.setHover('g1', undefined, ['GENE1'])
+  expect(display.shownTooltipRows).toEqual(['GENE1'])
+})
+
+// A ring of the circular view draws these records itself, so an overlay
+// label's size has to travel on the record.
+test('a floating label record carries its own overlay size', () => {
+  const { display } = setUp()
+  const data = geneData()
+  data.floatingLabelsData.set('t0', {
+    featureId: 't0',
+    minX: 1000,
+    maxX: 1500,
+    topY: 0,
+    featureHeight: 8,
+    parentFeatureId: 'g1',
+    subfeatureLabel: {
+      text: 'VP1',
+      relativeY: 0,
+      textWidth: 20,
+      isOverlay: true,
+    },
+  })
+  display.setRpcData(0, data, ctgA)
+
+  const label = display
+    .floatingLabels(resolvePalette())
+    .find(l => l.featureId === 't0')
+  expect(label).toMatchObject({ text: 'VP1', fontSize: 9 })
 })

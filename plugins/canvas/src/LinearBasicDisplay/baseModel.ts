@@ -82,6 +82,7 @@ import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
   buildRegionInstanceIndex,
+  drawnLabelTexts,
   featureHighlightInk,
   namedFeatureInk,
 } from './featureHighlightInk.ts'
@@ -955,10 +956,10 @@ export default function baseStateModelFactory(
                   key: `${region.displayedRegionIndex}-${featureId}-${r.kind}`,
                   x: r.labelX,
                   y: r.labelY,
-                  width: renderedTextWidth(r.label.textWidth, fontSize),
+                  width: renderedTextWidth(r.label.textWidth, r.fontSize),
                   text: r.label.text,
                   color: r.color,
-                  fontSize,
+                  fontSize: r.fontSize,
                   featureId,
                 })
               }
@@ -1052,6 +1053,25 @@ export default function baseStateModelFactory(
       get hoverInk(): HighlightRect[] {
         const item = self.hoverBoxSubfeature ?? self.hoverBoxFeature
         return featureHighlightInk(self, item ? [item.featureId] : [])
+      },
+      /**
+       * #getter
+       * The hover tooltip less any row that repeats a label drawn for the
+       * hovered feature or subfeature; undefined when nothing is left.
+       * "Copy tooltip text" still copies every row.
+       */
+      get shownTooltipRows(): string[] | undefined {
+        const rows = self.mouseoverExtraInformation
+        if (!rows) {
+          return undefined
+        }
+        const ids = [self.featureIdUnderMouse, self.subfeatureIdUnderMouse]
+        const drawn = drawnLabelTexts(
+          self,
+          ids.filter(id => id !== undefined),
+        )
+        const shown = rows.filter(row => !drawn.has(row))
+        return shown.length > 0 ? shown : undefined
       },
       /**
        * #getter

@@ -13,6 +13,7 @@ import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { PlacedLabel } from './components/labelPositioning.ts'
 import type { NamedFeature } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
@@ -119,6 +120,38 @@ function clipToCanvas(box: HighlightRect, state: RenderState) {
     : undefined
 }
 
+// The labels one region drew for a feature, in content px, placed in the first
+// of its blocks they reach.
+function placedLabels(
+  self: FeatureInkHost,
+  data: FeatureDataResult,
+  featureId: string,
+  blocks: readonly RenderBlock[],
+): PlacedLabel[] {
+  const labelData = data.floatingLabelsData.get(featureId)
+  if (!labelData) {
+    return []
+  }
+  const context = {
+    showLabels: self.renderedShowLabels,
+    showDescriptions: self.renderedShowDescriptions,
+    showSubfeatureLabels: self.renderedShowSubfeatureLabels,
+    fontSize: self.renderedLabelFontSize,
+  }
+  const block = blocks.find(b =>
+    labelsReachRegion(
+      labelData,
+      b,
+      context.showLabels,
+      context.showDescriptions,
+      context.fontSize,
+    ),
+  )
+  return block
+    ? placeFeatureLabels(labelData, makeBpMapper(block), block, context)
+    : []
+}
+
 // The label rows a feature painted, in the same content px the ink is in less
 // the scroll. A label wider than its feature overhangs it, and nothing clips
 // that back: the box is meant to cover the text as drawn.
@@ -128,46 +161,42 @@ function labelRects(
   featureId: string,
   blocks: readonly RenderBlock[],
 ): HighlightRect[] {
-  const labelData = data.floatingLabelsData.get(featureId)
-  if (!labelData) {
-    return []
-  }
-  const fontSize = self.renderedLabelFontSize
-  const context = {
-    showLabels: self.renderedShowLabels,
-    showDescriptions: self.renderedShowDescriptions,
-    showSubfeatureLabels: self.renderedShowSubfeatureLabels,
-    fontSize,
-  }
   const { scrollY } = self.renderState
-  for (const block of blocks) {
-    if (
-      !labelsReachRegion(
-        labelData,
-        block,
-        context.showLabels,
-        context.showDescriptions,
-        fontSize,
-      )
-    ) {
+  return placedLabels(self, data, featureId, blocks).map(placed => {
+    const size =
+      placed.kind === 'more' ? self.renderedLabelFontSize : placed.fontSize
+    return {
+      left: placed.labelX,
+      top: placed.labelY - scrollY,
+      width: renderedTextWidth(placed.label.textWidth, size),
+      height: size,
+    }
+  })
+}
+
+/**
+ * The text of every label drawn for these features, the isoform badge aside.
+ */
+export function drawnLabelTexts(
+  self: FeatureInkHost,
+  featureIds: readonly string[],
+): Set<string> {
+  const texts = new Set<string>()
+  for (const idx of regionIndices(self.renderBlocks)) {
+    const data = self.renderDataMap.get(idx)
+    if (!data) {
       continue
     }
-    return placeFeatureLabels(
-      labelData,
-      makeBpMapper(block),
-      block,
-      context,
-    ).map(placed => {
-      const size = placed.kind === 'more' ? fontSize : placed.fontSize
-      return {
-        left: placed.labelX,
-        top: placed.labelY - scrollY,
-        width: renderedTextWidth(placed.label.textWidth, size),
-        height: size,
+    const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
+    for (const featureId of featureIds) {
+      for (const placed of placedLabels(self, data, featureId, blocks)) {
+        if (placed.kind !== 'more') {
+          texts.add(placed.label.text)
+        }
       }
-    })
+    }
   }
-  return []
+  return texts
 }
 
 /**

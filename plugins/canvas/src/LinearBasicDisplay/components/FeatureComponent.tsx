@@ -131,12 +131,12 @@ const FeatureComponent = observer(function FeatureComponent({
       {({ canvasRef, mouseTracker }) => (
         <>
           <FeatureBody model={model} canvasRef={canvasRef} />
-          {/* `mouseoverExtraInformation` decides whether there is a tooltip at
-              all; only the position comes from the chrome's tracker. */}
+          {/* `shownTooltipRows` decides whether there is a tooltip at all;
+              only the position comes from the chrome's tracker. */}
           <PointerLayer mouseTracker={mouseTracker}>
             {mouseState => (
               <FeatureTooltip
-                rows={model.mouseoverExtraInformation}
+                rows={model.shownTooltipRows}
                 mouseState={mouseState}
               />
             )}
