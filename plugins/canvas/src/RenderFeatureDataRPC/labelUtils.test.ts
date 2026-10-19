@@ -4,6 +4,7 @@ import {
   getFeatureName,
   readFeatureLabels,
   reservesBelowLabelRow,
+  subfeatureLabelPlacement,
   subfeatureLabelText,
 } from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
@@ -34,6 +35,12 @@ function featureWith(values: Record<string, unknown>) {
 }
 
 describe('getFeatureName', () => {
+  it('reads the product of a feature with no name before its id', () => {
+    expect(getFeatureName(featureWith({ product: 'NS1', id: 'id-1' }))).toBe(
+      'NS1',
+    )
+  })
+
   it('joins a multi-valued (array) name into a string', () => {
     expect(getFeatureName(featureWith({ name: ['BRCA1', 'alias2'] }))).toBe(
       'BRCA1,alias2',
@@ -232,5 +239,25 @@ describe('reservesBelowLabelRow', () => {
       ask(createMockFeature('polyprotein'), 'below', 'MatureProteinRegion'),
     ).toBe(false)
     expect(ask(createMockFeature('LTR-1'), 'below', 'RepeatRegion')).toBe(false)
+  })
+})
+
+describe('subfeatureLabelPlacement', () => {
+  const place = (subfeatureLabels: string, type: string) =>
+    subfeatureLabelPlacement(
+      mockDisplayConfig({ subfeatureLabels } as any),
+      featureWith({ type }),
+    )
+
+  it('auto overlays a cleavage product and leaves a transcript unlabeled', () => {
+    expect(place('auto', 'mature_protein_region_of_CDS')).toBe('overlay')
+    expect(place('auto', 'mat_peptide')).toBe('overlay')
+    expect(place('auto', 'mRNA')).toBe('none')
+  })
+
+  it('applies an explicit mode to every part', () => {
+    expect(place('none', 'mature_protein_region_of_CDS')).toBe('none')
+    expect(place('below', 'mature_protein_region_of_CDS')).toBe('below')
+    expect(place('below', 'mRNA')).toBe('below')
   })
 })

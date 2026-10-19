@@ -170,7 +170,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           name: {
             type: 'featureField',
             description:
-              "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
+              "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else `product`, else the ID, and an empty value draws no name",
             defaultValue: FEATURE_NAME_FIELD,
           },
           /**

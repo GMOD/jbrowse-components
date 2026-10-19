@@ -1,8 +1,9 @@
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
-import { hasVisibleText } from './util.ts'
+import { hasVisibleText, isCleavageProduct } from './util.ts'
 
+import type { SubfeatureLabels } from './displayModes.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { GlyphType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -12,9 +13,14 @@ function toLabelString(value: unknown) {
   return valueText(value) || undefined
 }
 
+// FEATURE_NAME_FIELD's order, for a caller with no jexl; an empty string falls
+// through.
 export function getFeatureName(feature: Feature): string | undefined {
-  // empty-string name falls back to id
-  return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
+  return (
+    toLabelString(feature.get('name')) ??
+    toLabelString(feature.get('product')) ??
+    toLabelString(feature.get('id'))
+  )
 }
 
 type LabelReader = (feature: Feature) => string | undefined
@@ -151,4 +157,19 @@ export function subfeatureLabelText(
   jexl: JexlInstance | undefined,
 ) {
   return readFeatureName(config, feature, jexl) ?? getFeatureName(feature)
+}
+
+export type SubfeatureLabelPlacement = Exclude<SubfeatureLabels, 'auto'>
+
+// `auto` names a polyprotein's cleavage products on their rows and leaves other
+// parts unlabeled.
+export function subfeatureLabelPlacement(
+  config: DisplayConfig,
+  feature: Feature,
+): SubfeatureLabelPlacement {
+  const { subfeatureLabels } = config
+  if (subfeatureLabels === 'auto') {
+    return isCleavageProduct(feature) ? 'overlay' : 'none'
+  }
+  return subfeatureLabels
 }

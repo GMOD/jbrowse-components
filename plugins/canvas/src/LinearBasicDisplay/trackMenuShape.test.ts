@@ -213,6 +213,7 @@ describe('canvas track menu shape', () => {
       'Description only',
       'None',
       'Subfeature labels',
+      'Auto',
       'Off',
       'Below',
       'Overlay',

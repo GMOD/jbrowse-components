@@ -14,6 +14,7 @@ import {
   strokeColor,
 } from './glyphColors.ts'
 
+import type { SubfeatureLabelPlacement } from '../labelUtils.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { FeatureLayout } from '../types.ts'
 import type { ClassedColor, PackedColor } from './glyphColors.ts'
@@ -258,6 +259,7 @@ export function emitSubfeatureLabel(
   args: {
     featureId: string
     displayLabel: string | undefined
+    placement: SubfeatureLabelPlacement
     featureHeight: number
     minX: number
     maxX: number
@@ -265,16 +267,15 @@ export function emitSubfeatureLabel(
     labelRowsAbove: number
     parentFeatureId: string
   },
-  ctx: RenderContext,
   collector: Collector,
 ) {
-  const { config } = ctx
-  const { featureId, displayLabel, featureHeight, minX, maxX, topY } = args
-  if (config.subfeatureLabels !== 'none' && hasVisibleText(displayLabel)) {
+  const { featureId, displayLabel, placement, featureHeight } = args
+  const { minX, maxX, topY } = args
+  if (placement !== 'none' && hasVisibleText(displayLabel)) {
     const subfeatureLabel = createTranscriptFloatingLabel({
       displayLabel,
       featureHeight,
-      subfeatureLabels: config.subfeatureLabels,
+      subfeatureLabels: placement,
     })
     // Merge rather than replace: one FeatureLabelData carries name/description
     // alongside the subfeature label, so a set here must preserve any entry

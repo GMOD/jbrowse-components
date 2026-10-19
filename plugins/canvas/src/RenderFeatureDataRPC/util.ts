@@ -77,3 +77,21 @@ export function isCDS(feature: Feature) {
 export function isExon(feature: Feature) {
   return featureType(feature).toLowerCase() === 'exon'
 }
+
+// Two vocabularies name a cleavage product: NCBI's `*_region_of_CDS` SO family
+// and the INSDC feature keys a GenBank flatfile conversion emits. Compared
+// case-insensitively, since real-world GFFs vary in case.
+const CLEAVAGE_PRODUCT_TYPES = new Set([
+  'mature_protein_region_of_cds',
+  'signal_peptide_region_of_cds',
+  'propeptide_region_of_cds',
+  'mature_protein_region',
+  'mat_peptide',
+  'sig_peptide',
+  'transit_peptide',
+  'propeptide',
+])
+
+export function isCleavageProduct(feature: Feature) {
+  return CLEAVAGE_PRODUCT_TYPES.has(featureType(feature).toLowerCase())
+}

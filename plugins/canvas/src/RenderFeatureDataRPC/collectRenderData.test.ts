@@ -6,9 +6,11 @@ import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { FEATURE_NAME_FIELD } from './featureNameField.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutRepeatRegion } from './glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
+import { GENE_GLYPH_DEFAULTS } from './renderConfig.ts'
 import { mockDisplayConfig, paintThroughColor } from './testUtils.ts'
 
 import type { MockDisplayConfigOverrides } from './testUtils.ts'
@@ -209,7 +211,7 @@ describe('collectRenderData peptide overlay', () => {
 function polyproteinLayout(
   cdsStart: number,
   cdsEnd: number,
-  regions: { start: number; end: number }[],
+  regions: { start: number; end: number; product?: string }[],
   strand = 1,
 ) {
   const matures = regions.map((r, i) =>
@@ -219,6 +221,7 @@ function polyproteinLayout(
       start: r.start,
       end: r.end,
       strand,
+      attributes: { product: r.product },
     }),
   )
   const cds = mockFeature({
@@ -256,6 +259,26 @@ function polyproteinLayout(
 }
 
 describe('collectRenderData polyprotein mature-peptide overlay', () => {
+  it('names each cleavage product on its row under the default settings', () => {
+    const { layout } = polyproteinLayout(100, 118, [
+      { start: 100, end: 109, product: 'capsid protein' },
+      { start: 109, end: 118, product: 'NS1' },
+    ])
+    const result = collect(layout, {
+      config: mockDisplayConfig({
+        subfeatureLabels: GENE_GLYPH_DEFAULTS.subfeatureLabels,
+        labels: { name: FEATURE_NAME_FIELD, description: '' },
+      }),
+    })
+    const labels = ['mp0', 'mp1'].map(
+      id => result.floatingLabelsData.get(id)?.subfeatureLabel,
+    )
+    expect(labels).toMatchObject([
+      { text: 'capsid protein', isOverlay: true },
+      { text: 'NS1', isOverlay: true },
+    ])
+  })
+
   it('clips the ORF translation to each cleavage-product region', () => {
     // CDS 100-118 = 6 codons (MFKLST); two regions of 3 codons each
     const { layout } = polyproteinLayout(100, 118, [

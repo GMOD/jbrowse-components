@@ -222,26 +222,14 @@ override (e.g. selenocysteine `U`).
 Many viral genomes encode one polyprotein cleaved into mature peptides. When a
 CDS has `mature_protein_region` (or `mature_protein_region_of_CDS`) subfeatures,
 the track draws each cleavage product as a separate stacked row in a distinct
-color, hoverable and clickable. Its name comes from the `product` attribute when
-the track's `labels.name` reads it:
+color, hoverable and clickable.
 
-```json addtrack
-{
-  "trackId": "enterovirus_d_genes",
-  "name": "Genes",
-  "uri": "https://example.com/GCF_000861205.1.gff.gz",
-  "assemblyNames": ["GCF_000861205.1"],
-  "displayDefaults": {
-    "labels": {
-      "name": "jexl:feature.product || feature.name || feature.id"
-    }
-  }
-}
-```
-
-For a label that shows one attribute, write it bare, `"name": "product"`; the
-expression above adds fallbacks for features with no product. See the
-[jexl configuration guide](/docs/config_guides/jexl) for the expression syntax.
+- Each row carries its name over its body, read from the track's `labels.name`.
+  The default reads the `name`, else `product`, else the ID, so an NCBI cleavage
+  product shows its `product`.
+- The **Subfeature labels** choice in the Show menu sets the placement. `Auto`,
+  the default, names cleavage products only; `Off`, `Below` and `Overlay` apply
+  to every part, transcripts included.
 
 <Figure caption="An enterovirus polyprotein's mature peptides, each on its own row in its own color." src="/img/gene_track_mature_peptides.png" />
 

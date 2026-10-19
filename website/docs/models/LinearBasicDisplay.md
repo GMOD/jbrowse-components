@@ -88,8 +88,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;</code></pre></dialog></span> | The config typed off this display's own schema, reclaiming its slots for direct reads the way `configuration` above does for `getConf`. |
-| <span id="getter-subfeaturelabels">**subfeatureLabels**</span><br><code>"below" &#124; "none" &#124; "overlay"</code> |  |
-| <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"below" &#124; "none" &#124; "overlay"</code> |  |
+| <span id="getter-subfeaturelabels">**subfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> |  |
+| <span id="getter-effectivesubfeaturelabels">**effectiveSubfeatureLabels**</span><br><code>"auto" &#124; "below" &#124; "none" &#124; "overlay"</code> |  |
 | <span id="getter-showchevrons">**showChevrons**</span><br><code>boolean</code> |  |
 | <span id="getter-utrcolor">**utrColor**</span><br><code>string</code> |  |
 | <span id="getter-geneglyphmode">**geneGlyphMode**</span><br><code>"all" &#124; "auto" &#124; "longestCoding"</code> |  |
@@ -167,7 +167,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setsubfeaturelabels">**setSubfeatureLabels**</span><br><code>(value: "below" &#124; "none" &#124; "overlay") =&gt; void</code> |  |
+| <span id="action-setsubfeaturelabels">**setSubfeatureLabels**</span><br><code>(value: "auto" &#124; "below" &#124; "none" &#124; "overlay") =&gt; void</code> |  |
 | <span id="action-setgeneglyphmode">**setGeneGlyphMode**</span><br><code>(value: "all" &#124; "auto" &#124; "longestCoding") =&gt; void</code> |  |
 | <span id="action-dismissgeneglyphnotice">**dismissGeneGlyphNotice**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenesfilter">**setGenesFilter**</span><br><code>(value?: "exclude" &#124; "only" &#124; undefined) =&gt; void</code> |  |

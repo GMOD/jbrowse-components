@@ -42,20 +42,23 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Subfeature labels submenu', () => {
-  it('offers Off/Below/Overlay radios', () => {
+  it('offers Auto/Off/Below/Overlay radios', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = showSubMenu(display)
 
     const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
-    expect(labels).toEqual(['Off', 'Below', 'Overlay'])
+    expect(labels).toEqual(['Auto', 'Off', 'Below', 'Overlay'])
   })
 
   it('checks the mode the track holds', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    expect(display.subfeatureLabels).toBe('none')
+    expect(display.subfeatureLabels).toBe('auto')
+    expect(radio(showSubMenu(display), 'Auto').checked).toBe(true)
+
+    display.setSubfeatureLabels('none')
     expect(radio(showSubMenu(display), 'Off').checked).toBe(true)
 
     display.setSubfeatureLabels('overlay')

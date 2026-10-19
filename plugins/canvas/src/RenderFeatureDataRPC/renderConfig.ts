@@ -160,7 +160,7 @@ export type GeneGlyphSettings = Pick<
 >
 
 export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
-  subfeatureLabels: 'none',
+  subfeatureLabels: 'auto',
   transcriptTypes: [
     'mRNA',
     'transcript',

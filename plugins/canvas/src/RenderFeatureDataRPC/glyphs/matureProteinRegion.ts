@@ -1,30 +1,12 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
+import { getSubfeatures, isCDS, isCleavageProduct } from '../util.ts'
 import { boxLayout, featureHeightPx } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Two vocabularies name a cleavage product: NCBI's `*_region_of_CDS` SO family
-// and the INSDC feature keys a GenBank flatfile conversion emits. Compared
-// case-insensitively, since real-world GFFs vary in case.
-const MATURE_PROTEIN_TYPES = new Set([
-  'mature_protein_region_of_cds',
-  'signal_peptide_region_of_cds',
-  'propeptide_region_of_cds',
-  'mature_protein_region',
-  'mat_peptide',
-  'sig_peptide',
-  'transit_peptide',
-  'propeptide',
-])
-
-function isMatureProteinType(feature: Feature) {
-  return MATURE_PROTEIN_TYPES.has(featureType(feature).toLowerCase())
-}
-
 function getMatureProteinChildren(feature: Feature): Feature[] {
-  return getSubfeatures(feature).filter(isMatureProteinType)
+  return getSubfeatures(feature).filter(isCleavageProduct)
 }
 
 export function hasMatureProteinChildren(feature: Feature) {

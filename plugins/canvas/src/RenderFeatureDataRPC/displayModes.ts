@@ -23,6 +23,7 @@ export function isDisplayMode(value: unknown): value is DisplayMode {
 }
 
 export const SUBFEATURE_LABEL_OPTIONS = [
+  { value: 'auto', label: 'Auto' },
   { value: 'none', label: 'Off' },
   { value: 'below', label: 'Below' },
   { value: 'overlay', label: 'Overlay' },

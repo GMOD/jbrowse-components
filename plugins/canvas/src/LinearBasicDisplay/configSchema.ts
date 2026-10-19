@@ -101,7 +101,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('subfeatureLabels', [...SUBFEATURE_LABELS]),
         description:
-          'subfeature label display mode: `none` (the default), `below` or `overlay`',
+          "subfeature label display mode: `auto` (the default) names a polyprotein's cleavage products on their rows and nothing else; `none`, `below` or `overlay` apply to every part",
         defaultValue: GENE_GLYPH_DEFAULTS.subfeatureLabels,
       },
       /**

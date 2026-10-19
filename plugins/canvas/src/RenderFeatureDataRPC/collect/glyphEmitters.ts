@@ -8,6 +8,7 @@ import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
   readFeatureLabels,
   readFeatureName,
+  subfeatureLabelPlacement,
   subfeatureLabelText,
 } from '../labelUtils.ts'
 import { collapsibleIntronsOf } from '../splicedParts.ts'
@@ -237,6 +238,7 @@ function registerSubfeature(
       {
         featureId: feature.id(),
         displayLabel,
+        placement: subfeatureLabelPlacement(ctx.config, feature),
         featureHeight: heightPx,
         minX,
         maxX,
@@ -244,7 +246,6 @@ function registerSubfeature(
         labelRowsAbove,
         parentFeatureId,
       },
-      ctx,
       collector,
     )
   }
