@@ -135,14 +135,14 @@ where every track in the figure has a call.
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
 opens as a dense run of variant records over _TP53_, one block of color.
-**Filter by... → Edit filters...** in the track menu takes rows of field,
-operator and value over the track's columns. Type a column name into the field
-box, which lists the file's columns with the description the file gives each. A
-record has to pass every row:
+**Filter by... → Edit filters...** in the track menu takes one
+[jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
+every line. **Insert field…** lists the file's columns with the description the
+file gives each, and writes the one you pick at the cursor:
 
-- `annot` is `pLoF` keeps gnomAD's predicted loss-of-function consequence class
-  (the others are missense, synonymous and other)
-- `AF` ≥ `0.001` drops the rarest variants
+- `feature.annot == 'pLoF'` keeps gnomAD's predicted loss-of-function
+  consequence class (the others are missense, synonymous and other)
+- `feature.AF >= 0.001` drops the rarest variants
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu and the filter dialog Edit filters... opens." />
 
@@ -151,7 +151,7 @@ record has to pass every row:
 Once a filter is in effect, the same submenu adds **Clear all filters**.
 
 The filter works on any column a BigBed has. ClinVar's clinical classification
-is the column `clinSign`, so the row `clinSign` is `Pathogenic` filters that
+is the column `clinSign`, so `feature.clinSign == 'Pathogenic'` filters that
 catalog the same way. The same menus apply to a bigWig or BigBed of your own
 added with **Add track**; the
 [web quickstart](/docs/quickstart_web#adding-tracks) covers the steps.

@@ -25,6 +25,7 @@ const FIELDS: JexlFilterField[] = [
     group: 'Columns',
     values: ['PASS', 'q10'],
   },
+  { label: 'maf', call: 'maf', type: 'number', group: 'Computed' },
 ]
 
 function setup(
@@ -76,100 +77,71 @@ const apply = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
 }
 
-test('shows a line as rows and writes an untouched one back unchanged', () => {
+const textBox = () =>
+  screen.getByTestId<HTMLTextAreaElement>('jexl-filter-text')
+
+function pickField(label: string) {
+  const picker = screen.getByLabelText('Insert field…')
+  fireEvent.change(picker, { target: { value: label } })
+  fireEvent.click(screen.getByRole('option', { name: new RegExp(label) }))
+}
+
+test('shows every line without the prefix and writes it back unchanged', () => {
   const { written, handleClose } = setup()
   expect(screen.getByText('Filter Variants')).toBeInTheDocument()
-  expect(screen.getByDisplayValue('QUAL')).toBeInTheDocument()
-  expect(screen.getByDisplayValue('25')).toBeInTheDocument()
-  expect(screen.getByDisplayValue('FILTER')).toBeInTheDocument()
-  expect(screen.getByDisplayValue('PASS')).toBeInTheDocument()
-  expect(
-    screen.getByDisplayValue('feature.INFO.AC / feature.INFO.AN > 0.1'),
-  ).toBeInTheDocument()
+  expect(textBox().value).toBe(
+    STORED.map(line => line.slice('jexl:'.length)).join('\n'),
+  )
   apply()
   expect(written).toHaveBeenLastCalledWith(STORED)
   expect(handleClose).toHaveBeenCalled()
 })
 
-test('visiting a field without changing it leaves its line alone', () => {
+test('a line that does not compile names its line and blocks Apply', () => {
   const { written } = setup()
-  const field = screen.getByDisplayValue('QUAL')
-  fireEvent.focus(field)
-  fireEvent.blur(field)
-  const value = screen.getByDisplayValue('PASS')
-  fireEvent.focus(value)
-  fireEvent.blur(value)
-  apply()
-  expect(written).toHaveBeenLastCalledWith(STORED)
-})
-
-test('editing a condition writes each condition of its line alone', () => {
-  const { written } = setup()
-  fireEvent.change(screen.getByDisplayValue('25'), { target: { value: '30' } })
-  apply()
-  expect(written).toHaveBeenLastCalledWith([
-    'jexl:feature.QUAL >= 30',
-    "jexl:feature.FILTER == 'PASS'",
-    STORED[1],
-  ])
-})
-
-test('the Text tab edits every line as text, without the prefix', () => {
-  const { written } = setup()
-  fireEvent.click(screen.getByRole('tab', { name: 'Text' }))
-  const box = screen.getByDisplayValue(/feature\.QUAL>=25/)
-  expect((box as HTMLTextAreaElement).value).toBe(
-    STORED.map(line => line.slice('jexl:'.length)).join('\n'),
-  )
-  fireEvent.change(box, { target: { value: 'feature.QUAL >' } })
+  fireEvent.change(textBox(), {
+    target: { value: 'feature.QUAL > 5\nfeature.QUAL >' },
+  })
   expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled()
-  expect(screen.getByText(/^Line 1:/)).toBeInTheDocument()
-  fireEvent.change(box, { target: { value: 'feature.QUAL > 5\n\n' } })
+  expect(screen.getByText(/^Line 2:/)).toBeInTheDocument()
+  fireEvent.change(textBox(), { target: { value: 'feature.QUAL > 5\n\n' } })
   apply()
   expect(written).toHaveBeenLastCalledWith(['jexl:feature.QUAL > 5'])
+})
+
+test('a picked field is written at the cursor', () => {
+  setup()
+  fireEvent.change(textBox(), { target: { value: ' > 0.01' } })
+  textBox().setSelectionRange(0, 0)
+  pickField('maf')
+  expect(textBox().value).toBe('maf(feature) > 0.01')
+})
+
+test('the picker lists known values and replaces a selection', () => {
+  setup()
+  fireEvent.change(textBox(), { target: { value: "X == 'PASS'" } })
+  textBox().setSelectionRange(0, 1)
+  pickField('FILTER')
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  expect(textBox().value).toBe("feature.FILTER == 'PASS'")
+  fireEvent.change(screen.getByLabelText('Insert field…'), {
+    target: { value: 'FILTER' },
+  })
+  expect(screen.getByText('one of PASS, q10')).toBeInTheDocument()
 })
 
 test('waits for fields supplied as a promise', async () => {
   await act(async () => {
     setup(Promise.resolve(FIELDS))
   })
-  expect(screen.getByDisplayValue('QUAL')).toBeInTheDocument()
-})
-
-test('a typed field takes a numeric operator and writes a number', () => {
-  const { written } = setup()
-  fireEvent.click(screen.getByRole('button', { name: 'Add condition' }))
-  const field = screen.getAllByPlaceholderText('Field').at(-1)!
-  fireEvent.change(field, { target: { value: 'AF' } })
-  fireEvent.blur(field)
-  fireEvent.mouseDown(screen.getAllByText('is').at(-1)!)
-  expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual([
-    'is',
-    'is not',
-    '>',
-    '≥',
-    '<',
-    '≤',
-    'is one of',
-    'matches',
-  ])
-  fireEvent.click(screen.getByRole('option', { name: '≥' }))
-  fireEvent.change(screen.getAllByPlaceholderText('Value').at(-1)!, {
-    target: { value: '0.001' },
-  })
-  apply()
-  expect(written).toHaveBeenLastCalledWith([
-    ...STORED,
-    'jexl:feature.AF >= 0.001',
-  ])
+  expect(textBox()).toBeInTheDocument()
 })
 
 test('the picker lists the columns the adapter describes', async () => {
   await act(async () => {
     setup(FIELDS, Promise.resolve({ AF: 'Allele Frequency' }))
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Add condition' }))
-  fireEvent.change(screen.getAllByPlaceholderText('Field').at(-1)!, {
+  fireEvent.change(screen.getByLabelText('Insert field…'), {
     target: { value: 'A' },
   })
   expect(screen.getByText('Allele Frequency')).toBeInTheDocument()

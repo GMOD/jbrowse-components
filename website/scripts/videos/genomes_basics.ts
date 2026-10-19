@@ -7,8 +7,7 @@ import { displayReady, trackMenu } from './shared.ts'
 import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
-  filterField,
-  filterValue,
+  filterText,
   geneTrackOnly,
   gnomadTrackId,
   phylopTrackId,
@@ -81,29 +80,22 @@ export const genomesBasicsVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: trackMenu(gnomadTrackId),
-        say: 'Filter the track from its menu: keep annot equal to pLoF',
+        say: "Filter the track from its menu: feature.annot == 'pLoF'",
         hold: 1200,
       },
       { type: 'waitForText', text: 'Filter by...' },
       { type: 'click', text: 'Filter by...' },
       { type: 'click', text: 'Edit filters...' },
-      { type: 'waitForText', text: 'Add condition' },
-      // The dialog opens on one empty row, since this track declares no
-      // filters of its own.
+      { type: 'waitForSelector', selector: filterText },
+      // The dialog opens empty, since this track declares no filters of its
+      // own.
       { type: 'delay', ms: 2200 },
-      {
-        type: 'type',
-        selector: filterField,
-        value: plof.field,
-      },
-      { type: 'press', key: 'Tab' },
-      { type: 'delay', ms: 600 },
-      { type: 'type', selector: filterValue, value: plof.value },
+      { type: 'type', selector: filterText, value: plof },
       { type: 'delay', ms: 1200 },
       // The button reads APPLY and the DOM says Apply: MUI uppercases it in
       // CSS, so the match is the string and the chip is the label.
       { type: 'click', text: 'Apply' },
-      { type: 'waitForText', text: 'Add condition', hidden: true },
+      { type: 'waitForSelector', selector: filterText, hidden: true },
       // The pointer is where APPLY was, which is over the lane the moment the
       // dialog goes — and this track's mouseover is nine lines of allele
       // counts. Off it before the redraw is on camera.

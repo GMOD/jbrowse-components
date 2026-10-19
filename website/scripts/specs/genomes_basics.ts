@@ -161,15 +161,9 @@ const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
-// A filter row, built on the dialog's default Conditions tab: the column is
-// typed into the field picker, and a column of no declared type opens on the
-// `is` operator.
-const GNOMAD_PLOF = { field: 'annot', value: 'pLoF' }
+const GNOMAD_PLOF = "feature.annot == 'pLoF'"
 
-// The first condition row's inputs. Tab, not Enter, commits a typed field:
-// Enter in a free-text field submits the dialog.
-const FILTER_FIELD = '.MuiDialog-container input[placeholder="Field"]'
-const FILTER_VALUE = '.MuiDialog-container input[placeholder="Value"]'
+const FILTER_TEXT = '[data-testid="jexl-filter-text"]'
 
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track: one click, on a chip
@@ -215,8 +209,7 @@ const SITE = 'https://genomes.jbrowse.org'
 export const genomesBasicsVideoFixtures = {
   gnomadTrackId: GNOMAD_TRACK_ID,
   plof: GNOMAD_PLOF,
-  filterField: FILTER_FIELD,
-  filterValue: FILTER_VALUE,
+  filterText: FILTER_TEXT,
   // The gnomAD lane with nothing narrowing it: gnomad_filter_menu's session,
   // one track alone in the view at the window that figure is taken at.
   //
@@ -691,10 +684,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Filter by...' },
           { type: 'click', text: 'Edit filters...' },
-          { type: 'waitForText', text: 'Add condition' },
-          { type: 'type', selector: FILTER_FIELD, value: GNOMAD_PLOF.field },
-          { type: 'press', key: 'Tab' },
-          { type: 'type', selector: FILTER_VALUE, value: GNOMAD_PLOF.value },
+          { type: 'waitForSelector', selector: FILTER_TEXT },
+          { type: 'type', selector: FILTER_TEXT, value: GNOMAD_PLOF },
           { type: 'delay', ms: 500 },
         ],
         // back to the spec's own height, which the shorter first frame would

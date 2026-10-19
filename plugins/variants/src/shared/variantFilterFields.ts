@@ -58,7 +58,6 @@ const COMPUTED = (
       label: 'consequences',
       call: 'consequences',
       type: 'text',
-      multi: true,
       description: 'Every consequence term, from SnpEff ANN or VEP CSQ',
     },
   ] satisfies JexlFilterField[]
@@ -72,18 +71,17 @@ function columns(filterIds: string[]) {
         label: 'FILTER',
         path: ['FILTER'],
         type: 'text',
-        multi: true,
         values: filterIds,
       },
-      { label: 'ID', path: ['ID'], type: 'text', multi: true },
+      { label: 'ID', path: ['ID'], type: 'text' },
       { label: 'REF', path: ['REF'], type: 'text' },
-      { label: 'ALT', path: ['ALT'], type: 'text', multi: true },
+      { label: 'ALT', path: ['ALT'], type: 'text' },
     ] satisfies JexlFilterField[]
   ).map(field => ({ ...field, group: 'Columns' }))
 }
 
 function infoField(id: string, line: HeaderLine): JexlFilterField {
-  const { Type, Number: count, Description } = line
+  const { Type, Description } = line
   return {
     label: id,
     path: ['INFO', id],
@@ -94,7 +92,6 @@ function infoField(id: string, line: HeaderLine): JexlFilterField {
         : Type === 'Integer' || Type === 'Float'
           ? 'number'
           : 'text',
-    multi: Type !== 'Flag' && count !== 1,
     description: typeof Description === 'string' ? Description : undefined,
   }
 }

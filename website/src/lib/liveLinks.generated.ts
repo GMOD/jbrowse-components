@@ -3559,7 +3559,7 @@ export const videoSteps: Record<string, string[]> = {
   ],
   "genomes_basics/gnomad_filter": [
     "Every gnomAD exome variant over TP53, colored by consequence",
-    "Filter the track from its menu: keep annot equal to pLoF",
+    "Filter the track from its menu: feature.annot == 'pLoF'",
     "Only the predicted loss-of-function variants remain, each labelled"
   ],
   "genomes_basics/find_a_track": [

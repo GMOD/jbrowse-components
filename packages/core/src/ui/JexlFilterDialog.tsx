@@ -1,45 +1,27 @@
-import { use, useState } from 'react'
+import { use, useRef, useState } from 'react'
 
 import { getEnv } from '@jbrowse/mobx-state-tree'
-import AddIcon from '@mui/icons-material/Add'
-import {
-  Button,
-  ListItemText,
-  MenuItem,
-  Tab,
-  Tabs,
-  TextField,
-} from '@mui/material'
+import { Autocomplete, ListItemText, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { readConfObject } from '../configuration/readConfObject.ts'
 import {
-  addRow,
   describedColumns,
-  readFilterRows,
-  removeRow,
-  replaceRow,
-  resolveFields,
+  fieldExpression,
   stripJexlPrefix,
-  writeFilterRows,
-} from '../util/jexlFilterRows.ts'
+} from '../util/jexlFilterFields.ts'
 import { ensureJexlPrefix } from '../util/jexlStrings.ts'
 import { getContainingTrack } from '../util/mstUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import ExternalLink from './ExternalLink.tsx'
-import {
-  ConditionRowEditor,
-  TextRowEditor,
-  compileError,
-} from './JexlFilterRowEditors.tsx'
 import MonospaceTextField from './MonospaceTextField.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 
-import type { FilterRows, JexlFilterField } from '../util/jexlFilterRows.ts'
+import type { JexlFilterField } from '../util/jexlFilterFields.ts'
 import type { JexlFilterModel } from '../util/jexlFilters.ts'
 import type { Jexl } from '@jbrowse/jexl'
 
-export type { JexlFilterField } from '../util/jexlFilterRows.ts'
+export type { JexlFilterField } from '../util/jexlFilterFields.ts'
 
 export interface JexlFilterExample {
   code: string
@@ -96,16 +78,13 @@ const useStyles = makeStyles()(theme => ({
   body: {
     minHeight: 280,
   },
-  tabs: {
-    marginBottom: theme.spacing(2),
-  },
-  hint: {
-    marginBottom: theme.spacing(2),
-    color: theme.palette.text.secondary,
-  },
-  examples: {
-    minWidth: 220,
+  pickers: {
+    display: 'flex',
+    gap: theme.spacing(1),
     marginBottom: theme.spacing(1),
+  },
+  picker: {
+    minWidth: 220,
   },
 }))
 
@@ -115,6 +94,15 @@ function textLines(text: string) {
     .map(line => line.trim())
     .filter(line => !!line)
     .map(ensureJexlPrefix)
+}
+
+function compileError(line: string, jexl: Pick<Jexl, 'compile'>) {
+  try {
+    jexl.compile(stripJexlPrefix(line.trim()))
+    return undefined
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e)
+  }
 }
 
 function textError(text: string, jexl: Jexl) {
@@ -137,17 +125,19 @@ function trackName(model: JexlFilterModel) {
   }
 }
 
-function withOneRow(state: FilterRows) {
-  return state.rows.length > 0 ? state : addRow(state)
+function fieldHint({ description, values }: JexlFilterField) {
+  return (
+    [description, values?.length ? `one of ${values.join(', ')}` : undefined]
+      .filter(Boolean)
+      .join('; ') || undefined
+  )
 }
 
 /**
- * Editor for a display's jexl feature filters, for any display implementing
- * the {@link JexlFilterModel} contract. The Conditions tab shows each
- * line as rows of field, operator and value where it can, and as text where it
- * cannot; the Text tab is every line as text.
+ * Editor for a display's jexl feature filters, one expression per line, for
+ * any display implementing the {@link JexlFilterModel} contract.
  *
- * `fields` lists what the field picker offers, then the columns `metadata`
+ * `fields` lists what the field picker inserts, then the columns `metadata`
  * describes, if it is an adapter's `{column: description}` map. Either one
  * given as a promise suspends the dialog until it resolves, so it must not
  * reject.
@@ -170,22 +160,17 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
     .jexl
   const fieldList = fields instanceof Promise ? use(fields) : fields
   const described = metadata && use(metadata)
-  const [choices] = useState(() =>
-    resolveFields([...fieldList, ...describedColumns(described, fieldList)]),
+  const [choices] = useState(() => [
+    ...fieldList,
+    ...describedColumns(described, fieldList),
+  ])
+  const [text, setText] = useState(() =>
+    model.configuredFilters().map(stripJexlPrefix).join('\n'),
   )
-  const [state, setState] = useState(() =>
-    withOneRow(readFilterRows(model.configuredFilters(), jexl, choices)),
-  )
-  const [tab, setTab] = useState<'conditions' | 'text'>('conditions')
-  const [text, setText] = useState({ value: '', shown: '' })
-  const textEdited = text.value !== text.shown
-  const error =
-    tab === 'text'
-      ? textError(text.value, jexl)
-      : state.rows.some(
-          row => row.kind === 'text' && compileError(row.text, jexl),
-        )
+  const box = useRef<HTMLTextAreaElement>(null)
+  const error = textError(text, jexl)
   const name = trackName(model)
+  const grouped = choices.some(choice => choice.group)
 
   return (
     <SubmitDialog
@@ -197,127 +182,82 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
       submitDisabled={!!error}
       onCancel={handleClose}
       onSubmit={() => {
-        // An emptied list is "show everything", which is NOT the same as
-        // following the config slot, so it is set as an override too
-        model.setFilter(
-          tab === 'text' && textEdited
-            ? textLines(text.value)
-            : writeFilterRows(state),
-        )
+        // an emptied list means "show everything", not "follow the config",
+        // so it is set as an override too
+        model.setFilter(textLines(text))
         handleClose()
       }}
     >
       <div className={classes.body}>
-        <Tabs
-          className={classes.tabs}
-          value={tab}
-          onChange={(_, next: 'conditions' | 'text') => {
-            if (next === 'text') {
-              const value = writeFilterRows(state)
-                .map(stripJexlPrefix)
-                .join('\n')
-              setText({ value, shown: value })
-            } else if (textEdited) {
-              setState(
-                withOneRow(
-                  readFilterRows(textLines(text.value), jexl, choices),
-                ),
-              )
-            }
-            setTab(next)
-          }}
-        >
-          <Tab value="conditions" label="Conditions" />
-          <Tab value="text" label="Text" data-testid="jexl-filter-text-tab" />
-        </Tabs>
-        {tab === 'conditions' ? (
-          <>
-            <div className={classes.hint}>
-              Show features that match every condition.
-            </div>
-            {state.rows.map(row =>
-              row.kind === 'text' ? (
-                <TextRowEditor
-                  key={row.id}
-                  row={row}
-                  jexl={jexl}
-                  onChange={next => {
-                    setState(replaceRow(state, next))
-                  }}
-                  onRemove={() => {
-                    setState(removeRow(state, row.id))
-                  }}
+        <div className={classes.pickers}>
+          <Autocomplete<JexlFilterField>
+            className={classes.picker}
+            size="small"
+            blurOnSelect
+            options={choices}
+            value={null}
+            groupBy={grouped ? choice => choice.group ?? '' : undefined}
+            getOptionLabel={choice => choice.label}
+            getOptionKey={fieldExpression}
+            onChange={(_, choice) => {
+              if (choice) {
+                const insert = fieldExpression(choice)
+                const start = box.current?.selectionStart ?? text.length
+                const end = box.current?.selectionEnd ?? text.length
+                setText(text.slice(0, start) + insert + text.slice(end))
+              }
+            }}
+            renderOption={({ key, ...props }, choice) => (
+              <li key={key} {...props}>
+                <ListItemText
+                  primary={choice.label}
+                  secondary={fieldHint(choice)}
                 />
-              ) : (
-                <ConditionRowEditor
-                  key={row.id}
-                  row={row}
-                  choices={choices}
-                  onChange={next => {
-                    setState(replaceRow(state, next))
-                  }}
-                  onRemove={() => {
-                    setState(removeRow(state, row.id))
-                  }}
-                />
-              ),
+              </li>
             )}
-            <Button
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setState(addRow(state))
-              }}
-            >
-              Add condition
-            </Button>
-          </>
-        ) : (
-          <>
-            <TextField
-              select
-              size="small"
-              label="Insert example…"
-              value=""
-              className={classes.examples}
-              onChange={event => {
-                const code = stripJexlPrefix(event.target.value)
-                setText({
-                  ...text,
-                  value: text.value.trim()
-                    ? `${text.value.trimEnd()}\n${code}`
-                    : code,
-                })
-              }}
-            >
-              {examples.map(({ code, description }) => (
-                <MenuItem key={code} value={code}>
-                  <ListItemText
-                    primary={stripJexlPrefix(code)}
-                    secondary={description}
-                  />
-                </MenuItem>
-              ))}
-            </TextField>
-            <MonospaceTextField
-              fullWidth
-              minRows={6}
-              maxRows={14}
-              value={text.value}
-              error={error}
-              helperText="One filter per line; a feature has to pass every line."
-              onChange={value => {
-                setText({ ...text, value })
-              }}
-            />
-            <p>
-              See the{' '}
-              <ExternalLink href="https://jbrowse.org/jb2/docs/config_guides/jexl/">
-                jexl documentation
-              </ExternalLink>{' '}
-              for the expression language.
-            </p>
-          </>
-        )}
+            renderInput={params => (
+              <TextField {...params} label="Insert field…" />
+            )}
+          />
+          <TextField
+            select
+            size="small"
+            label="Insert example…"
+            value=""
+            className={classes.picker}
+            onChange={event => {
+              const code = stripJexlPrefix(event.target.value)
+              setText(text.trim() ? `${text.trimEnd()}\n${code}` : code)
+            }}
+          >
+            {examples.map(({ code, description }) => (
+              <MenuItem key={code} value={code}>
+                <ListItemText
+                  primary={stripJexlPrefix(code)}
+                  secondary={description}
+                />
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>
+        <MonospaceTextField
+          fullWidth
+          minRows={6}
+          maxRows={14}
+          inputRef={box}
+          inputTestId="jexl-filter-text"
+          value={text}
+          error={error}
+          helperText="One filter per line; a feature has to pass every line."
+          onChange={setText}
+        />
+        <p>
+          See the{' '}
+          <ExternalLink href="https://jbrowse.org/jb2/docs/config_guides/jexl/">
+            jexl documentation
+          </ExternalLink>{' '}
+          for the expression language.
+        </p>
       </div>
     </SubmitDialog>
   )
