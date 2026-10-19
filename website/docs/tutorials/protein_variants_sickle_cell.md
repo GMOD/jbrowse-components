@@ -21,7 +21,8 @@ changes, in a crystal structure of sickle haemoglobin. We'll:
 
 - open _HBB_ on codon 7 in the protein browser, with structure 2HBS, and hover
   the codon's alignment column to find its residue
-- add the GWAS Catalog and read what has been associated with rs334
+- add the GWAS Catalog, then a copy filtered to the traits tied to sickle cell
+  trait, and read what has been associated with rs334
 - add 1000 Genomes genotypes grouped by ancestry, with a common synonymous
   variant four codons upstream as the control
 - color the genome, the alignment and the structure by the alignment's protein
@@ -35,8 +36,8 @@ changes, in a crystal structure of sickle haemoglobin. We'll:
 
 ## The data
 
-Nothing to download: the protein browser, the plugins and the track config below
-read these files by URL. _Your own gene_ covers a gene of your own.
+Nothing to download: the protein browser, the plugins and the track configs
+below read these files by URL. _Your own gene_ covers a gene of your own.
 
 <details>
 <summary>The files</summary>
@@ -81,10 +82,46 @@ search `GWAS Catalog`, and tick it. The catalog has one record per study and
 trait, so a variant studied many times draws as a stack. Click a box to open its
 record.
 
-<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB." />
-
 The records at rs334 include malaria, haemolytic anaemias, glycated haemoglobin
-(HbA1c) and kidney function.
+(HbA1c) and kidney disease. A second copy of the catalog keeps those traits and
+labels each record with its trait, p-value, first author and year, read from the
+file's own columns:
+
+```json addtrack loc=chr11:5226956-5227046
+{
+  "type": "FeatureTrack",
+  "trackId": "gwasCatalog_sickle_cell_traits",
+  "name": "GWAS Catalog, traits tied to sickle cell trait",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "bedGzLocation": {
+      "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz"
+    },
+    "index": {
+      "indexType": "CSI",
+      "location": {
+        "uri": "https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi"
+      }
+    }
+  },
+  "displayDefaults": {
+    "filter": [
+      "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)', 'Glycated hemoglobin levels', 'Chronic Kidney Disease, Stage III (PheCode 585.33)']"
+    ],
+    "labels": {
+      "name": "trait",
+      "description": "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4) + ', ' + feature.author"
+    },
+    "showLabels": "nameAndDescription"
+  }
+}
+```
+
+The subset is a filter, which **Filter by... → Edit filters...** in the track
+menu edits to keep other traits.
+
+<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to traits tied to sickle cell trait, each record labeled with its trait." />
 
 ## Sickle allele by ancestry in 1000 Genomes
 

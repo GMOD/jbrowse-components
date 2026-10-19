@@ -10,7 +10,8 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Measured 2026-10-16 against the files the tracks read, so captions name the
 // direction without a number:
-//   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 134 GWAS Catalog rows.
+//   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 179 GWAS Catalog rows
+//   (2026-10-19), 7 in the page filter's four traits.
 //   1000 Genomes AF_AFR 0.100, AF_AMR 0.005, EUR/EAS/SAS 0. rs713040
 //   (chr11:5,227,013, His3, synonymous) 0.50-0.88 in every superpopulation.
 //   SOD1 E40K chr31:27,123,057 G>A (canFam4), codon 40 GAA>AAA. Dog10K: 198
@@ -144,7 +145,10 @@ const HBB_SESSION = readSession('protein_browser_hbb.session.json')
 const HBB_GENES = 'hg38-ncbiRefSeqSelect'
 const GWAS = 'hg38-gwasCatalog'
 const KG = 'kgp3202_chr11_snv'
-const KG_TRACK = pageTrack('tutorials/protein_variants_sickle_cell.md', KG)
+const SICKLE_CELL_PAGE = 'tutorials/protein_variants_sickle_cell.md'
+const KG_TRACK = pageTrack(SICKLE_CELL_PAGE, KG)
+const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
+const GWAS_SUBSET_TRACK = pageTrack(SICKLE_CELL_PAGE, GWAS_SUBSET)
 const RS334 = 'chr11:5,227,002'
 const RS713040 = 'chr11:5,227,013'
 const HBB_GENE_TRACK = { trackId: HBB_GENES, height: 60 }
@@ -216,10 +220,15 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/hbb_gwas_catalog',
     url: hbbSession({
-      tracks: [HBB_GENE_TRACK, { trackId: GWAS, height: 240 }],
+      tracks: [
+        HBB_GENE_TRACK,
+        { trackId: GWAS, height: 160 },
+        { trackId: GWAS_SUBSET, height: 300 },
+      ],
+      sessionTracks: [GWAS_SUBSET_TRACK],
     }),
     ...READY,
-    viewportHeight: 1220,
+    viewportHeight: 1430,
     actions: hoverAlignment({ dx: 193, dy: 8 }),
     annotations: [
       {
@@ -228,7 +237,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: { trackId: GWAS, loc: RS334, fracY: 0.5 },
-        dx: 160,
+        dx: -260,
         dy: 0,
       },
     ],
@@ -276,30 +285,34 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     url: hbbSession({
       tracks: [
         HBB_GENE_TRACK,
-        { trackId: GWAS, height: 110 },
+        { trackId: GWAS_SUBSET, height: 300 },
         { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
       ],
-      sessionTracks: [KG_TRACK],
+      sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
       loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
       msaHeight: 300,
       domains: true,
     }),
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
-    viewportHeight: 1300,
+    // Wide enough for the exon 2 records' labels to end inside the view. The
+    // alignment's columns widen with it, so column 7 sits further right.
+    viewportWidth: 2300,
+    viewportHeight: 1490,
     actions: [
       { type: 'waitForAppSettled' },
-      ...hoverAlignment({ dx: 193, dy: 8 }),
+      ...hoverAlignment({ dx: 224, dy: 8 }),
     ],
     annotations: [
       codonCallout('1  rs334, codon 7: GAG to GTG', HBB_GENES, RS334),
       {
         type: 'text',
-        text: '2  GWAS Catalog records at rs334',
+        text: '2  GWAS Catalog records at rs334, filtered to these traits',
         fontSize: 18,
+        maxWidth: 260,
         leader: true,
-        anchor: { trackId: GWAS, loc: RS334, fracY: 0.5 },
-        dx: 160,
+        anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.5 },
+        dx: -60,
         dy: 0,
       },
       {
@@ -328,7 +341,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: '[data-testid="msa_canvas"]',
           alignX: 'left',
-          dx: 193,
+          dx: 224,
           alignY: 'top',
           dy: 8,
         },
