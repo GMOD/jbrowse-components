@@ -76,6 +76,11 @@ const PREFIXES: [string, string][] = [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored',
     '.segs.bed.gz',
   ],
+  // a walk-file stem, which walksUri extends with .walks.bed.gz
+  [
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f3.GRCh38',
+    '.walks.bed.gz',
+  ],
   [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
     '.segs.bed.gz',
@@ -85,6 +90,10 @@ const PREFIXES: [string, string][] = [
   [
     'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38',
     '/hprc-v2.1-mc-grch38.gbz',
+  ],
+  [
+    'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38',
+    '.gfa.gz',
   ],
   // zarr store roots — the adapter reads objects inside
   ['https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr', '/zarr.json'],
