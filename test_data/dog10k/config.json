@@ -86,7 +86,10 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_nhej1_svs.vcf.gz"
+        "uri": "dog10k_nhej1_svs.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "dog10k_nhej1_samples.tsv"
+        }
       }
     },
     {

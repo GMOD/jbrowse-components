@@ -51,14 +51,13 @@ function arrangedSamples(rows: SampleRow[]) {
 // Mb put every pill over the labels. 20 Mb clears them.
 const WOLFDOG_PILL_X = 'chr1:20,000,000'
 
-// Row labels for the NHEJ1 SV figure, grouped so the Collie-clade breeds that
-// carry the deletion sit together above the breeds and wolves that do not. IDs
-// are the VCF's own, in its own order (the build script writes them); the swatch
-// marks the group and only the label is cosmetic.
+// Row labels for the NHEJ1 SV figure. IDs are the VCF's own, in its own order
+// (the build script writes them). The track facets them on the samples table's
+// `clade`, so the Collie-clade breeds are one labelled section above the other
+// breeds and the wolves.
 const CEA_GROUPS = [
   {
     label: 'Collie',
-    color: '#0072B2',
     ids: Array.from(
       { length: 13 },
       (_, i) => `COLL0000${String(i + 1).padStart(2, '0')}`,
@@ -66,37 +65,30 @@ const CEA_GROUPS = [
   },
   {
     label: 'Shetland Sheepdog',
-    color: '#0072B2',
     ids: ['SSHP000001', 'SSHP000002', 'SSHP000003', 'SSHP000004'],
   },
   {
     label: 'Lancashire Heeler',
-    color: '#0072B2',
     ids: ['LANC000001', 'LANC000002', 'LANC000003', 'LANC000004'],
   },
   {
     label: 'Silken Windhound',
-    color: '#0072B2',
     ids: ['SKWH000001', 'SKWH000002'],
   },
   {
     label: 'Australian Shepherd',
-    color: '#999999',
     ids: ['AUSS000001', 'AUSS000002', 'AUSS000003'],
   },
   {
     label: 'German Shepherd',
-    color: '#999999',
     ids: ['GRSD000002', 'GRSD000003'],
   },
   {
     label: 'Labrador Retriever',
-    color: '#999999',
     ids: ['LABR000001', 'LABR000002', 'LABR000003', 'LABR000004'],
   },
   {
     label: 'Wolf',
-    color: '#E69F00',
     ids: ['CLUPGR000001', 'CLUPGR000002', 'CLUPGR000003', 'CLUPGR000004'],
   },
 ]
@@ -750,6 +742,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiSampleVariantDisplay',
           height: 560,
           ...CEA_ROWS,
+          facet: {
+            field: 'clade',
+            domain: ['Collie clade', 'Other breeds', 'Gray wolf'],
+          },
           // The window holds nine SV records, and unfiltered they defeat the
           // figure: the 3,432 bp deletion 4 kb downstream is no-call in exactly
           // the four Collies homozygous for this one (its region is gone, so it

@@ -54,6 +54,20 @@ out += [r[0] for r in rows if r[2] == 'Wolf' and r[1] == 'Greece'][:4]
 print('\n'.join(out))
 PY
 
+# The figure facets its rows on `clade`: the Collie-clade breeds, the other
+# breeds, and the wolves
+python3 - <<'PY' > dog10k_nhej1_samples.tsv
+rows = [l.rstrip('\n').split('\t') for l in open('samples.txt')][1:]
+breed = {r[0]: r[1] for r in rows}
+carriers = {'Collie', 'Shetland Sheepdog', 'Lancashire Heeler', 'Silken Windhound'}
+print('name\tclade')
+for s in (l.strip() for l in open('sv.samples') if l.strip()):
+    b = breed[s]
+    clade = ('Collie clade' if b in carriers
+             else 'Gray wolf' if s.startswith('CLUP') else 'Other breeds')
+    print(f'{s}\t{clade}')
+PY
+
 # The genotype VCF is 5.9 GB; bcftools reads only this locus over HTTP. Zenodo
 # serves the file and its index from separate content URLs, so the index is
 # named explicitly with ##idx## rather than guessed from the data URL.
@@ -67,7 +81,7 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0' || true
 
 echo
-echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .tbi)."
+echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .tbi) and dog10k_nhej1_samples.tsv."
 echo "Load it with the track JSON in the structural-variant tutorial."
 
 # ── The DENR SINE dimorphisms ───────────────────────────────────────────────
