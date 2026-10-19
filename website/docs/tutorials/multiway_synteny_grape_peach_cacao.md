@@ -329,8 +329,8 @@ of one genome:
 
 - the display fits each lane to the genome it shows, over the orthologs the
   window brings in
-- one grey ribbon per ortholog group joins adjacent lanes, bridging past an
-  empty one
+- one ribbon per ortholog group joins adjacent lanes, bridging past an empty
+  one, red where the two lanes run the same way and blue where one is reversed
 - any track whose features have a `mate` per assembly feeds the same lanes,
   including an [OrthoFinder table](/docs/tutorials/orthofinder_synteny) or an
   [all-vs-all PAF](/docs/tutorials/allvsall_synteny)

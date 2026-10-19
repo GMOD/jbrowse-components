@@ -212,10 +212,10 @@ down the tree from human, the apes first and the cow last.
 }
 ```
 
-**Color by... → Strand**, under **Ribbons** in the track menu, sets
-`ribbonColor`, a color scale on the ribbons that maps a `field` to colors. Each
-ribbon takes the strand of the chain record that placed it, red where the lane
-runs the same way as hg38 and blue where it runs reversed.
+The ribbons color by strand, the default `ribbonColor` (**Color by... →
+Strand**, under **Ribbons** in the track menu). Each ribbon takes the strand of
+the chain record that placed it, red where the lane runs the same way as hg38
+and blue where it runs reversed.
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,
 with the same genes in the same order.

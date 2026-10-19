@@ -176,9 +176,9 @@ Opened on hg38 around _TP53_, the track draws a lane per ape under human, each
 in that genome's own coordinates. Each lane header names the chromosome and the
 span the lane shows, with `[rev]` where the lane runs against human.
 
-**Color by... → Strand**, under **Ribbons** in the track menu, colors each
-ribbon by whether its two lanes agree in orientation, and the session below
-opens with it:
+The ribbons color by strand by default (**Color by... → Strand**, under
+**Ribbons** in the track menu): each ribbon shows whether its two lanes agree in
+orientation. The session below opens on it:
 
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {

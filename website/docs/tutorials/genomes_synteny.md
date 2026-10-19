@@ -126,9 +126,9 @@ menu:
 - Pick **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
   lemur, Chinese tree shrew, naked mole-rat, elephant and platypus, a span from
   the apes to the monotremes
-- Pick **Color by... → Strand**, under **Ribbons**, to paint a ribbon red where
-  the two lanes it joins run the same way and blue where one is inverted against
-  the other
+- Read the ribbons by their default color, **Color by... → Strand** under
+  **Ribbons**: red where the two lanes a ribbon joins run the same way, blue
+  where one is inverted against the other
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over genomes from chimp to platypus, ribbons colored by strand." />
 
@@ -164,7 +164,6 @@ each. On hg38 at
 - Pick **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002
   maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
 - Drag the H9 hap2 lane's label to the top of the stack, beside hg38
-- Pick **Color by... → Strand**, under **Ribbons**
 - Turn off **Show... → Gene labels**, since the RefSeq track above names the
   genes
 
