@@ -42,12 +42,11 @@
 //   can fix it.
 //
 // Ideogram 2.0.0's throw is a bare `window` read at module scope, plugin-side.
-// Apollo 1.1.x read `document` the same way; 1.2.0 throws a TDZ
-// `ReferenceError` evaluating in the worker realm, not yet traced. Apollo's two remaining
-// name breaks (`isContainedWithin`, `getParentRenderProps`) were deliberate
-// deletions of dead code and are deliberately not being restored: Apollo has a
-// JBrowse 5 branch in progress, so the rebuild that fixes its worker throw picks
-// up the current ABI anyway.
+// Apollo's store bundle is its JBrowse 4 line (1.2.0 throws a TDZ
+// `ReferenceError` in the worker realm). Its JBrowse 5 build comes from the
+// `jbrowse_5` branch of GMOD/Apollo3, which copies in the names this ABI
+// dropped (`isContainedWithin`, `getParentRenderProps`), so an Apollo row here
+// is expected until that branch publishes, and is not ours to trace.
 //
 // Why bundles: a plugin externalizes `@jbrowse/core/*`, so at runtime a bare
 // import is a property read on the host's JBrowseExports. Nothing about that is
