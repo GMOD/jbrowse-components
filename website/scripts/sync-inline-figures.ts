@@ -52,7 +52,12 @@
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { check, checkOrWriteAll, docFiles } from './check-utils.ts'
+import {
+  check,
+  checkOrWriteAll,
+  docFiles,
+  formatMarkdown,
+} from './check-utils.ts'
 import { spliceInlineFigures } from './inlineFigures.ts'
 import { loadMeasurements } from './measurements.ts'
 import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
@@ -84,10 +89,15 @@ const generated = trees
     } = spliceInlineFigures(text, records)
     problems.push(...found.map(p => `${rel}: ${p}`))
     spliced += count
-    // Deliberately NOT formatted. `formatMarkdown` rewraps the paragraph a
-    // reference sits in, so a value one character wider would reflow lines the
-    // author wrote and put this generator's output all over the diff.
-    return { path, content, label: `${rel} inline figures` }
+    // A website page is formatted with `proseWrap: always`, so a wider value
+    // has to reflow its paragraph here or `check-format` fails on the
+    // rewrite. `formatMarkdown` leaves agent-docs, which nothing formats,
+    // as written.
+    return {
+      path,
+      content: content === text ? text : formatMarkdown(content, path),
+      label: `${rel} inline figures`,
+    }
   })
   .filter(g => g !== undefined)
 
@@ -99,7 +109,7 @@ if (problems.length > 0) {
   process.exit(1)
 }
 
-checkOrWriteAll(generated, 'run `pnpm inline-figures` and commit the result')
+checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
 
 if (!check) {
   console.log(`${spliced} inline figure(s) across ${generated.length} doc(s)`)
