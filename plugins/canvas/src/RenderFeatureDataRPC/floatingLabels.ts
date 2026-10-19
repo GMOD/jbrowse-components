@@ -7,7 +7,13 @@ import {
 } from './constants.ts'
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
-import type { LabelItem } from './rpcTypes.ts'
+import type { SubfeatureLabels } from './displayModes.ts'
+import type {
+  FeatureDataResult,
+  FloatingLabelsDataMap,
+  LabelItem,
+  LabelKinds,
+} from './rpcTypes.ts'
 
 // Single constructor for a LabelItem, so textWidth is always the measured width
 // of `text` at the base size the label DRAWS at — the invariant every layout
@@ -84,4 +90,37 @@ export function createTranscriptFloatingLabel({
     ...labelItem(truncateLabel(displayLabel), isOverlay ? -featureHeight : 0),
     isOverlay,
   }
+}
+
+export function labelKindsOf(labels: FloatingLabelsDataMap): LabelKinds {
+  const kinds = { name: false, description: false, subfeature: false }
+  for (const label of labels.values()) {
+    kinds.name ||= !!label.nameLabel
+    kinds.description ||= !!label.descriptionLabel
+    kinds.subfeature ||= !!label.subfeatureLabel
+  }
+  return kinds
+}
+
+/**
+ * Whether subfeature labels sit on their bodies in these regions. `auto`
+ * overlays only what the worker labeled, cleavage products alone, so a track
+ * with none keeps the unlabeled fit floor. A fixture without `labelKinds` is
+ * tallied from its labels.
+ */
+export function overlaysSubfeatureLabels(
+  mode: SubfeatureLabels,
+  regions: Iterable<
+    Pick<FeatureDataResult, 'labelKinds' | 'floatingLabelsData'>
+  >,
+) {
+  if (mode !== 'auto') {
+    return mode === 'overlay'
+  }
+  for (const { labelKinds, floatingLabelsData } of regions) {
+    if ((labelKinds ?? labelKindsOf(floatingLabelsData)).subfeature) {
+      return true
+    }
+  }
+  return false
 }

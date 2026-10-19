@@ -5,6 +5,7 @@ import { tooltipReader } from './collect/glyphColors.ts'
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
 import { geneTypeTest } from './featureAdmission.ts'
+import { labelKindsOf } from './floatingLabels.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RenderContext } from './collect/renderContext.ts'
@@ -46,16 +47,9 @@ export function collectRenderData(
     collector.flatbushItems,
   )
 
-  const labelKinds = { name: false, description: false, subfeature: false }
-  for (const labelData of collector.floatingLabelsData.values()) {
-    labelKinds.name ||= !!labelData.nameLabel
-    labelKinds.description ||= !!labelData.descriptionLabel
-    labelKinds.subfeature ||= !!labelData.subfeatureLabel
-  }
-
   return {
     ...packed,
-    labelKinds,
+    labelKinds: labelKindsOf(collector.floatingLabelsData),
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,

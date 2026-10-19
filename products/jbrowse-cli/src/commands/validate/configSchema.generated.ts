@@ -5018,8 +5018,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "name": {
-          "description": "the field each feature's name label reads, such as \`gene_name\`, or a \`jexl:\` expression over \`feature\`; the default reads the name, else \`product\`, else the ID, and an empty value draws no name.",
-          "default": "jexl:get(feature,'name') || get(feature,'product') || get(feature,'id')",
+          "description": "the field each feature's name label reads, such as \`gene_name\`, or a \`jexl:\` expression over \`feature\`; the default reads the name, else the ID, and an empty value draws no name.",
+          "default": "jexl:get(feature,'name') || get(feature,'id')",
           "if": {
             "type": "null"
           },

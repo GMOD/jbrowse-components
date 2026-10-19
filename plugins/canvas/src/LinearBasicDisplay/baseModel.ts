@@ -49,6 +49,7 @@ import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
+import { overlaysSubfeatureLabels } from '../RenderFeatureDataRPC/floatingLabels.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -774,7 +775,10 @@ export default function baseStateModelFactory(
        * their height on every rung that draws them.
        */
       get overlaysSubfeatureLabels() {
-        return self.effectiveSubfeatureLabels === 'overlay'
+        return overlaysSubfeatureLabels(
+          self.effectiveSubfeatureLabels,
+          self.rpcDataMap.values(),
+        )
       },
     }))
     .views(fitLadderViews)

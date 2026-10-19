@@ -854,7 +854,11 @@ describe('canvas display fit escalation ladder', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setShowLabels('name')
-    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
+    const withSubfeatureLabels = (subfeature: boolean) => ({
+      ...labeledStackedRegionData(10, 10),
+      labelKinds: { name: true, description: true, subfeature },
+    })
+    display.setRpcData(0, withSubfeatureLabels(false), ctgA)
     display.setHeightMode('fit')
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
@@ -866,9 +870,18 @@ describe('canvas display fit escalation ladder', () => {
         display.setHeight(h)
         return display.fitStage
       })
+    expect(display.subfeatureLabels).toBe('auto')
     expect(levelsAt().some(s => s.level === 'thinned')).toBe(true)
 
     setConf(display, 'subfeatureLabels', 'overlay')
+    for (const stage of levelsAt()) {
+      expect(stage.bodyScale).toBe(1)
+      expect(stage.level).not.toBe('thinned')
+    }
+
+    // `auto` overlays a cleavage product's name once the worker emitted one
+    setConf(display, 'subfeatureLabels', 'auto')
+    display.setRpcData(0, withSubfeatureLabels(true), ctgA)
     for (const stage of levelsAt()) {
       expect(stage.bodyScale).toBe(1)
       expect(stage.level).not.toBe('thinned')

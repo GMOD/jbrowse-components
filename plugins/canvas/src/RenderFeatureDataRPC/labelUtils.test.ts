@@ -35,12 +35,6 @@ function featureWith(values: Record<string, unknown>) {
 }
 
 describe('getFeatureName', () => {
-  it('reads the product of a feature with no name before its id', () => {
-    expect(getFeatureName(featureWith({ product: 'NS1', id: 'id-1' }))).toBe(
-      'NS1',
-    )
-  })
-
   it('joins a multi-valued (array) name into a string', () => {
     expect(getFeatureName(featureWith({ name: ['BRCA1', 'alias2'] }))).toBe(
       'BRCA1,alias2',
@@ -259,5 +253,26 @@ describe('subfeatureLabelPlacement', () => {
     expect(place('none', 'mature_protein_region_of_CDS')).toBe('none')
     expect(place('below', 'mature_protein_region_of_CDS')).toBe('below')
     expect(place('below', 'mRNA')).toBe('below')
+  })
+})
+
+describe('subfeatureLabelText', () => {
+  const config = mockDisplayConfig({
+    labels: { name: "jexl:get(feature,'name') || get(feature,'id')" },
+  } as any)
+  const jexl = createJexlInstance()
+
+  it("names a cleavage product by its product before the track's name field", () => {
+    const product = featureWith({
+      type: 'mature_protein_region_of_CDS',
+      id: 'id-YP_1:1..26',
+      product: 'NS1',
+    })
+    expect(subfeatureLabelText(product, config, jexl)).toBe('NS1')
+  })
+
+  it("names any other part by the track's name field", () => {
+    const mRNA = featureWith({ type: 'mRNA', name: 'NM_1', product: 'actin' })
+    expect(subfeatureLabelText(mRNA, config, jexl)).toBe('NM_1')
   })
 })

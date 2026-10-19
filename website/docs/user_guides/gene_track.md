@@ -224,12 +224,12 @@ CDS has `mature_protein_region` (or `mature_protein_region_of_CDS`) subfeatures,
 the track draws each cleavage product as a separate stacked row in a distinct
 color, hoverable and clickable.
 
-- Each row carries its name over its body, read from the track's `labels.name`.
-  The default reads the `name`, else `product`, else the ID, so an NCBI cleavage
-  product shows its `product`.
-- The **Subfeature labels** choice in the Show menu sets the placement. `Auto`,
-  the default, names cleavage products only; `Off`, `Below` and `Overlay` apply
-  to every part, transcripts included.
+- The track names each row by its `product` attribute, which NCBI writes in
+  place of a Name, and falls back to the track's `labels.name`.
+- **Subfeature labels** in the Show menu sets the placement
+  ([`subfeatureLabels`](/docs/config/LinearBasicDisplay/#slot-subfeaturelabels)).
+  `Auto` names cleavage products only; `Off`, `Below` and `Overlay` apply to
+  every part, transcripts included.
 
 <Figure caption="An enterovirus polyprotein's mature peptides, each on its own row in its own color." src="/img/gene_track_mature_peptides.png" />
 

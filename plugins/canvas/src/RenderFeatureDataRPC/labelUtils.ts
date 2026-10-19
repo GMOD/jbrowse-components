@@ -13,14 +13,9 @@ function toLabelString(value: unknown) {
   return valueText(value) || undefined
 }
 
-// FEATURE_NAME_FIELD's order, for a caller with no jexl; an empty string falls
-// through.
 export function getFeatureName(feature: Feature): string | undefined {
-  return (
-    toLabelString(feature.get('name')) ??
-    toLabelString(feature.get('product')) ??
-    toLabelString(feature.get('id'))
-  )
+  // empty-string name falls back to id
+  return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
 type LabelReader = (feature: Feature) => string | undefined
@@ -151,12 +146,20 @@ export function sharedChildLabelRows(
  * when this text is visible. Both the reservation and the emit go through this, so a track
  * labelling its children by `product` reserves the row it then paints into.
  */
+// A cleavage product's row reads its INSDC `product`, which NCBI writes in
+// place of a Name, before the track's name label.
 export function subfeatureLabelText(
   feature: Feature,
   config: DisplayConfig,
   jexl: JexlInstance | undefined,
 ) {
-  return readFeatureName(config, feature, jexl) ?? getFeatureName(feature)
+  return (
+    (isCleavageProduct(feature)
+      ? toLabelString(feature.get('product'))
+      : undefined) ??
+    readFeatureName(config, feature, jexl) ??
+    getFeatureName(feature)
+  )
 }
 
 export type SubfeatureLabelPlacement = Exclude<SubfeatureLabels, 'auto'>

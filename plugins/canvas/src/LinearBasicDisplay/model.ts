@@ -313,11 +313,15 @@ export default function stateModelFactory(
               mode => {
                 self.setSubfeatureLabels(mode)
               },
-              inertLabelHint(
-                self,
-                self.subfeatureLabels,
-                self.renderedShowSubfeatureLabels ? undefined : 'hidden to fit',
-              ),
+              self.subfeatureLabels === 'auto' && !self.overlaysSubfeatureLabels
+                ? undefined
+                : inertLabelHint(
+                    self,
+                    self.subfeatureLabels,
+                    self.renderedShowSubfeatureLabels
+                      ? undefined
+                      : 'hidden to fit',
+                  ),
             ),
           ]
         },
