@@ -14,8 +14,8 @@ the selection pressure on a protein-coding gene between two species. We:
 
 - build a human against rhesus macaque ortholog table with jcvi, and measure dN
   and dS on every pair with `kaks_from_pairs.py`
-- load the table as a synteny track, with each ortholog link colored by the
-  ratio
+- load both genomes and genes, and the table as a synteny track
+- color each ortholog link by the ratio
 - read the lysozyme (_LYZ_) neighbourhood on human chromosome 12, with the
   conserved neighbour _YEATS4_ as the control
 

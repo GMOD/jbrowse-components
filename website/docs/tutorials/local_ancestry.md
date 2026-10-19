@@ -15,8 +15,9 @@ trace back to a gray wolf ancestor and the rest to domestic dogs.
 each stretch of DNA came from, against a wolf panel and 219 other breeds. We:
 
 - run FLARE on the two wolfdog breeds
-- paint the result as one colored row per haplotype (one copy of a chromosome)
-- read the wolf blocks along chr1 in the wolfdogs against controls
+- load its calls as a multi-row feature track, one colored row per haplotype
+  (one copy of a chromosome)
+- read the blocks along chr1 in the wolfdogs against controls
 
 ## Prerequisites
 

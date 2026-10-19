@@ -11,13 +11,12 @@ tutorial_category: Population genomics
 hap-ibd identifies which stretches of a phased child's genome came down from the
 mother and which from the father. We:
 
-- load the trio's phased VCF as a genotype matrix and split each sample into two
-  haplotype rows
-- run hap-ibd to find the segments each haplotype shares with each parent
-- convert its output into painted inheritance blocks, one colored row per
-  parental haplotype
-- read meiotic crossovers off the color changes and check them against the raw
-  genotypes
+- load the trio's phased VCF as a genotype matrix, split into one row per
+  haplotype
+- run hap-ibd and convert its segments into a BED track
+- draw that track as one colored row per parental haplotype, so a crossover
+  reads as a color change
+- compare the painted rows with the raw genotypes
 
 ## Prerequisites
 

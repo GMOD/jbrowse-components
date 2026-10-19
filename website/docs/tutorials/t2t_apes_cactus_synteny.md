@@ -16,13 +16,12 @@ alignment of the telomere-to-telomere ape genomes, whose authors publish a chain
 for every pair of genomes in it. We:
 
 - extract the chains between neighbouring genomes into one indexed file
-- build one track over the six apes, each lane drawing the RefSeq genes of that
-  ape's hub on [genomes.jbrowse.org](https://genomes.jbrowse.org)
-- read _TP53_ down the tree, where every ape runs in one orientation to the
-  siamang
-- read a block on 17q12 that runs one way in chimpanzee, bonobo and gorilla and
-  the other way in human, both orangutans and the siamang, and count its aligned
-  bases out of the file
+- load them as one multi-way synteny track over the six apes, each lane drawing
+  the RefSeq genes of that ape's hub on
+  [genomes.jbrowse.org](https://genomes.jbrowse.org)
+- color the ribbons by strand to read orientation at _TP53_ and at a block on
+  17q12
+- count the 17q12 block's aligned bases out of the file
 
 ## Prerequisites
 

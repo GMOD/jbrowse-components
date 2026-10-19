@@ -11,10 +11,12 @@ stranded library the pair flags also mark which strand the transcript came from.
 JBrowse draws splice arcs and strand coloring from those two BAM fields, with no
 extra files or configuration. We:
 
-- read spliced alignments over _ACTB_ and pick them out of a deep pileup
-- color the reads by transcript strand at the surfeit locus
-- read a long-read alignment over _ACTB_
-- load a pipeline's junction table (STAR, regtools or portcullis) as a track
+- load the stranded reads and RefSeq genes on hg19, and read coverage and splice
+  arcs over _ACTB_
+- sort and filter to the spliced reads in a deep pileup
+- color and group the reads by first-of-pair strand at the surfeit locus
+- load a long-read alignment, and STAR, regtools and portcullis junction tables,
+  as tracks
 
 ## Prerequisites
 

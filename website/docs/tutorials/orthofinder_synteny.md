@@ -15,10 +15,10 @@ from one ancestral gene, from protein similarity alone. We:
 
 - run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
   reads
-- build the `wheat` set through to a stacked synteny view
-- open four more sets: vertebrates, drosophila, nightshades (`solanaceae`) and
-  grasses
-- read where gene order holds and where a duplication doubles it
+- load the `wheat` orthogroups as a synteny track and stack the six genomes in a
+  synteny view
+- open four more sets the same way: vertebrates, drosophila, nightshades
+  (`solanaceae`) and grasses
 
 ## Prerequisites
 

@@ -15,8 +15,8 @@ than a browser fetches at once. We:
 
 - count each file's features per kilobase into a small bigWig with
   `jbrowse make-density`
-- show the counts as gene and repeat density tracks along chromosome 1
-- zoom in to 1q21 to see the genes themselves
+- load the counts as gene and repeat density tracks along chromosome 1
+- zoom in to 1q21, where the tracks give way to the features themselves
 - check the tracks against counts taken straight from the files
 
 ## Prerequisites

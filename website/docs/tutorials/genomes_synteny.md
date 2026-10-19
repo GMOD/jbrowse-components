@@ -12,12 +12,11 @@ genomes.jbrowse.org already has UCSC's pairwise liftOver alignments for every
 genome, so you can turn one on in a linear genome view and launch a two-panel
 linear synteny view from any chain block. We:
 
-- compare hg38 against T2T-CHM13 (hs1) at _TNNT3_, a locus the two lay out
-  differently
-- compare hg38 against chimp at an _FTO_ intron
-- stack many genomes under hg38 in one multi-way track at _TNNT3_, then choose
-  which mouse strains become lanes at _Nnt_
-- compare one person's two haplotypes at the 17q21.31 inversion
+- launch hg38 against T2T-CHM13 (hs1) at _TNNT3_ and set the ribbon display
+- launch hg38 against chimp at an _FTO_ intron
+- stack many genomes under hg38 in one multi-way track, and choose which mouse
+  strains become lanes at _Nnt_
+- open one person's two haplotypes against each other at the 17q21.31 inversion
 
 ## Opening a liftOver track
 

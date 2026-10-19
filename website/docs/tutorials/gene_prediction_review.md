@@ -15,6 +15,8 @@ chr22 with the GENCODE annotation, and:
 - sort the models that disagree into four classes
 - build a static review page with one card per model, each linking back into
   JBrowse
+- use the page's cards and filters, and the Disagreements track of junctions
+  that differ from GENCODE
 - check one disagreement, a model that merges _IL17REL_ and _TTLL8_, against
   GENCODE
 

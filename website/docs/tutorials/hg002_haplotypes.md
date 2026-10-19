@@ -15,11 +15,11 @@ diploid assembly lets us lay them against each other. We use T2T-HG002 v1.2, the
 Q100 project's telomere-to-telomere assembly of the HG002 reference individual,
 and:
 
-- plot the mother's copy of every chromosome against the father's in a dotplot
-- find the 8p23.1 inversion (short arm of chromosome 8) HG002 has on one
-  haplotype, in a linear synteny view
-- keep the two haplotypes in register with the follow button, and check the
-  inversion against the chain
+- load the assembly and the maternal-paternal alignment
+- open a dotplot of the mother's copy of every chromosome against the father's
+- open the 8p23.1 inversion in a linear synteny view, with the follow button
+  keeping the two haplotypes in register
+- check the inversion against the chain
 
 ## Prerequisites
 

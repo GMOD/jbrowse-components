@@ -12,11 +12,11 @@ tutorial_subcategory: Ortholog tables
 Hexaploid oat has three near-complete copies of its genome, one from each grass
 that hybridized to make it, so most of its genes exist three times. We:
 
-- find the gene pairs between the copies with jcvi, from a protein
-  self-alignment
-- measure each pair's divergence at silent sites (dS) and at protein-changing
-  ones (dN) with `kaks_from_pairs.py`
-- draw oat against itself in a dotplot of those pairs, colored by dS
+- find the gene pairs between the copies with jcvi, and measure each pair's
+  divergence at silent sites (dS) and at protein-changing ones (dN) with
+  `kaks_from_pairs.py`
+- load the pair table as a synteny track
+- draw oat against itself in a dotplot, coloring each pair by dS
 
 The two subgenomes from closely related ancestors should pair at a lower dS than
 either does with the third.

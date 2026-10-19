@@ -10,8 +10,8 @@ tutorial_category: Cancer genomics
 We turn a TCGA project's somatic mutation calls into one matrix, each column a
 distinct mutation and each row a tumor. We:
 
-- load the cohort VCF
-- group the rows by a clinical field, receptor status or stage, so the mutations
+- load the cohort VCF as a multi-sample variant track
+- facet the rows by a clinical field, receptor status or stage, so the mutations
   a subtype shares line up
 - add a track of mutation frequency per gene
 

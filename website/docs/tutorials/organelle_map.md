@@ -16,8 +16,8 @@ chloroplast to a plasmid. We:
 
 - download the sequence and its genes
 - load the genome, marked as circular so the ring closes with no gap at its
-  origin, and the genes
-- open the genome in the circular view
+  origin, and the genes as a feature track
+- open the genome in the circular view and color the genes by feature type
 - check _ND6_ against the GFF3
 
 ## Prerequisites

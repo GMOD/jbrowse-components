@@ -13,10 +13,11 @@ We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. We:
 
-- build the join and load it as an eight-genome ortholog track, each primate a
-  lane under the human view in the coordinates of its own genome
-- read the _TP53_ neighbourhood and a 17q window across the eight primates
-- read human chromosome 2 as two fused ape chromosomes
+- build the join, and set up each lane's assembly from its hub
+- load the table as an eight-genome ortholog track, each primate a lane under
+  the human view in the coordinates of its own genome
+- read the _TP53_ neighbourhood and a 17q window across the lanes
+- read human chromosome 2 against the ape chromosomes it fused from
 
 ## Prerequisites
 

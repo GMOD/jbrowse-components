@@ -12,12 +12,12 @@ Cancer genomes have rearrangements that join several distant pieces of the
 genome into one molecule through a chain of junctions, each joining two distant
 stretches. In the COLO829 melanoma cell line we:
 
-- follow one chain across the three chromosomes it visits, in a breakpoint split
-  view
-- compare tumor and normal reads at the chr3 breakpoints
-- align the derivative allele assembled from the reads that span the chain to
-  the reference, in a synteny view
-- check that contig against the reads and the truth set
+- open the chain's three chromosomes side by side in a breakpoint split view
+- sort split reads first and show soft clipping to compare tumor and normal
+  reads at the chr3 breakpoints
+- load the derivative allele assembled from the spanning reads as a synteny
+  track against GRCh38
+- check the contig against the reads and the truth-set VCF
 
 ## Prerequisites
 

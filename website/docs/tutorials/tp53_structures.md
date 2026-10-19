@@ -15,9 +15,9 @@ structure to the transcript, and Mol\* draws the structures. We:
 
 - open three structures in one view beside the _TP53_ gene, each mapped to the
   same transcript
-- click a cancer hotspot on a crystal to find its codon, and check the codon
-  against the reference sequence
-- open an NMR ensemble of the transactivation domain
+- click a residue on a crystal to find its codon, and check the codon against
+  the reference sequence
+- choose the mapped chain in a complex, and open an NMR ensemble
 
 ## Prerequisites
 

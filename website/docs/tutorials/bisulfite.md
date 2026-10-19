@@ -14,9 +14,11 @@ from the C→T changes in the reads, so the BAM needs no base-modification tags
 caller runs first. With an _Arabidopsis thaliana_ WGBS run we:
 
 - align the reads with bwameth
-- load the BAM and color each read by its methylation in the CpG, CHG and CHH
-  contexts
-- compare gene-body methylation with transposon silencing
+- load the BAM with the TAIR10 hub assembly
+- color each read by its CpG, CHG and CHH methylation with **Color by... →
+  Bisulfite / EM-seq**
+- load gene and transposon tracks beside the reads to compare gene-body
+  methylation with transposon silencing
 
 ## Prerequisites
 

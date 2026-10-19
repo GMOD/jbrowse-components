@@ -17,14 +17,14 @@ recombination between the inverted and standard arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
 From a multi-sample VCF of 205 inbred lines we:
 
-- compute three statistics per window: Fst (how far apart two groups' allele
-  frequencies sit), nucleotide diversity π (how much sequences differ within a
-  group) and Tajima's D (below zero where rare variants are in excess, as after
-  a sweep)
+- compute Fst (the distance between two groups' allele frequencies), π
+  (diversity within a group) and Tajima's D (below zero after a sweep) per
+  window with vcftools, as bigWigs
 - load each as a [quantitative track](/docs/user_guides/quantitative_track) on
-  dm6
-- read the _Cyp6g1_ sweep against the genes
-- read the inversion, including per-sample inversion genotypes
+  dm6 beside the genes
+- read the _Cyp6g1_ sweep in Tajima's D and π
+- build a multi-sample variant track of per-line inversion genotypes and read
+  the inversion against it
 
 ## Prerequisites
 

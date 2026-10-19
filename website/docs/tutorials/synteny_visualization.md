@@ -13,10 +13,9 @@ We compare three _Helicobacter pylori_ strains (26695, CHC155 and J99) by
 aligning their assemblies with minimap2. The steps work the same on any pair of
 assemblies. We:
 
-- align each pair of genomes and load the assemblies and the alignment
-- read the alignment whole-genome in a dotplot
-- stack the three strains in a linear synteny view, where the genes line up base
-  by base, and color genes by ortholog
+- align each pair of genomes and load the assemblies and the PAF
+- open the whole-genome alignment in a dotplot
+- stack the three strains in a linear synteny view, and color genes by ortholog
 - index a large alignment as PIF
 
 Aligning each pair of genomes separately is one of two routes to a stacked view.

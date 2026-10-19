@@ -13,8 +13,9 @@ correlation between variants) runs across it as one block. We:
 
 - compute the LD with `plink2 --r2-phased`
 - draw it with an [`LDTrack`](/docs/config/ldtrack)
-- load the inversion as a structural variant genotyped per mosquito beneath it
-- compare the LD block with the karyotypes in Cameroon and Gabon
+- load the inversion as a structural variant, genotyped per mosquito, beneath
+  the LD track
+- compare the LD block with the karyotype rows in Cameroon and Gabon
 
 ## Prerequisites
 

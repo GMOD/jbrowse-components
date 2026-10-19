@@ -17,12 +17,12 @@ under the microscope and later confirmed by assembling Landsberg. We find it
 again with [SyRI](https://github.com/schneebergerlab/syri), which sorts an
 alignment into syntenic, inverted, translocated and duplicated regions. We:
 
-- align six assembled accessions, compare each with Columbia and with the
-  accession above it, and merge every comparison into one file whose ribbons
-  take the color of the type SyRI assigns
-- draw that file as the stack
-  [plotsr](https://github.com/schneebergerlab/plotsr) draws
-- draw the same accessions as lanes under Columbia coordinates
+- align six assembled accessions, run SyRI on each pair, and merge the
+  comparisons into one PAF whose ribbons take the color of the type SyRI assigns
+- stack linear synteny views the way
+  [plotsr](https://github.com/schneebergerlab/plotsr) draws them
+- draw the same accessions as lanes of a multi-way display under Columbia
+  coordinates
 - check the chromosome 4 inversion against SyRI's own output
 
 ## Prerequisites

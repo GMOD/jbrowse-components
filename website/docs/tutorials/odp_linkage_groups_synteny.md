@@ -14,15 +14,15 @@ Certain sets of genes have stayed on the same chromosome together since before
 animals existed, and those sets have names.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
-color for it. We:
+color for it. A sponge keeps each set on its own chromosome; a comb jelly
+spreads each over several. We:
 
-- load the jellyfish-sponge table as a synteny track and paint every ortholog
-  with its set's color
-- draw jellyfish against sponge as a dotplot, where the sponge colors fall in
-  one block per chromosome along a diagonal
-- stack six genomes with ribbons colored by linkage group, where a comb jelly
-  spreads each group over several chromosomes
-- check the linkage-group counts against the odp tables
+- load the jellyfish-sponge table as a synteny track, each ortholog colored by
+  its set
+- open it as a dotplot, with one genome's chromosomes sorted by where their
+  orthologs land on the other
+- stack six genomes in a linear synteny view, with ribbons colored by set
+- check the set counts against the odp tables
 
 ## Prerequisites
 

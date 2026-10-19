@@ -8,13 +8,15 @@ tutorial_subcategory: Ortholog tables
 ---
 
 MCScan, from the jcvi toolkit, lines up orthologous genes across more than two
-genomes at once, into one wide table with a column per species. We load that
-table directly in JBrowse, starting with grape, peach and cacao stacked as rows
-of one synteny view and zoomed to a conserved block. We:
+genomes at once, into one wide table with a column per species. We:
 
+- load the `.blocks` file with `MCScanBlocksAdapter` and stack grape, peach and
+  cacao as rows of one synteny view, zoomed to a conserved block
 - tell direct gene pairs from transitive ones
-- read one grape locus against all seven genomes at once, one lane per genome
-- redraw each lane in the coordinates of the genome it shows
+- open one grape locus against all seven genomes as a multi-way track, one lane
+  per genome
+- redraw each lane in its own genome's coordinates, and restack the genomes
+  around a locus
 
 ## Prerequisites
 

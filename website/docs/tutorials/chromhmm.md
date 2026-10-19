@@ -9,9 +9,10 @@ ChromHMM labels each region of the genome with a chromatin state, promoter,
 enhancer, heterochromatin and so on, once per cell type. We:
 
 - merge per-cell-type segmentation BEDs into one file
-- draw it as a single track with one color-coded row per cell type
-- read it at _HOXA_, where each cell type opens the genes matching its place
-  along the body axis, and at _PAX5_, which has genic enhancers only in B cells
+- load it as one feature track with a row per cell type, each segment colored by
+  state
+- add a legend, filter states and cluster the rows by similarity
+- load Roadmap's 127 epigenomes and read _HOXA_ and _PAX5_
 
 ## Prerequisites
 

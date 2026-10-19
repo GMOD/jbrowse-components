@@ -12,10 +12,10 @@ RepeatMasker annotates Alu, a primate-specific repeat family, and its `milliDiv`
 column records each copy's divergence from its subfamily consensus, in tenths of
 a percent. Divergence grows with time, so the column is an age. We:
 
-- plot each copy's divergence at one locus
-- count copies per bin when zoomed out
-- compare the young AluY share per megabase with the genome-wide share
-- correlate that share with Alu density across chromosome 1
+- plot each copy's `milliDiv` as a bar at one locus
+- bin and count copies when zoomed out
+- plot the AluY share per megabase against the genome-wide share
+- plot that share against Alu density across chromosome 1
 
 The plots come from `LinearMarkDisplay`, which turns the columns of a feature
 file into plots from a JSON `marks` list. It is experimental, and its config

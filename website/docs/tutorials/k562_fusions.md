@@ -11,12 +11,12 @@ tutorial_category: Cancer genomics
 A fusion caller writes a table of gene pairs, each with the coordinate of the
 transcript junction where the RNA joins the two genes. In the K562 cell line we:
 
-- load STAR-Fusion's short-read calls beside long RNA reads and count the
-  molecules crossing each junction
-- triage the calls in the SV inspector and read the split RNA reads at
-  _BCR_-_ABL1_
-- find where the chromosome broke under _BCR_-_ABL1_ and under _NUP214_-_XKR3_,
-  and compare each DNA break with the junction the caller reports
+- load STAR-Fusion's calls as a variant track beside long RNA reads, and triage
+  the calls in the SV inspector
+- open the split RNA reads at _BCR_-_ABL1_ across three regions, with read
+  connections drawn between the pieces
+- load the DNA breakpoints, lifted to hg38, and compare each with the junction
+  the caller reports under _BCR_-_ABL1_ and _NUP214_-_XKR3_
 
 ## Prerequisites
 

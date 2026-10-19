@@ -39,8 +39,10 @@ ratchet's backlog. What follows is what no check sees.
   `pangenome_hprc_haplotypes` is the page to copy.
 - **The opening ends in a list of what we do**, which `check-tutorial-openings`
   holds to a lead-in ending "We:" and three to five bullets. Write each bullet
-  as one stage of the page, in page order, opening with a verb; a bullet names a
-  step or a locus, not a finding. A sprawling page needs this most.
+  as one stage of the page, in page order, opening with a verb. A bullet says
+  what JBrowse does (load a file as a track type, color, group, facet, open a
+  view); the biology goes in the lead-in. It names a step or a locus, not a
+  finding. A sprawling page needs this most.
 - Readers skip prose and copy commands, so cut content rather than compress it,
   but never cut a route a reader can run on their own data.
 - Say each thing once. Prose beside a figure says what the caption cannot; prose

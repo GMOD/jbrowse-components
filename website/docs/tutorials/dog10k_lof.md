@@ -15,10 +15,10 @@ variant only by its protein change. We:
 
 - derive its genome coordinate by translating the reference coding sequence
 - slice the gene out of the 397 GB Dog10K SNV callset over HTTP and load the
-  slice as a variant track
-- read the genotypes across breeds, with the wild canids as the control
-- add a copy-number track to show the gene's expansion across every canid in the
-  collection
+  slice as a multi-sample variant track
+- cluster the samples to read genotypes across breeds, with wild canids as the
+  control
+- load a copy-number BED as a multi-row feature track across every canid
 
 ## Prerequisites
 

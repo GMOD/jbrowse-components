@@ -9,9 +9,10 @@ Single-cell ATAC-seq measures chromatin accessibility one cell at a time, and
 pooling the cells of each cluster, called pseudobulking, gives one accessibility
 profile per cell type. With a clustered 10x peripheral blood (PBMC) dataset we:
 
-- pool the cells into one coverage BigWig per cell type, outside JBrowse
-- load the set as one multi-wiggle track with a row per file
-- check the rows at T-cell and B-cell marker genes
+- pool the cells into one coverage bigWig per cell type, outside JBrowse
+- load the set as one multi-wiggle track with a row per file, on GRCh38 with
+  chr-style names
+- read the rows at T-cell and B-cell marker genes
 
 ## Prerequisites
 

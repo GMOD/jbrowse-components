@@ -10,11 +10,11 @@ tutorial_category: Epigenomics & single cell
 AlphaGenome reads a megabase of DNA and predicts where it is transcribed, where
 the chromatin is open, how it splices, and how it folds. At _TAL1_ we:
 
-- install the AlphaGenome plugin and request predictions for two cell lines
-- stack the predicted assays that share units on one axis
-- read predicted splice junctions and a contact map over the window
-- score an oncogenic insertion against the reference to see the enhancer it
-  creates
+- install the AlphaGenome plugin and request predictions as tracks for two cell
+  lines
+- stack the prediction tracks that share units on one axis
+- view the predicted splice junctions and the contact map over the window
+- score a variant against the reference and view its predicted effect as tracks
 
 :::caution Experimental
 

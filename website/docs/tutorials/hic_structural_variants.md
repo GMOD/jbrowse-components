@@ -9,15 +9,17 @@ tutorial_category: Structural variation
 ---
 
 Two chromosomes joined by a translocation touch along the join, so Hi-C reads
-linking them run far above background. JBrowse fetches a Hi-C matrix for every
-_pair_ of regions on screen, so a chr9 window and a chr22 window in one linear
-view draw the contacts between the two. We:
+linking them run far above background. The Philadelphia chromosome, the
+_BCR_-_ABL1_ fusion in the K562 leukemia line, is the example, against GM12878's
+normal karyotype. JBrowse fetches a Hi-C matrix for every _pair_ of regions on
+screen. We:
 
-- look for the Philadelphia chromosome, the _BCR_-_ABL1_ fusion, in the Hi-C of
-  the K562 leukemia line against GM12878's normal karyotype
-- rank the chr9-chr22 contact bins with juicer_tools
-- compare the two lines' A and B compartment calls at _EBF1_, a gene B cells
-  depend on for their identity
+- load the Hi-C and contact-domain tracks on GRCh38
+- open a chr9 window and a chr22 window in one linear view, so JBrowse draws the
+  contacts between the two
+- choose the control and normalization, and rank the chr9-chr22 contact bins
+  with juicer_tools
+- compare the two lines' A and B compartment calls at _EBF1_
 
 ## Prerequisites
 

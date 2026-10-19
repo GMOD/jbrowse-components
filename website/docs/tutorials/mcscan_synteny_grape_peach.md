@@ -14,10 +14,12 @@ have diverged too far to align base by base. We:
 
 - produce the gene BEDs and anchor files with
   [jcvi](https://github.com/tanghaibao/jcvi) MCScan
-- load the two into a synteny view, where a ribbon joins each orthologous gene
-  pair and a bar marks each block (a run of gene pairs in conserved order)
-- read one gene pair up close and tandem copies that share one ortholog
-- view the gene pairs as a dotplot, and convert an MCScanX run the same way
+- load the assemblies, gene tracks, and the `.anchors` and `.anchors.simple`
+  tracks
+- open a linear synteny view, with a ribbon for each gene pair and a bar for
+  each block (a run of gene pairs in conserved order), and color by syntenic
+  depth
+- open the same pairs in a dotplot, and convert an MCScanX run the same way
 
 ## Prerequisites
 

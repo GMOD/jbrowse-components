@@ -15,9 +15,8 @@ orthologous gene the same symbol in every strain that names it, so the ortholog
 table is a join on the gene name over the GFF3 files. We:
 
 - build the join and load it as an ortholog track
-- draw each genome as a lane under the K-12 view, holding the gene models
-  annotated in that genome
-- read the _atp_ operon across forty-four genomes
+- add each genome as a lane under the K-12 view, with its own gene models
+- read the _atp_ operon across all forty-four lanes
 - read the O-antigen cluster, which differs between strains, to see where the
   gene-symbol join stops
 

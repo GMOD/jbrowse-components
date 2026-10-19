@@ -11,9 +11,9 @@ base-modification tags (`MM` and `ML`), and JBrowse draws those calls straight
 from the BAM. At the _SNRPN_ imprinting center, one parent's copy is methylated
 and the other's is not. In HG002 nanopore reads there we:
 
-- color each read by its per-base methylation calls
-- tally the calls into an aggregate profile with modkit
-- split the reads by haplotype to pull the two parental alleles apart
+- color each read by its modification calls
+- tally the calls into an aggregate track with modkit
+- group the reads by haplotype to pull the two parental alleles apart
 - smooth each allele into a moving average across the imprinted domain
 
 ## Prerequisites
