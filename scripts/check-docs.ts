@@ -138,6 +138,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-page-endings.ts'),
   },
   {
+    name: 'tutorials open on a list of what the page does',
+    argv: web('check-tutorial-openings.ts'),
+  },
+  {
     // `sync-measurements` gates the measurement TABLES on a public page; this
     // is the prose around them, which is where most of the figures are. An
     // existence check, so it pins a distinctive figure and not a round one —

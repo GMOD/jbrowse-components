@@ -18,6 +18,8 @@ and:
 - plot the mother's copy of every chromosome against the father's in a dotplot
 - find the 8p23.1 inversion (short arm of chromosome 8) HG002 has on one
   haplotype, in a linear synteny view
+- keep the two haplotypes in register with the follow button, and check the
+  inversion against the chain
 
 ## Prerequisites
 

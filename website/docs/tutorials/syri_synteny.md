@@ -14,15 +14,16 @@ tutorial_subcategory: Whole-genome alignments
 The Columbia and Landsberg accessions of _Arabidopsis thaliana_ differ by an
 inversion of more than a megabase on the short arm of chromosome 4, first seen
 under the microscope and later confirmed by assembling Landsberg. We find it
-again by aligning six assembled accessions and running
-[SyRI](https://github.com/schneebergerlab/syri), which sorts an alignment into
-syntenic, inverted, translocated and duplicated regions. We compare each
-accession with Columbia and with the accession above it, and every comparison
-goes into one file whose ribbons take the color of the type SyRI assigns. We
-draw that file two ways:
+again with [SyRI](https://github.com/schneebergerlab/syri), which sorts an
+alignment into syntenic, inverted, translocated and duplicated regions. We:
 
-- the stack [plotsr](https://github.com/schneebergerlab/plotsr) draws
-- the same accessions as lanes under Columbia coordinates
+- align six assembled accessions, compare each with Columbia and with the
+  accession above it, and merge every comparison into one file whose ribbons
+  take the color of the type SyRI assigns
+- draw that file as the stack
+  [plotsr](https://github.com/schneebergerlab/plotsr) draws
+- draw the same accessions as lanes under Columbia coordinates
+- check the chromosome 4 inversion against SyRI's own output
 
 ## Prerequisites
 

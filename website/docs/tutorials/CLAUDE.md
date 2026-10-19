@@ -4,9 +4,9 @@ in tutorials, code comments included. Captions, numbers and voice:
 
 The `check-*` scripts under `website/scripts/` (figure-actions,
 unshown-settings, unshown-tools, prereq-tools, data-sources, script-commands,
-menu-paths, page-endings, and `check-build-scripts.py`) hold most page mechanics
-and print their rule when they fail; `--list` prints a ratchet's backlog. What
-follows is what no check sees.
+menu-paths, page-endings, tutorial-openings, and `check-build-scripts.py`) hold
+most page mechanics and print their rule when they fail; `--list` prints a
+ratchet's backlog. What follows is what no check sees.
 
 ## Shape
 
@@ -37,11 +37,10 @@ follows is what no check sees.
   the page looks at and why, in the reader's terms, before any JBrowse noun or
   display class name. The opening names the task and lists the loci.
   `pangenome_hprc_haplotypes` is the page to copy.
-- **The opening ends in a bulleted list of what we do**: a sentence ending "We:"
-  (or "we:"), then three to five one-line bullets, one per stage of the page in
-  the order the page runs them, each opening with a verb. No label over it. The
-  lead-in stays two to four sentences; the bullets name the steps and the loci,
-  not the findings. A sprawling page needs this most.
+- **The opening ends in a list of what we do**, which `check-tutorial-openings`
+  holds to a lead-in ending "We:" and three to five bullets. Write each bullet
+  as one stage of the page, in page order, opening with a verb; a bullet names a
+  step or a locus, not a finding. A sprawling page needs this most.
 - Readers skip prose and copy commands, so cut content rather than compress it,
   but never cut a route a reader can run on their own data.
 - Say each thing once. Prose beside a figure says what the caption cannot; prose
