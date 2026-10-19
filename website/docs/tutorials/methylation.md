@@ -247,9 +247,8 @@ samtools index haplotagged.bam
 A single CpG's fraction rests on the few reads covering it, so per-site values
 scatter from 0 to 100 and a difference spread over many sites is hard to see. A
 `window` step averages each CpG with a fixed number of neighbouring CpGs, so a
-CpG island weighs as many sites as it holds. We'll load both haplotypes over 400
-kb of chr15 around _SNRPN_, each in a row with its raw values under a moving
-average:
+CpG island weighs as many sites as it holds. We'll load both haplotypes around
+_SNRPN_, each in a row with its raw values under a moving average:
 
 ```json addtrack loc=chr15:24,800,000-25,200,000
 {

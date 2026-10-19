@@ -72,9 +72,13 @@ model, and a TPM matrix, which feeds the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
-that share between the two tissues. It needs a transcript-by-sample count matrix
-`cnt`, a `coldata` table with one `tissue` row per sample, and a `txinfo` table
-with an `isoform_id` and a `gene_id` for each transcript:
+that share between the two tissues. It takes three inputs:
+
+- `cnt`, a transcript-by-sample count matrix
+- `coldata`, a table with one `tissue` row per sample
+- `txinfo`, a table with an `isoform_id` and a `gene_id` for each transcript
+
+The test runs on them:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -116,23 +120,30 @@ model estimates. The script computes each transcript's isoform fraction, its
 share of the gene's expression, from the TPM matrix.[^tpm]
 
 **Write the statistics into GENCODE.** The annotation has to be the release the
-quantifications were made against. RSEM names each transcript with its version
-(`ENST00000356708.11`) and GENCODE raises that version whenever it revises the
-transcript, so joining against a later release drops every transcript revised
-since, with no error. ENCODE lists the release on each quantification's file
-page as its genome annotation (`V29` for all eight here).
+quantifications were made against:
 
-The script keeps each gene with a called transcript that is meaningfully
-expressed, since a fraction can swing widely on a handful of reads. It subsets
-those genes out of the GENCODE v29 GFF3 and appends each transcript's numbers to
-its attribute column.
+- RSEM names each transcript with its version (`ENST00000356708.11`), and
+  GENCODE raises that version whenever it revises the transcript.
+- Joining against a later release drops every transcript revised since, with no
+  error.
+- ENCODE lists the release on each quantification's file page as its genome
+  annotation (`V29` for all eight here).
+
+A transcript is called when its regular FDR and its |ΔIF| pass the cutoffs in
+the code below. The script keeps each gene with a called transcript that is
+meaningfully expressed, since a fraction can swing widely on a handful of reads,
+and appends each transcript's numbers to its attribute column in the GENCODE v29
+GFF3.
 
 To do the same join over your own results, write `results.tsv` with one row per
 transcript and the columns `isoform_id`, `regular_FDR` and `dIF` (the
-isoform-fraction change). This version keeps every GENCODE row, appending `dif`,
-`fdr`, `dtu` and `dif_called` to each transcript row and `dtu_transcripts` and
-`dtu_top_dif` to the gene row of each gene with a called transcript. The track
-reads those keys:
+isoform-fraction change). This version keeps every GENCODE row and appends:
+
+- `dif`, `fdr`, `dtu` and `dif_called` to each transcript row
+- `dtu_transcripts` and `dtu_top_dif` to the gene row of each gene with a called
+  transcript
+
+The track reads those keys:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -189,7 +200,7 @@ bgzip -f dtu_muscle_vs_liver.gff3
 tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 ```
 
-### satuRn's statistics in the GFF3 attribute column
+### The statistics in the attribute column
 
 The track reads each transcript's statistics from the attribute column. A
 transcript row from the finished file, wrapped:
@@ -203,11 +214,14 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
 ```
 
 The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
-take the transcript value. The gene row has `dtu_transcripts`, the count of
-called isoforms, and `dtu_top_dif`, the largest ΔIF among them, which the
-track's `mouseover` reads. The keys are lowercase because the GFF parser
-lowercases them, so a color field named `dIF` reads nothing and paints every
-transcript grey.
+take the transcript value. The gene row has two more keys, which the track's
+`mouseover` reads:
+
+- `dtu_transcripts`, the count of called isoforms
+- `dtu_top_dif`, the largest ΔIF among them
+
+The keys are lowercase because the GFF parser lowercases them, so a color field
+named `dIF` reads nothing and paints every transcript grey.
 
 `dtu` is `muscle`, `liver` or `ns`, as the script above calls it. `dif_called`
 is `dif` on the called transcripts and absent on the rest, so a transcript the
@@ -280,16 +294,16 @@ zero and muscle-preferred above. A value on a cut takes the interval above it.
 ```
 
 Add the four coverage tracks below and open them with the transcript track at
-`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_, an ATP synthase subunit.
-The gene is on the plus strand, so the two plus-strand tracks have its reads.
-satuRn used no genomic coordinates, so the coverage is an independent check on
-the color.
+`chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_, an ATP synthase subunit:
 
-Each coverage track scales to its peak until the tracks share an axis.
+- The gene is on the plus strand, so the two plus-strand tracks hold its reads.
+- satuRn used no genomic coordinates, so the coverage is an independent check on
+  the color.
 
-**Y axis... → Share axis with** on one track, with the other ticked, gives both
-one axis that follows the view, so the two tissues compare by height. In a
-config, each track names the same group:
+Each coverage track scales to its own peak by default. To compare the tissues by
+height, choose **Y axis... → Share axis with** on one track and tick the other;
+the two then share one axis that follows the view. In a config, each track names
+the same group:
 
 ```json addtrack loc=chr10:7,787,600-7,812,400
 {

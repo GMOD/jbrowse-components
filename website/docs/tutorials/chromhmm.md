@@ -461,7 +461,7 @@ and `TYPE` sorts them by how the sample was collected.
 [`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh)
 does the whole path. The script:
 
-1. Downloads the nine segmentation BEDs.
+1. Downloads the segmentation BEDs.
 2. Merges them, then bgzips and indexes the result.
 3. Downloads JBrowse and writes the `config.json` above, opening on HOXA.
 

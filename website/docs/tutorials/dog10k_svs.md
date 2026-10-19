@@ -512,8 +512,7 @@ Five scripts build the tracks in the figures, and each writes a `*_build/`
 directory. The tools are under [Prerequisites](#prerequisites). The scripts:
 
 1. `build_dog10k_nhej1_sv.sh` slices the _NHEJ1_ deletion from Schall and Kidd's
-   genotype VCF for the Collie-clade breeds, three unaffected breeds and four
-   gray wolves.
+   genotype VCF for the Collie-clade breeds, unaffected breeds and gray wolves.
 2. `build_omia_dog_variants.sh` reads OMIA's nightly mysqldump, since OMIA has
    no coordinate API. OMIA updates the database continuously, so the record
    count changes from day to day.

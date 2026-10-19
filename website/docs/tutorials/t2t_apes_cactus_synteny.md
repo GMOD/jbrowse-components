@@ -61,9 +61,9 @@ rebuild those results. The chain steps take your own chains.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                | File                                                                 |
-| --------------------------------------------------------- | -------------------------------------------------------------------- |
-| The eleven pairs the track uses, as one indexed alignment | [apes.pif.gz](https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz) |
+| What it is                                         | File                                                                 |
+| -------------------------------------------------- | -------------------------------------------------------------------- |
+| The pairs the track uses, as one indexed alignment | [apes.pif.gz](https://jbrowse.org/demos/t2t_apes_cactus/apes.pif.gz) |
 
 </details>
 
@@ -71,14 +71,15 @@ rebuild those results. The chain steps take your own chains.
 
 Each lane reads two chains from the file. The chain between hg38 and that ape
 places the lane under the human window, and the chain between that ape and the
-one above it draws the ribbons between them. Eleven pairs cover six apes:
+one above it draws the ribbons between them. The pairs cover every ape in the
+stack:
 
 - hg38 against each ape
 - chimpanzee against bonobo, bonobo against gorilla, gorilla against the
   Sumatran orangutan, the Sumatran against the Bornean orangutan, and the
   Bornean orangutan against the siamang
 
-All eleven come out of one multiple alignment, so the chimpanzee in the hg38
+All of them come out of one multiple alignment, so the chimpanzee in the hg38
 pair and the chimpanzee in the bonobo pair are aligned the same way.
 
 `chain2paf` reads a chain uncompressed:
@@ -266,9 +267,9 @@ The script works in four steps:
 
 1. Fetch each genome's hub config from genomes.jbrowse.org, which gives its lane
    the assembly and the NCBI RefSeq gene track.
-2. Download the eleven chains: hg38 against each ape, and each ape against the
-   next one down the tree.
-3. Convert each chain to PAF with PanSN names and index all eleven as one file.
+2. Download the chains: hg38 against each ape, and each ape against the next one
+   down the tree.
+3. Convert each chain to PAF with PanSN names and index them all as one file.
 4. Write the config, with the lanes stacked in tree order.
 
 ```bash

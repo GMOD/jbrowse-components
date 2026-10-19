@@ -627,7 +627,7 @@ the track menu shows the `color` block as text and applies edits live.
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
 runs every step above except the E146 read mapping. The script:
 
-1. Downloads the five assemblies and builds the graph with pggb.
+1. Downloads the assemblies and builds the graph with pggb.
 2. Writes the synteny, variant, MAF, depth, presence and graph tracks from it.
 3. Downloads JBrowse and writes a `config.json` with the five assemblies, their
    gene tracks, every other track on this page, and a default session.
