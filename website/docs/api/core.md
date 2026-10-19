@@ -1,6 +1,7 @@
 ---
 id: core
-title: core
+title: "@jbrowse/core"
+description: "JBrowse 2 core libraries used by plugins"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

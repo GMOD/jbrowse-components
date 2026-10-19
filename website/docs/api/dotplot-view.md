@@ -1,6 +1,7 @@
 ---
 id: dotplot-view
-title: dotplot-view
+title: "@jbrowse/plugin-dotplot-view"
+description: "JBrowse 2 dotplot view"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

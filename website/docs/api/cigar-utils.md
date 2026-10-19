@@ -1,6 +1,7 @@
 ---
 id: cigar-utils
-title: cigar-utils
+title: "@jbrowse/cigar-utils"
+description: "Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

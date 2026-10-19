@@ -1,6 +1,7 @@
 ---
 id: wiggle
-title: wiggle
+title: "@jbrowse/plugin-wiggle"
+description: "JBrowse 2 wiggle adapters, tracks, etc."
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

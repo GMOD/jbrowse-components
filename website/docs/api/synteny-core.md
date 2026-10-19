@@ -1,6 +1,7 @@
 ---
 id: synteny-core
-title: synteny-core
+title: "@jbrowse/synteny-core"
+description: "Shared utilities for synteny and dotplot rendering"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

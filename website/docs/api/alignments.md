@@ -1,6 +1,7 @@
 ---
 id: alignments
-title: alignments
+title: "@jbrowse/plugin-alignments"
+description: "JBrowse 2 alignments adapters, tracks, etc."
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

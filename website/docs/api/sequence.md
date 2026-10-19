@@ -1,6 +1,7 @@
 ---
 id: sequence
-title: sequence
+title: "@jbrowse/plugin-sequence"
+description: "JBrowse 2 sequence adapters, tracks, etc."
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

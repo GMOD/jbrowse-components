@@ -1,6 +1,7 @@
 ---
 id: comparative-adapters
-title: comparative-adapters
+title: "@jbrowse/plugin-comparative-adapters"
+description: "JBrowse 2 comparative adapters"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

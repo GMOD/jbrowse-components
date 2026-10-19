@@ -1,6 +1,7 @@
 ---
 id: wiggle-core
-title: wiggle-core
+title: "@jbrowse/wiggle-core"
+description: "Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

@@ -1,6 +1,7 @@
 ---
 id: display-ui
-title: display-ui
+title: "@jbrowse/display-ui"
+description: "The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

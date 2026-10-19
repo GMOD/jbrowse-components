@@ -1,6 +1,7 @@
 ---
 id: linear-comparative-view
-title: linear-comparative-view
+title: "@jbrowse/plugin-linear-comparative-view"
+description: "JBrowse 2 linear comparative view"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

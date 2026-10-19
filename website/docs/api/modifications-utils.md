@@ -1,6 +1,7 @@
 ---
 id: modifications-utils
-title: modifications-utils
+title: "@jbrowse/modifications-utils"
+description: "Pure MM/ML base-modification tag parsers (methylation, etc.)"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

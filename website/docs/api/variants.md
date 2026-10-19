@@ -1,6 +1,7 @@
 ---
 id: variants
-title: variants
+title: "@jbrowse/plugin-variants"
+description: "JBrowse 2 variant adapters, tracks, etc."
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

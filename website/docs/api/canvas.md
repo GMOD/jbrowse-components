@@ -1,6 +1,7 @@
 ---
 id: canvas
-title: canvas
+title: "@jbrowse/plugin-canvas"
+description: "JBrowse 2 plugin for canvas features"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

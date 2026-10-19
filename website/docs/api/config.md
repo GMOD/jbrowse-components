@@ -1,6 +1,7 @@
 ---
 id: config
-title: config
+title: "@jbrowse/plugin-config"
+description: "JBrowse 2 config utilities"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See

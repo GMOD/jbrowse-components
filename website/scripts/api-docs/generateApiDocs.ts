@@ -134,12 +134,35 @@ function sortByName(exports: ApiExport[]) {
   return [...exports].sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
-function renderGroup({ group, id, exports }: ApiGroup) {
+// A page is titled by the package its exports come from, with an explicit
+// group's remainder in parentheses (`core/util` -> `@jbrowse/core (util)`),
+// and described by that package's manifest.
+function groupHeading({ group, exports }: ApiGroup) {
+  const root = packageRoot(exports[0]!.filename)
+  const manifest = root
+    ? (JSON.parse(fs.readFileSync(`${root}/package.json`, 'utf8')) as {
+        name?: string
+        description?: string
+      })
+    : {}
+  const short = root?.split('/').at(-1)
+  const rest =
+    short && group.startsWith(`${short}/`) ? group.slice(short.length + 1) : ''
+  const name = manifest.name ?? group
+  return {
+    title: rest ? `${name} (${rest})` : name,
+    description: manifest.description,
+  }
+}
+
+function renderGroup(grp: ApiGroup) {
+  const { id, exports } = grp
+  const { title, description } = groupHeading(grp)
   const sorted = sortByName(exports)
   return `---
 id: ${id}
-title: ${group}
----
+title: ${JSON.stringify(title)}
+${description ? `description: ${JSON.stringify(description)}\n` : ''}---
 
 Auto-generated from exported functions tagged \`#api\` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to

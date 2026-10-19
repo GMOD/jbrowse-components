@@ -1,6 +1,7 @@
 ---
 id: sv-core
-title: sv-core
+title: "@jbrowse/sv-core"
+description: "VCF breakend / structural-variant parsing and the shared SV launch helpers"
 ---
 
 Auto-generated from exported functions tagged `#api` in the source. See
