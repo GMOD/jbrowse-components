@@ -5133,7 +5133,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "value",
-              "type": "CssColor"
+              "type": "(CssColor | undefined)"
             },
             {
               "name": "field",
@@ -5243,7 +5243,8 @@ export const configManifest: ConfigManifest = {
               ],
               "title": "Syntenic depth"
             }
-          }
+          },
+          "impliedField": "strand"
         },
         {
           "name": "hideUnlabelled",

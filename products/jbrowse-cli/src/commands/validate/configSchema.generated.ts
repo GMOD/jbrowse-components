@@ -8825,7 +8825,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "default": "rgba(130,130,130,0.3)",
           "$ref": "#/$defs/CssColor",
           "type": "string"
         },
@@ -8835,8 +8834,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "the color of the ribbons connecting adjacent lanes.",
-              "default": "rgba(130,130,130,0.3)",
+              "description": "the color of the ribbons connecting adjacent lanes; unset with no field, the ribbons are colored by strand, and a field paints rgba(130,130,130,0.3) where a pair has no value.",
               "if": {
                 "type": "null"
               },
