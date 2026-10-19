@@ -192,6 +192,20 @@ function seedReadme(root: string) {
 
 const BLOCK_RE = new RegExp(`${README_START}[\\s\\S]*?${README_END}`)
 
+// Whether `text` holds the managed block. A second START or a START with no END
+// is an error: BLOCK_RE replaces only the first pair, and a dangling START
+// would get a fresh block appended under it.
+function hasApiBlock(readmePath: string, text: string) {
+  const starts = text.split(README_START).length - 1
+  const ends = text.split(README_END).length - 1
+  if (starts > 1 || starts !== ends || (starts && !BLOCK_RE.test(text))) {
+    throw new Error(
+      `${readmePath}: expected at most one ${README_START} … ${README_END} pair, found ${starts} start(s) and ${ends} end(s)`,
+    )
+  }
+  return starts === 1
+}
+
 // Mirror each package's `#api` exports into its README, between managed markers
 // so regeneration is idempotent and never touches hand-written README prose. The
 // block is appended once (replaced in place thereafter). Packages without a
@@ -220,7 +234,7 @@ export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
     const block = `${README_START}\n\n${renderReadmeSection(exports)}\n\n${README_END}`
     writeDoc(
       readmePath,
-      BLOCK_RE.test(existing)
+      hasApiBlock(readmePath, existing)
         ? // A function replacer, because the block is rendered JSDoc prose,
           // type signatures and `#example` code: a `$&` or `$'` anywhere in
           // that (an example calling `String.replace`, a template-literal type)
@@ -246,8 +260,7 @@ function readmesWithApiBlock() {
       .filter(e => e.isDirectory())
       .map(e => `${workspace}/${e.name}/README.md`)
       .filter(
-        p =>
-          fs.existsSync(p) && fs.readFileSync(p, 'utf8').includes(README_START),
+        p => fs.existsSync(p) && hasApiBlock(p, fs.readFileSync(p, 'utf8')),
       ),
   )
 }
