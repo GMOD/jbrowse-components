@@ -8,9 +8,9 @@
 # copies static/ into dist/.
 #
 # <path> <width>x<height> <bytes> <sha256>
-website/static/media/config/settings_to_json.jpg 1920x860 148508 e1ac7a6fbd94929a3bb97b91063b0848a36218bf867407f261895b4ecc9cdd89
-website/static/media/config/settings_to_json.mp4 - 928817 4e31a28ed618ca512b86213415780fc3eb2cd8976ff7b09d776e05a8da37d773
-website/static/media/config/settings_to_json.vtt - 420 3486c3a7982f83366ad1fe5d6223345fe66f765679c375ee2dbc247d1b286398
+website/static/media/config/settings_to_json.jpg 1920x860 110211 eedba9d79b2ebba9cfd6c27fbc0b19fb1b66953d3caaeea1500a52c125ea4856
+website/static/media/config/settings_to_json.mp4 - 986843 ab9b359266677cda8f069584c8f983ea1682130c2d4e23308c532dc0abf1ece1
+website/static/media/config/settings_to_json.vtt - 411 72e133a5b9c5d67a485ff63e045304d353a91f4af0d9899214cb710a1264b347
 website/static/media/dog10k/igf1_cluster_route.jpg 1920x1070 348164 6393281ba97cf1ff1fc802a0f7019e613d401e0963cfc990c4238101edb4e7ba
 website/static/media/dog10k/igf1_cluster_route.mp4 - 1510230 8ca5922d669bce47cdb78dc5df3d22caa95ac3a68034687295cf38d5618e2e94
 website/static/media/dog10k/igf1_cluster_route.vtt - 538 91570d6b07b818de94db5dd12f4b0c3e161845119bd11e40a6c9426721c440b6
