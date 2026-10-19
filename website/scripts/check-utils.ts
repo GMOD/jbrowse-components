@@ -297,17 +297,28 @@ interface Generated {
 // commit" into fix, push, discover the next one. It was live here: the three
 // guide indexes are generated in one loop, so a stale `user_guide.md` hid a
 // stale `developer_guide.md` behind it.
+//
+// A file that does not exist yet is stale, not a crash, and a write leaves an
+// unchanged file alone so the log names only what moved.
 export function checkOrWriteAll(generated: Generated[], staleHint: string) {
+  const stale = generated.filter(
+    ({ path, content }) =>
+      !isFile(path) || readFileSync(path, 'utf8') !== content,
+  )
   if (!check) {
-    for (const { path, content } of generated) {
+    for (const { path, content } of stale) {
       writeFileSync(path, content)
       console.log(`wrote ${path}`)
     }
+    if (stale.length === 0) {
+      console.log(
+        generated.length === 1
+          ? `${generated[0]!.label} is up to date`
+          : `${generated.length} generated files are up to date`,
+      )
+    }
     return
   }
-  const stale = generated.filter(
-    ({ path, content }) => readFileSync(path, 'utf8') !== content,
-  )
   if (stale.length > 0) {
     console.error(
       stale.length === 1
