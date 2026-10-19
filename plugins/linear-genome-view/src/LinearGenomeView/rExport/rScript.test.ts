@@ -172,6 +172,23 @@ test('an adapter with a setting of its own crosses as its config', () => {
   )
 })
 
+test('a tabix GTF reads by its path, as ggjbrowse picks GtfTabixAdapter for .gtf.gz', () => {
+  const script = scriptOf({
+    regions: ONE,
+    tracks: [
+      {
+        ...track('bigbed_genes', 'LinearBasicDisplay'),
+        adapter: {
+          type: 'GtfTabixAdapter',
+          gtfGzLocation: { uri: '/data/genes.gtf.gz' },
+          index: { location: { uri: '/data/genes.gtf.gz.tbi' } },
+        },
+      },
+    ],
+  })
+  expect(script).toContain('jbrowse_features("/data/genes.gtf.gz",\n  locus')
+})
+
 test('variant tracks read as their displays draw them', () => {
   const script = scriptOf({
     regions: ONE,

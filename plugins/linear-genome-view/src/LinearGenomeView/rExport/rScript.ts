@@ -41,6 +41,7 @@ const READERS: Record<
     adapters: {
       Gff3TabixAdapter: { slot: 'gffGzLocation', ext: /\.gff3?\.gz$/ },
       Gff3Adapter: { slot: 'gffLocation', ext: /\.gff3?$/ },
+      GtfTabixAdapter: { slot: 'gtfGzLocation', ext: /\.gtf\.gz$/ },
       GtfAdapter: { slot: 'gtfLocation', ext: /\.gtf$/ },
       BedTabixAdapter: { slot: 'bedGzLocation', ext: /\.bed\.gz$/ },
       BedAdapter: { slot: 'bedLocation', ext: /\.bed$/ },
