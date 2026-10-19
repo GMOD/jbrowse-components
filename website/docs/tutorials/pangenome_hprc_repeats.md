@@ -45,17 +45,15 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
   HPRC config already loads it
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
-- for your own array in [Which copy is which](#which-copy-is-which):
-  [`gbz-base`](https://github.com/jltsiren/gbz-base), to cut the graph
 - for [Which copy is which](#which-copy-is-which) and
   [The ABCA7 alleles across the samples](#the-abca7-alleles-across-the-samples):
   Node, to run the plugin's scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org), and for its amylase build `samtools` built with
   libcurl, [`minimap2`](https://github.com/lh3/minimap2), `python3` and Node.js
-  for `npx`
+  with `npm`
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,gbz-base START -->
+<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt START -->
 
 ```bash
 # Debian/Ubuntu
@@ -63,11 +61,9 @@ sudo apt install samtools bcftools minimap2 nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge samtools bcftools minimap2 duckdb \
   nodejs trgt
-# any platform
-cargo install gbz-base
 ```
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt,gbz-base END -->
+<!-- TUTORIAL_INSTALL samtools,bcftools,minimap2,duckdb,node,trgt END -->
 
 ## The data
 
@@ -77,24 +73,23 @@ a call at _ABCA7_.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. The tandem-repeat VCF step takes your own graph and
-repeat interval, and the TRGT step your own aligned HiFi reads and repeat
+rebuild those results. The tandem-repeat VCF step takes a cut of your own graph
+over your own array, and the TRGT step your own aligned HiFi reads and repeat
 catalogue.
 
-| What it is                                                              | File                                                                                                                                                                     |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb | [adotto_hprc.tdb.tar](https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar)                                                                                      |
-| The catalogue itself                                                    | [adotto_repeats.hg38.bed.gz](https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz)                                                                        |
-| The assemblies, for the amylase build                                   | [assemblies_release2_v1.0.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv) |
+| What it is                                                                   | File                                                                                                                                                                     |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb      | [adotto_hprc.tdb.tar](https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar)                                                                                      |
+| The catalogue itself                                                         | [adotto_repeats.hg38.bed.gz](https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz)                                                                        |
+| The assemblies, for the amylase build                                        | [assemblies_release2_v1.0.index.csv](https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv) |
+| The graph cut over the KIV-2 array, eight haplotypes' walks with their bases | [hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa](https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa)                                            |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                                                | File                                                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Our tabix index files cut from the release's rGFA graph and from its haplotype walks, with the build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt)                                                                                                                            |
-| The release 2.1 gbz-base database, which the cut under [Which copy is which](#which-copy-is-which) reads by range request | [hprc-v2.1-mc-grch38.gbz.db](https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db) |
-| Our companion index naming that database's haplotypes                                                                     | [hprc-v2.1-mc-grch38.haplotype-index.f3.db](https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db)                                                              |
+| What it is                                                                                                                | File                                                    |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Our tabix index files cut from the release's rGFA graph and from its haplotype walks, with the build recorded beside them | [README.txt](https://jbrowse.org/demos/hprc/README.txt) |
 
 </details>
 
@@ -211,18 +206,13 @@ column of the samples table.
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.
 
-To write a record like it for your own array, we'll first cut the walks over it
-out of the gbz-base database as a GFA subgraph, with enough context that the cut
-reaches the reference nodes on either side:
+To write a record like it for your own array, start from a cut of the graph over
+the array: a GFA whose W lines are the walks across it, from the reference nodes
+on either side, and whose S lines hold those nodes' bases. We host the cut for
+the eight haplotypes:[^kiv2-cut]
 
 ```bash
-# the reference walk is PanSN GRCh38#0#chr6; the interval is the array
-npx --yes -p @gmod/gbz-base gbz-base-query \
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
-  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db \
-  --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
-  --context 1000 --snarls --haplotypes all --limit 100000 --resolve \
-  --format gfa > cut.gfa
+curl -fO https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 ```
 
 [`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
@@ -237,7 +227,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/mai
 
 ```bash
 printf 'chr6\t160616002\t160646753\tKIV-2\n' > arrays.bed
-node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
+node tandem-repeat-vcf.mjs hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
+  --bed arrays.bed --name KIV-2 \
   --unit-names KIV-2A,KIV-2B > kiv2.vcf
 ```
 
@@ -248,7 +239,8 @@ nothing in exon 2:
 
 ```bash
 printf 'chr6\t160617116\t160617276\texon 1\t0\t-\nchr6\t160618483\t160618665\texon 2\t0\t-\n' > kiv2_exons.bed
-node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
+node tandem-repeat-vcf.mjs hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
+  --bed arrays.bed --name KIV-2 \
   --sites kiv2_exons.bed > /dev/null
 ```
 
@@ -492,23 +484,33 @@ duckdb -json -c "
 
 The amylase build draws haplotypes as a synteny stack, each aligned to the row
 under it. It works in four steps, and the commands below run each one on any
-gbz-base database and any bgzipped, indexed assembly:
+`gfa-to-tabix --walks` file and any bgzipped, indexed assembly:
 
-1. Ask the graph where each haplotype crosses two single-copy windows, one
-   either side of the array. The distance between the two is that haplotype's
-   span across the locus, and the spans fall into the published structures.
+1. Read from the walk file where each haplotype crosses two single-copy windows,
+   one either side of the array. The distance between the two is that
+   haplotype's span across the locus, and the spans fall into the published
+   structures.
 2. Pick one haplotype per structure and fetch only the locus from its assembly.
 3. Count each haplotype's gene copies, and align it to its neighbour in the
    stack, so a band can match copies GRCh38 lacks.
 4. Shift each alignment back onto the whole contig's coordinates.
 
-Get every haplotype's path through a window:
+Fetch the script that reads a window's walks, then the walk reader it imports:
 
 ```bash
-npx --yes -p @gmod/gbz-base gbz-base-query graph.gbz.db \
-  --haplotype-index haplotypes.db \
-  --sample GRCh38 --contig chr1 --interval 103540000..103541000 \
-  --context 0 --alignments > window.json
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/walk_spans.mjs
+```
+
+```bash
+npm install @jbrowse/graph-walks @gmod/tabix generic-filehandle2
+```
+
+Get where every haplotype's walk crosses a window, one line per walk with its
+contig coordinates:
+
+```bash
+# the walk file is a path or a URL, with its .tbi beside it
+node walk_spans.mjs graph.GRCh38.walks.bed.gz 'GRCh38#0#chr1' 103540000 103541000 > left.tsv
 ```
 
 Fetch one haplotype's copy of the locus:
@@ -633,3 +635,9 @@ copy:
   https://doi.org/10.1126/science.adn0609
 - Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
   (2018). https://doi.org/10.1093/bioinformatics/bty191
+
+[^kiv2-cut]:
+    `gbz-base-query --keep` cut it from HPRC's gbz-base database, and
+    [README.txt](https://jbrowse.org/demos/hprc/README.txt) gives the command. A
+    walk file holds node bases only when `gfa-to-tabix --walks --sequences`
+    writes it.
