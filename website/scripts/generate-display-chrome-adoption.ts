@@ -23,27 +23,20 @@
 //   ReactComponent  →  the render tree  →  DisplayChrome
 //   stateModel      →  renderSvg        →  SvgChrome
 //
-// Resolution handles the four idioms a registration uses to name its component,
-// because all four are in the tree today:
+// Resolution reads the idioms registrations use today. A component is named as
 //
-//   ReactComponent: lazy(() => import('./components/X.tsx'))   most displays
-//   ReactComponent: X                    X imported from a relative path
-//   ReactComponent: X                    X imported from '@jbrowse/plugin-*'
-//   ReactComponent                       shorthand, after
-//                                        `const { ReactComponent } =
-//                                          pluginManager.getDisplayType('Y')`
+//   ReactComponent: lazy(() => import('./components/X.tsx'))
+//   ReactComponent: X                    X a module-scope `lazy(...)` binding,
+//                                        or imported from '@jbrowse/plugin-*'
+//   ReactComponent                       shorthand, for a local binding or
+//                                        `getDisplayType('Y')`'s component
 //
-// and the two a `stateModel` uses:
-//
-//   stateModel: modelFactory(configSchema)          most displays
-//   stateModel                                      shorthand, after
-//                                                   `const stateModel =
-//                                                     modelFactory(schema)`
+// and a model always as a loader, `stateModel: () => import('./model.ts')...`.
 //
 // **An unresolvable registration is a hard error, never a dropped row.** A
 // silently missing row is the exact failure this replaces: the table would look
-// authoritative and be short. If a fifth idiom appears, this fails and names
-// the file, which is the signal to teach it the idiom.
+// authoritative and be short. A new idiom fails and names the file, which is
+// the signal to teach it the idiom.
 //
 // Only the block between the markers is generated. Run: `pnpm autogen`
 // (or `--check` in CI).
@@ -91,11 +84,7 @@ interface Registration {
   model: string
 }
 
-// Memoized: resolution walks the same modules from many starting points — one
-// display's registration reaches `renderDisplaySvg.tsx` and every other
-// display's does too, so a run parsed it 38 times, and 171 parses covered ~60
-// distinct files. Nothing here mutates a tree, so one parse per file is the
-// same answer for a third of the work.
+// Memoized: every display's resolution reaches the same shared modules.
 const parsed = new Map<string, ts.SourceFile>()
 
 function parse(file: string) {
@@ -125,102 +114,7 @@ function propertyOf(obj: ts.ObjectLiteralExpression, key: string) {
   return undefined
 }
 
-/** A module-scope `function name(){}` or `const name = () => {}`. */
-function moduleScopeFunction(src: ts.SourceFile, name: string) {
-  for (const s of src.statements) {
-    if (ts.isFunctionDeclaration(s) && s.name?.text === name) {
-      return s
-    }
-    if (ts.isVariableStatement(s)) {
-      for (const d of s.declarationList.declarations) {
-        const init = d.initializer
-        if (
-          ts.isIdentifier(d.name) &&
-          d.name.text === name &&
-          init &&
-          (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
-        ) {
-          return init
-        }
-      }
-    }
-  }
-  return undefined
-}
-
-/** The object literals a module-scope function returns. */
-function returnedObjectLiterals(src: ts.SourceFile, name: string) {
-  const fn = moduleScopeFunction(src, name)
-  const out: ts.ObjectLiteralExpression[] = []
-  const body = fn?.body
-  if (!body) {
-    return out
-  }
-  if (!ts.isBlock(body)) {
-    const expr = ts.isParenthesizedExpression(body) ? body.expression : body
-    if (ts.isObjectLiteralExpression(expr)) {
-      out.push(expr)
-    }
-    return out
-  }
-  for (const st of body.statements) {
-    if (st.kind === ts.SyntaxKind.ReturnStatement) {
-      const expr = (st as ts.ReturnStatement).expression
-      if (expr && ts.isObjectLiteralExpression(expr)) {
-        out.push(expr)
-      }
-    }
-  }
-  return out
-}
-
-/**
- * A property of a registration's object literal, following `...helper(...)`
- * spreads into the object that helper returns — a registration that differs
- * from a sibling only in its names can be spelled that way (the LD pair was,
- * before the genotype estimator's removal left one of them).
- *
- * Only same-file helpers are followed, which is every one today and is what
- * keeps the caller's import map the right one to resolve the result against.
- */
-function registrationProperty(
-  obj: ts.ObjectLiteralExpression,
-  key: string,
-  src: ts.SourceFile,
-  seen = new Set<ts.Node>(),
-): ts.ObjectLiteralElementLike | undefined {
-  const direct = propertyOf(obj, key)
-  if (direct) {
-    return direct
-  }
-  for (const p of obj.properties) {
-    if (!ts.isSpreadAssignment(p) || !ts.isCallExpression(p.expression)) {
-      continue
-    }
-    const callee = p.expression.expression
-    if (!ts.isIdentifier(callee)) {
-      continue
-    }
-    for (const returned of returnedObjectLiterals(src, callee.text)) {
-      if (seen.has(returned)) {
-        continue
-      }
-      seen.add(returned)
-      const hit = registrationProperty(returned, key, src, seen)
-      if (hit) {
-        return hit
-      }
-    }
-  }
-  return undefined
-}
-
-/**
- * `() => import('X').then(f => f.default(configSchema))` → `'X'` — the lazy
- * state-model idiom. The specifier IS the answer this function's eager
- * counterpart works to reach: there the module has to be found by resolving the
- * factory identifier's import binding, here the registration names it outright.
- */
+/** `() => import('X').then(f => f.default(configSchema))` → `'X'`. */
 function loaderImportTarget(node: ts.Node): string | undefined {
   if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) {
     return undefined
@@ -323,9 +217,9 @@ function lazyMap(src: ts.SourceFile) {
  */
 function borrowedDisplayType(node: ts.Node): string | undefined {
   // Scoped to the enclosing function rather than the file, because a file can
-  // register several display types (gccontent and LD each register two) and
-  // only the one whose factory did the lookup is borrowing. `parent` is typed
-  // non-optional but is genuinely absent above a SourceFile, so stop there.
+  // register several display types and only the one whose factory did the
+  // lookup is borrowing. `parent` is typed non-optional but is genuinely absent
+  // above a SourceFile, so stop there.
   let scope = node
   while (!ts.isFunctionLike(scope)) {
     if (ts.isSourceFile(scope)) {
@@ -355,15 +249,10 @@ function collectRegistrations(): Registration[] {
   // symlinks — and finds the same registrations twice, under other paths.
   const skip = new Set(['node_modules', 'dist', 'esm', '__snapshots__'])
   // Test support registers display types too, and those are not adoption: a
-  // dozen plugins carry a harness that registers a stub with
-  // `ReactComponent: () => null`. Excluded by name, because the names are a
-  // convention rather than a guess — `testEnv.ts` in 13 places and
-  // `testUtils.ts` in 4. Both, not one: the list was `testEnv.ts` alone until
-  // an alignments harness picked the other name and failed the whole run as an
-  // unresolvable inline component. That is the loud failure working correctly
-  // on a file that should never have been scanned, so widen the names here
-  // rather than teaching the resolver a stub idiom — resolving it would put a
-  // test harness in the adoption map as though it shipped.
+  // harness registers a stub with `ReactComponent: () => null`. Excluded by the
+  // conventional names `testEnv.ts` and `testUtils.ts`; a harness under another
+  // name fails the run as an unresolvable component, and the fix is widening
+  // these names, never teaching the resolver the stub.
   const isTestSupport = (n: string) =>
     /^(testEnv|testUtils)\.tsx?$/.test(n) || /\.test\.tsx?$/.test(n)
   for (const file of walkFiles(
@@ -412,8 +301,8 @@ function collectRegistrations(): Registration[] {
             out.push({
               name,
               file,
-              component: resolveComponent(arg, src, file, imports, lazies),
-              model: resolveStateModel(arg, src, file, imports),
+              component: resolveComponent(arg, file, imports, lazies),
+              model: resolveStateModel(arg, file),
             })
           }
         }
@@ -427,12 +316,11 @@ function collectRegistrations(): Registration[] {
 
 function resolveComponent(
   obj: ts.ObjectLiteralExpression,
-  src: ts.SourceFile,
   file: string,
   imports: Map<string, string>,
   lazies: Map<string, string>,
 ): Registration['component'] {
-  const prop = registrationProperty(obj, 'ReactComponent', src)
+  const prop = propertyOf(obj, 'ReactComponent')
   if (!prop) {
     throw new Error(
       `${rel(file)}: a DisplayType registration has no ReactComponent. Every display registered for ${LGV} needs one; if that has genuinely changed, this generator needs to learn the new shape.`,
@@ -472,14 +360,11 @@ function resolveComponent(
       return { kind: 'module', module: moduleFrom(file, viaLazy) }
     }
     const module = imports.get(init.text)
-    if (module?.startsWith('.')) {
-      return { kind: 'module', module: moduleFrom(file, module) }
-    }
     if (module?.startsWith('@jbrowse/plugin-')) {
       return { kind: 'borrowsExport', pkg: module, exportName: init.text }
     }
     throw new Error(
-      `${rel(file)}: cannot resolve \`ReactComponent: ${init.text}\` — it is neither a lazy import, a relative import, nor a \`@jbrowse/plugin-*\` import.`,
+      `${rel(file)}: cannot resolve \`ReactComponent: ${init.text}\` — it is neither a lazy import nor a \`@jbrowse/plugin-*\` import.`,
     )
   }
   throw new Error(
@@ -488,87 +373,26 @@ function resolveComponent(
 }
 
 /**
- * The module of the factory a registration's `stateModel` calls — the entry
- * point of the model half, as `resolveComponent` is of the component half.
- *
- * Unlike `ReactComponent` there is no registry borrow to handle: a display that
- * wants another's model composes the factory inside its own, which is
- * `modelChainBases`' problem rather than this one's.
+ * The module a registration's `stateModel` loader imports — the entry point of
+ * the model half, as `resolveComponent` is of the component half. A display
+ * that wants another's model composes the factory inside its own, which is
+ * `factoryBases`' problem rather than this one's.
  */
 function resolveStateModel(
   obj: ts.ObjectLiteralExpression,
-  src: ts.SourceFile,
   file: string,
-  imports: Map<string, string>,
 ): string {
-  const prop = registrationProperty(obj, 'stateModel', src)
-  if (!prop) {
-    throw new Error(
-      `${rel(file)}: a DisplayType registration has no stateModel. Every display registered for ${LGV} needs one; if that has genuinely changed, this generator needs to learn the new shape.`,
-    )
-  }
-  // `stateModel,` shorthand, after `const stateModel = factory(configSchema)` —
-  // four registrations do this so they can name the model before the object.
-  const init = ts.isShorthandPropertyAssignment(prop)
-    ? localBinding(prop, 'stateModel')
-    : ts.isPropertyAssignment(prop)
-      ? prop.initializer
+  const prop = propertyOf(obj, 'stateModel')
+  const loaded =
+    prop && ts.isPropertyAssignment(prop)
+      ? loaderImportTarget(prop.initializer)
       : undefined
-  if (!init) {
+  if (!loaded) {
     throw new Error(
-      `${rel(file)}: cannot read the \`stateModel\` of a DisplayType registration — a shorthand with no \`const stateModel = ...\` in the enclosing function, or a property shape this generator has not been taught.`,
+      `${rel(file)}: a DisplayType registration's \`stateModel\` is not a \`() => import('...')\` loader. Every display registered for ${LGV} uses one; if that has changed, teach this generator the idiom.`,
     )
   }
-  // Every display registers a loader now — `stateModel: () => import(...)` —
-  // and the module it names is the model half's entry point, the same thing the
-  // eager form below resolves its factory identifier to.
-  const loaded = loaderImportTarget(init)
-  if (loaded) {
-    return moduleFrom(file, loaded)
-  }
-  const bases = modelChainBases(init, localBindings(init))
-  // One base is what every registration has today: `factory(configSchema)`,
-  // possibly with `.named(...).props(...)` chained on. A registration that
-  // composes two models inline would land here with two, and picking one would
-  // silently report half the model — so it fails and asks to be taught.
-  if (bases.size !== 1) {
-    throw new Error(
-      `${rel(file)}: \`stateModel\` resolves to ${bases.size} base factories (${[...bases].join(', ') || 'none'}), and this generator reads exactly one. Teach it the idiom rather than letting the row report half a model.`,
-    )
-  }
-  const [base] = [...bases]
-  const module = moduleForName(base!, file, imports)
-  if (!module) {
-    throw new Error(
-      `${rel(file)}: cannot resolve the \`stateModel\` factory \`${base}\` — it is neither a relative import nor a \`@jbrowse/plugin-*\` one.`,
-    )
-  }
-  return module
-}
-
-/** The initializer of a `const <name> = ...` in the function enclosing `node`. */
-function localBinding(node: ts.Node, name: string): ts.Expression | undefined {
-  let scope: ts.Node = node
-  while (!ts.isFunctionLike(scope)) {
-    if (ts.isSourceFile(scope)) {
-      return undefined
-    }
-    scope = scope.parent
-  }
-  let found: ts.Expression | undefined
-  const visit = (n: ts.Node) => {
-    if (
-      ts.isVariableDeclaration(n) &&
-      ts.isIdentifier(n.name) &&
-      n.name.text === name &&
-      n.initializer
-    ) {
-      found ??= n.initializer
-    }
-    ts.forEachChild(n, visit)
-  }
-  ts.forEachChild(scope, visit)
-  return found
+  return moduleFrom(file, loaded)
 }
 
 /** Every `const x = ...` in the function enclosing `node`, by name. */
@@ -605,8 +429,8 @@ function localBindings(node: ts.Node): Map<string, ts.Expression> {
  *   return baseFactory(schema).props({...}).views(...)   the chain's base
  *   types.compose('X', baseFactory(schema), types.model({...}))   an argument
  *
- * `locals` resolves `const baseModel = factory(schema)`, which three displays
- * write before composing it. `types.*` calls other than `compose` terminate:
+ * `locals` resolves `const baseModel = factory(schema)` written before
+ * composing it. `types.*` calls other than `compose` terminate:
  * `types.model({...})` adds props, never a `renderSvg`.
  */
 function modelChainBases(
@@ -839,12 +663,6 @@ interface SvgRoute {
   model: string
   /** The module that declaration hands the export to. */
   body: string
-  /**
-   * The display supplied that body itself, at its own call to the factory
-   * declaring `renderSvg`. It composes a shared action, not another display's
-   * export, so the row is not an `inherits`.
-   */
-  own?: boolean
 }
 
 /** Module-scope function declarations and `const f = () => ...` bindings. */
@@ -953,44 +771,6 @@ function delegateOf(
 }
 
 /**
- * The export edge a composing module hands a mixin factory, for the shape where
- * the lazy `import()` is an argument rather than a statement in the body —
- * `SomeFetchModel(() => import('./renderSvg.tsx'))`, where displays sharing
- * one model differ only in which edge module they pair it with, so the route
- * is at the call site, not in the model that declares the action.
- */
-function edgeFromFactoryCall(caller: string, factory: string) {
-  const src = parse(caller)
-  let edge: string | undefined
-  const visit = (n: ts.Node) => {
-    if (
-      ts.isCallExpression(n) &&
-      ts.isIdentifier(n.expression) &&
-      n.expression.text === factory
-    ) {
-      const inner = (m: ts.Node) => {
-        if (
-          ts.isCallExpression(m) &&
-          m.expression.kind === ts.SyntaxKind.ImportKeyword
-        ) {
-          const spec = literal(m.arguments[0])
-          if (spec?.startsWith('.')) {
-            edge ??= moduleFrom(caller, spec)
-          }
-        }
-        ts.forEachChild(m, inner)
-      }
-      for (const a of n.arguments) {
-        inner(a)
-      }
-    }
-    ts.forEachChild(n, visit)
-  }
-  ts.forEachChild(src, visit)
-  return edge
-}
-
-/**
  * Where a display's SVG export is implemented: the model module declaring
  * `renderSvg`, and the module that declaration delegates to. Undefined when no
  * model in the composition chain declares one — a real answer, and the row that
@@ -1004,7 +784,6 @@ function edgeFromFactoryCall(caller: string, factory: string) {
 function renderSvgRouteOf(
   module: string,
   seen = new Set<string>(),
-  composedBy?: { module: string; factory: string },
 ): SvgRoute | undefined {
   if (seen.has(module)) {
     return undefined
@@ -1014,24 +793,20 @@ function renderSvgRouteOf(
   const imports = importMap(src)
   const method = renderSvgMethod(src)
   if (method) {
-    const declared = delegateOf(method, module, imports)
-    const supplied =
-      declared ??
-      (composedBy && edgeFromFactoryCall(composedBy.module, composedBy.factory))
+    const body = delegateOf(method, module, imports)
     // Same doctrine as an unresolvable registration: a `renderSvg` whose body
     // this cannot follow would otherwise be reported as no chrome at all, which
     // is a false accusation rather than a missing row.
-    if (!supplied) {
+    if (!body) {
       throw new Error(
-        `${rel(module)}: \`renderSvg\` delegates to nothing this generator can follow — no relative \`await import('...')\` no call to an imported function, and no lazy edge passed to the factory at its call site. Teach it the idiom rather than letting the row claim the export is off the chrome.`,
+        `${rel(module)}: \`renderSvg\` delegates to nothing this generator can follow — no relative \`await import('...')\` and no call to an imported function. Teach it the idiom rather than letting the row claim the export is off the chrome.`,
       )
     }
-    return { model: module, body: supplied, own: !declared }
+    return { model: module, body }
   }
   for (const name of factoryBases(src)) {
     const next = moduleForName(name, module, imports)
-    const route =
-      next && renderSvgRouteOf(next, seen, { module, factory: name })
+    const route = next && renderSvgRouteOf(next, seen)
     if (route) {
       return route
     }
@@ -1083,16 +858,9 @@ function svgChromeOf(module: string, seen = new Set<string>()): boolean {
 
 /**
  * Whether a module declares `name` itself, rather than re-exporting it.
- *
- * `default` counts, and has to: the models are re-exported as
+ * `default` counts: the models are re-exported as
  * `export { default as modelFactory } from './model.ts'`, so `declaringModule`
- * recurses looking for the name `default`. Without this arm nothing ever
- * matched it, the chain "ran out", and the answer came from the fallback below
- * — which happened to be the same file, so the bug was invisible. It fired for
- * the alignments, wiggle and canvas base models, i.e. the three most-composed
- * models in the tree, which is a lot of weight on a documented last resort. The
- * risk was never the answer, it was the next person tightening that fallback
- * into a throw on the reasonable belief that it was exceptional.
+ * recurses looking for the name `default`.
  */
 function declaresName(src: ts.SourceFile, name: string) {
   for (const s of src.statements) {
@@ -1258,12 +1026,10 @@ function collectAdoption(): Row[] {
     // the display composes another display's model rather than declaring a
     // `renderSvg` of its own. Keyed on the *directory*, not the module, because
     // a display routinely splits its model across `model.ts` and `baseModel.ts`
-    // and inheriting from the file next door is not a borrow — the four real
-    // ones all reach across a plugin boundary. Either way the export body is
+    // and inheriting from the file next door is not a borrow. Either way the export body is
     // named rather than the lending model, since the body is the file the
     // chrome is reached from.
-    const inherited =
-      !!route && !route.own && dirname(route.model) !== dirname(r.model)
+    const inherited = !!route && dirname(route.model) !== dirname(r.model)
     return {
       ...resolve(r),
       svgChrome: !!route && svgChromeOf(route.body),
