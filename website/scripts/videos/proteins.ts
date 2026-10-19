@@ -134,12 +134,13 @@ export const proteinVideos: VideoSpec[] = [
       // the aligner queue; the toolbar mounts once `orthologParams` clears
       {
         type: 'waitForSelector',
-        selector: '[data-testid="fit_menu"]',
+        selector: '[data-testid="view_menu"]',
         timeout: 300000,
         cut: true,
       },
-      { type: 'click', selector: '[data-testid="fit_menu"]' },
-      { type: 'click', text: 'Fit horizontally' },
+      { type: 'click', selector: '[data-testid="view_menu"]' },
+      { type: 'click', selector: '[role="menuitem"]::-p-text(Zoom)' },
+      { type: 'click', text: 'Fit width' },
       { type: 'delay', ms: 1500 },
       {
         type: 'rightclick',

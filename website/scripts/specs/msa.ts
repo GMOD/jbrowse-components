@@ -299,13 +299,14 @@ export const msaSpecs: ScreenshotSpec[] = [
           ...SUBMIT_AND_WAIT,
           // The view opens at colWidth 12, which is residue zoom: about a
           // hundred columns of a ~1500-column alignment, and none of the domain
-          // blocks this frame is of. Fit horizontally is the one action that
-          // puts the whole protein on screen, and it computes the width instead
-          // of stepping 0.75x per click toward a floor that would still leave
-          // the C terminus off the right edge. The test id, since the button's
-          // label has been renamed under it once already.
-          { type: 'click', selector: '[data-testid="fit_menu"]' },
-          { type: 'click', text: 'Fit horizontally' },
+          // blocks this frame is of. Fit width is the one action that puts the
+          // whole protein on screen, and it computes the width instead of
+          // stepping 0.75x per click toward a floor that would still leave the
+          // C terminus off the right edge. A bare `Zoom` text would match the
+          // genome view's "Zoom on scroll" first.
+          { type: 'click', selector: '[data-testid="view_menu"]' },
+          { type: 'click', selector: '[role="menuitem"]::-p-text(Zoom)' },
+          { type: 'click', text: 'Fit width' },
           { type: 'delay', ms: 1000 },
           ...COLLAPSE_DOMAIN_KEY,
         ],
