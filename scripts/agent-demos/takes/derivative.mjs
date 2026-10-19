@@ -4,7 +4,7 @@ export const SHELL = true
 
 export const SYSTEM =
   cwd => `You are driving JBrowse Desktop over its MCP tools and you also have a shell
-with samtools 1.24, minimap2, tabix and the jbrowse CLI on PATH. Your working
+with samtools, minimap2, tabix and the jbrowse CLI on PATH. Your working
 directory is ${cwd}. Every file you create goes there, and the analysis runs in
 the shell, outside the app. Already in ${cwd}: the somatic SV callset
 COLO829.somatic-sv.vcf.gz (with .tbi), and grch38_chr3_10_12.fa (with .fai),

@@ -54,7 +54,7 @@ segments below exactly, so the whole allele is under a minute on camera. The
 system prompt in `derivative.mjs` names these two files and the CRAM URL, so the
 agent starts from the callset rather than from a download.
 
-`samtools consensus` needs 1.16 or later; this machine has 1.24.
+`samtools consensus` needs 1.16 or later; this machine has 1.23.
 
 ## What a good take does
 
@@ -172,7 +172,7 @@ grouped by a tag the agent writes from that classification.
 | The EBI MD5 fallback does not replace it | `REF_PATH` to ebi.ac.uk decoded 0 reads and cached nothing                 |
 | 29 spanning reads are in the slice       | `SA` tags touching all three chromosomes, matching `SV_MULTIHOP.md`        |
 | The per-allele counts                    | competitive alignment of all 2,089 locus reads, 2026-10-19                 |
-| `samtools consensus` exists here         | samtools 1.24                                                              |
+| `samtools consensus` exists here         | samtools 1.23                                                              |
 | The config opens in Desktop              | `open` on the `--jbrowse-out` config plus the synteny spec above, over MCP |
 
 ## Rehearsal, 2026-09-01
