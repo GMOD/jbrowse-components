@@ -1879,6 +1879,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_orthologs',
                 type: 'MultiWaySyntenyDisplay',
                 height: 1500,
+                // grey: red and blue here would mostly say which way each
+                // chromosome was deposited, and drown the gene colors
+                ribbonColor: { scale: 'none' },
               },
             ],
           },
@@ -1912,6 +1915,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 trackId: 'ecoli_orthologs',
                 type: 'MultiWaySyntenyDisplay',
                 height: 1500,
+                // grey: red and blue here would mostly say which way each
+                // chromosome was deposited, and drown the gene colors
+                ribbonColor: { scale: 'none' },
               },
             ],
           },
