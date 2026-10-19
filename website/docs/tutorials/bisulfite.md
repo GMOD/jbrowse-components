@@ -265,8 +265,8 @@ opens on, and the track menu switches it afterwards:
 }
 ```
 
-In grammar-of-graphics terms, `baseColor` is a color channel for each base, here
-set from the `bisulfite` field.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `baseColor` is
+a color channel for each base, here set from the `bisulfite` field.
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
 takes `CG`, `CHG`, `CHH` or `all`.
 

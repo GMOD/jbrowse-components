@@ -413,8 +413,8 @@ table, labeled `no annotation`.
 
 ### Ordering the lanes
 
-In grammar-of-graphics terms, `rows` assigns one lane per value of a field, here
-the genome.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
+one lane per value of a field, here the genome.
 
 - `rows.domain` pins the lanes it names to the top; the rest follow
   densest-first, so the order holds across a pan

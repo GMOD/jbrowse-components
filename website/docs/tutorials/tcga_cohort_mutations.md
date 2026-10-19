@@ -143,7 +143,7 @@ its darkness.
 
 ## Facet the rows by clinical annotation
 
-In grammar-of-graphics terms,
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
 display into stacked sections, one per value of a samples TSV column, sorted,
 and `facet.domain` pins the sections you want first.

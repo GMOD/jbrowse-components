@@ -125,8 +125,9 @@ copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 
 The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. In
-grammar-of-graphics terms, `color` is a color scale and `scales.y` the y scale,
-which these settings turn into a copy-number heatmap:
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
+color scale and `scales.y` the y scale, which these settings turn into a
+copy-number heatmap:
 
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
   one strip of color.

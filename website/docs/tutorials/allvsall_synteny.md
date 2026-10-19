@@ -299,7 +299,8 @@ five-strain stack:
 **Display types → Marks** in the track menu draws each `ecoli_ava` alignment as
 a line at its identity, one row per strain, with nothing to configure. The plot
 is the percent identity plot [PipMaker](https://doi.org/10.1101/gr.10.4.577)
-drew for a pair of genomes. In grammar-of-graphics terms, the config below
+drew for a pair of genomes. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, the config below
 writes it out: `rows` assigns one row per `mate.assemblyName`, `filter` drops
 records, `scales.y` is the y scale, and the `mark` is the shape drawn. Three
 details to read:

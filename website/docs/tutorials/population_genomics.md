@@ -268,9 +268,10 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-In grammar-of-graphics terms, `color` is a color scale: a `field` mapped through
-a `domain` to a `range` of colors. Here a `threshold` scale colors each bin by
-its side of zero, and `scales.y` pins the y scale to ±1.5:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
+color scale: a `field` mapped through a `domain` to a `range` of colors. Here a
+`threshold` scale colors each bin by its side of zero, and `scales.y` pins the y
+scale to ±1.5:
 
 ```json addtrack
 {
@@ -370,10 +371,10 @@ field holds the far breakpoint:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype` (standard or inverted). In
-grammar-of-graphics terms, `facet` splits the display into sections, one per
-`karyotype` value, `facet.domain` orders them, and `rowColor` is a color scale
-on each row's label bar:
+The samples TSV pairs each line with its `karyotype` (standard or inverted).
+`facet` splits the display into sections, one per `karyotype` value,
+`facet.domain` orders them, and `rowColor` is a color scale on each row's label
+bar:
 
 ```json addtrack
 {

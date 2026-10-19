@@ -217,7 +217,7 @@ go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
 cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
 the row loads with no data.
 
-In grammar-of-graphics terms, a
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) is the shape drawn, and
 the track menu switches it between modes: `bar` (the default, and the figures
 here) compares peak shape, and `span` maps score to color and fits more rows.

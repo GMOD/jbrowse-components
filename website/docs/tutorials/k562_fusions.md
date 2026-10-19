@@ -264,8 +264,9 @@ The build script lifts the breakends to hg38 and adds both as tracks:
 
 Open chr9 from _ABL1_ to past _NUP214_ with the copy-number track under both
 call tracks, and pick **Display types → Marks** from each call track's menu. In
-grammar-of-graphics terms, a `mark` is the shape drawn per record. A record that
-names its partner breakend draws as a `link` with nothing configured
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, a `mark` is the
+shape drawn per record. A record that names its partner breakend draws as a
+`link` with nothing configured
 ([mark display](/docs/config_guides/mark_display#links)), and a call whose
 partner is on another chromosome draws a stem at its breakpoint.
 

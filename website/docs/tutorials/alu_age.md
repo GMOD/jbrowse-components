@@ -83,9 +83,9 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
 line naming the columns; a mark refers to a column by name. In
-grammar-of-graphics terms, `encoding` maps columns to a mark's channels, and
-`color` is a color scale from a `field` through a `domain` to a `range`. The
-track below lists three marks:
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding` maps
+columns to a mark's channels, and `color` is a color scale from a `field`
+through a `domain` to a `range`. The track below lists three marks:
 
 - **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
   the height. A `formula` step writes the first four characters of the name into

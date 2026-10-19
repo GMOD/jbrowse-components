@@ -19,9 +19,9 @@ NA12878's reads on chromosome 20 we:
 - check the bars against the 1000 Genomes SV callset
 
 The plots use JBrowse's mark display, which maps feature fields to plot
-channels. In grammar-of-graphics terms, a `mark` is the shape drawn and
-`scales.y` the y scale. The mark display is experimental and its config shape
-may change.
+channels. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, a
+`mark` is the shape drawn and `scales.y` the y scale. The mark display is
+experimental and its config shape may change.
 
 ## Prerequisites
 

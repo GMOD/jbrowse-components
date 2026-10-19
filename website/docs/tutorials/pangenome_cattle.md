@@ -155,9 +155,9 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-In grammar-of-graphics terms, `rowColor` in the track config is a color scale on
-each row's label bar, mapping the sample table's `lineage` column through
-`domain` to `range`. The config also sets:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rowColor` in
+the track config is a color scale on each row's label bar, mapping the sample
+table's `lineage` column through `domain` to `range`. The config also sets:
 
 - `rows.domain` lists the cattle breeds above the wild species, and
   `rows.labels` writes each breed beside its row

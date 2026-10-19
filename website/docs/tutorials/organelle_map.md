@@ -132,10 +132,11 @@ jbrowse sort-gff genes.gff3 | bgzip > genes.gff.gz
 tabix -p gff genes.gff.gz
 ```
 
-In grammar-of-graphics terms, the gene track's `facet` splits it into a section
-per `strand`, and its `color` is a color scale mapping the GFF3 `type` field to
-colors. The name label falls back through the GFF3 attributes, so a record with
-no `gene` or `product`, like the D-loop, takes its `gbkey`:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the gene
+track's `facet` splits it into a section per `strand`, and its `color` is a
+color scale mapping the GFF3 `type` field to colors. The name label falls back
+through the GFF3 attributes, so a record with no `gene` or `product`, like the
+D-loop, takes its `gbkey`:
 
 ```json addtrack
 {

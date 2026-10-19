@@ -157,12 +157,13 @@ is a 7.8 kb block.
 }
 ```
 
-The VCF names each sample by its Dog10K ID. In grammar-of-graphics terms, `rows`
-orders the sample rows and names them, and `rowColor` is a color scale on each
-row's label bar. The session below sets both for two animals, and the figure
-does so for every row. **Edit colors/arrangement...** in the track menu writes
-both as you rename and recolor rows by hand, and **Advanced → Edit plot...**
-shows them as text.
+The VCF names each sample by its Dog10K ID. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` orders the
+sample rows and names them, and `rowColor` is a color scale on each row's label
+bar. The session below sets both for two animals, and the figure does so for
+every row. **Edit colors/arrangement...** in the track menu writes both as you
+rename and recolor rows by hand, and **Advanced → Edit plot...** shows them as
+text.
 
 ```json session config=test_data/dog10k/config.json
 {

@@ -240,10 +240,10 @@ it covers.
 ## Coloring the ribbons by strand
 
 The chromosome colors show where each piece went, and strand shows which way
-round it lies. In grammar-of-graphics terms, the view's `color` is a color
-scale, a `field` mapped to colors. The circle opens on `"field": "query"`, which
-colors by the first genome's chromosomes, human here. To color by strand
-instead:
+round it lies. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+the view's `color` is a color scale, a `field` mapped to colors. The circle
+opens on `"field": "query"`, which colors by the first genome's chromosomes,
+human here. To color by strand instead:
 
 - **Color by... → Strand** in the view's menu paints the reverse alignments a
   second color, and **Show legend** names the two.
@@ -299,9 +299,8 @@ jbrowse make-density hg38ToMm39.genes.gff.gz --chrom-sizes hg38ToMm39.chrom.size
 ```
 
 The track names both assemblies. Its display defaults draw a heatmap strip whose
-color is the average over each pixel's bins. In grammar-of-graphics terms,
-`mark` is the shape drawn, and `color` is a color scale mapping the `score`
-field to a `range` of two colors:
+color is the average over each pixel's bins. `mark` is the shape drawn, and
+`color` is a color scale mapping the `score` field to a `range` of two colors:
 
 ```json addtrack
 {

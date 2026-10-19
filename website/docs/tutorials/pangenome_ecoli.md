@@ -208,8 +208,9 @@ jbrowse make-pif ecoli_pggb_untangle.paf
 ```
 
 `untangle_to_bed.py` turns the same PAF into a BED with a `strain` column, so
-one track can draw every strain on K12's axis. In grammar-of-graphics terms,
-`rows` assigns one row per `strain`, and `color` is a color scale that here uses
+one track can draw every strain on K12's axis. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
+one row per `strain`, and `color` is a color scale that here uses
 `scale: "identity"` for the colors the file states, red where the strain runs
 inverted:
 

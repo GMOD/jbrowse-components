@@ -186,9 +186,9 @@ annotation, add one per genome from a bgzipped, tabix-indexed GFF3
 
 One `SyntenyTrack` names all eight assemblies, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
-In grammar-of-graphics terms, the display's `color` is a color scale, and
-`{ "field": "cluster" }` maps each gene's ortholog group, named by its gene
-symbol, to a color:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the display's
+`color` is a color scale, and `{ "field": "cluster" }` maps each gene's ortholog
+group, named by its gene symbol, to a color:
 
 - A conserved gene is one color down the whole stack, and a lane missing it
   breaks the column.

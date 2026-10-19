@@ -248,9 +248,9 @@ runs the converter twice:
 ## Loading the blocks as a multi-row track
 
 The multi-row feature display (`LinearMultiRowFeatureDisplay`) draws one row per
-`sample`. In grammar-of-graphics terms, `rows` assigns the rows and
-`rows.domain` orders them, and `color` is a color scale whose
-`scale: "identity"` names the BED's `itemRgb` colors in the key.
+`sample`. In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`rows` assigns the rows and `rows.domain` orders them, and `color` is a color
+scale whose `scale: "identity"` names the BED's `itemRgb` colors in the key.
 
 ```json addtrack
 {

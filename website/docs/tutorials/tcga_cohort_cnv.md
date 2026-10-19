@@ -116,8 +116,9 @@ The segments themselves are a `FeatureTrack` whose
 
 The rows divide the display's
 [`height`](/docs/config/linearmultirowfeaturedisplay/#slot-height), which at
-this row count makes each tumor under a pixel tall. In grammar-of-graphics
-terms, two settings draw the rows and colors:
+this row count makes each tumor under a pixel tall. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, two settings draw
+the rows and colors:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns one
   labeled row per value of `sample`

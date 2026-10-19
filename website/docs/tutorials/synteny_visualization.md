@@ -212,13 +212,14 @@ NZ_CP011330v1:1,238,100-1,258,100
 ## Coloring genes by ortholog
 
 NCBI reuses standardized gene symbols across bacterial strains, so the symbol is
-effectively an ortholog id. In grammar-of-graphics terms, a track's `color` is a
-color scale, a `field` mapped to colors. Pick **Color by... → Attribute...** on
-each gene track's menu and enter `gene` as the field. An ortholog is one color
-down all three panels, and features with no `gene` value (most genes here have
-only a locus tag) stay grey. Inside the inversion, _rsmA_ and _rlmN_ trade
-places in J99. **Advanced → Edit plot...** in the same menu shows the setting as
-text and applies edits live.
+effectively an ortholog id. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's `color`
+is a color scale, a `field` mapped to colors. Pick **Color by... →
+Attribute...** on each gene track's menu and enter `gene` as the field. An
+ortholog is one color down all three panels, and features with no `gene` value
+(most genes here have only a locus tag) stay grey. Inside the inversion, _rsmA_
+and _rlmN_ trade places in J99. **Advanced → Edit plot...** in the same menu
+shows the setting as text and applies edits live.
 
 <Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the three strains after applying it, a shared symbol one color down all three." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 

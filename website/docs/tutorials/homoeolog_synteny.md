@@ -200,10 +200,10 @@ pair by its dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
 come out at a lower dS than A-C or C-D pairs.
 
-In grammar-of-graphics terms, the dotplot's `color` is a color scale, here the
-`ds` field mapped to a ramp. The session pins the ramp's ends with `domainMin`
-and `domainMax`, so a color means one dS wherever the view goes; the menu has no
-field for them:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the dotplot's
+`color` is a color scale, here the `ds` field mapped to a ramp. The session pins
+the ramp's ends with `domainMin` and `domainMax`, so a color means one dS
+wherever the view goes; the menu has no field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {

@@ -178,8 +178,9 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 
 Each long read is one DNA molecule, so reads with an `HP` haplotype tag (from
 WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. In
-grammar-of-graphics terms, **Group by...** sets a `facet`, which splits the
-display into stacked sections, one per value of a field.
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, **Group by...**
+sets a `facet`, which splits the display into stacked sections, one per value of
+a field.
 
 Pick **Group by... → Tag...** in the track menu and enter `HP`. The pileup then
 stacks into:

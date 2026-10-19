@@ -284,10 +284,11 @@ awk -F'\t' -v OFS='\t' '
 ```
 
 The config below loads the regtools file built from this page's BAM as a feature
-track. In grammar-of-graphics terms, the `link` mark is the shape drawn for each
-junction, `size` scales with read count, `color` is a color scale on the
-known-junction flag against RefSeq, and `filter` drops records. `columnNames`
-names the extra columns so the color scale can read them:
+track. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the
+`link` mark is the shape drawn for each junction, `size` scales with read count,
+`color` is a color scale on the known-junction flag against RefSeq, and `filter`
+drops records. `columnNames` names the extra columns so the color scale can read
+them:
 
 ```json addtrack loc=chr11:49,220,500-49,231,500
 {

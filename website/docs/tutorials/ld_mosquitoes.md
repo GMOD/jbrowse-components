@@ -134,9 +134,10 @@ jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
-The track over that file is an `LDTrack`. In grammar-of-graphics terms, its
-`color` is a color scale, and `color.field` picks r² or D', the two metric
-columns, as its input:
+The track over that file is an `LDTrack`. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, its `color` is a
+color scale, and `color.field` picks r² or D', the two metric columns, as its
+input:
 
 ```json addtrack
 {
@@ -207,7 +208,6 @@ with a `LinearMultiSampleVariantDisplay`:
 }
 ```
 
-In grammar-of-graphics terms,
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
 display into one section per `karyotype` value, `facet.domain` orders them by
 dosage, and `rowColor` is a color scale on each row's label bar.

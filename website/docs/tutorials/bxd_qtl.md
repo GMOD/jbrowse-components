@@ -122,9 +122,9 @@ names the marker positions follow:
 
 The painting track is a `FeatureTrack` with a
 [`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). In
-grammar-of-graphics terms, `rows` assigns one row per `sample` and `color` is a
-color scale. For your own panel, swap `uri` for the bgzipped, tabix-indexed BED
-your conversion wrote.
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
+one row per `sample` and `color` is a color scale. For your own panel, swap
+`uri` for the bgzipped, tabix-indexed BED your conversion wrote.
 
 ```json addtrack loc=chr4
 {

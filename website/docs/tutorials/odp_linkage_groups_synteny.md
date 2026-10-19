@@ -184,8 +184,8 @@ We'll open the jellyfish-against-sponge table as a dotplot, then:
   turns one block per group into a diagonal.
 
 As a session, the same dotplot with the sponge's unplaced scaffolds left off its
-axis. In grammar-of-graphics terms, the session's `color` is a color scale, a
-`field` mapped to colors:
+axis. In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the
+session's `color` is a color scale, a `field` mapped to colors:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -226,9 +226,8 @@ and the session below sets what the figure needs.
 odp tests each pair of chromosomes for more shared orthologs than chance
 (Fisher's exact test, corrected for the number of pairs, in the `break_FET`
 column). Like the paper's figure, the stack draws orthologs on a chromosome pair
-under 0.05 at opacity 0.8 and the rest at 0.15. In grammar-of-graphics terms,
-that is an `opacity` scale, which maps the `break_FET` field, cut at 0.05, to a
-`range` of two opacities.
+under 0.05 at opacity 0.8 and the rest at 0.15. That is an `opacity` scale,
+which maps the `break_FET` field, cut at 0.05, to a `range` of two opacities.
 
 Each setting in the session has a menu route except `fadeThinAlignmentsMode` and
 the `opacity` mapping:

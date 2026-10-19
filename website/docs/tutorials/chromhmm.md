@@ -178,7 +178,8 @@ bgzipped, tabix-indexed BED from the merge above:
 }
 ```
 
-JBrowse finds the `.bed.gz.tbi` beside the file. In grammar-of-graphics terms,
+JBrowse finds the `.bed.gz.tbi` beside the file. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns the rows:
 
 - `field` is the attribute to split rows by, so every distinct `cellType`

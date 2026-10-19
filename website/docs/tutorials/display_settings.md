@@ -95,10 +95,10 @@ reopening the file restores every setting.
 </details>
 
 `height`, `unit` and `color` are the setting names in both apps. In
-grammar-of-graphics terms, `color` is a color scale, a field mapped to colors,
-and `unit` is the observation unit, a read or a chain. The
-[config schema docs](/docs/config_guide) list the names and values each display
-takes (e.g. [](/docs/config/linearalignmentsdisplay),
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
+color scale, a field mapped to colors, and `unit` is the observation unit, a
+read or a chain. The [config schema docs](/docs/config_guide) list the names and
+values each display takes (e.g. [](/docs/config/linearalignmentsdisplay),
 [](/docs/config/linearwiggledisplay)).
 
 Reading the JSON back finds the key for any setting on any track: change it in

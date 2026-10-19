@@ -245,10 +245,11 @@ hg38 assembly before either track.
 
 ## Coloring each isoform by its usage change
 
-In grammar-of-graphics terms, `color` is a color scale: its `field`,
-`dif_called` (a called transcript's isoform-fraction change), goes through the
-`threshold` cuts in `domain` to the colors in `range`, liver-preferred below
-zero and muscle-preferred above. A value on a cut takes the interval above it.
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `color` is a
+color scale: its `field`, `dif_called` (a called transcript's isoform-fraction
+change), goes through the `threshold` cuts in `domain` to the colors in `range`,
+liver-preferred below zero and muscle-preferred above. A value on a cut takes
+the interval above it.
 
 - The key lists every interval under the `title`, plus a `(no value)` row for
   uncalled transcripts.

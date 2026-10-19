@@ -147,8 +147,9 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 ```
 
 Then add the NA12878 reads. The CRAM needs its `.crai` beside it and decodes
-against hg38; for your own sample, swap the `uri`. In grammar-of-graphics terms,
-the track's `color` is a color scale on the `mapq` field:
+against hg38; for your own sample, swap the `uri`. In
+[grammar-of-graphics](/docs/config_guides/mark_display) terms, the track's
+`color` is a color scale on the `mapq` field:
 
 ```json addtrack loc=chr5:70,889,000-70,989,000
 {

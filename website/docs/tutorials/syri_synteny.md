@@ -268,8 +268,9 @@ one track:
 tabix -p bed syri_regions.bed.gz
 ```
 
-In grammar-of-graphics terms, `rows` assigns one row per value of a field, here
-`query`, the accession, and `rows.domain` orders them:
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
+one row per value of a field, here `query`, the accession, and `rows.domain`
+orders them:
 
 ```json addtrack
 {
