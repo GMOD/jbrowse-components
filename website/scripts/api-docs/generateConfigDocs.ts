@@ -1213,13 +1213,11 @@ function enumerationValues(node: ts.Expression): string[] | undefined {
 const MAX_INLINE_DEFAULT = 72
 function renderInlineDefault(node: ts.Expression): string | undefined {
   const isScalar =
-    ts.isNumericLiteral(node) ||
     node.kind === ts.SyntaxKind.TrueKeyword ||
     node.kind === ts.SyntaxKind.FalseKeyword ||
     node.kind === ts.SyntaxKind.NullKeyword ||
     ts.isIdentifier(node) ||
-    ts.isPropertyAccessExpression(node) ||
-    (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
+    ts.isPropertyAccessExpression(node)
   if (ts.isStringLiteralLike(node)) {
     return `'${node.text}'`
   }
@@ -1241,6 +1239,14 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
     : undefined
   if (numericConst !== undefined) {
     return numericConst
+  }
+  // `node.text`, not `getText()`: `1_000_000` is valid TypeScript but not
+  // valid JSON, and a reader pastes the default into a config.
+  if (ts.isNumericLiteral(node)) {
+    return node.text
+  }
+  if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
+    return `${ts.tokenToString(node.operator)}${node.operand.text}`
   }
   if (isScalar) {
     return node.getText()

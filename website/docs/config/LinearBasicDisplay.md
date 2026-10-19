@@ -65,7 +65,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5_000_000</code> | Feature (GFF/BED) tracks are light text, and the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a single gene can trip a tighter gate.<br>_advanced_ |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>5000000</code> | Feature (GFF/BED) tracks are light text, and the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a single gene can trip a tighter gate.<br>_advanced_ |
 | <span id="slot-filter">**filter**</span><br>[BasicFeatureFilter](../basicfeaturefilter) | The features the display draws: the jexl `expressions`, and `genes`, the gene-like features as a category. |
 | <span id="slot-connectorcolor">**connectorColor**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color of the connecting/intron lines between feature segments (defaults to the theme text color)<br>_callback args:_ `feature` |
 | <span id="slot-utrcolor">**utrColor**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue<br>_callback args:_ `feature` |
