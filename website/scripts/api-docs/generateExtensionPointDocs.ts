@@ -42,7 +42,15 @@ function collectFromFile(text: string, points: ExtensionPoint[]) {
 // — a typed point with no `#extensionPoint` tag is an error below. (A point that
 // is neither typed nor tagged still slips through; typing it is the fix, and is
 // wanted anyway.)
-function collectRegistryKeys(text: string, keys: Map<string, string>) {
+// A UI point names its shape by the alias it is declared with, which the guide's
+// "Points that resolve to UI" section explains along with its registering helper.
+const UI_SHAPE_ENTRY =
+  /^\s*'([\w-]+)':\s*(ComponentSlot|ComponentList|ElementList)</gm
+
+function collectRegistryKeys(
+  text: string,
+  keys: Map<string, string | undefined>,
+) {
   const blocks = /interface ExtensionPointRegistry\s*\{/g
   let m: RegExpExecArray | null
   while ((m = blocks.exec(text)) !== null) {
@@ -62,7 +70,10 @@ function collectRegistryKeys(text: string, keys: Map<string, string>) {
     // the entry's own `args:` line, which is what says whether callbacks
     // accumulate into a list or hand one value along
     for (const k of block.matchAll(/^\s*'([\w-]+)':\s*\{([\s\S]*?)^\s*\}/gm)) {
-      keys.set(k[1]!, /^\s*args:\s*(.+)$/m.exec(k[2]!)?.[1]?.trim() ?? '')
+      keys.set(k[1]!, shapeOf(/^\s*args:\s*(.+)$/m.exec(k[2]!)?.[1]?.trim()))
+    }
+    for (const k of block.matchAll(UI_SHAPE_ENTRY)) {
+      keys.set(k[1]!, k[2]!)
     }
   }
 }
@@ -72,19 +83,19 @@ function collectRegistryKeys(text: string, keys: Map<string, string>) {
  * which registration method the point takes. An array-valued `args` means every
  * callback appends and they all survive (`contributeToExtensionPoint`); `args:
  * undefined` means there is no value to overwrite at all, only side effects that
- * all run (`observeExtensionPoint`); anything else is a single value threaded
+ * all run (`listenToExtensionPoint`); anything else is a single value threaded
  * along, so each callback overwrites what the one before it returned
  * (`addToExtensionPoint`). This is the distinction that the point *names* don't
- * carry (`DotplotView-OverlaySVGComponent` accumulates,
- * `DotplotView-OverlayHTMLComponent` does not).
+ * carry (`Desktop-StartScreenMenuItems` accumulates,
+ * `Desktop-StartScreenLaunchPanel` does not).
  *
  * `notify` is its own row rather than folded into `single` because the two are
  * opposites where it matters: on a `single` point only the last plugin to
  * register is visible, and on a `notify` point every plugin's callback runs.
  */
-function shapeOf(args: string) {
-  if (args === '') {
-    return ''
+function shapeOf(args: string | undefined) {
+  if (args === undefined) {
+    return undefined
   }
   if (args.endsWith('[]')) {
     return 'list'
@@ -94,7 +105,7 @@ function shapeOf(args: string) {
 
 function collectExtensionPoints(corpus: SourceCorpus): ExtensionPoint[] {
   const points: ExtensionPoint[] = []
-  const registryKeys = new Map<string, string>()
+  const registryKeys = new Map<string, string | undefined>()
   for (const file of corpus.files) {
     const text = corpus.read(file)
     collectFromFile(text, points)
@@ -121,8 +132,14 @@ function collectExtensionPoints(corpus: SourceCorpus): ExtensionPoint[] {
       byId.set(p.id, p)
     }
   }
+  const shapeless = [...byId.keys()].filter(id => !registryKeys.get(id)).sort()
+  if (shapeless.length > 0) {
+    throw new Error(
+      `these tagged extension points have no shape the generator can read off ExtensionPointRegistry (an \`args:\` line, or a ComponentSlot/ComponentList/ElementList declaration), so their Shape cell would be blank: ${shapeless.join(', ')}`,
+    )
+  }
   return [...byId.values()]
-    .map(p => ({ ...p, shape: shapeOf(registryKeys.get(p.id) ?? '') }))
+    .map(p => ({ ...p, shape: registryKeys.get(p.id) }))
     .sort((a, b) => a.id.localeCompare(b.id))
 }
 

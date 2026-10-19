@@ -461,7 +461,8 @@ Generated from the `#extensionPoint` tags at each point's fire/registration
 site. The detailed sections that follow are hand-written.
 
 The **Shape** column shows what happens when a second plugin registers on the
-same point, and the generator derives it from the point's `args`:
+same point, and the generator reads it off the point's `ExtensionPointRegistry`
+entry:
 
 - **`list`** accumulates, so every plugin's contribution survives; register with
   `contributeToExtensionPoint`.
@@ -470,6 +471,9 @@ same point, and the generator derives it from the point's `args`:
 - **`single`** threads one value along, so each callback overwrites what the one
   before it returned and only the last plugin to register is visible; register
   with `addToExtensionPoint`.
+- **`ComponentSlot`**, **`ComponentList`** and **`ElementList`** are the UI
+  shapes, each with its own registering helper; see
+  [Points that resolve to UI](#points-that-resolve-to-ui).
 
 The names don't show this: `Desktop-StartScreenMenuItems` accumulates and
 `Desktop-StartScreenLaunchPanel` does not. Check the Shape column before
@@ -481,27 +485,27 @@ plugin before you put there.
 <!-- prettier-ignore -->
 | Extension point | Type | Shape | Description |
 | --- | --- | --- | --- |
-| `Core-addTrackComponent` | sync |  | Inject a custom React component into the add-track widget |
+| `Core-addTrackComponent` | sync | ComponentSlot | Inject a custom React component into the add-track widget |
 | `Core-addTrackComponentAdapterTypes` | sync | list | Adapter types whose add-track picker supplies the assembly |
 | `Core-describeAssemblies` | async | single | Describe, in one batch, assemblies absent from the session: each one's assembly config and gene adapter, read without connecting anything. Each callback adds to the descriptions the one before it returned |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
 | `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
-| `Core-extraAboutPanel` | sync |  | Add extra panels to a track's About dialog |
-| `Core-extraFeaturePanel` | sync |  | Add extra panels to the feature details widget |
+| `Core-extraAboutPanel` | sync | ComponentList | Add extra panels to a track's About dialog |
+| `Core-extraFeaturePanel` | sync | ComponentList | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
 | `Core-handleUnrecognizedAssembly` | sync | notify | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, so waitForAssembly can stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add tabs to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
-| `Core-replaceAbout` | sync |  | Replace or wrap a track's About dialog body |
-| `Core-replaceWidget` | sync |  | Replace or wrap the component that renders a widget |
-| `Desktop-StartScreenLaunchPanel` | sync |  | Replace or wrap the "Launch new session" panel |
+| `Core-replaceAbout` | sync | ComponentSlot | Replace or wrap a track's About dialog body |
+| `Core-replaceWidget` | sync | ComponentSlot | Replace or wrap the component that renders a widget |
+| `Desktop-StartScreenLaunchPanel` | sync | ComponentSlot | Replace or wrap the "Launch new session" panel |
 | `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
-| `Desktop-StartScreenRecentSessionsPanel` | sync |  | Replace or wrap the recent sessions panel |
-| `DotplotView-OverlayHTMLComponent` | sync |  | Add an HTML overlay component to the dotplot view |
-| `DotplotView-OverlaySVGComponent` | sync |  | Add an SVG overlay component to the dotplot view |
+| `Desktop-StartScreenRecentSessionsPanel` | sync | ComponentSlot | Replace or wrap the recent sessions panel |
+| `DotplotView-OverlayHTMLComponent` | sync | ElementList | Add an HTML overlay component to the dotplot view |
+| `DotplotView-OverlaySVGComponent` | sync | ElementList | Add an SVG overlay component to the dotplot view |
 | `LaunchView-BreakpointSplitView` | async | single | Programmatically launch a breakpoint split view |
 | `LaunchView-CircularView` | async | single | Programmatically launch a circular view |
 | `LaunchView-DotplotView` | async | single | Programmatically launch a dotplot view |
@@ -509,14 +513,14 @@ plugin before you put there.
 | `LaunchView-LinearSyntenyView` | async | single | Programmatically launch a linear synteny view |
 | `LaunchView-SpreadsheetView` | async | single | Programmatically launch a spreadsheet view |
 | `LaunchView-SvInspectorView` | async | single | Programmatically launch the SV inspector view |
-| `LinearGenomeView-HighlightSVGComponent` | sync |  | Add an SVG highlight overlay in the LGV SVG export |
-| `LinearGenomeView-OverviewScalebarComponent` | sync |  | Add a component to the overview scalebar |
-| `LinearGenomeView-ScalebarHighlightComponent` | sync |  | Add a highlight component to the scalebar |
+| `LinearGenomeView-HighlightSVGComponent` | sync | ElementList | Add an SVG highlight overlay in the LGV SVG export |
+| `LinearGenomeView-OverviewScalebarComponent` | sync | ElementList | Add a component to the overview scalebar |
+| `LinearGenomeView-ScalebarHighlightComponent` | sync | ElementList | Add a highlight component to the scalebar |
 | `LinearGenomeView-searchResultSelected` | async | notify | Invoked when a search result is selected |
-| `LinearGenomeView-TracksContainerComponent` | sync |  | Add a component into the LGV tracks container |
+| `LinearGenomeView-TracksContainerComponent` | sync | ElementList | Add a component into the LGV tracks container |
 | `SyntenyImportForm-FileFormats` | sync | list | Add synteny file formats to the "New track" panel of every synteny import form |
 | `SyntenyImportForm-Options` | sync | list | Add track options beside None / Existing track / New track in every synteny import form |
-| `TrackSelector-folderDialog` | sync |  | Replace the dialog shown when a folder category is clicked |
+| `TrackSelector-folderDialog` | sync | ComponentSlot | Replace the dialog shown when a folder category is clicked |
 | `TrackSelector-multiTrackMenuItems` | sync | list | Add items to the multi-track (shopping cart) menu |
 
 <!-- EXTENSION_POINTS_INDEX END -->
