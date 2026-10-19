@@ -97,29 +97,27 @@ one notification rather than an `undefined is not a function` somewhere later.
 ## Standalone helper packages
 
 JBrowse publishes several helper packages to npm alongside `@jbrowse/core`, so
-the parsing and scale math is already written. The host serves each of them, and
-the third column shows whether a second copy would also be safe, for a no-build
-plugin or one bundling deliberately.
+the parsing and scale math is already written. The third column says whether the
+host serves a package or your build bundles it.
 
 <!-- HELPER_PACKAGES START -->
 
 <!-- prettier-ignore -->
 | Package | What it provides | How to use it |
 | --- | --- | --- |
-| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | Served by the host, and safe to bundle too — no framework or `@jbrowse/core` dependency |
-| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | Served by the host, and it has to be: it depends on `@jbrowse/core`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
-| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
-| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
-| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
-| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
+| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | Served by the host; a plugin build externalizes it |
+| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | Bundled into your plugin; it imports no framework and not `@jbrowse/core` |
+| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | Bundled into your plugin; its imports of `@jbrowse/core`, `react`, `react-dom` stay external and resolve to the host's copies |
+| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | Bundled into your plugin; its imports of `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` stay external and resolve to the host's copies |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Bundled into your plugin; its imports of `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` stay external and resolve to the host's copies |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | Bundled into your plugin; its imports of `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` stay external and resolve to the host's copies |
 
 <!-- HELPER_PACKAGES END -->
 
-A package with no framework dependency is safe to bundle: two copies of a pure
-parser are wasteful at worst. One that depends on `@jbrowse/core` or the
-React/MobX stack is not — a second copy of core is a second configuration system
-and a second set of model types, which the host does not recognize — and that is
-why the host serves it.
+A bundled helper package keeps one copy of core: its own imports of
+`@jbrowse/core` and the React/MobX stack are served keys, so the plugin build
+leaves them external and they resolve to the host's copies. A no-build plugin
+has no bundler, so it can use a served package only.
 
 The exported functions for each are documented on the linked API pages and
 mirrored into the package's README on npm.

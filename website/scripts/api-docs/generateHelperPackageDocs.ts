@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import { servedPackages } from './generateReExportDocs.ts'
 import { markdownTable, rewriteMarkerBlock } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
@@ -19,10 +20,11 @@ import type { SourceCorpus } from './util.ts'
 //                     exports something tagged `#api`, i.e. has a generated API
 //                     page for a plugin author to read. An internal package
 //                     nothing documents is not something to recommend.
-//   what it costs     its own package.json dependencies + peerDependencies.
-//                     A package that pulls in `@jbrowse/core` or the React/MobX
-//                     stack is shared-identity-sensitive; one that pulls in
-//                     neither is safe to bundle outright.
+//   served or not     the re-export manifest. A served package is
+//                     externalized by a plugin build; any other is bundled
+//                     into the plugin, with its own imports of served
+//                     packages and the framework left external.
+//   what it imports   its own package.json dependencies + peerDependencies.
 //
 // The description is the manifest's own `description`, so a package says what
 // it provides in the one place npm also reads it from.
@@ -52,6 +54,7 @@ interface Pkg {
   name: string
   description: string
   shared: string[]
+  served: boolean
   apiPage: string
 }
 
@@ -84,6 +87,7 @@ function hasApiExports(corpus: SourceCorpus, dir: string) {
 }
 
 export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
+  const served = servedPackages()
   const out: Pkg[] = []
   for (const entry of fs.readdirSync(PACKAGES_DIR, { withFileTypes: true })) {
     const dir = path.join(PACKAGES_DIR, entry.name)
@@ -109,25 +113,25 @@ export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
       name: pkg.name,
       description: pkg.description,
       shared: SHARED.filter(d => d in deps),
+      served: served.has(pkg.name),
       apiPage: entry.name,
     })
   }
-  // Framework-free first — those are the ones with no caveat attached — then
-  // alphabetical within each half, so the table is stable across runs.
   return out.sort(
-    (a, b) => a.shared.length - b.shared.length || a.name.localeCompare(b.name),
+    (a, b) =>
+      Number(b.served) - Number(a.served) ||
+      a.shared.length - b.shared.length ||
+      a.name.localeCompare(b.name),
   )
 }
 
-// The "How to use it" cell is the actionable half. Every package here is one
-// the host serves (the re-export table above lists them), so a build-step
-// plugin gets the host's copy either way; what differs is whether a second
-// copy would be harmless, which is what a no-build plugin or a plugin bundling
-// deliberately needs to know.
 function howToUse(pkg: Pkg) {
+  if (pkg.served) {
+    return 'Served by the host; a plugin build externalizes it'
+  }
   return pkg.shared.length
-    ? `Served by the host, and it has to be: it depends on ${pkg.shared.map(d => `\`${d}\``).join(', ')}, so a bundled second copy would not interoperate. Import it and let the template externalize it`
-    : 'Served by the host, and safe to bundle too — no framework or `@jbrowse/core` dependency'
+    ? `Bundled into your plugin; its imports of ${pkg.shared.map(d => `\`${d}\``).join(', ')} stay external and resolve to the host's copies`
+    : 'Bundled into your plugin; it imports no framework and not `@jbrowse/core`'
 }
 
 function renderTable(packages: Pkg[]) {
