@@ -83,7 +83,7 @@ export const configVideos: VideoSpec[] = [
       {
         type: 'click',
         selector: '[data-testid="share-button"]',
-        say: 'Share the session, and show it as readable JSON',
+        say: 'Share the session, and view it as JSON',
         hold: 800,
       },
       { type: 'waitForText', text: 'Copy the URL below' },
@@ -101,14 +101,20 @@ export const configVideos: VideoSpec[] = [
       { type: 'delay', ms: 900 },
       {
         type: 'click',
-        text: 'Show readable JSON',
+        selector: '[aria-label="Session sharing settings"]',
         hold: 800,
       },
-      // The end of the route: a readable session under the `share-<id>` link.
+      { type: 'waitForText', text: 'View session JSON' },
+      {
+        type: 'click',
+        text: 'View session JSON',
+        hold: 800,
+      },
+      // The end of the route: the session JSON over the `share-<id>` link.
       //
       // The tour does NOT scroll it, and three takes went into deciding that.
       // The keys are ~25 wrapped lines from the end of an ~80-line document in
-      // a 20-row panel, and the panel's only lever is a caret — PageDown from
+      // a 30-row field, and the field's only lever is a caret — PageDown from
       // wherever the click landed, which moved fifteen lines between two takes,
       // or PageDown to the end, which is deterministic and stops one screen
       // past them. Neither is worth having: reading text off a moving film is

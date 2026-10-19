@@ -59,9 +59,10 @@ shows them as text and applies edits live.
 
 ## Read the setting names back out of the session JSON
 
-Click **Share** and tick the **Show readable JSON** box below the link.
+Click **Share**, then the gear icon in the share dialog, then **View session
+JSON**.
 
-<Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then the share dialog with Show readable JSON ticked to display the session." />
+<Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then the share dialog's View session JSON to display the session." />
 
 JBrowse Web saves an edit to a configured track as the settings that changed, so
 the session JSON lists the three settings under `trackConfigDeltas`, keyed by

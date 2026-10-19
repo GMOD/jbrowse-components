@@ -3554,7 +3554,7 @@ export const videoSteps: Record<string, string[]> = {
   "config/settings_to_json": [
     "From the track menu, color the reads by insert size and orientation",
     "Then link each read to its mate",
-    "Share the session, and show it as readable JSON",
+    "Share the session, and view it as JSON",
     "The whole session as JSON; the settings sit under trackConfigDeltas"
   ],
   "genomes_basics/gnomad_filter": [

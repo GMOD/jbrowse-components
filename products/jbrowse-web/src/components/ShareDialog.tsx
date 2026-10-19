@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { ErrorBanner, InfoDialog } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import SessionJsonPanel from '@jbrowse/core/ui/SessionJsonPanel'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
@@ -23,6 +22,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SessionJsonDialog from './SessionJsonDialog.tsx'
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
@@ -51,6 +51,7 @@ const ShareDialog = observer(function ShareDialog({
   session: SessionWithShareURL
 }) {
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
+  const [jsonDialogOpen, setJsonDialogOpen] = useState(false)
   const [mode, setMode] = useState(storedMode)
   // Snapshotted once on open, so the session changing under the dialog does
   // not re-upload it. Stamps what the live session resolves at read time, so
@@ -156,6 +157,12 @@ const ShareDialog = observer(function ShareDialog({
                 },
               })),
               {
+                label: 'View session JSON',
+                onClick: () => {
+                  setJsonDialogOpen(true)
+                },
+              },
+              {
                 label: 'About session URLs',
                 onClick: () => {
                   setInfoDialogOpen(true)
@@ -182,9 +189,17 @@ const ShareDialog = observer(function ShareDialog({
         ) : (
           <ShareLinkField value={url} />
         )}
-        <SessionJsonPanel session={snap} />
       </InfoDialog>
 
+      {jsonDialogOpen ? (
+        <SessionJsonDialog
+          session={session}
+          snap={snap}
+          onClose={() => {
+            setJsonDialogOpen(false)
+          }}
+        />
+      ) : null}
       <ShareInfoDialog
         open={infoDialogOpen}
         onClose={() => {

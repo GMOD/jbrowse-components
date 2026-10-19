@@ -129,7 +129,8 @@ test.each(['short', 'long'])(
   async mode => {
     const utils = await renderDialog(mode)
 
-    fireEvent.click(utils.getByText('Show readable JSON'))
+    fireEvent.click(utils.getByLabelText('Session sharing settings'))
+    fireEvent.click(await utils.findByText('View session JSON'))
     expect(utils.getByDisplayValue(/"name": "a session"/)).toBeTruthy()
   },
 )

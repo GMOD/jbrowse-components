@@ -14,7 +14,8 @@ const ShareInfoDialog = observer(function ShareInfoDialog({
       <DialogContentText>
         A session encodes your tracks, views, and selections in the URL, so it
         can get long. Both formats below carry the same data, and{' '}
-        <strong>Show readable JSON</strong> shows exactly what it contains.
+        <strong>View session JSON</strong> in the settings menu shows exactly
+        what it contains.
       </DialogContentText>
       <DialogContentText>
         <strong>Short URL</strong> (recommended): the session is encrypted in
