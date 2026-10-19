@@ -10,7 +10,7 @@ The GWAS track renders results as a Manhattan plot: -log₁₀(p-value) on the Y
 axis, genomic position on the X axis. Points support LocusZoom-style r² LD
 coloring to show linkage to an index SNP.
 
-<Figure caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background." src="/img/gwas/manhattan.png" />
+<Figure caption="A GWAS track as a Manhattan plot, each point a variant at its -log₁₀(p)." src="/img/gwas/manhattan.png" />
 
 For a genome-wide example, the embedded
 [Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas/) browses
@@ -55,7 +55,7 @@ can see which nearby variants are in linkage with the lead signal (see
 [Add GWAS track workflow](#add-gwas-track-workflow) for how the index is
 chosen).
 
-<Figure caption="LD coloring at the STAT4 locus: the lead SNP is the diamond, and surrounding points shade by their r² to it, so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
+<Figure caption="LD coloring at STAT4: the lead SNP is the diamond, and other points shade by their r² to it." src="/img/gwas/locuszoom_ld.png" />
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld/)

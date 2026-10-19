@@ -37,7 +37,7 @@ zoom wherever the pointer is over the tracks. To scroll the page while it is on,
 put the pointer on the view header or use the scrollbar. `Shift`+wheel stays
 horizontal scrolling.
 
-<Figure caption="The Zoom on scroll checkbox in the LGV header. With it on, the wheel zooms wherever it is over the tracks, and the header still scrolls the page." src="/img/scroll_zoom_toggle.png" />
+<Figure caption="The Zoom on scroll checkbox in the LGV header." src="/img/scroll_zoom_toggle.png" />
 
 ### Reordering tracks
 
@@ -77,14 +77,14 @@ The search box at the top of the LGV accepts:
 Name searching needs a text index; see
 [text searching](/docs/config_guides/text_searching).
 
-<Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
+<Figure caption="Searching for a gene name in the location box." src="/img/searching_lgv.png" />
 
 Picking a gene or feature from the results navigates to it and highlights it,
 pinned toward the top of its track. The highlight follows the feature as you pan
 and zoom. Search again to move it, or click "Clear search highlight" in the
 header bar.
 
-<Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature." src="/img/search_feature_highlight.png" />
+<Figure caption="A feature picked from the search results, pinned to the top of its track and boxed." src="/img/search_feature_highlight.png" />
 
 When several indexed annotation tracks match the same gene at one place, JBrowse
 navigates straight there, through an open track where there is one. The picker
@@ -96,12 +96,12 @@ Menu bar: `File` → `Open track...`. For a whole track hub (UCSC track hub or
 JBrowse 1 data directory), `File` → `Open connection...`; see
 [](/docs/user_guides/connections).
 
-<Figure caption="The 'Open track...' item in the File menu opens the 'Add a track' form as a drawer widget." src="/img/add_track_form.png" />
+<Figure caption="File → Open track... opens the Add a track form as a drawer widget." src="/img/add_track_form.png" />
 
 The circular plus (+) button in the "Available tracks" widget opens the same
 form.
 
-<Figure caption="(1) The 'Available tracks' widget, opened from the button on the far left of the linear genome view. (2) The plus (+) button at its bottom right launches the 'Add a track' form." src="/img/add_track_tracklist.png" />
+<Figure caption="(1) The Available tracks widget. (2) Its plus button opens the Add a track form." src="/img/add_track_tracklist.png" />
 
 The form takes a URL or a local file. Which formats need an index:
 
@@ -113,7 +113,7 @@ The form takes a URL or a local file. Which formats need an index:
 For remote files the index is inferred from conventional names (`file.bam` →
 `file.bam.bai`). Local files and non-standard names need it supplied by hand.
 
-<Video src="/media/ui/open_track_url.mp4" caption="A bigwig opened by URL against the volvox test data: the File menu item, the URL typed into the form, the name and adapter the form fills in from it, and the track drawing under the gene lane." />
+<Video src="/media/ui/open_track_url.mp4" caption="A bigwig opened by URL: the File menu item, the URL typed into the form, and the track drawing." />
 
 ### Opening local files
 
@@ -139,7 +139,7 @@ extension, and an index (`.bai`, `.csi`, `.tbi`, `.crai`) is paired with the
 data file it indexes whatever the order. The preview table is where a row is
 renamed or removed, and one assembly serves the batch.
 
-<Video src="/media/ui/bulk_add_tracks.mp4" caption="Four volvox URLs pasted in one box, scrambled, with an index sitting between two unrelated data files. The table that comes back has a row per data file, the index paired onto the one whose name it extends, and a submit button counting what it kept." />
+<Video src="/media/ui/bulk_add_tracks.mp4" caption="Four URLs pasted in one box, and the table pairing each index with its data file." />
 
 ## File format support
 
@@ -174,7 +174,7 @@ always use the Share button.
 JBrowse Desktop has no Share button, since its sessions are files. It opens a
 shared link via `File` → `Session` → `Open JBrowse Web link...`.
 
-<Figure caption="The session share dialog, which gives you a short URL to share your session with other users." src="/img/share_button.png" />
+<Figure caption="The session share dialog." src="/img/share_button.png" />
 
 The session URL contains:
 
@@ -192,18 +192,18 @@ The track menu (vertical "..." on the track selector or track label) holds the
 track-specific functions. Some options need the track open (from the track
 label); basics like "About track" are always available from the track selector.
 
-<Figure caption="Opening the track menu, from the track selector and from the track label, with a VCF track menu open." src="/img/track_menu.png" />
+<Figure caption="Opening the track menu from the track selector and from the track label." src="/img/track_menu.png" />
 
 ## Favorite and recently used tracks
 
 Mark favorites from the Track menu and view them under the star icon in the top
 right of the Available tracks widget.
 
-<Figure caption="Add a track to your list of favorite tracks from the Track menu, then view them in the top right menu." src="/img/favorite_tracks.png" />
+<Figure caption="Adding a track to the favorites from its track menu, and the favorites list." src="/img/favorite_tracks.png" />
 
 Recently opened tracks are listed under the clock icon.
 
-<Figure caption="Selected tracks will be added to a recently used list, then they can be viewed using the top right menu." src="/img/recent_tracks.png" />
+<Figure caption="The recently used tracks list." src="/img/recent_tracks.png" />
 
 ## Feature details
 
@@ -227,7 +227,7 @@ Gene and transcript features also have a sequence panel, covered in
 
 The track menu opens this dialog.
 
-<Figure caption="The 'About track' dialog for a CRAM file, showing the full CRAM header and the config info." src="/img/about_track.png"/>
+<Figure caption="The About track dialog for a CRAM file." src="/img/about_track.png"/>
 
 On a **reference sequence track** the dialog also has an "Assembly" section: the
 assembly's config (name, aliases, and the alias, cytoband and genetic-code files
@@ -243,7 +243,7 @@ share with the session and undo without touching the config file everyone else
 is served. An admin can write them into that file with **Admin → Save track
 settings to config**.
 
-<Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
+<Figure caption="Track actions → Settings in the track menu." src="/img/edit_track_settings.png" />
 
 The editor has a filter box to search options by name and tucks rarely-needed
 settings behind a **Show advanced settings** toggle. With more than one display
@@ -258,7 +258,7 @@ or an embedded session.
 
 Click and drag on either the main (lower) or overview (upper) scale bar.
 
-<Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
+<Figure caption="Rubberband selections on the main and overview scalebars." src="/img/rubberband.png" />
 
 The main scale bar's menu holds **Zoom to region**, **Get sequence...**, **Copy
 range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
@@ -334,7 +334,7 @@ Triangles in the overview bar show the current orientation.
 The header bar dropdown moves the drawer widget to the left or right side. It
 starts on the right.
 
-<Figure caption="Toggling drawer widget to the left side of the screen" src="/img/drawer_widget_toggle.png" />
+<Figure caption="Toggling the drawer widget to the left side of the screen." src="/img/drawer_widget_toggle.png" />
 
 ## Faceted track selector
 

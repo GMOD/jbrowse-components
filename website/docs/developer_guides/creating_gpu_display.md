@@ -33,9 +33,9 @@ a [build-step plugin](/docs/developer_guides/simple_plugin).
 
 ## Architecture overview
 
-<Figure caption="The worker sends the data to the GPU when the region changes, and the data stays on the GPU. Every later frame redraws what the GPU already holds, so, unlike in a Canvas2D display, panning and zooming never refetch or reparse. The machinery in the next figure keeps panning and zooming that way." src="/img/gpu_display_tldr.png" />
+<Figure caption="The worker sends data to the GPU when the region changes; every later frame redraws what the GPU already holds, so panning and zooming never refetch." src="/img/gpu_display_tldr.png" />
 
-<Figure caption="The three dashed lines mark where a change re-enters the pipeline: rpcProps() above the worker, gpuProps() at the upload autorun, and everything else at the frame. The stages below a line are the cost of that change. Every upload calls renderNow(), which bumps renderTick and closes the loop. A draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="The dashed lines mark where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installUpload`):

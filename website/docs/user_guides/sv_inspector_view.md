@@ -51,7 +51,7 @@ called from the SKBR3 breast cancer cell line
 ([published data](https://schatz-lab.org/publications/SKBR3/)). Paste the URL
 into the import form and select hg19:
 
-<Figure caption="The SV inspector import form with a VCF URL pasted. As the callout notes, 'Open from track' fills the inspector from a VCF track already open in the session." src="/img/sv_inspector_importform_after.png" />
+<Figure caption="The SV inspector import form with a VCF URL pasted." src="/img/sv_inspector_importform_after.png" />
 
 ## SV inspector results
 
@@ -64,7 +64,7 @@ Table filters are reflected in the circular view.
 
 <Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 
-<Video src="/media/sv/inspector_route.mp4" caption="The same callset from the Add menu onward: the import form, the URL and assembly it takes, the table and circle it opens, and a chromosome typed into the table filter, which filters the chords too." />
+<Video src="/media/sv/inspector_route.mp4" caption="The SV inspector from the Add menu: the import form, the table and circle it opens, and a table filter that filters the chords too." />
 
 ## Rearrangement events
 

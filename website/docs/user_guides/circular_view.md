@@ -14,7 +14,7 @@ Any track that draws in the linear genome view — a bigWig, a feature density, 
 alignment coverage — draws on the circle as a ring inside the ideogram, so a
 Circos-style figure is the same tracks opened on this view.
 
-<Figure caption="A circular genome view of a structural-variant VCF. Each chord connects the two breakpoints of one variant; arcs spanning between different chromosomes are inter-chromosomal events (translocations/breakends)." src="/img/jbrowse-img/circular_chords.png" />
+<Figure caption="A circular view of a structural-variant VCF, each chord joining the two breakpoints of one variant." src="/img/jbrowse-img/circular_chords.png" />
 
 ## Opening a circular genome view
 
@@ -59,7 +59,7 @@ const ringView = {
 }
 ```
 
-<Figure src="/img/circular_view/coverage_ring_chords.png" caption="A cancer cell line's long-read coverage as a ring, on a log scale, with its translocations as chords: the copy-number steps sit where the chords land."/>
+<Figure src="/img/circular_view/coverage_ring_chords.png" caption="A cancer cell line's coverage as a ring on a log scale, its translocations as chords."/>
 
 A multi-source quantitative track with its sources on rows gives each source a
 band inside one ring, so a sample pair or a small cohort is one nested set
@@ -69,7 +69,7 @@ meant to be read against each other. Naming the sources is the color's job here:
 the row labels are part of the display's chrome and a ring samples only its
 canvas, so give each subtrack a `color` in the adapter.
 
-<Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal from one multi-source quantitative track, a band each inside the ring, with the somatic SV truth set as chords. The tumour band steps between levels across whole chromosomes; the normal holds even over the same stretches." />
+<Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal as two bands of one multi-source quantitative track, with the SV truth set as chords." />
 
 A variant or synteny track keeps its chords and ribbons; a track that has both a
 linear and a circular display takes the circular one unless the entry names the
@@ -80,7 +80,7 @@ pileup as a ring; for a coverage ring alone, open the track as a
 mirrored arc's ring is mirrored with it, so a ring bin stays under the stretch
 of ideogram it belongs to.
 
-<Figure src="/img/circular_synteny/rings.png" caption="Two assemblies on one circle, human chromosomes clockwise from the top and mouse after them, with a gene density ring inside the ideogram and the liftOver blocks between the genomes as ribbons." />
+<Figure src="/img/circular_synteny/rings.png" caption="Human and mouse on one circle with a gene density ring inside the ideogram and liftOver blocks as ribbons." />
 
 ## Synteny ribbons
 
@@ -119,7 +119,7 @@ in the linear synteny view, so a circle of tens of thousands of short alignments
 shows where they pile up. `fadeThinAlignmentsMode: 'off'` on the view draws
 every ribbon at full opacity.
 
-<Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by... → Strand on the human and mouse circle. A mouse chromosome that runs antiparallel to its human partner is one color along its whole bundle, and a ribbon of the other color inside it is an inversion." />
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="Color by... → Strand on the human and mouse circle." />
 
 Hovering a ribbon or a chord highlights it and names it in a tooltip; clicking
 opens its details. Ribbons and chords draw on the GPU, so a circle holding tens
@@ -133,13 +133,13 @@ one reads the hosted UCSC liftOver chain, built by
 from nothing but two FASTA files: `scripts/build_circular_synteny_fasta.sh`
 aligns them with minimap2 and indexes the result with `jbrowse make-pif`.
 
-<Figure src="/img/circular_synteny/chimp_strand.png" caption="Human and chimpanzee colored by strand. Human chr2 runs to chimp chr2A and chr2B, the fusion that made it, and the reverse bundles inside chimp chr4, chr5 and chr12 are pericentric inversions (Yunis and Prakash 1982)." />
+<Figure src="/img/circular_synteny/chimp_strand.png" caption="Human and chimpanzee colored by strand." />
 
-<Figure src="/img/circular_synteny/yersinia.png" caption="Two strains of the plague bacterium, Yersinia pestis CO92 and KIM, one chromosome each, colored by strand. The blocks that cross the circle are the rearrangements between the strains (Deng et al. 2002); CO92's pCD1 and pPCP1 have no partner in KIM's assembly." />
+<Figure src="/img/circular_synteny/yersinia.png" caption="Two Yersinia pestis strains, one chromosome each, colored by strand." />
 
-<Figure src="/img/circular_synteny/brassica_triplication.png" caption="Arabidopsis chromosome 4 against the whole Brassica rapa genome. Its blocks land on three B. rapa chromosomes, the whole-genome triplication in the Brassica lineage (Wang et al. 2011), and the B. rapa ideogram is painted only where they do." />
+<Figure src="/img/circular_synteny/brassica_triplication.png" caption="Arabidopsis chromosome 4 against the whole Brassica rapa genome. The B. rapa ideogram is painted only where blocks land." />
 
-<Figure src="/img/circular_synteny/brassica_mosaic.png" caption="Both whole genomes: the B. rapa ideogram as a mosaic of the five Arabidopsis chromosomes' colors." />
+<Figure src="/img/circular_synteny/brassica_mosaic.png" caption="Both whole genomes, the B. rapa ideogram painted in the five Arabidopsis chromosomes' colors." />
 
 Citations:
 

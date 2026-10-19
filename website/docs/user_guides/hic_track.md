@@ -24,7 +24,7 @@ converting first, e.g. with `hicConvertFormat` from HiCExplorer.
 
 ## Reading the contact matrix
 
-<Figure caption="Hi-C contact matrix for hg19 chr8:50.4–61.3Mb, with a gene track above. The bright strip along the top edge is the diagonal (self-interactions), and the triangular sub-blocks below it are TADs, delimited by sharp drops in signal." src="/img/hic_track.png" />
+<Figure caption="A Hi-C contact matrix for hg19 chr8:50.4–61.3Mb with a gene track above." src="/img/hic_track.png" />
 
 Mousing over the matrix draws a V-shaped guide down to the two positions the bin
 under the cursor pairs, with a tooltip giving both loci and the contact score.
@@ -41,7 +41,7 @@ open so you can step repeatedly. Stepping applies a persistent offset from the
 auto-selected level, so resolution still tracks your zoom, just shifted.
 **Reset** returns to auto.
 
-<Figure caption="Show... → Legend and Show... → Resolution controls, both off by default. The overlay gives the color scale with its endpoints and a binsize dropdown, which is how a chosen resolution gets pinned into an exported figure." src="/img/hic/overlay_controls.png" />
+<Figure caption="Show... → Legend and Show... → Resolution, which add the color scale and a binsize dropdown." src="/img/hic/overlay_controls.png" />
 
 ## Adjusting the color scale
 
@@ -66,7 +66,7 @@ ramp spans. <!-- menu-path-ok --> Off, the diagonal owns the scale and
 everything below it washes out; on (the default) the scale saturates at the 95th
 percentile of counts and TAD structure separates from background.
 
-<Figure caption="4.2 Mb of hg19 chr8 with Emphasize faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
+<Figure caption="Emphasize faint contacts off and on, each frame labeled with its setting." src="/img/hic/faint_contacts.png" links="Emphasize faint contacts off=hic/percentile_off,Emphasize faint contacts on=hic/percentile_on" />
 
 **Color scheme → Log scale** maps counts to color on a log2 scale, compressing
 the diagonal further still.
@@ -120,7 +120,7 @@ diagonal: each chromosome is a triangle along the bottom edge, each pair of
 chromosomes is the block between their two triangles, and the whole pyramid is
 the genome against itself.
 
-<Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
+<Figure caption="GM12878 Hi-C at its coarsest binsize, hg38 chr1 to chrY in one view." src="/img/hic/whole_genome.png" />
 
 How much figure this is depends on the file. A file storing only
 intra-chromosomal contacts leaves every block between the triangles empty, so
@@ -181,7 +181,7 @@ matrix in the same track:
   further, and the file has a color per class in its `itemRgb` column, so the
   track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1, a B-cell identity gene, is A in the B-cell line and B in the leukemia line while the frame edges agree. The figure has no contact matrix, because the published eigenvector is computed from one." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window, the band at EBF1." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.

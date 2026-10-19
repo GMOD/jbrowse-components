@@ -54,7 +54,7 @@ the dialog's transcript dropdown reaches an isoform that isn't drawn.
 With an [RNA-seq track](/docs/tutorials/rnaseq), the spliced reads' **sashimi
 arcs** then span directly between adjacent exons.
 
-<Figure caption="Collapsing introns on PTEN (hg38). Top: the right-click menu. Bottom: the reshaped view with the exons side by side, where the direct-RNA nanopore track's sashimi arcs now span between adjacent exons." src="/img/gene_track_collapse_introns.png" />
+<Figure caption="Collapsing introns on PTEN. Top: the right-click menu. Bottom: the exons side by side, the sashimi arcs spanning between them." src="/img/gene_track_collapse_introns.png" />
 
 ## Display density and labels
 
@@ -79,7 +79,7 @@ groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
 grouping clears them. Drag a chip onto another section to move its section
 there; **Show... → Reset section order** returns them to the sorted order.
 
-<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes on hg38 grouped and colored by gene_biotype from Group by..., each biotype in a color of its own. Dragging the protein_coding chip then moves it to the top." />
+<Video src="/media/ui/gene_track_sections.mp4" caption="NCBI RefSeq genes grouped and colored by gene_biotype from Group by..., then the protein_coding chip dragged to the top." />
 
 The `facet` setting pre-groups a track, so a shared link opens grouped. As a
 string it names the field: a feature attribute, a dotted path into a structured
@@ -108,7 +108,7 @@ color per attribute value, with a key naming them, unless the track already sets
 a color. The attribute dialog's **Also color by this attribute** box makes that
 choice by hand.
 
-<Figure caption="NCBI RefSeq genes on hg38 grouped and colored by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip and in its strand's color." src="/img/gene_track_group_by_strand.png" />
+<Figure caption="NCBI RefSeq genes grouped and colored by strand." src="/img/gene_track_group_by_strand.png" />
 
 ### Writing the grouping as text
 
@@ -151,7 +151,7 @@ filter alone:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit plot from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's domain order." />
 
 A color by a field is the `color` setting's `{ "field", "domain", "range" }`
 form, and the track draws a key from the values it painted. A `domain` spends
@@ -173,7 +173,7 @@ frame across the view. Frame is constant within a segment, so a color change
 across a junction is a frame shift. The setting applies to every gene track in
 the view, and JBrowse remembers it across sessions.
 
-<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'CDS reading frame colors' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Color by CDS on BRCA1. Top: the menu toggle. Bottom: each codon tinted by reading frame with its amino acid drawn over it." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 
@@ -194,7 +194,7 @@ The key lists every interval and draws over the track, and you can dismiss it.
 For a rule no scale expresses, `color` also takes a jexl expression; see the
 [jexl configuration guide](/docs/config_guides/jexl).
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38): ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, which only one of the two colored transcripts includes." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C with muscle and liver RNA-seq coverage over GENCODE transcripts colored by satuRn's isoform-fraction change." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 The [differential transcript usage tutorial](/docs/tutorials/dtu) has the track
 configuration behind that figure and the pipeline that writes the attributes.
@@ -215,7 +215,7 @@ that code. The first codon shows as `M` when it is a valid start for that table
 (including `GTG` or `TTG`); the track applies and highlights any `transl_except`
 override (e.g. selenocysteine `U`).
 
-<Figure caption="The selenoprotein GPX1 on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 draws as a highlighted U. The reference sequence track's plain six-frame translation above still shows a stop there." src="/img/gene_track_selenocysteine.png" />
+<Figure caption="GPX1 on hg19, its transl_except codon drawn as a highlighted U. The sequence track's six-frame translation above shows a stop there." src="/img/gene_track_selenocysteine.png" />
 
 ## Mature peptides (polyproteins)
 
@@ -243,7 +243,7 @@ For a label that shows one attribute, write it bare, `"name": "product"`; the
 expression above adds fallbacks for features with no product. See the
 [jexl configuration guide](/docs/config_guides/jexl) for the expression syntax.
 
-<Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each on a separate row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
+<Figure caption="An enterovirus polyprotein's mature peptides, each on its own row in its own color." src="/img/gene_track_mature_peptides.png" />
 
 ## Reading a feature's protein sequence
 
@@ -268,7 +268,7 @@ large" message with a **Force load** button. A bigWig of feature counts per
 kilobase, built once from the file and added as a separate track, shows where
 the genes are at any width.
 
-<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes and three RepeatMasker families, each as features per kilobase." />
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with RefSeq genes and three RepeatMasker families, each as features per kilobase." />
 
 `jbrowse make-density` writes the bigWig beside the file:
 

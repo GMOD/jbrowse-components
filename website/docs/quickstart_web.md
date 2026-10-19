@@ -75,9 +75,9 @@ npx serve -S .                # http://localhost:3000
 - For production, put the folder in your web server's static directory, such as
   `/var/www/html/jbrowse2/`.
 
-<Figure caption="The JBrowse 2 fresh-install screen, shown when no config.json is present yet. An 'It worked!' banner plus a list of sample configs and demo sessions to try." src="/img/config_not_found.png"/>
+<Figure caption="The fresh-install screen JBrowse shows when no config.json is present." src="/img/config_not_found.png"/>
 
-<Figure caption="JBrowse 2 screen with a sample configuration" src="/img/sample_config.png"/>
+<Figure caption="JBrowse with a sample configuration." src="/img/sample_config.png"/>
 
 ## Adding tracks
 
@@ -102,7 +102,7 @@ jbrowse add-assembly genome.fa --load copy
 `--name` (`-n`) sets the assembly name, which defaults to the filename.
 bgzip-compressed indexed FASTA and 2bit work too.
 
-<Figure caption="JBrowse 2 linear genome view setup with volvox in assembly dropdown" src="/img/lgv_assembly.png"/>
+<Figure caption="The linear genome view setup with volvox in the assembly dropdown." src="/img/lgv_assembly.png"/>
 
 ### BAM / CRAM
 
@@ -111,7 +111,7 @@ samtools index file.bam   # or file.cram
 jbrowse add-track file.bam --load copy
 ```
 
-<Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
+<Figure caption="The linear genome view with an alignments track." src="/img/volvox_alignments.png"/>
 
 ### VCF
 
@@ -124,7 +124,7 @@ tabix file.vcf.gz
 jbrowse add-track file.vcf.gz --load copy
 ```
 
-<Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
+<Figure caption="The linear genome view with a variant track." src="/img/volvox_variants.png"/>
 
 ### BigWig / BigBed
 

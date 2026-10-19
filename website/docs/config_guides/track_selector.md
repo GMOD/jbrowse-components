@@ -38,9 +38,9 @@ Tracks appear in config.json order unless the `hierarchical` settings change it.
   so a match inside a collapsed category or a folder still shows. Clearing the
   box restores what was collapsed.
 
-<Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
+<Figure caption="All top-level categories collapsed." src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-<Figure caption="Screenshot showing that the end-user can toggle these options as well" src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
+<Figure caption="The same options in the track selector's menu." src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
 
 ## Folder categories (supertracks)
 

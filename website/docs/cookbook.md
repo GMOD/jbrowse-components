@@ -202,7 +202,7 @@ ribbons included:
 }
 ```
 
-<Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: forward-strand genes red, reverse-strand blue." src="/img/cookbook_color_by_strand.png"/>
+<Figure caption="NCBI RefSeq genes with this recipe: forward strand red, reverse blue." src="/img/cookbook_color_by_strand.png"/>
 
 `field` names any attribute the track has. On a gene track a transcript's parts
 paint in the transcript's value, or the gene's where the transcript has none.
@@ -261,7 +261,7 @@ heads it:
 }
 ```
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window with this recipe: each repeat gets the color of its repClass, and every class the domain leaves out a color of its own. The key over the track comes from the same object." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="UCSC RepeatMasker with this recipe, each repeat colored by its repClass. The key over the track comes from the same object." src="/img/cookbook_color_by_type.png"/>
 
 [](/docs/config_guides/customizing_feature_colors) covers reading the type list
 off the file and moving an outgrown callback into a plugin.
@@ -432,7 +432,7 @@ per-row autoscale draws a flat sample at the same height as an amplified one.
 Past a handful of samples, generate `subadapters` from your samplesheet
 ([multi-quantitative tracks](/docs/config_guides/quantitative_track)).
 
-<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1, one interpolated line and one color per 1000 Genomes individual on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
+<Figure caption="An eight-sample MultiQuantitativeTrack, one interpolated line and color per individual on a shared scale." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 

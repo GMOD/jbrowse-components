@@ -86,7 +86,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
-![ClinVar variants above NCBI RefSeq genes across a 220 kb window of hg19 chromosome 1, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.99f319ecd069.png)
+![ClinVar variants above NCBI RefSeq genes, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.99f319ecd069.png)
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
@@ -242,7 +242,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --out alignments_readgroup.png
 ```
 
-![HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads with a ~1.8 kb somatic deletion cluster into one band](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_readgroup.65f68378573c.png)
+![PacBio HiFi reads over CUZD1, sorted by the base at the center position](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_readgroup.65f68378573c.png)
 
 `facet=tags.HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
@@ -257,7 +257,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:63,005,675-63,007,432 --width 1200 --out alignments_haplotype.png
 ```
 
-![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_haplotype.5588157f30f0.png)
+![Reads grouped and colored by the HP tag](https://jbrowse.org/jb2-figures/jbrowse-img/alignments_haplotype.5588157f30f0.png)
 
 `baseColor:methylation` paints per-base CpG methylation calls from a
 modified-base (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue.
@@ -320,7 +320,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in a separate section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.19d36d666409.png)
+![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.19d36d666409.png)
 
 ### Breakpoint split views
 
@@ -355,7 +355,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_tumor.png
 ```
 
-![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, in the tumour nanopore reads. Every connecting curve is solid](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.b8d8bb3def65.png)
+![COLO829's der(3) loci, chr3 then chr10 then chr12, in the tumour nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.b8d8bb3def65.png)
 
 Then the same command with the other sample's track:
 
@@ -393,7 +393,7 @@ jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
   --width 1000 --out sv_review_derivative.png
 ```
 
-![The COLO829 der(3) allele as a single 39.5 kb contig: 32.7 kb of chr3, 199 bp of chr10 and 183 bp of chr12 end to end, with the spanning reads running through every junction](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_derivative.889af5af51fe.png)
+![The COLO829 der(3) allele as one contig, with the reads realigned to it](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_derivative.889af5af51fe.png)
 
 jb2export writes one image per command, so place the three beside each other in
 your docs.
@@ -452,7 +452,7 @@ jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 1900 --out skbr3_cov.png
 ```
 
-![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_cov.fe6badcf3732.png)
+![SKBR3 read coverage genome-wide on a log scale](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_cov.fe6badcf3732.png)
 
 The axis clips outliers by default, stopping short of a spike that would flatten
 the rest of the view; `scales.y.domainQuantile=1` follows the extremes instead:
@@ -497,7 +497,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
-![CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.a36902997081.png)
+![CATlas single-cell ATAC across 16 cell types over GCG](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.a36902997081.png)
 
 ### Variant tracks
 
@@ -549,7 +549,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```
 
-![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.1571c435227c.png)
+![A Hi-C contact matrix as a triangular heatmap along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.1571c435227c.png)
 
 `color:viridis` on a `--hic` track names the ramp the counts run across, any
 [scheme HicColor takes](https://jbrowse.org/jb2/docs/config/hiccolor/#slot-scheme),
@@ -574,7 +574,7 @@ jb2export --hub hg38 \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 
-![A TP53 intron/CDS boundary at base level: the reference sequence's DNA bases and six-frame translation above the NCBI RefSeq gene track, whose CDS exon block begins where the intron connector ends](https://jbrowse.org/jb2-figures/jbrowse-img/gene_track.d309d46f4d66.png)
+![A TP53 intron/CDS boundary at base level: the sequence track and its six-frame translation above the NCBI RefSeq genes](https://jbrowse.org/jb2-figures/jbrowse-img/gene_track.d309d46f4d66.png)
 
 ### Themes
 

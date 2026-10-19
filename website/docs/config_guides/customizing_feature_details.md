@@ -23,7 +23,7 @@ track dialog. For complex logic, register a jexl function in a small plugin.
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name); the callback also injects the extra 'extrafield' row and drops the default 'phase' and 'type' rows."/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field the callback rewrote into a link."/>
 
 The `<a>` markup is needed only because the link text differs from the URL; a
 value that is nothing but a URL is [linked for you](#bare-urls). The slots

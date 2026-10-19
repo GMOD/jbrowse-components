@@ -10,7 +10,7 @@ A track's data crosses one boundary and is stored in typed arrays of absolute
 genomic coordinates, and everything after that point is a redraw. A pan or a
 zoom therefore costs a frame and not a fetch.
 
-<Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. Each of the three crossings is labelled with the figure that draws it in full." src="/img/dataflow.png" />
+<Figure caption="A pan or zoom takes the dashed edge, re-entering at buffers the GPU already holds." src="/img/dataflow.png" />
 
 A viewport change first checks one thing: is this region already loaded? Where
 it is, nothing below the top of the figure runs. Where it is not, the display
@@ -127,7 +127,7 @@ is where a display declares which settings reach the buffer that way, and the
 pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
 returns re-uploads, and everything else is a frame.
 
-<Figure caption="The vertical position of a door marks what a setting costs: a setting that reaches rpcProps() enters above the worker and costs a round trip, one that reaches gpuProps() enters at the encode and costs an upload, everything else enters at the draw. The chain is collapsed, with no autorun and no tick on it, so that depth is the only thing to read off it." src="/img/render_rates.png" />
+<Figure caption="A door's height marks what a setting costs: rpcProps() costs a round trip, gpuProps() an upload, everything else a draw." src="/img/render_rates.png" />
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that

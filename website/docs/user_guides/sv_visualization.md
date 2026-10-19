@@ -36,7 +36,7 @@ A structural variant leaves three kinds of mark in an alignments track:
   spans the breakpoint and splits into a primary and a supplementary alignment,
   joined by the `SA` tag.
 
-<Figure caption="Soft-clipped reads at a breakpoint edge. The cluster of colored bases on the right marks where many reads end at a common position and their overhang is clipped." src="/img/alignments_soft_clipped.png" />
+<Figure caption="Soft-clipped reads at a breakpoint, their clipped overhang drawn as colored bases." src="/img/alignments_soft_clipped.png" />
 
 The rest of this page takes the third kind in turn, paired-end reads then long
 reads, then the views that show both sides of a breakpoint at once.
@@ -70,7 +70,7 @@ Colored this way, an inversion is a green LL bundle and a navy RR bundle
 spanning the same stretch, with magenta split reads at the breakpoints, in a
 pileup that is otherwise grey.
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication in paired-end reads, with the SV call above and its INFO fields open." src="/img/inverted_duplication.png" />
 
 The green LL bundle and the navy RR bundle come from pairs that straddle a
 junction. An inversion turns a stretch of sequence around, and every read inside
@@ -165,7 +165,7 @@ breakpoint. Reads describing the same connection draw as one arc thickened by
 how many there are, so the arcs count the support as well as locate it.
 [](/docs/tutorials/k562_fusions) counts a fusion's support that way.
 
-<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio, with the 1KGP ensemble SV call on top. The red arcs are pairs with a larger-than-expected insert size, lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
+<Figure caption="Read arcs over a deletion in a trio, with the SV call on top. Red arcs are pairs with a larger-than-expected insert." src="/img/multi-sv-trio.png" />
 
 Hover any arc for its classification. A read can have a grey LR fill and still
 have a colored arc: the read itself crosses the breakpoint, splits into a
@@ -182,7 +182,7 @@ coverage curve and arcs, the concordant pairs drop out, and the pileup goes
 away. Which band fills names the rearrangement, and a band that stays empty
 under a call is a call with no read-pair evidence behind it.
 
-<Figure caption="The INVdup call above, arranged as one band per pair orientation in HG02768. The two same-strand bands hold arc bundles ending on the same breakpoints, the normal band holds the ordinary coverage, and the outward-pointing band stays near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="The INVdup call's reads, one band per pair orientation. Reads whose mate is unmapped or elsewhere draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 404" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which pair-orientation band each SV type fills">
@@ -265,7 +265,7 @@ of the background and how many reads span a breakpoint is countable. Chains with
 supplementary alignments are joined by an orange line, and **Filter by...**
 keeps or hides the SV evidence and the reads without a mate.
 
-<Figure caption="Read cloud on a synthetic SV dataset, colored by insert size. Reads are stratified by log distance between mates, which separates the insertion pairs (pink) from the background." src="/img/alignments/read_cloud.png" />
+<Figure caption="Read cloud colored by insert size, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />
 
 ## Long reads
 
@@ -288,7 +288,7 @@ genotype directly from the pileup, independent of the caller's `GT` field: a
 locus where some reads invert and the rest run through unbroken is one inverted
 copy and one uninverted.
 
-<Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
+<Figure caption="Nanopore reads grouped by Group by... → Split read (SA tag) over an inversion call." src="/img/inversion_long_read.png" />
 
 ### One read against the reference
 
@@ -298,7 +298,7 @@ breakpoint, the order it visits those loci in is the structure of the
 rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions, the ordinary pileup above and the read drawn against the reference below. Each gap in the diagonal is sequence the read has and the reference does not." src="/img/read_vs_ref_insertion.png" />
+<Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read against the reference below." src="/img/read_vs_ref_insertion.png" />
 
 ### Rebuilding a derivative allele
 
@@ -340,7 +340,7 @@ spline is red: each one the view draws is a pair the aligner did not call proper
 or a split read, and the view does not measure insert size. The right end of the
 header, and the top of an SVG export, list the colors the view is drawing.
 
-<Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
+<Figure caption="Breakpoint split view for a translocation. Splines join reads spanning the junction, and the green line with feet is the variant call." src="/img/breakpoint_split_view.png" />
 
 Hovering a spline shades the reads it joins, every segment of the read in every
 panel it visits, and every other spline of the same read thickens alongside it.
@@ -361,7 +361,7 @@ splines and variant curves alike, back into a static picture.
 - **From the circular genome view**: click a chord and use the "Open breakpoints
   in split view" link in its Breakends section.
 
-<Figure caption="Feature details panel for a TRA variant. The Breakends section lists each endpoint with an 'Open in linear view' link, and below them a single 'Open breakpoints in split view' link that opens both loci at once." src="/img/link_to_split_view.png" />
+<Figure caption="Feature details for a TRA variant, with the Open breakpoints in split view link." src="/img/link_to_split_view.png" />
 
 ### Multi-hop events
 
@@ -370,7 +370,7 @@ view grows a panel per locus. The COLO829 tutorial follows one such chain across
 three chromosomes and
 [opens this view from a callset record](/docs/tutorials/cancer_sv#following-the-chain-across-panels).
 
-<Figure caption="A COLO829 chain through chr3, chr10 and chr12 and back to chr3, one panel per locus with the tumor pileup in each. The splines connect the same molecules from panel to panel, in the order the reads cross the junctions." src="/img/cancer_sv/multihop_split_view.png" />
+<Figure caption="A COLO829 chain through chr3, chr10 and chr12, one panel per locus. Splines join the same molecules from panel to panel." src="/img/cancer_sv/multihop_split_view.png" />
 
 ### Following a chain of breakends
 
@@ -382,7 +382,7 @@ exactly one, adding a panel per hop up to four. Only the two launches that can
 read the callset offer it, a variant track's right-click menu and a click on a
 chord drawn from that same file, and only for the stacked shape.
 
-<Figure caption="Launching from a COLO829 breakend record: the variant's right-click menu, the dialog with Follow further breakends at each end ticked, and the three panels the walk produces because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
+<Figure caption="The breakend's right-click menu, the dialog with Follow further breakends ticked, and the three panels it opens." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 The walk treats two junctions leaving one locus as one molecule, which the
 caller does not assert, so it stops where that would be a guess: two open
@@ -400,7 +400,7 @@ a separate pileup section, and untagged reads get one too, so unphased support
 stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
 phased haplotypes end to end.
 
-<Figure caption="A heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads with the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
+<Figure caption="A heterozygous deletion in reads grouped by HP tag, the SNP coverage above." src="/img/smalldel.png" />
 
 ## Working with large SVs
 
@@ -419,7 +419,7 @@ For large or inter-chromosomal SVs:
   matter.
 - Use the SV inspector for whole-genome triage before drilling in.
 
-<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale from the BigWig alone, with no reads loaded." src="/img/cnv.png" />
+<Figure caption="Tumor (red) and normal (blue) whole-genome coverage as a multi-quantitative track." src="/img/cnv.png" />
 
 ## Whole-genome assembly comparison
 

@@ -51,7 +51,7 @@ from the same `domain`:
 }
 ```
 
-<Video src="/media/ui/gene_track_channel_spec.mp4" caption="NCBI RefSeq genes on hg38: Edit plot from the Group by dialog, the spec above pasted in, and the sections stacked in the facet's domain order, each biotype colored by its position in the color's domain." />
+<Video src="/media/ui/gene_track_channel_spec.mp4" caption="Edit plot from the Group by dialog, the spec above pasted in, and the sections in the facet's domain order." />
 
 [The gene track guide's Grouping features into sections section](/docs/user_guides/gene_track#grouping-features-into-sections)
 has the full mechanism — the Group by/Color by menus, the draggable chips, and
@@ -81,13 +81,13 @@ whatever order the VCF lists them:
 "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] }
 ```
 
-<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, a second view of chr2L adds one row per DGRP line, genotyped for the inversion and grouped by karyotype. The block of inverted lines spans breakpoint to breakpoint; the Fst plateau runs past both." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst. Below: chr2L with one row per DGRP line, grouped by karyotype." links="Six arms=popgen/fst_in2lt_2L"/>
 
 ```json
 "facet": { "field": "karyotype", "domain": ["2L+a/2L+a", "2La/2L+a", "2La/2La"] }
 ```
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
 The domain in each case is a genetics decision, not an alphabetical one: dosage
 order in the mosquito figure, standard-before-inverted in the fly figure, both
@@ -174,7 +174,7 @@ ribbon joins:
 }
 ```
 
-<Figure src="/img/multiway_synteny/lgv_track_lanes_colored.png" caption="The same grape locus over seven genomes, lanes pinned by retention, ribbons colored by relative strand: red where a lane's orientation matches the one above it, blue where it is inverted." />
+<Figure src="/img/multiway_synteny/lgv_track_lanes_colored.png" caption="A grape locus over seven genomes, lanes pinned by retention, ribbons red where a lane runs the same way as the one above and blue where it is inverted." />
 
 Unlisted assemblies still get a lane — they stack below the named ones,
 densest-first, so a ribbon chain through them is cut as late as possible.
@@ -225,7 +225,7 @@ At a larger scale, a `rows.domain` of six names with `rows.kept` narrows a
 127-epigenome track to the three tissues a figure is about, in the order the
 comparison reads:
 
-<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
+<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA."/>
 
 [The ChromHMM tutorial](/docs/tutorials/chromhmm#the-legend-filtering-and-row-order)
 has both tracks in full, plus what an unset `rows.domain` does instead:

@@ -19,15 +19,15 @@ stream from GEO by range request, and the ratio is computed against the live
 session the way deepTools `bigwigCompare` would: depth-normalized, finely
 binned, smoothed over a window several bins wide.
 
-<Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="Asked to open hg38 at CDKN1A, add four GEO ATAC-seq bigWigs comparing nutlin against a vehicle control, derive a log2 nutlin-over-vehicle track, and test whether the gain is a normalization artifact. The agent put CDKN1A beside GAPDH and a gene desert: only CDKN1A holds a one-sided signal." />
+<Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="An agent opening hg38 at CDKN1A, adding four GEO ATAC-seq bigWigs, deriving a log2 ratio track and checking it against control loci." />
 
 Two more with a shell beside the app, filmed against only the JBrowse window.
 The captions are what the agent said and sent; only the questions were written
 in advance.
 
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="Asked to open two fly genomes side by side with no published alignment between them, add a whole-genome dotplot, and find the largest inversion. The agent ran minimap2 in the background, merged the two hosted configs, and found the answer in the alignment before navigating to it." />
+<Video src="/media/mcp/agent_synteny_take1.mp4" caption="An agent opening two fly genomes with no published alignment, running minimap2 in the background and adding a whole-genome dotplot." />
 
-<Video src="/media/mcp/agent_derivative_take1.mp4" caption="Asked to find a somatic rearrangement chaining three chromosomes, rebuild the allele from the tumor reads, show the reads on it next to the reference, and prove no read clips at a junction. The agent built the contig from the reads, loaded it as an assembly, and audited every CIGAR at every junction." />
+<Video src="/media/mcp/agent_derivative_take1.mp4" caption="An agent rebuilding a three-chromosome derivative allele from tumor reads, loading it as an assembly and showing the reads on it beside the reference." />
 
 ## Claude Desktop or Claude Code, with JBrowse Desktop
 

@@ -26,7 +26,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 
 ## The start screen
 
-<Figure src="/img/desktop-landing.png" caption="The JBrowse desktop start screen. The left panel launches new sessions; the right panel lists recently opened ones."/>
+<Figure src="/img/desktop-landing.png" caption="The JBrowse Desktop start screen."/>
 
 - **Open new genome** loads a genome from local files or URLs
   ([Opening a genome](#opening-a-genome)).
@@ -42,7 +42,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage   # once
 **Open new genome** brings up the "Open genome(s)" dialog, and what you give it
 becomes a new session on that assembly.
 
-<Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
+<Figure src="/img/desktop-open-genome-steps.png" caption="Open new genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 
 - Drop the sequence file (FASTA, bgzip-compressed FASTA or 2bit, with any `.fai`
   or `.gzi` beside it) onto the drop area, or click it to browse. **Open from a
@@ -70,14 +70,14 @@ scientific name or accession, grouped by source (UCSC, GenArk and so on). Star a
 genome to add it to **Favorite genomes**, and check several and click **Go** to
 open them in one session for comparative work.
 
-<Figure src="/img/desktop-available-genomes-steps.png" caption="Launching a public assembly. Show all available genomes (1) opens the table, and launch (2) opens a session on that genome, here T2T CHM13v2.0/hs1 with the assembly's hub tracks listed in the track selector."/>
+<Figure src="/img/desktop-available-genomes-steps.png" caption="Show all available genomes (1) opens the table, and launch (2) opens a session on that genome."/>
 
 ## Adding tracks
 
 Open the **File** menu and choose **Open track...**, or use the track selector's
 **Add track** button.
 
-<Figure src="/img/desktop-add-track-steps.png" caption="Adding a track. File then Open track... (1) opens the form, which takes a main file as a local path or a URL (2) and infers the index from it (3). Confirming the guessed track type adds the track to the open view, the third frame."/>
+<Figure src="/img/desktop-add-track-steps.png" caption="File → Open track... (1) opens the form, which takes a file or URL (2) and infers its index (3)."/>
 
 - Choose **Add a track from file or URL**, set the **Main file** as a local path
   or URL, and leave the **Index file** blank for BAM, CRAM or tabix files to

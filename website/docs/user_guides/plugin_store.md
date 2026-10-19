@@ -31,7 +31,7 @@ The full catalog, each plugin with its config snippet, is on the
 A hosted config often loads the plugins its tutorials need. Open **Tools →
 Plugin store**; **Installed plugins** at the top lists what this session loaded.
 
-<Figure caption="Tools then Plugin store opens the store. Installed plugins lists what is loaded now." src="/img/plugin_store.png" />
+<Figure caption="Tools → Plugin store." src="/img/plugin_store.png" />
 
 If the plugin is listed there, there is nothing to install; if not,
 [install it](#the-plugin-store).

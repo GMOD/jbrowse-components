@@ -12,7 +12,7 @@ structured-clone-safe values cross the boundary.
 
 ## The RPC lifecycle
 
-<Figure caption="One box per side of the boundary, with serializeArguments() and deserializeReturn() on the two crossings they act at. statusCallback stays on the main thread, and a side channel reports progress to it while execute() is still running." src="/img/rpc_lifecycle.png" />
+<Figure caption="serializeArguments() and deserializeReturn() at the two crossings. statusCallback stays on the main thread, and a side channel reports progress to it." src="/img/rpc_lifecycle.png" />
 
 `serializeArguments` and `deserializeReturn` are yours to override. The
 serialize step is where refNames are renamed and functions are stripped, which

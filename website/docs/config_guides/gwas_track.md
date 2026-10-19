@@ -15,7 +15,7 @@ per SNP at its score, so its marks, scales, facets and rows all apply, and any
 `FeatureTrack` can draw the same plot from one of its numeric columns — see
 [any scored feature file](#any-scored-feature-file).
 
-<Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>
+<Figure src="/img/gwas/manhattan.png" caption="A GWAS track as a Manhattan plot, each point a variant at its -log₁₀(p)."/>
 
 ## Preparing the GWAS file
 

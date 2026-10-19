@@ -17,7 +17,7 @@ details (adapters, the species list or Newick guide tree) are in the
 [MAF track configuration guide](/docs/config_guides/maf_track). This page covers
 what you can do once the track is on screen.
 
-<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment, with the ce11 NCBI RefSeq gene lane on top: the coverage band, then one row per species ordered by the guide tree, each species' differences from the reference drawn as colored marks. The conserved blocks line up with the coding exons above."/>
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way alignment under the ce11 genes: the coverage band, then one row per species with its differences from the reference."/>
 
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
@@ -42,7 +42,7 @@ both need the per-base alignment the tier skips reading. Pointing a track at a
 summary file is covered in the
 [MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
 
-<Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file, one grey bar per species per aligned region. At 200 bp (bottom) it draws the alignment itself, one colored cell per base, with the coverage band above."/>
+<Figure src="/img/maf_summary_tier.png" caption="The hg38 470-way narrowed to ~30 mammals over GAPDH. At 180 kb (top) the track reads its summary file; at 200 bp (bottom) it draws the alignment."/>
 
 A summary read costs the span on screen against the summary file, not against
 the alignment, so the tier holds at whole-chromosome scale on an alignment deep
@@ -96,7 +96,7 @@ full set of species. Fit-to-display-height mode takes every species into one
 display, so each row goes near-1px and the alignment reads as a texture, with
 the guide tree (dendrogram) down the left.
 
-<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run blue top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as red and white streaks."/>
+<Figure src="/img/maf_470way.png" caption="The hg38 470-way over GAPDH, every species at once."/>
 
 ## Color by source chromosome
 
@@ -111,7 +111,7 @@ ranking is per row, and a compact legend in the top-right names the scheme (main
 / 2nd / 3rd source). Like conservation, it is derived from the alignment with no
 extra data to fetch.
 
-<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its source-chromosome rank, so a row stays one color when collinear and switches where blocks come from a different source chromosome."/>
+<Figure src="/img/maf_color_by_chromosome.png" caption="The ce11 26-way colored by source chromosome, a row switching color where its blocks come from another chromosome."/>
 
 ## Inversions (strand flips)
 
@@ -154,7 +154,7 @@ On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
 legible, and the left sidebar redraws as the pruned guide tree.
 
-<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals, one per major clade plus opossum and platypus outgroups, in codon view at a conserved GAPDH exon."/>
+<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals in codon view."/>
 
 ## Tooltips
 
@@ -166,7 +166,7 @@ loaded (in codon view, or with the strip on), the hover also shows the gene
 name; in codon view it shows the species' codon and amino acid next to the
 reference's and labels the change synonymous or nonsynonymous.
 
-<Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment. Hovering a codon cell reads out the substitution against the reference, so the tooltip names a nonsynonymous change in words."/>
+<Figure src="/img/maf_codon_tooltip.png" caption="The codon-view tooltip, naming the substitution against the reference."/>
 
 ## Getting the alignment out as FASTA
 
@@ -217,7 +217,7 @@ deletion in the block is where the alignment put it, and no synteny file is
 involved. The reference row has the tracks this view had open, the MAF included;
 the species row has that species' gene track where the session has one.
 
-<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at that strain's locus." src="/img/maf_row_menu.png" />
+<Figure caption="The menu a drag across the rows raises, listing each strain the drag covers." src="/img/maf_row_menu.png" />
 
 ## Row layout and the species tree
 

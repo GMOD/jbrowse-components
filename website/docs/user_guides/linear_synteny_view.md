@@ -47,7 +47,7 @@ from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
 [MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), and
 a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
-<Figure caption="The import form synteny and dotplot views share, reached from the Add menu. Its Manual mode, shown here, is where you select two assemblies and can supply an additional file." src="/img/dotplot_add.png" />
+<Figure caption="The import form the synteny and dotplot views share, in Manual mode." src="/img/dotplot_add.png" />
 
 <Figure caption="The linear synteny view for the grape vs peach genomes." src="/img/linear_synteny.png" />
 
@@ -140,7 +140,7 @@ their position.
 Any panel you pan or zoom becomes the anchor, and the others follow it. Turn
 following off to move one panel alone.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002, which have the same coordinates and different sequence: the panels as they open, the header's toggle, and a second window typed into the anchor panel's search box alone." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002: the header's toggle, and a window typed into the anchor panel alone." />
 
 ## Interacting with the ribbons
 
@@ -291,7 +291,7 @@ inside **Rows**:
 - **Show...** for the header's own search boxes
 - **Export SVG...**
 
-<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
+<Figure caption="Human against chimp across an RB1 intron, from a liftOver chain with RepeatMasker on both. Colored indels paints a missing L1HS as a wedge." src="/img/synteny_human_chimp_cigar_modes.png" />
 
 ## Off-screen mates
 
@@ -359,7 +359,7 @@ anchor, since the follow would otherwise pull the row straight back off the
 contig it was just sent to, and the notification reports that. That undo
 restores the previous anchor too.
 
-<Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. The grey marks along the band's top edge are peach alignments whose grape end is on a chromosome the lower panel is not showing, and a labelled run names that chromosome. Most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
+<Figure caption="Peach chr1 over grape chr1 from MCScan blocks. Grey marks along the band's top edge are alignments whose grape end is on a chromosome not shown." src="/img/synteny_offscreen_mates.png" />
 
 ### Alignments anchored on the lower panel
 
@@ -379,7 +379,7 @@ The human/chimp synteny alignment plus RepeatMasker resolves a lineage-specific
 insertion an order of magnitude smaller than the L1HS above, and it is still a
 gap in the alignment with the element named at the indel:
 
-<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. Even an insertion this small draws as a visible indel." src="/img/synteny_te_picalm_alu.png" />
+<Figure caption="A human-specific AluYb8 in PICALM, drawn as an indel in the ribbon." src="/img/synteny_te_picalm_alu.png" />
 
 ## See also
 

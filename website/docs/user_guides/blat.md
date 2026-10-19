@@ -39,7 +39,7 @@ BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the
 best hit's row.
 
-<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
+<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit opened from the Search results list."/>
 
 Pasting FASTA searches each record separately, up to 25 records, 25 kb in any
 one record and 50 kb across the submission. Each record keeps its name, so hits
@@ -109,9 +109,9 @@ More than one product means more than one band. The results panel counts the
 products, lists each size to compare against a gel, and states explicitly when
 more than one product exists. Two products of similar size will not resolve.
 
-<Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
+<Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19."/>
 
-<Figure src="/img/desktop-ispcr-results.png" caption="A primer pair for TP53 exon 8 drawn as a read pair, the two footprints facing inward across the product they bracket. The tick near the left primer's outer end is a base that does not match the template, which still amplifies there but would not at the 3' end."/>
+<Figure src="/img/desktop-ispcr-results.png" caption="A primer pair for TP53 exon 8 drawn as a read pair, facing inward across the product. The tick is a base that does not match the template."/>
 
 ## Notes
 

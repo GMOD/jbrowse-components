@@ -22,7 +22,7 @@ offers these styles:
 - Line (interpolated) - midpoint to midpoint, smoother for sparse signals
 - Scatter - individual points, for sparse data
 
-<Figure caption="The same BigWig rendered in every plot type at once (XY plot, Density, Line (step), Line (interpolated), and Scatter), so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
+<Figure caption="One BigWig in every plot type: XY plot, Density, Line (step), Line (interpolated) and Scatter." src="/img/bigwig_line.png" />
 
 ## Score options
 
@@ -120,7 +120,7 @@ An outlier on one signal can blow out the shared Y axis. **Clip extreme
 outliers** in the **Y axis...** panel stops the axis short of a spike that would
 flatten the other rows, or pin the min and max there.
 
-<Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. The CD8, MAIT and NK rows have signal at CD8A and the two B rows at MS4A1, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs as one multi-quantitative track over CD8A and MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Adding a multi-quantitative track
 
@@ -136,8 +136,8 @@ Three ways to create one:
   [quantitative track configuration](/docs/config_guides/quantitative_track#many-signals-in-one-track)
   guide
 
-<Figure caption="The 'Add a track' form's workflow selector (red callout) lets you reach the multi-quantitative workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
-<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the 'Add a track' form then turns the selection into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
+<Figure caption="The Add a track form's workflow selector, which reaches the multi-quantitative workflow." src="/img/multiwig/addtrack.png" />
+<Figure caption="The track selector's ... menu adds tracks to the selection, and the cart icon turns it into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
 
 ### Loading bedMethyl as a multi-quantitative track
 
@@ -160,7 +160,7 @@ in the track menu. Auto mode samples signal values at each pixel across the
 visible region to build the matrix. See [](/docs/user_guides/clustering) for the
 modes, the dendrogram, and how to share a result in a session URL.
 
-<Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster rows by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
+<Figure caption="The Cluster rows by score dialog (top), and the rows reordered by signal similarity (bottom)." src="/img/multiwig/cluster_dialog.png" />
 
 ### Sorting rows by score at one position
 
@@ -193,7 +193,7 @@ For a chromosome-scale view of copy-number changes:
 - Increase the **Resolution** until the profile looks smooth
 - Drag the bottom edge of the track down to make it taller
 
-<Figure caption="Whole-genome CNV coverage profile from a BigWig file. Each chromosome is shown as a separate region; the signal represents read depth normalized by the pipeline. Copy-number gains appear as elevated signal; losses as depressed signal." src="/img/bigwig/whole_genome_coverage.png" />
+<Figure caption="A whole-genome coverage BigWig, each chromosome a region." src="/img/bigwig/whole_genome_coverage.png" />
 
 For tumor vs normal on one Y axis, put both signals in one track; for a whole
 cohort, the [TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).

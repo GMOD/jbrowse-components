@@ -212,7 +212,7 @@ from a table PLINK writes. Compute it over a single population panel: r² is a
 correlation across the samples in the file, so a pooled multi-population callset
 averages the block away.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle of pairwise r² at the human lactase locus (LCT/MCM6), over the haplotype matrix it summarises. Red is a pair of SNPs almost always inherited together, and the block over the highlighted gene is one long haplotype."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle of pairwise r² at LCT/MCM6 over the haplotype matrix it summarises."/>
 
 An `LDTrack` draws the table. `PlinkLDAdapter` reads a plain `.ld`;
 `PlinkLDTabixAdapter` reads a bgzipped, tabix-indexed `.ld.gz` and fetches only

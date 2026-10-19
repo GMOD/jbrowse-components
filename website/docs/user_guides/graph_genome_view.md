@@ -17,7 +17,7 @@ alignment, or depth.
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to open a node on them.
 
-<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph share the reference-position ramp, so a block and its node share a hue: the blue boxes are one segment in both. The charcoal nodes are alternate alleles, like the ringed one CFT073 has in place of the boxed segment; with no K12 coordinates, the lane does not draw them." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 with the graph as its bottom track. The segments lane and the graph share a color ramp, so a block and its node share a hue; charcoal nodes are alternate alleles." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -365,7 +365,7 @@ groups rows by the assembly each allele came from. The backbone sits on top, and
 each strain's charcoal marks sit under it, tied by grey threads to where they
 attach, so a row shows what that strain does to the reference.
 
-<Figure caption="90 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, where the other strains' rows hold only short alleles." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="90 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
 strain that _first contributed_ the sequence, because `SR` is build order and
@@ -389,7 +389,7 @@ plain GFA and the inside of an opened bubble. Click a label to open that bubble
 alone inside the track, with a button back. The track derives the bubbles inside
 an opened bubble, so a superbubble opens level by level.
 
-<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="LPA force-directed, its bubbles haloed and named. Clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 The graph draws the session's gene track onto the backbone. Exons are dark
 stretches along their reference nodes, and each gene's name is pinned under the
@@ -459,7 +459,7 @@ one step, so the right half still ends in a loose end. The hop expands only over
 off-reference segments, so it does not pull in the backbone on either side of
 the window.
 
-<Figure caption="The paa island cut from the same graph track twice, each under the lanes of a linear view. Left, at Graph context None, the boxed node has an unlinked end. Right, at 1 hop, the red ring marks the interior nodes the extra queries fetched, which link it to the blue-boxed entry as a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The same graph cut at Graph context None (left) and 1 hop (right). The red ring marks the nodes the extra queries fetched." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph with alleles nested inside alleles. On this
 window 1 hop already closes the cut. The setting stops at two, because hops only
@@ -555,13 +555,13 @@ The lane is a projection onto K12's coordinates, with a column for each K12
 base, so it cannot draw 65 kb that exists only in CFT073. The graph holds both,
 and the ringed node in the graph track is that 65 kb.
 
-<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies across every lane above it. The ringed node is 65.4 kb only CFT073 has, and it leaves and rejoins K12 at either end of the 2.1 kb band, which is the pair of teal K12 segments boxed in blue in the graph." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering an allele in the graph highlights its reference interval across every lane above." src="/img/pangenome/rgfa_hover_sync.png" />
 
 An alignment of the same insertion is independent evidence. The graph's
 insertion comes from the graph's segment and link indexes, and the alignment
 below comes from a whole-genome alignment made without the graph.
 
-<Figure caption="The same insertion as an alignment, K12 above and CFT073 below, the two panels at different scales. The flanking chains align ribbon to ribbon at both frame edges, and the CFT073 sequence between them has no alignment to K12." src="/img/pangenome/rgfa_insertion_synteny.png" />
+<Figure caption="The same insertion as an alignment, K12 above and CFT073 below." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
 The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts the same kind
 of alignment beside a graph track.
@@ -598,7 +598,7 @@ PanSN name, so a node there offers the haplotype that contributed it.
 [Browsing the HPRC graph](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 opens one this way.
 
-<Figure caption="Top: the graph view's Launch menu over a 50 kb K12 window. Each strain's entry names the locus it contributes, in that strain's coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, here with curved ribbons, transparent indels and Follow switched on so each row tracks the K12 window above it." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph view's Launch menu, each strain's entry naming its locus. Bottom: the synteny view the entry opens, one panel per strain." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 The per-strain entries show each strain's sequence at the locus. K12's
 `asnW`/`asnU`/`asnV` tRNA genes are integration sites for E. coli pathogenicity
@@ -614,7 +614,7 @@ on the right a linear view draws the graph, around segment `s1277` of the
 different colorings: stable rank shows _whose_ sequence an arm is, and the
 reference-position ramp shows _where_ each segment sits.
 
-<Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry opens. Right: the segments lane's track menu with Display types → Graph boxed, above the force-directed graph the lane turns into." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
+<Figure caption="Left: the graph's CFT073 entry boxed, above the view it opens. Right: the segments lane's Display types → Graph, above the graph the lane turns into." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
 ## Alleles from the rGFA alone {#when-all-you-have-is-the-graph}
 

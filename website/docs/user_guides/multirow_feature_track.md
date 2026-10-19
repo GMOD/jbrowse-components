@@ -15,7 +15,7 @@ becomes a single track with one config, one adapter, and one fetch.
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 **Display types → Multi-row feature display (painting)**.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM as a multi-row track, all 127 epigenomes over chr9 in tissue order, each row labelled and tinted by its tissue group, with NCBI RefSeq genes above. Each row takes the state color the file has: promoters are red in every tissue, and PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878." />
+<Figure src="/img/chromhmm.png" caption="Roadmap 15-state ChromHMM as a multi-row track, 127 epigenomes in tissue order, each row tinted by its tissue group." />
 
 ## Turning a feature track into rows
 
@@ -29,7 +29,7 @@ its labels and colors, and a clustering run survive a repartition. They name
 rows by value, so they match no row under the new partition and apply again when
 the field comes back. Hidden legend categories clear.
 
-<Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
+<Figure src="/img/multirow/display_types_menu.png" caption="The RepeatMasker track's Display types submenu (top), and the same window partitioned by repeat class (bottom)." />
 
 To fix the column in config, set
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) in the track
@@ -159,7 +159,7 @@ mean copy number, with `labels` naming each interval in the key:
 }
 ```
 
-<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by the interval the caller's log2 ratio falls in. Recurrent events read as vertical stripes through the stack, under the same cohort's gain/loss frequency." />
+<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number, one row per tumor, colored by the interval its log2 ratio falls in." />
 
 **Show... → Legend** keys the colors actually present, and the **Categories**
 submenu beside it hides individual categories, so you can drop the states or
@@ -242,7 +242,7 @@ attribute, such as one no `rowGroups` entry matches, takes no color unless
 `domain` pairs `""` with one. On a track colored per feature (an `itemRgb`
 painting, a jexl `color` slot) the bar is the only place a row's color shows.
 
-<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:37.5-42 Mb, 1104 TCGA-BRCA tumors clustered by their copy-number profile over the 1.5 Mb around ERBB2, with the dendrogram beside them. Rows sort into amplified, gained, lost, and balanced bands." />
+<Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="1104 tumors clustered by copy-number profile around ERBB2, with the dendrogram beside them." />
 
 ## Worked examples
 

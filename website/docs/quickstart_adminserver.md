@@ -54,7 +54,7 @@ To stop the server, press Ctrl+C
 Open the Assembly manager from the menu bar. It lists, creates, edits and
 deletes assemblies:
 
-<Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet." src="/img/assembly_manager.png"/>
+<Figure caption="The assembly manager with no assemblies loaded." src="/img/assembly_manager.png"/>
 
 To add hg38, press **Add new assembly**, then **Open from a URL**, and paste the
 FASTA and its two indexes, one per line:
@@ -68,13 +68,13 @@ https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi
 The form pairs the indexes with the FASTA and fills in a name from the filename.
 Set the name to `hg38`; the rest of this page uses that name.
 
-<Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
+<Figure caption="The assembly manager's form for adding an assembly." src="/img/hg38_assembly_table.png"/>
 
-<Video src="/media/ui/add_genome.mp4" caption="A JBrowse with no genome in it getting one: Tools, Assembly manager, Add new assembly, and three URLs pasted into a single box, which the form answers with the adapter it recognized and a name it filled in." />
+<Video src="/media/ui/add_genome.mp4" caption="Tools → Assembly manager → Add new assembly, three URLs pasted into one box, and the adapter and name the form fills in." />
 
 **Submit** puts hg38 in the list:
 
-<Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
+<Figure caption="The assembly manager with human assemblies available." src="/img/add_hg38_assembly.png"/>
 
 ### Editing a genome assembly
 
@@ -85,11 +85,11 @@ deletes them.
 
 Open the Add track form from the menu bar:
 
-<Figure caption="JBrowse 2 file menu with the 'Add track' form" src="/img/add_track_form.png"/>
+<Figure caption="The File menu's Add track form." src="/img/add_track_form.png"/>
 
 The circular "+" button in the track selector opens the same form:
 
-<Figure caption="The 'Add track' form can be launched from the circular '+' button in the bottom righthand corner" src="/img/add_track_tracklist.png"/>
+<Figure caption="The Add track form launched from the + button." src="/img/add_track_tracklist.png"/>
 
 Provide a URL or select a local file. Supported formats and index types:
 [](/docs/config_guides/file_types). Plugins add further formats; see the
@@ -108,7 +108,7 @@ every visitor is served.
 A new visitor sees the default session first. Open the Set default session form
 from the Admin menu:
 
-<Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
+<Figure caption="Set default session, which writes the current session into the config file." src="/img/default_session_form.png"/>
 
 The form clears the default session, or sets it to the current session or any
 previously saved one.

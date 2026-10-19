@@ -885,7 +885,7 @@ fetch per region:
 ]
 ```
 
-<Figure src="/img/mark_display/multiscale.png" caption="One Alu track, twice: across 3 Mb the binned mark draws and the axis is elements per 10 kb; across 30 kb the raw mark draws and the axis is each element's divergence from its consensus."/>
+<Figure src="/img/mark_display/multiscale.png" caption="One Alu track twice: across 3 Mb the binned mark draws, across 30 kb the raw mark."/>
 
 A mark outside its range is off entirely (not drawn, not hovered, and out of the
 y-axis, the legend and the row count), so the axis at each zoom is the drawing
@@ -976,7 +976,7 @@ axis every mark stands on, with its title, type, pinned ends and grid. Below,
 the marks in paint order on the left, and on the right the selected mark's type,
 its steps, and a field picker per channel that type reads.
 
-<Figure src="/img/mark_display/edit_plot.png" caption="Edit marks over an Alu track declaring a multiscale pair: the two marks in paint order on the left, and on the right the selected mark's type, a picker per channel a bar reads, and the zoom range that hands over to the binned count."/>
+<Figure src="/img/mark_display/edit_plot.png" caption="Edit marks on a multiscale pair: the two marks on the left, the selected mark's channels and zoom range on the right."/>
 
 A picker takes free text as well as a scanned field or one the mark's steps
 write, so `INFO.DP`, `count`, a `jexl:` expression or a constant all go through.

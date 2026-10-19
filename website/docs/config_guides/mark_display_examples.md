@@ -432,7 +432,7 @@ pair, stroked by its mapping quality.
 }
 ```
 
-<Figure src="/img/mark_display_examples/links.png" caption="The pairs across a deletion on chromosome 20, each an arc from its leftmost read to the end of its insert, stroked by its mapping quality." />
+<Figure src="/img/mark_display_examples/links.png" caption="Pairs across a deletion, each an arc stroked by its mapping quality." />
 
 ## One row per file
 
@@ -474,7 +474,7 @@ similarity...** in the track menu.
 }
 ```
 
-<Figure src="/img/mark_display_examples/rows.png" caption="Six individuals' copy number over CCL3L1, one row per file on a shared axis, stepping down from the top row to the bottom." />
+<Figure src="/img/mark_display_examples/rows.png" caption="Six individuals' copy number over CCL3L1, one row per file on a shared axis." />
 
 ## Percent identity along an alignment
 
@@ -528,7 +528,7 @@ the axis already reads the color.
 }
 ```
 
-<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity and colored by it, with gaps where nothing aligned." />
+<Figure src="/img/mark_display_examples/identity.png" caption="H. pylori 26695 against J99, one line per alignment at its identity and colored by it." />
 
 A PAF line has one identity for the whole alignment, so a long alignment draws
 as one flat line however its identity varies along its length. An all-vs-all PAF

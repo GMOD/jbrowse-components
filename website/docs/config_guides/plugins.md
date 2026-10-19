@@ -84,7 +84,7 @@ Electron's renderer runs both other formats, and a plugin reaching the main
 process does it through `window.require('electron')` whichever format it ships
 in. A config still naming one fails that plugin by name and opens without it.
 
-<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, and the GUI cannot remove them. The Available plugins list below offers one-click installs."/>
+<Figure src="/img/plugin_store.png" caption="The plugin store from the Tools menu. A plugin installed via the config shows a lock icon, and the GUI cannot remove it."/>
 
 ## See also
 

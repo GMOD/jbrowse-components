@@ -10,7 +10,7 @@ to base level and most of what you need is already on screen. Almost everything
 else is a track-menu option that changes how reads are sorted, colored, grouped,
 sized, or filtered.
 
-<Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
+<Figure caption="An alignments track: coverage on top, pileup below. Mismatches show as colored ticks in the pileup and colored segments in the coverage bars." src="/img/volvox_alignments.png" />
 
 A coverage bar that is part red means that fraction of reads have a mismatch
 there. The track menu's **Show... → Coverage** and **Show... → Pileup** toggles
@@ -102,13 +102,13 @@ Modifications** paints them in two modes:
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
-<Figure caption="COLO829 tumor nanopore reads over a hypomethylated CpG island on chr20, colored by type (top) and 2-color (bottom): by-type leaves the island near-empty, 2-color fills it solid blue." src="/img/alignments/modifications2.png" />
+<Figure caption="Nanopore reads over a CpG island colored by type (top) and 2-color (bottom)." src="/img/alignments/modifications2.png" />
 
 Any type in the MM tag paints, so fiber-seq's N6-methyladenine (`A+a`) draws
 like any other modification, and since the assay adds 6mA to accessible DNA the
 call density doubles as a chromatin-accessibility readout.
 
-<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode, where purple marks are 6mA calls left on accessible DNA. The treated sample (top) piles them over the promoter; the no-enzyme control (bottom) has only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
+<Figure caption="Fiber-seq reads at the GAPDH promoter in modifications mode, purple marking 6mA calls. Treated sample above, no-enzyme control below." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
 ### Bisulfite and EM-seq
 
@@ -178,7 +178,7 @@ writes the same object:
 }
 ```
 
-<Figure caption="Group by... → Tag... opens a dialog for the tag name (here the HP haplotype tag), which reports the values it finds in view and can color the reads by the same tag." src="/img/alignments/haplotype_groupby.png" />
+<Figure caption="Group by... → Tag... opens a dialog for the tag name, which reports the values it finds in view." src="/img/alignments/haplotype_groupby.png" />
 
 Each section has a label chip that controls the section's height:
 
@@ -203,7 +203,7 @@ view. They are not saved to a session or a shared link, and changing the
 grouping dimension clears them, since a section name means nothing under a
 different dimension.
 
-<Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so each haplotype's reads and SNPs sit in a separate section." src="/img/alignments/haplotype.png" />
+<Figure caption="Reads grouped and colored by the HP tag, one tinted section per haplotype." src="/img/alignments/haplotype.png" />
 
 Grouping by `HP` is also how to check that a heterozygous variant's supporting
 reads sit on one haplotype; see
@@ -218,13 +218,13 @@ the [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows
 that. Long-read cDNA is the clearest case, since the reads are oriented to the
 transcript.
 
-<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band holds the coverage over the gene it groups, and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
+<Figure caption="HSV-1 cDNA reads over two neighbouring genes, grouped and colored by strand." src="/img/alignments/strand_split_depth.png" />
 
 Grouping by strand also works as a check on the reads. A position colored in one
 band and not the other comes from one strand alone, the signature of a
 basecalling error; a position that disagrees in both bands is a real variant.
 
-<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only that strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="Nanopore reads grouped by strand, each band's coverage from that strand's reads alone." src="/img/alignments/strand_split_coverage.png" />
 
 **Track menu → Read connections → SV channels (pairs by orientation)** groups by
 pair orientation, drops the pileup and turns the arcs on together, so each
@@ -252,7 +252,7 @@ happens to the read height, then to the track height:
   height so the whole pileup fits, shrinking as coverage deepens. No preset
   reads as selected while fitting; picking one drops back to fixed
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it is selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit read height to track height selected." />
 
 Fit mode adapts to how much room a pileup has: drag the track taller or shorter
 and the reads re-fit. Reads draw no taller than the Normal preset and no smaller
@@ -282,7 +282,7 @@ reads at that base.
 
 Insertions larger than 10bp also draw a purple rectangle in the pileup.
 
-<Figure caption="A large insertion across nanopore, PacBio, and Illumina reads: long reads span it as a dense column of purple insertion rectangles." src="/img/insertion.png" />
+<Figure caption="A large insertion across nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
 
 ## Soft clipping
 
@@ -294,7 +294,7 @@ structural-variant breakpoint.
 A read with no `SEQ` field (secondary reads among them) has no clipped bases to
 draw, so its clip indicator appears black.
 
-<Figure caption="Enabling 'Soft clipping' (top) and the result (bottom): reads terminating at a deletion breakpoint expose their unaligned bases." src="/img/alignments_soft_clipped_menu.png" />
+<Figure caption="Enabling Soft clipping (top), and reads ending at a deletion breakpoint showing their unaligned bases (bottom)." src="/img/alignments_soft_clipped_menu.png" />
 
 ## Filtering reads
 
@@ -305,7 +305,7 @@ radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
 unspliced ones, and **Mapping quality** hides reads under a minimum MAPQ, as
 `samtools view -q` does. The coverage histogram follows the filter.
 
-<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read with the tag; the SAM flag masks sit in a separate section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
+<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read with the tag." src="/img/alignments/filter_dialog.png" />
 
 Right-click a read for the **Filter** submenu: _Filter for this read_, _Filter
 for this haplotype (HP:n)_ and _Filter for this read group (RG:x)_ read their
@@ -344,7 +344,7 @@ Turn the arcs off from the same submenu. See the
 coverage histogram, **Coverage axis... → Scale → Log** keeps the shallower
 junctions visible.
 
-<Figure caption="Sashimi arcs over B2M RNA-seq alignments with per-junction read-support labels enabled and the coverage histogram on a log scale, so the deep junction peak doesn't flatten the rest." src="/img/alignments_track_arcs.png" />
+<Figure caption="Sashimi arcs over B2M RNA-seq with read-support labels on and coverage on a log scale." src="/img/alignments_track_arcs.png" />
 
 ## Read connections
 
@@ -382,7 +382,7 @@ Hovering an arc reports its location, the distance between the ends, the
 supporting read count and its color bucket. In read-cloud mode it also gives the
 insert size.
 
-<Figure caption="Choosing 'Read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
+<Figure caption="Choosing Read arcs from the Read connections submenu." src="/img/alignments/select_arc_display.png" />
 
 ### Read cloud
 
@@ -390,7 +390,7 @@ insert size.
 distance between mates**, so the insert-size distribution is visible directly
 and short-insert (insertion-supporting) pairs lift away from the background.
 
-<Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, which separates the insertion pairs (pink) from the background." src="/img/alignments/read_cloud.png" />
+<Figure caption="Read cloud on a synthetic SV dataset, reads stratified by log distance between mates." src="/img/alignments/read_cloud.png" />
 
 ## Going to a read's mate
 
@@ -422,7 +422,7 @@ reference locus it touches lies along the other, and each alignment segment is a
 ribbon between them in the order the read visits them. An insertion shows as a
 gap in the diagonal. Dragging over the read row extracts that sequence.
 
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The ordinary pileup on top, and below it the read drawn against the reference, where each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
+<Figure caption="Linear read vs ref for a PacBio read: the pileup above and the read drawn against the reference below. Each gap in the diagonal is inserted sequence." src="/img/read_vs_ref_insertion.png" />
 
 `Dotplot of read vs ref` plots the same alignment as a dotplot, clearer when a
 read visits one locus repeatedly.

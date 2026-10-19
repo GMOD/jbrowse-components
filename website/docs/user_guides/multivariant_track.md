@@ -22,7 +22,7 @@ transparency so you can still tell them apart.
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
-<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's samples with the inversion into a block against the rest of the cohort." src="/img/multisv.png" />
+<Figure caption="The 1000 Genomes SV callset across 5 Mb of chr19, one row per sample, sorted by genotype at an inversion." src="/img/multisv.png" />
 
 ## Equal-width columns: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
 
@@ -34,7 +34,7 @@ Sparse small variants that would be only 1–2px wide at their true positions ea
 get a full readable column. Patterns like shared haplotypes, runs of
 homozygosity, and population structure become visible at a glance.
 
-<Figure caption="A phased trio in equal-width columns: one column per variant, one row per haplotype, each cell shaded reference against alt. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
+<Figure caption="A phased trio as a matrix, one column per variant and one row per haplotype." src="/img/trio-matrix-phased-clean.png" />
 
 ## Filtering by allele frequency and missingness
 
@@ -53,7 +53,7 @@ you release the slider:
 Missingness is especially useful in equal-width columns, where each variant
 takes a full column no matter how many of its genotypes are no-calls.
 
-<Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
+<Figure src="/img/variants/potato_missingness.png" caption="One tetraploid VCF twice as a genotype matrix. Top: the default missingness ceiling. Bottom: a 0.1 ceiling." />
 
 The two filters can be preset so the track loads already filtered, with the
 [`minMinorAlleleFrequency`](/docs/config/variantfilter/#slot-minminorallelefrequency)
@@ -117,7 +117,7 @@ SnpEff's SV-specific consequence terms (`exon_loss_variant`,
 `transcript_ablation`, `gene_fusion`, ...) map onto the same four tiers, so a
 deletion that removes an exon reads as HIGH the same way a stop-gained SNV does.
 
-<Figure caption="1000 Genomes phase 3 chr1 genotypes colored by consequence impact from SnpEff annotations: red is stop-gained or splice-site, orange missense, yellow synonymous, and grey the intronic and intergenic majority." src="/img/variants/consequence_impact_1000g.png" />
+<Figure caption="1000 Genomes genotypes colored by SnpEff consequence impact." src="/img/variants/consequence_impact_1000g.png" />
 
 To have the track load already colored this way, set the display's `color` to
 `{ "field": "impact" }`: see
@@ -147,7 +147,7 @@ duplication). Otherwise it comes from `INFO/EVENTTYPE` or `INFO/SVTYPE`, or from
 a sequence allele 50 bp or more longer or shorter than REF. JBrowse stores the
 result as each VCF record's `svType` field.
 
-<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-allele cell taking its variant's class color, pale for a het and full for a hom. The legend names every class present, including the callset's complex (CPX) events, with both shades beside each." src="/img/multisv_svtype.png" />
+<Figure caption="The SV callset colored by SV type, pale for a het and full for a hom." src="/img/multisv_svtype.png" />
 
 A track loads already colored by SV type with `color` set to
 `{ "field": "svType" }`: see
@@ -197,7 +197,7 @@ across 26 population codes) this way. For the TSV layout and the adapter and
 display slots, see
 [auto-coloring samples by metadata](/docs/config_guides/variant_track#auto-coloring-samples-by-metadata).
 
-<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code, and each genotype cell is shaded by allele dosage." src="/img/variants/population_1000genomes.png" />
+<Figure caption="All 2,504 1000 Genomes samples sorted and colored by population code." src="/img/variants/population_1000genomes.png" />
 
 You can also change the grouping attribute and colors interactively after the
 track is open.
@@ -208,7 +208,7 @@ Samples can be reordered by genotype similarity, via **Clustering → Cluster ro
 by genotype...** in the track menu. See [](/docs/user_guides/clustering) for the
 modes, the dendrogram, and how to share a result in a session URL.
 
-<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog. Bottom: the rows reordered by genotype similarity, with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
+<Figure caption="The Cluster rows by genotype dialog (top), and the rows reordered with a dendrogram (bottom)." src="/img/variants/cluster_dialog.png" />
 
 With per-haplotype rows, clustering treats each haplotype as a separate row, so
 the dendrogram shows haplotype-level relationships.

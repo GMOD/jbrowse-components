@@ -43,7 +43,7 @@ for which foundation each in-tree display uses.
 Cancelling bumps `fetchGeneration`. That re-fires `FetchVisibleRegions`, which
 starts fresh fetches.
 
-<Figure caption="Three of the four autoruns end in the same cancel, by two routes. clearAllRpcData() discards the loaded data, and invalidateSettings() keeps it on screen under the scrim. The cancel bumps fetchGeneration, which triggers FetchVisibleRegions, so to explain an unexpected refetch, find which of the three autoruns ran. The diagram leaves out loaded data because the fetch autorun reads it untracked." src="/img/display_autoruns.png" />
+<Figure caption="Three of the four autoruns end in the same cancel. clearAllRpcData() discards the loaded data; invalidateSettings() keeps it under the scrim." src="/img/display_autoruns.png" />
 
 `clearAllRpcData()` leaves the too-large gate alone. `regionTooLarge` is derived
 from the cached byte estimate, and a blocked display re-takes that estimate once
@@ -53,7 +53,7 @@ an ordinary clear.
 
 ## The whole fetch chain
 
-<Figure caption="A blocked display re-measures at each settled viewport and fetches once the window is small enough, which clears the banner. The dashed edge is that re-measurement, the second of its two returns." src="/img/fetch_chain.png" />
+<Figure caption="A blocked display re-measures at each settled viewport and fetches once the window is small enough." src="/img/fetch_chain.png" />
 
 `isBlockCovered` compares the block against the loaded bounds. The loaded bounds
 extend past the viewport, so after a small pan they still cover the block and

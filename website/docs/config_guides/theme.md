@@ -36,9 +36,9 @@ toggle for themselves.
 }
 ```
 
-<Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
+<Figure src="/img/default_theme.png" caption="The default theme."/>
 
-<Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
+<Figure src="/img/customized_theme.png" caption="The customized theme."/>
 
 ## Light and dark
 

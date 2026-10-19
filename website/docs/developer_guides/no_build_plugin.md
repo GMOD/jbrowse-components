@@ -195,7 +195,7 @@ Reference it from your config with `esmLoc`:
 
 With the "Citation" plugin above in your config, the session looks like this:
 
-<Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
+<Figure caption="JBrowse with the no-build plugin's top-level menu item, and the widget it opens." src="/img/no_build_final.png"/>
 
 ## Note: JSX syntax
 

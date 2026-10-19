@@ -36,7 +36,7 @@ than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
 versions you develop against. `@jbrowse/render-core` first publishes in the next
 release; until then, build against a `jbrowse-components` checkout.
 
-<Figure src="/img/gwas/manhattan.png" caption="The mark display's point mark over a GWAS file: the worker encodes the scored points as typed arrays and the shared point shape draws them. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
+<Figure src="/img/gwas/manhattan.png" caption="The mark display's point mark over a GWAS file, each point a variant at its −log₁₀(p)."/>
 
 ## Rendering across two threads
 

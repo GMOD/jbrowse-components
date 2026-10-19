@@ -25,7 +25,7 @@ sequence adapter in a `GCContentAdapter`, so it works for any assembly, whether
 its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA. The adapter
 fetches no new data beyond the sequence the browser already reads.
 
-<Figure caption="GC content (top, XY plot) and GC skew (bottom) computed on the fly across the whole H. pylori 26695 chromosome. The skew flips sign at the two points the Replication origin / terminus track marks." src="/img/gc_content.png" />
+<Figure caption="GC content (top) and GC skew (bottom) computed on the fly across the H. pylori chromosome." src="/img/gc_content.png" />
 
 ## GC content vs GC skew
 
