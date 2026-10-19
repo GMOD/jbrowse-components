@@ -41,6 +41,46 @@ test('reads follow a shim across chunks and stop at a shadowing local', () => {
   ])
 })
 
+// graphgenomeviewer 7.3.0's host shim (scripts/hostShim.mjs in that plugin), as
+// esbuild minifies it: one guarded reader per host module, called once per
+// name the bundle kept, and a default export probing `__esModule`.
+test('reads follow a guarded host reader to the names it is called with', () => {
+  const entry = 'https://example.org/dist/ggv.esm.js'
+  const util = 'https://example.org/dist/chunks/util.js'
+  expect(
+    hostReads(
+      new Map([
+        [
+          entry,
+          `import{a as s,b as d}from"./chunks/util.js";
+           var Ze=JBrowseExports["@jbrowse/core/Plugin"];var cn=Ze&&Ze.__esModule?Ze.default:Ze;
+           export default class extends cn{install(){return [s,d]}}`,
+        ],
+        [
+          util,
+          `var t=JBrowseExports["@jbrowse/core/util"],e=o=>t!=null&&o in Object(t)?t[o]:Object.assign(function(){throw new Error("missing "+o)},{jbrowseHostMissing:o});
+           var s=e("SimpleFeature");var d=e("getSession");var T=t&&t.__esModule?t.default:t;
+           export{s as a,d as b}`,
+        ],
+      ]),
+      entry,
+    ),
+  ).toEqual([
+    '@jbrowse/core/Plugin#default',
+    '@jbrowse/core/util#SimpleFeature',
+    '@jbrowse/core/util#getSession',
+  ])
+})
+
+test('an __esModule probe is never a break', () => {
+  expect(
+    unservedReads(['@jbrowse/core/util#__esModule'], {
+      framework: {},
+      modules: { '@jbrowse/core/util': { names: ['getSession'] } },
+    }),
+  ).toEqual([])
+})
+
 test('a removed name is unserved; default, * and a nameless framework module are not', () => {
   const manifest = {
     framework: { react: ['useState'], '@mui/material/Checkbox': [] },
