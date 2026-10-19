@@ -16,12 +16,17 @@ import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// A track as sv_visualization_cgiab prints it, its bare filenames (a file the
-// page has the reader build) read from where the demo hosts them.
-const cgiabPageTrack = (trackId: string) =>
-  pageTrack('tutorials/sv_visualization_cgiab.md', trackId, {
-    base: 'https://jbrowse.org/demos/cgiab',
-  })
+// A track as the C-GIAB SV page (or its copy-number part 2) prints it, its bare
+// filenames (a file the page has the reader build) read from where the demo
+// hosts them.
+const cgiabPageTrack = (trackId: string, page: 'sv' | 'cnv' = 'sv') =>
+  pageTrack(
+    page === 'sv'
+      ? 'tutorials/sv_visualization_cgiab.md'
+      : 'tutorials/cnv_cgiab.md',
+    trackId,
+    { base: 'https://jbrowse.org/demos/cgiab' },
+  )
 
 // HG008-T tumor PacBio HiFi Revio reads, the same rehosted slice the hosted
 // cgiab config's own reads track points at. Same reasoning as
@@ -96,7 +101,7 @@ export const HG008_DEPTH_TRACK = {
 // which is log2(3/2). Neither this lane nor the BAF lane draws a reference
 // line at the balanced level: the copy-number key already names it (declined
 // 2026-09-27).
-const HG008_BICSEQ2_TRACK = cgiabPageTrack('hg008t_bicseq2')
+const HG008_BICSEQ2_TRACK = cgiabPageTrack('hg008t_bicseq2', 'cnv')
 
 export const HG008_BAF_TRACK = {
   type: 'QuantitativeTrack',
@@ -1822,9 +1827,9 @@ export const svSpecs: ScreenshotSpec[] = [
     url: cgiabUrl({
       sessionTracks: [
         HG008_DEPTH_TRACK,
-        cgiabPageTrack('hg008t_nygc_cnv'),
-        cgiabPageTrack('hg008t_dragen_cnv'),
-        cgiabPageTrack('hg008t_wakhan_hifi_hic'),
+        cgiabPageTrack('hg008t_nygc_cnv', 'cnv'),
+        cgiabPageTrack('hg008t_dragen_cnv', 'cnv'),
+        cgiabPageTrack('hg008t_wakhan_hifi_hic', 'cnv'),
       ],
       views: [
         {

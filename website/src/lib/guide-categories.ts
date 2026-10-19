@@ -129,6 +129,7 @@ export const TUTORIAL_ORDER = [
   'k562_fusions',
   'sv_callset_review',
   'sv_visualization_cgiab',
+  'cnv_cgiab',
   'tcga_cohort_mutations',
   'tcga_cohort_cnv',
   'population_genomics',

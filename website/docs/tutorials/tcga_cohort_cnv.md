@@ -359,7 +359,7 @@ shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/population_cnv)
 - [](/docs/tutorials/alu_age)
-- [](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/cnv_cgiab)
 - [](/docs/config_guides/jexl)
 
 ## External links

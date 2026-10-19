@@ -237,12 +237,12 @@ donor.
 
 ## 6. The pages that want splitting, at a named seam
 
-- **`sv_visualization_cgiab.md`** (53 KB, 25 headings) — cut at line 594, between
-  `## Align the tumor assembly to GRCh38` and `## Walkthroughs`. Everything above
-  is bash and JSON with almost no figure; everything below is hosted-data
-  walkthroughs with fourteen. Six sibling sections between `:161` and `:339`
-  shuffle freely. `## Reproduce it end to end` currently sits ~400 lines after
-  the data preparation it wraps.
+- **`sv_visualization_cgiab.md`** — split into `sv_visualization_cgiab` (SV
+  callsets, translocation, _CUZD1_, assembly synteny) and `cnv_cgiab` (copy-number
+  callsets, depth, BAF, four driver genes), a shared trunk of assemblies, reads
+  and benchmark with two branches. The seam proposed here, between building and
+  reading, leaves a ~600-line page of bash and JSON with three figures, so each
+  page would not carry its own lesson and figures.
 - **`pangenome_ecoli.md`** (61 KB) — cut at `## The graph itself` (line 743),
   which already reads as a second page's title and carries 22.9 KB.
   `### Browsing the whole graph by locus` alone is 15.4 KB, larger than the whole

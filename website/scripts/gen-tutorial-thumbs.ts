@@ -264,8 +264,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'center',
   },
   sv_visualization_cgiab: {
-    // depth over BAF genome-wide, the half of the tutorial its translocation
-    // split view does not cover
+    // the split reads of the translocation between the two panels' callouts,
+    // centered on the curves that join them
+    src: 'sv_cgiab/translocation_breakpoint_split.png',
+    band: [0.27, 0.6],
+    position: 'center',
+  },
+  cnv_cgiab: {
+    // depth over BAF genome-wide
     src: 'sv_cgiab/cnv_depth_baf.png',
     band: [0.25, 1],
   },

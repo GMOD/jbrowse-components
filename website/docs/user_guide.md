@@ -117,6 +117,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/k562_fusions)
 - [](/docs/tutorials/sv_callset_review)
 - [](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/cnv_cgiab)
 - [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/tcga_cohort_cnv)
 
