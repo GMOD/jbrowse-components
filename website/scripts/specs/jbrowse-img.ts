@@ -535,8 +535,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // direction). HG00151 ONT long reads (1000G-ONT S3, the MINIMAP2_ALIGNED_BAMS
   // file that keeps the SA-tag split alignments) over a ~1.2 kb chr1 inversion —
   // the two breakpoints show as clipped-read columns with the connecting arcs
-  // between them. (No color:pairOrientation: that's a paired-end concept,
-  // meaningless on long reads; the arcs are the SV signal.)
+  // between them.
   cliSpec('sv_read_arcs', [
     '--hub',
     'hg38',
@@ -548,6 +547,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // flanks — the inversion is legible in the pileup itself, not only in the
     // arcs.
     'unit=chain',
+    // the chain's segment colors live under the orientation fields
+    'color.field=pairOrientation',
     // Split the pileup on SA-tag presence, as inversion_long_read does
     // (reviewer): the reads that cross the two breakpoints get their own
     // labelled section under the arcs, and the flat background pileup goes
