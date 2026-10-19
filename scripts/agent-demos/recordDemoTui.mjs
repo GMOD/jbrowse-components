@@ -37,6 +37,7 @@ import {
   typePrompt as typePromptInto,
   waitTurnDone as waitTurnDoneIn,
   waitTuiReady,
+  writeCaptions,
 } from './demoCore.mjs'
 
 const repoRoot = path.resolve(
@@ -335,50 +336,6 @@ async function waitTurnDone(before) {
   }
 }
 
-// ------------------------------------------------------------ captions (ASS)
-function assTime(sec) {
-  const h = Math.floor(sec / 3600)
-  const m = Math.floor((sec % 3600) / 60)
-  const s = (sec % 60).toFixed(2).padStart(5, '0')
-  return `${h}:${String(m).padStart(2, '0')}:${s}`
-}
-function wrap(text, width = 62) {
-  const words = text.split(' ')
-  const lines = []
-  let line = ''
-  for (const w of words) {
-    if (`${line} ${w}`.trim().length > width) {
-      lines.push(line.trim())
-      line = w
-    } else {
-      line += ` ${w}`
-    }
-  }
-  if (line.trim()) {
-    lines.push(line.trim())
-  }
-  return lines.join('\\N')
-}
-function writeCaptions(file, cues) {
-  const header = `[Script Info]
-ScriptType: v4.00+
-PlayResX: 1920
-PlayResY: 1080
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColor, OutlineColor, BackColor, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Narr, DejaVu Sans, 36, &H00FFFFFF, &H20000000, &H00000000, 1, 3, 8, 0, 2, 80, 80, 24, 1
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-`
-  const lines = cues.map(
-    c =>
-      `Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Narr,,0,0,0,,${wrap(c.text)}`,
-  )
-  fs.writeFileSync(file, `${header + lines.join('\n')}\n`)
-}
-
 // ------------------------------------------------------------ main
 let renderer
 let app
@@ -528,10 +485,15 @@ try {
     `#!/bin/sh\nexec node ${JSON.stringify(path.join(repoRoot, 'products/jbrowse-cli/dist/bin.js'))} "$@"\n`,
   )
   fs.chmodSync(cli, 0o755)
+  // a running tmux server keeps the environment it started with, so the account
+  // the harness was launched under has to be named here or the TUI bills another
+  const configDir = process.env.CLAUDE_CONFIG_DIR
+    ? `export CLAUDE_CONFIG_DIR=${JSON.stringify(process.env.CLAUDE_CONFIG_DIR)}\n`
+    : ''
   const startScript = path.join(cwd, 'start-session.sh')
   fs.writeFileSync(
     startScript,
-    `#!/bin/sh\nexport PATH=${JSON.stringify(binDir)}:"$PATH"\nexec claude --model opus \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
+    `#!/bin/sh\n${configDir}export PATH=${JSON.stringify(binDir)}:"$PATH"\nexec claude --model opus \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
   )
   fs.chmodSync(startScript, 0o755)
   tmux('send-keys', '-t', SESSION, './start-session.sh', 'Enter')

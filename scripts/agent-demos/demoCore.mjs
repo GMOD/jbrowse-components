@@ -197,11 +197,13 @@ export async function waitTurnDone(session, before, maxMs = 300_000) {
 // common shell prompt besides, so matching it declares the TUI ready before it
 // exists. Match what only a live TUI draws.
 const STARTUP_DIALOGS = [
-  // highlighted option is "No, exit", so take the one below it
+  // highlighted option is "No, exit", so take the one below it; a Down sent
+  // while the chooser is still drawing is dropped, and Enter then exits
   {
     what: 'folder trust',
     match: /project you created or one you trust/i,
     keys: ['Down', 'Enter'],
+    selected: /❯\s*Yes, I trust/,
   },
   // highlighted option is "No, keep browser tools off", which is what a take
   // wants — it drives JBrowse, not a browser
@@ -233,10 +235,18 @@ export async function waitTuiReady(session, timeoutMs = 120_000) {
     )
     if (dialog) {
       console.log(`  answering the ${dialog.what} prompt`)
-      for (const key of dialog.keys) {
-        tmux('send-keys', '-t', session, key)
-        await delay(400)
+      const [confirm, ...moves] = [...dialog.keys].reverse()
+      if (!dialog.selected?.test(pane)) {
+        for (const key of moves.reverse()) {
+          tmux('send-keys', '-t', session, key)
+          await delay(400)
+        }
       }
+      if (dialog.selected && !dialog.selected.test(capture(session))) {
+        continue
+      }
+      tmux('send-keys', '-t', session, confirm)
+      await delay(400)
       answered.add(dialog.what)
     } else if (TUI_READY.test(pane)) {
       return true
@@ -269,6 +279,8 @@ function wrap(text, width) {
   return lines.join('\\N')
 }
 
+// The style's field names are ASS's own British spellings: libass skips
+// PrimaryColor and the rest, and draws the text black on its black box.
 export function writeCaptions(file, cues, { font = 'DejaVu Sans' } = {}) {
   const header = `[Script Info]
 ScriptType: v4.00+
@@ -276,15 +288,17 @@ PlayResX: 1920
 PlayResY: 1080
 
 [V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColor, OutlineColor, BackColor, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Narr, ${font}, 36, &H00FFFFFF, &H20000000, &H00000000, 1, 3, 8, 0, 2, 80, 80, 24, 1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `
-  const lines = cues.map(
-    c =>
-      `Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Narr,,0,0,0,,${wrap(c.text, 62)}`,
-  )
+  const lines = cues
+    .filter(c => c.text)
+    .map(
+      c =>
+        `Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Narr,,0,0,0,,${wrap(c.text, 62)}`,
+    )
   fs.writeFileSync(file, `${header + lines.join('\n')}\n`)
 }
