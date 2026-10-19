@@ -125,9 +125,9 @@ jb.trackModel(trackId).applyDisplaySettings(s) // restyle, and report what lande
 jb.waitReady(ms) // wait for drawing, and report what did not draw
 ```
 
-Each helper exists because the raw model gets that answer wrong with no error: a
-refName the file spells differently, a settings key the display drops, a track
-that settled without drawing. Everything else is the model itself.
+Each helper covers an answer the raw model gets wrong with no error: a refName
+the file spells differently, a settings key the display drops, a track that
+settled without drawing. Everything else is the model itself.
 
 - [](/docs/agents_live_model) is the reference the agent reads.
 - [](/docs/agents_recipes) is a verified snippet per ask.

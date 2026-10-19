@@ -8,8 +8,8 @@ guide_category: Core configuration
 
 A connection makes an external hub's tracks available in the track selector
 without configuring each track by hand. Admin-defined connections go in the
-top-level `connections` array; connections a user adds at runtime live in their
-session. The config format is below; the
+top-level `connections` array; connections a user adds at runtime are stored in
+their session. The config format is below; the
 [Connections user guide](/docs/user_guides/connections) covers in-app behavior.
 
 ## Connection config format

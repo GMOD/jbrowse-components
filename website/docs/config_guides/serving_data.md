@@ -48,7 +48,7 @@ Almost always the server is sending `Content-Encoding: gzip` on a BGZF file
 (BAM, VCF.gz, GFF.gz, BED.gz, .fa.gz). BGZF looks like gzip, so content sniffers
 (Apache's `mod_mime_magic`, PHP's `mime_content_type`, some CDN auto-rules) add
 the header and the browser decompresses the file before JavaScript sees it.
-JBrowse does its own BGZF decompression and seeks by offsets from
+JBrowse decompresses BGZF itself and seeks by offsets from
 `.bai`/`.tbi`/`.csi`/`.gzi`, so what it gets is truncated data, "invalid BGZF
 block", or random gaps. Serve these files as opaque binary with no
 `Content-Encoding`:
@@ -85,7 +85,7 @@ server must:
 
 Exposing `Content-Range` is optional: JBrowse detects end-of-file from short or
 `416` responses, and `Content-Length` is CORS-safelisted, so download progress
-works either way. Exposing it lets JBrowse report the true file size in places
+works either way. With it exposed, JBrowse reports the true file size in places
 like the spreadsheet importer. For local development only, Chrome's
 `--disable-web-security` flag is a temporary workaround.
 

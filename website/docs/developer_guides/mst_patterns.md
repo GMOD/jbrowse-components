@@ -66,11 +66,11 @@ return untracked(() => ({
 }))
 ```
 
-This computed-and-untracked split is the shape to copy for any expensive effect:
-fold every input that should trigger it into one computed, track only that, and
-read the raw values inside `untracked`. Tracking the underlying observables
-individually would refire the worker fetch on every pan frame for an identical
-result.
+The computed-and-untracked split is the pattern to copy for any expensive
+effect: fold every input that should trigger it into one computed, track only
+that, and read the raw values inside `untracked`. Tracking the underlying
+observables individually would refire the worker fetch on every pan frame for an
+identical result.
 
 :::warning An autorun must do its own reads — an MST action is an untracked one
 
@@ -85,10 +85,9 @@ path that wants the same work on demand. The fix is to duplicate the reads in
 the autorun and say why in a comment; `RegionTooLargeMixin`'s byte gate is the
 worked example.
 
-The same trap in another form: `self.someAction(getSnapshot(self))` tracks fine,
-and only because the snapshot is taken in the argument list, before the action
-is entered. Move that read inside the action and the dependency disappears with
-it.
+A related trap: `self.someAction(getSnapshot(self))` tracks fine, and only
+because the snapshot is taken in the argument list, before the action is
+entered. Move that read inside the action and the dependency disappears with it.
 
 :::
 
@@ -146,7 +145,7 @@ across files obscures the composition order and which views depend on which.
 `self` inside a `.views()` block is typed with everything the model had
 **before** that block. So a later block reaches an earlier block's getters on
 `self`, and that is the reason to split. `LinearMarkDisplay` puts its typed
-`conf` getter in its own block so every getter after it can read `self.conf`:
+`conf` getter in a separate block so every getter after it can read `self.conf`:
 
 <!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#chainedViews -->
 
@@ -272,7 +271,7 @@ block's override; what differs is what TypeScript can see:
 
 - `self` is typed with everything the model had **before** the block. It reaches
   earlier blocks, the properties, and the volatiles — and cannot see a sibling
-  in its own block.
+  in the same block.
 - `this` inside the returned object literal is typed as **that literal**. It
   reaches same-block siblings and nothing else.
 
@@ -352,7 +351,7 @@ the inherited track menu:
 
 Use `.volatile(() => ({ … }))` for state that should not be persisted in
 snapshots — loading flags, hover and menu state that a reload should reset.
-Fetched data is not one: it lives on the foundation's per-region store and a
+Fetched data is not one: it is held in the foundation's per-region store and a
 display reads it back through a getter. The canvas display's block, in full:
 
 <!-- include: plugins/canvas/src/LinearBasicDisplay/baseModel.ts#volatile -->

@@ -64,10 +64,10 @@ const ringView = {
 A multi-source quantitative track with its sources on rows gives each source a
 band inside one ring, so a sample pair or a small cohort is one nested set
 rather than a ring each. The bands are drawn against the display's single score
-domain, and a stack of rows has no axis of its own, so name that domain where
-the bands are meant to be read against each other. Naming the sources is the
-color's job here: the row labels are part of the display's chrome and a ring
-samples only its canvas, so give each subtrack a `color` in the adapter.
+domain, and a stack of rows has no axis, so name that domain where the bands are
+meant to be read against each other. Naming the sources is the color's job here:
+the row labels are part of the display's chrome and a ring samples only its
+canvas, so give each subtrack a `color` in the adapter.
 
 <Figure src="/img/circular_view/tumor_normal_rings.png" caption="A tumour and its matched normal from one multi-source quantitative track, a band each inside the ring, with the somatic SV truth set as chords. The tumour band steps between levels across whole chromosomes; the normal holds even over the same stretches." />
 
@@ -93,15 +93,15 @@ dotplot's does: **Quick start** picks a synteny track and opens its two genomes,
 and **Manual** takes **Add a second assembly** and a track for the pair, with a
 chromosome box per genome.
 
-Both arcs of a two-genome circle run the same way round, so a genome left in its
-own contig order puts every matching pair of chromosomes at opposite ends of a
+A two-genome circle runs both arcs the same way round, so a genome left in its
+contig order puts every matching pair of chromosomes at opposite ends of a
 diameter and sends every ribbon through the middle. The circle reorders as it
 opens, and **Re-order chromosomes** in the view's menu does it on demand. The
 reorder puts the second genome's chromosomes in the order of the first's, by how
 many aligned bases each pair shares, and the circle lays that genome out
 mirrored so the ribbons come out as a band of parallel arcs.
-`autoDiagonalize: false` on the view keeps each genome in its own contig order.
-It is the same pass the linear synteny view and the dotplot run, over the same
+`autoDiagonalize: false` on the view keeps each genome in its contig order. It
+is the same pass the linear synteny view and the dotplot run, over the same
 alignment file, and it is offered on a two-genome circle with a synteny track
 and nowhere else.
 
@@ -127,8 +127,8 @@ of thousands of them still turns and zooms without a pause.
 
 ### Karyotype changes on other pairs
 
-Each circle below opens from its own demo config. The human and chimpanzee one
-reads the hosted UCSC liftOver chain, built by
+Each circle below opens from a separate demo config. The human and chimpanzee
+one reads the hosted UCSC liftOver chain, built by
 `scripts/build_circular_synteny.sh` with `QUERY=panTro6`. The other two start
 from nothing but two FASTA files: `scripts/build_circular_synteny_fasta.sh`
 aligns them with minimap2 and indexes the result with `jbrowse make-pif`.

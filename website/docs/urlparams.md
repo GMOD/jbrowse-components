@@ -18,9 +18,9 @@ JBrowse Web reads its launch state from the URL. Embedded components such as
   query string with HTTP 414. The Share button writes every link as a hash URL,
   which also keeps a short link's password out of the web server's logs.
 - If the fragment contains an `=`, JBrowse reads its parameters only from there
-  and ignores the query string. Moving one long parameter into the fragment
-  means moving them all: `?config=my.json#session=spec-{…}` loads the default
-  `config.json`, not `my.json`.
+  and ignores the query string. A link must therefore put every parameter in the
+  fragment: `?config=my.json#session=spec-{…}` loads the default `config.json`,
+  not `my.json`.
 
 ## Linear genome view (simple)
 
@@ -227,13 +227,13 @@ decides what opens and the rest are layered onto it or dropped. Highest first:
   config's `defaultSession`. It outranks a hub, which would otherwise replace
   that session.
 - **`&hubURL=`**. A link with both a hub and `&loc=` navigates inside the hub.
-- **`&loc=`/`&assembly=`** on their own open a fresh single linear genome view.
+- **`&loc=`/`&assembly=`** alone open a fresh single linear genome view.
 - A link with none of these opens the config's `defaultSession`.
 
 `?config=`, `&sessionName=` and `&renderer=` sit outside the ranking and apply
 to whichever launch wins. `&sessionTracks=` applies to the hub launch and to the
-shorthand on its own, and is not layered onto a default session or any
-`&session=`, which list their tracks in the session itself.
+bare shorthand. A default session or `&session=` lists its tracks itself, so
+`&sessionTracks=` adds none there.
 
 ## Session spec
 

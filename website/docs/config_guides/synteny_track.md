@@ -33,9 +33,9 @@ minimap2). The one thing to get right is that `assemblyNames` is
 
 ## Alignment format glossary
 
-Every format says the same thing in its own dialect: this stretch of one genome
-matches that stretch of the other. The **query** and **target** roles and the
-**CIGAR** are shared across them, and
+Every format records the same thing in a different dialect: this stretch of one
+genome matches that stretch of the other. The **query** and **target** roles and
+the **CIGAR** are shared across them, and
 [query, target, and CIGAR](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
 explains them.
 
@@ -192,9 +192,9 @@ erroring.
 
 <!-- GOTCHA MCScanBlocksAdapter END -->
 
-Both tutorials that build these files check the ids before loading anything:
-[MCScan anchors](/docs/tutorials/mcscan_synteny_grape_peach) and
-[OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny).
+The [MCScan anchors](/docs/tutorials/mcscan_synteny_grape_peach) and
+[OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny) tutorials build
+these files and check the ids before loading anything.
 
 ### PanSN depth: sample or haplotype
 
@@ -226,10 +226,10 @@ single haplotype (`grape#1`):
 
 - **Mapping to `grape`** makes the sample one assembly, and an alignment between
   its haplotypes then reads as paralogy
-- **Mapping to `grape#1`** gives each haplotype its own row, so hap1 against
-  hap2 becomes a synteny band, kept even where the two are identical. Only a
-  true self-diagonal, one PanSN sequence against itself at the same coordinates,
-  is dropped
+- **Mapping to `grape#1`** puts each haplotype in a separate row, so hap1
+  against hap2 becomes a synteny band, kept even where the two are identical.
+  Only a true self-diagonal, one PanSN sequence against itself at the same
+  coordinates, is dropped
 - **A prefix matches only at a `#` boundary**, so `grape` cannot pick up
   `grapefruit#1#chr1`, and mates are labelled at the depth you listed
 
@@ -237,10 +237,10 @@ single haplotype (`grape#1`):
 
 `MCScanBlocksAdapter` and the two multi-genome PAF adapters pair with
 `MultiWaySyntenyDisplay` as well as with the two-way linear synteny view above —
-it draws one lane per assembly, each in its own local coordinate frame, with
-ribbons connecting orthologs between adjacent lanes rather than anchoring every
-assembly against one reference. Its lane order, coloring and the rest of its own
-config are
+it draws one lane per assembly, each in the local coordinates of that assembly,
+with ribbons connecting orthologs between adjacent lanes rather than anchoring
+every assembly against one reference. The display's lane order, coloring and the
+rest of its config are covered in
 [grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
 
 ## Building a table for MCScanBlocksAdapter

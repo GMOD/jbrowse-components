@@ -17,7 +17,7 @@ chr22 with the GENCODE annotation, and:
   JBrowse
 - use the page's cards and filters, and the Disagreements track of junctions
   that differ from GENCODE
-- check one disagreement, a model that merges _IL17REL_ and _TTLL8_, against
+- check one disagreement, where a model merges _IL17REL_ and _TTLL8_, against
   GENCODE
 
 The pipeline is

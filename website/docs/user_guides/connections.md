@@ -20,8 +20,8 @@ JBrowse supports three built-in connection types:
 
 ## Connections in the track selector
 
-Every connection appears as its own **category** in the track selector, listed
-below your regular tracks and named after the connection.
+Every connection appears as a separate **category** in the track selector,
+listed below your regular tracks and named after the connection.
 
 A connection is loaded **lazily**: expanding its category fetches the hub's
 track list. This keeps large hubs (which can contain thousands of tracks) out of

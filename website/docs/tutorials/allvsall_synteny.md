@@ -63,8 +63,8 @@ CLI.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. Producing an
-all-vs-all PAF takes your own set of assemblies.
+[build script](#reproduce-it-end-to-end) fetches everything itself. You need
+your own set of assemblies to produce an all-vs-all PAF.
 
 | What it is | File                                                                                                                  |
 | ---------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -115,7 +115,7 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-The same step for one strain, as a config or in Desktop:
+The `jbrowse add-assembly` step for one strain, as a config or in Desktop:
 
 ```json addassembly
 {
@@ -305,8 +305,8 @@ records, `scales.y` is the y scale, and the `mark` is the shape drawn. Three
 details to read:
 
 - `identity` comes from minimap2's `de` divergence tag
-- `filter` drops K-12's alignments to itself, which otherwise take a row of
-  their own
+- `filter` drops K-12's alignments to itself, which otherwise take a separate
+  row
 - `scales.y.zero` is `false`, so the autoscaled axis spans the identities alone
 
 **Advanced → Edit plot...** in the same menu shows these keys as text and
@@ -378,7 +378,7 @@ transparent or none.
 To print the alignments between two strains near a gap, here Sakai against K-12
 at the stx2 island, set `s` and `m` to the two strain prefixes and `lo` and `hi`
 to the window. Because `-X` emits each pair once in either direction, the
-coordinates come from whichever column the strain landed in:
+coordinates come from whichever column holds the strain:
 
 ```bash
 awk -F'\t' -v OFS='\t' -v s=Sakai -v m=K12 '

@@ -22,8 +22,8 @@ naming what is being clustered.
 Clustering reads **only the region currently in view**, so it describes one
 window: a clustered painting is genome-wide relatedness only when the view is
 the whole genome. After a run, the locus the tree was computed from is shown
-beside the dendrogram and travels with an SVG export, so a figure includes its
-own scope.
+beside the dendrogram and travels with an SVG export, so the figure includes its
+scope.
 
 Hierarchical clustering returns a fully resolved tree for any input, including
 one with no structure in it, so re-running across loci until the rows separate
@@ -77,7 +77,7 @@ After a run, rows are reordered so similar rows sit together and a dendrogram is
 drawn in the sidebar.
 
 - **Show... → Tree** toggles the dendrogram. It stays disabled until clustering
-  has been run; the row labels have their own toggle beside it.
+  has been run; the row labels have a separate toggle beside it.
 - **Show... → Tree branch lengths** draws the tree with branch lengths, so the
   horizontal extent of each branch reflects distance.
 - Click any internal node to filter the track down to that subtree. Click it

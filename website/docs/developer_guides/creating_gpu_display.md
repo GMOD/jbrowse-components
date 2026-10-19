@@ -165,8 +165,8 @@ export interface ScoreRenderState {
 ## Step 2: Write the shader
 
 Create a `.slang` file. JBrowse uses a Slang-derived shader language that
-compiles to both WGSL (WebGPU) and GLSL (WebGL2). Modules are referenced by bare
-name (`import hpmath;`), not file path. The shared helpers are in
+compiles to both WGSL (WebGPU) and GLSL (WebGL2). A shader imports a module by
+bare name (`import hpmath;`), not file path. The shared helpers are in
 `packages/render-core/src/shaders/`:
 
 - `hpmath` for the high-precision genomic→pixel transform
@@ -310,9 +310,9 @@ your plugin registers, in the RPC worker too, so the WGSL and GLSL wait behind
 `import()` until a display builds a GPU backend with the pass. Import neither
 yourself.
 
-The table below says what lands in `score.generated.ts` and what a plugin
-imports from it. That module re-exports the interface and consts modules, so the
-table is the union of all three, plus the three strings the text modules hold:
+The table below lists the exports a plugin imports from `score.generated.ts`.
+That module re-exports the interface and consts modules, so the table is the
+union of all three, plus the three strings the text modules hold:
 
 <!-- SHADER_EXPORTS START -->
 
@@ -871,7 +871,7 @@ function ScoreSvgBody({
 The model's `renderSvg` action loads it lazily, so the export code is in no
 eager chunk. The score's color comes from config, so `model.renderState` is
 already right for the export. A render state built from the theme is not: the
-export dialog picks its own, which the body reads with `usePalette()`.
+export dialog picks a different one, which the body reads with `usePalette()`.
 [](/docs/developer_guides/svg_export) has the pipeline and that rule.
 
 ## Step 9: Register the display
@@ -899,8 +899,8 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 
 The model and the component both load late. Anything registered at plugin
 install loads everything it names by value, so a state model passed directly
-would load eagerly. Passing `stateModel` as a thunk keeps the display's mixins,
-its `installUpload` and their imports out of every host's startup bundle. They
+would load eagerly. With `stateModel` as a thunk, the display's mixins, its
+`installUpload` and their imports stay out of every host's startup bundle. They
 load when a track first shows the display or a session names it.
 
 ## The WebGL2 context ceiling
@@ -911,8 +911,8 @@ on Chrome). Past the cap, context eviction and re-acquisition repeat in a
 cascade and block the main thread. **A single ordinary view reaches the cap**:
 17 GPU tracks on one linear genome view. Budget one context per open GPU track.
 
-Adding chromosomes costs no contexts. A whole-genome view of one track is still
-one canvas, with one GPU buffer per `displayedRegionIndex`.
+A genome with more chromosomes uses no more contexts. A whole-genome view of one
+track is still one canvas, with one GPU buffer per `displayedRegionIndex`.
 
 View-level lazy mount and bounded auto-recovery in `useRenderingBackend` limit
 the problem. Tracks inside a mounted view are not virtualized, so a view can
@@ -937,13 +937,13 @@ lists what each backend refuses to allocate.
   `devicePixelRatio` before writing them.
 - Never edit `*.generated.ts`. Always edit `.slang` and run `pnpm gen:shaders`;
   CI enforces this with `git diff --exit-code`.
-- A shape holds no state. The model's `rpcDataMap` is the single source of truth
-  and is passed into `renderBlocks`; `installUpload` releases each departed key
-  through `hal.deleteRegion(key)`.
+- A shape's data comes from the model: `rpcDataMap` is the single source of
+  truth and is passed into `renderBlocks`; `installUpload` releases each
+  departed key through `hal.deleteRegion(key)`.
 - The shape defines geometry and picking. The display holds its data and the
-  mapping from data to channels. The installer handles only the diff. Moving any
-  of these responsibilities into another layer lets the painter and the hit test
-  disagree.
+  mapping from data to channels. The installer handles only the diff. If another
+  layer takes over one of these responsibilities, the painter and the hit test
+  can disagree.
 - Render the canvas through `DisplayChrome`, never by calling
   `useRenderingBackend` in your own component, and reach the HAL only through
   `@jbrowse/render-core/marks/backend`, only from the component.

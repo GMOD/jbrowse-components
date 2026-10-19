@@ -8,12 +8,12 @@ guide_category: Plugins
 sidebar_label: Load cost
 ---
 
-JBrowse registers pluggable elements once, before it reads a session, so every
-plugin a config names is fetched and evaluated on the way to the first frame. A
-plugin that draws a multiple sequence alignment pays for its alignment renderer
-on a visit that never opens one, and pays the parse again in each RPC worker.
-Keeping that cost down to what registration actually needs is three decisions,
-and the first two are in your build.
+JBrowse registers pluggable elements once, before it reads a session, so it
+fetches and evaluates every plugin a config names on the way to the first frame.
+A plugin that draws a multiple sequence alignment pays for its alignment
+renderer on a visit that never opens one, and pays the parse again in each RPC
+worker. Keeping that cost down to what registration actually needs is three
+decisions, and the first two are in your build.
 
 ## Register lazily
 
@@ -40,7 +40,7 @@ pluginManager.addViewType(() => {
 Register the component with `lazy()` for the same reason.
 
 The cost of the thunk is that `session.addView('MyView')` refuses a type whose
-model has not loaded, and says so. Use
+model has not loaded and reports that it has not loaded. Use
 [`launchView`](/docs/models/multipleviewssessionmixin#action-launchview), which
 loads the model and then adds the view; your plugin's own menu items and
 extension points should call it too. JBrowse preloads the types a session

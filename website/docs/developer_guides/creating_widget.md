@@ -63,8 +63,8 @@ extend it:
 - **`helpText`** puts a help button beside the title that opens what you pass in
   a dialog.
 
-A widget that displays something declares its own fields on the state model
-alongside `id` and `type`, and receives them as `addWidget`'s third argument —
+A widget that displays something declares fields on the state model alongside
+`id` and `type`, and receives them as `addWidget`'s third argument —
 `UcscResultsWidget` in the BLAT plugin is that shape, holding the hits its table
 renders.
 
@@ -76,8 +76,8 @@ user saves or shares.
 
 ## Opening a widget
 
-A widget is opened by the `name` its `WidgetType` was registered under. BLAT
-opens its results table that way when a search returns hits:
+A caller opens a widget by the `name` its `WidgetType` was registered under.
+BLAT opens its results table that way when a search returns hits:
 
 <!-- include: plugins/blat/src/ucscShared.ts#showWidget -->
 

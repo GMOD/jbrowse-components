@@ -27,9 +27,9 @@ track form:
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
 ```
 
-Its peaks are the ones a BMI scan is known for, FTO at chr16:53.8 Mb first by a
-wide margin, then TMEM18, MC4R and SEC16B, so a view that lands on any of them
-has something to show.
+Its peaks are the loci a BMI scan is known for: FTO at chr16:53.8 Mb first by a
+wide margin, then TMEM18, MC4R and SEC16B, so a view at any of them shows a
+peak.
 
 The BMI summary statistics file above has no LD data. The LD-colored demo below
 is a second pair, `gwas_giant-bmi_meta_women-only.gz` with a PLINK table beside
@@ -37,7 +37,7 @@ it, both under `jbrowse.org/demos/gwas/` and wired together by the demo config.
 
 ## Public data sources
 
-Most public GWAS repositories use their own TSV column layout. GWASAdapter
+Most public GWAS repositories use differing TSV column layouts. GWASAdapter
 requires BED, so a conversion step is needed before loading. See the
 [config guide](/docs/config_guides/gwas_track) for the preprocessing pipeline.
 
@@ -50,8 +50,8 @@ requires BED, so a conversion step is needed before loading. See the
 
 ## LD data
 
-With an LD file loaded, points are colored by r² to an index SNP, so you can see
-which nearby variants are in linkage with the lead signal (see
+With an LD file loaded, the track colors points by r² to an index SNP, so you
+can see which nearby variants are in linkage with the lead signal (see
 [Add GWAS track workflow](#add-gwas-track-workflow) for how the index is
 chosen).
 
@@ -59,7 +59,7 @@ chosen).
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld/)
-shows this r² coloring running live in a React app.
+runs this r² coloring live in a React app.
 
 The LD triangle is a separate feature: it draws r² between every pair of nearby
 variants as a heatmap, read from a PLINK LD file. See the

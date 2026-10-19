@@ -55,9 +55,9 @@ Pick the ramp from the track menu's **Color scheme**:
 
 A bin with no contacts is left unpainted, so the page shows through it, and a
 ramp that is dark at its low end would scatter dark specks across the sparse
-long-range half of the matrix. So viridis, magma, inferno and cividis run light
-to dark unless [`color.reverse`](/docs/config/hiccolor/#slot-reverse) says
-otherwise, whether picked from the menu or named in a config. These are the
+long-range half of the matrix. Viridis, magma, inferno and cividis therefore run
+light to dark unless [`color.reverse`](/docs/config/hiccolor/#slot-reverse)
+reverses them, whether picked from the menu or named in a config. These are the
 ramps every color scale in JBrowse names, so a config spells one as
 [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
@@ -96,7 +96,7 @@ the file actually contains:
 Vectors are stored per chromosome and binsize, so a file can list a scheme that
 is missing at the binsize on screen. The menu ticks the normalization the loaded
 matrix actually has rather than the one requested, and the unavailable entry
-says which scheme was substituted. Stepping to a finer resolution usually
+names the scheme that was substituted. Stepping to a finer resolution usually
 resolves it.
 
 ## Comparing two regions
@@ -113,12 +113,12 @@ auto-picked resolution is finer than anything the file holds for that pair, the
 cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
 
-The same pairwise geometry scales to the whole genome. **View → Zoom → Show all
-regions in assembly** puts every chromosome in the view at once, which makes the
-fetch every chromosome against every other one and the drawing a block diagonal:
-each chromosome is a triangle along the bottom edge, each pair of chromosomes is
-the block between their two triangles, and the whole pyramid is the genome
-against itself.
+The pairwise geometry of two regions scales to the whole genome. **View → Zoom →
+Show all regions in assembly** puts every chromosome in the view at once, which
+makes the fetch every chromosome against every other one and the drawing a block
+diagonal: each chromosome is a triangle along the bottom edge, each pair of
+chromosomes is the block between their two triangles, and the whole pyramid is
+the genome against itself.
 
 <Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
@@ -160,14 +160,14 @@ reorder so the links sit above it. A link's `size` sets its stroke width, and
 ## Compartments and subcompartments
 
 At tens of megabases the matrix separates into two interleaved sets of regions
-that preferentially contact their own kind: the A compartment, which is
+that preferentially contact regions of the same set: the A compartment, which is
 gene-rich and active, and the B compartment, which is not. In a published figure
 this reads as a checkerboard, but that picture is drawn from an
 _observed/expected_ matrix, where each bin has been divided by the average
 contact at its separation and then correlated. JBrowse draws raw or
 matrix-balanced counts, and against the steep decay of contact with distance the
 compartment signal stays a faint texture. Balanced counts on a linear ramp show
-the most of it; `Log scale` on a deeply sequenced file returns solid red.
+it best; `Log scale` on a deeply sequenced file returns solid red.
 
 Load the compartment call itself; the processing pipeline has already made it.
 ENCODE publishes two such files per Hi-C experiment, both derived from the
@@ -187,8 +187,8 @@ Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.
 
 **Pin both eigenvector tracks to the same scale.** Left to autoscale, each track
-scales to its own min and max, so the two stop being comparable. Set the min and
-max score by hand, from the track menu or in config.
+scales to the min and max of its data, so the two stop being comparable. Set the
+min and max score by hand, from the track menu or in config.
 
 **An eigenvector identifies A only up to a sign.** The decomposition that
 produces it is equally valid negated, so which sign means "active" is a property
@@ -201,9 +201,9 @@ both files above, positive is the gene-rich side.
 
 The subcompartment classes need the same caution in a different place. The
 cluster numbers a caller emits are arbitrary labels rather than the published
-A1/A2/B1/B2/B3 naming, so a class number means nothing on its own and two files
-only compare because the same pipeline assigned the same colors. A class number
-can move between two files without the eigenvector moving at all, which is a
+A1/A2/B1/B2/B3 naming, so a class number means nothing alone and two files only
+compare because the same pipeline assigned the same colors. A class number can
+move between two files without the eigenvector moving at all, which is a
 relabelling rather than a switch.
 
 ## See also

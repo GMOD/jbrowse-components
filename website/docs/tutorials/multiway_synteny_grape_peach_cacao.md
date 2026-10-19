@@ -15,7 +15,7 @@ genomes at once, into one wide table with a column per species. We:
 - tell direct gene pairs from transitive ones
 - open one grape locus against all seven genomes as a multi-way track, one lane
   per genome
-- redraw each lane in its own genome's coordinates, and restack the genomes
+- redraw each lane in the coordinates of its genome, and restack the genomes
   around a locus
 
 ## Prerequisites
@@ -209,8 +209,8 @@ alias, so a session can still say `peach`:
 }
 ```
 
-`refNameColumnHeaderName` makes the UCSC names canonical, naming the first peach
-chromosome `chrG1` where the BED says `NC_034009.1`.
+`refNameColumnHeaderName` makes the UCSC names canonical, so the first peach
+chromosome is `chrG1` where the BED has `NC_034009.1`.
 
 ## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 

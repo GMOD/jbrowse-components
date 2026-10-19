@@ -84,15 +84,15 @@ polylinker sites, or any other named motif set.
 
 With more than one motif in the list, **Launch as one track** puts every motif's
 matches in one track, distinguishable only by name, and **Launch one track per
-motif** gives each its own lane.
+motif** gives each motif a separate track.
 
 <Video src="/media/ui/sequence_search_motifs.mp4" caption="The route on a view with no tracks open: the view menu's Sequence search, the Motif list mode and the enzymes it prefills, three of them kept, and a lane per enzyme scanned out of the reference." />
 
 ## Ship a search in config.json
 
-A search launched from the menu lives in your session. To put one in front of
-everyone who opens the instance, write the same adapter into `config.json` as an
-ordinary `FeatureTrack` — it names no file, since the assembly supplies the
+A search launched from the menu is stored in your session. To put one in front
+of everyone who opens the instance, write the same adapter into `config.json` as
+an ordinary `FeatureTrack` — it names no file, since the assembly supplies the
 sequence. Each adapter's page opens with a whole track config:
 [](/docs/config/sequencesearchadapter), [](/docs/config/motiflistadapter) and
 [](/docs/config/crisprguideadapter).

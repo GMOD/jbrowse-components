@@ -85,14 +85,14 @@ prepares your config.json — it **does not run server-side code**.
 ### What does my web server need to do
 
 Serve static files, honor byte-range requests, set no `Content-Encoding` on BGZF
-files, and answer CORS if the data lives on another host.
+files, and answer CORS if the data is on another host.
 [](/docs/config_guides/serving_data)
 
 ### How do I put my data behind a login
 
-JBrowse has no server and no accounts of its own, so whatever serves the files
-decides who may read them — leaving a track out of config.json protects nothing,
-and a password in config.json is public. [](/docs/config_guides/authentication)
+JBrowse has no server and no accounts, so whatever serves the files decides who
+may read them — leaving a track out of config.json protects nothing, and a
+password in config.json is public. [](/docs/config_guides/authentication)
 
 ### How do I add an assembly, or load a track
 
@@ -142,7 +142,7 @@ config, set `color` in the track's `displayDefaults`; in a URL, in its
 ### How do I color features by an attribute (color callback)
 
 Set `color` to an object naming the attribute, `"color": { "field": "type" }`,
-which paints each value its own color and draws a key saying which is which.
+which paints each value a different color and draws a key saying which is which.
 [](/docs/cookbook#colors) has the chosen-color, binned and gradient forms. Logic
 no single field states takes a [Jexl](https://github.com/TomFrost/Jexl)
 expression,
@@ -173,8 +173,8 @@ does not have. Use the Share button, or build a self-contained link with
 ### When does JBrowse show "Zoom in to see more features"
 
 When either of two limits would be exceeded — the bytes the fetch would
-download, or the features that would land on screen. The banner's **Force load**
-button loads the region anyway, and
+download, or the features that would be drawn on screen. The banner's **Force
+load** button loads the region anyway, and
 [](/docs/config_guides/tracks#the-zoom-in-to-see-more-features-limits) covers
 raising each.
 

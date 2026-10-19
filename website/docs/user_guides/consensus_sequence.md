@@ -26,8 +26,8 @@ Two ways in, differing only in which region the panel opens on:
   and the dialog title repeats the name.
 
 Regions are limited to 500kb. Reads are much heavier to fetch than reference
-sequence, so a larger region is refused — the panel says so and waits for a
-smaller one typed into the field.
+sequence, so a larger region is refused — the panel reports the refusal and
+waits for a smaller one typed into the field.
 
 ## How a position is called
 
@@ -36,8 +36,9 @@ the read has a deletion. Votes are weighted, so a read with an ambiguity code
 splits its vote across the bases that code covers, and a read with N contributes
 a small amount to all four bases.
 
-The base with the most votes wins, provided it clears the minimum call fraction;
-otherwise the position is N (reads were present but did not agree enough).
+The base with the most votes is called, provided it clears the minimum call
+fraction; otherwise the position is N (reads were present but did not agree
+enough).
 
 Deletions are treated asymmetrically. A winning gap is always called, even below
 the call fraction, because agreement that a base is absent is still evidence of

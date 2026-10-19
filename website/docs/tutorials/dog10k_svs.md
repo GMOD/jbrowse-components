@@ -98,8 +98,8 @@ Dog10K collection and flagged those whose allele frequencies track breed clades
 (groups of related breeds). One is a 7.8 kb deletion in an intron of _NHEJ1_,
 the variant [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to
 Collie eye anomaly, which should be common in Collies and their relatives and
-absent from unrelated breeds and wolves. The anomaly is recessive, so the darker
-cells below are affected animals and the lighter ones carriers.
+absent from unrelated breeds and wolves. The anomaly is recessive, so darker
+cells below mark affected animals and lighter ones mark carriers.
 
 ## Slicing the NHEJ1 locus out of the Paragraph callset
 
@@ -351,7 +351,7 @@ intron 48870419-48870952: called as a DEL of 534 bp at 48870418-48870951
 ### Slicing the two FGF4 intron records out of the Manta callset
 
 The _FGF4_ records come from the Michigan aggregate Manta callset, which has
-`DUP` and `INV` records too. Selecting on `POS` keeps the two intron records:
+`DUP` and `INV` records too. Select on `POS` to keep the two intron records:
 
 <!-- from: scripts/build_dog10k_fgf4_retrogene.sh -->
 
@@ -397,7 +397,7 @@ still on both chromosomes, so each such animal's pileup is always a mixture.
 ### The two known FGF4 retrocopies
 
 Dogs have two known _FGF4_ retrocopies. Both leave the same records at the
-parent gene, so a genotype here cannot say which copy an animal has:
+parent gene, so a genotype here is identical whichever copy an animal has:
 
 - one, tied to short legs by Parker et al.
 - a second, on a different chromosome, tied to chondrodystrophy and
@@ -491,7 +491,8 @@ To put the parent gene between the two retrocopies, we:
    then click **Launch**.
 3. Open the view's sliders menu and set **CIGAR indels → Transparent indels**.
    Colored indels would show one gap as a deletion above the parent row and an
-   insertion below it, because each ribbon reads the CIGAR from its own side.
+   insertion below it, because the CIGAR reads as a deletion from one side and
+   an insertion from the other.
 
 The window ends where the CFA18 alignment does, and the CFA12 ribbon runs past
 it.
@@ -531,8 +532,8 @@ bash build_dog10k_fgf4_synteny.sh
   _FGF4_ intron records over every canid in the callset, which this tutorial's
   config holds as a track.
 - `build_dog10k_fgf4_synteny.sh` exits non-zero unless every gap in both
-  alignments lands on an annotated _FGF4_ intron and each deposited CDS is a
-  single interval.
+  alignments is in an annotated _FGF4_ intron and each deposited CDS is a single
+  interval.
 
 ## See also
 

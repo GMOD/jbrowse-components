@@ -35,10 +35,10 @@ mapping quality, or any BAM tag. Four more order the whole layout instead:
 - **Sort by... → Split reads first** puts the reads aligned in pieces there, the
   ones with an `SA` tag.
 - **Sort by... → SV evidence first** puts the split reads on top, then the reads
-  carrying an insertion or deletion of 50 bp or more, then the pairs the aligner
-  did not call concordant: at a breakpoint those are the reads crossing it. A
-  read counts only when both ends are placed: a split read whose other pieces
-  all sit at mapping quality 0, such as the clipped tail of an Alu, stays put.
+  with an insertion or deletion of 50 bp or more, then the pairs the aligner did
+  not call concordant: at a breakpoint those are the reads crossing it. A read
+  counts only when both ends are placed: a split read whose other pieces all sit
+  at mapping quality 0, such as the clipped tail of an Alu, stays put.
 
 ## Color by
 
@@ -67,8 +67,8 @@ The track menu's **Color by...** offers several schemes.
   where it aligned with the aligner putting no better than even odds on it being
   the right copy, which happens when the best score is tied across positions
   ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108)). A
-  **secondary** alignment (FLAG `0x100`) is a competing placement recorded as
-  its own record; the default `flagExclude` of 1540 (duplicate, QC-fail,
+  **secondary** alignment (FLAG `0x100`) is a competing placement recorded as a
+  separate record; the default `flagExclude` of 1540 (duplicate, QC-fail,
   unmapped) does not drop those. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works a locus where
   MAPQ 0 covers a whole gene.
@@ -125,7 +125,7 @@ the CG, CHG or CHH context, which plant genomes methylate in all three. The
 For paired-end data, **Color by → Pair orientation** and **Color by → Insert
 size** highlight discordant pairs, the main way to scan short reads for
 structural variants: unexpectedly large inserts turn red, small ones pink, and
-abnormal orientations get their own colors. **Insert size and orientation**
+abnormal orientations get separate colors. **Insert size and orientation**
 paints whichever cue is strongest. The
 [SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation)
 has the color tables, the expected-insert threshold, and what each pattern means
@@ -180,8 +180,7 @@ writes the same object:
 
 <Figure caption="Group by... → Tag... opens a dialog for the tag name (here the HP haplotype tag), which reports the values it finds in view and can color the reads by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
-Each section is headed by a label chip, and the chip is where the section's
-height is controlled:
+Each section has a label chip that controls the section's height:
 
 - The chevron collapses that section to just its coverage band, and expands it
   again.
@@ -368,8 +367,8 @@ nothing across chromosomes.
 
 **Color by... → Arc color** picks what colors the arcs and the read cloud:
 insert size, pair orientation, or both. **Same as reads**, the default, takes
-the read color when the reads are colored by one of those three, and paints
-insert size and orientation under any other read color. The
+the read color when the read color is one of those three, and paints insert size
+and orientation under any other read color. The
 [`readConnections.color`](/docs/config/readconnections/#slot-color) holds the
 choice, `""` meaning same as reads.
 
@@ -403,7 +402,7 @@ mapped:
   turns on **View as pairs / link supplementary alignments** so the pair is
   drawn joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
-  [their own stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
+  [separate stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
   which draws the connecting splines
 
 For a split read, the **View split alignments** submenu offers the same two:
@@ -418,10 +417,10 @@ plus one supplementary per additional locus, the whole set recorded in each
 record's `SA` tag, drawn as separate rows in the pileup.
 
 Right-click any of them and choose **Launch → Linear read vs ref** to put them
-back together. The read becomes an assembly of its own along one lane, every
+back together. The read becomes a separate assembly along one row, every
 reference locus it touches lies along the other, and each alignment segment is a
 ribbon between them in the order the read visits them. An insertion shows as a
-gap in the diagonal. Dragging over the read lane extracts that sequence.
+gap in the diagonal. Dragging over the read row extracts that sequence.
 
 <Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The ordinary pileup on top, and below it the read drawn against the reference, where each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
 

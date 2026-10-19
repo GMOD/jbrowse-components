@@ -36,9 +36,9 @@ screen. We:
 Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.
 
-Nothing to download: the track configs and the scan script below read these
-files by URL. Your own `.hic` file loads by swapping `uri` in the track config
-under _Adding the Hi-C and contact-domain tracks_.
+The track configs and the scan script below read these files by URL, so no
+download is needed. Your own `.hic` file loads by swapping `uri` in the track
+config under _Adding the Hi-C and contact-domain tracks_.
 
 <details>
 <summary>The files</summary>
@@ -196,8 +196,8 @@ reproducible mapping artifact and not a rearrangement.
 
 ## Ranking chr9-chr22 contact bins with juicer_tools
 
-Finding the translocation takes one dump per `.hic` file and a sort. Dump the
-raw contact counts between the two chromosomes:
+To find the translocation, run one dump per `.hic` file and sort the results.
+Dump the raw contact counts between the two chromosomes:
 
 <!-- from: scripts/scan_hic_translocation.sh -->
 
@@ -234,7 +234,7 @@ Override `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` to scan any two `.hic`
 files that hold inter-chromosomal blocks. Reading the output:
 
 - The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_.
-- `RES=10000` lands on the junction itself, _ABL1_ intron 1 against the _BCR_
+- `RES=10000` resolves the junction itself, _ABL1_ intron 1 against the _BCR_
   major breakpoint cluster region.
   [The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
   of the same fusion in that intron.

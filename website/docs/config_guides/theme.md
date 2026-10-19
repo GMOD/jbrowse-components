@@ -45,13 +45,13 @@ toggle for themselves.
 A palette and its light/dark setting are two separate things in Preferences. The
 theme picker chooses colors — Default (from config), Stock, Minimal, or any
 `extraThemes` entry — and a second control chooses Light, Dark or Follow system.
-Moving one leaves the other alone, so a reader on Minimal who switches to dark
+The two settings are independent, so a reader on Minimal who switches to dark
 gets dark Minimal, and the colors you set under `theme` above apply in both.
 
 Sessions start on Light, so a reader reaches dark by asking for it. Picking
-Follow system puts a sun or moon in the toolbar naming the mode the OS landed
-on. Clicking it switches to the other mode and holds it until the OS next
-changes; clicking again goes back to following.
+Follow system puts a sun or moon in the toolbar showing the mode the OS
+currently uses. Clicking it switches to the other mode and holds it until the OS
+next changes; clicking again goes back to following.
 
 Most of a dark theme follows from the setting: the backgrounds, text, dividers,
 gridlines, coverage and hover colors all have dark values already. What does not

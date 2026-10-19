@@ -247,13 +247,11 @@ its last in-repo importer does, with nobody deciding to drop it.
 
 ## Names removed from the session and from a plugin's `exports`
 
-A plugin reaches these surfaces without importing anything, so removing a name
-from them is quieter than removing one from the re-export ABI above. A plugin
-looks up a session member on an object at runtime, often behind
-`'x' in session`, so removing one raises no error and the plugin stops asking. A
-plugin `exports` object is reached as `pluginManager.getPlugin('X').exports.Y`,
-where a missing name is `undefined` and calling it throws inside the calling
-plugin's `install`.
+A plugin reaches these surfaces without importing anything. It looks up a
+session member on an object at runtime, often behind `'x' in session`, so
+removing one raises no error and the plugin stops asking. A plugin `exports`
+object is reached as `pluginManager.getPlugin('X').exports.Y`, where a missing
+name is `undefined` and calling it throws inside the calling plugin's `install`.
 
 - **the session**, which a plugin reaches by member lookup (`'x' in session`)
   rather than by import, so nothing fails at build time:
@@ -857,7 +855,7 @@ contribute to rather than only the ones your own tests build.
 
 A few things built during development were removed before release, so you may
 have seen them in branch history: an in-tree pangenome/GFA graph-genome viewer
-and tube-map view (the graph view now lives in the external
+and tube-map view (the graph view is now the external
 [`jbrowse-plugin-graphgenomeviewer`](/docs/user_guides/graph_genome_view)), and
 a large multi-genome HPRC synteny dataset.
 

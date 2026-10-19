@@ -6,7 +6,7 @@ description:
 guide_category: Core concepts
 ---
 
-A track's data crosses one boundary and lands in typed arrays of absolute
+A track's data crosses one boundary and is stored in typed arrays of absolute
 genomic coordinates, and everything after that point is a redraw. A pan or a
 zoom therefore costs a frame and not a fetch.
 
@@ -91,7 +91,7 @@ what the pool is worth per format, and how to check it engaged are
 Three layers cache different things, and they compose because each dedups a
 different unit:
 
-| layer                        | unit                           | lives in          | goes stale when    |
+| layer                        | unit                           | stored in         | goes stale when    |
 | ---------------------------- | ------------------------------ | ----------------- | ------------------ |
 | `RemoteFileWithRangeCache`   | compressed bytes, as fetched   | the worker        | never              |
 | the parser's own chunk cache | decompressed and parsed chunks | the worker        | never              |
@@ -110,7 +110,7 @@ keeps what the worker computed under one set of settings, so
 every region when it changes, drawing the old answer under a scrim until the new
 one lands.
 [The cache key](/docs/developer_guides/data_fetching#rpcprops-the-cache-key)
-says what may go in it.
+section lists what may go in it.
 
 ## Where the GPU sits
 
@@ -120,8 +120,8 @@ pan, a zoom, a resize or a plot-wide opacity writes one shader parameter.
 
 A third rate sits between those two. A color scheme, a sort order and a row
 grouping are packed into the instance buffer, so changing one re-encodes and
-re-uploads the regions it touches and stops there. None of them changes what the
-worker computed, so none of them refetches.
+re-uploads the regions it touches and stops there. Each leaves the worker's
+output unchanged, so none refetches.
 [`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)
 is where a display declares which settings reach the buffer that way, and the
 pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
@@ -132,13 +132,13 @@ returns re-uploads, and everything else is a frame.
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that
 same function against a context that serializes each call, so on-screen and
-exported pixels never drift apart. Every canvas-drawing display supplies one,
-and the shader path is the optional accelerator on top.
+exported pixels match. Every canvas-drawing display supplies one, and the shader
+path is the optional accelerator on top.
 
 ## Where the parsers sit
 
 `read the index`, `read the chunks it named`, `inflate` and `build records` are
-one library per format, maintained in their own repositories, and the three big
+one library per format, maintained in separate repositories, and the three big
 ones each draw this segment with the same legend:
 
 - [`@gmod/bam`](https://github.com/GMOD/bam-js/blob/main/docs/dataflow.md) — BAM

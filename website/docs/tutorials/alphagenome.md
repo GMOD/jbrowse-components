@@ -36,9 +36,9 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
-Nothing to download: the plugin reads both stored predictions by URL. Your own
-variants swap `uri` for a VCF or BED, as _Asking AlphaGenome for a prediction_
-shows.
+The plugin reads both stored predictions by URL, so no download is needed. Your
+own variants swap `uri` for a VCF or BED, as _Asking AlphaGenome for a
+prediction_ shows.
 
 <details>
 <summary>The files</summary>
@@ -54,9 +54,8 @@ shows.
 
 Given a window of reference sequence and a cell type, AlphaGenome predicts the
 RNA-seq, DNase, ATAC, CAGE, PRO-cap and ChIP-seq signal an experiment would
-produce there, plus splice junctions and a contact map. Changing one base and
-asking again gives a second prediction, and the difference is the variant's
-predicted effect.
+produce there, plus splice junctions and a contact map. After one base changes,
+a second prediction differs from the first by the variant's predicted effect.
 
 The window is a megabase centered on _TAL1_, which is on in K562, an
 erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.

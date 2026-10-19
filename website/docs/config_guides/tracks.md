@@ -166,9 +166,9 @@ The display types, grouped by the track type they attach to:
 
 Two limits guard a region, and either one shows "Zoom in to see features or
 force load (may be slow)" with a **Force load** button: the bytes the fetch
-would download, and the features that would land on screen. Regions under about
-20 kb are never held back, and adapters that summarize at screen resolution
-(bigWig, Hi-C, MultiWiggle, sequence) are never too large.
+would download, and the features that would be drawn on screen. Regions under
+about 20 kb are never held back, and adapters that summarize at screen
+resolution (bigWig, Hi-C, MultiWiggle, sequence) are never too large.
 
 Alignments and MAF tracks' cost per reference base scales with read depth or
 with the number of aligned species instead, which zooming does not reduce, so
@@ -197,9 +197,8 @@ loads the region regardless.
 ### Raising the byte limit
 
 [`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is a
-byte count. The BAM, CRAM and VCF adapters have their own `fetchSizeLimit`,
-which takes priority over the display's, so for those formats set it on the
-adapter:
+byte count. The BAM, CRAM and VCF adapters have a `fetchSizeLimit` slot, which
+takes priority over the display's, so for those formats set it on the adapter:
 
 ```json addtrack
 {

@@ -162,7 +162,7 @@ Add the slice as a track, with hosted copies of the two files:
 }
 ```
 
-To put a site the wolves carry beside codon 40, type
+To put a site where the wolves have the alternate allele beside codon 40, type
 `chr31:27122805-27122834 chr31:27123013-27123103` into the location box. The
 first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 

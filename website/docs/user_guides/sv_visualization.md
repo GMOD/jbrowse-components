@@ -136,7 +136,7 @@ the pileup states it.
 **Color by → Insert size** colors a read by how far apart its mates aligned: red
 for larger than expected, pink for smaller, light grey for normal. **Insert size
 (gradient)** shades continuously by the size of the deviation instead. Expected
-is a robust band around the typical insert.[^mad]
+is a band around the median insert.[^mad]
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
@@ -177,8 +177,8 @@ an inversion. That is evidence from one molecule rather than from a pair.
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
 the rows around it. **Read connections → SV channels (pairs by orientation)**
-takes the same reads apart: each orientation class gets a separate band with its
-own coverage curve and arcs, the concordant pairs drop out, and the pileup goes
+takes the same reads apart: each orientation class gets a separate band with a
+coverage curve and arcs, the concordant pairs drop out, and the pileup goes
 away. Which band fills names the rearrangement, and a band that stays empty
 under a call is a call with no read-pair evidence behind it.
 
@@ -303,11 +303,11 @@ rearrangement. See
 ### Rebuilding a derivative allele
 
 Where long reads cross every junction of a rearrangement, the allele they have
-can be assembled as a sequence and loaded as an assembly of its own, with the
-reads realigned to it. Assembling it is an assembler's job — Flye, Shasta and
-hifiasm all do local assemblies of this kind — and JBrowse shows the contig
-against the reference as a synteny view. [](/docs/tutorials/cancer_sv) does that
-with COLO829's der(3).
+can be assembled as a sequence and loaded as a separate assembly, with the reads
+realigned to it. Assembling it is an assembler's job — Flye, Shasta and hifiasm
+all do local assemblies of this kind — and JBrowse shows the contig against the
+reference as a synteny view. [](/docs/tutorials/cancer_sv) does that with
+COLO829's der(3).
 
 ## Signatures by SV type
 
@@ -378,9 +378,9 @@ A BND record names one partner, so a launch from one record is two loci however
 many the rearrangement has. **Follow further breakends at each end** reaches the
 rest from the callset: at each end of the chain it looks for another junction
 leaving from within a kilobase of the same place, and takes it when there is
-exactly one, adding a panel per hop up to four. It is offered by the two
-launches that can read the callset, a variant track's right-click menu and a
-click on a chord drawn from that same file, and only for the stacked shape.
+exactly one, adding a panel per hop up to four. Only the two launches that can
+read the callset offer it, a variant track's right-click menu and a click on a
+chord drawn from that same file, and only for the stacked shape.
 
 <Figure caption="Launching from a COLO829 breakend record: the variant's right-click menu, the dialog with Follow further breakends at each end ticked, and the three panels the walk produces because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 

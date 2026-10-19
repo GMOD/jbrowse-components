@@ -15,7 +15,7 @@ table is a join on the gene name, built from eight GFF3 files in seconds. We:
 
 - build the join, and set up each lane's assembly from its hub
 - load the table as an eight-genome ortholog track, each primate a lane under
-  the human view in the coordinates of its own genome
+  the human view in the coordinates of that primate's genome
 - read the _TP53_ neighbourhood and a 17q window across the lanes
 - read human chromosome 2 against the ape chromosomes it fused from
 
@@ -293,7 +293,7 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 - Navigate the human row to `chr2` and the chimpanzee row to `chr12` and
   `chr13`, the two chromosomes that hold its halves
 - Pick **Target** in the palette button menu, which paints each ribbon by the
-  chimpanzee chromosome it lands on
+  chimpanzee chromosome it maps to
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
@@ -307,8 +307,8 @@ The script needs the tools under [Prerequisites](#prerequisites) and works in
 three steps:
 
 1. Download the eight annotations and sequence reports, and keep the genes on
-   the assembled chromosomes each report names, so no lane lands on an unplaced
-   scaffold.
+   the assembled chromosomes each report names, so no lane has a gene on an
+   unplaced scaffold.
 2. Join the annotations on gene symbol into one table anchored on human.
 3. Write the config from each genome's hub entry and gene track, plus the
    ortholog track.

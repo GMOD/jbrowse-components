@@ -28,16 +28,16 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **`color`, `height`, `filter`, the coverage band's `scales.y` and the four
   bands, `coverage`, `pileup`, `sashimi` and `readConnections`,** are
   [`LinearAlignmentsDisplay`](/docs/config/linearalignmentsdisplay) slots; each
-  band object holds whether it draws, its height and its own `filter`. Reads
-  draw gray with mismatches marked until
+  band object holds whether it draws, its height and a `filter`. Reads draw gray
+  with mismatches marked until
   [`color`](/docs/config/linearalignmentsdisplay/#slot-color) names a field —
   `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
   [`baseColor`](/docs/config/linearalignmentsdisplay/#slot-basecolor) draws
   modifications or base quality over them; the
   [cookbook](/docs/cookbook#alignments-tracks) has the coloring, grouping and
   flag-filter recipe
-- **[`unit`](/docs/config/linearalignmentsdisplay/#slot-unit) says what one row
-  stands for**, a read or a chain of a read with its mate and split segments;
+- **[`unit`](/docs/config/linearalignmentsdisplay/#slot-unit) sets what one row
+  is**, a read or a chain of a read with its mate and split segments;
   [`facet`](/docs/config/linearalignmentsdisplay/#slot-facet) stacks one
   labelled section per value of a read field (`pairOrientation`, `tags.HP`); and
   [`readConnections.color`](/docs/config/readconnections/#slot-color) picks the

@@ -15,9 +15,9 @@ holding the data, read the next section before configuring any of this.
 
 ## Serving JBrowse and its data behind one login
 
-JBrowse has no server and no user accounts of its own. It is static files
-running in a browser, reading your data files over HTTP, so whatever serves the
-files decides who sees a track. Two consequences:
+JBrowse has no server and no user accounts. It is static files running in a
+browser, reading your data files over HTTP, so whatever serves the files decides
+who sees a track. Two consequences:
 
 - **Leaving a track out of config.json protects nothing.** The browser downloads
   config.json, so every URL in it is visible to anyone who can open the app.
@@ -158,7 +158,7 @@ walk below. This is also what the Add Track form's account picker writes:
 - **An id the config does not declare** is honoured only when its leading
   segment is an account type (`HTTPBasicInternetAccount-myserver`, the form
   JBrowse mints when a server answers 401). Any other unknown id is ignored and
-  the file is read unauthenticated, which surfaces as the server's 401.
+  the file is read unauthenticated, so the user sees the server's 401.
 
 **Otherwise, the `domains` walk.** JBrowse goes through `internetAccounts` in
 order and picks the **first** whose `domains` matches, so put the most specific
@@ -270,9 +270,9 @@ goes in, which also covers plain API-key headers:
 
 ## Where tokens are stored
 
-A token obtained during a session lives in the browser's `sessionStorage`, keyed
-by `internetAccountId`, and is never written into a saved or shared session:
-sharing a session shares the view, and the recipient is prompted for their own
+A token obtained during a session is stored in the browser's `sessionStorage`,
+keyed by `internetAccountId`, and is never written into a saved or shared
+session: sharing a session shares the view, and the recipient is prompted for
 credentials. Closing the tab discards the token.
 
 ## Private files in S3
@@ -282,16 +282,16 @@ none of the account types above reach it.
 
 ### Presigned URLs
 
-`aws s3 presign` turns a private object into a URL containing its own signature,
+`aws s3 presign` turns a private object into a URL containing the signature,
 which needs no `internetAccounts` entry. Sign the data file and its index
-separately, since each is its own object:
+separately, since each is a separate object:
 
 ```bash
 aws s3 presign s3://mybucket/sample.bam --expires-in 604800
 aws s3 presign s3://mybucket/sample.bam.bai --expires-in 604800
 ```
 
-Both signed URLs go in the track, spelled out; the
+The signed data URL and the signed index URL go in the track, spelled out; the
 [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) cannot hold
 them:
 
@@ -343,8 +343,8 @@ and fetches what comes back. Three rules either way:
 - **Swap the URL inside the fetcher, never in the location.** The range cache
   keys on the URL the filehandle was constructed with, so a stable unsigned URL
   keeps it intact; `GoogleDriveOAuthModel` is the in-tree precedent. Cache
-  presigned URLs per object with their expiry, so no chunk fetch signs on its
-  own.
+  presigned URLs per object with their expiry, so a chunk fetch never signs a
+  URL.
 - **Treat a `403` as a possibly-stale signature** and retry once after
   refreshing, since a credential can lapse between two chunk fetches.
 

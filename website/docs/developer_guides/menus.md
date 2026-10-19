@@ -5,10 +5,10 @@ description:
 guide_category: Plugins
 ---
 
-Menus come in three surfaces with three mechanisms. The app menu bar takes
-contributions from a plugin's `configure()`, guarded by `isAbstractMenuManager`;
-a track menu and a right-click menu are the display model's `trackMenuItems()`
-and `contextMenuItems()`, captured from the super method where the display is
+Menus come in three surfaces with three mechanisms. A plugin adds items to the
+app menu bar from `configure()`, guarded by `isAbstractMenuManager`; a track
+menu and a right-click menu are the display model's `trackMenuItems()` and
+`contextMenuItems()`, captured from the super method where the display is
 defined and added to with `addDisplayMenuItems` from anywhere else. All three
 hold the same `MenuItem[]`.
 
@@ -104,7 +104,7 @@ To add items to a menu on a display you do not own, use `addDisplayMenuItems`
   use a menu they all have — a menu only one of them has is a compile error
   rather than a `self[menu]` that is undefined on the rest.
 - **`group`** collects several plugins' entries into one submenu. Without it,
-  each contribution becomes its own top-level row.
+  each contribution becomes a separate top-level row.
 - **`undefined`** from the callback adds nothing, which is how an item scoped to
   some state opts out.
 
@@ -222,10 +222,10 @@ the Material UI barrel into every host that installs the plugin.
 
 Called from `configure()`, guarded by `isAbstractMenuManager`. A contribution is
 recorded and merged in each time the menu opens, so none of these return
-anything and one that names a path that is not a sub-menu costs your item rather
-than the app. A contributed `subMenu` may be a function, and stays one: it is
-called when its panel opens, with any contributions into it merged onto the
-result.
+anything, and a path that names something other than a sub-menu drops your item
+without breaking the app. A contributed `subMenu` may be a function, and stays
+one: it is called when its panel opens, with any contributions into it merged
+onto the result.
 
 A `position` is an index into the menu's rows as they are at the moment it
 opens, which for a menu built from session state is not knowable in advance. A

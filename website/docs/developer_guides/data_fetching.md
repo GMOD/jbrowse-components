@@ -12,7 +12,7 @@ the cache key. Understand this chain before writing a display or debugging an
 unexpected refetch in any display.
 
 Displays whose data isn't partitioned by region compose `GlobalFetchMixin`
-instead and install a fetch autorun of their own. See
+instead and install a fetch autorun. See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
 for which foundation each in-tree display uses.
 
@@ -48,7 +48,8 @@ starts fresh fetches.
 `clearAllRpcData()` leaves the too-large gate alone. `regionTooLarge` is derived
 from the cached byte estimate, and a blocked display re-takes that estimate once
 per settled viewport. The gate therefore releases itself and needs no imperative
-clear. Keeping the estimate stops the banner flickering on an ordinary clear.
+clear. `clearAllRpcData()` keeps the estimate, so the banner does not flicker on
+an ordinary clear.
 
 ## The whole fetch chain
 
@@ -58,11 +59,11 @@ clear. Keeping the estimate stops the banner flickering on an ordinary clear.
 extend past the viewport, so after a small pan they still cover the block and
 nothing is fetched. `isCacheValid` checks whether the data held for a region is
 still valid for the current view, by comparing the whole fetch key; a display
-does not override it. A display whose data goes stale for reasons the bounds
-can't detect reports that through `zoomFetchArgs` (the zoom-derived arguments a
-fetch now would send the worker, which the foundation stamps beside each region)
-or `regionHasData` (whether what the last fetch stored still answers at this
-zoom).
+does not override it. A display whose data falls out of date for reasons the
+bounds can't detect reports that through `zoomFetchArgs` (the zoom-derived
+arguments a fetch now would send the worker, which the foundation stamps beside
+each region) or `regionHasData` (whether what the last fetch stored still
+answers at this zoom).
 
 ## Implementing fetchNeeded
 
@@ -111,7 +112,7 @@ progress. The envelope keeps the literal method name at the call site, so the
 registry's types for args and return still apply. Each region receives a
 separate `ctx`, so every region's progress aggregates into one bar.
 
-Put a batch-wide step that runs after every region has landed in `onComplete`.
+Put a batch-wide step that runs after every region has loaded in `onComplete`.
 It runs once, under the same staleness guard. Both canvas feature displays
 commit their region-too-large measurements there. Those measurements must be
 atomic across the batch, even though the payloads are not.
@@ -130,7 +131,7 @@ region:
   cannot be split, such as multi-sample variant's `cellData` or MAF's per-batch
   sample union. It makes one `call` and one `commit`, and marks every region
   loaded together. It takes the region list as an argument in place of the
-  plan's `needed`, because a display using it picks its own set. The variant
+  plan's `needed`, because a display using it picks the set itself. The variant
   matrix lays columns out across the whole visible width, so a partial refetch
   has no meaning there.
 

@@ -14,13 +14,13 @@ Certain sets of genes have stayed on the same chromosome together since before
 animals existed, and those sets have names.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
-color for it. A sponge keeps each set on its own chromosome; a comb jelly
-spreads each over several. We:
+color for it. A sponge keeps each set on one chromosome; a comb jelly spreads
+each over several. We:
 
 - load the jellyfish-sponge table as a synteny track, each ortholog colored by
   its set
 - open it as a dotplot, with one genome's chromosomes sorted by where their
-  orthologs land on the other
+  orthologs sit on the other
 - stack six genomes in a linear synteny view, with ribbons colored by set
 - check the set counts against the odp tables
 
@@ -307,8 +307,8 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
   | sort | uniq -c | sort -rn
 ```
 
-Swapping in another table and group gives the counts behind the stack. In
-_Hormiphora_ (`HCA_RES`), even the chromosome holding the largest share of a
+Run the command on another table and group to get the counts behind the stack.
+In _Hormiphora_ (`HCA_RES`), even the chromosome holding the largest share of a
 group holds less than half of it, which is why most of the stack's second band
 is faint. In the cladorhizid (`CLAa_EMU`), most of each group still sits on one
 chromosome.

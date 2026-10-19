@@ -49,10 +49,10 @@ The assemblies are two GenArk genomes
 hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
-Nothing to download: the agent fetches both sequences itself, then aligns them
-in about seven minutes on 16 threads and 14 GB of memory. For a pair of your
-own, swap in your `.pif.gz` and assemblies, as _Ask the agent to align and open
-the two genomes_ shows.
+No download is needed, since the agent fetches both sequences itself and aligns
+them in about seven minutes on 16 threads and 14 GB of memory. For a pair of
+your own, swap in your `.pif.gz` and assemblies, as _Ask the agent to align and
+open the two genomes_ shows.
 
 <details>
 <summary>The files</summary>
@@ -85,9 +85,9 @@ The agent runs this aligner command:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-The alignment takes several minutes, so the agent runs it in the background.
-Indexing the PAF then lets the browser read one region without parsing the whole
-file:
+The alignment takes several minutes, so the agent runs it in the background. The
+agent then indexes the PAF, so the browser can read one region without parsing
+the whole file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -126,7 +126,8 @@ order no chromosome name resolves and the synteny band draws empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-Naming the six chromosome arms gives one diagonal:
+With the axes restricted to the six chromosome arms, the plot shows one
+diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.

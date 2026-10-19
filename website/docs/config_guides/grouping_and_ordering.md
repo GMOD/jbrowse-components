@@ -8,22 +8,22 @@ guide_category: Track types
 
 Several unrelated-looking track settings — a gene track's biotype sections, an
 alignments track's haplotype bands, a multi-sample variant track's karyotype
-rows, a multiway synteny track's lanes, a multi-row display's partitions — read
+rows, a multiway synteny track's lanes, a multi-row display's partitions — use
 the same two ideas: a field (or, for multiway synteny, the assembly itself)
-decides what gets its own section, and a `domain` list decides which section
-draws first. This page is the shared mechanism; each example below links to the
-guide or tutorial it is worked through in full.
+splits the data into sections, and a `domain` list decides which section draws
+first. This page is the shared mechanism; each example below links to the guide
+or tutorial it is worked through in full.
 
 ## `field` and `domain`
 
 Most of these displays take a `facet` object: `{ field, domain }`. `field` is a
 feature attribute, a dotted path into a structured one (`INFO.SVTYPE`), or a
-`jexl:` expression — whatever value it returns gets its own section. `domain` is
-a list of values: the ones it names stack first, in that order, and every other
-value found in the data follows, sorted. A value in `domain` that the data never
-produces is simply never drawn — `domain` orders sections, it does not create
-them, so naming one ahead of time costs nothing and refetches nothing when it
-later appears.
+`jexl:` expression — each distinct value it returns makes one section. `domain`
+is a list of values: the ones it names stack first, in that order, and every
+other value found in the data follows, sorted. A value in `domain` that the data
+never produces is never drawn, because `domain` orders sections and does not
+create them. Naming one ahead of time therefore adds no refetch when it later
+appears.
 
 A `rows.domain` orders a display's rows by the same rule, with one difference:
 rows a source lists, such as a VCF's samples or a multi-BigWig's subtracks, keep
@@ -100,10 +100,9 @@ reads the fly inversion as diversity in each arrangement.
 ## The mark display
 
 `LinearMarkDisplay` takes the same `facet` object, and separately, a `row`
-channel that packs features within a section (a BAM's own pileup, or any mark
-whose `transform` runs a `pileup` step). Faceting and row-packing are
-independent — a facet splits into sections first, and each mark packs its own
-rows inside each section:
+channel that packs features within a section (a BAM's pileup, or any mark whose
+`transform` runs a `pileup` step). Faceting and row-packing are independent — a
+facet splits into sections first, and each mark packs rows inside each section:
 
 <Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a separate band under the chip that names it, and the untagged reads in a third."/>
 
@@ -116,8 +115,8 @@ a drag back into `domain`.
 `MultiWaySyntenyDisplay` draws one lane per assembly rather than one section per
 field value, so there is no `facet` — its `rows` is the lane arrangement, and
 `rows.domain` lists assembly names. It composes with `ribbonColor`, which paints
-each ribbon by a field of its own — here, the relative strand between the two
-lanes a ribbon joins:
+each ribbon by a field — here, the relative strand between the two lanes a
+ribbon joins:
 
 ```json addtrack
 {
@@ -222,9 +221,9 @@ tiers rather than alphabetical order:
 }
 ```
 
-The same mechanism at a larger scale — a `rows.domain` of six names, with
-`rows.kept` narrowing a 127-epigenome track to the three tissues a figure is
-actually about, in the order the comparison reads:
+At a larger scale, a `rows.domain` of six names with `rows.kept` narrows a
+127-epigenome track to the three tissues a figure is about, in the order the
+comparison reads:
 
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 

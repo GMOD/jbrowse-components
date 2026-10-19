@@ -231,7 +231,7 @@ pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Bottom: two LD triangles at one locus and allele-frequency floor, differing only in which samples went in, over the same Fst track and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-- In the Fst track at the top, the most differentiated sites in the window sit
+- In the Fst track at the top, the sites with the highest Fst in the window sit
   inside the block.
 - The block fills the flat span of the
   [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts

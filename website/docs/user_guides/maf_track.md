@@ -13,7 +13,7 @@ publishes (e.g. the human 470-way or the _C. elegans_ 26-way).
 JBrowse reads three formats, MAF (tabix-indexed BED), BigMaf, and bgzipped TAF
 (taffy), all opened as a single track. Add one with **File → Open track**, or
 load a track an administrator has configured. Data-format and configuration
-details (adapters, the species list or Newick guide tree) live in the
+details (adapters, the species list or Newick guide tree) are in the
 [MAF track configuration guide](/docs/config_guides/maf_track). This page covers
 what you can do once the track is on screen.
 
@@ -106,18 +106,18 @@ its blocks come from (in that species' own genome) are ranked by coverage: the
 row's main chromosome gets the primary color, and blocks from a different source
 chromosome take a contrasting accent. A row that stays one color is collinear; a
 row that _changes color along its length_ is drawing blocks from more than one
-source chromosome, an immediate flag for a translocation or rearrangement.
-Ranking per row keeps this readable, and a compact legend in the top-right names
-the scheme (main / 2nd / 3rd source). Like conservation, it is derived from the
-alignment with no extra data to fetch.
+source chromosome, an immediate flag for a translocation or rearrangement. The
+ranking is per row, and a compact legend in the top-right names the scheme (main
+/ 2nd / 3rd source). Like conservation, it is derived from the alignment with no
+extra data to fetch.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its source-chromosome rank, so a row stays one color when collinear and switches where blocks come from a different source chromosome."/>
 
 ## Inversions (strand flips)
 
 **Show... → Inversions (strand flips)** overlays a diagonal hatch on any block
-that aligns inverted relative to its own source chromosome's consensus
-orientation. Each block is compared to its scaffold's consensus, so an
+that aligns inverted relative to the consensus orientation of its source
+chromosome. Each block is compared to its scaffold's consensus, so an
 arbitrarily-oriented scaffold reads as collinear and only a genuine
 intra-scaffold strand flip is marked. It is an overlay, so it composes on top of
 the base, codon, or per-row identity rendering.
@@ -128,18 +128,16 @@ When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
 on the display), two coding-aware options appear. **CDS frames** (off by
 default, under **Show...**) draws a thin reading-frame-colored strip on each
 species' row, marking the coding exons projected onto that species so the gene
-structure reads vertically across the whole alignment. It is a strip drawn over
-whatever the rows are colored by, so it composes with any **Color by...**
-choice.
+structure reads vertically across the whole alignment. The strip draws over
+whatever the rows are colored by, so it works with any **Color by...** choice.
 
 **Codon changes (amino acids)**, a **Color by...** option, switches the
 per-sample rows from per-base SNP coloring to a per-codon view: every species is
 translated in the reference reading frame, and each codon cell is colored by how
-its amino acid compares to the reference: nonsynonymous changes stand out,
+its amino acid compares to the reference. Nonsynonymous changes stand out,
 synonymous (silent) changes get a faint tint, a stop the reference does not
-share is flagged, and conserved codons, the gene's own stop among them, stay
-clean. The residue is drawn on each codon once you zoom in far enough to read
-it.
+share is flagged, and conserved codons, including the gene's stop, stay clean.
+The residue is drawn on each codon once you zoom in far enough to read it.
 
 <!-- COLOR_TABLE maf START -->
 
@@ -163,7 +161,7 @@ legible, and the left sidebar redraws as the pruned guide tree.
 Hovering any cell reads out the alignment at that position: the species, its
 base, and the location in that species' own genome, plus the alignment status of
 the neighboring blocks (e.g. a bridged gap and its size). Insertions, deletions,
-and bridged e-line gaps each get their own tooltip. When the CDS-frames file is
+and bridged e-line gaps each get a separate tooltip. When the CDS-frames file is
 loaded (in codon view, or with the strip on), the hover also shows the gene
 name; in codon view it shows the species' codon and amino acid next to the
 reference's and labels the change synonymous or nonsynonymous.
@@ -181,18 +179,19 @@ is the slice a downstream alignment viewer or tree builder wants.
 Without a drag, the track menu's **Launch → View subsequences (visible region)**
 takes the whole window and every row.
 
-The same menu offers **Show only differences**, which blanks every base matching
-the reference so substitutions are all that remain, plus **Include insertions**,
-**Single line format**, **Color background**, and **Show sample names**.
+The **View subsequences** menu also offers **Show only differences**, which
+blanks every base matching the reference so substitutions are all that remain,
+plus **Include insertions**, **Single line format**, **Color background**, and
+**Show sample names**.
 
 A drag crossing a region boundary clips to the region it began in.
 
 ## Jumping to a species' own genome
 
-The rows of a MAF have each species' own coordinates, so a row can be opened in
-its own genome. That same menu's **Open aligned genome at the matching region**
-submenu lists one entry per species the selection covers, naming that species'
-locus in its own coordinates; clicking one opens a view there.
+Each row of a MAF uses its species' coordinates, so a row can be opened in that
+species' genome. The menu a drag raises has an **Open aligned genome at the
+matching region** submenu that lists one entry per species the selection covers,
+naming the locus in that species' coordinates; clicking one opens a view there.
 
 Only rows with aligned bases in the selection are listed, and only those whose
 sample names a genome the session can open: a sample configured with an
@@ -216,7 +215,7 @@ reference over that species' genome with the alignment drawn between them as
 ribbons. The ribbons come from the MAF's own columns, so every insertion and
 deletion in the block is where the alignment put it, and no synteny file is
 involved. The reference row has the tracks this view had open, the MAF included;
-the species row has its own gene track where the session has one.
+the species row has that species' gene track where the session has one.
 
 <Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at that strain's locus." src="/img/maf_row_menu.png" />
 
@@ -253,11 +252,11 @@ shows only the species it names, so none where the alignment holds none of them.
 
 ### Clustering rows by identity
 
-A guide tree states how the genomes are related in general. **Clustering →
-Cluster rows by identity...** states how they differ over the window in view:
-each row is scored by how much of the window it both aligns and matches the
-reference at, where a stretch it does not reach at all scores zero, and
-hierarchical clustering over those scores gives the row order and the
+A guide tree records how the genomes are related in general. **Clustering →
+Cluster rows by identity...** clusters rows by how they differ over the window
+in view: it scores each row by how much of the window the row both aligns and
+matches the reference at, where a stretch it does not reach at all scores zero,
+and hierarchical clustering over those scores gives the row order and the
 dendrogram.
 
 A cohort alignment wants exactly this ordering. A file of one species ships no

@@ -117,7 +117,8 @@ of both merged files, as in the Roadmap track config below.
 
 ## Configuring a multi-row display, one row per cell type
 
-Both releases are on hg19, so we load that assembly and a RefSeq gene track:
+The Broad and Roadmap releases are both on hg19, so we load that assembly and a
+RefSeq gene track:
 
 ```json addassembly
 {
@@ -205,7 +206,7 @@ lineage commits.
 ## Chromatin-state legend, filtering and row order {#the-legend-filtering-and-row-order}
 
 JBrowse builds the key from the state colors, one entry per distinct color,
-labeled with the first state name seen in it. States sharing a color collapse
+labeled with the first state name seen in it. States that share a color merge
 into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
 entry with `5_`. An identity
 [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale keeps the
@@ -215,8 +216,8 @@ Most of any segmentation is quiescent or heterochromatic. The track menu has
 these actions for reading the rest:
 
 - **Show... → Legend** turns the key off.
-- The **Categories** submenu has a checkbox per legend entry. Unchecking the
-  quiescent and repressed states leaves the promoters, enhancers and
+- The **Categories** submenu has a checkbox per legend entry. Uncheck the
+  quiescent and repressed states to leave the promoters, enhancers and
   transcription.
 - **Clustering → Cluster rows by similarity...** reorders the rows by the state
   each has across the region in view and draws the dendrogram in the sidebar.

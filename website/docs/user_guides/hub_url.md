@@ -9,7 +9,7 @@ guide_category: General usage
 The `&hubURL=` query parameter opens a
 [UCSC track hub](/docs/user_guides/connections#ucsc-track-hub-url-format)
 straight from a link, with no config file to set up first. Whoever opens the
-link lands in JBrowse with the hub's assemblies and tracks already available.
+link gets JBrowse with the hub's assemblies and tracks already available.
 
 ## Basic usage
 
@@ -19,7 +19,7 @@ https://jbrowse.org/code/jb2/latest/?config=none&hubURL=https://example.com/hub.
 
 - `hubURL=` points directly at the hub's `hub.txt` file (the same URL you would
   paste into the connection form).
-- `config=none` skips loading a JBrowse config, because the hub supplies its own
+- `config=none` skips loading a JBrowse config, because the hub supplies the
   assemblies and tracks. See [`?config=`](/docs/urlparams#config).
 
 JBrowse reads the hub's `shortLabel` and uses it as the session name.
@@ -47,9 +47,9 @@ stanza. Add [`&loc=`](/docs/urlparams#loc) and
 ```
 
 `&assembly=` is required here, and it is the hub's genome ID — the same name the
-hub's `genomes.txt` (or its `genome` line, for a one-file hub) uses. `&loc=` on
-its own has no assembly to resolve against, so JBrowse loads the hub at its own
-default location and says why. `&tracks=` works the same way, naming track IDs
+hub's `genomes.txt` (or its `genome` line, for a one-file hub) uses. `&loc=`
+alone has no assembly to resolve against, so JBrowse loads the hub at the hub's
+default location and shows why. `&tracks=` works the same way, naming track IDs
 the hub defines.
 
 ## Loading several hubs
@@ -72,7 +72,7 @@ the session.
 
 Hub tracks match to assemblies by genome ID, and the assemblies available are
 whatever the hub has plus whatever a combined `?config=` defines, so a hub
-opened with `config=none` shows only the tracks its own assemblies cover.
+opened with `config=none` shows only the tracks that the hub's assemblies cover.
 
 ## See also
 

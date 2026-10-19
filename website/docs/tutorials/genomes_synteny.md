@@ -109,7 +109,7 @@ alignment exists.
 A liftOver track pairs hg38 with one other genome. hg38's staging config also
 has **hg38 vs 240 genomes (liftOver, multi-way)**, one track over all of hg38's
 liftOver chains. The track draws hg38 on top and a lane per genome below, each
-lane with the gene models annotated on that genome, and lives on
+lane with the gene models annotated on that genome, and is on
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
 5 ships.
 

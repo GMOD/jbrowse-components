@@ -299,8 +299,8 @@ Reading the matrix against the Fst track above it:
   keeps genomic spacing, so sloped lines tie each column to its coordinate.
 - Rows depart from their size-class color in both directions: single orange rows
   sit within the giant cluster and single blue rows within the small one.
-- The wolves form a contiguous band of their own directly below the toy and
-  small block, and carry part of its haplotype.
+- The wolves form a contiguous band directly below the toy and small block, and
+  have part of its haplotype.
 
 The build script writes the Fst track as `dog10k_igf1_fst.bed.gz`. It loads like
 the genome scan, as a `GWASTrack` whose `GWASAdapter` takes `scoreColumn` `fst`
@@ -326,15 +326,15 @@ Schall and Kidd (2025) list structural variants associated with breed clades.
 Two scripts, in order:
 
 1. [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
-   runs the scan. It corrects each class's allele frequency for its own sample
-   size, so the unequal classes do not tilt the score, skips windows with too
-   few sites to score, and prints the percentiles behind the reference line.
+   runs the scan. It corrects each class's allele frequency for that class's
+   sample size, so the unequal classes do not tilt the score, skips windows with
+   too few sites to score, and prints the percentiles behind the reference line.
 2. [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
    slices the _IGF1_ window for those samples and scores each site with the
    scan's estimator.
 
-Both take their breed groups from the Dog10K sample table by breed name, so
-genotype plays no part in who sits in which class.
+The two scripts take their breed groups from the Dog10K sample table by breed
+name, so a sample's class never depends on its genotype.
 
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts

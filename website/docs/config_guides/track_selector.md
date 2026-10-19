@@ -8,7 +8,7 @@ Control track grouping, sorting, and collapse with `hierarchical` settings under
 `configuration`. Add a `metadata` object to any track to gain filterable columns
 in the faceted selector.
 
-Tracks appear in config.json order unless `hierarchical` says otherwise.
+Tracks appear in config.json order unless the `hierarchical` settings change it.
 [](/docs/config/hierarchicalconfigschema) lists every slot; the ones people set:
 
 ```json

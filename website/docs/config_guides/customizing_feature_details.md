@@ -69,7 +69,7 @@ in place.
 Every value passes through an HTML sanitizer, so `<b>`, `<a>` and `<table>`
 render as markup, and a value that is not recognizable HTML is escaped (a VCF
 `<TRA>` allele still reads as `<TRA>`). A value that is just a URL becomes a
-link on its own; the
+link with no extra markup; the
 [cookbook's details recipe](/docs/cookbook#labels-tooltips-details) links a gene
 to NCBI that way.
 

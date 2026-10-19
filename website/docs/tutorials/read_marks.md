@@ -81,7 +81,7 @@ must be the GRCh38 sequence the reads were aligned to.
 ## Plotting read depth as bars over the EFCAB8 deletion
 
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
-callset says NA12878 has one copy of a 3.9 kb deletion.
+callset records one copy of a 3.9 kb deletion in NA12878.
 
 ```json addtrack loc=chr20:32,925,000-32,955,000
 {

@@ -104,7 +104,7 @@ sequenced animals, to catch a wolf cross in any breed, plus:
   wolves, bred back to dogs afterwards. Each should have wolf-derived haplotype
   blocks on a dog background, and a German Shepherd essentially none.
 - **The Shiloh Shepherd**, from the Dog10K paper's discussion of wolf-like dogs,
-  shares more of its doubleton (F2) sites, those carried by only two
+  shares more of its doubleton (F2) sites, those present on only two
   chromosomes, with wolves than any other breed dog in the collection.
 - **The Tamaskan**, from the same discussion, is a wolf-lookalike bred from
   ordinary sled and herding dogs.
@@ -204,8 +204,8 @@ GRSD000002      0       1         German Shepherd Dog
 
 Nearly all swept breeds show a trace of wolf, and seven of the eight wolfdogs
 (four Saarloos, four Czechoslovakian) sit far above them. The eighth,
-Czechoslovakian 2 (`CZEC000002`), lands inside the range of the sweep with no
-long block anywhere.
+Czechoslovakian 2 (`CZEC000002`), is inside the range of the sweep with no long
+block anywhere.
 
 ### Collapsing FLARE's calls into BED blocks
 
@@ -313,8 +313,7 @@ wolf-derived.
 
 Blocks break up towards the end of chr1, tracking the genetic map: the build
 script tiles the chromosome and prints block-edge count and recombination per
-tile, and the tile with the most block edges has recombination far above the
-median.
+tile, and the tile with the most block edges has recombination above the median.
 
 ### Held-out wolves where FLARE and allele counts disagree
 

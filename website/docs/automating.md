@@ -21,8 +21,8 @@ document:
 | [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
 A running JBrowse also takes the document a piece at a time, an assembly or a
-track at once, with no file to edit. Every config block in these docs has that
-route beside the file and the CLI command, on its own tab.
+track at once, with no file to edit. Every config block in these docs shows that
+route as a tab beside the file and the CLI command.
 
 ## What a session document contains
 
@@ -68,16 +68,16 @@ The genome, a track, and the view to open on:
   [](/docs/config_guides/intro) covers them and the optional top-level fields
   beside them (`plugins`, `connections`, `internetAccounts`,
   `aggregateTextSearchAdapters`, `configuration`).
-- **The session says what is open.** A view names a track by the `trackId` the
-  config gave it; the join above is the one string `"ncbi_genes"`.
+- **The session lists what is open.** A view refers to a track by the `trackId`
+  in the config; the join above is the one string `"ncbi_genes"`.
   [](/docs/config_guides/default_session) covers the session object, the
   exported snapshot form, and shipping several named sessions.
-- **Settings live on the track, state lives in the session.** Color, height,
+- **Settings are stored on the track, state in the session.** Color, height,
   display mode and filters are [configuration slots](/docs/config_guides/tracks)
   under the track's `displayDefaults`. What is open and where it is scrolled to
   is session state. A view can still set a slot per launch by writing the track
   entry as an object: `{ "trackId": "ncbi_genes", "height": 250 }`.
-- **A session can hold tracks of its own.** `sessionTracks` takes the same track
+- **A session can hold extra tracks.** `sessionTracks` takes the same track
   configs as `tracks`, but they travel with the session and never reach the
   `config.json` the server hands every visitor. It is how a link adds a track to
   somebody else's instance.
@@ -177,7 +177,7 @@ export type TrackInit =
   `{"refName":"chr1","start":1000,"end":2000,"color":"#ff000055","label":"my region"}`.
   In a URL the JSON form must contain no spaces.
 - Circular, dotplot, synteny, spreadsheet, breakpoint-split and SV-inspector
-  views each take their own launch fields, listed per view type in the
+  views each take launch fields that differ per view type, listed in the
   [session spec reference](/docs/urlparams#session-spec).
 
 ## Where the view object goes
@@ -230,9 +230,9 @@ The view object serves every launch route unchanged:
   building `config.json` from a script.
 - **The generated reference** lists every slot of every type under
   [](/docs/config) and every state model under [](/docs/models), both from the
-  release you are running. [](/docs/config_guides/file_types) maps a file format
-  to its adapter, and [](/docs/config_guides/slot_types) says what a slot's type
-  accepts.
+  release you are running. [](/docs/config_guides/file_types) lists the adapter
+  for each file format, and [](/docs/config_guides/slot_types) lists what each
+  slot type accepts.
 
 ## Checking a document
 

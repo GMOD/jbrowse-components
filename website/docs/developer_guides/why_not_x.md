@@ -7,10 +7,10 @@ description:
 guide_category: Advanced topics
 ---
 
-JBrowse gives every track its own canvas, and on WebGL2 each canvas holds its
-own driver context — a browser hands out sixteen per page, so one view with
-seventeen GPU tracks exhausts them. WebGPU serves every canvas on a page from
-one device, which is why the ladder targets it first, then WebGL2, then
+JBrowse draws every track on a separate canvas, and on WebGL2 each canvas holds
+a separate driver context — a browser hands out sixteen per page, so one view
+with seventeen GPU tracks exhausts them. WebGPU serves every canvas on a page
+from one device, which is why the ladder targets it first, then WebGL2, then
 Canvas2D. Three constraints follow from how a track gets its data, and every
 rendering library below fails at least one of them. Rust runs here in
 decompression, offline preprocessing and build tooling, because none of the
@@ -21,7 +21,7 @@ Three constraints decide what this renderer can be built on:
 - **A display's drawing has to survive [](/docs/developer_guides/svg_export).**
   A display that draws to a canvas ships a Canvas2D draw function, and the
   export runs that function rather than the shader, so on-screen and exported
-  pixels cannot drift. The display already has a drawing path the GPU has no
+  pixels cannot differ. The display already has a drawing path the GPU has no
   part in, and a rendering library would add one more implementation of every
   glyph to keep in step with it.
 - **The bytes are never converted.** A worker decodes a track into
@@ -64,13 +64,13 @@ visualization someone authored.
 
 ## Why WebGPU, and not WebGL2 alone
 
-Each display owns one canvas, and `WebGL2Hal` takes its own `webgl2` context for
-it with no pooling between them, so on WebGL2 the number of live contexts on a
-page is simply the number of open GPU tracks. A browser allows sixteen, which
-one ordinary linear view reaches at seventeen tracks. Past that the browser
-makes room by evicting a live context, the display that lost it re-acquires,
-that acquisition evicts another, and the cascade wedges the main thread. WebGPU
-removes the per-canvas cost entirely, because
+Each display owns one canvas, and `WebGL2Hal` takes a separate `webgl2` context
+for each, with no pooling between them, so on WebGL2 the number of live contexts
+on a page is simply the number of open GPU tracks. A browser allows sixteen,
+which one ordinary linear view reaches at seventeen tracks. Past that the
+browser makes room by evicting a live context, the display that lost it
+re-acquires, that acquisition evicts another, and the cascade wedges the main
+thread. WebGPU removes the per-canvas cost entirely, because
 `packages/render-core/src/gpuDevice.ts` holds one `GPUDevice` for the whole page
 that every canvas configures against, so an added track costs a swap chain.
 [GPU_PORTABILITY.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_PORTABILITY.md)
@@ -111,8 +111,8 @@ a hot loop in Rust would have to move one of them:
 Hand-tuning a loop within TypeScript has the same trouble: two rewrites of a MAF
 worker loop
 [measured worse than the plain loop they replaced](/docs/developer_guides/optimizations#two-kernels-that-look-like-wins-and-are-not),
-because the shape of the memory access is what moves the number, and that is
-already visible in TypeScript.
+because the memory access pattern changes the measured result, and that pattern
+is already visible in TypeScript.
 
 ## Where Rust earns it
 
@@ -132,7 +132,7 @@ clock.
 
 ## How the decision gets made
 
-Identify which clock a change lands on, measure it against the code it would
+Identify which clock a change affects, measure it against the code it would
 replace, and publish the number even when it comes out a loss.
 [](/docs/developer_guides/optimizations) lists those beside the wins, and each
 declined idea is noted at the site that would re-try it. If a library now clears

@@ -99,13 +99,12 @@ location slot and the `.tbi` index beside it:
 }
 ```
 
-All three describe one track. Write the layer that says what you mean: the
-shortest for a file the extension describes, the middle for a different `type`
-or a `displays` array, the last for an index that does not sit beside its file.
-An assembly unpacks the same way, `{ "name": "volvox", "uri": "volvox.2bit" }`
-becoming a `sequence` adapter
-([file types](/docs/config_guides/file_types#the-whole-track-shorthand) lists
-the extensions).
+All three configs above describe one track. Write the shortest for a file the
+extension describes, the middle for a different `type` or a `displays` array,
+and the last for an index that does not sit beside its file. An assembly unpacks
+the same way, `{ "name": "volvox", "uri": "volvox.2bit" }` becoming a `sequence`
+adapter ([file types](/docs/config_guides/file_types#the-whole-track-shorthand)
+lists the extensions).
 
 ## A complete config
 
@@ -218,10 +217,10 @@ paint in the transcript's value, or the gene's where the transcript has none.
 | BED file's own colors         | leave `color` unset                                                                        |
 | Anything else                 | a `jexl:` expression over `feature` returning a color                                      |
 
-`score` paints a gradient unless `scale` says otherwise, and any other field a
-color per value; `domainMin` and `domainMax` pin a gradient's ends, which
-otherwise follow the loaded features. `labels` names the `domain` values in the
-key and `title` heads it:
+`score` paints a gradient unless `scale` is set, and any other field a color per
+value; `domainMin` and `domainMax` pin a gradient's ends, which otherwise follow
+the loaded features. `labels` names the `domain` values in the key and `title`
+heads it:
 
 ```json addtrack
 {
@@ -439,8 +438,8 @@ Past a handful of samples, generate `subadapters` from your samplesheet
 
 `color` and `filter` work as on a feature track, and VCF `INFO` fields are the
 usual thing to branch on. The `svType` field reads a record's structural-variant
-class off its symbolic ALT or `INFO/SVTYPE`, and paints each class its own color
-under a key:
+class off its symbolic ALT or `INFO/SVTYPE`, and paints each class a separate
+color under a key:
 
 ```json addtrack
 {
@@ -461,10 +460,10 @@ For a multi-sample VCF as a genotype grid, see
 
 ## Synteny and dotplot tracks
 
-Getting the two assemblies backwards is the most common mistake here. minimap2
-takes its inputs target first (`minimap2 grape.fa peach.fa` makes grape the
-target), so name them explicitly. The query draws on the dotplot's horizontal
-axis and the top row in linear synteny; if the track loads blank, flip the two.
+Swapped assemblies are a common mistake here. minimap2 takes its inputs target
+first (`minimap2 grape.fa peach.fa` makes grape the target), so name them
+explicitly. The query draws on the dotplot's horizontal axis and the top row in
+linear synteny; if the track loads blank, flip the two.
 
 ```json addtrack
 {
@@ -515,9 +514,9 @@ points, one fewer than the colors in `range`, and a gradient pins its ends with
 | `rows`     | one row per source or sample; `domain` puts the listed rows first                                                                            | quantitative, multi-row feature, multi-sample variant, MAF, mark display             |
 | `scales.y` | the value axis: `type`, `domainMin`/`domainMax`, `domainQuantile`, `autoscaleGroup`, and the guides `rules`, `grid`, `title`, `minimalTicks` | quantitative, alignments coverage, synteny, mark display, GWAS                       |
 
-The same `scales.y` object works on each of those track types. This one captions
-an alignments track's coverage band, rules it at every tick and draws a labelled
-line at 20x:
+A `scales.y` object works the same way on each of those track types. This one
+captions an alignments track's coverage band, rules it at every tick and draws a
+labelled line at 20x:
 
 ```json addtrack
 {

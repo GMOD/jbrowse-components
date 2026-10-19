@@ -21,8 +21,8 @@ are drawn:
 - Auto (default) - stacks every transcript zoomed in, collapses each gene to one
   transcript zoomed out, and keeps only as many isoforms per gene as the track's
   height has rows for
-- All transcripts - every transcript on its own row, whatever the zoom or track
-  height. A stack taller than the track scrolls
+- All transcripts - every transcript in a separate row, whatever the zoom or
+  track height. A stack taller than the track scrolls
 - Representative transcript - one isoform per gene
 
 The representative isoform is the one the annotation tags: `RefSeq Select` or
@@ -104,9 +104,9 @@ config author declares and what a reader arranges are one setting:
 ```
 
 Grouping also colors each section by its value, red and blue by strand or one
-color per attribute value, with a key naming them, unless the track already has
-a color of its own. The attribute dialog's **Also color by this attribute** box
-makes that choice by hand.
+color per attribute value, with a key naming them, unless the track already sets
+a color. The attribute dialog's **Also color by this attribute** box makes that
+choice by hand.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped and colored by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip and in its strand's color." src="/img/gene_track_group_by_strand.png" />
 
@@ -128,14 +128,14 @@ setting whole, and `null` clears one. Each of these pastes as it is:
 - `{ "color": { "field": "source" } }` one color per source
 - `{ "color": { "field": "strand" } }` forward strand red, reverse blue
 - `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "range": ["#1f77b4", "#ff7f0e"] } }`
-  those two biotypes blue and orange, and every other its own color
+  those two biotypes blue and orange, and every other value a distinct color
 - `{ "color": "#1f77b4" }` one color for everything
 - `{ "filter": { "genes": "only" } }` genes only
 - `{ "filter": ["jexl:feature.score > 100"] }` scores above 100
 - `{ "facet": null, "color": null }` ungrouped, default color
 
 The dialog lists the same examples. This one groups by biotype in a chosen
-order, gives each of the four biotypes its own color, and leaves the track's
+order, gives each of the four biotypes a distinct color, and leaves the track's
 filter alone:
 
 ```json
@@ -156,10 +156,10 @@ filter alone:
 A color by a field is the `color` setting's `{ "field", "domain", "range" }`
 form, and the track draws a key from the values it painted. A `domain` spends
 the `range` colors on the values it lists, in order, and a value it leaves out
-never takes one of their colors. Every other value takes a color of its own the
-first time the track shows it, and keeps it while the track is open; a value no
-other value competes with paints the color derived from itself, the same on
-every reload. A transcript and all its parts paint the transcript's value, or
+never takes one of their colors. Every other value takes a distinct color the
+first time the track shows it, and keeps it while the track is open; a value
+that no other value competes with gets a color derived from the value, the same
+on every reload. A transcript and all its parts take the transcript's value, or
 its gene's where the transcript has none. `strand` is a field too, painting
 forward tomato and reverse cornflowerblue unless a domain or range says
 otherwise. Each channel is the same setting its menu writes, so the Sections
@@ -178,10 +178,10 @@ the view, and JBrowse remembers it across sessions.
 ## Color transcripts by a value in the file
 
 The [`color`](/docs/config/featurecolor) object binds a field in the GFF3
-attribute column to a scale. Under `categorical` each value takes its own color;
-under `threshold` a number takes the color of the interval it falls in, between
-the cut points `domain` lists, with one `range` color per interval. A
-transcript's exons, CDS and UTRs paint the transcript's value, and a UTR follows
+attribute column to a scale. Under `categorical` each value takes a distinct
+color; under `threshold` a number takes the color of the interval it falls in,
+between the cut points `domain` lists, with one `range` color per interval. A
+transcript's exons, CDS and UTRs take the transcript's value, and a UTR follows
 `color` unless `utrColor` overrides it.
 
 - **JBrowse lowercases attribute names.** `dIF=0.79` reads under the key `dif`,
@@ -239,8 +239,8 @@ the track's `labels.name` reads it:
 }
 ```
 
-A label reading one attribute names it bare, `"name": "product"`; the expression
-above adds the fallbacks for the features that carry no product. See the
+For a label that shows one attribute, write it bare, `"name": "product"`; the
+expression above adds fallbacks for features with no product. See the
 [jexl configuration guide](/docs/config_guides/jexl) for the expression syntax.
 
 <Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each on a separate row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
@@ -265,7 +265,7 @@ installation.
 
 Zoomed out far enough, a gene track stops fetching and shows a "region too
 large" message with a **Force load** button. A bigWig of feature counts per
-kilobase, built once from the file and added as a track of its own, shows where
+kilobase, built once from the file and added as a separate track, shows where
 the genes are at any width.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes and three RepeatMasker families, each as features per kilobase." />

@@ -62,7 +62,7 @@ stacks one section per strand and colors each feature by its type.
 - A string is a setting's one-value form, such as a facet's field or a constant
   color.
 
-The line under the text says which settings applying would set or reset, and
+The line under the text lists which settings applying would set or reset, and
 Apply is disabled while the text is something the track's config would refuse,
 with the reason shown. A setting spelled another way but meaning the same thing
 changes nothing. Apply writes the settings onto the track, so they are kept with
@@ -70,7 +70,7 @@ the session and **Reset track settings** returns them to the track's config.
 
 ## From an agent or a script
 
-The same settings are a display's `plot`: read `display.plot`, edit a copy,
+A display exposes the same settings as `plot`: read `display.plot`, edit a copy,
 check it with `display.plotProblems(draft)`, and write it with
 `display.applyPlot(draft)`. See
 [Agents and the live model](/docs/agents_live_model).

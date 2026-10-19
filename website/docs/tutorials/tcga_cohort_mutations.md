@@ -334,7 +334,7 @@ One script builds every file above for any project id,
    writes, per gene and group, the share of tumors with at least one call in the
    `--impact` tiers. A tumor counts once however many calls it has in the gene.
 
-It needs `curl`, `python3`, and `bgzip` + `tabix` from
+The scripts need `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
 `apt install curl python3 tabix`.
 

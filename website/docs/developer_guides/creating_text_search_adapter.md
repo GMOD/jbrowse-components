@@ -55,14 +55,14 @@ results that matched precisely and one unrestricted search answers both "what
 matches?" and "what matches exactly?". Only the adapter can make that judgement
 — trix calls a hit exact when _any_ indexed attribute equals the query — so it
 travels on the result. Filtering on `searchType === 'exact'` works, and the
-built-ins also do it, but filtering on its own costs the search box two reads of
-one index.
+built-ins also do it, but filtering in the search box costs two reads of one
+index.
 
 ## Implementing the adapter
 
 `JBrowse1TextSearchAdapter` is the smaller of the two built-ins and shows the
-whole shape: a constructor that reads its config, a `searchIndex` that returns
-`BaseResult[]`, and its own handling of `searchType === 'exact'`.
+whole structure: a constructor that reads its config, a `searchIndex` that
+returns `BaseResult[]`, and handling of `searchType === 'exact'`.
 
 <!-- include: plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts -->
 
@@ -154,7 +154,7 @@ export default class JBrowse1TextSearchAdapter
 }
 ```
 
-The three constructor arguments are `BaseAdapter`'s, so pass them straight to
+`BaseAdapter` defines the three constructor arguments, so pass them straight to
 `super` even if you only use `config`. Backing the adapter with an API instead
 of a file changes only `searchIndex`'s body — `fetch` the endpoint you read out
 of the config and map each hit to a `BaseResult`.

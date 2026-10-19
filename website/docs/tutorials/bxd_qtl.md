@@ -105,8 +105,8 @@ tabix -p bed bxd_painting.bed.gz
 the rest under `LC_ALL=C`, so the adapter reads the column names off the file
 whatever your locale.
 
-Both tracks use the `mm10` assembly, whose chromosome names the marker positions
-follow:
+The painting and Manhattan tracks both use the `mm10` assembly, whose chromosome
+names the marker positions follow:
 
 ```json addassembly
 {

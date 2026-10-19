@@ -40,8 +40,8 @@ writing the BAM to disk.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. Generating
-per-cell-type BigWigs takes your own barcoded BAM and barcode table.
+[build script](#reproduce-it-end-to-end) fetches everything itself. To generate
+per-cell-type BigWigs, supply your own barcoded BAM and barcode table.
 
 | What it is                                                           | File                                                                                                                                              |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -211,7 +211,7 @@ _IL7R_ in CD4 T cells, and the rows share one axis.
 Take the row order and colors from the single-cell object, so related lineages
 stay adjacent and each row keeps its cluster's UMAP color.
 
-The clusters were named by scoring them against marker panels, so those markers
+We named the clusters by scoring them against marker panels, so those markers
 have signal in the rows of their cell types by construction. To test the labels,
 we open nine markers the panels leave out, one per cell type: _CD40LG_,
 _LINC02446_, _SPON2_, _CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_.

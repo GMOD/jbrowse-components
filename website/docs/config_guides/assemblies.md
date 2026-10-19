@@ -64,8 +64,8 @@ the ones below that need more than a slot description.
 ## Configuring reference name aliasing
 
 A track that loads without error but stays empty is usually a reference name
-mismatch: the file calls its chromosomes `chr1` or `NC_000001.11` where the
-assembly says `1`, and JBrowse matches by exact name. `refNameAliases` points at
+mismatch: the file names its chromosomes `chr1` or `NC_000001.11` where the
+assembly uses `1`, and JBrowse matches by exact name. `refNameAliases` points at
 a tab-separated file, one row per sequence, primary name first. UCSC
 [chromAlias files](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
 are that format; an NCBI `sequence_report.tsv` goes through
@@ -94,9 +94,9 @@ table 11 (the full list is on the
 }
 ```
 
-Keys match through refname aliasing, so `chrM` applies when the FASTA says `MT`
-only if the alias file lists `MT` in the chrM row. With no alias file, key the
-map by the FASTA's own name. A sidecar TSV
+Keys match through refname aliasing, so `chrM` applies when the FASTA names the
+sequence `MT` only if the alias file lists `MT` in the chrM row. With no alias
+file, key the map by the FASTA's own name. A sidecar TSV
 ([`geneticCodesLocation`](/docs/config/baseassembly/#slot-geneticcodeslocation),
 `refName<TAB>geneticCodeId`) supplies the same map; the inline entry wins if
 both are present.

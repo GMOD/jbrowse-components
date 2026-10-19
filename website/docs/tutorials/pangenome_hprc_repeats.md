@@ -376,7 +376,7 @@ that order. Their walks show in pairs in that order and fall into three groups:
   far from both calls (both walks, in HG01943).
 - HG02559 and HG04199 each have a walk with no verdict. No read spans one of
   HG02559's alleles, so the tick on HG02559#1 is grey, and HG04199's assembly
-  does not span the repeat: its second walk's readout says the contig ends
+  does not span the repeat: its second walk's readout shows that the contig ends
   before it.
 
 Click the TRGT record to see why. Its sample table gives `AL`, the allele
@@ -545,7 +545,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_amylase_haplotypes.sh
 ```
 
-This session opens the script's `config.json`; point `config=` at your copy:
+The session below opens the script's `config.json`; point `config=` at your
+copy:
 
 ```json session config=test_data/amylase/config.json
 {

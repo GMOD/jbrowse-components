@@ -43,8 +43,8 @@ The files are region slices of public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
 bucket.
 
-Nothing to download: the track configs below load region slices we host, cut
-from these files. Reads of your own with `MM` and `ML` tags load by swapping
+The track configs below load region slices we host, cut from these files, so no
+download is needed. Reads of your own with `MM` and `ML` tags load by swapping
 `uri`, as _Per-read methylation from the alignments_ shows.
 
 <details>
@@ -331,9 +331,9 @@ The display draws two marks over the same rows:
 - **the `line` mark** plots `meth`, which the `window` step writes: each CpG's
   mean over the 50 CpGs on either side, weighted by `n_valid_cov`, the read
   depth modkit counted there
-- **with `groupby: ["source"]`** the step averages each haplotype over its own
-  CpGs, and with `rows: "source"` the display gives each haplotype a row whose
-  label names it, so `showLegend` is off
+- **with `groupby: ["source"]`** the step averages each haplotype over that
+  haplotype's CpGs, and with `rows: "source"` the display gives each haplotype a
+  row whose label names it, so `showLegend` is off
 - **with `fetchSizeLimit`** raised, the track reads the whole slice when zoomed
   out
 

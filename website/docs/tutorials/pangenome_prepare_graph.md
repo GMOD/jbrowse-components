@@ -523,8 +523,8 @@ reader to zoom in.
 The one command builds the graph track, the bubbles, the tier and the allele
 inventory, with the tools under [Prerequisites](#prerequisites). It:
 
-1. places every segment on a genome: an rGFA states each position in its own
-   tags, and for a plain GFA the command follows the backbone's paths first,
+1. places every segment on a genome: an rGFA holds each position in tags on the
+   segment, and for a plain GFA the command follows the backbone's paths first,
    then places each remaining segment on the first other haplotype whose path
    visits it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on

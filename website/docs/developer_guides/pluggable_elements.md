@@ -6,8 +6,8 @@ guide_category: Getting started
 
 A plugin can register ten element types: adapters, text search adapters,
 displays, tracks, connections, views, widgets, RPC methods, internet accounts
-and add-track workflows. Each has a guide of its own, and so do extension
-points; the display types are what draw.
+and add-track workflows. Each has a separate guide, as do extension points; the
+display types draw.
 
 A plugin's `install` method adds these elements to the host application, while
 `configure` typically sets up
@@ -96,10 +96,10 @@ that reads it.
 
 A track combines an adapter with one or more displays, and can also:
 
-- Add extra menu items to the track menu. The track's own menu is assembled from
-  its displays' `trackMenuItems()` plus a "Display types" submenu, so most items
+- Add extra menu items to the track menu. The track menu is assembled from its
+  displays' `trackMenuItems()` plus a "Display types" submenu, so most items
   come from the display rather than the track
-- Add its own file formats to "Save track data"
+- Add file formats to "Save track data"
 
 Example tracks:
 
@@ -127,7 +127,7 @@ which displays attach to which track type.
 
 ## Rendering
 
-Drawing is implemented by the **display types**:
+The **display types** implement drawing:
 
 - The worker fetches feature data via RPC and returns compact typed arrays
   (absolute genomic uint32 coordinates). Its job ends there; drawing begins on

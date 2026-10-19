@@ -151,8 +151,8 @@ types**), and its point mark chooses what it reads:
   reaches a raw column of the file. A feature with no finite value there is
   skipped.
 - `encoding.color: { "field": "population" }` — gives each distinct value of a
-  column its own color and draws a key of the values met. A value takes the same
-  color in every region and session. Its
+  column a different color and draws a key of the values met. A value takes the
+  same color in every region and session. Its
   [`domain`](/docs/config/markcolor/#slot-domain) is the order those values
   take, in the key and in the colors: the values it lists come first, in that
   order, and the rest follow sorted, and `range` hands them colors.

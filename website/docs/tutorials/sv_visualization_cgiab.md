@@ -449,7 +449,7 @@ bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
 npx --yes serve cgiab_build/jbrowse2
 ```
 
-It downloads over 200 GB and takes hours.
+The script downloads over 200 GB and takes hours.
 
 ## See also
 

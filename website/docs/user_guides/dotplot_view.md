@@ -31,16 +31,16 @@ dotplot-specific:
 Two toolbar controls do most of the work on a whole-genome plot, and the figure
 below uses the second:
 
-- The palette button's **Color by** menu. **Query** gives each sequence on the
-  horizontal axis its own color, and **Strand** colors by that instead. The
+- The palette button's **Color by** menu. **Query** colors each sequence on the
+  horizontal axis differently, and **Strand** colors by strand instead. The
   numbers an alignment has, identity and mapping quality among them, sit under
   **Color by value**. Each option has a description of what it colors. A text
-  column there paints one color per label, each label a color of its own that it
-  keeps as others arrive. The view's `color.domain` lists labels that take the
-  palette in order and lead the legend. With more than one alignment file
-  plotted together, **Distinct color per track** gives each its own color, and
-  **Track colors** below it pins the color for one track at a time. On a plot
-  whose blocks are all a single pixel wide, reach for **Min length** first.
+  column there paints one color per label, and a label keeps its color as others
+  arrive. The view's `color.domain` lists labels that take the palette in order
+  and lead the legend. With more than one alignment file plotted together,
+  **Distinct color per track** gives each track a separate color, and **Track
+  colors** below it pins the color for one track at a time. On a plot whose
+  blocks are all a single pixel wide, reach for **Min length** first.
 - **Min length**, in the settings menu, drops alignments shorter than the slider
   value. Divergent genomes align in many short fragments, and hiding them is
   usually what makes the syntenic blocks visible.
@@ -50,9 +50,8 @@ plot looks like: **Opacity** and **Line width** for how each alignment draws,
 **Identity fade** for fading each one by its sequence identity, **CIGAR indels**
 for whether per-base indels are drawn inside one, **Level of detail** for how
 much of a tiered file is loaded, and **Gridlines**, which extends each axis'
-ruler ticks across the plot. At whole-genome zoom neither axis has room to
-number itself, so the gridlines row says **none at this zoom** while it stays
-ticked.
+ruler ticks across the plot. At whole-genome zoom neither axis has room for tick
+numbers, so the gridlines row reads **none at this zoom** while it stays ticked.
 
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal remains. The horizontal band across grape chr12 is a repeat-rich region." src="/img/dotplot.png" />
 
@@ -80,20 +79,20 @@ in a [linear synteny view](/docs/user_guides/linear_synteny_view), both panels
 framing one palindrome and colored by strand: the arms draw as a single
 minus-strand ribbon over the plus-strand match of the sequence to itself.
 
-The gene lanes show the same pattern from the annotation. Each arm has its own
-copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
-RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
-unpainted gaps inside the arms are where the two copies differ.
+The gene lanes show the same pattern from the annotation. Each arm has copies of
+the same Y-linked families, RBMY1B and RBMY1A1 on one side against RBMY1D and
+RBMY1E on the other, CDY10P and CDY11P either side of the centre. The unpainted
+gaps inside the arms are where the two copies differ.
 
 <Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings remain. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched lavender ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than
 separate. The same track over the whole 4.8 Mb box above is a mat, whereas a
-dotplot gives each alignment its own place on two axes. Use the plot to find the
+dotplot spreads the alignments across two axes. Use the plot to find the
 structures and a synteny view on one of them.
 
-Producing the alignment takes one extra minimap2 flag:
+Align the sequence to itself with one extra minimap2 flag:
 
 ```bash
 minimap2 -x asm20 -P chrY.fa chrY.fa > chrY_self.paf
@@ -101,12 +100,12 @@ jbrowse make-pif chrY_self.paf --csi
 ```
 
 `-P` is required here: without it minimap2 keeps one primary chain per query and
-marks the rest secondary, so a sequence aligned to itself returns its own
-diagonal and little else. With `-P` every dispersed repeat is kept too, so set
-**Min length** afterwards or the plot fills in solid at whole-chromosome zoom.
+marks the rest secondary, so a sequence aligned to itself returns the diagonal
+and little else. With `-P` every dispersed repeat is kept too, so set **Min
+length** afterwards or the plot fills in solid at whole-chromosome zoom.
 
-The two axes come from a synteny track's two `assemblyNames`, so a self
-comparison needs two assembly entries pointing at the same sequence under
+The dotplot's two axes come from a synteny track's two `assemblyNames`, so a
+self comparison needs two assembly entries pointing at the same sequence under
 different names.
 
 ## Navigation and interaction

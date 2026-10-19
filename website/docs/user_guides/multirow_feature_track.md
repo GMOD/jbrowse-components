@@ -24,10 +24,10 @@ column the file turns out to have: a RepeatMasker table opens as ~20 rows of
 `repClass`, and anything else falls back to the `name` column. Which column
 assigns a feature to a row is then **One row per…** in the same track menu,
 which lists the attribute names the loaded features have — so RepeatMasker also
-offers `repFamily` and `name` beside the class it started on. Repartitioning
-leaves a saved row order, its labels and colors and a clustering run in place:
-they name rows by value, so they sit idle under the new partition and come back
-with the field. Hidden legend categories clear.
+offers `repFamily` and `name` beside the class it started on. A saved row order,
+its labels and colors, and a clustering run survive a repartition. They name
+rows by value, so they match no row under the new partition and apply again when
+the field comes back. Hidden legend categories clear.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 
@@ -104,8 +104,8 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 ```
 
 Any extra column works the same way, so `rows` can be `sample`, `cellType`,
-`strain`, `haplotype`, or whatever you called it. GFF3/GTF attributes and BigBed
-extra fields are addressed by name identically.
+`strain`, `haplotype`, or whatever you called it. A GFF3/GTF attribute or BigBed
+extra field works by name.
 
 ## Coloring the blocks
 
@@ -196,7 +196,7 @@ no value last. Three ways to change that:
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).
 
-All three write the track's
+Each of the three ways of reordering writes the track's
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) setting, so undo
 reaches an arrangement, a shared session contains it, and it survives turning
 the track off and on. **Reset row order** appears in the track menu once any of
@@ -209,7 +209,7 @@ matches, and
 [`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
 the rows in bands by it, each band named in a strip beside the dendrogram and
 keeping its rows in their arranged order; clustering then runs within each band.
-A group carries no color of its own; `rowColor` colors the groups:
+A group takes its color from `rowColor`:
 
 ```json
 {
@@ -226,21 +226,21 @@ A group carries no color of its own; `rowColor` colors the groups:
 }
 ```
 
-Bands carry a group by position, which stays readable over many groups where
-colors alone blur together, so a long list of groups reads best faceted, with
-the colors as the second cue.
+A band marks a group by position, which stays readable over many groups where
+colors alone are hard to tell apart, so facet a long list of groups and use the
+colors as a second cue.
 
 **Show... → Tree** toggles the dendrogram once one has been computed, and
 **Show... → Row labels** the labels beside it, which are useful with no
 clustering run.
 
-A row with a color of its own, from
-[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) by its
-name or by an attribute such as its group, draws it as a bar at the left of its
-label, so a row can be found by color. A row with no value of that attribute,
-such as one no `rowGroups` entry matches, takes no color unless `domain` pairs
-`""` with one. On a track colored per feature (an `itemRgb` painting, a jexl
-`color` slot) the bar is the only place a row's color shows.
+A row that
+[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) colors by
+its name or by an attribute such as its group draws a bar of that color at the
+left of its label, so a row can be found by color. A row with no value of that
+attribute, such as one no `rowGroups` entry matches, takes no color unless
+`domain` pairs `""` with one. On a track colored per feature (an `itemRgb`
+painting, a jexl `color` slot) the bar is the only place a row's color shows.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:37.5-42 Mb, 1104 TCGA-BRCA tumors clustered by their copy-number profile over the 1.5 Mb around ERBB2, with the dendrogram beside them. Rows sort into amplified, gained, lost, and balanced bands." />
 

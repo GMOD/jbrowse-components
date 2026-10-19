@@ -78,9 +78,9 @@ writing the config.
 
 ## The schema, in an editor
 
-The same checks `jbrowse validate` runs are also published as a JSON Schema at
-`https://jbrowse.org/jb2/schema/v5/config.json`, generated from JBrowse's own
-type registry. A `$schema` line at the top of the file is all an editor needs to
+The checks `jbrowse validate` runs are also published as a JSON Schema at
+`https://jbrowse.org/jb2/schema/v5/config.json`, generated from the JBrowse type
+registry. A `$schema` line at the top of the file is all an editor needs to
 complete type names, slot names and enum members, show each slot's description
 and default on hover, and underline a key JBrowse would drop:
 
@@ -100,8 +100,8 @@ schema cannot see — a `trackId` a session names that no track defines, an
 assembly no `assemblies` entry defines — so the two agree on every slot. A type
 a plugin registers is not in the schema and passes with its keys unchecked; a
 `frozen` slot such as the alignments display's `modifications` is any JSON
-value, and its description says what it takes. A session spec written on its
-own, the `views[]` entry a `&session=spec-` URL contains, validates against
+value, and its description lists what it takes. A standalone session spec, such
+as the `views[]` entry a `&session=spec-` URL contains, validates against
 `#/$defs/View` inside the same file.
 
 ## See also

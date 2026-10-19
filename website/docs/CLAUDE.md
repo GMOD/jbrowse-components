@@ -28,11 +28,11 @@ Markers: `agent-docs/reference/GENERATED_DOC_BLOCKS.md`.
 - **JSON config fences** (`check-config-blocks`): a whole track config in a
   fence tagged `json addtrack`, never a fragment; a whole config opens with
   `"$schema": "https://jbrowse.org/jb2/schema/v5/config.json"`; a
-  `defaultSession` gets its own `json session` fence as its only key. Prefer
-  `displayDefaults` to a `displays` array, and the whole-track shorthand
+  `defaultSession` goes in a separate `json session` fence, as its only key.
+  Prefer `displayDefaults` to a `displays` array, and the whole-track shorthand
   (`trackId`, `uri`, `assemblyNames`) where the extension infers the adapter.
-- **A tagged fence renders its own app and CLI tabs**, so the prose says what
-  the config is, never "add this to `tracks`" or "run the CLI command below". An
+- **A tagged fence renders app and CLI tabs**, so the prose describes what the
+  config is, never "add this to `tracks`" or "run the CLI command below". An
   assembly the add-genome form has no input for (`aliases`, `geneticCodes`) gets
   no app tab, and the page owes that reader a sentence.
 - `config=` on a session fence grows a live link. Prefer
@@ -45,8 +45,8 @@ Markers: `agent-docs/reference/GENERATED_DOC_BLOCKS.md`.
 
 ## Voice
 
-Dry and scientific: the figure holds the result, and the prose says what was
-done and what it means. A page opens with a plain paragraph, under no summary
-label, saying what it shows and what makes it work, without "this page". Don't
-restate the title, close on a superlative, or credit the result to the wrong
-mechanism.
+Dry and scientific: the figure holds the result, and the prose describes what
+was done and what it means. A page opens with a plain paragraph, under no
+summary label, saying what it shows and what makes it work, without "this page".
+Don't restate the title, close on a superlative, or credit the result to the
+wrong mechanism.

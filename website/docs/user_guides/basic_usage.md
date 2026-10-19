@@ -48,7 +48,7 @@ Drag the six-dot handle on a track label up or down.
 ### Resizing tracks
 
 - **One track:** drag the thin handle under it. Double-clicking the handle grows
-  a track that scrolls its own content to show all of it.
+  a track that scrolls its content to show all of it.
 - **Every track at once:** drag the grey bar under the last track. Each track
   gives or takes in proportion to its height, so tall tracks move the most.
   While the view is taller than the window, the bar stays at the bottom of the
@@ -135,9 +135,9 @@ stores the path.
 
 **Add multiple tracks at once** in the "Add a track" form takes file URLs, one
 per line, or a set of local files dropped on it. Each row is typed from its
-extension, and an index (`.bai`, `.csi`, `.tbi`, `.crai`) is paired with its own
-data file whatever the order. The preview table is where a row is renamed or
-removed, and one assembly serves the batch.
+extension, and an index (`.bai`, `.csi`, `.tbi`, `.crai`) is paired with the
+data file it indexes whatever the order. The preview table is where a row is
+renamed or removed, and one assembly serves the batch.
 
 <Video src="/media/ui/bulk_add_tracks.mp4" caption="Four volvox URLs pasted in one box, scrambled, with an index sitting between two unrelated data files. The table that comes back has a row per data file, the index paired onto the one whose name it extends, and a submit button counting what it kept." />
 
@@ -163,7 +163,7 @@ Tools → Undo/Redo, or `ctrl+z`/`cmd+z` (undo) and
 `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
 Undo is app-wide, so it reaches things like reopening a view you just closed.
-The [embedded components](/docs/embedded_components) do not include it.
+The [embedded components](/docs/embedded_components) have no undo.
 
 ## Sharing sessions
 
@@ -209,7 +209,7 @@ Recently opened tracks are listed under the clock icon.
 
 Clicking a feature opens its details panel in the drawer. The Attributes section
 lists the fields as they came out of the file: a GFF3 attribute, a BED extra
-column, or a VCF INFO key appears under its own name.
+column, or a VCF INFO key appears under its name in the file.
 
 Two things happen to values on the way in, with no configuration:
 
@@ -265,7 +265,7 @@ range**, **Highlight region** ([](/docs/user_guides/highlights)), then a
 **Launch** submenu of what can open from the selection:
 
 - **Linear genome view**, a new view of the span with this view's tracks and
-  their settings. It scrolls and zooms on its own, like any other view
+  their settings. It scrolls and zooms independently, like any other view
 - [](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at),
   when a synteny dataset in the session covers this assembly. It opens one panel
   per assembly aligning to the selection, whether or not the synteny track is
@@ -317,7 +317,7 @@ gives an arbitrary slice of bands.
 
 ### Track label positioning
 
-Track labels sit on their own row, overlap the data, or hide entirely, from the
+Track labels sit on a separate row, overlap the data, or hide entirely, from the
 **Track labels** submenu in the view's hamburger menu.
 
 <Figure caption="The overlap and offset track label positioning options." src="/img/tracklabels.png" />

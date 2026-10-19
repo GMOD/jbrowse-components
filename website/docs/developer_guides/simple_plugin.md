@@ -23,11 +23,10 @@ They are otherwise the same: pnpm, vitest unit tests, and Puppeteer end-to-end
 tests against a nightly JBrowse build. Pick esbuild for faster builds; rollup is
 older and more widely referenced in existing examples.
 
-The two templates ship a custom **view** (`src/HelloView`) as their worked
-example. For a custom track/display, scaffold from a template and then follow
-[](/docs/developer_guides/plotting_features). Its complete plugin lives in
-`example-plugins/score-example/`, and every code block in that guide is
-generated from that source.
+Each template ships a custom **view** (`src/HelloView`) as its worked example.
+For a custom track/display, scaffold from a template and then follow
+[](/docs/developer_guides/plotting_features). Every code block in that guide is
+generated from the complete plugin in `example-plugins/score-example/`.
 
 ## What's in a plugin
 
@@ -44,12 +43,12 @@ The element-specific guides walk through each type:
 
 <!-- doclist:developer_guides category="Plugins" -->
 
-A plugin can also add its own **configuration slots**, through one of three
-class members that differ only in where the slots land:
+A plugin can also add **configuration slots**, through one of three class
+members that differ only in where they put the slots:
 
 - `configurationSchema` nests them under the plugin's own `name`, so a slot
-  reads as `configuration.MyPlugin.mySlot`. This is the one to reach for: the
-  slots live in the plugin's own namespace.
+  reads as `configuration.MyPlugin.mySlot`. This is the one to reach for, since
+  the slots are in a namespace named for the plugin.
 - `configurationSchemaUnnamespaced` merges them into `configuration` directly.
 - `rootConfigurationSchema` is a function of the plugin manager whose result is
   spread into the root config, for a schema that has to be built against what is

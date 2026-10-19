@@ -35,7 +35,7 @@ three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `point`,
-`line` or `span`, what a signal is drawn as; `rows` says how many rows there
+`line` or `span`, what a signal is drawn as; `rows` sets how many rows there
 are, so the two can be set independently.
 
 A line's [`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) is
@@ -123,8 +123,8 @@ plots as a signal without a conversion to bedGraph:
 }
 ```
 
-This FeatureTrack also offers the Manhattan plot under the track menu's
-**Display types**; the
+A FeatureTrack also offers the Manhattan plot under the track menu's **Display
+types**; the
 [GWAS track guide](/docs/config_guides/gwas_track#any-scored-feature-file)
 covers it.
 
@@ -158,10 +158,10 @@ The track type defaults its display to `rows: "source"`, `extent: "none"` and a
 puts every source back in one shared plot box, and
 `rows: { "field": "source", "domain": […] }` names the sources that lead the row
 order. The same object takes `labels`, a label per source by name, and
-[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives a source a
-color of its own. **Edit colors/arrangement...** in the track menu writes both,
-as settings a reader can undo or reset, and choosing Each row there also writes
-the `color` below, since a color per subtrack is the two together.
+[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives each source
+a color. **Edit colors/arrangement...** in the track menu writes both, as
+settings a reader can undo or reset, and choosing Each row there also writes the
+`color` below, since a color per subtrack is the two together.
 
 ### The subadapters form
 

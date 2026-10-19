@@ -275,8 +275,8 @@ Add the records as a track:
 ```
 
 Then open `chr1:2,428,800-2,429,800`. The figure shades
-`chr1:2,429,109-2,429,320`, the stretch OMIA's record says the allele
-duplicates.
+`chr1:2,429,109-2,429,320`, the stretch OMIA records as duplicated by the
+allele.
 
 <Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. The Angus row alone has the insertion, at the right edge of the shaded sequence it copies; every other row is reference." src="/img/pangenome/bovine_polled.png" />
 

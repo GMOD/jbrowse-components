@@ -27,8 +27,8 @@ launches the JBrowse 5 development build until JBrowse 5 ships.
 
 The graph view is a beta plugin. We welcome your [feedback](/contact).
 
-The mouse graph records no strain's path, so it lists the alleles that exist and
-leaves out which strains have them.
+The mouse graph lists the alleles that exist. Which strains have them is absent,
+because the graph holds no path per strain.
 
 :::
 
@@ -57,7 +57,7 @@ conda install -c bioconda -c conda-forge htslib minigraph
 The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies as UCSC GenArk rehosts them.
 
-Nothing to download: the track configs below read the index files by URL.
+The track configs below read the index files by URL, so no download is needed.
 _Building a minigraph graph from the strain assemblies_ builds the files for
 strains of your own.
 
@@ -161,9 +161,9 @@ intron at `chr11:34,516,045-34,560,497`. To open it:
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph has one label for the whole bubble, with Dock2 pinned under the backbone. The colored path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-`minigraph` writes no path lines, so the graph does not record which strains
-have an allele. The allele inventory's `firstSeenIn` lists the first assembly to
-contribute it.
+Which strains have an allele is absent from the graph, because `minigraph`
+writes no path lines. The allele inventory's `firstSeenIn` lists the first
+assembly to contribute it.
 
 The _Dock2_ bubble is one row of the hosted bubbles BED, with the same segment
 count and span the figure labels:
@@ -202,8 +202,9 @@ The script runs two audits on the joined graph and stops if:
 - a segment has an `SN` tag that is neither `mm39#0#chr*` nor `<strain>#1#chr*`
 - renumbering leaves a duplicate segment id
 
-Either failure produces a graph with wrong coordinates that every later check
-accepts, so copy these audits into your own build.
+A segment with a bad `SN` tag or a duplicate id produces a graph with wrong
+coordinates that every later check accepts, so copy these audits into your own
+build.
 
 ## See also
 

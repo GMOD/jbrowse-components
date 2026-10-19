@@ -369,8 +369,8 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-This command built the hosted store from all 2504 samples over the windows in
-the figures.
+The `build_signal_zarr.ts` command above built the hosted store from all 2504
+samples over the windows in the figures.
 
 Three things shape the store:
 

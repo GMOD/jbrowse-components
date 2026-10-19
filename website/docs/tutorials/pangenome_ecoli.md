@@ -68,8 +68,8 @@ assemblies by accession with the NCBI `datasets` CLI. The nanopore reads are the
 one file to download by hand, with the `curl` under
 [Testing the CPZ-55 depth trough with nanopore reads](#testing-the-cpz-55-depth-trough-with-nanopore-reads).
 The page's commands build local graph files from the assemblies, and the tracks
-over those read them from disk; every other track reads a hosted copy. Building
-the graph takes your own set of assemblies.
+over those read them from disk; every other track reads a hosted copy. To build
+the graph, supply your own set of assemblies.
 
 | What it is                                               | File                                                                                                                  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -122,7 +122,7 @@ wrapper body.
 
 Every projection is a track on a strain's assembly, and each strain's FASTA
 holds one sequence named `chr`, the refName the graph's paths are renamed to
-below. We'll add K12, the reference the projections land on, from a
+below. We'll add K12, the reference the projections target, from a
 bgzip-compressed, indexed FASTA:
 
 ```json addassembly

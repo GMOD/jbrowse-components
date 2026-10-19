@@ -208,8 +208,8 @@ swapped:
 }
 ```
 
-Both adapters read the whole file into memory, which MCScan output is small
-enough for.
+`MCScanAnchorsAdapter` and `MCScanSimpleAnchorsAdapter` read the whole file into
+memory, which MCScan output is small enough for.
 
 ## Viewing gene pairs and blocks in one synteny view
 
@@ -271,10 +271,11 @@ are off screen still takes color.
 
 ## Viewing the gene pairs as a dotplot
 
-Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pair
-is one point and a block a run of them. The axes start in index order;
-**Re-order chromosomes**, in the overflow menu of the dotplot header, sorts the
-vertical axis to follow the horizontal one.
+The anchors track and the simple anchors track also load in a dotplot, where a
+gene pair is one point and a block a run of them; **Add → Dotplot view** opens
+one. The axes start in index order; **Re-order chromosomes**, in the overflow
+menu of the dotplot header, sorts the vertical axis to follow the horizontal
+one.
 
 <Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
 

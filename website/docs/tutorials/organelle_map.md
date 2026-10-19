@@ -202,8 +202,8 @@ with the same track to see the three side by side:
 
 <Figure src="/img/organelle_map/nd6_linear.png" caption="The last few kilobases of NC_012920.1, the NCBI genes grouped by strand. ND5 and CYTB run on the plus strand with ND6 between them on the minus strand. The D-loop's piece before the origin runs to the end of the sequence." />
 
-Listing the minus-strand genes from the GFF3's strand column gives _ND6_ and
-eight tRNA genes:
+The command below lists the minus-strand genes from the GFF3's strand column,
+_ND6_ and eight tRNA genes:
 
 ```bash
 awk -F'\t' '$3 == "gene" && $7 == "-"' genes.gff3 | grep -o 'Name=[^;]*'

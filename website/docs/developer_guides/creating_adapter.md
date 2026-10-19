@@ -30,7 +30,7 @@ owns the drawing, state, and menus.
 
 <!-- ADAPTER_BASES END -->
 
-Two have guides of their own: [](/docs/developer_guides/refname_aliasing) and
+Two have a separate guide: [](/docs/developer_guides/refname_aliasing) and
 [](/docs/developer_guides/creating_text_search_adapter).
 [](/docs/config_guides/file_types) maps every format JBrowse already reads to
 the adapter that reads it, which is the place to check before writing one.
@@ -45,7 +45,7 @@ Extend `BaseFeatureDataAdapter` and supply two methods:
 
 The base class already holds the config, `getSubAdapter` and the plugin manager
 and exposes `this.getConf('slotName')`, so no constructor is needed unless the
-adapter sets up state of its own. Type it on your config schema
+adapter sets up extra state. Type it on your config schema
 (`BaseFeatureDataAdapter<MyAdapterConfig>`, where `MyAdapterConfig` comes from
 your [config schema](/docs/developer_guides/configuration_schema)) so those
 `getConf` reads are typed.
@@ -180,7 +180,7 @@ adapter's `adapterCapabilities`, and JBrowse builds each instance with the
 sequence adapter config of the assembly it is displayed against, one instance
 per genome, in `sequenceAdapterConfig`. `getSequenceSubAdapter` reads that,
 falling back to a configured slot only when one is set. A track then needs no
-`sequenceAdapter` of its own:
+`sequenceAdapter` setting:
 
 <!-- include: plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts#subAdapter -->
 
@@ -363,10 +363,10 @@ export interface BaseOptions {
 ```
 
 Any `rpcProps()` the display model defines are spread in at the RPC call site,
-so a display's user-facing settings reach the adapter under their own names. A
-family of adapters that shares such settings declares its own options type
-extending `BaseOptions`, as the comparative adapters do with
-`ComparativeOptions` from `@jbrowse/synteny-core`:
+so a display's user-facing settings reach the adapter under those names. A
+family of adapters that shares such settings declares an options type extending
+`BaseOptions`, as the comparative adapters do with `ComparativeOptions` from
+`@jbrowse/synteny-core`:
 
 <!-- include: packages/synteny-core/src/comparativeOptions.ts#comparativeOptions -->
 

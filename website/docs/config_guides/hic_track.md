@@ -100,8 +100,9 @@ The compartment eigenvector is a BigWig, drawn as a
 around zero. Pin
 [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
 [`domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) when two of these
-tracks are read against each other, so neither autoscales to its own extremes;
-the [user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
+tracks are read against each other, so neither autoscales to that track's
+extremes; the
+[user guide](/docs/user_guides/hic_track#compartments-and-subcompartments)
 covers the sign check that goes with it:
 
 ```json addtrack
@@ -153,7 +154,7 @@ and neither failure it prevents raises an error:
 - **The file's last three columns are not BED12's block fields**, so the
   positional layout takes the cluster count for a `blockCount` and grows every
   feature a row of nonexistent subfeatures
-- **Naming column nine `itemRgb`** paints the classes in their own colors. The
+- **Column nine named `itemRgb`** paints each class in a separate color. The
   file's header spells it `itemRGB`, which JBrowse does not look for, and a
   second comment line follows the column line, so the parser takes that last
   line as the definition and finds no tab-separated fields in it

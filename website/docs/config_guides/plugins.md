@@ -4,9 +4,9 @@ description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---
 
-In jbrowse-web and jbrowse-desktop, the top-level `plugins` array says what to
-load. A published plugin is named by its plugin-store entry; a plugin you host
-yourself is named by its url.
+In jbrowse-web and jbrowse-desktop, the top-level `plugins` array lists what to
+load: a published plugin by its plugin-store entry, and a plugin you host
+yourself by its url.
 
 ```json
 {
@@ -27,9 +27,9 @@ yourself is named by its url.
 - **`storePlugin` is the name the [plugin store](/plugin_store/) lists it
   under.** JBrowse resolves it against the store when the config loads, picking
   a build published for the version of JBrowse doing the reading and checking
-  its integrity hash. Nothing in the config pins a url or a version, which is
-  what makes it the form to use in a config that will be read for years — a
-  permanent url, a track hub. Plugin authors submit a PR to
+  its integrity hash. The config pins no url or version, so this is the form to
+  use in a config that will be read for years, such as a permanent url or a
+  track hub. Plugin authors submit a PR to
   [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) to be
   listed.
 - **`name` must match the plugin's own registration** (`name = 'MyPlugin'` in

@@ -182,7 +182,7 @@ it as `pbmc5k_scatac_pseudobulk_hg38`:
 }
 ```
 
-The `subadapters` list has three things to set yourself:
+Set three things in the `subadapters` list yourself:
 
 - the order: subadapters draw in the order given, so group them by lineage
 - `color`: copy the cluster color from your analysis, so a cell type matches its
@@ -267,8 +267,7 @@ beside its `cell_type`. The script:
    above
 2. orders the rows by lineage (T cells, NK, B cells, then myeloid) from a map
    written into the script, because the object's own label order scatters each
-   lineage down the stack. Running it on your own experiment means replacing
-   that map
+   lineage down the stack. To run it on your own experiment, replace that map
 3. gives each row its cluster's color from the same object, so a cell type
    matches its UMAP
 4. loads the set as one track over hg38 and RefSeq genes

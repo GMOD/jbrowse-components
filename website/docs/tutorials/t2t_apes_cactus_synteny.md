@@ -212,15 +212,15 @@ Navigate to `chr17:33,200,000-35,800,000`, on 17q12.
 <Figure caption="Human chr17 on 17q12 over the same six ape lanes, ribbons colored by strand. Blue fills the gutter between human and chimpanzee and the gutter between gorilla and the Sumatran orangutan; chimpanzee, bonobo and gorilla run red among themselves, and so do the two orangutans and the siamang." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 Down the stack, the orientation changes from human to chimpanzee and back from
-gorilla to the Sumatran orangutan, so chimpanzee, bonobo and gorilla carry the
-block one way and human, both orangutans and the siamang the other.
+gorilla to the Sumatran orangutan, so chimpanzee, bonobo and gorilla have the
+block in one orientation and human, both orangutans and the siamang in the
+other.
 
 ## Checking the 17q block against the chains
 
 The hg38 rows of the file give each ape's orientation over the window directly.
-A Cactus chain spans its own gaps, and a reversed chain often sits inside the
-gap of a forward one, so the script counts the bases each chain aligns inside
-the window:
+A Cactus chain spans gaps, and a reversed chain often sits inside the gap of a
+forward one, so the script counts the bases each chain aligns inside the window:
 
 ```python
 # aligned bases per genome and strand over hg38 chr17:33.2-35.8 Mb

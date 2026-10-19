@@ -23,9 +23,8 @@ path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), or a
 [`jexl:` expression](/docs/config_guides/jexl) over `feature` that derives one
 (`"jexl:feature.end - feature.start"`). The display evaluates the expression
 once per feature, the way it reads a named field. The empty string names no
-field, and each slot's own text says what it then does: a color or facet `field`
-left empty is off, a label left empty draws nothing, and `rows.field` falls back
-to the display's default.
+field: a color or facet `field` left empty is off, a label left empty draws
+nothing, and `rows.field` falls back to the display's default.
 
 ## stringArray
 
@@ -121,12 +120,11 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 `maybeFrozen` and `maybeFileLocation` each accept everything the type without
 the prefix accepts, plus one more state: **unset**.
 
-A slot left unset holds no value of its own, which lets the display decide what
-to do from the data in front of it — a state distinct from any value the slot
-could hold, including one that looks like the display's usual choice. A
-`maybeString` left unset is therefore not the empty string: a color key's
-`title` keeps the display's own heading while unset, and `""` is a key with no
-heading.
+An unset slot holds no value, so the display decides what to do from the data in
+front of it. Unset differs from every value the slot could hold, including one
+that looks like the display's usual choice. A `maybeString` left unset is
+therefore not the empty string: a color key's `title` keeps the display's own
+heading while unset, and `""` is a key with no heading.
 
 ## See also
 

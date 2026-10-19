@@ -100,7 +100,7 @@ a length per line):
 
 ### Finding homoeolog pairs from a protein self-alignment
 
-Passing the same prefix twice (`oat oat`) makes a self-comparison: jcvi drops
+With the same prefix twice (`oat oat`), jcvi makes a self-comparison: it drops
 the gene-against-itself diagonal, then chains the rest into syntenic blocks
 (co-linear runs of pairs).
 
@@ -121,14 +121,15 @@ Two flags matter here:
 - `--no_strip_names` keeps the ids byte-identical to the BED the adapter joins
   on
 
-The alignment is the long step. Running it separately keeps DIAMOND at default
+The alignment is the long step. When you run it separately, DIAMOND uses default
 sensitivity, which finds homoeologs this recent. jcvi picks the file up by name
 and skips its alignment step.
 
 Three choices decide which pairs survive:
 
-- Chaining keeps a gene pair (an anchor) only where its neighbours agree, which
-  removes the off-diagonal noise of gene families' best hits.
+- jcvi chains the pairs and keeps a gene pair (an anchor) only where its
+  neighbours agree, which removes the off-diagonal noise of gene families' best
+  hits.
 - The script keeps the pairs whose chromosomes have different subgenome letters,
   since a self-comparison also chains tandem and segmental duplicates within a
   subgenome, and writes them, two transcript ids per line, to `oat.pairs.tsv`.

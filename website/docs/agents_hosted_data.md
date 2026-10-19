@@ -26,9 +26,9 @@ Fetch `https://jbrowse.org/ucsc/hg38/config.json` and you have, in one document:
 - for the UCSC databases, an **aggregate text-search index**, which makes a gene
   name work as a location
 
-The GenArk assemblies include the sequence, aliases and their own smaller track
-set. A `GCF_` (RefSeq) assembly is usually annotated from the NCBI RefSeq GFF
-and indexed, a `GCA_` (GenBank) one usually neither, so read
+The GenArk assemblies include the sequence, aliases and a smaller track set. A
+`GCF_` (RefSeq) assembly is usually annotated from the NCBI RefSeq GFF and
+indexed, a `GCA_` (GenBank) one usually neither, so read
 `aggregateTextSearchAdapters` out of the config when a gene name has to resolve.
 
 ### The URL scheme
@@ -146,8 +146,8 @@ npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --track hg38-phyloP10
 ## Adding your own file to a hub
 
 The hosted config supplies the assembly and the annotation context, and a
-session spec's `sessionTracks` supplies your file. Nothing is authored to disk
-and no assembly is built.
+session spec's `sessionTracks` supplies your file. The agent authors no file and
+builds no assembly.
 
 ```json
 {

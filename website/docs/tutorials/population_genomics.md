@@ -245,10 +245,10 @@ load as one track:
 ```
 
 Each arrangement's π swings several fold between 2 kb windows, far more than the
-two arrangements differ, so two rows of it look alike. Pooling into 250 kb bins
-and taking log2 of inverted over standard gives one track that sits at zero
-where the arrangements have equal diversity. An `awk` step writes it from the
-two π bedGraphs:
+two arrangements differ, so two rows of it look alike. Pool into 250 kb bins and
+take log2 of inverted over standard to get one track that sits at zero where the
+arrangements have equal diversity. An `awk` step writes it from the two π
+bedGraphs:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 

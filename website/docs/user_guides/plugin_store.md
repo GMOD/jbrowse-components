@@ -7,8 +7,8 @@ guide_category: General usage
 ---
 
 Plugins add track types, view types, data adapters and menu items, and some
-bring their own data. How you install one, and how long it stays, depends on
-where you run JBrowse.
+include data. How you install one, and how long it stays, depends on where you
+run JBrowse.
 
 The full catalog, each plugin with its config snippet, is on the
 [plugin store page](/plugin_store). To write your own plugin, see the

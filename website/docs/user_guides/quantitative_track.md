@@ -26,9 +26,9 @@ offers these styles:
 
 ## Score options
 
-**Plot type** and **Resolution** are top-level track menu items. Resolution
-steps how many points per pixel a BigWig is read at, finer or coarser than one
-per pixel, and holds **Bin summary** beneath the stepper.
+**Plot type** and **Resolution** are top-level track menu items. **Resolution**
+is a stepper for how many points per pixel a BigWig is read at, finer or coarser
+than one per pixel, and **Bin summary** sits beneath it.
 
 ### The Y axis panel
 
@@ -70,9 +70,9 @@ has no 0. Density mode offers neither Include 0 nor the guides.
 
 ### Bin summary
 
-Zoomed out, a BigWig serves precomputed summary bins, and **Resolution → Bin
-summary** picks which of a bin's stored statistics is drawn: **Minimum**,
-**Maximum** or **Average**
+Zoomed out, JBrowse reads precomputed summary bins from a BigWig, and
+**Resolution → Bin summary** selects which of a bin's stored statistics is
+drawn: **Minimum**, **Maximum** or **Average**
 ([`aggregate`](/docs/config/linearwiggledisplay/#slot-aggregate)). **Show min
 and max** draws the bin's min to max around it
 ([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): an XY plot nests
@@ -89,10 +89,10 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 
 **Edit colors/arrangement...** opens the plot's two colors on one line: one
 above the baseline, one below, and both the same for a flat plot. Setting them
-is the whole color story for a single signal, and a track with subtracks gets
-the list beneath them, where **Color rows by → Each row** picks a subtrack's
-color in the list, and on overlapping plots hands every other subtrack a palette
-entry of its own.
+colors a single signal completely, and a track with subtracks gets the list
+beneath them, where **Color rows by → Each row** picks a subtrack's color in the
+list, and on overlapping plots gives every other subtrack a separate palette
+entry.
 
 **Edit plot...**, in that dialog, is the escape for what the line does not
 offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
@@ -107,8 +107,8 @@ A `MultiQuantitativeTrack` combines several quantitative signals (typically
 BigWig files) into one track on a shared Y axis, and opens with one row per
 signal. **Plot type** holds the five plot styles twice, once under **Multi-row**
 and once under **Overlapping**, so one click picks both how a signal is drawn
-and whether it gets a row of its own. A track with a single signal has no layout
-to choose and lists the five styles on their own.
+and whether it gets a separate row. A track with a single signal has no layout
+to choose and lists the five styles once.
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 

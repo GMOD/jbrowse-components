@@ -196,7 +196,8 @@ palette and render blank. As a getter the value is always present, and MobX
 recomputes it only when the theme changes.
 
 SVG export deliberately overrides the palette with the _export_ theme, so the
-export path resolves its own palette instead of reading the session's.
+export path resolves the export theme's palette instead of reading the
+session's.
 
 ## Adding theme colors in plugins
 
@@ -205,8 +206,8 @@ uniform the renderer sets, belong in the `Palette` / `PaletteOptions` module
 augmentation. Follow the existing `modificationFwd` / `modificationRev` pattern:
 
 - Declare the field on `StringColors` in `palette.ts`.
-- Tag it with `#color <group> | <label> | <description>` so it surfaces as a
-  swatch row in these guides.
+- Tag it with `#color <group> | <label> | <description>` so the generator adds
+  it as a swatch row to these guides.
 - Give it a value in `lightStringColors`, plus `darkStringColors` if dark mode
   needs a different one — a `Partial<StringColors>` overlay on the light set
   rather than a second full table.

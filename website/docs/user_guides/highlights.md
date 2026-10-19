@@ -38,8 +38,8 @@ every highlight with a link back to it.
 ## Showing, hiding and removing
 
 **Show highlights** hides or shows the bands in every view at once. An LGV has
-it under **Show…**, a dotplot at the top of its menu, and the list in its own
-menu. Making or recoloring a highlight shows them again.
+it under **Show…**, a dotplot has it at the top of its menu, and the list has it
+in its menu. Making or recoloring a highlight shows them again.
 
 A band's chip menu has **Dismiss highlight**. In the list, tick rows and press
 the delete icon.
@@ -95,6 +95,6 @@ its assembly:
 launch ([](/docs/embedded_components)); after that, `session.addHighlight` takes
 an object like the one above, `session.setHighlights` replaces the list (`[]`
 clears it), and `removeHighlight` and `updateHighlight` take an entry of
-`session.highlights`. A view's `highlights` lists the ones on its own
-assemblies. The [BaseSessionModel reference](/docs/models/basesessionmodel) has
-the rest.
+`session.highlights`. A view's `highlights` lists the ones on the assemblies the
+view displays. The [BaseSessionModel reference](/docs/models/basesessionmodel)
+has the rest.

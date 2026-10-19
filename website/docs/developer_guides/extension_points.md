@@ -395,7 +395,7 @@ builds the wrapped component once and caches it.
 
 `Core-replaceWidget` is re-evaluated on every render of the drawer, so returning
 a component declared inside the callback hands React a brand new component type
-each time. The widget inside is unmounted and remounted, losing its scroll
+each time. React unmounts and remounts the widget inside, which loses its scroll
 position, any text typed into it, and any panel the user had expanded.
 
 :::

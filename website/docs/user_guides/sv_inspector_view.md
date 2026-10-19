@@ -35,9 +35,8 @@ caller-specific `SVTYPE=TRA` used by some tools.
 Single-locus deletions and duplications load into the table like anything else,
 but the circular overview cannot draw them: a chord runs between a record's two
 ends, and at whole-genome scale a deletion's two ends are the same point. The
-legend below the circle says so — it counts every class in the rows on screen,
-including the ones with no chord to draw, so a mostly-local callset reads as
-such.
+legend below the circle counts every class in the rows on screen, including the
+ones with no chord to draw, so a mostly-local callset reads as such.
 
 Compatible variant callers include:
 
@@ -82,12 +81,12 @@ outside that event, so its other junctions stand out against the whole callset.
 
 The dropdown lists a value only when its records describe more than one
 junction. A breakend callset writes each junction twice, once from either end,
-and GRIDSS gives that pair an `EVENT` of its own, so a list of every value would
+and GRIDSS gives that pair a distinct `EVENT`, so a list of every value would
 name every breakpoint in the file.
 
 JBrowse reads the grouping and does not compute one, and it reads the standard
-key only. A caller that files the same grouping under its own key needs the key
-renamed before import. [Severus](https://github.com/KolmogorovLab/Severus)
+key only. A caller that files the same grouping under a different key needs the
+key renamed before import. [Severus](https://github.com/KolmogorovLab/Severus)
 writes `CLUSTERID`, and `MATE_ID` where the specification has `MATEID`:
 
 ```bash

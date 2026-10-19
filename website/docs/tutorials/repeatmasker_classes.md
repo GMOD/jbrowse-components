@@ -156,12 +156,12 @@ its `domain` with a color in its `range`.
 }
 ```
 
-A row not named in `rowColor` paints in the default block color. Setting
-`unknown` in `rowColor` gives every unnamed row one color.
+A row not named in `rowColor` paints in the default block color. `unknown` in
+`rowColor` sets one color for every unnamed row.
 
 The track opens with the first display listed, so the multi-row entry makes rows
-the default. Putting a bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps
-the packed form as the default and leaves the rows one menu click away.
+the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
+packed form as the default and leaves the rows one menu click away.
 
 ## Checking the rows against the RepeatMasker file {#checking-the-rows-against-the-file}
 
@@ -189,8 +189,8 @@ The `Unknown` row is the control. Neither the `rowColor` above nor the
 because the rows come from the file. Pan to a window whose output has no
 `Unknown` line and the row goes away.
 
-The same command with `$6` in place of `$7` counts `repFamily`, the finer
-partition (`L1`, `Alu`, `MIR`).
+The `tabix` command above, with `$6` in place of `$7`, counts `repFamily`, the
+finer partition (`L1`, `Alu`, `MIR`).
 
 ## Serving your own RepeatMasker output
 

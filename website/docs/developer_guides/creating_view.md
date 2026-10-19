@@ -5,17 +5,17 @@ guide_category: Plugins
 ---
 
 View types are top-level "panels" the session can contain alongside built-ins
-like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view defines its
-own state model and React component; displaying genomic tracks is optional.
+like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view defines a
+state model and a React component; displaying genomic tracks is optional.
 
 ## When to add a custom view type
 
-Add a view type when you need a panel with its own layout, state, and toolbar
-that does not fit inside an existing view. Examples:
+Add a view type when you need a panel whose layout, state and toolbar do not fit
+inside an existing view. Examples:
 
 - `jbrowse-plugin-msaview` adds a multiple sequence alignment view that has no
   underlying tracks at all
-- `DotplotView` and `LinearSyntenyView` host synteny tracks but with their own
+- `DotplotView` and `LinearSyntenyView` host synteny tracks but with a separate
   axis and layout logic
 
 To render features differently inside the linear genome view, use
@@ -94,7 +94,7 @@ and a view keeps that until it augments
 
 ## Making the view launchable from a session spec
 
-Registering the view type lets a session snapshot _restore_ one. Opening one
+With the view type registered, a session snapshot can _restore_ one. Opening one
 from a URL is separate: `loadSessionSpec` dispatches on the spec's `type` to a
 `LaunchView-<name>` extension point, and a view type with no registered point
 cannot be launched from a spec; the error names the view type.

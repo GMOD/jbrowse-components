@@ -172,8 +172,8 @@ Set these on each gene track:
   so the track is one row deep
 - **Color by... → Strand** paints forward red and reverse blue, matching the
   ribbons
-- at this zoom the labels come from a second track over the same GFF under its
-  own `trackId`, with **Filter by...** set to
+- at this zoom the labels come from a second track over the same GFF under a
+  separate `trackId`, with **Filter by...** set to
   `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
   the longest protein-coding genes in the inverted block
 

@@ -11,9 +11,9 @@ A custom display fetches features in a worker and declares what it draws as a
 list of **marks**, each a shape bound to the display's payload. With one of the
 shared shapes you write no shader, no painter and no hit test;
 `createMarkBackend` turns the list into the WebGPU, WebGL2 and Canvas2D
-backends, and the same painter is the SVG export. Only a drawing no shared shape
-fits needs a shape of its own, which is
-[](/docs/developer_guides/creating_gpu_display).
+backends, and the same painter is the SVG export. A drawing that no shared shape
+fits needs a custom shape, which [](/docs/developer_guides/creating_gpu_display)
+covers.
 
 :::tip Start in config
 
@@ -47,10 +47,10 @@ Rendering splits across two threads:
 The worker returns compact data, never pixels, with all genomic positions
 absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
 a cheap per-frame `renderState`, and the fetch/draw wiring; mixins supply the
-fetch and draw lifecycles. The mark list says which of the payload's arrays feed
-which lane of a shape, and the backend built from it paints the visible blocks —
-on the GPU where there is one, through the shape's Canvas2D painter where there
-is not, and through that same painter for SVG export.
+fetch and draw lifecycles. The mark list binds the payload's arrays to the
+inputs of a shape, and the backend built from it paints the visible blocks — on
+the GPU where there is one, through the shape's Canvas2D painter where there is
+not, and through that same painter for SVG export.
 
 Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
@@ -69,7 +69,7 @@ is fuller):
 `example-plugins/score-example/` is the finished plugin — a standalone package
 CI installs from a packed tarball and asserts renders, so it stays buildable
 against the published packages. It draws a box whose height is the feature's
-score, which neither shared shape does, so it has a shape of its own
+score, which neither shared shape does, so it defines a new shape
 (`scoreMark.ts` and `shaders/`); a display on `spanMark` or `pointMark` has
 neither file:
 
@@ -105,7 +105,7 @@ src/
 The payload is the encoder's own channels, `EncodedChannels` from
 `@jbrowse/core/util/markEncoding`: the same arrays a config-declared mark draws
 from, so a shape reads them under the same names. A payload of your own is for
-what those channels cannot say, and it stays compact, structured-clone-friendly
+what those channels cannot hold, and it stays compact, structured-clone-friendly
 and in absolute genomic positions.
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
@@ -121,11 +121,11 @@ export type ScoreRegionData = Encoded<'y'>
 ## Step 2: Write the RPC method
 
 The worker fetches from the adapter and hands the features to `encodeFeatures`,
-which reads the score column as `y` and returns the channels. It is the
-evaluation `LinearMarkDisplay` runs for a `marks` entry, so a display with a
-shape of its own and a config-declared bar chart pack a region the same way. See
-[](/docs/developer_guides/rpc_workers) for the full `RpcMethodType` contract;
-the shape is:
+which reads the score column as `y` and returns the channels. `encodeFeatures`
+is the evaluation `LinearMarkDisplay` runs for a `marks` entry, so a display
+with a custom shape and a config-declared bar chart pack a region the same way.
+See [](/docs/developer_guides/rpc_workers) for the full `RpcMethodType`
+contract; the shape is:
 
 `ScoreRPC/GetScoreData.ts`:
 
@@ -430,9 +430,9 @@ export const SCORE_MARKS = [
 ]
 ```
 
-The example's `scoreMark` is its own, because a box grown from the bottom to a
-value is none of the shared shapes. Most displays are one of them, and name it
-in place of `scoreMark` with nothing else to write:
+The example defines a new `scoreMark`, because a box grown from the bottom to a
+value matches none of the shared shapes. Most displays match one of them, and
+name it in place of `scoreMark` with nothing else to write:
 
 - **`spanMark`** — a colored rectangle from `x` to `x2` on the band of `row`:
   features laid into rows, MAF's alignment cells, anything that is a box on a
@@ -766,10 +766,10 @@ other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
   slot, the legend off the encoder's scale tables
 - `plugins/gwas/src/LinearManhattanDisplay/` - a display built on the mark
   display: its model composes `LinearMarkDisplay`'s, its schema takes that
-  display's as its base with a default plot of its own, and what it adds is the
-  LD join each region's fetch hands the adapter
-- `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that keeps
-  a shape of its own (`cellMark.ts`) beside its shader
+  display's as its base with a default plot, and what it adds is the LD join
+  each region's fetch hands the adapter
+- `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that
+  defines a custom shape (`cellMark.ts`) beside its shader
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display, five marks over one payload
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - a plugin-local shape

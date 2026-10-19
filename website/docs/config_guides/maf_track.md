@@ -52,7 +52,7 @@ and its `.tbi`, plus an `nhUri` for the tree:
 The species come from a `samples` array, an `nhLocation`/`nhUri` Newick tree, or
 both. With a tree, its leaf names are the sample set and the row order, and
 `samples` becomes an override table matched by id; a leaf with no entry keeps
-its own name as its label.
+its leaf name as its label.
 
 A [`samples`](/docs/config/maftabixadapter/#slot-samples) entry is a bare id
 string or an object. The id is matched against the MAF's `src` column with the
@@ -66,7 +66,7 @@ adds:
   [that row's locus in the species' own coordinates](/docs/user_guides/maf_track#jumping-to-a-species-own-genome).
   Rows of a sample that leaves it unset are not offered. Write it out: ids are
   UCSC db names in some alignments, scientific names in others and lab-internal
-  ids in others still, so a name lookup can land on the wrong genome and report
+  ids in others still, so a name lookup can pick the wrong genome and report
   wrong coordinates with no warning
 - **`assemblyConfigLocation`** the config to load `assemblyName` from when the
   session does not already hold it. JBrowse fetches just that assembly at click
@@ -224,7 +224,7 @@ row as a bar chart of its identity to the reference in place of a band of cells:
 projected through the alignment, one record per (species, region), keyed by
 `src` species. It enables the "CDS frames" overlay and the "Codon changes (amino
 acids)" row coloring, neither on by default. A record for the reference `src`
-gives the reference row its own gene structure too.
+gives the reference row a gene structure too.
 
 ## A larger example: the human 470-way
 

@@ -283,7 +283,7 @@ awk -F'\t' -v OFS='\t' '
 ' 3-filt/portcullis_filtered.pass.junctions.tab > junctions.bed
 ```
 
-This config loads the regtools file built from this page's BAM as a feature
+The config below loads the regtools file built from this page's BAM as a feature
 track. In grammar-of-graphics terms, the `link` mark is the shape drawn for each
 junction, `size` scales with read count, `color` is a color scale on the
 known-junction flag against RefSeq, and `filter` drops records. `columnNames`

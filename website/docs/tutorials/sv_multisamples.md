@@ -201,7 +201,7 @@ comparable:
 
 Coverage over the deleted span in the top row sits just above zero. The
 neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some
-_RHCE_ reads land in the empty _RHD_ footprint.
+_RHCE_ reads map to the empty _RHD_ footprint.
 
 ## Reading a complex call in HG02768 from read-pair orientation
 

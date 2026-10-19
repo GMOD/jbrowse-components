@@ -121,7 +121,8 @@ options check the framing and manage a long run:
     places) with pieces in more than one window
   - `alt` is the reads with the record's ALT over the reads covering it,
     `17/41`, one pair per alignments track, for a record on one chromosome whose
-    ALT says what a read carries: an SNV, an indel, a `<DEL>` or an `<INS>`
+    ALT is a sequence a read can contain: an SNV, an indel, a `<DEL>` or an
+    `<INS>`
   - `spec` is the view as a [session spec](/docs/urlparams#session-spec), which
     opens the same windows and tracks in JBrowse
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first

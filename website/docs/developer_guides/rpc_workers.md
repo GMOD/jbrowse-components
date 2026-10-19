@@ -166,7 +166,7 @@ and a bug if the worker keeps it in a cache.
 ## Registering the method
 
 `addRpcMethod` takes a factory, called once per realm — the main thread and each
-worker construct their own instance:
+worker construct a separate instance:
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/index.ts -->
 
@@ -254,7 +254,7 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 
 See [](/docs/developer_guides/data_fetching) for what `fetchEachRegion` does
 with that, and [](/docs/developer_guides/plotting_features) for the rest of the
-model. A one-off call — a dialog, a widget — needs none of it and can
+model. A one-off call (a dialog, a widget) needs none of it and can
 `await rpcManager.call(...)` directly.
 
 ## What can cross the worker boundary
@@ -296,7 +296,7 @@ The `declare module '@jbrowse/core/rpc/RpcRegistry'` block at the top of
 per-method arg inference and a typed return without naming the session id.
 Without the registration both overloads fall back to `any`, so a misspelled arg
 or a wrong assumption about the return type compiles. It goes in the file that
-defines the method, so the two can't drift.
+defines the method, so the two change together.
 
 ## Worker count and configuration
 

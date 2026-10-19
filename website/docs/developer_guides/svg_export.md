@@ -260,13 +260,13 @@ document-global, and a duplicate renders the second group unclipped.
 
 ## Colors, fonts and live figures
 
-The export dialog picks its own theme and font, which need not be the ones the
-session shows. A body reads colors from `usePalette()`, never from the session.
-When a model input is built from the theme, give it a twin that takes the
-palette and call that from the body; the sequence display's `colorPaletteIn`
-above is one, beside the `colorPalette` getter the screen reads. The legend
-works the same way: a display whose key takes colors from the theme overrides
-`LegendMixin`'s `colorScalesIn(palette)`, and the exported key is drawn from it.
+The export dialog picks a theme and font, which need not match the session's. A
+body reads colors from `usePalette()`, never from the session. When a model
+input is built from the theme, give it a twin that takes the palette and call
+that from the body; the sequence display's `colorPaletteIn` above is one, beside
+the `colorPalette` getter the screen reads. The legend works the same way: a
+display whose key takes colors from the theme overrides `LegendMixin`'s
+`colorScalesIn(palette)`, and the exported key is drawn from it.
 
 The dialog sets `font-family` on the root `<svg>`, so a `<text>` should leave
 the attribute off and inherit it. Measure labels in `opts.fontFamily`.
@@ -276,9 +276,9 @@ against one snapshot of the model. Draw overlays as plain components that read
 the model once: an `observer` used on screen follows the view, so a pan slides
 its labels across layers drawn before it.
 
-A figure carries a pinned highlight but never a hover or a selection, since both
-only say where the reader's pointer was. A body passing the screen's render
-state to a painter clears the hovered and selected ids first.
+A figure includes a pinned highlight but never a hover or a selection, since
+both only mark where the reader's pointer was. A body passing the screen's
+render state to a painter clears the hovered and selected ids first.
 
 ## Reusing on-screen drawing code
 

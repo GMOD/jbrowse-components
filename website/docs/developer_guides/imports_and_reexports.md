@@ -32,13 +32,13 @@ React or MobX, the host's instance and yours would run side by side:
 - `@jbrowse/core` - pluggable-element base classes, the configuration system,
   and shared model types must be the same objects the host registers against.
 
-So JBrowse loads one copy of each and **re-exports** it to plugins.
+JBrowse therefore loads one copy of each and **re-exports** it to plugins.
 
 ## What is re-exported
 
-The list lives in
+The list is in
 [`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts),
-generated from the packages' own `exports` maps, and the table below is
+generated from the `exports` map of each package, and the table below is
 generated from the same run. The categories:
 
 - Framework singletons - `react` (with `react/jsx-runtime`), `react-dom` (with
@@ -64,8 +64,8 @@ module reaches react-dom, a Material UI component, the data grid or floating-ui,
 in which case it serves a stub that lists the module's export names, so your
 bundle still evaluates there. The stub is inert — every read and call on it
 returns another stub, so a number taken off one is 0 and a list is empty — and
-it reports nothing when that happens. Anything the worker has to compute belongs
-on a subpath the worker serves for real. The last column says how much of each
+it reports nothing when that happens. Put anything the worker has to compute on
+a subpath the worker serves for real. The last column shows how much of each
 package that is; an adapter, an RPC method or a state-model mixin is always real
 in both realms.
 
@@ -85,7 +85,7 @@ in both realms.
 
 Anything not in that list (`d3`, `lodash-es`, a file-format parser, your own
 helpers): `import` it normally and your bundler includes it in your plugin's
-output. Nothing breaks from having more than one copy, so these aren't shared.
+output. These libraries tolerate more than one copy, so they are not shared.
 
 A `@jbrowse` subpath the exports map does not publish is not importable at all,
 so there is nothing of a served package that a plugin can end up bundling. What
@@ -98,7 +98,7 @@ one notification rather than an `undefined is not a function` somewhere later.
 
 JBrowse publishes several helper packages to npm alongside `@jbrowse/core`, so
 the parsing and scale math is already written. The host serves each of them, and
-the third column says whether a second copy would also be safe, for a no-build
+the third column shows whether a second copy would also be safe, for a no-build
 plugin or one bundling deliberately.
 
 <!-- HELPER_PACKAGES START -->
@@ -177,7 +177,7 @@ line to change is in your own tsconfig:
 }
 ```
 
-Both [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
+The [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
 a plugin started from one never meets this. Leaving `moduleResolution` out
 entirely also works, because TypeScript now defaults to `bundler`. The error
 reaches you only from a tsconfig naming `"node"` explicitly, which was the

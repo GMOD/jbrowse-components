@@ -217,15 +217,15 @@ off because the row labels already name the four categories:
 
 ## Reading crossovers off the painted blocks
 
-The four rows of the painted track are each parent's two copies, blue for father
+The painted track draws each parent's two copies as rows, blue for father
 HG02026 and red for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
 The blue rows together are the child's paternal chromosome. A filled blue row
 marks the father's copy the child inherited there, so hap-ibd places a paternal
-crossover at each step between the blue rows. The red rows are the maternal
-chromosome in the same way.
+crossover at each step between the blue rows. Likewise, the red rows are the
+maternal chromosome.
 
 The control in the figure is that no position has both blue rows filled, or both
 red rows, which would mean hap-ibd matched one child haplotype to both of a

@@ -45,10 +45,10 @@ ratchet's backlog. What follows is what no check sees.
   finding. A sprawling page needs this most.
 - Readers skip prose and copy commands, so cut content rather than compress it,
   but never cut a route a reader can run on their own data.
-- Say each thing once. Prose beside a figure says what the caption cannot; prose
-  beside a fence says what its keys and comments cannot; a flag's explanation
-  lives in the comment in its fence. A sentence naming another tutorial needs a
-  step that uses it, or the link goes under See also.
+- Say each thing once. Prose beside a figure adds what the caption lacks; prose
+  beside a fence adds what its keys and comments lack; a flag's explanation goes
+  in the comment in its fence. A sentence naming another tutorial needs a step
+  that uses it, or the link goes under See also.
 
 ## Typography
 
@@ -73,8 +73,8 @@ ratchet's backlog. What follows is what no check sees.
 - The reader has not cloned the repo: Reproduce curls the script and runs the
   copy.
 - **Never hand over a script bare.** Above the `curl … | bash` fence, a numbered
-  list of three or four steps says what the script does and why, in the reader's
-  terms, with no commands.
+  list of three or four steps describes what the script does and why, in the
+  reader's terms, with no commands.
 - `<!-- from: scripts/build_<topic>.sh -->` goes over a fence showing a real
   command the script runs, never over the `curl … | bash` fence, where it
   asserts nothing. Leave it off a fence the script only approximates. A `python`
@@ -94,7 +94,7 @@ ratchet's backlog. What follows is what no check sees.
   `website/scripts/api-docs/tutorialInstall.json` (apt and conda lines, a Linux
   wget line for binaries apt lacks, plus cargo, pip and npm). A tool with no
   packaged install stays a bullet with a link. The intro gets its own heading.
-- **The data section tells the reader what to do.** Its heading is
+- **The data section gives the reader instructions.** Its heading is
   `## Download the data` when the reader fetches files by hand, with a `bash`
   fence of `wget -c` lines, one comment per file giving its size, and otherwise
   `## The data`, whose second sentence says whether the reader needs the files:
@@ -123,8 +123,8 @@ ratchet's backlog. What follows is what no check sees.
   build adds the prefix.
 - No convenience pitches ("nothing to install"). A genomes.jbrowse.org link is
   welcome where the story uses it.
-- Moving a figure off a page means moving its card's crop source in
-  `gen-tutorial-thumbs.ts`; nothing warns.
+- If you move a figure off a page, move its card's crop source in
+  `gen-tutorial-thumbs.ts` too; no check warns you.
 
 ## Before adding a locus
 

@@ -77,7 +77,8 @@ One track draws the lanes, reading each haplotype's walk from tabix-indexed
 files we built from the release's graph. The HPRC page's **Haplotypes** launch
 adds it, and the config below is the one to adapt for your own graph:
 
-- **A lane** is one haplotype's walk, its route through the graph.
+- **A lane** is one haplotype's walk, which lists in order the nodes that
+  haplotype passes through.
 - **`assemblyNames`** lists an assembly per haplotype. The track finds each walk
   through the assembly's `sample#haplotype` alias (`HG00097.1` is aliased
   `HG00097#1`), which
@@ -160,8 +161,8 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 
 ## What the lanes leave out {#limits}
 
-The three loci above are ones the lanes draw well. The cases below mislead, each
-measured on HPRC release 2.1 in October 2026;
+The lanes draw the three loci above well. The cases below mislead, each measured
+on HPRC release 2.1 in October 2026;
 [part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
 and the VCF behind them.
 

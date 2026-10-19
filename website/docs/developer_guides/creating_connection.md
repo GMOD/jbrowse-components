@@ -54,8 +54,8 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Optional items
 
-The first three furnish the "Add connection" dialog. None is enforced, and every
-connection in the tree sets all three.
+The first three furnish the "Add connection" dialog. A connection may omit them,
+but every connection in the tree sets all three.
 
 - `displayName`: what the connection-type dropdown lists, falling back to `name`
   as it does on every pluggable element. Worth setting to something readable,

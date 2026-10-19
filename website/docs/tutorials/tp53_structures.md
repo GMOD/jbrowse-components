@@ -27,9 +27,9 @@ structure to the transcript, and Mol\* draws the structures. We:
 
 ## The data
 
-Nothing to download: the links open a hosted hg38 config with NCBI RefSeq genes,
-and the protein3d plugin fetches these files when a link opens. _Structures of
-your own gene_ covers a gene of your own.
+The links open a hosted hg38 config with NCBI RefSeq genes, and the protein3d
+plugin fetches these files when a link opens, so no download is needed.
+_Structures of your own gene_ covers a gene of your own.
 
 <details>
 <summary>The files</summary>

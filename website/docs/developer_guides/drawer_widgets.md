@@ -68,8 +68,8 @@ export default function ViewSpelledOut() {
 
 ## Managing widgets programmatically
 
-Opening a widget from your own code means holding the engine, so it needs the
-`useCreateViewState` form — the same object either way, see
+Code that opens a widget holds the engine, so it needs the `useCreateViewState`
+form — the same object either way, see
 [useCreateViewState](https://jbrowse.org/storybook/lgv/use-create-view-state/).
 
 Every drawer action is on the session, so they read
@@ -91,7 +91,7 @@ Every drawer action is on the session, so they read
 
 The `view` prop accepts two sets of keys. `InitState` keys need resolving on
 load (a locstring has to become regions, a track id has to become an open
-track), so they live in a one-shot blob. `LinearGenomeViewLaunchProps` are plain
+track), so they go in a one-shot blob. `LinearGenomeViewLaunchProps` are plain
 view props forwarded straight onto the snapshot, so they round-trip on save like
 any other setting:
 
@@ -167,10 +167,10 @@ export type LinearGenomeViewLaunchProps = Partial<
 
 `drawerWidth` and `drawerPosition` do **not** travel together. `drawerWidth` is
 an ordinary session property, so it round-trips through a saved or shared
-session; `drawerPosition` is stripped out of the snapshot on the way out and
-lives only in that browser's localStorage, as a personal layout preference. A
-session cannot hold a drawer position, so a host that wants one sets it after
-load.
+session; `drawerPosition` is stripped out of the snapshot on the way out and is
+stored only in that browser's localStorage, as a personal layout preference. A
+host that wants a drawer position sets it after load, because a session cannot
+hold one.
 
 ## Showing a custom widget
 

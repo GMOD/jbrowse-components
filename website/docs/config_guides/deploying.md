@@ -61,9 +61,8 @@ whose `subadapters` come from the same rows.
 A restored session looks each track up by `trackId`, so a pipeline that
 regenerates `config.json` with a different id each build (a timestamp, a random
 suffix) breaks every link shared before. Derive each `trackId` from stable
-inputs, as the script above does from the assembly and sample name. Changing or
-deleting an id breaks any saved session that references it, and the whole
-session fails to load.
+inputs, as the script above does from the assembly and sample name. A saved
+session fails to load entirely when an id it references is changed or deleted.
 
 ## Server settings that make JBrowse load faster
 
@@ -198,7 +197,7 @@ for the reasons on that page.
 On a host that cannot set `Cache-Control` on `config.json`, the
 [cache-buster](/docs/config_guides/avoiding_stale_config) is a one-line
 `<script>` in `index.html` for a build script to inject. `config.json` is
-fetched before it can configure anything, so the setting has to live in
+fetched before it can configure anything, so the setting has to be in
 `index.html`.
 
 ## See also

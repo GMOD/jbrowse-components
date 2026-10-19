@@ -111,7 +111,8 @@ writes each region as one:
 - **Sequence lengths** come from a `.chrom.sizes` file beside `syri.out`, the
   first two columns of the FASTA index.
 
-Concatenating the records from every pair gives one file for every view below:
+Concatenate the records from every pair into one file, which every view below
+uses:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -251,8 +252,9 @@ between the two genomes it joins:
 
 To compare every accession with Col-0 in Col-0 coordinates, `syri_to_paf.py`
 also writes each pair's regions in reference coordinates, one BED row per
-region. A row is named by its type, colored by `itemRgb`, and has the accession
-name in a `query` column. The rows against Col-0 concatenate into one track:
+region. Each row's name is its type, its color comes from `itemRgb`, and a
+`query` column holds the accession name. The rows against Col-0 concatenate into
+one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 

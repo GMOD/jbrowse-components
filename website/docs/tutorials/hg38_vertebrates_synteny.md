@@ -55,7 +55,7 @@ chains as one indexed alignment per genome_ shows.
 | UCSC's liftOver folder for hg38, one `hg38To<Genome>.over.chain.gz` per genome | [liftOver/](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/) |
 
 <details>
-<summary>The same chains as indexed alignments (no download needed)</summary>
+<summary>The liftOver chains as indexed alignments (no download needed)</summary>
 
 | What it is                                                             | File                                                                                            |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -77,8 +77,8 @@ whether or not a gene lies there, so the track can draw each lane from the chain
 alone.
 
 Each UCSC chain aligns hg38 to one other genome, so no row aligns chimpanzee to
-mouse. The track places each lane from its own chain, and every ribbon joins a
-lane to hg38, whichever lane sits above it.
+mouse. The track places each lane from the chain for that genome, and every
+ribbon joins a lane to hg38, whichever lane sits above it.
 
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`, which can write a coarser tier beside the per-base one for
@@ -241,7 +241,7 @@ ribbons run straight on screen while the strand color still marks each of them
 as an inversion. Inside a lane, a ribbon crosses where one block runs against
 its neighbour, as in the dog and cow lanes.
 
-A lane draws one stretch of its chromosome at a time. Where the window lands on
+A lane draws one stretch of its chromosome at a time. Where the window aligns to
 two stretches a window or more apart, the lane draws the one holding more of the
 window, and its header names the other after `also at`. The marmoset lane draws
 the reversed block that places the right of the window, and names the forward
@@ -263,7 +263,7 @@ the frame:
 
 ## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
 
-Each lane draws in the coordinates of its own genome, fitted to wherever the
+Each lane draws in the coordinates of that lane's genome, fitted to wherever the
 alignment places the hg38 window.
 
 - **Span**: the number at a lane's right edge is the span the lane shows, and

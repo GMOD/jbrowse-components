@@ -70,8 +70,8 @@ A row has exactly one, `cg:Z:`.
   replaces any `cg:Z:` the row also had, since `cs` spells out mismatches that
   minimap2's own `cg` folds into `M`. The substituted bases are dropped, their
   positions survive as `X`
-- `cs` is never emitted. Reorienting one means reversing op order _and_
-  reverse-complementing its spelled-out bases
+- `cs` is never emitted. To reorient a `cs`, reverse the op order _and_
+  reverse-complement its spelled-out bases
 - an incoming `cr:Z:` is stripped from both tiers
 
 Run minimap2 with `--eqx` so the CIGAR distinguishes `=` from `X`.
@@ -84,7 +84,7 @@ The renderer reads the first of these that a row has:
 - `id:f:`, written by odgi untangle, as a fraction or a percentage
 - the `num_matches` / `block_len` columns
 
-This identity value is the same quantity as rustybam's `rb stats --paf`
+The identity value is the same quantity as rustybam's `rb stats --paf`
 `perID_by_all` and [SVbyEye](https://github.com/daewoooo/SVbyEye). It is never
 recomputed from the CIGAR, where a plain `M` folds mismatches into matches and
 would report a divergent alignment as identical. A coarse row has its fine row's
@@ -108,8 +108,8 @@ One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 Every field is optional, and files built before the header have none. A reader
 ignores a header key it does not know, so a new key needs no version bump, and a
-writer must not bump for one: `version` moves only when a reader of the previous
-generation would misread the rows.
+writer must not bump for one. A writer raises `version` only when a reader of
+the previous generation would misread the rows.
 
 ## Coarse tier
 
@@ -119,7 +119,7 @@ CIGARs. The "Level of detail" control defaults to `auto` (settings menu on both
 comparative views, track menu on the LGV synteny track).
 
 A coarse row is its fine row with the coordinate columns and every non-alignment
-tag verbatim. The CIGAR is replaced by a **coarse CIGAR** in a `cr:Z:` tag:
+tag verbatim. A **coarse CIGAR** in a `cr:Z:` tag takes the place of the CIGAR:
 
 - an indel longer than half of `--coarse` keeps its `I`/`D`/`N` op and length
 - everything between two kept indels folds into one match run, written
@@ -311,10 +311,10 @@ records also name two sequences. Both tools fold the second dimension into the
 tabix sequence key and let ordinary tabix binning do the rest. Pairix folds the
 mate chromosome into the key (`chr1|chr2`), bins on the first position and
 filters the second position line by line, with autoflip querying the swapped
-pair when a file stores each pair once. That needs a modified index format and
-its own reader. PIF folds only a perspective letter into the key and writes each
-record twice, so stock tabix and every existing reader work unchanged, at the
-cost of a larger file. PIF records are also strand-aware intervals with an
+pair when a file stores each pair once. That needs a modified index format and a
+dedicated reader. PIF folds only a perspective letter into the key and writes
+each record twice, so stock tabix and every existing reader work unchanged, at
+the cost of a larger file. PIF records are also strand-aware intervals with an
 alignment string rather than point pairs, so they need the CIGAR reorientation
 and the coarse tier.
 

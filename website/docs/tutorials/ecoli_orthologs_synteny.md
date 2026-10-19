@@ -15,7 +15,8 @@ orthologous gene the same symbol in every strain that names it, so the ortholog
 table is a join on the gene name over the GFF3 files. We:
 
 - build the join and load it as an ortholog track
-- add each genome as a lane under the K-12 view, with its own gene models
+- add each genome as a lane under the K-12 view, with the gene models annotated
+  in that genome
 - read the _atp_ operon across all forty-four lanes
 - read the O-antigen cluster, which differs between strains, to see where the
   gene-symbol join stops
@@ -191,8 +192,8 @@ runs against K-12
 In grammar-of-graphics terms, the display's `color` is a color scale, here the
 `cluster` field mapped to colors:
 
-- Every gene is colored by its ortholog group, which the table names after the
-  K-12 gene anchoring it, so a conserved gene is one color running down the
+- Every gene is colored by its ortholog group, which is named for the K-12 gene
+  anchoring it in the table, so a conserved gene is one color running down the
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
@@ -200,9 +201,9 @@ In grammar-of-graphics terms, the display's `color` is a color scale, here the
   it because the cluster window holds dozens of groups, and the display omits it
   in any window with more than thirty.
 
-Lanes stack with the genome placing the most of the window's genes first. The
-default height scrolls the stack inside the track, so the session sets `height`
-to fit every lane:
+Lanes stack in order of how many of the window's genes each genome places, most
+first. The default height scrolls the stack inside the track, so the session
+sets `height` to fit every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {

@@ -68,8 +68,8 @@ accession. K12 is the `--reference` backbone the other four align onto.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. Building the
-graph takes your own set of assemblies.
+[build script](#reproduce-it-end-to-end) fetches everything itself. You need
+your own set of assemblies to build the graph.
 
 | What it is                                                         | File                                                                                                                  |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
@@ -154,8 +154,8 @@ in_cactus cactus-pangenome /data/js /data/seqfile.txt \
 ## Load the genomes
 
 Every projection is a track on a strain's assembly, and each strain's FASTA
-holds one sequence named `chr`. We'll add K12, the reference the projections
-land on, from a bgzip-compressed, indexed FASTA:
+holds one sequence named `chr`. We'll add K12, the reference the projections map
+to, from a bgzip-compressed, indexed FASTA:
 
 ```json addassembly
 {
@@ -406,7 +406,7 @@ gene copy):
 
 We'll map the short reads of a sample outside the graph through the whole
 pangenome and project the result onto K12. A read that follows another strain's
-path through a variable region has no mismatches or soft clips and lands at that
+path through a variable region has no mismatches or soft clips and maps to that
 region's K12 coordinates. A read over sequence K12 lacks has no K12 coordinate
 and stays unmapped.
 

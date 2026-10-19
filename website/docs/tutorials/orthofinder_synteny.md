@@ -204,8 +204,8 @@ raises a track error naming both lists.
 A gene-level synteny view reads no sequence, so each assembly is a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes` file
 (a name and a length per line) built from the `##sequence-region` header in its
-GFF3. We'll load wheat; the other genomes repeat the block under their own
-names:
+GFF3. We'll load wheat; the other genomes repeat the block under each genome's
+name:
 
 ```json addassembly
 { "name": "wheat", "uri": "wheat.chrom.sizes" }
@@ -336,10 +336,10 @@ which draws a lane per fly. Every fly keeps this window's melanogaster genes.
 
 ### Collinear blocks from the same orthogroups {#collinear-blocks}
 
-An orthogroup says which genes are related, and nothing about which of them
-still sit in order. [MCScanX](https://github.com/wyp1125/MCScanX)'s `MCScanX_h`
-chains ortholog pairs that keep their order into collinear blocks. Start by
-writing every gene pair an orthogroup holds between two flies:
+An orthogroup lists the related genes and holds no gene order.
+[MCScanX](https://github.com/wyp1125/MCScanX)'s `MCScanX_h` chains ortholog
+pairs that keep their order into collinear blocks. Start by writing every gene
+pair an orthogroup holds between two flies:
 
 <!-- from: scripts/build_orthofinder_synteny.sh -->
 

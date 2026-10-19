@@ -192,8 +192,8 @@ builds the same circle once you pick the chain track. As a session:
 }
 ```
 
-Both assemblies name their chromosomes alike, so the arcs have the same labels.
-To read the circle:
+The human and mouse assemblies name their chromosomes alike, so the arcs have
+the same labels. To read the circle:
 
 - Human chromosomes run clockwise from the top and mouse chromosomes follow; the
   title bar names the two in that order.

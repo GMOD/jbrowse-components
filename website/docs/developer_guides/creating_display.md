@@ -107,8 +107,7 @@ answers how the display _fetches_; how it _renders_ is a separate axis on top.
 
 <!-- DISPLAY_FOUNDATIONS END -->
 
-The two walkthroughs below both use `MultiRegionDisplayMixin`, the common case.
-The
+The two walkthroughs below use `MultiRegionDisplayMixin`, the common case. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 goes further into why fetch and render are split.
 
@@ -116,7 +115,7 @@ If your display holds onto what the pointer is over, read
 [the hover rules](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_HOVER.md)
 first: a zoom, a side-scroll, an internal scroll and the region-too-large banner
 all move content under a stationary cursor without firing a pointer event, so a
-stored hit goes on naming what used to be there.
+stored hit keeps naming the content that was there before.
 
 ## Cross-cutting mixins
 
@@ -152,15 +151,16 @@ or the other, never both.
 ## Walkthroughs
 
 Two end-to-end guides build the same display, differing only in whether the
-display writes a shape of its own. Start with the first:
+display writes a custom shape. Start with the first:
 
 - [](/docs/developer_guides/plotting_features) - fetch in a worker, declare a
   mark over a shared shape. Most displays stop here.
 - [](/docs/developer_guides/creating_gpu_display) - the same display over a
-  shape of its own: a `.slang`, a uniform write, a painter and a hit test.
+  custom shape: a `.slang`, a uniform write, a painter and a hit test.
 
-Both are build-step plugins; [](/docs/developer_guides/simple_plugin) covers the
-scaffold and build setup they assume.
+Each walkthrough is a build-step plugin;
+[](/docs/developer_guides/simple_plugin) covers the scaffold and build setup
+they assume.
 
 For a worked in-tree display, read `plugins/wiggle/src/LinearWiggleDisplay` for
 an overlay drawn over rendered content, or

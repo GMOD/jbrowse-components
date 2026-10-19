@@ -306,7 +306,7 @@ against a control:
    the same width on either side, and across chr5 the share of calls whose
    midpoint falls in a flagged region.
 
-It needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
+The script needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
 `bedtools`, `samtools`, `curl` and `awk`.
 
 ```bash

@@ -206,17 +206,17 @@ includes a bundler and type checking.
 
 ## Note: UMD vs ESM module syntax
 
-This guide uses ESM modules (a plain exported class), supported by all modern
+Plugins here are ESM modules (a plain exported class), supported by all modern
 browsers. For legacy browsers you can use UMD modules instead. See
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
 which defines a global variable instead of exporting a class.
 
 ## Note: Plugins in embedded React components
 
-This guide targets jbrowse-web, which loads plugins via `config.json`. Embedded
-components (`@jbrowse/react-app2` or `@jbrowse/react-linear-genome-view2`) have
-no config.json, so they take the class directly — declared in the same file, and
-passed in `plugins`:
+The steps here target jbrowse-web, which loads plugins via `config.json`.
+Embedded components (`@jbrowse/react-app2` or
+`@jbrowse/react-linear-genome-view2`) have no config.json, so they take the
+class directly — declared in the same file, and passed in `plugins`:
 
 <!-- include: products/jbrowse-react-app/examples-site/src/examples/InlinePlugin.tsx#usePlugin -->
 

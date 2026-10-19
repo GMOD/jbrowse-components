@@ -135,7 +135,7 @@ below. We measured each on HPRC release 2.1 in October 2026.
   VCF is blank, and the page will offer the launch anyway.
 - **No single launch shows the whole locus.** The graph shows which sequence
   exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
-  are arranged. Reading a locus means opening more than one.
+  are arranged. A locus needs more than one of them.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 

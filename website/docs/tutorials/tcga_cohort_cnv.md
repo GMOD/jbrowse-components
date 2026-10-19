@@ -330,7 +330,7 @@ One script builds every file above for any project id,
    midpoint. Bins where fewer than half the tumors have any call are left out,
    so a gap in the track is missing data.
 
-It needs `curl`, `python3`, and `bgzip` + `tabix` from
+The script needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
 `apt install curl python3 tabix`.
 

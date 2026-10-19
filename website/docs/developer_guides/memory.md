@@ -23,14 +23,14 @@ page describes what stays resident afterward.
 | `rpcDataMap`                 | one region's packed columns | display model | the regions the view shows |
 | GPU buffers                  | uploaded vertex data        | display       | per-object guards only     |
 
-The budget lives in `packages/core/src/util/cacheBudgets.ts`.
+The budget is defined in `packages/core/src/util/cacheBudgets.ts`.
 
 ## Cache budget scope
 
 `@gmod/bam`, `@gmod/tabix` and `@gmod/cram` each take a per-file budget, and
 `dataAdapterCache` holds one adapter per open track, so those ceilings multiply
 with nothing summing them. Three moderately deep alignments tracks over eight
-windows, every cache still well under its own 1 GB ceiling throughout:
+windows, every cache still well under its 1 GB ceiling throughout:
 
 <!-- BEGIN GENERATED MEASUREMENT cache-budget-retention-climb -->
 
@@ -67,9 +67,8 @@ budget yields only what is globally least-recently-used, so idle tracks hand
 their space to the one being panned.
 
 There is one budget because `SharedBudget.total` sums over its members, so they
-must all weigh the same unit — cram weighs a decoded slice's byte length, where
-it used to weigh a record count that could not be summed with bam and tabix's
-bytes.
+must all weigh the same unit — cram weighs a decoded slice's byte length, the
+same unit as bam and tabix.
 
 `@gmod/bgzf-filehandle` keeps one module-global wasm heap that never shrinks, so
 each wasm call inflates at most a capped slice of input and output.
@@ -86,9 +85,9 @@ total memory somewhere that can see the whole process.
 
 ## GPU memory guards {#gpu-memory-is-guarded-per-object-not-per-session}
 
-Nothing sums uploaded bytes across displays, so OOM there is reportable rather
-than preventable; both backends route through `OomReporter` to a
-zoom-in-or-reduce-height message. WebGPU refuses past the adapter's own
+JBrowse does not sum uploaded bytes across displays, so an OOM there can be
+reported but not prevented; both backends route through `OomReporter` to a
+zoom-in-or-reduce-height message. WebGPU refuses past the adapter's
 `maxBufferSize`, WebGL2 past a fixed 256 MiB, so a region can banner on WebGL2
 while rendering on WebGPU.
 

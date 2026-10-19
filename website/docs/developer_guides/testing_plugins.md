@@ -5,8 +5,8 @@ description:
 guide_category: Advanced topics
 ---
 
-Most plugin logic is covered by fast Jest unit tests (adapters, models) and
-jsdom render tests (components); browser tests drive the built app.
+Fast Jest unit tests (adapters, models) and jsdom render tests (components)
+cover most plugin logic; browser tests drive the built app.
 
 The [plugin templates](/docs/developer_guides/simple_plugin) ship with Jest
 preconfigured, so `pnpm test` works out of the box.
@@ -304,9 +304,9 @@ runs — nothing is listening until you say so. Three things turn it on:
   deployment that is running a plugin under development.
 
 A violation then appears as a warning notification in the session the broken
-display is in, alongside the console message. It names the fix, and it says
-which of the three turned it on, because the notice is about your code rather
-than about the reader's data.
+display is in, alongside the console message. The notification text gives the
+fix and states which of the three turned it on, because the notice is about your
+code rather than about the reader's data.
 
 If you are building your own chrome rather than using a JBrowse app, the
 notification needs a `<Snackbar session={session} />` somewhere in your tree —

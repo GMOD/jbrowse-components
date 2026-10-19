@@ -74,9 +74,9 @@ awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
   sort | uniq -c | sort -rn
 ```
 
-A type the `domain` does not list takes the next palette color and its own row
-in the key, so an unexpected row there is the signal to go back to that list. A
-worked case: the
+A type the `domain` does not list takes the next palette color and a separate
+row in the key, so an unexpected row there is the signal to go back to that
+list. A worked case: the
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
 writes a GFF whose column 3 holds mobile element types (published per genome
 under MGnify's
@@ -129,8 +129,8 @@ CDSs back:
 
 - **`unknown` greys the rest in one go.** `"unknown": "#bdc3c7"` in place of the
   `CDS` entry paints every type the `domain` leaves out that grey, and the key
-  names them one row, Other. An unexpected type then gets no row of its own,
-  which was the signal to go back to the type list.
+  names them one row, Other. An unexpected type then gets no separate row, so
+  the key no longer signals that the type list needs checking.
 - **Two names for the repeat flanks** because the pipeline renamed the type
   across releases, and a file uses whichever name its release used. A renamed
   type is the usual reason a key is missing.

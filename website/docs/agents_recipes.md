@@ -60,8 +60,8 @@ return jb.loadSessionSpec({
 ```
 
 The result is the settle report plus a session summary naming the view, its
-visible region and each track's display and height. Here the report also says
-that ClinVar is over its fetch-size gate at a whole-gene zoom:
+visible region and each track's display and height. Here the report also lists
+ClinVar as over its fetch-size gate at a whole-gene zoom:
 
 ```json
 {
@@ -128,9 +128,9 @@ return {
   `gene_id` with no `Name`, so `name` is `null` on every gene there and `id` is
   the symbol.
 
-The same tabulate-in-code pattern works over ClinVar on the hosted hg38 config,
-counting by clinical significance instead. The whole BRCA1 view is over the
-read's byte gate, so `loc` narrows it to the gene's last exons:
+The tabulate-in-code pattern also works over ClinVar on the hosted hg38 config,
+counting by clinical significance. The whole BRCA1 view is over the read's byte
+gate, so `loc` narrows it to the gene's last exons:
 
 ```js
 const feats = await jb.getFeatures({
@@ -293,8 +293,8 @@ A `LinearMarkDisplay` is a grammar of graphics over any feature, alignments or
 variant track: each mark names its `mark` type, the fields feeding its channels
 and the transforms run before it. Reuse a catalog track's adapter under a new
 session track whose display declares the plot, and the axis, legend and hover
-follow. The display has one y axis, so each pair's insert size is its own track
-beside the coverage rather than a second axis on this one:
+follow. The display has one y axis, so each pair's insert size goes in a
+separate track beside the coverage rather than a second axis on this one:
 
 ```js
 const source = session.getTrackById('volvox_alignments')
@@ -400,8 +400,8 @@ return {
 
 ## Prove a track drew
 
-A display that refuses to draw replaces its own subtree and raises no toast, so
-a screenshot of it looks fine. The settle report is where it shows:
+A display that refuses to draw replaces its subtree and raises no toast, so a
+screenshot of it looks fine. The settle report is where it shows:
 
 ```js
 await jb.view().launchTrack('volvox_bigwig_nonexist')
@@ -432,7 +432,7 @@ return jb.waitReady(20000)
 
 ## A figure per locus
 
-The loop lives in the client, one navigate-and-settle call per locus and a
+The loop runs in the client, with one navigate-and-settle call per locus and a
 cropped screenshot after each. The settle call returns the view's element box so
 `rect` or `selector` can crop to it:
 
@@ -605,7 +605,7 @@ return jb.loadSessionSpec({
 
 `await view.launchTrack(trackId, {}, { type })` draws a track as another of its
 display types, whether or not it is already shown, and the rest of the settings
-land on the display it switched to. A type the view cannot draw is refused with
+apply to the display it switched to. A type the view cannot draw is refused with
 a notification naming the ones it can, which `track.compatibleDisplays` lists.
 
 ```js
@@ -684,9 +684,9 @@ return jb.setSession(doc)
   whole instruction. Views the document does not list are closed.
 - A document the model refuses throws naming the path and the value, and nothing
   is applied.
-- Config slots (`displayMode`, `color`) live in the config, not the session's
-  built track, so put the setting on a `{ trackId }` entry: it restyles a track
-  already shown and opens one that is not.
+- Config slots (`displayMode`, `color`) are stored in the config, not the
+  session's built track, so put the setting on a `{ trackId }` entry: it
+  restyles a track already shown and opens one that is not.
 
 ## Fit everything in the window
 
@@ -701,7 +701,7 @@ for (const t of jb.view().tracks) {
 return jb.fitToWindow()
 ```
 
-It answers `fits`, the overflow before and after, each cut as
+`jb.fitToWindow()` returns `fits`, the overflow before and after, each cut as
 `{ what, from, to }`, and a note when every shrinkable thing is at its floor,
 which is when hiding a track or a `fullPage` screenshot is the answer.
 
@@ -725,8 +725,8 @@ return { seated, ...(await jb.waitReady(30000)) }
   cell as tabs; a leaf with several ids stacks those views in one tab.
 - A leaf spelled with any other key throws naming it, and a layout that seats no
   view throws rather than leaving a blank tab.
-- Calling `session.applyLayoutSpec` directly does neither of the two things
-  `session.layoutViews` adds, and the views stay stacked with no error.
+- `session.applyLayoutSpec` called directly skips the two throws above, so a bad
+  layout leaves the views stacked with no error.
 
 ## See also
 

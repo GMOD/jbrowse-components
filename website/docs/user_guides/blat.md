@@ -42,9 +42,9 @@ best hit's row.
 <Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
 Pasting FASTA searches each record separately, up to 25 records, 25 kb in any
-one record and 50 kb across the submission. Records keep their own names, so
-hits from different queries stay attributable in the track. A bare sequence with
-no header is named `YourSeq` by the server.
+one record and 50 kb across the submission. Each record keeps its name, so hits
+from different queries stay attributable in the track. A bare sequence with no
+header is named `YourSeq` by the server.
 
 ### Which database gets searched
 
@@ -59,9 +59,9 @@ The assembly picker drives the UCSC database, resolved in this order:
 including with a GenArk accession such as `GCF_000001405.40`.
 
 An assembly UCSC does not host has nowhere to search — a genome you opened from
-your own files is the usual case — and the dialog says so before you submit. If
-UCSC does have a database for it, set that database under advanced settings.
-These dialogs have no local aligner behind them;
+your own files is the usual case — and the dialog warns of this before you
+submit. If UCSC does have a database for it, set that database under advanced
+settings. These dialogs have no local aligner behind them;
 [](/docs/user_guides/sequence_search) scans the reference for an exact pattern
 without involving UCSC.
 
@@ -77,7 +77,7 @@ desktop when the shared budget is spent and the search falls back to UCSC. Solve
 it in the window that opens, or paste a UCSC apiKey (generate one from a UCSC
 Genome Browser account under Hub Development → API key) to skip it. On desktop,
 entering a key moves the server field to UCSC, because the proxy replaces a key
-you send with its own — so a key only spends against UCSC directly.
+you send with the proxy's key — so a key only spends against UCSC directly.
 
 ## In-silico PCR
 

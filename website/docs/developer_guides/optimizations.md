@@ -242,7 +242,7 @@ wrong when the read being cancelled is one
 ### Genotype codes in a multi-sample VCF
 
 A row of a multi-sample VCF has one genotype per sample, and drawing that row
-used to mean cutting one substring out of the line per sample.
+from substrings cuts one out of the line per sample.
 [`@gmod/vcf`](https://github.com/GMOD/vcf-js/blob/main/docs/optimizations.md#one-pass-per-sample-however-many-keys-you-ask-for)
 reports each genotype as a pair of offsets into the line it already holds, and
 `analyzeVariants` walks those in a single pass per row: each distinct genotype

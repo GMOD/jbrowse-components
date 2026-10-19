@@ -100,7 +100,7 @@ export default BedGraphAdapter
 
 The name must match the `type` field in config JSON, and `explicitlyTyped: true`
 requires that field to be present. Each slot becomes an observable MST property.
-A display's schema is `closed` without saying so, and an adapter's says
+A display's schema is implicitly `closed`, and an adapter's declares
 `closed: true`: a config carrying a key the schema does not declare loads
 without it and names the key on the console, and a write of one through
 `setConf` throws. An adapter's `preProcessSnapshot` therefore strips the
@@ -203,8 +203,8 @@ and set.
 ## Schema inheritance with baseConfiguration
 
 Displays inherit base display slots by passing `baseConfiguration` in the
-options argument. `LinearMafDisplay` declares its own slots and takes the rest
-from the base linear display schema:
+options argument. `LinearMafDisplay` declares some slots and takes the rest from
+the base linear display schema:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/configSchema.ts#schemaOptions -->
 
@@ -251,8 +251,8 @@ The full signatures are in the
 
 Use `getConf` when you hold a **state model** that has a `.configuration` member
 (a track model, display model, etc.) — `LinearMarkDisplay`'s `origin` getter is
-`getConf(self, 'origin')`, and its typed `conf` getter, in a block of its own,
-is what every later block reads a sub-schema through:
+`getConf(self, 'origin')`, and every later block reads a sub-schema through its
+typed `conf` getter, which sits in a separate block:
 
 <!-- include: plugins/marks/src/LinearMarkDisplay/model.ts#chainedViews -->
 
@@ -415,8 +415,8 @@ The context object is `readConfObject`'s and `getConf`'s optional third
 argument, so "what is this setting" and "what is this setting for this feature"
 are the same call with and without it. On a slot holding a `jexl:` value the
 arg-less form still evaluates, against a context where every name the expression
-mentions is `undefined`, and hands back the fallout as the setting. Nothing
-throws at the reader, and the two ways it goes wrong look nothing alike:
+mentions is `undefined`, and hands back the fallout as the setting. The reader
+raises no error, and the two ways it goes wrong differ:
 
 - the expression touches a member of the missing value (`get(feature,…)`) and
   throws out of whatever getter did the read, which shows up as the display
@@ -459,8 +459,8 @@ the expression language itself.
 
 A slot that declares no `contextVariable` refuses a `jexl:` string: loading a
 config, `setSlot`, the config editor and the generated JSON Schema each name the
-slot. A callback the code evaluates is one the schema says it takes, so a
-missing declaration shows up the first time a config writes one.
+slot. A callback the code evaluates needs a declared `contextVariable` on its
+slot, so a missing declaration is reported the first time a config writes one.
 
 A slot naming a field the display reads per feature, such as a color or facet
 `field`, is a `featureField` rather than a callback. It takes a field name, a

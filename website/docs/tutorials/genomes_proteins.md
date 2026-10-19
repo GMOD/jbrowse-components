@@ -178,7 +178,7 @@ Click the arrow beside **Launch** to list everything the dialog can build.
 the protein: the plugin registers the UniProt accession as a temporary assembly
 with the amino-acid sequence as its reference, so coordinates are residues. The
 view has a track per UniProt feature type, plus Antigen, Variation, AlphaFold
-confidence (pLDDT) and AlphaMissense scores. None is on at first, so turn them
+confidence (pLDDT) and AlphaMissense scores. All are off at first, so turn them
 on in the track selector under **Session tracks**.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />

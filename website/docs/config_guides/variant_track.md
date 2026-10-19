@@ -174,7 +174,7 @@ SAMPLE004	EAS	Pacific	case
 ```
 
 `rowColor` on the display names one of those columns, and each distinct value
-gets its own palette color:
+gets a different palette color:
 
 ```json addtrack
 {

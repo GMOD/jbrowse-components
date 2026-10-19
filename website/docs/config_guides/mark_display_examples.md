@@ -212,7 +212,7 @@ it.
 
 ## A summary per bin
 
-The same bins, with `mean` over the column in place of the count.
+The histogram's bins show `mean` over the column in place of the count.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:150,000,000-153,000,000
 {
@@ -292,7 +292,7 @@ draws the packing, colored by strand.
 ## A facet
 
 `facet` splits the copies on a field and stacks one section per value under a
-chip. A `pileup` in the facet's own `transform` packs each section on its own.
+chip. A `pileup` in the facet's `transform` packs each section separately.
 
 ```json addtrack config=https://jbrowse.org/demos/gene_density/config.json loc=chr1:151,000,000-151,030,000
 {

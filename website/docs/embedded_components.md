@@ -32,8 +32,8 @@ the component's one `assembly` (see
 [the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
 **`@jbrowse/react-app2` has a stylesheet to import**:
-`import '@jbrowse/react-app2/styles.css'`. It holds no rules today, and it is
-where the package ships any CSS it comes to need.
+`import '@jbrowse/react-app2/styles.css'`. The stylesheet holds no rules today,
+and the package ships any future CSS in it.
 
 **The props are initial values, like an input's `defaultValue`.** The engine is
 built once on first render and later prop changes are ignored. To switch
@@ -99,12 +99,11 @@ const state = createViewState({
   `createLinearGenomeView` takes the same name as its `assembly`. The circular
   view takes a list, `jbrowseHub: ['hg38', 'mm39']`, for two genomes on one
   circle.
-- **`localFiles`**, a `name -> bytes` map, serves a host whose data lives in a
-  process rather than at a URL: a notebook kernel, an R session, anywhere with
-  no web server and no CORS. `tracks` then refers to a registered name as if it
-  were a URL. Register an index under its conventional sibling name
-  (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and only the bytes the view needs are
-  read.
+- **`localFiles`**, a `name -> bytes` map, serves a host whose data is in a
+  process, not at a URL: a notebook kernel, an R session, anywhere with no web
+  server and no CORS. `tracks` then refers to a registered name as if it were a
+  URL. Register an index under its conventional sibling name (`peaks.bed.gz` +
+  `peaks.bed.gz.tbi`) and only the bytes the view needs are read.
 - **`menuBar`** draws the app-shaped `File` menu bar above the embedded linear
   view, with the two items an embed can honour (open track, open connection);
   **`disableAddTracks`** empties that menu and removes the track selector's

@@ -39,7 +39,7 @@ homozygosity, and population structure become visible at a glance.
 ## Filtering by allele frequency and missingness
 
 Two inline sliders in the track menu thin a dense callset down to the variants
-worth looking at. Both live under **Track menu → Filter by...** and re-fetch as
+worth looking at. Both are under **Track menu → Filter by...** and re-fetch as
 you release the slider:
 
 - **Minor allele frequency** hides variants whose minor allele frequency falls
@@ -55,7 +55,7 @@ takes a full column no matter how many of its genotypes are no-calls.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
 
-Either filter can be preset so the track loads already filtered, with the
+The two filters can be preset so the track loads already filtered, with the
 [`minMinorAlleleFrequency`](/docs/config/variantfilter/#slot-minminorallelefrequency)
 and [`maxMissingness`](/docs/config/variantfilter/#slot-maxmissingness) members
 of the display's `filter`. See
@@ -63,10 +63,9 @@ of the display's `filter`. See
 
 ## Rows: per sample or per haplotype
 
-Both layouts color each genotype cell, and how they color it depends on what one
-row stands for: the
-[`unit`](/docs/config/linearmultisamplevariantdisplay/#slot-unit) display
-option, which the track menu's **Rows** item sets.
+The [`unit`](/docs/config/linearmultisamplevariantdisplay/#slot-unit) display
+option, which the track menu's **Rows** item sets, decides what one row stands
+for and how each genotype cell is colored.
 
 With **Rows → Per sample** (`unit: 'sample'`), one cell is drawn per sample and
 shaded by how many alternate alleles the call has:
@@ -81,11 +80,11 @@ counts every non-reference allele, so `1/2` draws as dark as `1/1`, and an
 uncalled genotype (`./.`) takes the no-call color.
 
 With **Rows → Per haplotype** (`unit: 'haplotype'`), each sample is split into
-one row per haplotype and every haplotype cell is colored reference vs alt on
-its own, with no dosage shading, so inherited haplotype blocks line up as the
-contiguous vertical bands in the trio matrix above. A haplotype with the site's
-most frequent alt takes the same blue as a homozygous-alt cell in per-sample
-rows, and any other alt draws red.
+one row per haplotype and every haplotype cell is colored reference vs alt
+individually, with no dosage shading, so inherited haplotype blocks line up as
+the contiguous vertical bands in the trio matrix above. A haplotype with the
+site's most frequent alt takes the same blue as a homozygous-alt cell in
+per-sample rows, and any other alt draws red.
 
 Per-haplotype rows draw only what the VCF phases: `|`-separated genotypes, and
 haploid calls, which have nothing to phase. A genotype written with `/` fills
@@ -113,10 +112,10 @@ fixed color, so the legend is the same across tracks:
 - LOW (yellow) - e.g. `synonymous_variant`, `splice_region_variant`
 - MODIFIER (grey) - e.g. `intron_variant`, `intergenic_region`
 
-This works for both SNVs/indels and structural variants. SnpEff's SV-specific
-consequence terms (`exon_loss_variant`, `transcript_ablation`, `gene_fusion`,
-...) map onto the same four tiers, so a deletion that removes an exon reads as
-HIGH the same way a stop-gained SNV does.
+Consequence coloring works for both SNVs/indels and structural variants.
+SnpEff's SV-specific consequence terms (`exon_loss_variant`,
+`transcript_ablation`, `gene_fusion`, ...) map onto the same four tiers, so a
+deletion that removes an exon reads as HIGH the same way a stop-gained SNV does.
 
 <Figure caption="1000 Genomes phase 3 chr1 genotypes colored by consequence impact from SnpEff annotations: red is stop-gained or splice-site, orange missense, yellow synonymous, and grey the intronic and intergenic majority." src="/img/variants/consequence_impact_1000g.png" />
 
@@ -162,8 +161,8 @@ its header declares, with the header's description, and the computed values such
 as `maf` and `missingness`; any other field name or a `jexl:` expression can be
 typed in.
 
-- Left as it is, each value of the field takes its own color, as `INFO.CLNSIG`
-  gives Pathogenic, Benign and Uncertain_significance one each.
+- Left as it is, each value of the field takes a separate color, as
+  `INFO.CLNSIG` gives Pathogenic, Benign and Uncertain_significance one each.
 - **Cut points** turn a number into ranges: `0.001, 0.01` over `INFO.AF` makes
   ultra-rare, rare and common bands.
 
@@ -179,16 +178,16 @@ any attribute you supply. Two slots wire it up:
 - `samplesTsvLocation` on the adapter takes a samples TSV whose first column is
   the sample name (matching the VCF header) and whose every remaining column is
   a metadata attribute.
-- `rowColor` on the display names one of those columns, and the per-sample rows
-  are tinted by that attribute for as long as it is set, over any color the TSV
-  gives a row. Set it back to None to restore the TSV's colors; the arrangement
-  editor's **Each row** picks a color per sample instead.
+- `rowColor` on the display takes the name of one of those columns, and while it
+  is set the per-sample rows are tinted by that attribute, over any color the
+  TSV gives a row. Set it back to None to restore the TSV's colors; the
+  arrangement editor's **Each row** picks a color per sample instead.
 - `facet` bands the rows so each value of a column is contiguous: the column's
   name, or `{ "field": …, "domain": [...] }` with the band order. Each band's
   name runs up a strip beside the dendrogram where the band is tall enough to
-  hold it. The band is applied over whatever order you have arranged, so
-  dragging a sample into another band snaps it back, and clustering under bands
-  clusters each band on its own, with a dendrogram per band.
+  hold it. The bands override whatever order you have arranged, so dragging a
+  sample into another band snaps it back, and clustering under bands clusters
+  each band separately, with a dendrogram per band.
 - [`rows.domain`](/docs/config/rowarrangement/#slot-domain) names the samples
   that lead the rows; the rest keep the file's order, and a grouping attribute
   bands within that order.

@@ -216,7 +216,7 @@ alignment (the second piece of the split read) on chr9. In the track menu:
   view: the right-hand window gets one arc and the intron 1 window two, one at
   each place the reads enter it.
 
-A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment lands
+A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment falls
 in neither window.
 
 <Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws counted arcs from the BCR donor into both ABL1 windows, and only the right-hand window has a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
@@ -300,7 +300,7 @@ builds everything above from public sources. For K562 it:
    either end fails to lift or lands reversed in hg38, where its orientation
    would come out wrong
 
-The same run builds the COLO829 half of the demo, which
+The script also builds the COLO829 half of the demo, which
 [](/docs/tutorials/cancer_sv) walks through.
 
 ```bash

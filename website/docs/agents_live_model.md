@@ -23,9 +23,9 @@ expression. In scope either way:
 
 ## The helper library
 
-A helper exists where the raw model answers wrong **without an error** — an
+A helper exists where the raw model answers wrong **without an error** (an
 unrenamed refName, a display that replaced its subtree without a toast, a name
-several views could answer — and turns that into a throw or a report. Everything
+several views could answer) and turns that into a throw or a report. Everything
 else is done with the model.
 
 Orientation and building:
@@ -77,7 +77,7 @@ Reading:
   drawing (default 30000), answering `notifications` (error toasts), `notReady`
   (views failed or `initializing`, tracks settled without drawing (`phase`) or
   drawn around config (`notices`)), `offscreen` (views taller than the window),
-  `drawer` and `dialog`. None raises a toast, so check this report.
+  `drawer` and `dialog`. Check this report, since these fields raise no toast.
 
 The foundations:
 
@@ -113,8 +113,8 @@ Besides `value`, a call answers with:
   returning it.
 - `notifications`, toasts the session raised since the previous call, each with
   its `level`, each reported once.
-- `pageErrors`, the throws that got no toast: an uncaught exception, an
-  unawaited rejection, a mobx reaction that died. Nothing else reports these.
+- `pageErrors`, the throws that got no toast and appear nowhere else: an
+  uncaught exception, an unawaited rejection, a mobx reaction that died.
 - a thrown error as its message plus `at code line L, column C`, counted in your
   code. A compile error has no line; look for an unbalanced bracket or an
   `await` in a non-async callback.
@@ -212,18 +212,17 @@ or `strand`; an alignments track's facet field is a read dimension
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 
-A plot of a track's features, written as ggplot2 writes one, is the
-`LinearMarkDisplay` on any feature, alignments, variant or quantitative track:
-`marks` (layers, each a `mark` with an `encoding` over feature fields and its
-own `transform` steps), `transform`, `facet`, `rows` and `scales`, all in its
-`plot`. The same plot applied to another track's mark display draws the same
-thing there. The docs topic `plots` is the whole vocabulary, with the ggplot2
-and Vega-Lite name for each idea.
+The `LinearMarkDisplay` on any feature, alignments, variant or quantitative
+track draws a plot specified as in ggplot2: `marks` (layers, each a `mark` with
+an `encoding` over feature fields and its `transform` steps), `transform`,
+`facet`, `rows` and `scales`, all in its `plot`. The same plot applied to
+another track's mark display draws the same thing there. The docs topic `plots`
+is the whole vocabulary, with the ggplot2 and Vega-Lite name for each idea.
 
 A feature's label is whatever `name` it has, else its `id`, and a file decides
 which: the hosted RefSeq GFF names a gene by `ID` and `gene_id` and has no
 `Name`, so `f.get('name')` is `null` there and `f.get('id')` is the symbol.
-`Object.keys(f.toJSON())` says what one feature has before you filter on a
+`Object.keys(f.toJSON())` lists what one feature has before you filter on a
 field.
 
 - Reads are plain property or getter access; **mutations only through actions**
@@ -238,16 +237,16 @@ field.
   through the same slot machinery.
 - A misspelled key on a spec's track entry — one that is neither a config slot
   nor something the display has — raises an error notification naming it. A spec
-  has no return channel of its own, so that is where it reports, rather than
-  loading the track with the setting missing. A spec `layout` indexes the spec's
-  own `views` array.
+  returns no value, so the notification is the report, and the track does not
+  load with the setting missing. A spec `layout` indexes the spec's `views`
+  array.
 - An action's signature is under `docs topic:"model:<modelType>"`
   `section:"Actions"` — the `modelType` `jb.inspect` answered with — config
   slots by type under `docs topic:"config:BamAdapter"`, every name under
-  `docs topic:"types"`. That is where a display's own actions live, for anything
-  a slot does not cover. With the name already in hand, pass the name as the
-  `section` — `section:"setColor"` answers with that one line, where the section
-  holding it is the whole getter or action list, and the page's contents says
+  `docs topic:"types"`. A display's actions, for anything a slot does not cover,
+  are in the model topic. With the name already in hand, pass it as the
+  `section`: `section:"setColor"` returns that one line, where the section
+  holding it is the whole getter or action list, and the page's contents lists
   how many characters that is.
 - A track too tall for the window wants a height strategy, not `displayMode`: a
   display may take `heightMode` `fit` or `grow`, and `compact` only shrinks each
@@ -354,9 +353,9 @@ return {
 }
 ```
 
-The probe's adapter lives on the main thread under the `sessionId` you gave it,
-for the life of the page: fine for a header, not for features. `jb.getFeatures`
-does two things raw adapter code gets wrong without an error:
+The probe's adapter runs on the main thread under the `sessionId` you gave it,
+until the page closes: fine for a header, not for features. `jb.getFeatures`
+avoids two mistakes that raw adapter code makes and that raise no error:
 
 - It renames canonical refNames to the file's spelling with core's
   `renameRegionsIfNeeded`; "ctgA" against a file saying "contigA" matches
@@ -416,7 +415,7 @@ return jb.waitReady(60000)
   `addSessionTrackConf` refuses a known trackId whose content differs (the same
   content is idempotent), and the adapter cache is keyed on `adapterId`, so the
   same id with new features keeps serving the first array it saw.
-- **Plan for a few thousand features, not more.** The array lives in the track
+- **Plan for a few thousand features, not more.** The array is part of the track
   config, so it is held in memory, written into the session snapshot, and
   re-serialized by every autosave. Above that, run the tool that does the job
   (`bigwigCompare`, `bedGraphToBigWig`, deeptools), write a real indexed file
@@ -436,9 +435,9 @@ await jb.view().launchTrack('nutlin-log2')
 
 ## Shell tools and files, from Desktop
 
-The machine's tools are one `window.require` away, which is the route for a
-client with no shell of its own. A real pipeline step runs here and its output
-loads with `jb.addTrack`:
+`window.require` gives access to the machine's tools, the route for a client
+with no shell of its own. A real pipeline step runs here and its output loads
+with `jb.addTrack`:
 
 ```js
 const { execFile } = window.require('child_process')
@@ -477,7 +476,7 @@ The Claude in Chrome extension changes the calling convention:
 - **One evaluation has a fixed time budget**, about 45 seconds, and the code
   keeps running when it expires. `jb.loadSessionSpec` settles the new session
   before it answers, which on a cold hosted config can outlive the budget. Call
-  it on its own, and read `jb.sessionSummary()` on the next call.
+  it alone, and read `jb.sessionSummary()` on the next call.
 - **Results are sanitized on the way back.** Nested objects are cut off past a
   few levels, long strings are clipped, and a string that looks like base64 is
   replaced. Return flat, pre-sliced values, or a `JSON.stringify` of what you
