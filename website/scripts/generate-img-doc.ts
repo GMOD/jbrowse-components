@@ -1,25 +1,13 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { indexSpellings } from '../../packages/add-track-core/src/indexCandidates.ts'
-import {
-  syntenyTrackTypes,
-  trackTypes,
-} from '../../products/jbrowse-img/src/makeConfigs.ts'
-import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
-import { check, formatMarkdown } from './check-utils.ts'
+import { check, checkOrWrite, formatMarkdown } from './check-utils.ts'
 import { docsDir, repoRoot, websiteDir } from './paths.ts'
 
 // Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
 // @jbrowse/img static-export docs live alongside the CLI docs (cli.md). The
-// README is the source of truth — edit it there, then run `pnpm autogen` (or
-// this script directly) to regenerate. CI parity via `--check`.
+// README is the source of truth, and sync-img-readme.ts fills its generated
+// blocks; edit it there, then run `pnpm autogen`.
 
 const productDir = join(repoRoot, 'products', 'jbrowse-img')
 const readmePath = join(productDir, 'README.md')
@@ -76,50 +64,6 @@ function rewriteImages(md: string) {
   return { out, names }
 }
 
-// Fill the README's INJECT_HELP marker block with the live `jb2export --help`
-// output (top-level + every subcommand), so the published help reference can't
-// drift from the CLI. Mirrors the COLOR_TABLE marker pattern used in the guides.
-const helpStartRe =
-  /(<!-- INJECT_HELP START[^>]*-->)[\s\S]*?(<!-- INJECT_HELP END -->)/
-
-function injectHelp(md: string) {
-  if (!helpStartRe.test(md)) {
-    throw new Error('README is missing the INJECT_HELP marker block')
-  }
-  const help = buildFullHelp('jb2export', trackTypes, syntenyTrackTypes)
-  // A function replacer: the help text is generated from the option
-  // descriptions and defaults, so a `$&` or `$'` in one of those would be read
-  // as a replacement pattern and splice the README into its own help block.
-  // The two markers are put back by hand rather than through `$1`/`$2` for the
-  // same reason.
-  return md.replace(
-    helpStartRe,
-    (_match, start: string, end: string) =>
-      `${start}\n\n\`\`\`text\n${help}\n\`\`\`\n\n${end}`,
-  )
-}
-
-// The index spellings a track flag probes for, generated from the list
-// `siblingIndex` actually walks — a spelling added there appears here rather
-// than being restated in prose that then goes out of date.
-const indexStartRe =
-  /(<!-- INJECT_INDEX_SPELLINGS START[^>]*-->)[\s\S]*?(<!-- INJECT_INDEX_SPELLINGS END -->)/
-
-function injectIndexSpellings(md: string) {
-  if (!indexStartRe.test(md)) {
-    throw new Error('README is missing the INJECT_INDEX_SPELLINGS marker block')
-  }
-  const table = [
-    '| Spelling | Written by |',
-    '| -------- | ---------- |',
-    ...indexSpellings.map(s => `| ${s.name} | ${s.writtenBy} |`),
-  ].join('\n')
-  return md.replace(
-    indexStartRe,
-    (_match, start: string, end: string) => `${start}\n\n${table}\n\n${end}`,
-  )
-}
-
 // The site renders captioned figures via the <Figure> component (handled by
 // remark-figure), so convert the README's plain markdown images into <Figure>s
 // — the image alt text becomes the figcaption.
@@ -131,21 +75,8 @@ function imagesToFigures(md: string) {
   )
 }
 
-// The generated string is compared byte-for-byte against the committed file, and
-// `pnpm format` also rewrites that file — so whatever formats here has to agree
-// with `pnpm format` or the two fight and `--check` oscillates. `formatMarkdown`
-// runs the repo formatter itself, which is the only way to say that by
-// construction; this was a prettier call, and prettier agreed with oxfmt on
-// markdown by observation.
 function generate() {
-  // The README is the source of truth, but its help block is auto-filled from
-  // the CLI. Refresh it and run it through the formatter so the injected README
-  // is byte-identical to what `pnpm format` produces — then both the README and
-  // the doc generated from it stay current and idempotent under --check.
-  const readme = formatMarkdown(
-    injectIndexSpellings(injectHelp(readFileSync(readmePath, 'utf8'))),
-    readmePath,
-  )
+  const readme = readFileSync(readmePath, 'utf8')
   // Drop the leading "# @jbrowse/img" H1 — the frontmatter title supplies the
   // page heading. Keep everything after it.
   const body = readme.replace(/^# @jbrowse\/img\n+/, '')
@@ -163,7 +94,7 @@ function generate() {
     '',
     rewriteRelativeLinks(withFigures),
   ].join('\n')
-  return { md: formatMarkdown(raw, outPath), names, readme }
+  return { md: formatMarkdown(raw, outPath), names }
 }
 
 // Copy each referenced example image into the website's static dir (or, in check
@@ -192,35 +123,23 @@ function syncImages(names: Set<string>) {
   return stale
 }
 
-const { md, names, readme } = generate()
+const { md, names } = generate()
 const staleImages = syncImages(names)
 
-if (check) {
-  const docStale = readFileSync(outPath, 'utf8') !== md
-  const readmeStale = readFileSync(readmePath, 'utf8') !== readme
-  if (docStale || readmeStale || staleImages.length > 0) {
-    if (readmeStale) {
-      console.error(`${readmePath} help block is out of date.`)
-    }
-    if (docStale) {
-      console.error(`${outPath} is out of date.`)
-    }
-    if (staleImages.length > 0) {
-      console.error(
-        `images out of date in ${imgDestDir}: ${staleImages.join(', ')}`,
-      )
-    }
-    console.error('Run `pnpm autogen` to regenerate.')
-    process.exit(1)
-  }
-  console.log('jbrowse-img.md is up to date')
-} else {
-  writeFileSync(readmePath, readme)
-  writeFileSync(outPath, md)
-  console.log(`wrote ${outPath}`)
-  if (staleImages.length > 0) {
-    console.log(
-      `copied ${staleImages.length} image(s) to ${imgDestDir}: ${staleImages.join(', ')}`,
-    )
-  }
+if (check && staleImages.length > 0) {
+  console.error(
+    `images out of date in ${imgDestDir}: ${staleImages.join(', ')}. Run \`pnpm autogen\` to regenerate.`,
+  )
+  process.exit(1)
 }
+if (!check && staleImages.length > 0) {
+  console.log(
+    `copied ${staleImages.length} image(s) to ${imgDestDir}: ${staleImages.join(', ')}`,
+  )
+}
+checkOrWrite({
+  path: outPath,
+  content: md,
+  label: 'jbrowse-img.md',
+  staleHint: 'run `pnpm autogen`',
+})

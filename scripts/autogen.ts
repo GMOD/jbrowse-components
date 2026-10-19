@@ -56,8 +56,9 @@ interface Generator {
   // Rewrites a package.json, which every node process resolves modules
   // through, so a rewrite runs it with nothing else in flight.
   exclusive?: boolean
-  // Writes only files no other generator writes or reads, so a rewrite runs it
-  // in a pool beside the ordered doc chain. Everything without either flag
+  // Writes only files no other generator writes, and that only generators
+  // naming it in `needs` read, so a rewrite runs it in a pool beside the
+  // ordered doc chain. Everything without either flag
   // splices blocks into `website/docs` and `agent-docs`, where two generators
   // rewriting one page at once lose a block, and so keeps this list's order.
   independent?: boolean
@@ -141,16 +142,25 @@ const GENERATORS: Generator[] = [
     argv: rootScript('gen-component-test-pins.ts'),
     independent: true,
   },
+  // Writes one file under website/src/lib and reads no doc.
+  { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
   {
     // spec-recipe-unmapped.txt, and recipe-path-labels.ts when an exemption
     // there has stopped covering anything.
     name: 'spec recipe unmapped list',
     argv: web('check-spec-recipes.ts'),
     independent: true,
+    // imports liveLinks.generated.ts
+    needs: ['live links'],
   },
   { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
-  { name: 'diagram usage table', argv: web('gen-diagram-usage.ts') },
+  {
+    // Reads the <Figure> lines guide indexes writes into developer_guide.md.
+    name: 'diagram usage table',
+    argv: web('gen-diagram-usage.ts'),
+    needs: ['guide indexes'],
+  },
   {
     // The v5 ABI-removal tables in upgrading_v5.md and PLUGIN_ABI_STABILITY.md,
     // from the two ABI baselines, core's published `exports` map and
@@ -193,8 +203,6 @@ const GENERATORS: Generator[] = [
   },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
-  // Writes one file under website/src/lib and reads no doc.
-  { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
   {
     // Rendered from tracked sources (wordmark outlines, logo paths) into the
     // figure corpus and checked against figures.lock, so it is stale exactly
@@ -207,7 +215,12 @@ const GENERATORS: Generator[] = [
     figureDependent: true,
     figureRoot: 'website/static/img',
   },
-  { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
+  {
+    // Its fence ratchet counts the mirrored jbrowse-capture.md.
+    name: 'doc snippets',
+    argv: web('sync-doc-snippets.ts'),
+    needs: ['jbrowse-capture doc'],
+  },
   {
     // The tables in the agent-docs that own each measurement, from
     // agent-docs/measurements/<id>.json.

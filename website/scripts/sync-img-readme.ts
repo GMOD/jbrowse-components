@@ -30,10 +30,20 @@
 // real inputs yet carry no marker, and fails if that total rises above
 // UNCOVERED_BASELINE. The number can only go down.
 //
-// Run `pnpm sync-img-readme` to update, `--check` to fail on drift (CI/autogen).
+// It also fills the README's INJECT_HELP and INJECT_INDEX_SPELLINGS blocks, so
+// this is the README's one writer and generate-img-doc.ts only mirrors it.
+//
+// Run `pnpm autogen` to update; `--check` fails on drift.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { indexSpellings } from '../../packages/add-track-core/src/indexCandidates.ts'
+import {
+  syntenyTrackTypes,
+  trackTypes,
+} from '../../products/jbrowse-img/src/makeConfigs.ts'
+import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
+import { formatMarkdown } from './check-utils.ts'
 import { readManifest } from './figure-paths.ts'
 import { storeUrl } from './figure-store.ts'
 import { jbrowseImgSpecs } from './specs/jbrowse-img.ts'
@@ -305,8 +315,58 @@ function sync(source: string) {
   return { text: out.join('\n'), problems, uncovered, covered: seen }
 }
 
+// Fill the README's INJECT_HELP marker block with the live `jb2export --help`
+// output (top-level + every subcommand), so the published help reference can't
+// drift from the CLI. Mirrors the COLOR_TABLE marker pattern used in the guides.
+const helpStartRe =
+  /(<!-- INJECT_HELP START[^>]*-->)[\s\S]*?(<!-- INJECT_HELP END -->)/
+
+function injectHelp(md: string) {
+  if (!helpStartRe.test(md)) {
+    throw new Error('README is missing the INJECT_HELP marker block')
+  }
+  const help = buildFullHelp('jb2export', trackTypes, syntenyTrackTypes)
+  // A function replacer: the help text is generated from the option
+  // descriptions and defaults, so a `$&` or `$'` in one of those would be read
+  // as a replacement pattern and splice the README into its own help block.
+  // The two markers are put back by hand rather than through `$1`/`$2` for the
+  // same reason.
+  return md.replace(
+    helpStartRe,
+    (_match, start: string, end: string) =>
+      `${start}\n\n\`\`\`text\n${help}\n\`\`\`\n\n${end}`,
+  )
+}
+
+// The index spellings a track flag probes for, generated from the list
+// `siblingIndex` actually walks — a spelling added there appears here rather
+// than being restated in prose that then goes out of date.
+const indexStartRe =
+  /(<!-- INJECT_INDEX_SPELLINGS START[^>]*-->)[\s\S]*?(<!-- INJECT_INDEX_SPELLINGS END -->)/
+
+function injectIndexSpellings(md: string) {
+  if (!indexStartRe.test(md)) {
+    throw new Error('README is missing the INJECT_INDEX_SPELLINGS marker block')
+  }
+  const table = [
+    '| Spelling | Written by |',
+    '| -------- | ---------- |',
+    ...indexSpellings.map(s => `| ${s.name} | ${s.writtenBy} |`),
+  ].join('\n')
+  return md.replace(
+    indexStartRe,
+    (_match, start: string, end: string) => `${start}\n\n${table}\n\n${end}`,
+  )
+}
+
 const original = readFileSync(README, 'utf8')
-const { text, problems, uncovered, covered } = sync(original)
+const synced = sync(original)
+const { problems, uncovered, covered } = synced
+// Formatted so the README is byte-identical to what `pnpm format` produces.
+const text = formatMarkdown(
+  injectIndexSpellings(injectHelp(synced.text)),
+  README,
+)
 
 const unplaced = [...specsByName.keys()].filter(name => !covered.has(name))
 if (unplaced.length > 0) {
@@ -331,7 +391,7 @@ for (const { line, message } of problems) {
 if (check) {
   if (text !== original) {
     console.error(
-      'README.md: a jb2export command no longer matches its spec — run `pnpm sync-img-readme`',
+      'README.md: a generated command, help block or index table is out of date — run `pnpm autogen`',
     )
   }
   if (text !== original || problems.length > 0) {
@@ -346,7 +406,7 @@ if (check) {
   }
   if (text !== original) {
     writeFileSync(README, text)
-    console.log(`sync-img-readme: rewrote ${covered.size} command(s)`)
+    console.log(`sync-img-readme: rewrote README.md`)
   } else {
     console.log(`sync-img-readme: ${covered.size} command(s) already in sync`)
   }
