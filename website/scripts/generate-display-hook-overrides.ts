@@ -233,20 +233,16 @@ const HOOKS: Hook[] = [
 // the table rather than being expanded to every display that composes them.
 const SCAN_ROOTS = ['plugins', 'packages']
 
-/** The unit a declaration is attributed to, e.g. `maf/LinearMafDisplay`. */
+/**
+ * The unit a declaration is attributed to: the directory or file under `src/`,
+ * e.g. `maf/LinearMafDisplay` or `display-kit/CoarseTierMixin`.
+ */
 function unitOf(file: string): string | undefined {
-  const rel = relative(repoRoot, file).split('/')
-  const [root, pkg, src, ...rest] = rel
-  if (!root || !pkg || src !== 'src') {
+  const [, pkg, src, first] = relative(repoRoot, file).split('/')
+  if (!pkg || src !== 'src' || !first) {
     return undefined
   }
-  if (root === 'packages') {
-    return pkg
-  }
-  // plugins/<plugin>/src/<dir>/... — the display directory, or the file's own
-  // name when a model sits directly under src/
-  const dir = rest.length > 1 ? rest[0] : undefined
-  return dir ? `${pkg}/${dir}` : pkg
+  return `${pkg}/${first.replace(/\.tsx?$/, '')}`
 }
 
 /**
@@ -290,12 +286,9 @@ function declaredMembers(file: string, text: string): Set<string> {
 }
 
 function main() {
-  const declarers = new Map<
-    string,
-    { units: Set<string>; files: Set<string> }
-  >()
+  const declarers = new Map<string, { files: Set<string> }>()
   for (const hook of HOOKS) {
-    declarers.set(hook.name, { units: new Set(), files: new Set() })
+    declarers.set(hook.name, { files: new Set() })
   }
   const hookNames = HOOKS.map(h => h.name)
   const names = new Set(hookNames)
@@ -311,8 +304,7 @@ function main() {
       new Set(['node_modules', 'esm', 'dist', 'shaders', '__pycache__']),
     )
     for (const file of files) {
-      const unit = unitOf(file)
-      if (!unit) {
+      if (!unitOf(file)) {
         continue
       }
       // A file that never spells a hook name declares none, and that is 96%
@@ -324,9 +316,7 @@ function main() {
       const members = declaredMembers(file, text)
       for (const name of names) {
         if (members.has(name)) {
-          const entry = declarers.get(name)!
-          entry.units.add(unit)
-          entry.files.add(relative(repoRoot, file))
+          declarers.get(name)!.files.add(relative(repoRoot, file))
         }
       }
     }
@@ -349,11 +339,14 @@ function main() {
   }
 
   const rows = HOOKS.map(hook => {
-    const { units } = declarers.get(hook.name)!
-    const ownerUnits = new Set(
-      ownersOf(hook).map(owner => unitOf(join(repoRoot, owner))),
-    )
-    const overriders = [...units].filter(u => !ownerUnits.has(u)).sort()
+    const owners = new Set(ownersOf(hook))
+    const overriders = [
+      ...new Set(
+        [...declarers.get(hook.name)!.files]
+          .filter(file => !owners.has(file))
+          .map(file => unitOf(join(repoRoot, file))!),
+      ),
+    ].sort()
     return [
       `\`${hook.name}\``,
       hook.ifNotOverridden,
