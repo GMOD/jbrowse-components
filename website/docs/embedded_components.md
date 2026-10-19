@@ -185,9 +185,12 @@ screenshot.
   every export of a namespace it cannot see into, and loads those modules on
   page load wherever another page shares them.
 - **Keep the poster up until the view reads ready.** Each component publishes
-  `[data-app-phase="ready"]` once its tracks have drawn. Wait for it with
+  `[data-app-phase="ready"]` once its tracks have drawn, or once a load has
+  failed, so an error still reaches the reader. Wait for it with
   `data-app-views` above 0, then two animation frames, so the view's pending
   renders paint before the poster comes down.
+- **Make the loading view `inert`**, so keyboard focus and screen readers stay
+  out of a view nobody can see yet.
 - **Hide the loading view with `opacity: 0`.** The LGV, CGV and app components
   set `all: initial` on their root to keep the host page's CSS out. That also
   resets an inherited `visibility`, so under `visibility: hidden` the loading

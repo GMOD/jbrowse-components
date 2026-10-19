@@ -80,6 +80,7 @@ export default function StaticFirstPaint() {
         // opacity, not visibility: the view's root resets inherited styles
         <div
           ref={watchReady}
+          inert={!ready}
           style={
             {
               gridArea: '1 / 1',

@@ -24,11 +24,11 @@ function isReady(el: HTMLElement) {
  * view's `[data-app-phase="ready"]`, then two frames for its pending renders
  * to paint.
  *
- * The loading view sits under the poster at `opacity: 0`: the product
- * components reset inherited styles on their root, so `visibility: hidden` on
- * a wrapper would not hide them. On a box narrower than the screenshot the
- * poster crops its right side rather than shrinking, since the view keeps its
- * height at any width.
+ * The loading view sits under the poster, `inert` and at `opacity: 0`: the
+ * product components reset inherited styles on their root, so
+ * `visibility: hidden` on a wrapper would not hide them. On a box narrower
+ * than the screenshot the poster crops its right side rather than shrinking,
+ * since the view keeps its height at any width.
  */
 export const PosterFirst = observer(function PosterFirst({
   poster,
@@ -94,6 +94,7 @@ export const PosterFirst = observer(function PosterFirst({
       {near ? (
         <div
           ref={watchReady}
+          inert={!ready}
           style={{ gridArea: '1 / 1', opacity: ready ? 1 : 0 }}
         >
           <Suspense fallback={null}>{children}</Suspense>

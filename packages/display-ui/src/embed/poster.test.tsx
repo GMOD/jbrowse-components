@@ -49,6 +49,7 @@ test('the poster holds until the view reads ready, then the view shows', async (
   })
   const viewBox = container.querySelector('[data-app-phase]')!.parentElement!
   expect(viewBox.style.opacity).toBe('0')
+  expect(viewBox.hasAttribute('inert')).toBe(true)
   expect(screen.getByAltText('genes')).toBeTruthy()
 
   await act(async () => {
@@ -59,6 +60,7 @@ test('the poster holds until the view reads ready, then the view shows', async (
   })
   expect(screen.queryByAltText('genes')).toBeNull()
   expect(viewBox.style.opacity).toBe('1')
+  expect(viewBox.hasAttribute('inert')).toBe(false)
 })
 
 test('the view mounts only once its box nears the viewport', () => {
