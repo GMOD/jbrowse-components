@@ -474,12 +474,17 @@ describe('a deletion the lane carries against the anchor', () => {
   })
 })
 
-describe('an insertion the lane carries against the anchor', () => {
+describe('what a lane states across a gap against the anchor', () => {
   const [ref, at] = CARRIERS['HG01123.1']
-  const runs = (insertedBp: number, records: [string, string]) =>
-    groupFeatures([
+  const gapped = (
+    anchorGap: number,
+    laneGap: number,
+    records: [string, string],
+  ) => {
+    const right = WINDOW_START + 40_000 + anchorGap
+    return groupFeatures([
       piece(
-        'ins/0',
+        'gap/0',
         WINDOW_START,
         WINDOW_START + 40_000,
         [{ assemblyName: 'HG01123.1', refName: ref, start: at }],
@@ -487,36 +492,72 @@ describe('an insertion the lane carries against the anchor', () => {
         records[0],
       ),
       piece(
-        'ins/1',
-        WINDOW_START + 40_000,
-        WINDOW_END,
+        'gap/1',
+        right,
+        right + 40_000,
         [
           {
             assemblyName: 'HG01123.1',
             refName: ref,
-            start: at + 40_000 + insertedBp,
+            start: at + 40_000 + laneGap,
           },
         ],
         1,
         records[1],
       ),
     ])
+  }
+  const read = (groups: MultiWayGroup[]) => {
+    const { openings, changes } = laneIndelsOf(groups)
+    return {
+      openings: openings('HG01123.1', ref),
+      changes: changes('HG01123.1', ref),
+    }
+  }
 
-  test('lists one between two runs of one record, at its breakpoint, its length', () => {
-    const { openings, insertions } = laneIndelsOf(runs(30_000, ['r', 'r']))
-    expect(insertions('HG01123.1', ref)).toEqual([
-      { at: at + 40_000, bp: 30_000 },
-    ])
-    expect(openings('HG01123.1', ref)).toEqual([])
+  test('an insertion between two runs of one record, at its breakpoint, its length', () => {
+    expect(read(gapped(0, 30_000, ['r', 'r']))).toEqual({
+      openings: [],
+      changes: [{ at: at + 40_000, bp: 30_000, kind: 'insertion' }],
+    })
   })
 
-  test('lists none under SPLIT_AT_GAP_BP, nor between two records', () => {
-    expect(
-      laneIndelsOf(runs(9_999, ['r', 'r'])).insertions('HG01123.1', ref),
-    ).toEqual([])
-    expect(
-      laneIndelsOf(runs(30_000, ['r', 's'])).insertions('HG01123.1', ref),
-    ).toEqual([])
+  test('nothing under SPLIT_AT_GAP_BP, and no insertion between two records', () => {
+    expect(read(gapped(0, 9_999, ['r', 'r']))).toEqual({
+      openings: [],
+      changes: [],
+    })
+    expect(read(gapped(0, 30_000, ['r', 's']))).toEqual({
+      openings: [],
+      changes: [],
+    })
+  })
+
+  test('one record replacing 935 kb with 900 kb names both sides and opens the net', () => {
+    expect(read(gapped(935_000, 900_000, ['r', 'r']))).toEqual({
+      openings: [{ at: at + 40_000, bp: 35_000 }],
+      changes: [
+        { at: at + 40_000, bp: 935_000, kind: 'deletion' },
+        { at: at + 40_000, bp: 900_000, kind: 'insertion' },
+      ],
+    })
+  })
+
+  test('one record replacing 905 kb with 900 kb names both sides, though the net opens nothing', () => {
+    expect(read(gapped(905_000, 900_000, ['r', 'r']))).toEqual({
+      openings: [],
+      changes: [
+        { at: at + 40_000, bp: 905_000, kind: 'deletion' },
+        { at: at + 40_000, bp: 900_000, kind: 'insertion' },
+      ],
+    })
+  })
+
+  test('two records 900 kb apart in the lane state nothing between them', () => {
+    expect(read(gapped(935_000, 900_000, ['r', 's']))).toEqual({
+      openings: [],
+      changes: [],
+    })
   })
 })
 

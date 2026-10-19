@@ -157,12 +157,20 @@ cost is linear in lanes.
 - **Lane names**: `rows.labels` names a lane by any spelling of its assembly
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
   label a source's header declares (`laneLabel`).
-- **Lane changes chip**: the header lists the holes, and the insertions of
-  `SPLIT_AT_GAP_BP` or more between two runs of one record, that the shown
-  frame meets, largest first, two then a count, in the HPRC portal's words
-  (`laneIndelsOf`, `laneHeaderRows`). It never pairs a deletion with an
-  insertion as a shift, since that infers an allele
+- **Lane changes chip**: the header lists what the records state across the
+  gaps the shown frame meets, largest first, two then a count, in the HPRC
+  portal's words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Between two
+  runs of one record, the anchor gap and the lane gap each list at their own
+  size once they reach `SPLIT_AT_GAP_BP`, so a 935 kb stretch replaced by
+  900 kb reads "935 kb deletion, 900 kb insertion". The hole opens at the net
+  of the two, so what follows sits under its own anchor stretch. Netting the
+  chip into one deletion
+  or one shift infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
+  Two records state nothing between them, so a hole opens across records
+  only where they abut (lane gap under `SPLIT_AT_GAP_BP`): SyRI's Cvi
+  centromere, 216 kb of its own unaligned sequence against 280 kb of
+  Col-0's, opens none.
 - **The chip lists no insertion that two records state.** The graph plugin
   stamps one `recordId` on every run of a walk record from 7.1.12, so at GSTT1
   HG00099#1's walk lane reads "54 kb insertion, 37 kb deletion".

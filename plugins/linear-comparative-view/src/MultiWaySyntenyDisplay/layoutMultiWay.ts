@@ -96,16 +96,18 @@ export interface LaneOpening {
 }
 
 /**
- * `bp` of lane sequence the anchor lacks, from lane bp `at`: an insertion one
- * alignment record carries between two of its runs. It opens nothing.
+ * What a lane's records state at lane bp `at`: `bp` of anchor its sequence
+ * lacks, or `bp` of its own sequence the anchor lacks. One record's gap can
+ * state both, and each is its own change.
  */
-export interface LaneInsertion {
+export interface LaneChange {
   at: number
   bp: number
+  kind: 'deletion' | 'insertion'
 }
 
 const NO_OPENINGS: readonly LaneOpening[] = []
-const NO_INSERTIONS: readonly LaneInsertion[] = []
+const NO_CHANGES: readonly LaneChange[] = []
 
 /** a stretch of a lane's contig, in lane bp */
 export interface LaneBlock {
@@ -247,14 +249,18 @@ function placedAnchorOf(groups: MultiWayGroup[]) {
 }
 
 /**
- * Openings: where two pieces of a lane abut, or nearly, while their anchor
- * ends sit at least `SPLIT_AT_GAP_BP` further apart, and the gap is a
- * deletion: the two pieces are one alignment record, or the lane places the
- * anchor between them nowhere. Two records meeting where that stretch went
- * elsewhere in the lane are a rearrangement's breakpoint, whose anchor
- * distance runs to megabases. Insertions: where two runs of one record sit
- * `SPLIT_AT_GAP_BP` or more further apart in the lane than on the anchor.
- * Named records are genes, whose spacing says nothing about either.
+ * Openings: where a lane's anchor ends sit at least `SPLIT_AT_GAP_BP` further
+ * apart than its pieces, and the gap is a deletion: the two pieces are one
+ * alignment record, or they abut (a lane gap under `SPLIT_AT_GAP_BP`) and the
+ * lane places the anchor between them nowhere. Two records meeting where that
+ * stretch went elsewhere in the lane are a rearrangement's breakpoint, whose
+ * anchor distance runs to megabases. An opening is the net of the two gaps,
+ * so what follows sits under its own anchor stretch.
+ *
+ * Changes: what the records state. Within one record, the anchor and lane
+ * gaps are a deletion and an insertion, each listed at its own size once it
+ * reaches `SPLIT_AT_GAP_BP`, never netted into one; across two records only an
+ * opening's deletion. Named records are genes, whose spacing says nothing.
  */
 export function laneIndelsOf(groups: MultiWayGroup[]) {
   const pieces = new Map<
@@ -278,52 +284,55 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
   }
   const placedAnchor = placedAnchorOf(groups)
   const openingsByLane = new Map<string, LaneOpening[]>()
-  const insertionsByLane = new Map<string, LaneInsertion[]>()
+  const changesByLane = new Map<string, LaneChange[]>()
   for (const [key, list] of pieces) {
     const assemblyName = key.slice(0, key.indexOf('\u0000'))
     list.sort((a, b) => a.lane.start - b.lane.start)
     const openings: LaneOpening[] = []
-    const insertions: LaneInsertion[] = []
+    const changes: LaneChange[] = []
     forEachLaneGap(list, (left, right, laneGap, anchorGap) => {
       if (anchorGap === undefined) {
         return
       }
-      const record = oneRecord(left.lane, right.lane)
-      if (
-        laneGap >= 0 &&
-        anchorGap - laneGap >= SPLIT_AT_GAP_BP &&
-        (record ||
-          !placedAnchor(
-            assemblyName,
-            left.anchor.refName,
-            left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
-            left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
-          ))
-      ) {
-        openings.push({ at: left.lane.end, bp: anchorGap - laneGap })
+      const at = left.lane.end
+      const net = anchorGap - laneGap
+      if (oneRecord(left.lane, right.lane)) {
+        if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
+          openings.push({ at, bp: net })
+        }
+        if (anchorGap >= SPLIT_AT_GAP_BP) {
+          changes.push({ at, bp: anchorGap, kind: 'deletion' })
+        }
+        if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
+          changes.push({ at, bp: laneGap, kind: 'insertion' })
+        }
       } else if (
-        record &&
-        anchorGap >= 0 &&
-        laneGap - anchorGap >= SPLIT_AT_GAP_BP
+        laneGap >= 0 &&
+        laneGap < SPLIT_AT_GAP_BP &&
+        net >= SPLIT_AT_GAP_BP &&
+        !placedAnchor(
+          assemblyName,
+          left.anchor.refName,
+          left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
+          left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
+        )
       ) {
-        insertions.push({ at: left.lane.end, bp: laneGap - anchorGap })
+        openings.push({ at, bp: net })
+        changes.push({ at, bp: net, kind: 'deletion' })
       }
     })
     if (openings.length) {
       openingsByLane.set(key, openings)
     }
-    if (insertions.length) {
-      insertionsByLane.set(key, insertions)
+    if (changes.length) {
+      changesByLane.set(key, changes)
     }
   }
   return {
     openings: (assemblyName: string, refName: string): readonly LaneOpening[] =>
       openingsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_OPENINGS,
-    insertions: (
-      assemblyName: string,
-      refName: string,
-    ): readonly LaneInsertion[] =>
-      insertionsByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_INSERTIONS,
+    changes: (assemblyName: string, refName: string): readonly LaneChange[] =>
+      changesByLane.get(`${assemblyName}\u0000${refName}`) ?? NO_CHANGES,
   }
 }
 

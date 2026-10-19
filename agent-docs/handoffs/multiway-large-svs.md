@@ -38,7 +38,7 @@ of a lane inside a long deletion says so instead of the lane drawing blank.
 | # | item | where | status |
 | --- | --- | --- | --- |
 | 5 | R export stacks lanes as a fresh load does | `multiwayTables.ts:482`, model ordering | done |
-| 1 | Chip lists both sides of a one-record replacement; cross-record hole only where pieces abut | `MW/layoutMultiWay.ts:287-310` | open |
+| 1 | Chip lists both sides of a one-record replacement; cross-record hole only where pieces abut | `MW/layoutMultiWay.ts:287-310` | done |
 | 2 | Lane order reads strand, flip-invariant | `MW/structureOrder.ts` | open |
 | 3 | Walk path states an inversion against GRCh38 | graph plugin `WalkTabixSyntenyAdapter.ts:171` | open |
 | 4 | Chip names an inversion | `MW/layoutMultiWay.ts`, `MW/laneHeader.ts` | open |

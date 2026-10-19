@@ -1,7 +1,7 @@
 import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from './laneHeader.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { RowFrame } from './layoutMultiWay.ts'
+import type { LaneChange, RowFrame } from './layoutMultiWay.ts'
 
 const frame: RowFrame = {
   refName: 'Pp1',
@@ -188,7 +188,12 @@ describe('the changes chip', () => {
       ],
     },
   })
-  const changesOf = (insertions: { at: number; bp: number }[]) =>
+  const deletions: LaneChange[] = [
+    { at: 10_000, bp: 18_000, kind: 'deletion' },
+    { at: 50_000, bp: 30_000, kind: 'deletion' },
+    { at: 400_000, bp: 1_234_567, kind: 'deletion' },
+  ]
+  const changesOf = (changes: LaneChange[]) =>
     laneHeaderRows(
       [anchorLane, lane],
       2000,
@@ -196,15 +201,16 @@ describe('the changes chip', () => {
       undefined,
       undefined,
       (assemblyName, refName) =>
-        assemblyName === 'peach' && refName === 'Pp1' ? insertions : [],
+        assemblyName === 'peach' && refName === 'Pp1' ? changes : [],
     ).map(row => row.changes)
 
   test('lists what the shown frame meets, largest first, two then a count', () => {
     expect(
       changesOf([
-        { at: 20_000, bp: 54_000 },
-        { at: 140_000, bp: 11_000 },
-        { at: 300_000, bp: 90_000 },
+        ...deletions,
+        { at: 20_000, bp: 54_000, kind: 'insertion' },
+        { at: 140_000, bp: 11_000, kind: 'insertion' },
+        { at: 300_000, bp: 90_000, kind: 'insertion' },
       ]),
     ).toEqual([
       undefined,
@@ -213,7 +219,7 @@ describe('the changes chip', () => {
   })
 
   test('names two changes without a count, in the portal’s units', () => {
-    expect(changesOf([])[1]?.text).toBe('30 kb deletion, 18 kb deletion')
+    expect(changesOf(deletions)[1]?.text).toBe('30 kb deletion, 18 kb deletion')
     const wide = mateLane({
       frame: {
         min: 0,
@@ -221,7 +227,11 @@ describe('the changes chip', () => {
         openings: [{ at: 1000, bp: 1_234_567 }],
       },
     })
-    expect(laneHeaderRows([anchorLane, wide], 2000, '')[1]!.changes).toEqual({
+    expect(
+      laneHeaderRows([anchorLane, wide], 2000, '', undefined, undefined, () => [
+        { at: 1000, bp: 1_234_567, kind: 'deletion' },
+      ])[1]!.changes,
+    ).toEqual({
       text: '1.2 Mb deletion',
       anchor: 'grape',
     })

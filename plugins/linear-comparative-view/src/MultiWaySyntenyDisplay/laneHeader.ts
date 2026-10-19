@@ -4,7 +4,7 @@ import { measureText } from '@jbrowse/core/util/measureText'
 import { frameOpenings, laneBpOfOpened } from './layoutMultiWay.ts'
 
 import type { Lane } from './laneStack.ts'
-import type { LaneBlock, LaneInsertion } from './layoutMultiWay.ts'
+import type { LaneBlock, LaneChange } from './layoutMultiWay.ts'
 
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
@@ -64,22 +64,20 @@ function bpText(n: number) {
 
 function laneChanges(
   lane: Pick<Lane, 'frame' | 'canon'>,
-  insertions: readonly LaneInsertion[],
+  stated: readonly LaneChange[],
 ) {
-  const { frame } = lane
   const region = laneRegion(lane)
-  if (!frame || !region) {
+  if (!region) {
     return undefined
   }
   const { start, end } = region
-  const changes = [
-    ...frameOpenings(frame)
-      .filter(({ at }) => at >= start && at <= end)
-      .map(({ bp }) => ({ bp, kind: 'deletion' })),
-    ...insertions
-      .filter(({ at, bp }) => at <= end && at + bp >= start)
-      .map(({ bp }) => ({ bp, kind: 'insertion' })),
-  ].sort((a, b) => b.bp - a.bp)
+  const changes = stated
+    .filter(({ at, bp, kind }) =>
+      kind === 'deletion'
+        ? at >= start && at <= end
+        : at <= end && at + bp >= start,
+    )
+    .toSorted((a, b) => b.bp - a.bp)
   const listed = changes
     .slice(0, LISTED_CHANGES)
     .map(({ bp, kind }) => `${bpText(bp)} ${kind}`)
@@ -148,10 +146,10 @@ export function laneHeaderRows(
   inlineGlyphHeight?: number,
   /** names the anchor on each mate lane that is read against it */
   against?: string,
-  insertionsOf: (
+  changesOf: (
     assemblyName: string,
     refName: string,
-  ) => readonly LaneInsertion[] = () => [],
+  ) => readonly LaneChange[] = () => [],
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
@@ -171,7 +169,7 @@ export function laneHeaderRows(
       ? `· also at ${frame.alsoAt.map(block => blockLocString(lane, frame.refName, block)).join(', ')}`
       : undefined
     const changes =
-      frame && laneChanges(lane, insertionsOf(lane.assemblyName, frame.refName))
+      frame && laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
     return {
       assemblyName: lane.assemblyName,
       label: inline

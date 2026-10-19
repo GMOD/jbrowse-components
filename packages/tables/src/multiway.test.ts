@@ -111,7 +111,7 @@ test('ribbons color by strand, keyed against the lane above', async () => {
   expect(new Set(t.ribbons.color)).toEqual(new Set([t.legend.color[0]]))
 })
 
-test('SyRI calls color their ribbons, and a lane opens a hole for a deletion', async () => {
+test('SyRI calls color their ribbons, and a lane unaligned on both sides opens no hole', async () => {
   const t = await engine.multiway(SYRI)
   expect(t.assemblyNames).toEqual(['Col-0', 'Ler', 'Cvi', 'Eri', 'Kyo', 'Sha'])
   expect(t.legend.label).toEqual(['SYN', 'INV', 'TRANS, INVTR', 'DUP, INVDP'])
@@ -126,10 +126,9 @@ test('SyRI calls color their ribbons, and a lane opens a hole for a deletion', a
       Math.sign(t.ribbons.upperEnd[i]! - t.ribbons.upperStart[i]!),
     ).not.toBe(Math.sign(t.ribbons.lowerEnd[i]! - t.ribbons.lowerStart[i]!))
   }
-  const cvi = indexes(t.segments.lane, l => l === 2)
-  expect(cvi).toHaveLength(2)
-  expect(t.segments.end[cvi[0]!]).toBe(t.segments.start[cvi[1]!])
-  expect(t.segments.x2[cvi[0]!]).toBeLessThan(t.segments.x1[cvi[1]!]!)
+  // Cvi's centromere: 216 kb of its own sequence between two records against
+  // 280 kb of Col-0's, unaligned on both sides, which states no deletion
+  expect(indexes(t.segments.lane, l => l === 2)).toHaveLength(1)
 
   const pinned = await engine.multiway({
     ...SYRI,

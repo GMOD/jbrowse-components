@@ -688,10 +688,11 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * each lane's insertions in `laneIndels`, which open nothing
+       * each lane's deletions and insertions as its records state them, for
+       * the header
        */
-      get laneInsertions() {
-        return this.laneIndels.insertions
+      get laneChanges() {
+        return this.laneIndels.changes
       },
       /** #getter */
       get ribbonColorAttributes(): string[] {
@@ -1977,7 +1978,7 @@ export function stateModelFactory(
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
-          self.laneInsertions,
+          self.laneChanges,
         )
       },
       /**
