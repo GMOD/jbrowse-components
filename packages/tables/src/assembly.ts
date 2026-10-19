@@ -75,10 +75,14 @@ async function resolveAssembly(
     sequenceAdapter,
     regions,
     canonical: name =>
-      refNameAliases[name] ??
-      lowerCaseRefNameAliases[name.toLowerCase()] ??
+      ownValue(refNameAliases, name) ??
+      ownValue(lowerCaseRefNameAliases, name.toLowerCase()) ??
       name,
   }
+}
+
+function ownValue(map: Record<string, string>, key: string) {
+  return Object.hasOwn(map, key) ? map[key] : undefined
 }
 
 /** How many resolved assemblies the engine keeps, the most recently read. */

@@ -181,7 +181,8 @@ shorthand included (`{ name, uri, refNameAliases: { uri } }`):
   `canonical` (`refName` itself under no assembly), and
   `canonicalNames({ assembly, refNames })` returns `{ refName, canonical }`
   for names a user typed, through the alias file and in any case, an
-  unknown name as given. ggjbrowse finds a bare contig name (`12` for a file
+  unknown name as given. `refNames` may be one string, as R's `auto_unbox`
+  sends a single name. ggjbrowse finds a bare contig name (`12` for a file
   spelling it `chr12`) this way, as the engine renames a locus.
 
 Only the requested regions are renamed: a mate's or SA tag's contig keeps the
@@ -379,9 +380,10 @@ isoforms and row height the browser gives up to fit the track; `heightMode:
   lists leaves every table. Ungrouped, one section labelled `''` spans the
   track.
 
-`@jbrowse/tables` installs the BED, GFF3 and GTF plugins, which register adapters and nothing else, and
-registers `FromConfigAdapter` (`@jbrowse/plugin-config/adapters`), so a
-track that writes its features inline in its config reads as a file does.
+`@jbrowse/tables` installs the BED, GFF3 and GTF plugins, which register
+adapters and nothing else, and registers `FromConfigAdapter`
+(`@jbrowse/plugin-config/adapters`), so a track that writes its features
+inline in its config reads as a file does.
 
 **A VCF read as features is the plain variant display's table.** A
 `VariantTrack` draws its records with `LinearVariantDisplay`, whose config is

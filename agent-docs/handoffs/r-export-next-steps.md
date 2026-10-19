@@ -19,12 +19,13 @@ not wanted.
    `@jbrowse/tables` publishes, an r-universe build so V8 installs as a
    binary, then two or three R users with their own tracks.
 2. **Real data:** an hg38 BAM at a deep locus, a CRAM, a ten-track session.
-3. **ggjbrowse names a whole contig by its alias:** `parsed_regions()`
-   matches a bare name against the file's contigs as typed, so `12` for a
-   file spelling it `chr12` is refused while the locus `12:1-100` reads.
-   The engine now gives `fileRegions` and `regions` a `canonical` column and
-   `canonicalNames({ assembly, refNames })` (TABLES.md); R matches the
-   name's canonical against the contigs'.
+3. **ggjbrowse names a whole contig by its alias:** on ggjbrowse's main,
+   `parsed_regions()` matches a bare name against the file's contigs as
+   typed, so `12` for a file spelling it `chr12` is refused while the locus
+   `12:1-100` reads. The engine gives `fileRegions` and `regions` a
+   `canonical` column and `canonicalNames({ assembly, refNames })`
+   (TABLES.md). ggjbrowse's unmerged `engine-calls` branch matches a name's
+   canonical against the contigs', and lands with the next bundle.
 
 ## ggjbrowse API review (2026-10-11)
 

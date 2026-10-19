@@ -81,6 +81,19 @@ test('a host matches a contig name to the file’s through the assembly’s cano
   })
 })
 
+test('canonicalNames takes one name as a scalar, never resolves a prototype member, and needs an assembly', async () => {
+  expect(
+    await engine.canonicalNames({ assembly, refNames: 'contigA' }),
+  ).toEqual({ refName: ['contigA'], canonical: ['ctgA'] })
+  const odd = ['constructor', 'toString', '__proto__', 'hasOwnProperty']
+  expect(
+    (await engine.canonicalNames({ assembly, refNames: odd })).canonical,
+  ).toEqual(odd)
+  await expect(engine.canonicalNames({ refNames: ['ctgA'] })).rejects.toThrow(
+    /through an assembly/,
+  )
+})
+
 test('a CRAM spelling its contig another way decodes against the assembly’s sequence', async () => {
   const { sequenceAdapter: _, ...cram } = CRAM
   const t = await engine.alignments({

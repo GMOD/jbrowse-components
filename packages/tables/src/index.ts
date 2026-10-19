@@ -366,18 +366,25 @@ export function createTablesEngine() {
     /**
      * Each name as the assembly's canonical name for its contig, through the
      * alias file and in any case, as the browser's location box reads it; a
-     * name the assembly does not know comes back as given.
+     * name the assembly does not know comes back as given. `refNames` may be
+     * one name, as R sends a vector of length one.
      */
     canonicalNames: trimmed(
       async ({
         assembly,
         refNames,
       }: {
-        assembly: AssemblyConfig
-        refNames: string[]
+        assembly?: AssemblyConfig
+        refNames: string | string[]
       }) => {
+        if (!assembly) {
+          throw new Error(
+            'canonicalNames resolves names through an assembly; pass one',
+          )
+        }
+        const names = typeof refNames === 'string' ? [refNames] : refNames
         const { canonical } = await assemblyOf(assembly)
-        return { refName: refNames, canonical: refNames.map(canonical) }
+        return { refName: names, canonical: names.map(canonical) }
       },
     ),
     /**
