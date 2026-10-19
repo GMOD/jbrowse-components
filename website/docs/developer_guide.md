@@ -21,7 +21,7 @@ covers both if you have not used them.
 
 Two kinds of package are published on their own: products and plugins.
 
-<Figure src="/img/products_and_plugins.png" caption="A product owns a PluginManager and loads plugins at runtime. A plugin's install() registers what it packages."/>
+<Figure src="/img/products_and_plugins.png" caption="A product owns a PluginManager and loads plugins at runtime. A plugin's install() registers what it packages: views, tracks, display types, adapters, and the MST autoruns that extend the rest of the app."/>
 
 A product is an application published on its own: `jbrowse-web` in a browser,
 `jbrowse-desktop` in Electron, `jbrowse-cli` on the command line, and the
@@ -31,7 +31,7 @@ A plugin adds functionality to a product **at runtime**. Anyone can write and
 publish one, and a product loads plugins from a URL. A product can also be built
 with its plugins bundled in, as the embedded components are.
 
-<Figure src="/img/product_architecture.png" caption="A product instantiates the RootModel; the state tree runs from the session through views, tracks and displays, each observed by the React component across from it."/>
+<Figure src="/img/product_architecture.png" caption="A product instantiates the RootModel, and the state tree below it runs from the session through views, tracks and displays. Each React component on the right observes the state node across from it."/>
 
 ## Example plugins
 

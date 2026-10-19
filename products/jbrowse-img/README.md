@@ -28,7 +28,7 @@ ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
 rendered straight from public files in a single command (`--aliases` reconciles
 the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
-![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.2f958bc60f92.png)
+![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/1.e2e6cac81c8d.png)
 
 <!-- jb2export: 1 -->
 
@@ -86,7 +86,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542-48,907,531 --width 1200 --out remote_files.png
 ```
 
-![ClinVar variants above NCBI RefSeq genes, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.99f319ecd069.png)
+![ClinVar variants above NCBI RefSeq genes, every file streamed from a public URL](https://jbrowse.org/jb2-figures/jbrowse-img/remote_files.5d179fabe07d.png)
 
 ### Hosted assemblies (genomes.jbrowse.org)
 
@@ -316,11 +316,11 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain facet=split coverage.height=80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain color.field=pairOrientation facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.19d36d666409.png)
+![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.74712a4cbf99.png)
 
 ### Breakpoint split views
 
@@ -355,7 +355,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_tumor.png
 ```
 
-![COLO829's der(3) loci, chr3 then chr10 then chr12, in the tumour nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.b8d8bb3def65.png)
+![COLO829's der(3) loci, chr3 then chr10 then chr12, in the tumour nanopore reads](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.ab381bb352f0.png)
 
 Then the same command with the other sample's track:
 
@@ -497,7 +497,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
   --loc chr2:162,000,000-162,300,000 --width 1400 --out scatac_multiwiggle.png
 ```
 
-![CATlas single-cell ATAC across 16 cell types over GCG](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.a36902997081.png)
+![CATlas single-cell ATAC across 16 cell types over GCG](https://jbrowse.org/jb2-figures/jbrowse-img/scatac_multiwiggle.13ca0f7d318c.png)
 
 ### Variant tracks
 
@@ -574,7 +574,7 @@ jb2export --hub hg38 \
   --refseq --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 
-![A TP53 intron/CDS boundary at base level: the sequence track and its six-frame translation above the NCBI RefSeq genes](https://jbrowse.org/jb2-figures/jbrowse-img/gene_track.d309d46f4d66.png)
+![A TP53 intron/CDS boundary at base level: the sequence track and its six-frame translation above the NCBI RefSeq genes](https://jbrowse.org/jb2-figures/jbrowse-img/gene_track.890f9ba49a32.png)
 
 ### Themes
 
@@ -590,7 +590,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
   --themeName stock --themeMode dark --width 1200 --out dark_theme.png
 ```
 
-![The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the stock palette drawn dark](https://jbrowse.org/jb2-figures/jbrowse-img/dark_theme.03acb0de6ec5.png)
+![The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the stock palette drawn dark](https://jbrowse.org/jb2-figures/jbrowse-img/dark_theme.000d69be1d7d.png)
 
 ## Track modifiers
 
@@ -1168,7 +1168,7 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 800 --out circular_chords.png
 ```
 
-![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.26a42edb09f7.png)
+![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.272733cacbdb.png)
 
 Run `jb2export circular --help` for the full list of options.
 
@@ -1187,7 +1187,7 @@ jb2export --config https://jbrowse.org/demos/circular_synteny/config.json \
   --out circular_synteny.png
 ```
 
-![Human chromosomes 1, 2 and X against their mouse counterparts on one circle, liftOver ribbons inside a gene density ring for both genomes](https://jbrowse.org/jb2-figures/jbrowse-img/circular_synteny.15b060f77ba1.png)
+![Human chromosomes 1, 2 and X against their mouse counterparts on one circle, liftOver ribbons inside a gene density ring for both genomes](https://jbrowse.org/jb2-figures/jbrowse-img/circular_synteny.f253c8c722c7.png)
 
 ## Configs and sessions
 
@@ -1256,7 +1256,7 @@ jb2export --config data/config.json --session data/skbr3/session.json \
   --assembly hg19 --width 1400 --out skbr3_session.png
 ```
 
-![SKBR3 whole-genome read coverage, restored from a saved session file](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.325e8668f0a6.png)
+![SKBR3 whole-genome read coverage, restored from a saved session file](https://jbrowse.org/jb2-figures/jbrowse-img/skbr3_session.5c90436cd64a.png)
 
 The session names its tracks by trackId, so the `--config` you pass has to be
 the one those ids come from. Here that is `data/config.json`, which defines hg19
