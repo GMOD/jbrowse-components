@@ -69,7 +69,7 @@ confidence (AlphaFold)**. Dark blue is very high, light blue confident, yellow
 low and orange very low, and the header's **pLDDT** row draws the same scale
 along the sequence.
 
-<Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 on the Pinot Noir reference, its UniRef alignment below and the AlphaFold model beside, colored by pLDDT. The header reads Structure: L, Genome: R. The MADS domain at the left of the model is dark blue; residue 197 sits where the long helix turns yellow, before the orange C-terminal tail." />
+<Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 with its UniRef alignment and the AlphaFold model colored by pLDDT." />
 
 Arginine fills most rows of the alignment column, muscadine grape's included.
 Residue 197 falls in AlphaFold's low band, where AlphaFold DB advises treating

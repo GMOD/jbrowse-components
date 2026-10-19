@@ -108,7 +108,7 @@ callset records one copy of a 3.9 kb deletion in NA12878.
 
 Open the track at `chr20:32,925,000-32,955,000`.
 
-<Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Over a few kilobases in the middle of the window the depth runs at about half of what it is on either side." />
+<Figure src="/img/read_marks/depth.png" caption="An EFCAB8 intron in NA12878, the read depth as bars." />
 
 ## Plotting insert size as one point per read pair
 
@@ -158,7 +158,7 @@ the mapping quality, which colors the points.
 
 Open it under the depth track in the same window.
 
-<Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in full blue." />
+<Figure src="/img/read_marks/insert_size.png" caption="The same window, depth as bars above and each pair's insert size as a point below." />
 
 Each pair in the upper group straddles the missing 3.9 kb. Click a point to open
 its read.
@@ -265,7 +265,7 @@ edges the `bin` step above it wrote.
 
 Open both tracks on the whole of `chr20`.
 
-<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, pinched in the banding above the ruler, and the repeats flanking it saturate both; outside them the bars rise in a handful of places, each under a short stack of dark points." />
+<Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20: every pair with an insert under 20 kb as a point, and red bars counting the 2 to 10 kb pairs per bin." />
 
 The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
 _EFCAB8_ deletion.

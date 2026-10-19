@@ -74,7 +74,7 @@ NCBI taxon ID whose genome genomes.jbrowse.org hosts with NCBI gene annotation,
 and the chips after **TP53** open other organisms on a residue each, such as
 rifampicin resistance in _M. tuberculosis_ _rpoB_.
 
-<Figure caption="The protein browser on the TP53 chip with Advanced ticked: the structure the chip picked and the AlphaMissense coloring above the launch button, and the protein map below it, with R248 on the ruler inside the DNA-binding domain and a line under the map saying what is known at that residue." src="/img/protein/protein_browser_page.png" />
+<Figure caption="The protein browser on the TP53 chip with Advanced ticked: the picked structure and coloring above the launch button, and the protein map below." src="/img/protein/protein_browser_page.png" />
 
 ## Reading the TP53 session
 
@@ -95,7 +95,7 @@ lights up in turn. [g2p_mapper](https://github.com/cmdcolin/g2p_mapper) maps
 each position through the transcript's coding sequence, so introns, UTRs and
 residues the structure does not cover highlight nothing.
 
-<Figure caption="TP53 as the protein browser launches it on R248: the coding exons above ClinVar and AlphaMissense, the P53 family's Pfam seed alignment under them, opened on R248's column with TP53's row in the middle, beside the fish p53s and human p73, and an arginine down nearly every row, and 3KMD beside, four copies of the DNA-binding core on DNA, colored by AlphaMissense. The cores are red and their outer loops pale. R248 is magenta in each copy where it reaches into the DNA, and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
+<Figure caption="TP53 as the protein browser launches it on R248: the coding exons over ClinVar and AlphaMissense, the P53 family alignment on R248's column, and 3KMD colored by AlphaMissense with R248 in magenta." src="/img/protein/protein_browser_tp53.png" />
 
 ## Changing what the TP53 session opens on
 
@@ -146,7 +146,7 @@ The dialog opens on its **AlphaFoldDB search** tab:
   matches the structure's residues.
 - **Launch** renders the structure.
 
-<Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53 on the hosted hg38 with NCBI RefSeq and ClinVar loaded: the right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position afterwards picks out its residue on the structure and in the alignment above it; the intron between the two exons picks out nothing." />
+<Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53's right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position picks out its residue." />
 
 The structure opens under the genome view, linked the same way as the protein
 browser's. Where its sequence differs from the transcript's translation, the
@@ -162,7 +162,7 @@ the dialog's **Launch** button opens, puts the protein view beside the genome
 view. Click the nuclear export signal on the alignment panel's **Motif** row to
 select its residues and band their codons on the gene.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from on the gene." src="/img/protein/connected.png" />
+<Figure caption="A connected session on TP53, NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues and bands their codons." src="/img/protein/connected.png" />
 
 ### Other structure sources and views in the Launch dialog
 
@@ -181,7 +181,7 @@ view has a track per UniProt feature type, plus Antigen, Variation, AlphaFold
 confidence (pLDDT) and AlphaMissense scores. All are off at first, so turn them
 on in the track selector under **Session tracks**.
 
-<Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
+<Figure src="/img/protein/annotation_1d.png" caption="TP53 above the 1D protein view its gene menu launched, with four session tracks in residue coordinates." />
 
 <Video src="/media/proteins/annotation_1d.mp4" caption="TP53's launch dialog opened on the arrow beside Launch, then the 1D annotation view." />
 
@@ -189,7 +189,7 @@ Launch an alignment from the same right-click menu too, and each panel's menu
 has **Arrange all views → Side by side**, which puts the genome, alignment and
 structure in three columns.
 
-<Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Arrange all views → Side by side arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
+<Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching an alignment and a structure, then Arrange all views → Side by side. One hover in the genome moves the highlight in both." />
 
 ## Choosing the species to align for NLRP1
 
@@ -214,7 +214,7 @@ them. It opens at residue zoom on the N terminus; **Fit horizontally**, under
 the toolbar's fit and zoom button, puts the whole alignment on screen, which is
 the zoom the domain blocks read at.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. In the alignment, the leftmost block is present in some rows and absent in others, the stack of blocks to its right runs down nearly all rows, and the whale rows have only the stack's right-hand end." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="NLRP1's right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds." />
 
 ### Reading NLRP1's conserved-domain overlay on the MSA
 
@@ -244,7 +244,7 @@ in the linear view you launched from, then narrow it to one record:
 - **UniProt - Chains**, **Mutations** and **AA Modifications** project the rest
   of the record.
 
-<Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry. Pyrin sits at the right-hand end, where the N terminus is, and NACHT, FIIND and CARD run leftward from it." />
+<Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry." />
 
 ## Adding the plugins to your own instance
 

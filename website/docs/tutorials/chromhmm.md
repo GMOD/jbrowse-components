@@ -195,7 +195,7 @@ without a defline.
 
 Type `chr7:27,110,000-27,265,000` into the location box, the _HOXA_ cluster:
 
-<Figure src="/img/chromhmm_encode_hoxa.png" caption="The nine ENCODE cell types over HOXA, one row each in ENCODE's tier order, under the RefSeq genes. HUVEC, HSMM and NHEK are active into the posterior genes, NHLF stops at HOXA7 and HMEC fades past it, the blood lines GM12878 and K562 are repressed across the cluster, and H1-hESC is poised." />
+<Figure src="/img/chromhmm_encode_hoxa.png" caption="The nine ENCODE cell types over HOXA, one row each, under the RefSeq genes." />
 
 The HOX genes are transcribed in the order they sit in, so each cell type opens
 the stretch matching its position along the body axis and holds the rest under
@@ -308,7 +308,7 @@ epigenomes. Over _PAX5_:
 - spleen and blood mononuclear cells, which hold B cells, and a few ES, iPS and
   neural progenitor lines show _PAX5_ transcribed without the enhancers
 
-<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order and banded by tissue group with facet, each label tinted by its group. Promoters are red in every tissue; PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878."/>
+<Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9, banded by tissue group with facet. PAX5 is boxed."/>
 
 Listing six epigenome names in `rows.domain` (the order) and `rows.kept` (the
 subset) narrows the same track to lung fibroblasts, foreskin fibroblasts and ES
@@ -359,12 +359,12 @@ fibroblasts from different parts of the body:
 **Advanced → Edit plot...** in the track menu shows `rows` with its `domain` and
 `kept` as text and applies the same subset to an open track live.
 
-<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
+<Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, with HOXA1-A7 and HOXA9-A13 boxed."/>
 
 **Clustering → Cluster rows by similarity...** in the track menu replaces the
 tissue order with one derived from the data at whatever locus is in view.
 
-<Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
+<Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Cluster rows by similarity on the 127-epigenome track, which redraws the rows in blocks with a dendrogram." />
 
 With 127 rows in one track a row is a few pixels tall and its label barely
 legible, so we group the rows by the 19 Roadmap tissue groups with three

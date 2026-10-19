@@ -203,13 +203,13 @@ opens with it:
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on hg38 over six T2T ape lanes in tree order, each ribbon joining a lane to the one above it and colored by strand. The ribbons run red from human down to the Bornean orangutan, and the reversed siamang lane's run blue." src="/img/multiway_synteny/t2t_apes_cactus_tp53.png" />
+<Figure caption="TP53 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_tp53.png" />
 
 ## A block on 17q that splits the African apes
 
 Navigate to `chr17:33,200,000-35,800,000`, on 17q12.
 
-<Figure caption="Human chr17 on 17q12 over the same six ape lanes, ribbons colored by strand. Blue fills the gutter between human and chimpanzee and the gutter between gorilla and the Sumatran orangutan; chimpanzee, bonobo and gorilla run red among themselves, and so do the two orangutans and the siamang." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
+<Figure caption="17q12 over the same six lanes, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 Down the stack, the orientation changes from human to chimpanzee and back from
 gorilla to the Sumatran orangutan, so chimpanzee, bonobo and gorilla have the

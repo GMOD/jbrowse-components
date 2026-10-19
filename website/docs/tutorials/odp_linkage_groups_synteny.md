@@ -210,7 +210,7 @@ axis. In grammar-of-graphics terms, the session's `color` is a color scale, a
 }
 ```
 
-<Figure caption="Rhopilema (jellyfish) against Ephydatia (sponge), each ortholog colored by the BCnS linkage group odp assigned it, sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish and a sponge chromosome meet, and the blocks run along the diagonal. Grey points are orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
+<Figure caption="Jellyfish against sponge as a dotplot, each ortholog colored by its linkage group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
 Inside a block the points fill the square, because gene order along each
 chromosome has shuffled. Each gene stays on its chromosome.
@@ -288,7 +288,7 @@ the `opacity` mapping:
 }
 ```
 
-<Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
+<Figure caption="Six genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid sponge took no part, and in

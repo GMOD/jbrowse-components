@@ -70,7 +70,7 @@ the literature's Glu6 is the transcript's residue 7. The protein view's header
 reads both numbers off the hover and compares the two letters, glutamate in the
 transcript and valine in the crystal.
 
-<Figure src="/img/protein/hbb_codon_hover.png" caption="HBB at codon 7 with its ortholog alignment below and 2HBS beside. The codon band, the orange alignment column and Val6 in magenta mark the same position, and the header reads Structure: V, Genome: E." />
+<Figure src="/img/protein/hbb_codon_hover.png" caption="HBB at codon 7 with its ortholog alignment and 2HBS. The codon band, the alignment column and Val6 mark the same position." />
 
 ## The GWAS Catalog at rs334
 
@@ -79,7 +79,7 @@ search `GWAS Catalog`, and tick it. The catalog has one record per study and
 trait, so a variant studied many times draws as a stack. Click a box to open its
 record.
 
-<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB. The stack sits on codon 7 and nothing else in the window has an association." />
+<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB." />
 
 The 134 records at rs334 include malaria, haemolytic anaemias, glycated
 haemoglobin (HbA1c) and kidney function.
@@ -134,7 +134,7 @@ synonymous change in the His3 codon four codons upstream, sits to its left on
 screen. HbC, rs33930165, a second allele of the same codon, shares the
 highlighted column.
 
-<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, colored down the left edge by superpopulation. Under the sickle codon the alternate genotypes sit in the African-ancestry block; the rs713040 column runs through every block." />
+<Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, colored down the left edge by superpopulation." />
 
 ## Your own gene
 

@@ -349,7 +349,7 @@ called-variant count per window (column 4 of the table π comes from).
 To band the swept window, drag across `chr2R:12,130,000-12,200,000` on the
 scalebar and pick **Highlight region**.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip together over the highlighted window against their background either side, and the count of called variants under them falls with them."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R, Cyp6g1 highlighted."/>
 
 Called variants fall under the sweep because a duplication of _Cyp6g1_
 segregates alongside the resistance allele
@@ -424,7 +424,7 @@ feature:
 
 Open `chr2L` alone, with the π ratio track under Fst:
 
-<Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst between the two arrangements; the block on 2L stands against low background elsewhere. Below, chr2L alone with π in the inverted lines over π in the standard ones, log2 in 250 kb bins." links="Six arms=popgen/fst_in2lt_2L"/>
+<Figure src="/img/popgen/in2lt_pi_ratio.png" caption="Top: the six dm6 arms with the In(2L)t extent over Fst. Below: chr2L with the log2 π ratio of inverted over standard lines." links="Six arms=popgen/fst_in2lt_2L"/>
 
 The inverted lines have less diversity than the standard ones across the
 inverted region, most near the breakpoints, where the suppressed recombination

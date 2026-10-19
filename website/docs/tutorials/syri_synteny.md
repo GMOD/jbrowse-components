@@ -208,7 +208,7 @@ other end sits on another chromosome, which the label at the edge of the frame
 names. The key has one row per color, so `INVTR` shares a row with `TRANS` and
 `INVDP` with `DUP`.
 
-<Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion between the two accessions, with syntenic regions either side." src="/img/syri/col_ler_chr4.png" />
+<Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion." src="/img/syri/col_ler_chr4.png" />
 
 ## Stacking six accessions, one SyRI run per band
 
@@ -246,7 +246,7 @@ between the two genomes it joins:
 }
 ```
 
-<Figure caption="Five chromosomes of six Arabidopsis accessions, each band the SyRI comparison of the two genomes it joins, colored by type. The chromosome 4 inversion crosses only in the band under Col-0, and a chromosome 3 inversion only in the band between Kyo and Sha." src="/img/syri/six_accessions.png" />
+<Figure caption="Six Arabidopsis accessions stacked, each band the SyRI comparison of the two genomes it joins." src="/img/syri/six_accessions.png" />
 
 ## Every accession in Columbia coordinates
 
@@ -333,7 +333,7 @@ those two accessions, so it has the type SyRI gave that pair.
 }
 ```
 
-<Figure caption="Col-0 chromosome 4 with one row of SyRI regions per accession above, and the accessions as lanes in their own assembly coordinates below, each band colored by the SyRI type between the two genomes it joins. Every accession is inverted against Col-0 across the same stretch, and the bands between accessions run straight there." src="/img/syri/col0_lanes.png" />
+<Figure caption="Col-0 chromosome 4 with a row of SyRI regions per accession above, and the accessions as lanes below." src="/img/syri/col0_lanes.png" />
 
 ## Checking the chromosome 4 inversion against syri.out
 

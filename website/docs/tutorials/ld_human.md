@@ -229,7 +229,7 @@ Open the region the slice covers with that Fst track, the hub's **Recomb Rate -
 Recomb. deCODE Avg** track, and two copies of the `LDTrack` above, the second
 pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
-<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: RefSeq genes and Weir and Cockerham Fst per variant across a wide span of chr2. Bottom: two LD triangles at one locus and allele-frequency floor, differing only in which samples went in, over the same Fst track and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
+<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top: Fst per variant across chr2. Bottom: two LD triangles at one locus, differing only in which samples went in." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
 - In the Fst track at the top, the sites with the highest Fst in the window sit
   inside the block.
@@ -282,7 +282,7 @@ Cluster the rows by genotype two ways:
   [`runClustering`](/docs/models/treesidebarmixin/) and
   [`clusterRegion`](/docs/models/treesidebarmixin/) model properties
 
-<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises, one row per chromosome, clustered by genotype."/>
 
 - In file order the matrix is a plaid. Clustering puts near-identical
   chromosomes together, so a swept haplotype forms one slab.
@@ -394,7 +394,7 @@ six bigWigs as a row each, on one axis from 0 to 1:
 Open it over `chr2:135,844,000-135,858,000`, the stretch of _MCM6_ that holds
 `rs4988235`:
 
-<Figure src="/img/ld/lct_population_af.png" caption="RefSeq genes, ClinVar's lactase-persistence variants, and the alternate allele frequency of each biallelic SNV in six 1000 Genomes populations, a row each on one axis, across MCM6. The highlight marks rs4988235, whose bar falls from CEU to TSI and is absent in YRI and CHB."/>
+<Figure src="/img/ld/lct_population_af.png" caption="Alternate allele frequency in six 1000 Genomes populations, a row each on one axis. The highlight marks rs4988235."/>
 
 - At `rs4988235` the allele is common in the two northern European populations
   (CEU, FIN) and rarer in PJL (Punjabi) and TSI (Tuscan), the spread

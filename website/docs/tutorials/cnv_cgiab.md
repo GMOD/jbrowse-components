@@ -303,7 +303,7 @@ a fixed axis from **Y axis... → Range**, so a halving reads as a level. Open
 `chr9:21,850,000-23,050,000`, around _CDKN2A_, with the depth above the four CNV
 callsets:
 
-<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth above them. Depth drops out over CDKN2A, where the benchmark and NYGC both have a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
+<Figure caption="Four published CNV callsets over chr9p21.3, under the HiFiCNV depth." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
 **B-allele frequency** (BAF) is the fraction of tumor reads with the alternate
 allele, drawn unfolded. A balanced region is one band at 0.5, and a region with
@@ -330,7 +330,7 @@ bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes HG008-T_baf.bcftools.bw
 
 Plot it with **Scatter** over a fixed 0 to 1 range.
 
-<Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity; most of the q-arm is balanced." src="/img/sv_cgiab/cnv_depth_baf.png" />
+<Figure caption="Chromosome 3: the segmented copy ratio, the HiFiCNV depth and B-allele frequency over the benchmark CNV calls." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
 #### Drawing individual BAF points when zoomed out
 
@@ -409,9 +409,9 @@ with 0 and 3 stops indexcov's centromere spikes from flattening every plateau.
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps and BAF the allelic balance across each step.
 
-<Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Plot type → Overlapping → Scatter on the coverage track over chr5, redrawing the two stacked rows as one band of points: the normal holds flat while the tumor steps." />
+<Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Plot type → Overlapping → Scatter on the coverage track, drawing the two rows as one band of points." />
 
-<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF track shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal coverage as overlapping scatter, the BAF and the benchmark CNV calls." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 ### CDKN2A: homozygous deletion
 
@@ -464,7 +464,7 @@ The benchmark's `total_copy_number` is absolute, so CN 2 is diploid; 9p has
 already lost a copy, so CN 1 is the local background here. Widen the view
 several hundred kilobases right to read CN 2 against it.
 
-<Figure caption="The CDKN2A deletion: coverage drops out in the tumor row and not in the normal, the read pileup drops out with it, and the CNV call under them reads CN 0." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="CDKN2A in the tumor and normal coverage, the read pileup and the CNV calls." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 ### Chromosome 17: two kinds of loss of heterozygosity
 
@@ -476,7 +476,7 @@ with the depth track above the BAF:
 - **The rest of the q-arm** is copy-neutral LOH (`CNA_21`, CN 2, 2+0): one
   haplotype lost, the other duplicated.
 
-<Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls. The p-arm and the start of the q-arm are a single-copy loss with LOH; the rest of the q-arm is copy-neutral LOH, at diploid depth and still split in the BAF." src="/img/sv_cgiab/cnv_chr17_loh.png" />
+<Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
 Together, depth and BAF separate four states:
 
@@ -496,14 +496,14 @@ Navigate to _KRAS_ on chr12. It sits in a gain (`SV_101`, CN 3, 2+1): a 2 Mb
 tandem duplication that includes the G12V-mutated copy
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
-<Figure caption="KRAS on chr12: its MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication the copy-ratio edges land on the called boundaries and the BAF separates into two bands." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS's MANE Select transcript over the copy ratio, depth and BAF, above the CNV calls." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 _SMAD4_ on 18q is a single-copy loss with LOH (`CNA_48`, CN 1, 0+1), like
 _TP53_. The balanced p-arm and the matched normal are the two controls. Leave
 the copy-ratio track's `color` unset (one color above the `origin` of 0, another
 below) with a symmetric axis, so a step down and a step up fill equally.
 
-<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. All three tracks change together partway along 18q and stay changed to the telomere." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="SMAD4's MANE Select transcript over the copy ratio, tumor and normal coverage and the BAF, above the CNV calls." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 ## Reproduce it end to end
 

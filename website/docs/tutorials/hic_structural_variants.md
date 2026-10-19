@@ -158,7 +158,7 @@ explicitly.[^juicer]
 Type both locations into the location box, separated by a space:
 `chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
 
-<Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles appears with the second region." />
+<Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered beside a chr9 one, GM12878 above and K562 below. The wedge between the triangles appears with the second region." />
 
 Two regions on separate chromosomes touch at background rate. If they are fused,
 they contact each other constantly.
@@ -167,7 +167,7 @@ K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
 ([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
 _ABL1_ on chr9.
 
-<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between the two panels' triangles is chr9 against chr22: empty in GM12878, a dense block under the arrow in K562." links="Open this view=hic/bcr_abl1_translocation" />
+<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 and BCR as two windows in one view, GM12878 above and K562 below. The wedge between the panels is chr9 against chr22." links="Open this view=hic/bcr_abl1_translocation" />
 
 The domain boundaries inside each window line up between the two lines, so chr9
 and chr22 each fold normally in K562.
@@ -278,7 +278,7 @@ The K562 track uses
 On an eigenvector track already open, **Y axis... → Range** writes the same two
 ends. Open both eigenvector tracks over _EBF1_ on chr5:
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window, the band at EBF1." links="Open this view=hic/compartment_switch" />
 
 The band over _EBF1_ is in the A compartment in GM12878, a B-lymphoblastoid
 line, and the B compartment in K562, an erythroleukemia, while the sequence

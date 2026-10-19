@@ -253,7 +253,7 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
 }
 ```
 
-<Figure caption="Human against rhesus macaque across a stretch of conserved gene order on human chromosome 12, each ribbon one ortholog pair colored by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque on chromosome 12, each ribbon an ortholog pair colored by dN/dS." src="/img/selection_pressure/lysozyme.png" />
 
 Gene order is the same in both genomes here, so color is the only thing that
 varies. Click the orange _LYZ_ ribbon for its synonymous count and Fisher p in

@@ -230,7 +230,7 @@ open them side by side in one view, a T-cell marker (_CD8A_) and a B-cell marker
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 ```
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 side by side in one view. The CD8, MAIT and NK rows have signal at CD8A, and only the two B rows have it at MS4A1." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs as one MultiQuantitativeTrack over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Building the track from a folder of BigWigs
 

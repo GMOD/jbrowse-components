@@ -44,7 +44,7 @@ Right-click any chain block and choose **Launch → Linear synteny view with
 - **Copy this view's tracks into its panel** sets whether the panel you launched
   from keeps the tracks that view had on.
 
-<Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to Human (hs1) liftOver track at TNNT3: the block's right-click menu, the dialog that frames the second panel, and Replace current view putting the two-panel synteny view in the linear view's place. The hg38 panel opens with the gene track that was open above; the hs1 panel opens empty." />
+<Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to hs1 liftOver track at TNNT3: the right-click menu, the framing dialog, and Replace current view." />
 
 For a locus no single chain block covers, drag-select it on the scale bar and
 pick **Launch → Linear synteny view**, whose dialog offers every assembly the
@@ -64,7 +64,7 @@ The palette button in the same header sets the ribbons' `color`, a color scale
 that maps a field to colors. **Strand** paints each block by its orientation;
 the figures below use it.
 
-<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels." />
+<Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The TNNT3 comparison before and after the two ribbon settings, with their menu open on top." />
 
 ## The TNNT3 rearrangement
 
@@ -73,7 +73,7 @@ region reads as an inversion plus a deletion that removes the long noncoding RNA
 _LINC01150_ in every individual. Pick **Strand** from the header's palette
 button, and the segment that moved is the one off-color ribbon.
 
-<Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the blue ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
+<Figure caption="hg38 (top) against hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
 ## Launching hg38 against chimp at an FTO intron
 
@@ -87,7 +87,7 @@ Turn on **hg38 to Chimp (panTro6) liftOver** under **Pairwise alignments** →
 **liftOver**, type `chr16:54,036,000-54,054,000`, an intron of _FTO_, into the
 location box, and launch a synteny view from a chain block:
 
-<Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
+<Figure caption="Launching from the hg38-to-panTro6 liftOver track: right-click a chain block, confirm the framing, launch, then add the chimp panel's tracks." src="/img/genomes_synteny/launch_sequence.png" />
 
 The figure's last step switches to curves and **Transparent indels**
 ([above](#ribbon-display-settings)), turning the one gap into a hole that lines
@@ -119,7 +119,7 @@ the 80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
 figure opens the track over the same hg38 window, with a lane for each of those
 species the track holds.
 
-<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page on staging.genomes.jbrowse.org at its Conserved gene order section, with the Multi-way synteny lanes link boxed." />
+<Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page's Conserved gene order section, with the Multi-way synteny lanes link boxed." />
 
 The track holds only genomes UCSC publishes a liftOver chain to. Where the gene
 page's assembly for a species has no chain, its lane is the newest build of that
@@ -133,7 +133,7 @@ read at once, so in the track menu:
   the two lanes it joins run the same way and blue where one is inverted against
   the other
 
-<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, and its ribbons are blue." />
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand." />
 
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
 covers the lane labels, `[rev]`, the ribbons and the lane menus.
@@ -152,7 +152,7 @@ mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 - in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
   filter and tick the strains, the C57BL/6J T2T assembly among them
 
-<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. The T2T assembly of that strain runs straight under mm39, and every other strain's ribbon fans open in the middle of the gene, over the exons the reference strain lost." />
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first." />
 
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
@@ -171,7 +171,7 @@ each. On hg38 at
 - Turn off **Show... → Gene labels**, since the RefSeq track above names the
   genes
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1. Its partner hap1 and the other three haplotypes run red throughout." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane's ribbons turn blue across MAPT and KANSL1." />
 
 ## See also
 

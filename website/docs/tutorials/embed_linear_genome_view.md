@@ -84,7 +84,7 @@ npx serve -S .
 
 Open the URL `serve` prints.
 
-<Figure caption="The complete example below embedded in a web page, with genes, exome reads, conservation and 1000 Genomes calls at the tutorial's chr10 locus." src="/img/embed_linear_genome_view/final.png"/>
+<Figure caption="The complete example below embedded in a web page." src="/img/embed_linear_genome_view/final.png"/>
 
 The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
 `tracks` shorthand above needs, so pin a version for production

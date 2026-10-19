@@ -223,7 +223,7 @@ them side by side:
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
 ```
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci the cluster labelling did not use, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
+<Figure caption="Nine per-cell-type BigWigs as one MultiQuantitativeTrack over nine marker loci, in the order of the rows they mark." src="/img/scrna/marker_panel.png" />
 
 Two other routes build the same track:
 
@@ -290,7 +290,7 @@ per chromosome.
 Type `chr12:69,353,000-69,354,500` into the location box, the 3' end of _LYZ_,
 where the 3' kit's reads land:
 
-<Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
+<Figure caption="The nine pseudobulk rows at LYZ above the cells they sum, ordered by cell type and colored to match." src="/img/scrna/percell_lyz.png" />
 
 Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
 that was free in the droplet.

@@ -339,9 +339,9 @@ change the `trackId`, the name and `cytosineContext`:
 }
 ```
 
-<Figure caption="RefSeq genes, the RepeatMasker track, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+<Figure caption="RefSeq genes, RepeatMasker, the aggregate MethylDackel track and three copies of one WGBS pileup colored by CpG, CHG and CHH." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
-<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the RefSeq genes, the RepeatMasker track and the aggregate MethylDackel rows: the LTR element stays red in all three contexts, and the gene body is red only in CpG." />
+<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu." />
 
 ## Reproduce it end to end
 

@@ -229,7 +229,7 @@ with the same genes in the same order.
 - The mouse lane shows `[rev]` because its chain runs the other way against hg38
   here, so its ribbons are blue.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes in tree order, each ribbon joining its lane to hg38 and colored by strand. The ape lanes run red and nearly unbroken, the gorilla one stopping partway; the monkey and non-primate lanes break into more ribbons, and the reversed mouse lane's are blue." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="TP53 on hg38 over eight UCSC genome lanes in tree order, ribbons colored by strand." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
 centromere, near _PMP22_. The region is a hotspot of segmental duplications
@@ -259,7 +259,7 @@ the frame:
   whose blocks split about evenly between the two orientations.
 - **Let the lane choose its orientation** hands the choice back.
 
-<Figure caption="The eight lanes at chr17 near the PMP22 duplications, ribbons colored by strand. Most lanes place the window as several blocks of both colors, against the TP53 window's single red runs, and a flipped lane, marked reversed in its header, runs its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
+<Figure caption="The same lanes near the PMP22 duplications. A flipped lane, marked reversed in its header, draws its ribbons straight and still blue." src="/img/multiway_synteny/hg38_vertebrates_17p_strand.png" />
 
 ## Reading a lane's span, width multiple and ribbons {#reading-the-stack}
 

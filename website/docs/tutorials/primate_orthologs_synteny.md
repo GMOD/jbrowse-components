@@ -277,12 +277,12 @@ the _TP53_ neighbourhood with it:
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes, each drawing its own RefSeq gene models. Every lane has the block in order. The siamang lane is reversed, so its header shows [rev] and its ribbons, drawn straight because the lane is mirrored, are in the reverse-strand color." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="TP53 on human chr17 over seven primate lanes, each with its own RefSeq genes. The reversed siamang lane shows [rev] and draws its ribbons straight." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.
 
-<Figure caption="Human chr17 on 17q over the seven primate lanes, ribbons colored by strand. Blue marks a block read backwards from the lane above. One runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
+<Figure caption="17q over the seven primate lanes, ribbons colored by strand. Blue marks a block read backwards from the lane above." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
 ## Human chromosome 2 as two fused ape chromosomes
 
@@ -295,7 +295,7 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 - Pick **Target** in the palette button menu, which paints each ribbon by the
   chimpanzee chromosome it maps to
 
-<Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
+<Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
 In the multi-lane view, each ape lane picks the contig with more genes in the
 window and names the other in its header. **Show ⟨contig⟩ in this lane** on the

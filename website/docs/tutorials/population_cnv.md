@@ -204,7 +204,7 @@ each plateau lines up with a copy count:
 }
 ```
 
-<Figure caption="The CCL3L1 window as six stacked profiles on one shared axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="CCL3L1 as six stacked profiles on one shared axis." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks hold the variation. The right-hand block spans the
 chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
@@ -230,7 +230,7 @@ VCF on the same assembly:
 }
 ```
 
-<Figure caption="UGT2B17 on chr4, a biallelic deletion, with the SV map above the PUR panel track. Each individual sits flat at two, one or zero copies, with the same breakpoints in every individual that has it, and the SV map calls it a CN0 deletion." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 with the SV map above the PUR panel track." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
@@ -312,7 +312,7 @@ With the plugin loaded, the adapter's `uri` names the store:
 A relative `uri` resolves against the config that holds it, so a store beside
 your `config.json` takes `qm2_cn_1kb.zarr`.
 
-<Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="All 2504 individuals from one Zarr store, clustered. Red is a gain, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
 ## A deletion nested inside another on chr3, sorted by clustering
 
@@ -346,7 +346,7 @@ this one to drop every record under 5 kb:
 jexl:alleleLength(feature)>=5000
 ```
 
-<Figure caption="All 2504 individuals over the nested deletion, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows has neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
+<Figure caption="All 2504 individuals over the nested deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
 
 ## Building a Zarr store from per-sample BigWigs
 

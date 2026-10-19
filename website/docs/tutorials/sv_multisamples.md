@@ -182,9 +182,9 @@ The figure below has three tracks over NCBI RefSeq genes:
   copy gained
 - the same records in the ordinary variant display, each labelled with its id
 
-<Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's copy-number calls under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels of copy number." src="/img/multisv_rhd.png" />
+<Figure caption="The 1KGP SV callset over RHD with the panel's copy-number calls under it." src="/img/multisv_rhd.png" />
 
-<Video src="/media/sv/multisample_sort.mp4" caption="A right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
+<Video src="/media/sv/multisample_sort.mp4" caption="Right-clicking the deletion sorts the cohort by its genotype there." />
 
 ## Checking the RHD genotypes against read coverage in three samples
 
@@ -197,7 +197,7 @@ comparable:
 - Share one axis from **Coverage axis... → Share axis with**, ticking the other
   two tracks, so the samples compare by height.
 
-<Figure caption="Coverage over the RHD deletion in three samples on one shared axis, with the RHD span banded. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="Coverage over RHD in three samples on one shared axis, the RHD span banded." src="/img/multisv_rhd_dosage.png" />
 
 Coverage over the deleted span in the top row sits just above zero. The
 neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some
@@ -223,7 +223,7 @@ coverage curve and arcs:
 - The outward-pointing band (mates facing away from each other), where a tandem
   duplication would go, stays near empty
 
-<Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band shows the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="HG02768's reads at the complex call, one band per pair orientation. Reads whose mate is unmapped or elsewhere draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
 shows. A copy inserted beside its origin leaves pair orientation unchanged, so

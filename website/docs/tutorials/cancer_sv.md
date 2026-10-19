@@ -161,7 +161,7 @@ another chromosome. The matched normal is clean.
 - **Force load** approves the download when the track asks first because the
   pileup is deep, and holds for the rest of the session.
 
-<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip where normal reads read through. Right: the same event as a breakpoint split view over every locus the chain visits." src="/img/cancer_sv/multihop_reads.png" />
+<Figure caption="Left: COLO829 tumor above its normal at the two chr3 breakpoints, soft clipping shown. Right: the breakpoint split view over every locus the chain visits." src="/img/cancer_sv/multihop_reads.png" />
 
 ## Following the chain across breakpoint split view panels {#following-the-chain-across-panels}
 
@@ -188,7 +188,7 @@ Check **Follow further breakends at each end** to add the rest of the chain:
   chr10 breakend has a second junction a couple of hundred bases away, and its
   far end is on chr12.
 
-<Figure caption="Opening the split view from the record itself: right-click the breakend, set the shape and window in the dialog, and get three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
+<Figure caption="Opening the split view by right-clicking the breakend." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 To follow a single read, right-click it and choose **Linear read vs ref**.
 JBrowse opens a synteny view with the read as an assembly along the bottom and
@@ -299,7 +299,7 @@ track. The view shows:
   retained there. Ticks pointing apart mark a deletion-type join, ticks pointing
   toward each other a duplication-type join, and parallel ticks an inversion.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes, the truth set and the tumor's split reads above, with each junction drawn once as an arc; the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci, each junction drawn once as an arc, and the annotation projected onto the allele below." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the der(3) contig against the reads and the truth set
 
@@ -316,9 +316,9 @@ Each hg38 window is wider than the piece the allele uses, and the read track
 shows split alignments only, so its coverage counts reads that cross a junction
 and steps down as each arm ends.
 
-<Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The derivative's segments at base scale: the truth set's calls over the reads against hg38 above, and the reads realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
 
-<Figure caption="COLO829 tumor ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at the chr3 junction with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="Tumor ONT reads over one junction, against hg38 on the left and realigned to the derivative on the right. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## Reproduce it end to end
 

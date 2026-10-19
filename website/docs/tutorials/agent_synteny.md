@@ -118,7 +118,7 @@ In `assemblyNames`, the query (`sim.fa.gz`, the second `minimap2` argument)
 comes first and the target second, the order of the PAF columns. In the other
 order no chromosome name resolves and the synteny band draws empty.
 
-<Figure caption="chr3R on both genomes with NCBI RefSeq genes on each row and the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
+<Figure caption="chr3R on both genomes with RefSeq genes on each row and the minimap2 alignment between them, colored by strand." src="/img/agent_synteny/comparison_built.png" />
 
 ## Ask for a dotplot restricted to the chromosome arms
 
@@ -137,7 +137,7 @@ Ask the agent to quantify what restricting the axes drops. Add one more request,
 to color the dotplot by strand, so a reversed block draws in blue and a forward
 one in red.
 
-<Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, with short reverse segments in blue where chr2R begins and partway along chrX." src="/img/agent_synteny/dotplot_arms.png" />
+<Figure caption="The alignment as a dotplot cut to the six chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
 
 ## Ask where the two genomes run in opposite directions
 
@@ -200,12 +200,12 @@ Close the gene tracks and take the synteny view to the 2R region.
 The agent opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
 at `chr2R:500,000-3,800,000`.
 
-<Figure caption="The 2R region, the alignment alone between the two rows. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
+<Figure caption="The 2R region, the alignment alone. Reverse-strand blocks draw blue and cross the band." src="/img/agent_synteny/inversion_2r.png" />
 
 Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 `chrX:8,330,000-9,180,000`, where the reverse blocks are fewer and longer:
 
-<Figure caption="The X region, the alignment alone between the two rows. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
+<Figure caption="The X region, the alignment alone. Two reverse blocks cross in the middle." src="/img/agent_synteny/inversion_x.png" />
 
 ## Three instructions to include when prompting the agent
 

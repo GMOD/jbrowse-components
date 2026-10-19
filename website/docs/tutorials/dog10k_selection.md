@@ -153,7 +153,7 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
   bash build_dog10k_size_fst.sh
 ```
 
-<Figure caption="Top: Fst between the toy/small and giant breeds in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed 99.9th-percentile line. Bottom: the IGF1 region rebinned to 20 kb, where the peak resolves into a sweep. The band marks the 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between toy/small and giant breeds across the autosomes. Bottom: the IGF1 region rebinned to 20 kb, the band marking the window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Fst has no p-value, so the cutoff is a
 [reference line](/docs/config/valuescale/#slot-scalesyrules) at the 99.9th
@@ -282,11 +282,11 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
 }
 ```
 
-<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="Rows in build order, then the track menu's clustering run over the peak's differentiated core, which gathers the size classes into blocks on genotype alone. Widened back out, the small breeds share one haplotype across IGF1 that most giants lack." />
+<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="Clustering the rows from the track menu over the peak's core." />
 
 ## The IGF1 haplotype block in toy, giant and wolf genotypes
 
-<Figure caption="SNVs across IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two size classes. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across IGF1 as a matrix, one row per canid with its size class as the sidebar swatch, under per-site Fst." src="/img/dog10k-igf1-haplotype.png" />
 
 Reading the matrix against the Fst track above it:
 

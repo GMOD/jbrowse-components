@@ -178,7 +178,7 @@ row's two breakpoints side by side as two regions of one view:
 - **Read connections → View as pairs / link supplementary alignments** merges
   each molecule's two alignments onto one row.
 
-<Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
+<Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
 The build script adds the STAR-Fusion calls as a track:
 
@@ -219,7 +219,7 @@ alignment (the second piece of the split read) on chr9. In the track menu:
 A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment falls
 in neither window.
 
-<Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws counted arcs from the BCR donor into both ABL1 windows, and only the right-hand window has a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR beside two ABL1 windows as three regions of one view, split reads only with supplementary alignments linked." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 
@@ -269,7 +269,7 @@ names its partner breakend draws as a `link` with nothing configured
 ([mark display](/docs/config_guides/mark_display#links)), and a call whose
 partner is on another chromosome draws a stem at its breakpoint.
 
-<Figure caption="chr9 from ABL1 to past NUP214: STAR-Fusion junctions from RNA-seq, 10X DNA breakends and DepMap copy number, with the three DNA breaks banded. Copy number steps at the outer two breaks. The BCR-ABL1 junction sits well right of its break, the NUP214-XKR3 junction on top of its break, and the right-hand break reaches chr13, where nothing is transcribed." src="/img/cancer_sv/k562_amplicon_dna.png" />
+<Figure caption="chr9 from ABL1 past NUP214: STAR-Fusion junctions, 10X DNA breakends and DepMap copy number, the three DNA breaks banded." src="/img/cancer_sv/k562_amplicon_dna.png" />
 
 | Junction        | RNA junction (STAR-Fusion)        | DNA break (10X)           | Apart                 |
 | --------------- | --------------------------------- | ------------------------- | --------------------- |

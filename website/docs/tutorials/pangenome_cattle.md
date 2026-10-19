@@ -117,7 +117,7 @@ Open
 and press **Open in JBrowse**. The whole chromosome opens with the graph's
 coarse tier, which folds every variant under 10 kb into the reference.
 
-<Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with variants under 10 kb folded into the reference. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
+<Figure caption="Chromosome 23 with RefSeq genes, segments per bubble as a curve, and the graph with variants under 10 kb folded into the reference." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 BoLA, the cattle major histocompatibility complex (immune genes that vary a lot
 between breeds), contains the heat shock gene _HSPA1A_, the subject of the next
@@ -231,7 +231,7 @@ the graph around _HSPA1A_. Then:
   to **Compress lengths**. An insertion has no reference span to draw along, and
   the portal opens the graph force-directed, which draws it by its shape.
 
-<Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion beside HSPA1A. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="HSPA1A with the deconstructed callset, one row per assembly, the allele inventory and the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
 
 The yak row has the reference allele, and Leonard et al. built no yak assembly,
 so their result does not cover it.
@@ -278,7 +278,7 @@ Then open `chr1:2,428,800-2,429,800`. The figure shades
 `chr1:2,429,109-2,429,320`, the stretch OMIA records as duplicated by the
 allele.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. The Angus row alone has the insertion, at the right edge of the shaded sequence it copies; every other row is reference." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus with OMIA's record of the Celtic polled allele above the callset." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
 further along, which Holstein cattle have. The panel has no Holstein, and the
@@ -293,7 +293,7 @@ holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put the graph
 track back on the reference's coordinates under the callset with **Anchored**
 under the **Layout** row of its menu.
 
-<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The Simmental row has a distinct allele across the repeat and every other row has the deletion, which the graph draws as the dashed arc skipping the repeat." src="/img/pangenome/bovine_kit.png" />
+<Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
 The larger box at the left of the Simmental row is an insertion the length of
 the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
@@ -303,7 +303,7 @@ the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
 deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
-<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The gaur row has the deletion, which the graph draws as the dashed arc over TAS2R46, and four cattle rows have a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
+<Figure caption="TAS2R46 with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_tas2r46.png" />
 
 Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
 share that allele, and only the gaur's deletes the span. The insertion boxed in

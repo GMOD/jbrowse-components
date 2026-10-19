@@ -28,17 +28,17 @@ instance with a URL you can share:
 
 - The front page's table of main genomes, with the GenArk catalog below it
 
-<Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes, and the GenArk catalog starts below it." />
+<Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page." />
 
 - The [/ucsc](https://genomes.jbrowse.org/ucsc) page, with a filter box over
   every UCSC database's name, species and description
 
-<Figure src="/img/genomes_basics/site_ucsc_list.png" caption="The full UCSC database listing. Each row opens the same kind of JBrowse instance the front page links to." />
+<Figure src="/img/genomes_basics/site_ucsc_list.png" caption="The UCSC database listing." />
 
 - The header search box, which takes a common name, a species, an assembly name
   or an accession across both catalogs
 
-<Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query. The dropdown mixes UCSC database names with GenArk accessions, since both catalogs are in the one index." />
+<Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query, mixing UCSC databases with GenArk accessions." />
 
 ## Searching for TP53 and trimming its isoforms
 
@@ -47,7 +47,7 @@ selector showing. Type `TP53` into the location box and press Enter. The hosted
 config ships a name index, so gene symbols resolve, and coordinates like
 `chr17:7,668,400-7,687,550` work too.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, found by the config's name index. Middle: what Enter opens, as many transcripts as the track's height holds, a link beside the TP53 label for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box. Middle: the view Enter opens, with the isoform control circled. Bottom: the same view after picking Representative transcript." />
 
 RefSeq All draws each transcript on a separate row, and _TP53_ has more than the
 track's height holds. Two controls trim the isoforms:
@@ -79,7 +79,7 @@ Type `chr17:7,674,180-7,674,290`, a stretch of exon 7, into the location box.
 - At this zoom the gene track draws a codon row per transcript; pick
   **Representative transcript** from the isoform control to keep one
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. The popover offers the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The gene track's isoform control and the popover it opens." />
 
 At this zoom phyloP draws one bar per base, and within a codon the third base's
 bar is the short one, since most third-position changes leave the amino acid
@@ -94,7 +94,7 @@ the 470-way pair. Tick both, under Comparative Genomics:
 - **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)**
 - **Basewise Conservation (phyloP) - 470 phyloP**
 
-<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
+<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom with phyloP and the 470-way multiz alignment. A base is drawn only where it differs from human." />
 
 In the alignment track, most columns are blank because every species matches
 human at those bases, and conserved columns give a positive score. phyloP counts
@@ -126,7 +126,7 @@ from ENCODE3's release, but the config points at the hg38 files.
 **Plot type → Multi-row → XY plot** in the track menu gives each cell line a
 row.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs colored by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter tracks. Left: two marks' cell lines in one plot, and the Plot type menu that separates them. Right: a row per cell line." />
 
 _TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
 where every track in the figure has a call.
@@ -144,9 +144,9 @@ every row:
   (the others are missense, synonymous and other)
 - `AF` ≥ `0.001` drops the rarest variants
 
-<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
+<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu and the Filter by... dialog." />
 
-<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the track with the predicted loss-of-function records alone, in the one color the file gives that class." />
+<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD Exomes over TP53, filtered to one consequence class from the track menu." />
 
 Once a filter is in effect, the track menu's filter row opens a submenu with
 **Edit filters...** and **Clear all filters**.
@@ -163,7 +163,7 @@ The config is hosted on jbrowse.org, but most UCSC track data resolves back to
 hgdownload, read by byte range. The track menu's **About track** prints the
 adapter, which is where to look when a track is slow or missing.
 
-<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with the icon that opens it circled and About track boxed. Right: the dialog it opens, naming the BigWig on hgdownload with UCSC's trackDb entry below it." />
+<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu with About track boxed. Right: the dialog it opens." />
 
 The URL is the file itself, and any program that reads a BigWig by range can
 open it, such as `rtracklayer` in R:
@@ -186,7 +186,7 @@ accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
 Open `GCF_040938575.1` from the site's header search for `axolotl`, and type
 `TP53` into its location box.
 
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box." />
 
 ## See also
 

@@ -86,7 +86,7 @@ Open the 1TUP panel and click the R248 hotspot on its STRUCT row, or
 The ruler and the transcript row give the same number, because the 1TUP authors
 numbered their construct the way UniProt numbers the whole protein.
 
-<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. The crystal's three copies of p53's core are blue on grey DNA, R248 is magenta on the copies in view, with its neighbours drawn as sticks, and a band marks its codon on the gene." />
+<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. R248 is magenta, and a band marks its codon on the gene." />
 
 Hovering the codon on the gene highlights the residue on the structures that
 contain it; hovering the intron beside the exon highlights nothing.
@@ -99,7 +99,7 @@ peptide. Open the 1YCR panel: its **Mapped chain** picker lists both chains, and
 the plugin picked the peptide, a short exact match near the start of the
 transcript row.
 
-<Figure src="/img/protein/tp53_mapped_chain.png" caption="1YCR with its Mapped chain picker open. Chain B, the p53 peptide, is the mapped one, blue against grey MDM2; Chain A above it in the picker is MDM2." />
+<Figure src="/img/protein/tp53_mapped_chain.png" caption="1YCR with its Mapped chain picker open." />
 
 Switch the picker to Chain A. The plugin realigns against MDM2, which turns
 blue, and the GENOME row becomes a scatter of gapped fragments, because the
@@ -119,7 +119,7 @@ translation. The view opens slowly because the plugin loads each model as a
 separate structure. Click **Reset Zoom**, the circular arrow at the top right of
 the canvas, to fit the whole ensemble.
 
-<Figure src="/img/protein/tp53_nmr_ensemble.png" caption="NCBI RefSeq over TP53's first coding exons beside every model of 2L14. The p53 chain is blue on grey CBP with its two helices in magenta; the helices overlap from model to model, the linker leaving the first one spreads, and bands on the gene mark the helices' codons." />
+<Figure src="/img/protein/tp53_nmr_ensemble.png" caption="TP53's first coding exons beside every model of 2L14. Bands on the gene mark the codons of the helices in magenta." />
 
 The grey spray on the right is the C-terminal tail of CBP. The first helix lies
 within the stretch the 1YCR peptide covers, and its codons straddle an intron,

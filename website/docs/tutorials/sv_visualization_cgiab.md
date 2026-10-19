@@ -290,7 +290,7 @@ do below. The figure also shows the HiFiCNV depth, which
 [part 2](/docs/tutorials/cnv_cgiab#building-depth-per-bin-and-b-allele-frequency-tracks)
 builds.
 
-<Figure caption="The chr3 breakends of one benchmark rearrangement, filed under EVENT=cluster_3, in five SV callsets, over the HiFiCNV depth and the benchmark's CNV track. Every callset marks both breakends, the depth steps down between them, and the CNV track crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
+<Figure caption="One benchmark rearrangement's breakends in five SV callsets, over the HiFiCNV depth and the benchmark's CNV track." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
 ## Aligning the tumor assembly to GRCh38
 
@@ -351,7 +351,7 @@ junction in the reads:
 [The cancer SV tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
 covers opening the view from a record and following the further breakends.
 
-<Figure caption="Breakpoint split view of the chr3-chr13 translocation, with tumor PacBio HiFi reads in both panels. Splines join the two halves of each read that maps partly to chr3 and partly to chr13." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
+<Figure caption="Breakpoint split view of the chr3-chr13 translocation with tumor HiFi reads. Splines join the two halves of each split read." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
 We read the same junction three ways:
 
@@ -402,7 +402,7 @@ HiFi reads, then set **Read height → Compact** and **Sort by... → Base pair*
 the reads' track menu and center the deletion. **Show... → Center line** in the
 view menu helps line up the breakpoint.
 
-<Figure caption="Tumor PacBio HiFi reads at compact height, sorted by base pair with the deletion centered, over the gene annotations. The deletion removes two CUZD1 exons." src="/img/sv_cgiab/deletion_linear_view.png" />
+<Figure caption="Tumor HiFi reads at compact height, sorted by base pair at the deletion." src="/img/sv_cgiab/deletion_linear_view.png" />
 
 ### Dotplot and synteny views of the tumor assembly against GRCh38
 
@@ -415,18 +415,18 @@ certain chromosomes** and type `*_hap1` into the chromosomes box of the
 HG008T_v3.2 axis, then `*_hap2` in a second view, for a plain
 assembly-vs-reference diagonal per haplotype.
 
-<Figure caption="The two haplotypes of HG008-T v3.2 (y) against GRCh38 chromosomes (x), hap1 left and hap2 right. A scaffold that matches one GRCh38 chromosome is one diagonal segment. On hap1 the chr3_chr13_hap1 scaffold has a piece of chr3 and a piece of chr13, the translocation; on hap2 chr13_hap2 is one unbroken diagonal against chr13." src="/img/sv_cgiab/dotplot_haplotypes.png" />
+<Figure caption="HG008-T's two haplotypes (y) against GRCh38 (x) as dotplots, hap1 left and hap2 right." src="/img/sv_cgiab/dotplot_haplotypes.png" />
 
 Drag over a region and take **Launch → Linear synteny view**, keeping
 **HG008T_v3.2 vs GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the
 synteny track, then enter `chr13 chr3` in the GRCh38 search box.
 
-<Figure caption="The junction at base level: the breakpoint split view's two 10 kb reference windows, with the benchmark calls and the tumor reads grouped by split read, above chr3_chr13_hap1. The reads stop at each breakend, a curve joins the two halves of each split read under one arc that totals them, and the scaffold runs through. The chr3 ribbon twists because the scaffold has chr3 on the reverse strand." src="/img/sv_cgiab/junction_synteny.png" />
+<Figure caption="The breakpoint split view's two reference windows with tumor reads grouped by split read, above the fused scaffold. A curve joins the two halves of each split read." src="/img/sv_cgiab/junction_synteny.png" />
 
 **Add row** in the import form gives each haplotype a separate row: hap2,
 GRCh38, hap1, with ribbons between each adjacent pair.
 
-<Figure caption="A three-row synteny view: hap2 on top, GRCh38 chr13 and chr3 in the middle, and the fused chr3_chr13_hap1 scaffold below. The hap2 ribbons run straight to chr13_hap2 and to the chr3 part of a scaffold that continues into chr11 and chr6. On hap1 the chr13 ribbon meets a twisted chr3 ribbon at the marked junction." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A three-row synteny view: hap2, GRCh38 chr13 and chr3, and the fused chr3_chr13_hap1 scaffold." src="/img/sv_cgiab/synteny_view.png" />
 
 The [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view) cover these

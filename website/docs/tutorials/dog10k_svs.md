@@ -198,7 +198,7 @@ shows them as text.
 Open the session above and add the assembly's gene annotation to see where the
 deletion falls in _NHEJ1_.
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every animal with the deletion is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The track between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A deletion inside an NHEJ1 intron genotyped across breeds, with OMIA's record of the same variant between the genes and the genotypes." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 ### Checking the NHEJ1 deletion against OMIA's curated record
 
@@ -312,7 +312,7 @@ A samples TSV labels these 86 rows. Its first column is the sample name and
 every other column is an attribute that `rowColor` can name. The _RNASE1_ track
 is the same config with the other slice's `uri`.
 
-<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs have the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a duplication over pancreatic amylase. Right: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
 
 The grey Czechoslovakian Wolfdog row is CZEC000003, the animal
 [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
@@ -497,7 +497,7 @@ To put the parent gene between the two retrocopies, we:
 The window ends where the CFA18 alignment does, and the CFA12 ribbon runs past
 it.
 
-<Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="Two FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and across Dog10K genomes." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 ## Slicing more clade-associated SVs from Schall and Kidd
 

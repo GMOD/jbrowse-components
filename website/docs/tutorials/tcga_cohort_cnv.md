@@ -139,9 +139,9 @@ Clustered at whole-genome zoom, the stack groups tumors by their genome-wide
 profile, and the heavily aneuploid tumors, whose rows run red or blue end to
 end, form a separate band.
 
-<Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window, clustered from the track menu: 1104 tumors in barcode order, the Clustering item, and the bands the run leaves behind." />
+<Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window clustered from the track menu." />
 
-<Figure caption="Copy-number segments around ERBB2 (highlighted), one row per tumor, clustered on this window. The rows sort into amplified, gained, lost and balanced bands, and the amplified tumors' gain thins out on either side of the gene." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="Copy-number segments around ERBB2, one row per tumor, clustered on this window." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 ## Add a track of gain and loss frequency {#add-a-recurrence-track}
 
@@ -189,7 +189,7 @@ other.
 the axis, so a bar means the same fraction wherever you navigate. Place the
 track above the stack, so that each peak sits over a stripe:
 
-<Figure caption="Gain and loss frequency per 100 kb (bars up for gain, down for loss) above the copy-number stack of all primary tumors, one row per tumor, clustered by profile. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="Gain and loss frequency per 100 kb above the copy-number stack of all primary tumors, clustered by profile." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## Split gain and loss frequency by clinical group {#split-the-recurrence-by-clinical-group}
 
@@ -270,7 +270,7 @@ On a track already open:
 
 The bottom row is the tumors with no resolved subtype.
 
-<Figure caption="Gain and loss frequency per 100 kb (bars up for gain, down for loss) across the 22 autosomes and chrX, one row per receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+<Figure caption="Gain and loss frequency per 100 kb, one row per receptor subtype." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 The file keeps gain and loss as separate columns, since at the edge of the 17q
 amplicon the HER2+ group is gained and lost at nearly the same rate, and its row

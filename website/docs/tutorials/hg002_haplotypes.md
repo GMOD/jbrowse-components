@@ -100,12 +100,12 @@ We'll set up the dotplot in the import form:
   takes a comma-separated list of contig names with `*` as a wildcard, so each
   axis gets one haplotype.
 
-<Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
+<Figure caption="The dotplot import form in Manual mode, the chromosome boxes cutting each axis down to one haplotype." src="/img/hg002_haplotypes_import_form.png" />
 
 Press **Launch**, then click the palette icon in the view's header and pick
 **Strand**, which draws the collinear blocks red and the inverted ones blue.
 
-<Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form: switching modes, opening the chromosome boxes, restricting each axis to one haplotype, and coloring the launched plot by strand." />
+<Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form and coloring it by strand." />
 
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing to chain to
 on the other haplotype, and their column and row stay empty.
@@ -114,7 +114,7 @@ Genome-wide, an inversion of a few megabases is a pixel or two of the line, so
 open a second dotplot the same way with `chr8_MATERNAL` and `chr8_PATERNAL` in
 the boxes, colored by strand.
 
-<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand, maternal on x against paternal on y: the whole genome above, chr8 alone below. Genome-wide each chromosome pairs with its homolog along one red diagonal, the empty row and column being chrX and chrY; on chr8 the 8p23.1 inversion is the blue stretch running against the diagonal near the start." src="/img/hg002_haplotypes_wholegenome.png" />
+<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand: the whole genome above, chr8 below." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## Opening the 8p23.1 inversion in a linear synteny view
 
@@ -180,7 +180,7 @@ Set these on each gene track:
 **Advanced → Edit plot...** in a gene track's menu shows its `color` (a color
 scale) and `filter` (drops records) as text and applies edits live.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled gene track beside the ribbons shows the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 ## Keeping the two haplotypes in register with the follow button
 
@@ -193,14 +193,14 @@ follow button fills the paternal panel and closes the ribbon. Turn follow off to
 pan the paternal panel by hand, or right-click a chain block for **Move other
 panel to the matching region**, which does the follow move once.
 
-<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal panel is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Before and after the follow button, maternal over paternal." src="/img/hg002_haplotypes_follow_panel.png" />
 
 **Location markers**, in the header's settings menu, draw a line through each
 ribbon from a point on the top row to where it maps on the bottom. The clip
 types the same coordinates into both panels, 2 Mb into the collinear chain past
 the inversion.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with gene tracks and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up and the markers stay vertical as the top panel is dragged." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="The follow button places the paternal panel from the maternal one through the chain, so the location markers stay vertical as the top panel is dragged." />
 
 ## Checking the 8p23.1 inversion against the chain
 

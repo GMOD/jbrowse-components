@@ -154,7 +154,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 
 Add the four tracks above, then open chromosome 1 with all four.
 
-<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats, each as features per kilobase on its own scale. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
+<Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with RefSeq genes, Alu, L1 and simple repeats, each as features per kilobase on its own scale." />
 
 The gap in every track is the centromere and the 1q12 heterochromatin beside it.
 
@@ -177,7 +177,7 @@ gene:
 }
 ```
 
-<Figure src="/img/gene_density_1q21.png" caption="Chromosome 1 from 150 to 160 Mb: the RefSeq genes as features above the Alu and L1 copies per kilobase. Alu peaks under the densest runs of genes, and L1 runs more evenly across them." />
+<Figure src="/img/gene_density_1q21.png" caption="chr1 from 150 to 160 Mb, the RefSeq genes as features above Alu and L1 per kilobase." />
 
 ## Checking the tracks against counts from the files
 

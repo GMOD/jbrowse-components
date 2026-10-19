@@ -187,9 +187,9 @@ We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
 - Right-click _CDH1_ in the gene track.
 - Choose **Collapse introns**, then **Replace current view**.
 
-<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
+<Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The CDH1 transcript reshaped to its exons from the gene's menu, and the tumor matrix redrawn over it." />
 
-<Figure caption="CDH1's exons (introns collapsed), rows grouped and colored by histology, cells colored by VEP impact. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty." src="/img/tcga/mutations_cdh1_histology.png" />
+<Figure caption="CDH1's exons, rows grouped and colored by histology, cells colored by VEP impact." src="/img/tcga/mutations_cdh1_histology.png" />
 
 Loss of E-cadherin, the protein _CDH1_ encodes, is the defining lesion of
 lobular breast cancer
@@ -241,7 +241,7 @@ With its introns collapsed the same way, _PIK3CA_ shows its calls piled on three
 columns: H1047R in the kinase domain, and E542K and E545K side by side in the
 helical domain. All three run through every band, densest in HR+/HER2-.
 
-<Figure caption="PIK3CA's exons (introns collapsed), rows banded and colored by receptor subtype. Three columns, two in the helical domain and one in the kinase domain, hold most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
+<Figure caption="PIK3CA's exons, rows banded and colored by receptor subtype." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
 ## Add a track of mutation frequency per gene
 

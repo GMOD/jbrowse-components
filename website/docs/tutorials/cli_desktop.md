@@ -144,7 +144,7 @@ jbrowse-desktop myproject/config.json
 (On macOS: `open -a "JBrowse 2" myproject/config.json`. See
 [launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
 
-<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name and the track labels come from the commands above, run on the volvox test genome."/>
+<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path. The session name and track labels come from the commands above."/>
 
 Desktop autosaves your work to a separate session file, and a `.jbrowse` file,
 which Desktop itself writes, saves in place.

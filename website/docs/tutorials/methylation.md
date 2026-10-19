@@ -118,9 +118,9 @@ The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
-<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its new track menu: Color by..., Modifications, and the two-color mode painting methylated CpGs red and unmethylated ones blue." />
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu: Color by..., Modifications, and the two-color mode." />
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read with no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. The bottom mode fills every unmarked CpG in blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -192,9 +192,9 @@ The dialog also offers to color reads by the tag; with methylation coloring on,
 that box starts unchecked, and leaving it unchecked keeps the coloring.
 **Advanced → Edit plot...** shows the resulting `facet` as text.
 
-<Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
+<Video src="/media/methylation/group_by_hp.mp4" caption="Group by... → Tag... on the HP tag, the dialog finding values 1 and 2 in the reads." />
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, with the track menu open at Group by... → Tag.... Bottom: the same reads grouped by the HP tag, one band per haplotype and one for untagged reads." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island colored by 5mC. Top: file order. Bottom: grouped by the HP tag." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
 The two per-haplotype bedMethyl files from `--phased` load as one track above
 the reads, with a row per file. Pinning the axis at 0 to 100 puts both rows on
@@ -230,7 +230,7 @@ one scale, so an unmethylated row stays flat:
 }
 ```
 
-<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. The per-haplotype profile on top, the reads grouped by HP below, with the same haplotype methylated in both." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="The SNRPN CpG island: the per-haplotype profile on top, the reads grouped by HP below." src="/img/methylation/hg002_snrpn_combined.png" />
 
 Reads of your own without an `HP` tag get one from `whatshap haplotag`, which
 reads a phased VCF. The
@@ -340,13 +340,13 @@ The display draws two marks over the same rows:
 Type `chr15:24,800,000-25,200,000` into the location box to see the _SNRPN_
 promoter and the stretch of _SNHG14_ downstream of it:
 
-<Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average. At the SNRPN promoter HP1 is methylated and HP2 unmethylated, and across the SNHG14 gene body HP2 is the more methylated. Upstream of SNRPN the two rows sit at about the same level." src="/img/methylation/hg002_imprinted_smoothed.png" />
+<Figure caption="HG002 5mC by haplotype over SNRPN and SNHG14, each CpG in grey under its moving average." src="/img/methylation/hg002_imprinted_smoothed.png" />
 
 **Edit marks...** in the track menu opens the marks. In the line's `window`
 step, set **rows before** and **rows after** to 500 for a 1,001-CpG average,
 then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 
-<Figure caption="The same track across the Prader-Willi and Angelman domain with a 1,001-CpG moving average. The haplotypes part across SNRPN and SNHG14 and track each other over the rest of the domain." src="/img/methylation/hg002_imprinted_domain.png" />
+<Figure caption="The same track across the Prader-Willi and Angelman domain with a wider moving average." src="/img/methylation/hg002_imprinted_domain.png" />
 
 ## See also
 

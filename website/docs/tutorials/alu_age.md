@@ -169,7 +169,7 @@ track below lists three marks:
 Open `chr1:151,000,000-151,030,000`, 30 kb of 1q21, and click a bar to open its
 row.
 
-<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the color. The AluY bars are among the shortest in the window and the AluJ bars the tallest, with AluS between; FLAM, the older free left Alu monomer, is as tall as AluJ." />
+<Figure src="/img/alu_age/locus.png" caption="Alu copies over 1q21, one bar per copy, its height the divergence from its consensus and its color the lineage." />
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
@@ -263,7 +263,7 @@ and key names live. The config below sets them in the track:
 }
 ```
 
-<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies per kilobase above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the Alu copies track above the same AluY share, over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+<Figure src="/img/alu_age/young_share.png" caption="Top: chromosome 1, Alu copies per kilobase above the AluY share per megabase. Below: the copies track under the wedge, with copies per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
 ## Correlating AluY share with Alu density across the genome
 

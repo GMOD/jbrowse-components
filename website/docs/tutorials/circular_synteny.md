@@ -205,7 +205,7 @@ the same labels. To read the circle:
   the [linear synteny view](/docs/user_guides/linear_synteny_view), so large
   blocks dominate and short rows stay faint.
 
-<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the color of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes, and the two X arcs hold one bundle." />
+<Figure src="/img/circular_synteny/ribbons.png" caption="Human and mouse chromosomes around the circle, every liftOver row of 100 kb and over as a ribbon in the color of its human chromosome." />
 
 ## Ordering the mouse arc to follow human
 
@@ -235,7 +235,7 @@ Hover the mouse chr11 band on the circle opened above to dim every ribbon that
 misses it. The tooltip lists each human chromosome aligned to it with the share
 it covers.
 
-<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
+<Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from." />
 
 ## Coloring the ribbons by strand
 
@@ -249,7 +249,7 @@ instead:
   second color, and **Show legend** names the two.
 - In a session, set `"color": { "field": "strand" }` on the view.
 
-<Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle colored by strand. Whole mouse chromosomes take one color or the other by which way they run against their human partners; a ribbon of the other color inside a bundle is an inversion." />
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle colored by strand." />
 
 ## The X chromosome as the control
 
@@ -259,7 +259,7 @@ The X chromosome has stayed whole across the two lineages, so no ribbon at the
 The figure also has the gene density ring that
 [Gene density as a ring](#gene-density-as-a-ring) builds.
 
-<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the same three mouse chromosomes in the other, with a gene density ring inside the ideogram. The autosome ribbons cross between the genomes, and the X ribbons stay between the two X arcs." />
+<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring inside the ideogram." />
 
 Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
 PIF holds short rows between human chrX and mouse autosomes, each a repeat or
@@ -384,7 +384,7 @@ before the synteny track:
 }
 ```
 
-<Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich. The densest stretches sit on the small human chromosomes and their mouse counterparts, and both X arcs are paler than the autosomes beside them." />
+<Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich." />
 
 ## Checking a ribbon and a ring value against the source files
 
@@ -392,7 +392,7 @@ Cut the ring session's `displayedRegionNames` to `["chr1", "chr2", "chrX"]` and
 hover the widest ribbon, the X block that runs reverse between the two genomes
 and so twists. A tooltip gives its span in each genome and its strand.
 
-<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey and crossing itself between the two X arcs because it is on the reverse strand. The tooltip names its span in each genome." />
+<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered, filled grey and crossing itself because it is on the reverse strand. The tooltip names its span in each genome." />
 
 The two loci in the tooltip come from one row of the PIF. `tabix` returns that
 row at the human coordinate the tooltip starts at:

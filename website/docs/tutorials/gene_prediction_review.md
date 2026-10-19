@@ -114,7 +114,7 @@ genes with a gap between them. GENCODE's gene features have `gene_name` and no
 `Name`, so the track labels them by accession, `ENSG00000188263` for _IL17REL_
 and `ENSG00000138892` for _TTLL8_.
 
-<Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
+<Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL and TTLL8, which GENCODE annotates as two genes." />
 
 ## Sorting Tiberius models into five classes against GENCODE
 

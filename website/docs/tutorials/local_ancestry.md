@@ -114,7 +114,7 @@ sequenced animals, to catch a wolf cross in any breed, plus:
 
 Every file between the phased panel and the painted track is text, VCF or BED:
 
-<Figure caption="The Dog10K sample table and phased BCF at the top, the panel lists and per-chromosome VCFs FLARE takes as input in the middle, and the BED9 files the track reads at the bottom." src="/img/wolfdog_ancestry_pipeline.png" />
+<Figure caption="The sample table and phased BCF, FLARE's inputs, and the BED9 files the track reads." src="/img/wolfdog_ancestry_pipeline.png" />
 
 ### Choosing the wolf and dog reference panels
 
@@ -304,7 +304,7 @@ animals:
 
 ## Wolf blocks along chr1 in wolfdogs and controls
 
-<Figure caption="Local ancestry along chr1 called by FLARE against gray wolf and breed-dog panels: wolf-derived in orange, dog in blue, two rows per animal in descending order of wolf fraction." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="FLARE's local ancestry along chr1, wolf in orange and dog in blue, two rows per animal." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Each pair of rows is the two chromosome copies of one animal. Orange marks a
 stretch resembling a present-day gray wolf more than a breed dog. Wolf on one

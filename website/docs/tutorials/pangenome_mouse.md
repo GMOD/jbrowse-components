@@ -145,7 +145,7 @@ transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose
 intolerant. **GRCm39 is C57BL/6J**, so the backbone of this graph, the reference
 path, is the strain with the deletion.
 
-<Figure caption="The Nnt window with the RefSeq genes and the bubbles track above the force-directed graph track. The node hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
+<Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The haloed node beside Nnt is labelled as an insertion." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
@@ -159,7 +159,7 @@ intron at `chr11:34,516,045-34,560,497`. To open it:
   **Graph**.
 - In the graph track's menu, tick **Show... → Show bubble halos**.
 
-<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph has one label for the whole bubble, with Dock2 pinned under the backbone. The colored path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The Dock2 intron bubble in the bubbles track, the allele inventory and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 Which strains have an allele is absent from the graph, because `minigraph`
 writes no path lines. The allele inventory's `firstSeenIn` lists the first

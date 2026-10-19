@@ -180,7 +180,7 @@ on one axis:
 The panel stacks any tracks in the same units this way. For one track per pick,
 untick **Stack on a shared scale**.
 
-<Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row shows a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
+<Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878 on one y-axis." src="/img/alphagenome/expression_two_cell_lines.png" />
 
 _STIL_, to the right, is predicted in both lines, which shows the GM12878 row
 loaded.
@@ -193,7 +193,7 @@ Add four accessibility rows to the prediction:
 - Type `ATAC` and tick both again; ticks survive the filter change.
 - Click **Add 4 selected** to put all four in one track on one axis.
 
-<Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
+<Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis." src="/img/alphagenome/accessibility_shared_axis.png" />
 
 The GM12878 rows have peaks too, at open chromatin that is not transcribed.
 
@@ -202,7 +202,7 @@ The GM12878 rows have peaks too, at open chromatin that is not transcribed.
 Splice junctions come back as arcs joining exons, as in a sashimi plot. Add the
 K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
 
-<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq. The K562 arcs join the exons the RefSeq track draws; the GM12878 track has none." src="/img/alphagenome/splice_junctions.png" />
+<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 as arcs." src="/img/alphagenome/splice_junctions.png" />
 
 ## The predicted GM12878 contact map over the whole window
 
@@ -210,7 +210,7 @@ AlphaGenome predicts Hi-C-style contact maps at 2 kb bins for about a dozen cell
 lines, GM12878 among them. Add the GM12878 contact map and zoom out to the whole
 predicted megabase:
 
-<Figure caption="The predicted GM12878 contact map across the whole window, at 2 kb bins. Blocks of self-interaction sit along the diagonal with blank stretches between them, and TAL1 lies near the middle of the view." src="/img/alphagenome/contact_map.png" />
+<Figure caption="The predicted GM12878 contact map across the window at 2 kb bins." src="/img/alphagenome/contact_map.png" />
 
 ## Scoring a TAL1 variant against the reference
 
@@ -223,7 +223,7 @@ Right-click any variant and choose **Predict variant effect with AlphaGenome**.
 The query panel opens with the variant loaded, and running it predicts the
 window twice, once for the reference and once with the variant.
 
-<Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/predict_variant_menu.png" />
+<Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The menu's last row opens the query panel with that variant loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
 The stored prediction is for the **Jurkat** insertion,
 `chr1:47239296 C>CCGTTTCCTAACC`, in CD34+ common myeloid progenitors, the
@@ -249,7 +249,7 @@ where positive is a gain from the insertion.[^mapping] To read the differences:
   because on a row this sparse the default clipping flattens the gain at the
   insertion.
 
-<Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac, positive for a predicted gain." src="/img/alphagenome/variant_difference.png" />
+<Figure caption="The Jurkat insertion scored in CD34+ progenitors: alternate minus reference for DNase, RNA-seq and H3K27ac." src="/img/alphagenome/variant_difference.png" />
 
 Accessibility rises at the insertion. H3K27ac, the mark of an active enhancer,
 rises across the locus, and predicted transcription rises over the _TAL1_ exons.

@@ -198,7 +198,7 @@ views.[^coarse]
 **Manual** mode builds the stack by hand: **Add row** per strain, and the
 connector button between each pair to pick its track.
 
-<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all Quick start in the import form, the ecoli_ava track filling in its five assemblies as rows." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Stacking the strains in a defaultSession
 
@@ -234,7 +234,7 @@ A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
 Row order is a free choice with an all-vs-all PAF, since the file aligns every
 pair.
 
-<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 has inversions against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 ## Adding gene tracks to see what a gap holds
 
@@ -255,7 +255,7 @@ Navigate the K-12 row to `chr:1,026,000-1,126,000` and the Sakai row to
 `chr:1,205,000-1,305,000`. The gap right of the ribbon holds _stx2A_ and
 _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
-<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and stx2B sits in the stretch past it with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks at the Sp5 prophage. The ribbon runs out where the shared backbone ends." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
 ## One strain against all the others
 
@@ -282,7 +282,7 @@ graph's segments, built with minigraph in the
 [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli), above the
 sections.
 
-<Figure caption="Above, one track with one section per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+<Figure caption="Above, K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 At whole-chromosome zoom, the same sections also fit on the K-12 row of the
 five-strain stack:
@@ -292,7 +292,7 @@ five-strain stack:
 - Pick **Strand** from the palette button, so an inversion is blue in both
   halves.
 
-<Figure caption="The one-vs-all sections on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all sections on the K-12 row of the five-strain stack, colored by strand." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ### Percent identity per strain
 
@@ -336,7 +336,7 @@ applies edits live.
 }
 ```
 
-<Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity. NCTC86 runs closest to K-12, and the short, less similar alignments fall at the same places in every row." src="/img/multiway_synteny/ecoli_identity_rows.png" />
+<Figure caption="K-12 against each other strain, one row per strain, each alignment a line at its identity." src="/img/multiway_synteny/ecoli_identity_rows.png" />
 
 ### Redrawing each lane in its own strain's coordinates
 
@@ -363,11 +363,11 @@ Right-clicking a single alignment offers three routes under **Launch**:
 - **Open Sakai at the matching region** opens a linear genome view of Sakai at
   that region.
 
-<Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or a linear view of that strain, in one Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
+<Figure caption="Right-clicking one alignment in the one-vs-all lanes opens the Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
-<Figure caption="A rubberband selection over the shared backbone, the Launch → Linear synteny view entry it raises, the dialog listing a panel per strain, and the five-row stack it opens." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="A rubberband selection, the Launch → Linear synteny view entry it raises, the dialog, and the stack it opens." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
-<Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, the dialog lists a panel per strain that aligns to the window, and its arrows move IAI39 up under K-12 before the launch replaces the lane view with the stack." />
+<Video src="/media/synteny/allvsall_launch_from_selection.mp4" caption="From the lanes to the stack for one locus: a scale-bar selection raises Launch, and the dialog's arrows reorder the panels before launch." />
 
 A launched view is a few kilobases wide, so it draws each indel from the CIGAR
 `minimap2 -c` wrote. **CIGAR indels** in the settings menu sets them to colored,

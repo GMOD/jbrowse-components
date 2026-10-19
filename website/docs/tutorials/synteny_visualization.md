@@ -151,7 +151,7 @@ indexed needs only its `uri`; swap in your own file.
 A track whose `assemblyNames` are in the wrong order draws an empty band and
 shows a warning in the view header:
 
-<Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
+<Figure caption="A synteny track whose assemblyNames are reversed draws an empty band, and the warning icon in its header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
 ## Reading the whole genome in a dotplot
 
@@ -159,9 +159,9 @@ shows a warning in the view header:
 just added and click **Launch**. **Swap** transposes the axes. **Manual** picks
 each axis and a synteny file by hand.
 
-<Figure caption="The dotplot import form in Manual mode, where you pick the X-axis and Y-axis assembly by hand, then optionally add a synteny file in any of the formats it accepts." src="/img/sv_synteny/dotplot_import.png" />
+<Figure caption="The dotplot import form in Manual mode." src="/img/sv_synteny/dotplot_import.png" />
 
-<Figure caption="The 26695 vs J99 alignment, 26695 on the X-axis and J99 on the Y-axis. The backbone runs anti-diagonal because the two assemblies were deposited in opposite orientations, and the pieces sitting off it are the rearrangements between the strains." src="/img/sv_synteny/dotplot.png" />
+<Figure caption="26695 (x) against J99 (y). The backbone runs anti-diagonal, since the two assemblies were deposited in opposite orientations." src="/img/sv_synteny/dotplot.png" />
 
 To open any of those pieces at base resolution, drag a box across it, then
 right-click inside the box and choose **Linear synteny view**.
@@ -207,7 +207,7 @@ NZ_CP011330v1:1,238,100-1,258,100
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, a zoom in on each row, and each strain's gene track from the track selector for that row." />
 
-<Figure caption="Three H. pylori strains stacked with a gene track on each genome, across a block inverted in J99. The ribbons between 26695 and CHC155 run straight, and the ribbons into J99 cross only over the inverted block, between flanking genes that line up in all three strains." src="/img/sv_synteny/linear_synteny_genes.png" />
+<Figure caption="Three H. pylori strains stacked with a gene track on each. The ribbons into J99 cross over its inverted block." src="/img/sv_synteny/linear_synteny_genes.png" />
 
 ## Coloring genes by ortholog
 
@@ -220,7 +220,7 @@ only a locus tag) stay grey. Inside the inversion, _rsmA_ and _rlmN_ trade
 places in J99. **Advanced → Edit plot...** in the same menu shows the setting as
 text and applies edits live.
 
-<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the J99 row shows the inverted block's colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
+<Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the three strains after applying it, a shared symbol one color down all three." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
 The config below is the same setting on the hub's gene track:
 

@@ -169,7 +169,7 @@ which exon it sits in.
 
 ## CYP1A2 stop-gained genotypes across breeds and wolves
 
-<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant track, then one row per dog. Five breeds have the allele; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
+<Figure caption="The CYP1A2 stop-gained variant at base level: the sequence and its translation, the site as a variant track, then one row per dog." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The build script genotypes the stop site over every canid in the callset. Dozens
 of breeds have the allele and it reaches homozygosity in several: every German
@@ -294,7 +294,7 @@ figure's upper track is a second BED the script writes,
 names; its track takes `rows: { "field": "sample", "domain": [...] }` with those
 names in drawing order.
 
-<Figure caption="Copy number over CYP1A2 and its neighbours, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
+<Figure caption="Copy number over CYP1A2, named animals above and the whole collection below." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
 the collection, plus the four wolves from the genotype figure. Every Golden has

@@ -55,7 +55,7 @@ Open the track's menu from the track label, then:
 **Advanced → Edit plot...** is a second route to the `color` and `unit`: it
 shows them as text and applies edits live.
 
-<Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
+<Figure caption="The volvox-sv (cram) track as a 250px pileup, reads viewed as pairs and colored by insert size and orientation." src="/img/display_settings_url_snapshot.png" />
 
 ## Read the setting names back out of the session JSON
 

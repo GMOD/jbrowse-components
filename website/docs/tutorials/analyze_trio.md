@@ -220,7 +220,7 @@ off because the row labels already name the four categories:
 The painted track draws each parent's two copies as rows, blue for father
 HG02026 and red for mother HG02025:
 
-<Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
+<Figure caption="hap-ibd inheritance blocks in the multi-row feature display, the father's haplotypes blue and the mother's red." src="/img/trio-hapibd-painting.png"/>
 
 The blue rows together are the child's paternal chromosome. A filled blue row
 marks the father's copy the child inherited there, so hap-ibd places a paternal
@@ -256,12 +256,12 @@ Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
 paternal crossover near chr1:29.7 Mb:
 
-<Figure caption="A paternal crossover. The painting steps from Father hap2 to Father hap1, and the tinted frames mark that switch in the raw genotypes." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="A paternal crossover, where the painting steps from Father hap2 to Father hap1. Tinted frames mark the switch in the genotypes." src="/img/trio-crossover-paternal.png"/>
 
 Near chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="A maternal crossover. The painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="A maternal crossover, where the painting steps from Mother hap2 to Mother hap1." src="/img/trio-crossover-maternal.png"/>
 
 The 1000 Genomes VCF is statistically phased, so its genotypes switch between
 the two parental copies more often than real crossovers do. hap-ibd's cM-length

@@ -237,7 +237,7 @@ trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 Stack the r² track of each population over the karyotype track of the same
 population.
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in Cameroon, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
 The block's edges line up with the published breakpoint coordinates.
 

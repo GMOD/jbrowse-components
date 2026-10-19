@@ -315,7 +315,7 @@ beside it), then:
   (`jexl:feature.name=='Tyrp1'`).
 - Open chr4 with the genes, the scan and the painting.
 
-<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are nearly all B (blue) and both brown bands nearly all D (red). Away from the peak every band is a mix of the two."/>
+<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="chr4 with the painting's rows banded by coat color, B in blue and D in red."/>
 
 Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
 dilute brown strains DBA/2's; the rest of chr4 is the control, where nothing
@@ -327,7 +327,7 @@ The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). The same grouped painting, with the gene track filtered to _Myo5a_,
 splits the sections the other way:
 
-<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
+<Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way."/>
 
 ## Reproduce it end to end
 

@@ -93,7 +93,7 @@ The hover lights the codon on the gene, the column in the alignment and the
 residue on the structure, and the protein view's header compares the two
 letters: glutamate in the dog genome, lysine in the crystal.
 
-<Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 on canFam4, its ortholog alignment below and 7WX0 beside. The hovered column, the codon band and Lys40 outlined in pink mark one position, and the header reads Structure: K, Genome: E." />
+<Figure src="/img/protein/sod1_codon_hover.png" caption="SOD1 at codon 40 with its ortholog alignment and 7WX0. The hovered column, the codon band and Lys40 mark one position." />
 
 ## Slicing SOD1 out of Dog10K
 
@@ -166,7 +166,7 @@ To put a site where the wolves have the alternate allele beside codon 40, type
 `chr31:27122805-27122834 chr31:27123013-27123103` into the location box. The
 first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 
-<Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category: wolves at the top, then coyotes, village dogs, mixed and other dogs, and breed dogs. Under codon 40 the alternate genotypes sit in the village and breed dog blocks and the wolf rows are reference; the intronic SNV to the left is alternate in every block." />
+<Figure src="/img/protein/sod1_dog10k.png" caption="Dog10K genotypes under SOD1, one row per canid, colored down the left edge by category." />
 
 ## Counting E40K carriers by category
 

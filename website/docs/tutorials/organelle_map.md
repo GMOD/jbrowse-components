@@ -192,7 +192,7 @@ half the circle's radius, and a track that asks for more lays its rows out in
 the band it gets. A circle of one sequence names its features outside the ruler,
 each joined to its feature by a line.
 
-<Figure src="/img/organelle_map/mito_ring.png" caption="The human mitochondrial genome NC_012920.1 as a circle, with the NCBI genes grouped by strand and colored by type. The outer row holds the plus-strand genes, the inner row the minus-strand ones: ND6 among the protein-coding genes, a handful of tRNAs, and the D-loop, which runs across position 1 as one arc." />
+<Figure src="/img/organelle_map/mito_ring.png" caption="NC_012920.1 as a circle, the NCBI genes grouped by strand and colored by type." />
 
 ## Checking ND6 against the GFF3
 
@@ -200,7 +200,7 @@ The minus-strand row holds a single protein-coding gene, _ND6_, which sits
 between _ND5_ and _CYTB_. Type `NC_012920.1:12,000-16,569` into a linear view
 with the same track to see the three side by side:
 
-<Figure src="/img/organelle_map/nd6_linear.png" caption="The last few kilobases of NC_012920.1, the NCBI genes grouped by strand. ND5 and CYTB run on the plus strand with ND6 between them on the minus strand. The D-loop's piece before the origin runs to the end of the sequence." />
+<Figure src="/img/organelle_map/nd6_linear.png" caption="The end of NC_012920.1, the NCBI genes grouped by strand." />
 
 The command below lists the minus-strand genes from the GFF3's strand column,
 _ND6_ and eight tRNA genes:

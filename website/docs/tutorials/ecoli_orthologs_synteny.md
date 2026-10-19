@@ -227,7 +227,7 @@ sets `height` to fit every lane:
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes, each drawing its own RefSeq gene models. A gene's color runs the full stack. Lanes marked [rev] hold this window's genes in the opposite order to K-12 and are mirrored, so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over forty-three lanes, each with its own RefSeq genes. Lanes marked [rev] are mirrored, so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
 ## The O-antigen cluster, where the gene-symbol join stops
 
@@ -257,7 +257,7 @@ differs most between strains. Open the cluster:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The flanking ribbons run through every lane; the interior is mostly grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same lanes." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 

@@ -219,7 +219,7 @@ We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
 - Turn on the simple-anchors track in each panel's track selector, where it
   draws as a row of bars.
 
-<Figure caption="Peach and grape with both MCScan tracks loaded. In the band, wide ribbons are .anchors.simple blocks with the per-gene .anchors pairs over them; the strand-colored bars in each panel are the same blocks. Marks along the top of the band are gene pairs whose grape gene lies on a chromosome not shown. Most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
+<Figure caption="Peach and grape with both MCScan tracks: .anchors.simple blocks as wide ribbons, the per-gene .anchors pairs over them. Marks along the top of the band are pairs whose grape gene is on a chromosome not shown." src="/img/mcscan_anchors.png" />
 
 The bars in each panel come from the block track's `LGVSyntenyDisplay`, which
 draws synteny as features in an ordinary linear genome view row. Selecting it by
@@ -247,14 +247,14 @@ name needs the full `displays` array:
 }
 ```
 
-<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, so each block is the bundle of pairs it was reduced from." />
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone. Bottom: both files on one band." />
 
 ## A single gene pair up close {#what-an-anchor-looks-like-up-close}
 
 Zoom to one block with both gene tracks on and set to **Filter by... → Genes →
 Only genes**.
 
-<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Only genes. Each ribbon is one .anchors line, spanning the two genes it pairs; genes without a ribbon have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
+<Figure caption="One MCScan block with both gene tracks set to Only genes. Each ribbon is one .anchors line, spanning the two genes it pairs." src="/img/mcscan_synteny/gene_level.png" />
 
 MCScan anchors only the pairs it could call confidently, so most genes have no
 ribbon.
@@ -267,7 +267,7 @@ turns orange where several genes share one ortholog, which is often a tandem
 array. The count covers the whole `.anchors` file, so a gene whose other copies
 are off screen still takes color.
 
-<Figure caption="Grape chr1 against peach Pp04, the .anchors track colored by syntenic depth. Grey one-to-one pairs run in order across the block; orange marks a tandem array in each genome, grape copies converging on one peach gene and peach copies fanning out from one grape gene." src="/img/mcscan_synteny/syntenic_depth.png" />
+<Figure caption="Grape chr1 against peach Pp04, the .anchors track colored by syntenic depth." src="/img/mcscan_synteny/syntenic_depth.png" />
 
 ## Viewing the gene pairs as a dotplot
 
@@ -277,9 +277,9 @@ one. The axes start in index order; **Re-order chromosomes**, in the overflow
 menu of the dotplot header, sorts the vertical axis to follow the horizontal
 one.
 
-<Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
+<Video src="/media/synteny/dotplot_reorder.mp4" caption="The dotplot axes in index order, then re-sorted from the header's overflow menu." />
 
-<Figure caption="Peach against grape after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
+<Figure caption="Peach against grape after Re-order chromosomes, every point one .anchors gene pair." src="/img/mcscan_synteny/dotplot.png" />
 
 **Re-order chromosomes** puts each peach chromosome's strongest grape partner on
 the diagonal, and its other partners stay off it. The

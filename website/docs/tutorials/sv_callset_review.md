@@ -153,7 +153,7 @@ jb2export breakpoint \
   --width 1000 --out der3_tumor.png
 ```
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads have a solid curve at every breakend and the matched normal has none at them. On the right, the same three loci as one reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="COLO829's der(3) loci in three panels with tumor and normal nanopore reads, and the same loci as one reconstructed contig on the right." src="/img/jbrowse-img/sv_review_pair.png" />
 
 `featureHeight:super-compact` in the `jb2export breakpoint` command draws each
 read 1 px tall, which fits six pileups on one screen.
@@ -177,7 +177,7 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 A somatic call has curves in `tumor/` and none in `normal/`. Each call and its
 control share a file name across the two directories:
 
-<Figure caption="Three rows of the two batch directories, tumor on the left and the matched normal on the right, each labelled with its file name. The chr7 junction has a fan of curves in the tumor and none in the normal. The chr1 to chr19 junction has curves in both. The chr2 deletion has no curve in either; one tumor read has it as a gap through both panels." src="/img/jbrowse-img/sv_callset_sheet.png" />
+<Figure caption="Three rows of the two batch directories, tumor on the left and normal on the right, each labelled with its file name." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
 The caller filed the chr1 to chr19 junction as somatic, but the curves in the
 normal mark it as germline.

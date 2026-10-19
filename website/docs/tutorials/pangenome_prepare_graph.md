@@ -208,7 +208,7 @@ The config's first track is the graph. Its adapter holds:
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
 
-<Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
+<Figure caption="The HPRC graph's segment index over C4 on hg38." src="/img/pangenome/prepare_graph_segments.png" />
 
 The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
 into your own config, then run `jbrowse validate config.json`, which reports a

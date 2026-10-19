@@ -163,7 +163,7 @@ the track's `color` is a color scale on the `mapq` field:
 Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
 `chr5:70,850,000-71,500,000` for the reads.
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, the region on chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a second view from SMN1 to where the reads recover, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Top: SMN2 and SMN1 with gnomAD coverage, GIAB's difficult regions and the SV callset. Below: a second view with Umap mappability and reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 GIAB flags two long intervals, much larger than the gene, and the gnomAD track
 stays low across both. Beyond them, GIAB flags nothing larger than a few
@@ -173,7 +173,7 @@ same coordinate as the gnomAD coverage.
 
 Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
-<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four tracks and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
+<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette with one read per row, colored by mapping quality." links="Open this view=qc/smn1_evidence" />
 
 Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
 the reads track shows this `color` as text and applies edits live.
@@ -216,7 +216,7 @@ the hs1 assembly and the chain file, whose query is the genome it lifts to:
 }
 ```
 
-<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on that assembly's SMN2-to-SMN1 span and its flanks, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above T2T-CHM13, each on its SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains colored by strand." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
 crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the

@@ -279,7 +279,7 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 - `color` is a color scale, a `field` mapped to colors; the `reference` field
   colors both bands by the chromosomes of the shared middle row
 
-<Figure caption="Peach, cacao and grape stacked, with one MCScan .blocks file backing both synteny bands. The view reorders and flips each row so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
+<Figure caption="Peach, cacao and grape stacked from one MCScan .blocks file. Color by → Reference anchors both bands on the middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct and transitive pairs {#direct-vs-transitive-pairs}
 
@@ -304,7 +304,7 @@ We'll stack peach over grape over cacao. Then:
 - Pick **Color by value → Syntenic depth** on the palette button in the view
   header.
 
-<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. Ribbons colored by syntenic depth: grey one-to-one orthologs step across all three in the same order, and orange marks grape genes that share an ortholog, darkest at the fan where a tandem array meets one peach and one cacao gene." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="One conserved block at gene level with each genome's gene track, ribbons colored by syntenic depth." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One grape locus against all seven genomes
 
@@ -319,7 +319,7 @@ in a linear genome view on grape:
 - Pick **Group by... → Mate assembly** to facet the track into one lane per
   genome.
 
-<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, while arabidopsis and tomato (the one asterid) keep a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the blocks track grouped by mate assembly, one lane per genome." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Lanes in per-genome coordinates {#each-genome-in-its-own-coordinates}
 
@@ -395,7 +395,7 @@ config, so name your own `trackId` instead):
 }
 ```
 
-<Figure caption="The grape gene track above multi-way lanes, one per genome, all from a single MCScan blocks track. The peach and cacao lanes draw gene models from those genomes' gene tracks, the others draw gene spans from the table as boxes, and a chain of ribbons bridges past a lane that places nothing." src="/img/multiway_synteny/lgv_track_lanes.png" />
+<Figure caption="The grape gene track above multi-way lanes from one MCScan blocks track. A chain of ribbons bridges past a lane that places nothing." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 ### What a lane header shows
 
@@ -430,7 +430,7 @@ number differs.
 - Click a ribbon to open the details for that pair, and click empty canvas to
   clear the outline.
 
-<Figure caption="Lanes zoomed to a few genes, with one ribbon clicked. Each ribbon links a gene to its ortholog in the lane below; the clicked ortholog group is outlined down every lane that chains it, and the details panel opens on the clicked pair." src="/img/multiway_synteny/lgv_track_clicked.png" />
+<Figure caption="Lanes zoomed to a few genes with one ribbon clicked: its ortholog group is outlined down every lane, and the details panel opens on the pair." src="/img/multiway_synteny/lgv_track_clicked.png" />
 
 ## Restacking the genomes around a locus
 
@@ -448,7 +448,7 @@ The ⋮ on a lane header, or a right-click on its name, opens the lane menu.
 at the matching region** opens peach in a linear genome view, with its gene
 track.
 
-<Figure caption="The lane header menu: reorder or hide a lane, open peach at its span, or re-anchor the track on it." src="/img/multiway_synteny/lane_header_menu.png" />
+<Figure caption="The lane header menu." src="/img/multiway_synteny/lane_header_menu.png" />
 
 <Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus: a scale-bar selection raises Launch, and the dialog lists a panel per genome with grape between its two mates." />
 

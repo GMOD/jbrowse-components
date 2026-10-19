@@ -113,7 +113,7 @@ The thin teal lines jumping across a gap are spliced alignments, where a read
 maps partly to one exon and partly to the next, skipping the intron between
 them.
 
-<Figure caption="RNA-seq reads over ACTB under the NCBI RefSeq gene model: the coverage histogram with strand-colored splice arcs, then the spliced read pileup." src="/img/rnaseq/basic.png" />
+<Figure caption="RNA-seq reads over ACTB: coverage with strand-colored splice arcs, then the spliced pileup." src="/img/rnaseq/basic.png" />
 
 ## Read coverage and read height
 
@@ -121,7 +121,7 @@ The histogram counts the reads in the pileup below it at each position.
 
 **Read height → Compact** in the track menu packs the full read stack into view:
 
-<Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
+<Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
 
 ## Spliced reads, CIGAR strings, and splice arcs
 
@@ -162,7 +162,7 @@ track-menu settings pull the splicing evidence out.
 lowest rows, so the junction-spanning reads sit together at the top of the
 pileup.
 
-<Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. Teal lines mark reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
+<Figure caption="The ACTB pileup in file order above, sorted with spliced reads first below." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
 **Filter by... → Spliced reads → Only spliced reads** sets a `filter` that drops
 every read without a skip, and the coverage histogram follows, leaving the
@@ -174,7 +174,7 @@ every arc whose intron does not begin and end with GT-AG, GC-AG or AT-AC on
 either strand. Raising **Sashimi arcs → Min read support** also drops thin arcs,
 along with any real junction few reads support.
 
-<Figure caption="Every junction the reads have above, and only the canonical ones below. The motif filter drops the two salmon arcs around the leftmost intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
+<Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
 ## Strand-specific RNA-seq
 
@@ -189,7 +189,7 @@ location box, then pick this path from the track menu:
 
 **Color by... → Paired end → First-of-pair strand**
 
-<Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
+<Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
 
 Grouping the reads by first-of-pair strand shows transcript strand over a whole
 gene.
@@ -202,7 +202,7 @@ histograms alone.
 On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 `chr6:31,920,500-31,933,000` into the location box:
 
-<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
+<Figure caption="NELFE and SKIV2L grouped by first-of-pair strand." src="/img/rnaseq/strand_split_coverage.png" />
 
 ## Long-read splicing: IsoSeq over ACTB
 
@@ -220,7 +220,7 @@ the same assembly:
 }
 ```
 
-<Figure caption="IsoSeq high-quality isoforms over ACTB. A long read often spans all of a transcript's exons, so one spliced alignment covers the whole transcript." src="/img/rnaseq/longread_isoseq.png" />
+<Figure caption="IsoSeq isoforms over ACTB." src="/img/rnaseq/longread_isoseq.png" />
 
 ## Loading STAR, regtools and portcullis junction tables
 
@@ -355,7 +355,7 @@ Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
 where the file separates what RefSeq annotates from what this library also
 splices:
 
-<Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The large red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
+<Figure caption="FOLH1's 5' end: RefSeq transcripts above the library's junctions, blue where an annotated transcript joins the two ends and red where none does." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
 To load the other tables:
 

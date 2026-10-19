@@ -255,7 +255,7 @@ field for them:
 }
 ```
 
-<Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair colored by dS on a pinned ramp. Cells pairing an A chromosome with a D one sit lower on the ramp than cells pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
+<Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair colored by dS on a pinned ramp." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
 With **dN/dS** chosen on the palette button, almost every pair draws below 1 on
 the ramp. A ratio over 1 between copies this recently separated rests on few

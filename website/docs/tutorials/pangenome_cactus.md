@@ -228,7 +228,7 @@ In grammar-of-graphics terms, `color` is a color scale that maps each ribbon's
 `strand` to red where the two strains run the same way and blue where one is
 inverted against the other.
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair, colored by strand. The top three bands run red throughout, and IAI39's large inversions are the blue ribbons crossing the bottom one." src="/img/pangenome_cactus/synteny.png" />
+<Figure caption="The Minigraph-Cactus graph's halSynteny projection, five strains stacked and colored by strand." src="/img/pangenome_cactus/synteny.png" />
 
 ## Variants against K12 (vg deconstruct)
 
@@ -303,7 +303,7 @@ writes one line per block, which a
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. The four non-K12 rows stop at the edges of the cryptic prophage CPZ-55, which only K12 has." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The HAL projected onto K12 as a MAF, one row per strain, colored where each differs from K12." src="/img/pangenome_cactus/maf.png" />
 
 A row with no colored columns shares its sequence with K12, and a row that stops
 has no alignment to K12 there. The coverage band tells the two apart.
@@ -400,7 +400,7 @@ gene copy):
 }
 ```
 
-<Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
+<Figure caption="odgi depth over the rrnC operon against each builder's graph, on one axis." src="/img/pangenome_cactus/builders.png" />
 
 ## Mapping a new isolate through the graph
 
@@ -520,7 +520,7 @@ Turned on, the track draws the window as a graph on K12's coordinates. In its
 track menu, **Display types → Feature display** draws the same segments as a row
 of blocks instead.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and the track drawing the graph on K12's coordinates." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with Open track... → Add pangenome graph track." />
 
 Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
 the other four skip. To see it:
@@ -534,7 +534,7 @@ the other four skip. To see it:
   the strains-per-segment track counts the strains, and the MAF's rows name
   them.
 
-<Figure caption="1.6 kb of K12 past flhD, as tracks above and as the graph track below. The gene track names the IS1 transposase pair insA5 and insB5 in the shaded span, the strains-per-segment track paints that span as one strain where the rest of the window is all five, the four non-K12 MAF rows show it as a deletion, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD as tracks above and as the graph track below. The shaded span is the IS1 element the other four strains route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 In the track menu, **Show... → Show deletion edges** hides the dashed link the
 graph draws for the other four strains' route, which is labelled with the length
@@ -547,13 +547,13 @@ Open `mc/ecoli.viz/chr.full.viz.png`, the
 raster `--viz` wrote, with one row per strain and graph node order on the
 horizontal axis.
 
-<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so its positions do not correspond to genes or coordinates. The gold band marks the locus the figure below opens." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain graph drawn by odgi viz, one row per strain, on graph node order. The gold band marks the locus the next figure opens." src="/img/pangenome_cactus/graph.png" />
 
 The `odgi pav` track contains the same paths. Drawn on K12's coordinates, in the
 raster's row order and colors, they differ only on the horizontal axis. The gold
 band marks `chr:1,000,000-1,100,000` in both.
 
-<Figure caption="The same paths and the same colors on K12's coordinates. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
+<Figure caption="The same paths and colors on K12's coordinates, the gold band the same 100 kb." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 The graph axis counts pangenome bases, so a locus where other strains have
 sequence K12 lacks takes up more of it. The band contains Sakai's _stx2_

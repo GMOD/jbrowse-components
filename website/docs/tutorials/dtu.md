@@ -341,7 +341,7 @@ The other three tracks differ in their id, name and file:
 }
 ```
 
-<Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is a cassette exon, included in some isoforms and skipped in others. Muscle coverage is flat there and liver peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C with muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by satuRn's isoform-fraction change. The marked column is a cassette exon." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 ## Reproduce it end to end
 
