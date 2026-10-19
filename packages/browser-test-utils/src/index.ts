@@ -52,6 +52,7 @@ export {
 export {
   checkExamplesSiteDocLinks,
   writeExamplesSiteDemoHeights,
+  writeExamplesSitePoster,
 } from './examplesSiteCli.ts'
 export {
   buildDocIndex,

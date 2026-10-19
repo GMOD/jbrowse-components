@@ -1,14 +1,12 @@
-import http from 'node:http'
-
 import {
   findChromeExecutable,
   isBrowserConsoleNoise,
   waitForFrame,
 } from '@jbrowse/capture'
 import puppeteer from 'puppeteer'
-import handler from 'serve-handler'
 
 import { BASE_CHROME_ARGS } from './chromeArgs.ts'
+import { serveExamplesSite } from './examplesSiteServer.ts'
 
 import type { Page } from 'puppeteer'
 
@@ -162,18 +160,7 @@ export async function smokeExamplesSite({
   allowedUnsettled = () => false,
   log = () => {},
 }: SmokeOptions): Promise<number> {
-  const server = http.createServer((req, res) => {
-    // strip the Astro base prefix so /storybook/<x>/foo/ resolves to dist/foo/
-    if (req.url?.startsWith(base)) {
-      req.url = req.url.slice(base.length) || '/'
-    }
-    void handler(req, res, { public: distDir })
-  })
-  await new Promise<void>(resolve => {
-    server.listen(0, resolve)
-  })
-  const addr = server.address()
-  const port = typeof addr === 'object' && addr ? addr.port : 0
+  const site = await serveExamplesSite(distDir, base)
 
   const browser = await puppeteer.launch({
     executablePath: findChromeExecutable(),
@@ -186,7 +173,7 @@ export async function smokeExamplesSite({
 
   async function visit(slug: string) {
     // '' is the landing page: `${base}/${slug}/` would give it a double slash
-    const url = `http://localhost:${port}${base}/${slug ? `${slug}/` : ''}`
+    const url = site.url(slug)
     const name = slug || 'index'
     const page = await browser.newPage()
     await page.setViewport(viewport)
@@ -342,11 +329,7 @@ export async function smokeExamplesSite({
   }
 
   await browser.close()
-  await new Promise<void>(resolve => {
-    server.close(() => {
-      resolve()
-    })
-  })
+  await site.close()
   log(`\n${slugs.length - failures}/${slugs.length} pages OK`)
   return failures
 }

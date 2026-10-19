@@ -48,6 +48,13 @@ export const pages: ExamplePage[] = [
     group: 'Getting started',
   },
   {
+    slug: 'static-first-paint',
+    title: 'A picture first, then the view',
+    description:
+      'A screenshot paints with the page; the engine loads near the viewport.',
+    group: 'Getting started',
+  },
+  {
     slug: 'without-react',
     title: 'Without React',
     description:

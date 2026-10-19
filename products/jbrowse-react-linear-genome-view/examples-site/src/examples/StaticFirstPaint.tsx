@@ -6,7 +6,7 @@ const LinearGenomeView = lazy(async () => ({
 }))
 
 // A screenshot of this same view once it finished drawing, taken at the width
-// below by scripts/capture-poster.mjs
+// below by `pnpm capture-poster`
 const poster = {
   src: '/storybook/lgv/static-first-paint.png',
   width: 800,
@@ -84,17 +84,25 @@ export default function StaticFirstPaint() {
           <Suspense fallback={null}>
             <LinearGenomeView
               assembly={{
-                name: 'volvox',
-                uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+                name: 'hg38',
+                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+                refNameAliases: {
+                  uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+                },
               }}
               tracks={[
                 {
-                  trackId: 'volvox_gff3',
-                  name: 'Volvox genes',
-                  uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+                  trackId: 'hg38-ncbi-refseq-curated',
+                  name: 'NCBI RefSeq Curated',
+                  uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+                  index:
+                    'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi',
                 },
               ]}
-              view={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
+              view={{
+                loc: 'chr7:155,799,529..155,812,871',
+                tracks: ['hg38-ncbi-refseq-curated'],
+              }}
             />
           </Suspense>
         </div>
@@ -102,7 +110,7 @@ export default function StaticFirstPaint() {
       {ready ? null : (
         <img
           {...poster}
-          alt="Volvox genes at ctgA:1105..1221"
+          alt="NCBI RefSeq genes at SHH, chr7:155,799,529..155,812,871"
           // narrower than the screenshot, crop its right side rather than shrink
           // it, since the view keeps its height at any width
           style={{

@@ -166,16 +166,24 @@ a track written in full, with its `adapter`, `displays` and `type`, or one on a
 An embedded view shows an empty box until its JavaScript, its assembly and its
 first track fetch have all arrived. A screenshot of the view's opening state
 paints with the page instead, and the live view takes over once it has drawn.
-The [live example](https://jbrowse.org/storybook/lgv/static-first-paint/) has
-the full source.
+Each package has a live example with the full source:
+[LGV](https://jbrowse.org/storybook/lgv/static-first-paint/),
+[CGV](https://jbrowse.org/storybook/cgv/static-first-paint/),
+[app](https://jbrowse.org/storybook/app/static-first-paint/) and
+[build your own](https://jbrowse.org/storybook/byo/static-first-paint/), where
+`PosterFirst` from `@jbrowse/display-ui/embed` does everything below but the
+screenshot.
 
 - **Shoot the poster from the view itself**, at the width the embed will have.
   `waitForJBrowseReady` from `@jbrowse/capture` holds until every track has
   drawn. A `jb2export` figure has no toolbar and uses different fonts, so the
   page would jump when the live view replaced it.
 - **Load the engine when the box nears the viewport.** An `IntersectionObserver`
-  plus a dynamic `import()` (`React.lazy`) means a page with several embeds pays
-  only for the ones the reader scrolls to.
+  plus a dynamic `import()` (`React.lazy`) means a page with several embeds
+  starts the engine for each one as the reader scrolls to it. Destructure what
+  each `import()` returns (`const { X } = await import('pkg')`): a bundler keeps
+  every export of a namespace it cannot see into, and loads those modules on
+  page load wherever another page shares them.
 - **Keep the poster up until the view reads ready.** Each component publishes
   `[data-app-phase="ready"]` once its tracks have drawn. Wait for it with
   `data-app-views` above 0, then two animation frames, so the view's pending
@@ -185,26 +193,17 @@ the full source.
   resets an inherited `visibility`, so under `visibility: hidden` the loading
   scrim shows through the poster.
 - **Crop the poster on a narrower screen.** Give it `width: 100%`, the height it
-  was shot at, `object-fit: cover` and `object-position: left top`. The view
-  keeps its height at any width, so the box keeps its height through the swap
-  and the poster's text stays at full size.
+  was shot at, `object-fit: cover`, and an `object-position` of `left top` for a
+  linear view or `center top` for the circle. The view keeps its height at any
+  width, so the box keeps its height through the swap and the poster's text
+  stays at full size.
 
-The script that shoots the example's poster, run against the built page:
+The function that shoots each example's poster from its built page, with
+`launchBrowser` and `waitForJBrowseReady` from `@jbrowse/capture`:
 
-<!-- include: products/jbrowse-react-linear-genome-view/examples-site/scripts/capture-poster.mjs#shoot -->
+<!-- include: packages/browser-test-utils/src/examplesPoster.ts#shoot -->
 
-```js
-import { fileURLToPath } from 'node:url'
-
-import { launchBrowser, waitForJBrowseReady } from '@jbrowse/capture'
-
-const url =
-  process.argv[2] ?? 'http://localhost:4321/storybook/lgv/static-first-paint/'
-const embed = '.demo astro-island > div'
-const out = fileURLToPath(
-  new URL('../public/static-first-paint.png', import.meta.url),
-)
-
+```ts
 const browser = await launchBrowser()
 try {
   const page = await browser.newPage()
@@ -218,9 +217,12 @@ try {
     embed,
   )
   const element = await page.$(embed)
+  if (!element) {
+    throw new Error(`no ${embed} on ${url}`)
+  }
   await element.screenshot({ path: out })
-  const { width, height } = await element.boundingBox()
-  console.log(`wrote ${out}, ${width}x${height} CSS px`)
+  const box = await element.boundingBox()
+  return { width: Math.round(box!.width), height: Math.round(box!.height) }
 } finally {
   await browser.close()
 }

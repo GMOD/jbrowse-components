@@ -48,6 +48,13 @@ export const pages: ExamplePage[] = [
     group: 'Customizing',
   },
   {
+    slug: 'static-first-paint',
+    title: 'A picture first, then the view',
+    description:
+      'A screenshot paints with the page; the engine loads near the viewport.',
+    group: 'Customizing',
+  },
+  {
     slug: 'inline-plugin',
     title: 'Inline plugin',
     description: 'A Plugin class from your own source.',

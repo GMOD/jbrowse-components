@@ -3078,9 +3078,6 @@ importers:
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
-      '@jbrowse/capture':
-        specifier: workspace:*
-        version: link:../../jbrowse-capture
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

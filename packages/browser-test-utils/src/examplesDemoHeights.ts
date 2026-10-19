@@ -1,10 +1,8 @@
-import http from 'node:http'
-
 import { findChromeExecutable } from '@jbrowse/capture'
 import puppeteer from 'puppeteer'
-import handler from 'serve-handler'
 
 import { BASE_CHROME_ARGS } from './chromeArgs.ts'
+import { serveExamplesSite } from './examplesSiteServer.ts'
 import { DESKTOP_VIEWPORT, waitForDemosDrawn } from './examplesSmoke.ts'
 
 // Measure the height every demo on an examples-site settles at, so those figures
@@ -70,17 +68,7 @@ export async function measureDemoHeights({
   settleMs = 4000,
   log = () => {},
 }: DemoHeightOptions): Promise<Record<string, number>> {
-  const server = http.createServer((req, res) => {
-    if (req.url?.startsWith(base)) {
-      req.url = req.url.slice(base.length) || '/'
-    }
-    void handler(req, res, { public: distDir })
-  })
-  await new Promise<void>(resolve => {
-    server.listen(0, resolve)
-  })
-  const addr = server.address()
-  const port = typeof addr === 'object' && addr ? addr.port : 0
+  const site = await serveExamplesSite(distDir, base)
 
   const browser = await puppeteer.launch({
     executablePath: findChromeExecutable(),
@@ -97,7 +85,7 @@ export async function measureDemoHeights({
       const page = await browser.newPage()
       await page.setViewport(viewport)
       try {
-        await page.goto(`http://localhost:${port}${base}/${slug}/`, {
+        await page.goto(site.url(slug), {
           waitUntil: 'networkidle0',
           timeout: 45000,
         })
@@ -124,11 +112,7 @@ export async function measureDemoHeights({
   }
 
   await browser.close()
-  await new Promise<void>(resolve => {
-    server.close(() => {
-      resolve()
-    })
-  })
+  await site.close()
   return Object.fromEntries(
     Object.entries(tallest).sort(([a], [b]) => a.localeCompare(b)),
   )

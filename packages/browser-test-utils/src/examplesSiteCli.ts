@@ -1,11 +1,12 @@
-import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { listFilesRecursive, runExamplesSiteChecks } from './docLinks.ts'
 import { measureDemoHeights } from './examplesDemoHeights.ts'
+import { captureExamplePoster } from './examplesPoster.ts'
 
-// The whole of two examples-site maintenance scripts. Each site's
+// The whole of three examples-site maintenance scripts. Each site's
 // scripts/<name>.mjs is now a one-line call passing its own `import.meta.url`,
 // and that argument is the one part that cannot move here: node resolves a
 // module's relative paths from its real location, so a script shared by symlink
@@ -129,4 +130,46 @@ export async function writeExamplesSiteDemoHeights(
       .map(([slug, h]) => `  ${slug.padEnd(30)} ${String(h).padStart(4)}px`)
       .join('\n')}\nwrote ${path.relative(site, outFile)}`,
   )
+}
+
+/**
+ * Shoot `public/<slug>.png`, the poster a page shows while its view loads,
+ * from that page's own built demo:
+ *
+ *     pnpm build && pnpm capture-poster && pnpm build
+ *
+ * The poster is a build input like the demo heights, so the second build ships
+ * it. Fails when the example's source does not state the size the poster was
+ * shot at.
+ */
+export async function writeExamplesSitePoster(
+  scriptUrl: string,
+  slug: string,
+  log: (message: string) => void = console.log,
+) {
+  const site = siteRoot(scriptUrl)
+  const { base } = await loadAstroConfig(site)
+  const out = `${path.join(site, 'public', slug)}.png` as const
+  const { width, height } = await captureExamplePoster({
+    distDir: path.join(site, 'dist'),
+    base,
+    slug,
+    out,
+  })
+  log(`wrote ${path.relative(site, out)}, ${width}x${height} CSS px`)
+  const pascal = slug.replaceAll(/(?:^|-)(\w)/g, (_, c: string) =>
+    c.toUpperCase(),
+  )
+  const example = path.join(site, 'src', 'examples', `${pascal}.tsx`)
+  const source = readFileSync(example, 'utf8')
+  if (
+    !source.includes(`width: ${width},`) ||
+    !source.includes(`height: ${height},`)
+  ) {
+    log(
+      `${path.relative(site, example)} must state width: ${width}, height: ${height}`,
+    )
+    return 1
+  }
+  return 0
 }

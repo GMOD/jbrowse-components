@@ -156,6 +156,13 @@ export const pages: ExamplePage[] = [
     group: 'Workers, links and export',
   },
   {
+    slug: 'static-first-paint',
+    title: 'A picture first, then the view',
+    description:
+      'A screenshot paints with the page; the engine loads near the viewport.',
+    group: 'Workers, links and export',
+  },
+  {
     slug: 'session-in-url',
     title: 'Session in the URL',
     description: 'Save the view to a link and restore it on load.',

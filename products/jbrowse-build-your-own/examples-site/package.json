@@ -10,6 +10,7 @@
     "typecheck": "astro check",
     "measure-eager-bundle": "node scripts/measureEagerBundle.mjs",
     "measure-demo-heights": "node scripts/measureDemoHeights.mjs",
+    "capture-poster": "node scripts/capturePoster.mjs",
     "smoke": "node scripts/measureEagerBundle.mjs --check && node scripts/smoke.mjs",
     "check-links": "node scripts/check-doc-links.mjs && node scripts/check-duplication.mjs",
     "probe-eager-graph": "node scripts/eagerGraph.mjs"
