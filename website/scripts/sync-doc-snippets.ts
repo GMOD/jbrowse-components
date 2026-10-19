@@ -70,100 +70,19 @@ const stale: string[] = []
 // which left the ~20 fences in `config_guides/`, `tutorials/` and the top-level
 // pages free to grow.
 //
-// Raised 19 -> 20 on 2026-08-07, which is the direction this is not supposed to
-// move, so the reason is on the record. `agents_capture.md` arrived with two,
-// taking the total to 21 and leaving `pnpm autogen --check` failing on main.
-// One of them was the session gate, hand-copied from `sessionGate.ts` and
-// already drifted from it — its copy had dropped the `?? []` and `?.` guards,
-// so the snippet a reader was invited to paste threw on a view whose tracks had
-// not arrived. That one is an include now, and the drift it was in the middle
-// of is the argument for this ratchet existing.
+// The fences that stay un-included have no source to point at:
 //
-// The other is a usage example of `@jbrowse/capture`'s public API under
-// "Writing your own script": openJBrowse, then a click, then a read back out of
-// the running app. Nothing in the repo compiles that shape — `captureJBrowse`
-// is the one-call form and does not click anything — so there is no source to
-// point at, only source that could be written to be pointed at. Writing an
-// example module into a published package to satisfy a docs checker is a bigger
-// decision than this ratchet should make on its own, so the debt is recorded
-// instead. Convert it by adding that example and lower this by one more.
+// - a usage example of a public API in a shape no repo code calls, such as a
+//   `@jbrowse/capture` script that clicks and reads back;
+// - a `run_javascript` body on the agent pages, which is the thing a reader
+//   pastes into MCP, where the tests covering the same calls assert around them;
+// - a migration guide's before/after pair, whose "before" the tree no longer
+//   contains;
+// - an embedded-view controller example, whose test wraps the same calls in a
+//   jsdom harness.
 //
-// 20 -> 18 on 2026-08-12: `automating.md` hand-wrote `InitState` and
-// `TrackInit` as paraphrases, and the InitState one had already lost the
-// difference between the two kinds of key it documents — `drawer_widgets.md`
-// includes the real declaration and says the split matters. Both are includes
-// now, `TrackInit` having gained a region marker at its declaration.
-//
-// 18 -> 19 on 2026-08-15: `jbrowse-capture.md` (mirrored from
-// products/jbrowse-capture/README.md) carries the README's own "## Library"
-// example — captureJBrowse/openJBrowse usage — for the same reason the
-// "Writing your own script" example above is exempt: nothing in the repo
-// compiles that exact shape, so there is no source to point an include at.
-//
-// 19 -> 20 on 2026-08-17: `agents_capture.md` leads with the one-line readiness
-// wait, `await page.waitForSelector('[data-app-phase="ready"]')`. The selector
-// itself IS source — `APP_READY` in products/jbrowse-capture/src/waits.ts — but
-// the fence teaches the puppeteer call around it, and nothing in the repo
-// compiles that call: `@jbrowse/capture` wraps it in `waitForAppReady`, which
-// is the thing the page is telling a reader they can do without. An include
-// pointing at the const would put a declaration where the page needs a call.
-//
-// 20 -> 21 on 2026-08-18: `embedded_components.md` gained a second imperative
-// controller example when `createCircularGenomeView` landed (fe371f0346), the
-// twin of the `createLinearGenomeView` fence above it — which is already one of
-// these 20, for the same reason. `createCircularGenomeView.test.ts` does compile
-// those calls, but wraps them in jest and a `view.setWidth(800)` that only jsdom
-// needs, so an include would teach a reader the harness instead of the API.
-// 21 -> 24 on 2026-09-01: the three agent pages landed, and `agents_mcp.md`
-// spent almost all of it. Its fences are a tour of the `jb` standard library —
-// a list of one-line calls with a trailing comment each, then a worked
-// loadSessionSpec and a getFeatures read — assembled for a reader rather than
-// lifted from anywhere. `jbApi.test.ts` exercises the same functions, but as
-// assertions around them, so an include would put the harness on the page where
-// the point is the call. `agents.md` adds one, and `agents_web.md` adds ZERO
-// deliberately: its examples are prose and inline code for exactly this reason,
-// which is the pattern to copy rather than this raise.
-//
-// 24 -> 49 on 2026-09-01: `agents_recipes.md` (16) and `agents_live_model.md`
-// (9) landed. Every recipe fence is a `run_javascript` body — the thing a reader
-// pastes into MCP — and the live-model page's are the reads and writes an agent
-// makes against a session it already holds. Neither has a source file to point
-// at: the bodies are the API surface, not code we ship, and the tests that cover
-// the same calls assert around them rather than running them as written.
-//
-// Note main had already come DOWN to 19 against this 21 when the raise landed,
-// so the honest figure for what these pages cost is +5, not +3. Lower it again
-// the moment a tested `jb` example fixture exists to point at — that is the
-// conversion this debt is waiting on, and it would buy back most of the six.
-//
-// 49 -> 41 on 2026-09-02: the agent pages were consolidated. `agents_mcp.md`
-// and `agents_web.md` folded into `agents.md` and `agents_live_model.md`, the
-// recipes page dropped two entries, and `agents_capture.md` kept only the
-// selectors the generated `@jbrowse/capture` reference does not carry.
-//
-// 41 -> 40 on 2026-09-02: `automating.md` absorbed `config_and_session_json.md`
-// and dropped its hand-rolled puppeteer script; `agents_capture.md` and the
-// generated `@jbrowse/capture` reference carry the waits.
-//
-// 40 -> 35 on 2026-09-02: the quickstarts and config_guides passes cut every
-// guide to what the generated config/model pages and the cookbook don't
-// already carry, dropping fences those pages restated.
-//
-// 35 -> 37 on 2026-09-04: `upgrading_v5.md` gained the lazy-stateModel breakage
-// (0ea3f65617), which is a before/after pair. The "before" is the v4 idiom, code
-// this tree no longer contains and so has nothing to point at; the "after" is
-// the shape a plugin author writes, not a region we ship. A migration guide's
-// pair is the case this baseline's own instruction calls "genuinely can't be" —
-// but it is still debt, and it is the only kind that should raise this number.
-//
-// 40 -> 41 on 2026-09-07: `agents_recipes.md` gained the exportSvg recipe
-// (e3511754c2). It is a `run_javascript` body like the other sixteen on that
-// page — the thing a reader pastes into MCP, not code we ship — so there is no
-// source to point an include at. Lower this the moment a tested `jb` example
-// fixture exists, which would buy back the whole page at once.
-//
-// 41 -> 42 on 2026-09-14: the two-genome session spec recipe (6774300bb4), the
-// same kind of run_javascript body.
+// Raise the baseline only for one of these, and say which in the commit. A
+// tested `jb` example fixture would let the agent pages include most of theirs.
 const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '44')
 let unIncluded = 0
 const byPage: [string, number][] = []
