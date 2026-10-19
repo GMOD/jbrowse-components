@@ -184,7 +184,7 @@ compatible whatever its state here.
 <!-- prettier-ignore -->
 | Plugin | What breaks |
 | --- | --- |
-| Apollo | `@jbrowse/core/util#isContainedWithin`<br />`@jbrowse/core/util/tracks#getParentRenderProps`<br />`worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')` |
+| Apollo | `worker eval: ReferenceError: Cannot access 'su' before initialization` |
 | Ideogram | `worker eval: ReferenceError: window is not defined` |
 
 <!-- END GENERATED ABI_PLUGIN_BREAKS -->

@@ -13,6 +13,11 @@
 //   Y = __toESM(X(), 1)          then  Y.name, Y.default
 //   import { a as e } from './chunk.js'   naming another chunk's X or Y
 //
+// and a plugin's own host shim (graphgenomeviewer's scripts/hostShim.mjs):
+//   t = JBrowseExports["mod"], e = o => ... t[o] ...   a guarded reader
+//   s = e("name")                                      one call per kept name
+//   T = t && t.__esModule ? t.default : t              the default import
+//
 // `default` off a `__toESM(m, 1)` wrapper is the served module itself, so it
 // stands for the module and never for a name in it. `*` records a module
 // that escapes as a value or is indexed dynamically: its names are unknown.
@@ -27,8 +32,9 @@ const HOST = 'JBrowseExports'
 
 type Kind =
   | { t: 'shim'; mod: string }
-  | { t: 'mod'; mod: string; viaDefault?: boolean }
+  | { t: 'mod'; mod: string; viaDefault?: boolean; interop?: boolean }
   | { t: 'esm'; mod: string }
+  | { t: 'reader'; mod: string }
 
 interface Chunk {
   url: string
@@ -39,6 +45,9 @@ interface Chunk {
   deps: string[]
   hostLookups: acorn.MemberExpression[]
   kinds: Map<string, Kind | undefined>
+  // A host alias read inside one of these is the shape's own plumbing, not a
+  // read by the plugin: a guarded reader's body, or a default-import probe.
+  plumbing: Map<AnyNode, Kind>
   moduleScope?: Scope
 }
 
@@ -120,6 +129,7 @@ export function hostReads(sources: Map<string, string>, entry: string) {
       deps: [],
       hostLookups: [],
       kinds: new Map(),
+      plumbing: new Map(),
     }
     chunks.set(url, c)
     walk(ast, (n, parent) => {
@@ -253,6 +263,51 @@ export function hostReads(sources: Map<string, string>, entry: string) {
     return out
   }
 
+  // `o => ... host[o] ...`, indexing a host module by its one parameter
+  function readerOf(c: Chunk, e: AnyNode, stack: Set<string>) {
+    if (
+      e.type !== 'ArrowFunctionExpression' &&
+      e.type !== 'FunctionExpression'
+    ) {
+      return undefined
+    }
+    const [only, ...rest] = e.params
+    if (only?.type !== 'Identifier' || rest.length > 0) {
+      return undefined
+    }
+    const param = only.name
+    let mod: string | undefined
+    walk(e.body, n => {
+      if (
+        n.type === 'MemberExpression' &&
+        n.computed &&
+        n.object.type === 'Identifier' &&
+        n.property.type === 'Identifier' &&
+        n.property.name === param
+      ) {
+        const k = kindOf(c, n.object.name, stack)
+        mod ??= k?.t === 'mod' ? k.mod : undefined
+      }
+    })
+    return mod
+  }
+
+  // `x && x.__esModule ? x.default : x`, a default import of host module x
+  function interopOf(c: Chunk, e: AnyNode, stack: Set<string>) {
+    if (
+      e.type !== 'ConditionalExpression' ||
+      e.alternate.type !== 'Identifier' ||
+      e.consequent.type !== 'MemberExpression' ||
+      e.consequent.object.type !== 'Identifier' ||
+      e.consequent.object.name !== e.alternate.name ||
+      propertyName(e.consequent) !== 'default'
+    ) {
+      return undefined
+    }
+    const k = kindOf(c, e.alternate.name, stack)
+    return k?.t === 'mod' ? k.mod : undefined
+  }
+
   function kindOfExpr(
     c: Chunk,
     e: AnyNode,
@@ -264,6 +319,23 @@ export function hostReads(sources: Map<string, string>, entry: string) {
     }
     if (e.type === 'Identifier') {
       return isModuleRef(c, e) ? kindOf(c, e.name, stack) : undefined
+    }
+    const reader = readerOf(c, e, stack)
+    if (reader) {
+      const k: Kind = { t: 'reader', mod: reader }
+      c.plumbing.set(e, k)
+      return k
+    }
+    const interop = interopOf(c, e, stack)
+    if (interop) {
+      const k: Kind = {
+        t: 'mod',
+        mod: interop,
+        viaDefault: true,
+        interop: true,
+      }
+      c.plumbing.set(e, k)
+      return k
     }
     if (e.type !== 'CallExpression') {
       return undefined
@@ -322,6 +394,15 @@ export function hostReads(sources: Map<string, string>, entry: string) {
     }
   }
 
+  function inPlumbing(c: Chunk, n: AnyNode) {
+    for (let a = c.parents.get(n); a; a = c.parents.get(a)) {
+      if (c.plumbing.has(a)) {
+        return true
+      }
+    }
+    return false
+  }
+
   function scan(c: Chunk) {
     const relevant =
       c.hostLookups.length > 0 ||
@@ -329,7 +410,12 @@ export function hostReads(sources: Map<string, string>, entry: string) {
     if (!relevant) {
       return
     }
-    for (const variable of scopeOf(c).variables) {
+    // every kind first, so `plumbing` is complete before any reference is read
+    const variables = scopeOf(c).variables
+    for (const variable of variables) {
+      kindOf(c, variable.name)
+    }
+    for (const variable of variables) {
       const k = kindOf(c, variable.name)
       if (!k) {
         continue
@@ -337,10 +423,23 @@ export function hostReads(sources: Map<string, string>, entry: string) {
       for (const r of variable.references) {
         const n = r.identifier as unknown as acorn.Identifier
         const p = c.parents.get(n)
-        if ((r.isWrite() && !r.isRead()) || p?.type === 'ExportSpecifier') {
+        if (
+          (r.isWrite() && !r.isRead()) ||
+          p?.type === 'ExportSpecifier' ||
+          inPlumbing(c, n)
+        ) {
           continue
         }
-        if (k.t !== 'shim') {
+        if (k.t === 'mod' && k.interop) {
+          reads.add(`${k.mod}#default`)
+        }
+        if (k.t === 'reader') {
+          const arg =
+            p?.type === 'CallExpression' && p.callee === n && p.arguments[0]
+          reads.add(
+            `${k.mod}#${arg && arg.type === 'Literal' && typeof arg.value === 'string' ? arg.value : '*'}`,
+          )
+        } else if (k.t !== 'shim') {
           recordUse(c, n, k)
         } else if (p?.type === 'CallExpression' && p.callee === n) {
           // `Y = X()` and `Y = __toESM(X())` are tracked through Y instead
@@ -418,6 +517,7 @@ export function unservedReads(reads: string[], manifest: AbiManifest) {
       !names ||
       (name !== 'default' &&
         name !== '*' &&
+        name !== '__esModule' &&
         names.length > 0 &&
         !names.includes(name))
     )
