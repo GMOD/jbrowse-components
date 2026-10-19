@@ -3,11 +3,11 @@
 A somatic structural variant callset, a tumor's long reads streaming from S3,
 and a rearrangement that joins three chromosomes inside a kilobase. The agent
 finds the chain in the VCF, pulls the reads that cross all three loci, builds
-the derivative contig from them, aligns it back, and then shows the reads on the
-allele it built, where none of them clips. Every step exists in
-`scripts/sv_multihop.py` and is documented in
-`agent-docs/reference/SV_MULTIHOP.md`; the demo is an agent writing the short
-form of that live, with the tree's version as the answer key.
+the derivative contig from them, aligns it back, and then counts, junction by
+junction, the reads that support the derivative against those that support the
+reference. The measured facts are in `agent-docs/reference/SV_MULTIHOP.md`; the
+script that first derived them, `sv_multihop.py`, is gone (ADR-140), so the
+numbers below are the answer key.
 
 ```
 node scripts/agent-demos/agentDemo.mjs out/derivative scripts/agent-demos/takes/derivative.mjs
@@ -125,21 +125,43 @@ by strand so the folded-back arm reads as the crossing it is. The
 `--jbrowse-out` flag of the tree's `derive` writes exactly this config and is
 the answer key for the reviewer, not the route the agent should take on camera.
 
-**Turn four** is a count, not a picture. On the realigned BAM, over each of the
-four junction coordinates on the derivative, the number of reads whose CIGAR
-clips within a few bases of the junction:
+**Turn four** is a count per allele, and it needs the reference to compete. A
+read aligned to the contig alone has nowhere else to go, so the normal-allele
+reads clip at every junction, and "no spanning read clips" holds by definition:
+a read that spans a junction is unclipped there. All the locus reads go to one
+index holding the reference and the contig, so each lands on the allele it fits;
+a read supports a junction when one alignment, supplementary included, covers it
+with 500 bp or more on each side:
 
-```
-0 of the 29 primary alignments clip at any of the four junctions
-depth 28 across all of them
+```bash
+cat grch38_chr3_10_12.fa der3.fa > competitive.fa
+minimap2 -ax map-ont -Y competitive.fa locus_reads.fa | samtools sort -o competitive.bam
 ```
 
-The agent gets there with `samtools view` and a CIGAR check in the shell, or
-with `jb.getFeatures` on the alignments track and each feature's `CIGAR`, and
-then shows the pileup at one junction with the read connections on. The control
-is the same reads on hg38: at `chr3:25,359,568` on the reference every spanning
-read clips, because the reference has no chr10 to continue into. A
-`BreakpointSplitView` of chr3 and chr10 with the tumor CRAM shows that side.
+Measured on 2,089 reads from the three windows:
+
+| junction       | der(3) | reference at the breakends    | reads on both |
+| -------------- | ------ | ----------------------------- | ------------- |
+| chr3 \| chr10  | 26     | chr3:25,359,568 112; chr10 24 | 0             |
+| chr10 \| chr12 | 25     | chr10:58,717,662 24; chr12 39 | 0             |
+| chr12 \| chr3  | 25     | chr12:72,273,111 39; chr3 111 | 0             |
+
+- About one chr3 molecule in five at the breakends carries der(3). The chr10 and
+  chr12 fractions read higher because chr3 here is deeper: 130-180x against 40x.
+- No read spans both alleles at any junction, which is the claim that could have
+  failed.
+- The chr3 flank upstream of the breakends is about 50x deeper than the flank
+  downstream, two upstream arms per fold-back molecule.
+- `-F 0x904` (primary only) drops reads to 19, since the fold-back splits many
+  derivative reads and their cassette alignment is a supplementary. Three more
+  reads cross the cassette but split at the palindrome's edges (contig 32,276
+  and 33,127); a count of 26 to 29 is right.
+- A normal read in the shared chr3 sequence can land on the contig because it
+  carries the derivative haplotype's SNPs, and nine clip at the chr3 junctions
+  for that reason. Only spanning reads count.
+
+Showing which is which is the competitive BAM on both rows, the reads colored or
+grouped by a tag the agent writes from that classification.
 
 ## Verified before this was written
 
@@ -149,6 +171,7 @@ read clips, because the reference has no chr10 to continue into. A
 | No 3 GB reference is needed              | remote `faidx` of chr3, chr10, chr12 in 30 s; CRAM slice decodes on it     |
 | The EBI MD5 fallback does not replace it | `REF_PATH` to ebi.ac.uk decoded 0 reads and cached nothing                 |
 | 29 spanning reads are in the slice       | `SA` tags touching all three chromosomes, matching `SV_MULTIHOP.md`        |
+| The per-allele counts                    | competitive alignment of all 2,089 locus reads, 2026-10-19                 |
 | `samtools consensus` exists here         | samtools 1.24                                                              |
 | The config opens in Desktop              | `open` on the `--jbrowse-out` config plus the synteny spec above, over MCP |
 

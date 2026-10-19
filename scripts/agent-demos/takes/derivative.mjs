@@ -18,5 +18,5 @@ export const TURNS = [
   'Find rearrangements in this somatic SV callset that chain across three chromosomes.',
   'Rebuild that allele from the tumor reads.',
   'Show the reads on the derivative next to the reference.',
-  'Prove no read clips at a junction.',
+  'At each junction, how many reads support the derivative and how many the reference? Show which is which.',
 ]
