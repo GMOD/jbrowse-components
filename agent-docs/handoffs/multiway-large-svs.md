@@ -42,7 +42,7 @@ of a lane inside a long deletion says so instead of the lane drawing blank.
 | 2 | Lane order reads strand, flip-invariant | `MW/structureOrder.ts` | done |
 | 3 | Walk path states an inversion against GRCh38 | graph plugin `WalkTabixSyntenyAdapter.ts:171` | open |
 | 4 | Chip names an inversion | `MW/layoutMultiWay.ts`, `MW/laneHeader.ts` | done (walk sources state one after 3) |
-| 7 | Lane inside a deletion longer than the window says so | core `clipFeatureToRegion`, display grouping, lane header | open |
+| 7 | Lane inside a deletion longer than the window says so | core `clipFeatureToRegion`, display grouping, lane header | done |
 | 6 | Template layers survive a 1-2 Mb lane | `MW/laneLayers.ts:145` | done |
 
 Done-when, per item:

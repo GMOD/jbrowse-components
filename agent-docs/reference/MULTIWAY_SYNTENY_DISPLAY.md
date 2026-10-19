@@ -173,6 +173,14 @@ cost is linear in lanes.
   so a hole opens across records only where they abut (lane gap under
   `SPLIT_AT_GAP_BP`): SyRI's Cvi centromere, 216 kb of its own unaligned
   sequence against 280 kb of Col-0's, opens none.
+- **A lane inside a deletion longer than the window**: with `splitAtGapBp`,
+  `clipFeatureToRegion` answers a record whose gap between two runs holds the
+  whole window with that gap alone, marked `spansWindow`, and
+  `multiWayFeaturesOf` lifts it off into `deletions` before anything groups,
+  frames or draws it. A lane the window shows nothing else of becomes a row
+  at the foot of the stack, and its header reads "inside a 1.2 Mb deletion".
+  A deletion two records state is out of reach, since neither record meets
+  the window.
 - **The chip lists no insertion that two records state.** The graph plugin
   stamps one `recordId` on every run of a walk record from 7.1.12, so at GSTT1
   HG00099#1's walk lane reads "54 kb insertion, 37 kb deletion".

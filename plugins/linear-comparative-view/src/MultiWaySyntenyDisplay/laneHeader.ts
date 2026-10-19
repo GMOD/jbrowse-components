@@ -150,6 +150,9 @@ export function laneHeaderRows(
     assemblyName: string,
     refName: string,
   ) => readonly LaneChange[] = () => [],
+  /** bp of a deletion a lane's record states across the whole window */
+  windowDeletionOf: (assemblyName: string) => number | undefined = () =>
+    undefined,
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   const anchor = lanes.find(lane => lane.isAnchor)?.label
@@ -168,8 +171,12 @@ export function laneHeaderRows(
     const alsoAt = frame?.alsoAt.length
       ? `· also at ${frame.alsoAt.map(block => blockLocString(lane, frame.refName, block)).join(', ')}`
       : undefined
-    const changes =
-      frame && laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
+    const inside = frame ? undefined : windowDeletionOf(lane.assemblyName)
+    const changes = frame
+      ? laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
+      : inside !== undefined && !lane.isAnchor
+        ? `inside a ${bpText(inside)} deletion`
+        : undefined
     return {
       assemblyName: lane.assemblyName,
       label: inline

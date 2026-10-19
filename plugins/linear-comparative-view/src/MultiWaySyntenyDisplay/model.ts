@@ -196,6 +196,7 @@ import { laneProfiles, structureOrder } from './structureOrder.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { WindowDeletion } from './MultiWayGetFeatures.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
@@ -286,6 +287,7 @@ interface MultiWayVolatiles {
         features: Feature[]
         ops: AlignmentOpsById
         lanes?: string[]
+        deletions: readonly WindowDeletion[]
       }
     | undefined
   seenAttributeRanges: Record<string, AttributeRange>
@@ -479,8 +481,9 @@ export function stateModelFactory(
           anchor: string = containingLgv(self).assemblyNames[0]!,
           lanes?: string[],
           ops: AlignmentOpsById = NO_OPS,
+          deletions: readonly WindowDeletion[] = [],
         ) {
-          self.fetchedFeatures = { anchor, features, ops, lanes }
+          self.fetchedFeatures = { anchor, features, ops, lanes, deletions }
           observeRibbonFeatures(features)
         },
         /** #action */
@@ -635,6 +638,14 @@ export function stateModelFactory(
       /** #getter */
       get featureOps(): AlignmentOpsById {
         return (this.features && self.fetchedFeatures?.ops) ?? NO_OPS
+      },
+      /**
+       * #getter
+       * the deletions a record states across the whole fetched window, for a
+       * lane the window shows none of
+       */
+      get windowDeletions(): readonly WindowDeletion[] {
+        return (this.features && self.fetchedFeatures?.deletions) ?? []
       },
       /** #getter */
       get hoveredGroupKey() {
@@ -1051,7 +1062,10 @@ export function stateModelFactory(
       get laneUniverse(): LaneChoice[] {
         return laneUniverseOf({
           anchor: self.anchorAssemblyName,
-          mateNames: self.groups.flatMap(group => [...group.mates.keys()]),
+          mateNames: [
+            ...self.groups.flatMap(group => [...group.mates.keys()]),
+            ...self.windowDeletions.map(d => d.assemblyName),
+          ],
           declared: self.declaredLanes ?? [],
           trackAssemblies: getTrackAssemblyNames(self.parentTrack),
           keyOf: self.laneKey,
@@ -1073,9 +1087,12 @@ export function stateModelFactory(
             .map(lane => self.laneKey(lane.name)),
         )
         const preferred = [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])]
-        return rowAssembliesOf(self.groups, preferred, self.laneKey).filter(
-          assemblyName => drawn.has(self.laneKey(assemblyName)),
-        )
+        return rowAssembliesOf(
+          self.groups,
+          preferred,
+          self.laneKey,
+          self.windowDeletions.map(d => d.assemblyName),
+        ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
       },
       /**
        * #getter
@@ -1985,6 +2002,15 @@ export function stateModelFactory(
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
           self.laneChanges,
+          assemblyName => {
+            const key = self.laneKey(assemblyName)
+            const spanning = self.windowDeletions.filter(
+              d => self.laneKey(d.assemblyName) === key,
+            )
+            return spanning.length
+              ? Math.max(...spanning.map(d => d.bp))
+              : undefined
+          },
         )
       },
       /**

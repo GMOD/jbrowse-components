@@ -2698,3 +2698,31 @@ test("a gene-table row the anchor lacks is read on each lane's own window and jo
     display.ribbonGeometry.targets.find(t => t.groupKey === key)?.label,
   ).toBe('vioB\nnot in volvox')
 })
+
+test('a lane the window shows none of, inside a deletion its record states, is a row whose header names it', () => {
+  const display = createDisplay()
+  display.setFeatures(
+    [
+      new SimpleFeature({
+        uniqueId: 'f1',
+        refName: 'ctgA',
+        start: 100,
+        end: 300,
+        strand: 1,
+        mate: {
+          assemblyName: 'volvox_random',
+          refName: 'ctgB',
+          start: 100,
+          end: 300,
+        },
+      }),
+    ],
+    undefined,
+    undefined,
+    NO_OPS,
+    [{ assemblyName: 'volvox_ins', refName: 'ctgA', at: 5000, bp: 1_200_000 }],
+  )
+  expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
+  const row = display.laneHeaderRows.find(r => r.assemblyName === 'volvox_ins')
+  expect(row?.changes?.text).toBe('inside a 1.2 Mb deletion')
+})

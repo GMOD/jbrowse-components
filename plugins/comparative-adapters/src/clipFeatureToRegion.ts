@@ -66,6 +66,8 @@ function interpolateClip(
 interface Piece extends ClippedIntervals {
   suffix: string
   cigar?: Uint32Array
+  /** a gap between two runs that holds the whole window */
+  spansWindow?: true
 }
 
 function clipIntervals(
@@ -101,7 +103,7 @@ function clipIntervals(
             strand,
             splitAtGapBp,
           )
-    return runs.flatMap((run, i) => {
+    const pieces = runs.flatMap((run, i) => {
       const clipped = clipSyntenyFeature(
         run.cigar,
         run.start,
@@ -119,13 +121,27 @@ function clipIntervals(
         { ...clipped, suffix: `${holds(run) ? '' : windowSuffix}${numbered}` },
       ]
     })
+    const before = runs.findLast(run => run.end <= window.start)
+    const after = runs.find(run => run.start >= window.end)
+    return pieces.length === 0 && before && after
+      ? [
+          {
+            start: before.end,
+            end: after.start,
+            mateStart: Math.min(before.mateEnd, after.mateEnd),
+            mateEnd: Math.max(before.mateStart, after.mateStart),
+            suffix: `${windowSuffix}/spanned`,
+            spansWindow: true,
+          },
+        ]
+      : pieces
   }
 }
 
 function clippedFeature(
   feature: Feature,
   mate: SerializedMate,
-  { suffix, cigar, ...clipped }: Piece,
+  { suffix, cigar, spansWindow, ...clipped }: Piece,
   keepAlignment: boolean,
 ) {
   const source = feature.toJSON()
@@ -136,6 +152,7 @@ function clippedFeature(
     start: clipped.start,
     end: clipped.end,
     mate: { ...mate, start: clipped.mateStart, end: clipped.mateEnd },
+    ...(spansWindow ? { spansWindow } : {}),
   }
   if (source.syntenyId !== undefined) {
     data.syntenyId = `${String(source.syntenyId)}${suffix}`
@@ -167,8 +184,11 @@ function clippedFeature(
  * suffix, so each run is its own group to a display grouping on it — one
  * placement per run rather than one ribbon across the gap. Every piece names
  * its record's id in `recordId`, so a gap between two pieces of one record
- * reads as the deletion the alignment states. A feature with no `mate` is not
- * a pairwise record and passes through whole.
+ * reads as the deletion the alignment states. With `splitAtGapBp`, a record
+ * whose gap between two runs holds the whole window, a deletion longer than
+ * the window, yields that gap alone, marked `spansWindow`: its own extent the
+ * deleted stretch, its mate's the lane bp between the runs. A feature with no
+ * `mate` is not a pairwise record and passes through whole.
  */
 export function clipFeatureToRegion(
   feature: Feature,

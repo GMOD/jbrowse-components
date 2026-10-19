@@ -234,6 +234,17 @@ test('splitAtGapBp: - strand runs walk the mate from its far end', () => {
   expect(runs.every(f => f.get('strand') === -1)).toBe(true)
 })
 
+test('splitAtGapBp: a window inside a deletion yields the deletion alone, on both axes, marked spansWindow', () => {
+  const window = { start: 105_000, end: 120_000 }
+  const [gap, ...rest] = clipFeatureToRegion(gapped(), window, 10_000)
+  expect(rest).toEqual([])
+  expect(extents(gap!)).toEqual([101_000, 126_000, 6000, 6000])
+  expect(gap!.get('spansWindow')).toBe(true)
+  expect(gap!.get('recordId')).toBe('r1')
+  const [reversed] = clipFeatureToRegion(gapped({ strand: -1 }), window, 10_000)
+  expect(extents(reversed!)).toEqual([101_000, 126_000, 6500, 6500])
+})
+
 test('splitAtGapBp: a record with no alignment string is one run', () => {
   expect(
     clipFeatureToRegion(record(), { start: 0, end: 5000 }, 10_000).map(extents),

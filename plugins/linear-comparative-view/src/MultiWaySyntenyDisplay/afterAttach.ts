@@ -71,19 +71,22 @@ function fetchPhases(
     // `prepare` captures `haplotypes`, so a landing carries the selection its
     // run asked for
     run: async ({ regions, lodTier, haplotypes }, ctx) => {
-      const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
-        regions,
-        adapterConfig: self.adapterConfig,
-        ...(haplotypes === undefined ? {} : { haplotypes }),
-        opts: {
-          mateShape: 'grouped',
-          lodMode: lodTier,
+      const { features, ops, deletions } = await ctx.callRpc(
+        'MultiWayGetFeatures',
+        {
+          regions,
+          adapterConfig: self.adapterConfig,
+          ...(haplotypes === undefined ? {} : { haplotypes }),
+          opts: {
+            mateShape: 'grouped',
+            lodMode: lodTier,
+          },
         },
-      })
-      return { features: dedupe(features, r => r.id()), ops }
+      )
+      return { features: dedupe(features, r => r.id()), ops, deletions }
     },
-    commit: ({ features, ops }, { regions, anchor, haplotypes }) => {
-      self.setFeatures(features, anchor, haplotypes, ops)
+    commit: ({ features, ops, deletions }, { regions, anchor, haplotypes }) => {
+      self.setFeatures(features, anchor, haplotypes, ops, deletions)
       self.holdLaneOrder(regions)
     },
   }

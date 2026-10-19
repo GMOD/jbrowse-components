@@ -633,10 +633,15 @@ export function groupSpansLanes(group: PlacedGroup) {
 }
 
 // Densest lane first, after the lanes `preferred` names, in its order.
+/**
+ * Lanes densest first, `preferred` ones leading in its order; `placeless`
+ * lanes, which the window shows none of, follow the rest
+ */
 export function rowAssembliesOf(
   groups: MultiWayGroup[],
   preferred: string[],
   keyOf: (assemblyName: string) => string = name => name,
+  placeless: readonly string[] = [],
 ) {
   const evidence = new Map<string, Map<string, number>>()
   for (const group of groups) {
@@ -659,6 +664,7 @@ export function rowAssembliesOf(
     }))
     .sort((a, b) => b.density - a.density || a.appearance - b.appearance)
     .map(lane => lane.assemblyName)
+  present.push(...new Set(placeless.filter(name => !evidence.has(name))))
   const byKey = new Map<string, string[]>()
   for (const assemblyName of present) {
     const key = keyOf(assemblyName)
