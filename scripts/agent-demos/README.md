@@ -18,7 +18,8 @@ make. Run by hand, never in CI.
 
 ## The takes
 
-A take module exports `TURNS` (or `STEPS` on macOS), `SHELL` and `SYSTEM`.
+A take module exports `TURNS` (or `STEPS` on macOS), `SHELL` and `SYSTEM`, and
+on Linux optionally `SPEEDUP`, how fast the clip plays the busy stretches.
 `SHELL: true` drops `--restricted` and allows Bash and file tools; `SYSTEM`
 hands the working directory and pre-staged files over off camera. Pre-stage into
 `<outdir>/cwd`. Each shell take has a `.md` beside it with what a good take does

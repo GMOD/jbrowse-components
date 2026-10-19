@@ -608,8 +608,11 @@ try {
     { stdio: 'inherit' },
   )
   // Most of a take is the model thinking over a still screen. mpdecimate drops
-  // the frames that barely differ from the last one kept, so every change plays
-  // at 24 fps and the waits vanish; the crop takes off GNOME's top bar.
+  // the frames that barely differ from the last one kept; a kept frame the
+  // screen sat on for over a second (a finished answer) then holds 1.5 s, and
+  // the rest play at the take's SPEEDUP, 4x unless it says otherwise. Playing
+  // every kept frame for 1/24 s instead flashed each answer past. The crop
+  // takes off GNOME's top bar.
   const clip = path.join(outDir, 'clip.mp4')
   console.log('collapsing the still stretches…')
   spawnSync(
@@ -622,10 +625,12 @@ try {
       [
         `crop=${WIDTH}:${HEIGHT - TOP_BAR}:0:${TOP_BAR}`,
         'mpdecimate=hi=3072:lo=1280:frac=0.5:max=0',
-        'setpts=N/24/TB',
+        `setpts='if(eq(N,0),0,PREV_OUTPTS+if(gt(PTS-PREV_INPTS,1/TB),1.5/TB,(PTS-PREV_INPTS)/${take.SPEEDUP ?? 4}))'`,
         'tpad=stop_mode=clone:stop_duration=5',
         'format=yuv420p',
       ].join(','),
+      '-fps_mode',
+      'cfr',
       '-r',
       '24',
       '-an',

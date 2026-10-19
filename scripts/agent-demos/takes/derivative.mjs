@@ -1,6 +1,8 @@
 // Derivative allele: a three-chromosome somatic rearrangement in COLO829,
 // rebuilt from the tumor reads. See derivative.md.
 export const SHELL = true
+// the longest take by far: at the default 4x its clip runs past five minutes
+export const SPEEDUP = 10
 
 export const SYSTEM =
   cwd => `You are driving JBrowse Desktop over its MCP tools and you also have a shell
