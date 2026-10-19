@@ -114,7 +114,7 @@ export const configVideos: VideoSpec[] = [
       //
       // The tour does NOT scroll it, and three takes went into deciding that.
       // The keys are ~25 wrapped lines from the end of an ~80-line document in
-      // a 30-row field, and the field's only lever is a caret — PageDown from
+      // a 20-row field, and the field's only lever is a caret — PageDown from
       // wherever the click landed, which moved fifteen lines between two takes,
       // or PageDown to the end, which is deterministic and stops one screen
       // past them. Neither is worth having: reading text off a moving film is

@@ -39,7 +39,7 @@ const SessionJsonDialog = observer(function SessionJsonDialog({
         value={json}
         readOnly
         fullWidth
-        maxRows={30}
+        maxRows={20}
       />
     </InfoDialog>
   )
