@@ -52,9 +52,9 @@ test('a source answering lane pairs on the anchor exports its lanes stacked by s
   expect(stacked.assemblyNames).toEqual([
     'Col-0',
     'Kyo',
+    'Sha',
     'Eri',
     'Ler',
-    'Sha',
     'Cvi',
   ])
 })

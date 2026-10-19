@@ -97,7 +97,7 @@ test('a lane gap the anchor spans alike carries nothing the anchor lacks', () =>
     [piece('l', 0, 10_000), piece('r', 40_000, 50_000)],
     new Map(),
   ).get('apart')!
-  expect(Math.max(...apart.slice(apart.length / 2))).toBe(0)
+  expect(Math.max(...apart.slice((2 * apart.length) / 3))).toBe(0)
 })
 
 test('a profile reads a deletion as uncovered bins and an insertion as carried sequence', () => {
@@ -107,9 +107,38 @@ test('a profile reads a deletion as uncovered bins and an insertion as carried s
   ])
   const del = profiles.get('del')!
   const ins = profiles.get('ins')!
-  const bins = del.length / 2
+  const bins = del.length / 3
   expect(del[bins / 2]).toBe(0)
   expect(del[0]).toBe(1)
   expect(Math.max(...del.slice(bins))).toBe(0)
-  expect(Math.max(...ins.slice(bins))).toBe(20_000 / 100)
+  expect(Math.max(...ins.slice(2 * bins))).toBe(20_000 / 100)
+})
+
+test('an inversion carrier sits at an end, and a lane reversed whole sits with the collinear ones', () => {
+  const run = (lane: string, start: number, end: number, strand: number) =>
+    new SimpleFeature({
+      uniqueId: `${lane}:${start}`,
+      refName: 'chr1',
+      start,
+      end,
+      strand,
+      mate: { assemblyName: lane, refName: 'c', start, end },
+    })
+  const collinear = (lane: string) => [run(lane, 0, 12_000, 1)]
+  const order = structureOrder(
+    laneProfiles(
+      [
+        ...collinear('a'),
+        ...collinear('b'),
+        ...collinear('c'),
+        run('i', 0, 4000, 1),
+        run('i', 4000, 8000, -1),
+        run('i', 8000, 12_000, 1),
+        run('r', 0, 12_000, -1),
+      ],
+      new Map(),
+    ),
+  )
+  expect(order.at(-1)).toBe('i')
+  expect(order.slice(0, 4).toSorted()).toEqual(['a', 'b', 'c', 'r'])
 })

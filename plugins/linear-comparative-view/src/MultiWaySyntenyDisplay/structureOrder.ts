@@ -53,8 +53,10 @@ function anchorAxis(features: readonly Feature[]): AnchorAxis {
 
 /**
  * A lane's structure against the anchor, in anchor bins: how much of each bin
- * it aligns to, then how much sequence it carries there that the anchor lacks,
- * in bins' worth, so an insertion weighs what a deletion of its length does
+ * it aligns to forward, then reversed, then how much sequence it carries there
+ * that the anchor lacks, in bins' worth, so an insertion weighs what a
+ * deletion of its length does. A bin aligned reversed differs from a forward
+ * one in two bands, so it weighs twice a deleted bin
  */
 export function laneProfiles(
   features: readonly Feature[],
@@ -65,16 +67,17 @@ export function laneProfiles(
   for (const f of features) {
     const lane = getMate(f)?.assemblyName
     if (lane !== undefined) {
-      const profile = profiles.get(lane) ?? new Float64Array(2 * BINS)
+      const profile = profiles.get(lane) ?? new Float64Array(3 * BINS)
       profiles.set(lane, profile)
       const refName: string = f.get('refName')
+      const band = f.get('strand') === -1 ? BINS : 0
       const cover = (from: number, to: number) => {
         for (let bp = from; bp < to;) {
           const bin = axis.binOf(refName, bp)
           const next =
             bin === BINS - 1 ? to : Math.min(to, axis.binEnd(refName, bin))
           const end = Math.max(next, bp + 1)
-          profile[bin]! += (end - bp) / axis.binBp
+          profile[band + bin]! += (end - bp) / axis.binBp
           bp = end
         }
       }
@@ -96,7 +99,7 @@ export function laneProfiles(
           } else if (op === CIGAR_D || op === CIGAR_N) {
             bp += len
           } else if (op === CIGAR_I) {
-            profile[BINS + axis.binOf(refName, bp)]! += len / axis.binBp
+            profile[2 * BINS + axis.binOf(refName, bp)]! += len / axis.binBp
           }
         }
       }
@@ -133,26 +136,34 @@ export function laneProfiles(
         if (excess > 0) {
           const at =
             left.lane.orientation < 0 ? left.anchor.start : left.anchor.end
-          profile[BINS + axis.binOf(left.anchor.refName, at)]! +=
+          profile[2 * BINS + axis.binOf(left.anchor.refName, at)]! +=
             excess / axis.binBp
         }
       })
     }
   }
   for (const profile of profiles.values()) {
-    for (let i = 0; i < BINS; i++) {
+    for (let i = 0; i < 2 * BINS; i++) {
       profile[i] = Math.min(1, profile[i]!)
     }
   }
   return profiles
 }
 
+// Reading `b`'s forward and reversed bands either way round, so a contig
+// assembled against the anchor's direction sits with its collinear peers
 function distance(a: Float64Array, b: Float64Array) {
-  let d = 0
-  for (let i = 0; i < a.length; i++) {
-    d += Math.abs(a[i]! - b[i]!)
+  let same = 0
+  let swapped = 0
+  for (let i = 0; i < BINS; i++) {
+    same += Math.abs(a[i]! - b[i]!) + Math.abs(a[BINS + i]! - b[BINS + i]!)
+    swapped += Math.abs(a[i]! - b[BINS + i]!) + Math.abs(a[BINS + i]! - b[i]!)
   }
-  return d
+  let inserted = 0
+  for (let i = 2 * BINS; i < 3 * BINS; i++) {
+    inserted += Math.abs(a[i]! - b[i]!)
+  }
+  return Math.min(same, swapped) + inserted
 }
 
 /**
@@ -168,8 +179,7 @@ export function structureOrder(profiles: ReadonlyMap<string, Float64Array>) {
   if (n < 3) {
     return names
   }
-  const anchor = new Float64Array(vectors[0]!.length).fill(0)
-  anchor.fill(1, 0, anchor.length / 2)
+  const anchor = new Float64Array(3 * BINS).fill(1, 0, BINS)
   const d = vectors.map(a => vectors.map(b => distance(a, b)))
   const toAnchor = vectors.map(v => distance(v, anchor))
   const left = new Set(names.keys())
