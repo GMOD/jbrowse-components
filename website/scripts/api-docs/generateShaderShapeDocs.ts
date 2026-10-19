@@ -42,14 +42,12 @@ function slangFiles(dir: string, out: string[] = []) {
 }
 
 // `plugins/wiggle/src/shared/shaders/wiggleLine.slang` -> `wiggle/wiggleLine`,
-// which is how the doc's prose names them: the plugin, then the shader. A
-// render-core module importing another one says `render-core/` instead, so an
-// internal edge (coverageBar -> coverageBand) is not mistaken for a consumer.
+// which is how the doc's prose names them: the plugin or package, then the
+// shader. A render-core module importing another one reads `render-core/`, so
+// an internal edge (coverageBar -> coverageBand) is not mistaken for a
+// consumer.
 function label(file: string) {
-  const parts = file.split(path.sep)
-  const name = path.basename(file, '.slang')
-  const owner = parts[0] === 'plugins' ? parts[1] : 'render-core'
-  return `${owner}/${name}`
+  return `${file.split(path.sep)[1]}/${path.basename(file, '.slang')}`
 }
 
 export function collectShapeConsumers() {
