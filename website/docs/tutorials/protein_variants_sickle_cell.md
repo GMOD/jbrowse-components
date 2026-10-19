@@ -21,8 +21,8 @@ changes, in a crystal structure of sickle haemoglobin. We'll:
 
 - open _HBB_ on codon 7 in the protein browser, with structure 2HBS, and hover
   the codon's alignment column to find its residue
-- add the GWAS Catalog, then a copy filtered to the traits tied to sickle cell
-  trait, and read what has been associated with rs334
+- add the GWAS Catalog, then a copy filtered to rs334's strongest record for
+  each trait tied to sickle cell trait, and read what each record reports
 - add 1000 Genomes genotypes grouped by ancestry, with a common synonymous
   variant four codons upstream as the control
 - color the genome, the alignment and the structure by the alignment's protein
@@ -83,15 +83,16 @@ trait, so a variant studied many times draws as a stack. Click a box to open its
 record.
 
 The records at rs334 include malaria, haemolytic anaemias, glycated haemoglobin
-(HbA1c) and kidney disease. A second copy of the catalog keeps those traits and
-labels each record with its trait, p-value, first author and year, read from the
-file's own columns:
+(HbA1c) and kidney disease. A second copy of the catalog keeps rs334's strongest
+record for each of those traits, the one with the smallest p-value, and labels
+it with its trait, p-value, first author and year, read from the file's own
+columns:
 
 ```json addtrack loc=chr11:5226956-5227046
 {
   "type": "FeatureTrack",
   "trackId": "gwasCatalog_sickle_cell_traits",
-  "name": "GWAS Catalog, traits tied to sickle cell trait",
+  "name": "GWAS Catalog at rs334, one record per trait",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -107,7 +108,9 @@ file's own columns:
   },
   "displayDefaults": {
     "filter": [
-      "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)', 'Glycated hemoglobin levels', 'Chronic Kidney Disease, Stage III (PheCode 585.33)']"
+      "jexl:feature.name == 'rs334'",
+      "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)', 'Glycated hemoglobin levels', 'Chronic Kidney Disease, Stage III (PheCode 585.33)']",
+      "jexl:feature.pValue in ['4E-69', '1E-323', '3E-39', '9E-31']"
     ],
     "labels": {
       "name": "trait",
@@ -121,7 +124,7 @@ file's own columns:
 The subset is a filter, which **Filter by... → Edit filters...** in the track
 menu edits to keep other traits.
 
-<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to traits tied to sickle cell trait, each record labeled with its trait." />
+<Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to rs334's strongest record for each trait, labeled with its trait." />
 
 ## Sickle allele by ancestry in 1000 Genomes
 

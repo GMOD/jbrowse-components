@@ -10,8 +10,10 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Measured 2026-10-16 against the files the tracks read, so captions name the
 // direction without a number:
-//   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 179 GWAS Catalog rows
-//   (2026-10-19), 7 in the page filter's four traits.
+//   HBB rs334 chr11:5,227,002 T>A, codon 7 GAG>GTG; 179 GWAS Catalog rows at
+//   the codon (2026-10-19), 134 of them rs334; the page filter keeps 4, one per
+//   trait. Alignment column 7: Glu in most rows, Asp in Bolivian squirrel
+//   monkey, Ala in Norway rat.
 //   1000 Genomes AF_AFR 0.100, AF_AMR 0.005, EUR/EAS/SAS 0. rs713040
 //   (chr11:5,227,013, His3, synonymous) 0.50-0.88 in every superpopulation.
 //   SOD1 E40K chr31:27,123,057 G>A (canFam4), codon 40 GAA>AAA. Dog10K: 198
@@ -113,12 +115,12 @@ function hoverAlignment({ dx, dy }: { dx?: number; dy: number }) {
   ]
 }
 
-function structureCallout(text: string): Annotation {
+function structureCallout(text: string, fontSize = 18): Annotation {
   return {
     type: 'text',
     text,
     maxWidth: 420,
-    fontSize: 18,
+    fontSize,
     anchor: {
       selector: '[data-testid="protein-view-molstar"]',
       alignX: 'left',
@@ -129,11 +131,16 @@ function structureCallout(text: string): Annotation {
   }
 }
 
-function codonCallout(text: string, trackId: string, loc: string): Annotation {
+function codonCallout(
+  text: string,
+  trackId: string,
+  loc: string,
+  fontSize = 18,
+): Annotation {
   return {
     type: 'text',
     text,
-    fontSize: 18,
+    fontSize,
     leader: true,
     anchor: { trackId, loc, fracY: 0.4 },
     dx: 150,
@@ -170,9 +177,46 @@ function hbbSession(
   )
 }
 
+const HBB_FONT_SIZE = 23
 const HBB_STRUCTURE = structureCallout(
-  'Val6 in magenta: 2HBS is the sickle protein itself',
+  'Sickle valine, in magenta',
+  HBB_FONT_SIZE,
 )
+const SICKLE_CODON = 'The sickle-cell change: GAG to GTG'
+const SICKLE_CARRIERS =
+  'Sickle allele, carried mostly by African-ancestry genomes'
+const RS713040_CONTROL = 'A harmless nearby variant, common in every population'
+
+// Both pills sit in the gap right of the codon column, clear of the legend.
+// `controlDx` carries rs713040's leader across the column, whose distance in px
+// follows the figure's zoom.
+function kgCallouts(
+  prefix: (n: number) => string,
+  controlDx: number,
+): Annotation[] {
+  return [
+    {
+      type: 'text',
+      text: `${prefix(3)}${SICKLE_CARRIERS}`,
+      fontSize: HBB_FONT_SIZE,
+      maxWidth: 340,
+      leader: true,
+      anchor: { trackId: KG, loc: RS334, fracY: 0.12 },
+      dx: 50,
+      dy: 90,
+    },
+    {
+      type: 'text',
+      text: `${prefix(4)}${RS713040_CONTROL}`,
+      fontSize: HBB_FONT_SIZE,
+      maxWidth: 340,
+      leader: true,
+      anchor: { trackId: KG, loc: RS713040, fracY: 0.75 },
+      dx: controlDx,
+      dy: 0,
+    },
+  ]
+}
 
 const SOD1_SESSION = readSession('sod1_canfam4.session.json')
 const SOD1_GENES = 'canFam4-ncbiRefSeqCurated'
@@ -212,7 +256,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     ...READY,
     actions: hoverAlignment({ dx: 193, dy: 232 }),
     annotations: [
-      codonCallout('Codon 7, GAG on the transcript', HBB_GENES, RS334),
+      codonCallout(SICKLE_CODON, HBB_GENES, RS334, HBB_FONT_SIZE),
       HBB_STRUCTURE,
     ],
   },
@@ -223,21 +267,21 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       tracks: [
         HBB_GENE_TRACK,
         { trackId: GWAS, height: 160 },
-        { trackId: GWAS_SUBSET, height: 300 },
+        { trackId: GWAS_SUBSET, height: 170 },
       ],
       sessionTracks: [GWAS_SUBSET_TRACK],
     }),
     ...READY,
-    viewportHeight: 1430,
+    viewportHeight: 1300,
     actions: hoverAlignment({ dx: 193, dy: 8 }),
     annotations: [
       {
         type: 'text',
-        text: 'One feature per study and trait',
-        fontSize: 18,
+        text: 'Every GWAS hit at this codon',
+        fontSize: HBB_FONT_SIZE,
         leader: true,
         anchor: { trackId: GWAS, loc: RS334, fracY: 0.5 },
-        dx: -260,
+        dx: -60,
         dy: 0,
       },
     ],
@@ -248,36 +292,16 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     url: hbbSession({
       tracks: [
         HBB_GENE_TRACK,
-        { trackId: GWAS, height: 110 },
+        { trackId: GWAS_SUBSET, height: 170 },
         { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
       ],
-      sessionTracks: [KG_TRACK],
+      sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
       msaHeight: 300,
     }),
     ...READY,
-    viewportHeight: 1150,
+    viewportHeight: 1210,
     actions: hoverAlignment({ dx: 193, dy: 8 }),
-    annotations: [
-      {
-        type: 'text',
-        text: 'Sickle allele, African-ancestry rows only',
-        fontSize: 18,
-        leader: true,
-        anchor: { trackId: KG, loc: RS334, fracY: 0.12 },
-        dx: 170,
-        dy: 150,
-      },
-      {
-        type: 'text',
-        text: 'rs713040, in every group',
-        fontSize: 18,
-        leader: true,
-        anchor: { trackId: KG, loc: RS713040, fracY: 0.75 },
-        dx: 90,
-        dy: 40,
-      },
-      HBB_STRUCTURE,
-    ],
+    annotations: [...kgCallouts(() => '', 190), HBB_STRUCTURE],
   },
   {
     mode: 'url',
@@ -285,7 +309,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     url: hbbSession({
       tracks: [
         HBB_GENE_TRACK,
-        { trackId: GWAS_SUBSET, height: 300 },
+        { trackId: GWAS_SUBSET, height: 170 },
         { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
       ],
       sessionTracks: [GWAS_SUBSET_TRACK, KG_TRACK],
@@ -295,48 +319,30 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
     }),
     ...READY,
     readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
-    // Wide enough for the exon 2 records' labels to end inside the view. The
-    // alignment's columns widen with it, so column 7 sits further right.
+    // Wide enough for the GWAS labels to end inside the view. The alignment's
+    // columns widen with it, so column 7 sits further right.
     viewportWidth: 2300,
-    viewportHeight: 1490,
+    viewportHeight: 1360,
     actions: [
       { type: 'waitForAppSettled' },
       ...hoverAlignment({ dx: 224, dy: 8 }),
     ],
     annotations: [
-      codonCallout('1  rs334, codon 7: GAG to GTG', HBB_GENES, RS334),
+      codonCallout(`1  ${SICKLE_CODON}`, HBB_GENES, RS334, HBB_FONT_SIZE),
       {
         type: 'text',
-        text: '2  GWAS Catalog records at rs334, filtered to these traits',
-        fontSize: 18,
-        maxWidth: 260,
+        text: '2  GWAS hits at rs334',
+        fontSize: HBB_FONT_SIZE,
         leader: true,
         anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.5 },
         dx: -60,
         dy: 0,
       },
+      ...kgCallouts(n => `${n}  `, 140),
       {
         type: 'text',
-        text: '3  Sickle allele, African-ancestry rows only',
-        fontSize: 18,
-        leader: true,
-        anchor: { trackId: KG, loc: RS334, fracY: 0.12 },
-        dx: 170,
-        dy: 150,
-      },
-      {
-        type: 'text',
-        text: '4  rs713040, synonymous His3, in every group',
-        fontSize: 18,
-        leader: true,
-        anchor: { trackId: KG, loc: RS713040, fracY: 0.75 },
-        dx: 90,
-        dy: 40,
-      },
-      {
-        type: 'text',
-        text: '5  The same column in every ortholog',
-        fontSize: 18,
+        text: '5  Most other mammals have glutamate here too',
+        fontSize: HBB_FONT_SIZE,
         leader: true,
         anchor: {
           selector: '[data-testid="msa_canvas"]',
@@ -348,12 +354,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dx: 150,
         dy: -70,
       },
-      {
-        ...structureCallout(
-          '6  Val6 in magenta: Structure V, Genome E in the header',
-        ),
-        maxWidth: 600,
-      },
+      structureCallout('6  Sickle valine, in magenta', HBB_FONT_SIZE),
     ],
   },
   {
