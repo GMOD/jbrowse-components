@@ -24,6 +24,8 @@ changes, in a crystal structure of sickle haemoglobin. We'll:
 - add the GWAS Catalog and read what has been associated with rs334
 - add 1000 Genomes genotypes grouped by ancestry, with a common synonymous
   variant four codons upstream as the control
+- color the genome, the alignment and the structure by the alignment's protein
+  domains
 
 ## Prerequisites
 
@@ -135,6 +137,25 @@ screen. HbC, rs33930165, a second allele of the same codon, shares the
 highlighted column.
 
 <Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, colored down the left edge by superpopulation." />
+
+## The domains across all three views
+
+The alignment view fills its rows with NCBI's conserved domains and sites. The
+genome view and the structure read them from the alignment, so each domain keeps
+one color in every view:
+
+- in the alignment view's menu, click **Show domains on the genome**, which adds
+  a domain track to the genome view
+- in the genome view's menu, untick **Show... → CDS reading frame colors**,
+  whose frame colors would mix with the domain colors
+- type `chr11:5226956-5227046[rev] chr11:5226750-5226799[rev]` into the location
+  box, which adds the start of exon 2 beside codon 7
+- in the protein view's palette menu, pick **Domains from the alignment**
+
+In the protein view's header, the **From the alignment** rows list the same
+domains and sites.
+
+<Figure src="/img/protein/hbb_domains_three_views.png" caption="HBB in three linked views, colored by the alignment's domains: the genome's domain track, the alignment's rows and the 2HBS cartoon. On the structure a cartoon color marks a domain and side-chain sticks mark a site." />
 
 ## Your own gene
 

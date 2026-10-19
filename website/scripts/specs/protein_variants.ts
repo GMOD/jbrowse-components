@@ -43,6 +43,7 @@ interface SessionOptions {
   tracks: object[]
   sessionTracks?: object[]
   msaHeight?: number
+  domains?: boolean
 }
 
 function linkedSession(
@@ -50,7 +51,13 @@ function linkedSession(
   config: string,
   msaName: string,
   region: object,
-  { loc, tracks, sessionTracks = [], msaHeight = 560 }: SessionOptions,
+  {
+    loc,
+    tracks,
+    sessionTracks = [],
+    msaHeight = 560,
+    domains = false,
+  }: SessionOptions,
 ) {
   const session = structuredClone(base)
   const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
@@ -58,9 +65,15 @@ function linkedSession(
   lgv.showGridlines = true
   msa.height = msaHeight
   msa.displayName = msaName
-  msa.showDomains = false
+  msa.showDomains = domains
   msa.region = region
   protein.height = 780
+  if (domains) {
+    lgv.colorByCDS = false
+    msa.domainsOnGenome = true
+    delete protein.colorScheme
+    protein.color = { field: 'domain' }
+  }
   session.sessionTracks = sessionTracks
   return `?config=${encodeURIComponent(config)}&session=encoded-${deflateSync(
     JSON.stringify(session),
@@ -135,8 +148,13 @@ const KG_TRACK = pageTrack('tutorials/protein_variants_sickle_cell.md', KG)
 const RS334 = 'chr11:5,227,002'
 const RS713040 = 'chr11:5,227,013'
 const HBB_GENE_TRACK = { trackId: HBB_GENES, height: 60 }
+const HBB_DOMAINS = 'msaview-domains-msa-HBB'
+const HBB_CODON_7 = 'chr11:5226956-5227046[rev]'
+const HBB_EXON_2_START = 'chr11:5226750-5226799[rev]'
 
-function hbbSession(options: Omit<SessionOptions, 'loc'>) {
+function hbbSession(
+  options: Partial<SessionOptions> & Pick<SessionOptions, 'tracks'>,
+) {
   const session = structuredClone(HBB_SESSION)
   session.views[2]!.colorScheme = 'mapped-chain'
   return linkedSession(
@@ -144,7 +162,7 @@ function hbbSession(options: Omit<SessionOptions, 'loc'>) {
     decodeURIComponent(UCSC_HG38_CONFIG),
     'HBB orthologs',
     { row: 'human_query', start: 1, end: 31 },
-    { loc: 'chr11:5226956-5227046[rev]', ...options },
+    { loc: HBB_CODON_7, ...options },
   )
 }
 
@@ -250,6 +268,79 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dy: 40,
       },
       HBB_STRUCTURE,
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'protein/hbb_domains_three_views',
+    url: hbbSession({
+      tracks: [
+        HBB_GENE_TRACK,
+        { trackId: GWAS, height: 110 },
+        { trackId: KG, type: 'LinearMultiSampleVariantDisplay', height: 330 },
+      ],
+      sessionTracks: [KG_TRACK],
+      loc: `${HBB_CODON_7} ${HBB_EXON_2_START}`,
+      msaHeight: 300,
+      domains: true,
+    }),
+    ...READY,
+    readySelector: `${READY.readySelector}:has([data-testid="trackRenderingContainer-lgv-HBB-${HBB_DOMAINS}"])`,
+    viewportHeight: 1300,
+    actions: [
+      { type: 'waitForAppSettled' },
+      ...hoverAlignment({ dx: 193, dy: 8 }),
+    ],
+    annotations: [
+      codonCallout('1  rs334, codon 7: GAG to GTG', HBB_GENES, RS334),
+      {
+        type: 'text',
+        text: '2  GWAS Catalog records at rs334',
+        fontSize: 18,
+        leader: true,
+        anchor: { trackId: GWAS, loc: RS334, fracY: 0.5 },
+        dx: 160,
+        dy: 0,
+      },
+      {
+        type: 'text',
+        text: '3  Sickle allele, African-ancestry rows only',
+        fontSize: 18,
+        leader: true,
+        anchor: { trackId: KG, loc: RS334, fracY: 0.12 },
+        dx: 170,
+        dy: 150,
+      },
+      {
+        type: 'text',
+        text: '4  rs713040, synonymous His3, in every group',
+        fontSize: 18,
+        leader: true,
+        anchor: { trackId: KG, loc: RS713040, fracY: 0.75 },
+        dx: 90,
+        dy: 40,
+      },
+      {
+        type: 'text',
+        text: '5  The same column in every ortholog',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          selector: '[data-testid="msa_canvas"]',
+          alignX: 'left',
+          dx: 193,
+          alignY: 'top',
+          dy: 8,
+        },
+        dx: 150,
+        dy: -70,
+      },
+      {
+        ...structureCallout(
+          '6  Val6 in magenta: Structure V, Genome E in the header',
+        ),
+        maxWidth: 600,
+      },
     ],
   },
   {
