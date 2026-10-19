@@ -176,6 +176,13 @@ shorthand included (`{ name, uri, refNameAliases: { uri } }`):
 - Each table returns `readAs` (`refName`, `originalRefName`, one per region),
   the names it read under. A host labels the rows with the name it asked for.
 - `regions` lists the assembly's contigs as its sequence file names them.
+- A host matching a contig name to a file's goes through `canonical`:
+  `fileRegions` and `regions` give each contig's canonical name in
+  `canonical` (`refName` itself under no assembly), and
+  `canonicalNames({ assembly, refNames })` returns `{ refName, canonical }`
+  for names a user typed, through the alias file and in any case, an
+  unknown name as given. ggjbrowse finds a bare contig name (`12` for a file
+  spelling it `chr12`) this way, as the engine renames a locus.
 
 Only the requested regions are renamed: a mate's or SA tag's contig keeps the
 file's spelling, as `REFNAME_NAMESPACES.md` describes for the browser.

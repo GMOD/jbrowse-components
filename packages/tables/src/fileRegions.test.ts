@@ -69,6 +69,7 @@ test('a VCF’s contigs take their ##contig lengths, and a name its index lists 
   })
   expect(plain).toEqual({
     refName: ['ctgA'],
+    canonical: ['ctgA'],
     start: [0],
     end: [50001],
     lengthKnown: [true],

@@ -59,6 +59,28 @@ test('an assembly reads a file under its own name for a contig and its alias', a
   expect(byAlias.reads.start).toEqual(same.reads.start)
 })
 
+test('a host matches a contig name to the file’s through the assembly’s canonical names', async () => {
+  const file = await engine.fileRegions({
+    adapterConfig: ALTNAME_BAM.adapterConfig,
+    assembly,
+  })
+  expect(file.refName).toEqual(['contigA'])
+  expect(file.canonical).toEqual(['ctgA'])
+  expect(
+    (await engine.fileRegions({ adapterConfig: ALTNAME_BAM.adapterConfig }))
+      .canonical,
+  ).toEqual(['contigA'])
+  expect(
+    await engine.canonicalNames({
+      assembly,
+      refNames: ['A', 'contigA', 'CTGA', 'ctgB', 'chrNope'],
+    }),
+  ).toEqual({
+    refName: ['A', 'contigA', 'CTGA', 'ctgB', 'chrNope'],
+    canonical: ['ctgA', 'ctgA', 'ctgA', 'ctgB', 'chrNope'],
+  })
+})
+
 test('a CRAM spelling its contig another way decodes against the assembly’s sequence', async () => {
   const { sequenceAdapter: _, ...cram } = CRAM
   const t = await engine.alignments({
@@ -95,6 +117,7 @@ test('features and the sequence read under an alias, and the regions list the se
   )
   expect(await engine.regions({ assembly })).toEqual({
     refName: ['ctgA', 'ctgB'],
+    canonical: ['ctgA', 'ctgB'],
     start: [0, 0],
     end: [50001, 6079],
   })

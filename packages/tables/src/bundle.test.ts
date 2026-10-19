@@ -71,6 +71,7 @@ let jbrowse: {
   contigs: (args: string) => Promise<string>
   multiway: (args: string) => Promise<string>
   regions: (args: string) => Promise<string>
+  canonicalNames: (args: string) => Promise<string>
   fileRegions: (args: string) => Promise<string>
   cache: (args: string) => Promise<string>
   clearCache: () => Promise<string>
@@ -241,9 +242,17 @@ test('the bundle reads a file under its alias through an assembly, in a bare hos
   )
   expect(read(await jbrowse.regions(JSON.stringify({ assembly })))).toEqual({
     refName: ['ctgA', 'ctgB'],
+    canonical: ['ctgA', 'ctgB'],
     start: [0, 0],
     end: [50001, 6079],
   })
+  expect(
+    read(
+      await jbrowse.canonicalNames(
+        JSON.stringify({ assembly, refNames: ['contigA', 'ctgB'] }),
+      ),
+    ),
+  ).toEqual({ refName: ['contigA', 'ctgB'], canonical: ['ctgA', 'ctgB'] })
 })
 
 test('the bundle fades a region’s marks as the engine does, at a host’s px per bp', async () => {

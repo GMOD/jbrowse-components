@@ -292,8 +292,10 @@ export function createTablesEngine() {
      * a read of the whole file reads, under the file's own spelling. The end
      * is the contig's length where the assembly or the file states one, else
      * the most an int32 holds, which each reader clamps to what its index
-     * addresses. `lengthKnown` says which, and `hasData` whether the file
-     * holds records there, null where its index cannot tell.
+     * addresses. `lengthKnown` says which, `hasData` whether the file
+     * holds records there, null where its index cannot tell, and `canonical`
+     * the assembly's name for the contig, `refName` where the call names no
+     * assembly.
      */
     fileRegions: trimmed(
       async ({
@@ -350,16 +352,34 @@ export function createTablesEngine() {
     ),
     /**
      * The contigs an assembly's sequence lists, named as the sequence file
-     * names them.
+     * names them, with `canonical` the assembly's name for each.
      */
     regions: trimmed(async ({ assembly }: { assembly: AssemblyConfig }) => {
-      const { regions } = await assemblyOf(assembly)
+      const { regions, canonical } = await assemblyOf(assembly)
       return {
         refName: regions.map(r => r.refName),
+        canonical: regions.map(r => canonical(r.refName)),
         start: regions.map(r => r.start),
         end: regions.map(r => r.end),
       }
     }),
+    /**
+     * Each name as the assembly's canonical name for its contig, through the
+     * alias file and in any case, as the browser's location box reads it; a
+     * name the assembly does not know comes back as given.
+     */
+    canonicalNames: trimmed(
+      async ({
+        assembly,
+        refNames,
+      }: {
+        assembly: AssemblyConfig
+        refNames: string[]
+      }) => {
+        const { canonical } = await assemblyOf(assembly)
+        return { refName: refNames, canonical: refNames.map(canonical) }
+      },
+    ),
     /**
      * What the caches hold, after setting their limit to `limit` bytes where
      * given, `Infinity` for none: a smaller limit evicts at once, keeping the

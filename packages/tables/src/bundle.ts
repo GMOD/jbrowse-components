@@ -40,6 +40,8 @@ const cacheArgs = ({ limit }: { limit?: number | null }) =>
   fileRegions: async (args: string) =>
     send(await engine.fileRegions(JSON.parse(args))),
   regions: async (args: string) => send(await engine.regions(JSON.parse(args))),
+  canonicalNames: async (args: string) =>
+    send(await engine.canonicalNames(JSON.parse(args))),
   alignmentColors: () => send(alignmentColors()),
   cache: async (args: string) =>
     JSON.stringify(await engine.cache(cacheArgs(JSON.parse(args)))),

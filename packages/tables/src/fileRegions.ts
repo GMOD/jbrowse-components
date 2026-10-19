@@ -59,7 +59,8 @@ async function contigsOf(
  * Each contig a file lists, from 0 to its length: the assembly's where it
  * has the contig, else the file's own where it states one, else
  * `WHOLE_CONTIG_END`. `hasData` is whether the file holds records there,
- * null where its index cannot tell.
+ * null where its index cannot tell, and `canonical` the assembly's name for
+ * the contig.
  */
 export async function fileRegions(
   pluginManager: PluginManager,
@@ -80,6 +81,7 @@ export async function fileRegions(
   )
   return {
     refName: contigs.map(c => c.refName),
+    canonical: contigs.map(c => canonical(c.refName)),
     start: contigs.map(() => 0),
     end: length.map(l => l ?? WHOLE_CONTIG_END),
     lengthKnown: length.map(l => l !== undefined),
