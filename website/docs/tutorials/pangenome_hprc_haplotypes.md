@@ -113,7 +113,7 @@ adds it, and the config below is the one to adapt for your own graph:
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 **CFH / CFHR** example, the complement factor H gene cluster. Under **More about
 this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
-et al. 2006), such as HG00253's second haplotype, breaks across both genes.
+et al. 2006) opens a hole across both.
 
 <Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
@@ -126,18 +126,14 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 `HG00146.1` and `HG00097.1` under **Lanes → Choose lanes...**, and then:
 
 - **Lanes → Order lanes by structure** stacks each lane beside the one whose
-  deletions and insertions against GRCh38 are most alike, so the haplotypes with
-  _GSTT1_ sit as one block.
-- **The band between two lanes** aligns the two haplotypes to each other, read
-  off the nodes both walks share. It fans open where the lower lane has sequence
-  the upper one lacks, and runs unbroken between two haplotypes that both have
-  it.
+  deletions and insertions against GRCh38 are most alike.
+- **The band between two lanes** aligns the two haplotypes on the nodes both
+  walks share, and fans open where the lower lane has sequence the upper lacks.
 
 <Figure caption="GSTT1 with ten lanes ordered by structure." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## FLNA / EMD: two genes in the opposite order {#inversions}
 
-An inversion keeps the same sequence and reverses it, so no lane changes length.
 _FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
 them is inverted on many X chromosomes (Small et al. 1997). From any
 **Haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`.
@@ -145,12 +141,11 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 **Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
 `HG01978.1`. Then:
 
-- **A lane whose walk runs the block backwards** draws it mirrored in place, so
-  its genes line up with the lanes above, and its header names the span as an
-  inversion.
-- **HPRC release 2 bubbles** in the track selector adds the graph's bubbles, the
-  places where haplotype paths split and rejoin. `gfatools bubble` flags one as
-  `inversion` when its paths disagree about orientation.
+- **A lane whose walk runs the block backwards** draws it mirrored in place, and
+  its header names the inversion.
+- **HPRC release 2 bubbles** in the track selector adds the graph's bubbles.
+  `gfatools bubble` flags one as `inversion` when its paths disagree about
+  orientation.
 - **Filter by... → Edit filters...** on that track keeps the flagged ones with
   this filter:
 
@@ -162,24 +157,17 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 
 ## What the lanes leave out {#limits}
 
-The lanes draw the three loci above well. The cases below mislead, each measured
-on HPRC release 2.1 in October 2026;
-[part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
-and the VCF behind them.
+These cases mislead; [part 1](/docs/tutorials/pangenome_hprc#limits) lists the
+limits of the graph and the VCF behind them.
 
-- **A haplotype the graph does not align has no lane.** Part 1 lists where, and
-  how many the page counts.
+- **A haplotype the graph does not align has no lane.**
 - **A lane can be empty and correct.** Where a haplotype's deletion is longer
   than the window, the graph has no walk for it there and the launch opens no
-  row. Around SMN1 / SMN2 four of eight lanes are 190 to 250 kb deletions that
-  draw nothing in a 60 kb window.
-- **A lane can stop partway.** A haplotype aligned for part of a window draws
-  that part and ends. The gap after it is where the graph's alignment stops, not
-  where the sequence does.
+  row.
+- **A lane can stop partway** where the graph's alignment of that haplotype
+  stops.
 - **One lane stands for many haplotypes.** The page picks one haplotype per
-  structural form, and a form groups haplotypes by their structural variants of
-  50 bp or more. Two haplotypes in one form can still differ in everything
-  smaller.
+  structural form, grouped by structural variants of 50 bp or more.
 - **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
   CYP2D6 cannot show how many copies a haplotype has.
 
