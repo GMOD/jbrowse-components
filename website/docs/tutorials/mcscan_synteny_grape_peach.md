@@ -134,7 +134,9 @@ python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 ```
 
 The command writes `grape.peach.anchors` and `grape.peach.anchors.simple` to the
-working directory. The adapters read anchors and BED files plain or gzipped.
+working directory. The adapters read anchors and BED files plain or gzipped. The
+configs below name gzipped copies, which `gzip -k` makes of each of the four
+files; drop `.gz` from a `uri` to read the plain file.
 
 ## Loading the grape and peach assemblies and gene tracks
 

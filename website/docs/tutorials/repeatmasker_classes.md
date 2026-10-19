@@ -228,9 +228,14 @@ reads the result unchanged.
 
 ## Reproduce it end to end
 
-One script converts the `.out`, indexes it, and writes a runnable JBrowse with
-the track already set to the multi-row display,
-[`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh):
+[`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh)
+turns your RepeatMasker `.out` into a runnable JBrowse. The script:
+
+1. Splits the `.out`'s `class/family` field into a class column and a family
+   column.
+2. Writes a BED whose header names the columns UCSC's does, then bgzips and
+   indexes it.
+3. Downloads JBrowse and adds the track with the multi-row display selected.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeatmasker_classes.sh

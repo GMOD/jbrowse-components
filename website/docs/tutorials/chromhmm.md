@@ -458,17 +458,18 @@ and `TYPE` sorts them by how the sample was collected.
 
 ## Reproduce it end to end
 
-One script does the whole path,
-[`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh):
+[`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh)
+does the whole path. The script:
+
+1. Downloads the nine segmentation BEDs.
+2. Merges them, then bgzips and indexes the result.
+3. Downloads JBrowse and writes the `config.json` above, opening on HOXA.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_multirow.sh
 bash build_chromhmm_multirow.sh         # builds ./chromhmm_build/jbrowse2
 npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 ```
-
-The script downloads the nine segmentation BEDs, merges, bgzips and tabixes
-them, downloads JBrowse, and writes the `config.json` above, opening on HOXA.
 
 [`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
 builds the 127-epigenome track by the same merge. Roadmap's segmentations are

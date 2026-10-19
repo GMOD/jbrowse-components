@@ -228,14 +228,20 @@ Two more are worth asking for:
 
 ## Running the whole pipeline as a script
 
+[`build_fly_agent_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fly_agent_synteny.sh)
+runs the pipeline without the agent. It needs the tools in
+[Prerequisites](#prerequisites), plus `jq` and `curl`. The script:
+
+1. Downloads both genomes from their hosted GenArk configs.
+2. Aligns simulans against mauritiana with minimap2.
+3. Indexes the PAF as PIF.
+4. Merges the two hosted configs and the synteny track into one `config.json` to
+   open in Desktop.
+
 ```bash
 curl -O https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_fly_agent_synteny.sh
 bash build_fly_agent_synteny.sh fly_agent_synteny_build
 ```
-
-The script downloads both genomes, runs the alignment, indexes it, and writes
-`config.json` to open in Desktop. It needs the tools in
-[Prerequisites](#prerequisites), plus `jq` and `curl`.
 
 ## See also
 

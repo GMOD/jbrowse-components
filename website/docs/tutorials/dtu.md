@@ -345,8 +345,13 @@ The other three tracks differ in their id, name and file:
 
 ## Reproduce it end to end
 
-One script wraps every step above,
-[`build_dtu_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dtu_demo.sh):
+[`build_dtu_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dtu_demo.sh)
+wraps every step above. The script:
+
+1. Downloads the ENTEx muscle and liver RSEM quantifications and GENCODE v29.
+2. Tests differential transcript usage with satuRn and computes each
+   transcript's isoform-fraction change from TPM.
+3. Writes the statistics into the GENCODE GFF3, then bgzips and indexes it.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dtu_demo.sh

@@ -508,8 +508,23 @@ the _FGF4_ check does.
 
 ## Reproduce it end to end
 
-Five scripts build the tracks in the figures; see
-[Prerequisites](#prerequisites). Each writes a `*_build/` directory.
+Five scripts build the tracks in the figures, and each writes a `*_build/`
+directory. The tools are under [Prerequisites](#prerequisites). The scripts:
+
+1. `build_dog10k_nhej1_sv.sh` slices the _NHEJ1_ deletion from Schall and Kidd's
+   genotype VCF for the Collie-clade breeds, three unaffected breeds and four
+   gray wolves.
+2. `build_omia_dog_variants.sh` reads OMIA's nightly mysqldump, since OMIA has
+   no coordinate API. OMIA updates the database continuously, so the record
+   count changes from day to day.
+3. `build_dog10k_amy2b_sv.sh` slices the _AMY2B_ duplication and _RNASE1_
+   insertion records for one panel, in the same order.
+4. `build_dog10k_fgf4_retrogene.sh` slices the two _FGF4_ intron records, and
+   also writes `dog10k_fgf4_cohort_svs`, the same records over every canid in
+   the callset, which this tutorial's config holds as a track.
+5. `build_dog10k_fgf4_synteny.sh` aligns the two _FGF4_ retrocopies to their
+   parent gene. It exits non-zero unless every gap in both alignments is in an
+   annotated _FGF4_ intron and each deposited CDS is a single interval.
 
 ```bash
 BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
@@ -524,16 +539,6 @@ bash build_dog10k_amy2b_sv.sh
 bash build_dog10k_fgf4_retrogene.sh
 bash build_dog10k_fgf4_synteny.sh
 ```
-
-- `build_omia_dog_variants.sh` reads OMIA's nightly mysqldump, since OMIA has no
-  coordinate API. OMIA updates the database continuously, so the record count
-  changes from day to day.
-- `build_dog10k_fgf4_retrogene.sh` also writes `dog10k_fgf4_cohort_svs`, the two
-  _FGF4_ intron records over every canid in the callset, which this tutorial's
-  config holds as a track.
-- `build_dog10k_fgf4_synteny.sh` exits non-zero unless every gap in both
-  alignments is in an annotated _FGF4_ intron and each deposited CDS is a single
-  interval.
 
 ## See also
 
